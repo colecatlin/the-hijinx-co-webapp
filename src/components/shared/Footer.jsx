@@ -35,7 +35,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A0A] text-white">
+    <footer className="bg-[#232323] text-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-8">
           {/* Brand */}
@@ -59,7 +59,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       to={createPageUrl(link.page)}
-                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                      className="text-sm text-[#1A3249] hover:text-[#00FFDA] transition-colors"
                     >
                       {link.name}
                     </Link>

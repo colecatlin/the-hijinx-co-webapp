@@ -14,15 +14,15 @@ export default function LatestFeed() {
   });
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-gray-100">
+    <section className="max-w-7xl mx-auto px-6 py-20 border-t border-[#1A3249]">
       <div className="flex items-end justify-between mb-10">
         <div>
-          <span className="font-mono text-xs tracking-[0.2em] text-gray-400 uppercase">Latest</span>
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight mt-2">From The Outlet</h2>
+          <span className="font-mono text-xs tracking-[0.2em] text-[#1A3249] uppercase">Latest</span>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#FFF8F5] mt-2">From The Outlet</h2>
         </div>
         <Link
           to={createPageUrl('OutletHome')}
-          className="hidden md:flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors"
+          className="hidden md:flex items-center gap-1 text-xs font-medium text-[#00FFDA] hover:text-[#D33F49] transition-colors"
         >
           View all <ArrowRight className="w-3 h-3" />
         </Link>
@@ -48,7 +48,7 @@ export default function LatestFeed() {
               to={createPageUrl('OutletStoryPage') + `?id=${story.id}`}
               className="group"
             >
-              <div className="aspect-[4/3] bg-gray-100 mb-3 overflow-hidden">
+              <div className="aspect-[4/3] bg-[#1A3249] mb-3 overflow-hidden">
                 {story.cover_image ? (
                   <img
                     src={story.cover_image}
@@ -57,16 +57,16 @@ export default function LatestFeed() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="font-mono text-xs text-gray-300">{story.category}</span>
+                    <span className="font-mono text-xs text-[#FFF8F5]">{story.category}</span>
                   </div>
                 )}
               </div>
-              <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase">{story.category}</span>
-              <h3 className="font-bold text-sm mt-1 group-hover:underline decoration-1 underline-offset-2 tracking-tight leading-snug">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[#1A3249] uppercase">{story.category}</span>
+              <h3 className="font-bold text-sm mt-1 text-[#FFF8F5] group-hover:text-[#00FFDA] transition-colors tracking-tight leading-snug">
                 {story.title}
               </h3>
               {story.published_date && (
-                <p className="font-mono text-[10px] text-gray-400 mt-2">
+                <p className="font-mono text-[10px] text-[#1A3249] mt-2">
                   {format(new Date(story.published_date), 'MMM d, yyyy')}
                 </p>
               )}

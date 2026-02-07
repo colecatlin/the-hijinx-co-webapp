@@ -23,7 +23,7 @@ export default function OutletHome() {
   const filtered = activeCategory === 'All' ? stories : stories.filter(s => s.category === activeCategory);
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
         <SectionHeader
           label="The Outlet"
