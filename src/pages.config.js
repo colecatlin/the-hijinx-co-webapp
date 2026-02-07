@@ -54,6 +54,17 @@ import OutletIssues from './pages/OutletIssues';
 import OutletIssuePage from './pages/OutletIssuePage';
 import OutletSubmit from './pages/OutletSubmit';
 import OutletAdvertising from './pages/OutletAdvertising';
+import MotorsportsHome from './pages/MotorsportsHome';
+import StandingsHome from './pages/StandingsHome';
+import ScheduleHome from './pages/ScheduleHome';
+import ResultsHome from './pages/ResultsHome';
+import EventResults from './pages/EventResults';
+import DriverDirectory from './pages/DriverDirectory';
+import DriverProfile from './pages/DriverProfile';
+import TeamDirectory from './pages/TeamDirectory';
+import TeamProfile from './pages/TeamProfile';
+import TrackDirectory from './pages/TrackDirectory';
+import TrackProfile from './pages/TrackProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +76,17 @@ export const PAGES = {
     "OutletIssuePage": OutletIssuePage,
     "OutletSubmit": OutletSubmit,
     "OutletAdvertising": OutletAdvertising,
+    "MotorsportsHome": MotorsportsHome,
+    "StandingsHome": StandingsHome,
+    "ScheduleHome": ScheduleHome,
+    "ResultsHome": ResultsHome,
+    "EventResults": EventResults,
+    "DriverDirectory": DriverDirectory,
+    "DriverProfile": DriverProfile,
+    "TeamDirectory": TeamDirectory,
+    "TeamProfile": TeamProfile,
+    "TrackDirectory": TrackDirectory,
+    "TrackProfile": TrackProfile,
 }
 
 export const pagesConfig = {
