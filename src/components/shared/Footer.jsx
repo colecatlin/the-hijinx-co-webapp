@@ -40,12 +40,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <h3 className="text-2xl font-black tracking-tight">HIJINX</h3>
-            <p className="text-gray-400 text-sm mt-3 max-w-xs leading-relaxed">
+            <h3 className="text-2xl font-black tracking-tight text-[#FFF8F5]">HIJINX</h3>
+            <p className="text-[#FFF8F5] text-sm mt-3 max-w-xs leading-relaxed opacity-80">
               A multi-vertical platform building at the intersection of media, motorsports, and culture.
             </p>
             <div className="mt-6">
-              <p className="font-mono text-xs text-gray-500 tracking-[0.15em] mb-3">STAY UPDATED</p>
+              <p className="font-mono text-xs text-[#FFF8F5] tracking-[0.15em] mb-3 opacity-60">STAY UPDATED</p>
               <NewsletterSignup source="footer" dark />
             </div>
           </div>
@@ -53,13 +53,13 @@ export default function Footer() {
           {/* Link Columns */}
           {footerLinks.map((col) => (
             <div key={col.label}>
-              <p className="font-mono text-xs tracking-[0.2em] text-gray-500 mb-4">{col.label.toUpperCase()}</p>
+              <p className="font-mono text-xs tracking-[0.2em] text-[#FFF8F5] opacity-60 mb-4">{col.label.toUpperCase()}</p>
               <ul className="space-y-3">
                 {col.links.map((link) => (
                   <li key={link.name}>
                     <Link
                       to={createPageUrl(link.page)}
-                      className="text-sm text-[#1A3249] hover:text-[#00FFDA] transition-colors"
+                      className="text-sm text-[#FFF8F5] hover:text-[#00FFDA] transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -72,10 +72,10 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="font-mono text-xs text-gray-600">
+          <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
             © {new Date().getFullYear()} The Hijinx Co LLC. All rights reserved.
           </p>
-          <p className="font-mono text-xs text-gray-600">
+          <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
             Built on purpose.
           </p>
         </div>
