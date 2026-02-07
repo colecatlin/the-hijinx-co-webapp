@@ -30,7 +30,7 @@ export default function ApparelHome() {
 
         <div className="mb-10">
           <a 
-            href="https://hijinxco.myshopify.com" 
+            href="https://www.hijinxco.com" 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#95BF47] hover:bg-[#7da639] text-white font-semibold text-sm transition-colors"
