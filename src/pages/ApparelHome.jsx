@@ -25,8 +25,20 @@ export default function ApparelHome() {
         <SectionHeader
           label="Apparel & Lifestyle"
           title="The Collection"
-          subtitle="Essentials and goods from Hijinx."
+          subtitle="Essentials and goods from Hijinx. Shop our full collection on Shopify."
         />
+
+        <div className="mb-10">
+          <a 
+            href="https://hijinxco.myshopify.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#95BF47] hover:bg-[#7da639] text-white font-semibold text-sm transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Visit Shopify Store
+          </a>
+        </div>
 
         <div className="flex gap-2 overflow-x-auto pb-2 mb-10">
           {categories.map((cat) => (
@@ -56,18 +68,21 @@ export default function ApparelHome() {
                     <div className="w-full h-full flex items-center justify-center"><Shirt className="w-8 h-8 text-gray-200" /></div>
                   )}
                 </div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{product.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      {product.price && <span className="text-sm font-mono">${product.price}</span>}
-                      {product.status === 'coming_soon' && <span className="text-[10px] font-mono text-gray-400 uppercase">Coming Soon</span>}
-                      {product.status === 'sold_out' && <span className="text-[10px] font-mono text-red-400 uppercase">Sold Out</span>}
-                    </div>
+                <div>
+                  <h3 className="font-semibold text-sm">{product.name}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    {product.price && <span className="text-sm font-mono">${product.price}</span>}
+                    {product.status === 'coming_soon' && <span className="text-[10px] font-mono text-gray-400 uppercase">Coming Soon</span>}
+                    {product.status === 'sold_out' && <span className="text-[10px] font-mono text-red-400 uppercase">Sold Out</span>}
                   </div>
                   {product.external_link && (
-                    <a href={product.external_link} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-300 hover:text-[#0A0A0A] transition-colors">
-                      <ExternalLink className="w-4 h-4" />
+                    <a 
+                      href={product.external_link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0A0A0A] transition-colors mt-2"
+                    >
+                      Shop Now <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
