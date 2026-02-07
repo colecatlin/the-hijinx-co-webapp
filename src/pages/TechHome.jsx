@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import PageShell from '../components/shared/PageShell';
-import SectionHeader from '../components/shared/SectionHeader';
+import PageShell from '@/components/shared/PageShell';
+import SectionHeader from '@/components/shared/SectionHeader';
 import { Monitor, Cpu, ArrowRight } from 'lucide-react';
 
 const products = [

@@ -1,9 +1,9 @@
 import React from 'react';
-import PageShell from '../components/shared/PageShell';
-import HeroSection from '../components/home/HeroSection';
-import VerticalGrid from '../components/home/VerticalGrid';
-import LatestFeed from '../components/home/LatestFeed';
-import NewsletterSignup from '../components/shared/NewsletterSignup';
+import PageShell from '@/components/shared/PageShell';
+import HeroSection from '@/components/home/HeroSection';
+import VerticalGrid from '@/components/home/VerticalGrid';
+import LatestFeed from '@/components/home/LatestFeed';
+import NewsletterSignup from '@/components/shared/NewsletterSignup';
 
 export default function Home() {
   return (

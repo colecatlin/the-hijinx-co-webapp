@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import PageShell from '../components/shared/PageShell';
-import NewsletterSignup from '../components/shared/NewsletterSignup';
+import PageShell from '@/components/shared/PageShell';
+import NewsletterSignup from '@/components/shared/NewsletterSignup';
 import { GraduationCap, BookOpen, Wrench, TrendingUp } from 'lucide-react';
 
 const modules = [

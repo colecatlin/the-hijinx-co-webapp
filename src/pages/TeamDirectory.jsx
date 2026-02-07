@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import PageShell from '../components/shared/PageShell';
-import SectionHeader from '../components/shared/SectionHeader';
-import EmptyState from '../components/shared/EmptyState';
+import PageShell from '@/components/shared/PageShell';
+import SectionHeader from '@/components/shared/SectionHeader';
+import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building2, Search, ArrowRight } from 'lucide-react';
 

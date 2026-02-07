@@ -1,5 +1,5 @@
 import React from 'react';
-import PageShell from '../components/shared/PageShell';
+import PageShell from '@/components/shared/PageShell';
 import { motion } from 'framer-motion';
 
 export default function About() {

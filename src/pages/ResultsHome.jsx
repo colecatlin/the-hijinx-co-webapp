@@ -4,9 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
-import PageShell from '../components/shared/PageShell';
-import SectionHeader from '../components/shared/SectionHeader';
-import EmptyState from '../components/shared/EmptyState';
+import PageShell from '@/components/shared/PageShell';
+import SectionHeader from '@/components/shared/SectionHeader';
+import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Flag, ChevronRight } from 'lucide-react';
 

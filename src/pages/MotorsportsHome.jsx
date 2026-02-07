@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
-import PageShell from '../components/shared/PageShell';
-import SectionHeader from '../components/shared/SectionHeader';
+import PageShell from '@/components/shared/PageShell';
+import SectionHeader from '@/components/shared/SectionHeader';
 import { Trophy, Calendar, Flag, Users, Building2, MapPin } from 'lucide-react';
 
 const sections = [

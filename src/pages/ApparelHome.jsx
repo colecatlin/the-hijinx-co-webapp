@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import PageShell from '../components/shared/PageShell';
-import SectionHeader from '../components/shared/SectionHeader';
-import EmptyState from '../components/shared/EmptyState';
+import PageShell from '@/components/shared/PageShell';
+import SectionHeader from '@/components/shared/SectionHeader';
+import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Shirt, ExternalLink } from 'lucide-react';
 
