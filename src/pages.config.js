@@ -65,6 +65,14 @@ import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import ApparelHome from './pages/ApparelHome';
+import CreativeServices from './pages/CreativeServices';
+import TechHome from './pages/TechHome';
+import Learning from './pages/Learning';
+import Hospitality from './pages/Hospitality';
+import FoodBeverage from './pages/FoodBeverage';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +95,14 @@ export const PAGES = {
     "TeamProfile": TeamProfile,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "ApparelHome": ApparelHome,
+    "CreativeServices": CreativeServices,
+    "TechHome": TechHome,
+    "Learning": Learning,
+    "Hospitality": Hospitality,
+    "FoodBeverage": FoodBeverage,
+    "About": About,
+    "Contact": Contact,
 }
 
 export const pagesConfig = {
