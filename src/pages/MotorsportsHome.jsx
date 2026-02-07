@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../components/utils';
+import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import PageShell from '../components/shared/PageShell';
 import SectionHeader from '../components/shared/SectionHeader';

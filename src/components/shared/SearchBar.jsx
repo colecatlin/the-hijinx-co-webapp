@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Search, X, FileText, Flag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/components/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SearchBar({ onClose }) {

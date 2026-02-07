@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { createPageUrl } from './components/utils';
+import { createPageUrl } from '@/components/utils';
 import { Search, Menu, X, ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import SearchBar from './components/shared/SearchBar';
-import Footer from './components/shared/Footer';
+import SearchBar from '@/components/shared/SearchBar';
+import Footer from '@/components/shared/Footer';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
