@@ -114,6 +114,18 @@ export default function TrackProfile() {
 
   return (
     <PageShell className="bg-[#FFF8F5]">
+      {/* Header Image */}
+      {media?.hero_image_url && (
+        <div className="w-full h-[400px] relative overflow-hidden">
+          <img 
+            src={media.hero_image_url} 
+            alt={track.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
+
       {/* Sticky sub nav */}
       <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
         <div className="max-w-7xl mx-auto px-6">
