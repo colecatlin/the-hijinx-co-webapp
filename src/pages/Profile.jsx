@@ -48,6 +48,7 @@ export default function Profile() {
         full_name: user.full_name || '',
         bio: user.bio || '',
         account_type: user.account_type || 'individual',
+        association: user.association || '',
         company_name: user.company_name || '',
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
@@ -146,6 +147,30 @@ export default function Profile() {
                         Business
                       </span>
                     </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Association</Label>
+                <Select
+                  value={formData.association}
+                  onValueChange={(value) => setFormData({ ...formData, association: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Fan">Fan</SelectItem>
+                    <SelectItem value="Driver">Driver</SelectItem>
+                    <SelectItem value="Team Member">Team Member</SelectItem>
+                    <SelectItem value="Team Owner">Team Owner</SelectItem>
+                    <SelectItem value="Sponsor">Sponsor</SelectItem>
+                    <SelectItem value="Media">Media</SelectItem>
+                    <SelectItem value="Track Official">Track Official</SelectItem>
+                    <SelectItem value="Crew Chief">Crew Chief</SelectItem>
+                    <SelectItem value="Mechanic">Mechanic</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
