@@ -28,6 +28,7 @@ const navItems = [
   { name: 'Learning', page: 'Learning' },
   { name: 'Hospitality', page: 'Hospitality' },
   { name: 'Food & Bev', page: 'FoodBeverage' },
+  { name: 'Profile', page: 'Profile' },
   { name: 'About', page: 'About' },
   { name: 'Contact', page: 'Contact' },
 ];
