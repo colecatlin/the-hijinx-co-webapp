@@ -47,62 +47,62 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Home from './pages/Home';
-import OutletHome from './pages/OutletHome';
-import OutletStoryPage from './pages/OutletStoryPage';
-import OutletIssues from './pages/OutletIssues';
-import OutletIssuePage from './pages/OutletIssuePage';
-import OutletSubmit from './pages/OutletSubmit';
-import OutletAdvertising from './pages/OutletAdvertising';
-import MotorsportsHome from './pages/MotorsportsHome';
-import StandingsHome from './pages/StandingsHome';
-import ScheduleHome from './pages/ScheduleHome';
-import ResultsHome from './pages/ResultsHome';
-import EventResults from './pages/EventResults';
+import About from './pages/About';
+import ApparelHome from './pages/ApparelHome';
+import Contact from './pages/Contact';
+import CreativeServices from './pages/CreativeServices';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverProfile from './pages/DriverProfile';
+import EventResults from './pages/EventResults';
+import FoodBeverage from './pages/FoodBeverage';
+import Home from './pages/Home';
+import Hospitality from './pages/Hospitality';
+import Learning from './pages/Learning';
+import MotorsportsHome from './pages/MotorsportsHome';
+import OutletAdvertising from './pages/OutletAdvertising';
+import OutletHome from './pages/OutletHome';
+import OutletIssuePage from './pages/OutletIssuePage';
+import OutletIssues from './pages/OutletIssues';
+import OutletStoryPage from './pages/OutletStoryPage';
+import OutletSubmit from './pages/OutletSubmit';
+import ResultsHome from './pages/ResultsHome';
+import ScheduleHome from './pages/ScheduleHome';
+import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
+import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ApparelHome from './pages/ApparelHome';
-import CreativeServices from './pages/CreativeServices';
-import TechHome from './pages/TechHome';
-import Learning from './pages/Learning';
-import Hospitality from './pages/Hospitality';
-import FoodBeverage from './pages/FoodBeverage';
-import About from './pages/About';
-import Contact from './pages/Contact';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "OutletHome": OutletHome,
-    "OutletStoryPage": OutletStoryPage,
-    "OutletIssues": OutletIssues,
-    "OutletIssuePage": OutletIssuePage,
-    "OutletSubmit": OutletSubmit,
-    "OutletAdvertising": OutletAdvertising,
-    "MotorsportsHome": MotorsportsHome,
-    "StandingsHome": StandingsHome,
-    "ScheduleHome": ScheduleHome,
-    "ResultsHome": ResultsHome,
-    "EventResults": EventResults,
+    "About": About,
+    "ApparelHome": ApparelHome,
+    "Contact": Contact,
+    "CreativeServices": CreativeServices,
     "DriverDirectory": DriverDirectory,
     "DriverProfile": DriverProfile,
+    "EventResults": EventResults,
+    "FoodBeverage": FoodBeverage,
+    "Home": Home,
+    "Hospitality": Hospitality,
+    "Learning": Learning,
+    "MotorsportsHome": MotorsportsHome,
+    "OutletAdvertising": OutletAdvertising,
+    "OutletHome": OutletHome,
+    "OutletIssuePage": OutletIssuePage,
+    "OutletIssues": OutletIssues,
+    "OutletStoryPage": OutletStoryPage,
+    "OutletSubmit": OutletSubmit,
+    "ResultsHome": ResultsHome,
+    "ScheduleHome": ScheduleHome,
+    "StandingsHome": StandingsHome,
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
+    "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ApparelHome": ApparelHome,
-    "CreativeServices": CreativeServices,
-    "TechHome": TechHome,
-    "Learning": Learning,
-    "Hospitality": Hospitality,
-    "FoodBeverage": FoodBeverage,
-    "About": About,
-    "Contact": Contact,
 }
 
 export const pagesConfig = {

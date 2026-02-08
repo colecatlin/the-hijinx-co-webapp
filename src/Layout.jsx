@@ -97,8 +97,8 @@ export default function Layout({ children, currentPageName }) {
                     to={createPageUrl(item.page)}
                     className={`flex items-center gap-1 px-3 py-3 text-xs font-medium tracking-wide uppercase transition-colors ${
                       isActive(item.page)
-                        ? 'text-[#0A0A0A] border-b-2 border-[#0A0A0A]'
-                        : 'text-gray-500 hover:text-[#0A0A0A]'
+                        ? 'text-[#232323] border-b-2 border-[#232323]'
+                        : 'text-gray-600 hover:text-[#232323]'
                     }`}
                   >
                     {item.name}
@@ -117,7 +117,7 @@ export default function Layout({ children, currentPageName }) {
                         <Link
                           key={sub.name}
                           to={createPageUrl(sub.page)}
-                          className="block px-4 py-2 text-xs font-medium text-gray-500 hover:text-[#0A0A0A] hover:bg-gray-50 transition-colors"
+                          className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
                         >
                           {sub.name}
                         </Link>
@@ -147,7 +147,7 @@ export default function Layout({ children, currentPageName }) {
                   <Link
                     to={createPageUrl(item.page)}
                     className={`block py-3 text-lg font-semibold tracking-tight ${
-                      isActive(item.page) ? 'text-[#0A0A0A]' : 'text-gray-400'
+                      isActive(item.page) ? 'text-[#232323]' : 'text-gray-500'
                     }`}
                   >
                     {item.name}
@@ -158,7 +158,7 @@ export default function Layout({ children, currentPageName }) {
                         <Link
                           key={sub.name}
                           to={createPageUrl(sub.page)}
-                          className="block py-2 text-sm text-gray-400 hover:text-[#0A0A0A] transition-colors"
+                          className="block py-2 text-sm text-gray-500 hover:text-[#232323] transition-colors"
                         >
                           {sub.name}
                         </Link>
