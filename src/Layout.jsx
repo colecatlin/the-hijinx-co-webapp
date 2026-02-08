@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Search, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SearchBar from '@/components/shared/SearchBar';
 import Footer from '@/components/shared/Footer';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
@@ -40,6 +42,11 @@ export default function Layout({ children, currentPageName }) {
   const [hoveredItem, setHoveredItem] = useState(null);
   const location = useLocation();
 
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+  });
+
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
@@ -74,6 +81,21 @@ export default function Layout({ children, currentPageName }) {
             >
               <Search className="w-4 h-4" />
             </button>
+            {isAuthenticated ? (
+              <Link
+                to={createPageUrl('Profile')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <User className="w-4 h-4" />
+              </Link>
+            ) : (
+              <button
+                onClick={() => base44.auth.redirectToLogin()}
+                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+              >
+                Login
+              </button>
+            )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
