@@ -4,15 +4,15 @@ import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Flag } from 'lucide-react';
 
-export default function TrackCard({ track, disciplines = [] }) {
+export default function TrackCard({ track, disciplines = [], media }) {
   return (
     <Link
       to={createPageUrl('TrackProfile', { id: track.slug })}
-      className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group"
+      className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
     >
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
-          <div>
+          <div className="flex-1 pr-2">
             <h3 className="text-lg font-bold text-[#232323] group-hover:text-[#1A3249] transition-colors">
               {track.name}
             </h3>
@@ -65,6 +65,16 @@ export default function TrackCard({ track, disciplines = [] }) {
           {track.turns_count && <span>{track.turns_count} turns</span>}
         </div>
       </div>
+
+      {media?.hero_image_url && (
+        <div className="absolute bottom-4 right-4 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+          <img 
+            src={media.hero_image_url} 
+            alt={track.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
     </Link>
   );
 }
