@@ -50,6 +50,15 @@ export default function Profile() {
         account_type: user.account_type || 'individual',
         association: user.association || '',
         company_name: user.company_name || '',
+        car_number: user.car_number || '',
+        team_affiliation: user.team_affiliation || '',
+        vehicle_type: user.vehicle_type || '',
+        role_on_team: user.role_on_team || '',
+        owned_team_name: user.owned_team_name || '',
+        sponsorship_interests: user.sponsorship_interests || '',
+        media_outlet: user.media_outlet || '',
+        media_role: user.media_role || '',
+        track_name: user.track_name || '',
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
         favorite_series: user.favorite_series || [],
@@ -195,6 +204,152 @@ export default function Profile() {
                 />
               </div>
             </div>
+
+            {/* Association-specific fields */}
+            {formData.association === 'Driver' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Driver Information</h3>
+                <div>
+                  <Label>Car Number</Label>
+                  <Input
+                    value={formData.car_number}
+                    onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
+                    placeholder="e.g., 44"
+                  />
+                </div>
+                <div>
+                  <Label>Team Affiliation</Label>
+                  <Input
+                    value={formData.team_affiliation}
+                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
+                    placeholder="Your team name"
+                  />
+                </div>
+                <div>
+                  <Label>Vehicle Type</Label>
+                  <Input
+                    value={formData.vehicle_type}
+                    onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                    placeholder="e.g., Late Model, Sprint Car"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Team Member' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Team Member Information</h3>
+                <div>
+                  <Label>Team Name</Label>
+                  <Input
+                    value={formData.team_affiliation}
+                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
+                    placeholder="Your team name"
+                  />
+                </div>
+                <div>
+                  <Label>Role on Team</Label>
+                  <Input
+                    value={formData.role_on_team}
+                    onChange={(e) => setFormData({ ...formData, role_on_team: e.target.value })}
+                    placeholder="e.g., Pit Crew, Manager"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Team Owner' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Team Owner Information</h3>
+                <div>
+                  <Label>Team Name</Label>
+                  <Input
+                    value={formData.owned_team_name}
+                    onChange={(e) => setFormData({ ...formData, owned_team_name: e.target.value })}
+                    placeholder="Your team name"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Crew Chief' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Crew Chief Information</h3>
+                <div>
+                  <Label>Team Name</Label>
+                  <Input
+                    value={formData.team_affiliation}
+                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
+                    placeholder="Your team name"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Mechanic' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Mechanic Information</h3>
+                <div>
+                  <Label>Team Name</Label>
+                  <Input
+                    value={formData.team_affiliation}
+                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
+                    placeholder="Your team name"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Sponsor' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Sponsor Information</h3>
+                <div>
+                  <Label>Sponsorship Interests</Label>
+                  <Textarea
+                    value={formData.sponsorship_interests}
+                    onChange={(e) => setFormData({ ...formData, sponsorship_interests: e.target.value })}
+                    rows={3}
+                    placeholder="What are you interested in sponsoring?"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Media' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Media Information</h3>
+                <div>
+                  <Label>Media Outlet</Label>
+                  <Input
+                    value={formData.media_outlet}
+                    onChange={(e) => setFormData({ ...formData, media_outlet: e.target.value })}
+                    placeholder="Your media outlet or publication"
+                  />
+                </div>
+                <div>
+                  <Label>Role</Label>
+                  <Input
+                    value={formData.media_role}
+                    onChange={(e) => setFormData({ ...formData, media_role: e.target.value })}
+                    placeholder="e.g., Reporter, Photographer, Editor"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.association === 'Track Official' && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#232323]">Track Official Information</h3>
+                <div>
+                  <Label>Track Name</Label>
+                  <Input
+                    value={formData.track_name}
+                    onChange={(e) => setFormData({ ...formData, track_name: e.target.value })}
+                    placeholder="Your track name"
+                  />
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Favorites */}
