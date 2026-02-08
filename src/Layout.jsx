@@ -156,14 +156,32 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile nav */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed inset-0 z-[55] bg-white pt-16 overflow-y-auto lg:hidden"
-          >
-            <nav className="px-6 py-8">
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-[55] bg-black/20 lg:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm z-[56] bg-white overflow-y-auto lg:hidden shadow-2xl"
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <span className="text-sm font-semibold">Menu</span>
+              </div>
+              <nav className="px-6 py-6">
               {navItems.map((item) => (
                 <div key={item.name} className="mb-1">
                   <Link
@@ -190,9 +208,10 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               ))}
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+            </>
+            )}
+            </AnimatePresence>
 
       {/* Search overlay */}
       <AnimatePresence>
