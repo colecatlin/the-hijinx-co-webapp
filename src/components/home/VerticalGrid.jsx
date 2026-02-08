@@ -22,7 +22,7 @@ export default function VerticalGrid() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <span className="font-mono text-xs tracking-[0.2em] text-[#1A3249] uppercase">Verticals</span>
-      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#FFF8F5] mt-2 mb-10">Explore the Platform</h2>
+      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#232323] mt-2 mb-10">Explore the Platform</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {verticals.map((v, i) => (
           <motion.div

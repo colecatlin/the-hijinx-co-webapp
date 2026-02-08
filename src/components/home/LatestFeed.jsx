@@ -18,7 +18,7 @@ export default function LatestFeed() {
       <div className="flex items-end justify-between mb-10">
         <div>
           <span className="font-mono text-xs tracking-[0.2em] text-[#1A3249] uppercase">Latest</span>
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#FFF8F5] mt-2">From The Outlet</h2>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#232323] mt-2">From The Outlet</h2>
         </div>
         <Link
           to={createPageUrl('OutletHome')}
@@ -62,7 +62,7 @@ export default function LatestFeed() {
                 )}
               </div>
               <span className="font-mono text-[10px] tracking-[0.2em] text-[#1A3249] uppercase">{story.category}</span>
-              <h3 className="font-bold text-sm mt-1 text-[#FFF8F5] group-hover:text-[#00FFDA] transition-colors tracking-tight leading-snug">
+              <h3 className="font-bold text-sm mt-1 text-[#232323] group-hover:text-[#00FFDA] transition-colors tracking-tight leading-snug">
                 {story.title}
               </h3>
               {story.published_date && (
