@@ -157,14 +157,18 @@ export default function ManageDrivers() {
             </div>
           </div>
 
-          <Tabs defaultValue="programs" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+          <Tabs defaultValue="core" className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="core">Core Details</TabsTrigger>
               <TabsTrigger value="programs">Programs</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
               <TabsTrigger value="community">Community</TabsTrigger>
               <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
             </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
             <TabsContent value="programs" className="mt-6">
               <DriverProgramsSection driverId={selectedDriverForEdit.id} />
             </TabsContent>
