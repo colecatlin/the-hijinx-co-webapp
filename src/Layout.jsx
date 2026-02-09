@@ -41,18 +41,15 @@ export default function Layout({ children, currentPageName }) {
   const [hoveredItem, setHoveredItem] = useState(null);
   const location = useLocation();
 
-  const isLoginPage = location.pathname === '/login';
-
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
-    enabled: !isLoginPage,
   });
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    enabled: !isLoginPage && isAuthenticated === true,
+    enabled: isAuthenticated,
   });
 
   useEffect(() => {
@@ -104,13 +101,12 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             )}
             {isAuthenticated ? (
-              <button
-                onClick={() => base44.auth.logout(createPageUrl('Home'))}
+              <Link
+                to={createPageUrl('Profile')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
-                title="Logout"
               >
                 <User className="w-4 h-4" />
-              </button>
+              </Link>
             ) : (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
@@ -208,36 +204,17 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm font-semibold">Menu</span>
               </div>
               <nav className="px-6 py-6">
-               {isAuthenticated ? (
-                 <div className="mb-4">
-                   <Link
-                     to={createPageUrl('Profile')}
-                     className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-                   >
-                     Profile
-                   </Link>
-                 </div>
-               ) : (
-                 <div className="mb-4">
-                   <button
-                     onClick={() => base44.auth.redirectToLogin()}
-                     className="w-full py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-                   >
-                     Login
-                   </button>
-                 </div>
-               )}
-               {user?.role === 'admin' && (
-                 <div className="mb-4">
-                   <Link
-                     to={createPageUrl('Management')}
-                     className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-                   >
-                     Management
-                   </Link>
-                 </div>
-               )}
-               {navItems.map((item) => (
+              {user?.role === 'admin' && (
+                <div className="mb-4">
+                  <Link
+                    to={createPageUrl('Management')}
+                    className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                  >
+                    Management
+                  </Link>
+                </div>
+              )}
+              {navItems.map((item) => (
                 <div key={item.name} className="mb-1">
                   <Link
                     to={createPageUrl(item.page)}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Building2, Save, LogOut } from 'lucide-react';
+import { User, Building2, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Profile() {
@@ -26,25 +25,21 @@ export default function Profile() {
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
-    enabled: !!user,
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
-    enabled: !!user,
   });
 
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
-    enabled: !!user,
   });
 
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
-    enabled: !!user,
   });
 
   React.useEffect(() => {
@@ -439,28 +434,15 @@ export default function Profile() {
             </div>
           </motion.div>
 
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={updateMutation.isPending}
-              className="bg-[#232323] hover:bg-[#1A3249]"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
-
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              onClick={() => base44.auth.logout(createPageUrl('Home'))}
-              className="border-red-200 text-red-600 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={updateMutation.isPending}
+            className="bg-[#232323] hover:bg-[#1A3249]"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+          </Button>
 
           {updateMutation.isSuccess && (
             <p className="text-sm text-green-600">Profile updated successfully!</p>
