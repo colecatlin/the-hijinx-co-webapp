@@ -8,14 +8,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Search, Pencil, Trash2, Upload, Download } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeriesForm from '@/components/management/SeriesForm';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
+import { downloadTemplate } from '@/components/shared/downloadTemplate';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingSeries, setEditingSeries] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedSeries, setSelectedSeries] = useState([]);
+  const [filters, setFilters] = useState({
+    discipline: 'all',
+    region: 'all',
+    competition_level: 'all',
+    status: 'all',
+  });
+  const [sortBy, setSortBy] = useState('name');
 
   const queryClient = useQueryClient();
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: series = [], isLoading } = useQuery({
     queryKey: ['series'],
@@ -39,9 +52,30 @@ export default function ManageSeries() {
     },
   });
 
-  const filteredSeries = series.filter(s =>
-    s.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSeries = series
+    .filter(s => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = s.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
+
+      if (filters.discipline !== 'all' && s.discipline !== filters.discipline) return false;
+      if (filters.region !== 'all' && s.region !== filters.region) return false;
+      if (filters.competition_level !== 'all' && s.competition_level !== filters.competition_level) return false;
+      if (filters.status !== 'all' && s.status !== filters.status) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'founded') return (b.founded_year || 0) - (a.founded_year || 0);
+      if (sortBy === 'discipline') return (a.discipline || '').localeCompare(b.discipline || '');
+      if (sortBy === 'content_value') {
+        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
+        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
+      }
+      return 0;
+    });
 
   const handleSelectAll = (checked) => {
     if (checked) {
@@ -114,145 +148,170 @@ export default function ManageSeries() {
   };
 
   return (
-    <PageShell className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Series</h1>
-            <p className="text-gray-600 mt-1">Define racing series and classes</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-series').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-series"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Series
-            </Button>
+    <PageShell className="bg-white">
+      <div className="min-h-screen bg-white">
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-black mb-2">Manage Series</h1>
+                <p className="text-gray-600 text-lg">{series.length} total series</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template">
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" onClick={handleExport}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                <Button variant="outline" onClick={() => document.getElementById('import-series').click()}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import
+                </Button>
+                <input
+                  id="import-series"
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+                <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Series
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
         {showForm ? (
-          <SeriesForm
-            series={editingSeries}
-            onClose={() => {
-              setShowForm(false);
-              setEditingSeries(null);
-            }}
-          />
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <SeriesForm
+              series={editingSeries}
+              onClose={() => {
+                setShowForm(false);
+                setEditingSeries(null);
+              }}
+            />
+          </div>
         ) : (
-          <>
-            <div className="flex gap-3 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search series..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              {selectedSeries.length > 0 && (
-                <Button
-                  variant="destructive"
-                  onClick={handleBulkDelete}
-                  disabled={bulkDeleteMutation.isPending}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete {selectedSeries.length}
-                </Button>
-              )}
-            </div>
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <DirectoryFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              filterConfig={[
+                {
+                  key: 'discipline',
+                  label: 'Discipline',
+                  options: [
+                    { value: 'all', label: 'All Disciplines' },
+                    { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                    { value: 'Road Racing', label: 'Road Racing' },
+                    { value: 'Off Road', label: 'Off Road' },
+                    { value: 'Snowmobile', label: 'Snowmobile' },
+                    { value: 'Rallycross', label: 'Rallycross' },
+                    { value: 'Mixed', label: 'Mixed' },
+                  ]
+                },
+                {
+                  key: 'region',
+                  label: 'Region',
+                  options: [
+                    { value: 'all', label: 'All Regions' },
+                    { value: 'Global', label: 'Global' },
+                    { value: 'North America', label: 'North America' },
+                    { value: 'Europe', label: 'Europe' },
+                    { value: 'Regional', label: 'Regional' },
+                  ]
+                },
+                {
+                  key: 'competition_level',
+                  label: 'Level',
+                  options: [
+                    { value: 'all', label: 'All Levels' },
+                    { value: 'Professional', label: 'Professional' },
+                    { value: 'Semi Pro', label: 'Semi Pro' },
+                    { value: 'Amateur', label: 'Amateur' },
+                  ]
+                },
+                {
+                  key: 'status',
+                  label: 'Status',
+                  options: [
+                    { value: 'all', label: 'All Status' },
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Historic', label: 'Historic' },
+                  ]
+                },
+              ]}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              sortOptions={[
+                { value: 'name', label: 'Name' },
+                { value: 'founded', label: 'Founded' },
+                { value: 'discipline', label: 'Discipline' },
+                { value: 'content_value', label: 'Content Value' },
+              ]}
+            />
 
             {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-20 w-full" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-64 rounded-lg" />
                 ))}
               </div>
             ) : filteredSeries.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                <p className="text-gray-500">No series found</p>
+              <div className="text-center py-16">
+                <p className="text-gray-500 text-lg">No series found</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="w-12 px-4 py-3">
-                        <Checkbox
-                          checked={selectedSeries.length === filteredSeries.length && filteredSeries.length > 0}
-                          onCheckedChange={handleSelectAll}
-                        />
-                      </th>
-                      <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Name</th>
-                      <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Classes</th>
-                      <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Current Season</th>
-                      <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="w-32 px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredSeries.map((s) => (
-                      <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <Checkbox
-                            checked={selectedSeries.includes(s.id)}
-                            onCheckedChange={(checked) => handleSelectSeries(s.id, checked)}
-                          />
-                        </td>
-                        <td className="px-4 py-3 font-medium">{s.name}</td>
-                        <td className="px-4 py-3 text-gray-600 text-sm">
-                          {s.classes?.join(', ') || '-'}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{s.current_season || '-'}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 text-xs rounded ${
-                            s.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {s.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(s)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDelete(s.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                {filteredSeries.map((s) => (
+                  <div key={s.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg mb-1">{s.name}</h3>
+                        <p className="text-sm text-gray-500">{s.discipline}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(s)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(s.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm mb-4">
+                      <p className="text-gray-600"><span className="font-medium">Region:</span> {s.region}</p>
+                      <p className="text-gray-600"><span className="font-medium">Level:</span> {s.competition_level}</p>
+                      <p className="text-gray-600"><span className="font-medium">Founded:</span> {s.founded_year || 'N/A'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                        s.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </PageShell>
