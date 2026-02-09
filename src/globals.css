@@ -18,8 +18,9 @@
   --hijinx-gray-700: #404040;
   --hijinx-gray-800: #262626;
   --hijinx-gray-900: #171717;
+  --hijinx-teal: #1DA1A1;
   --hijinx-accent: #E5FF00;
-}
+  }
 
 * {
   font-family: var(--font-sans);
