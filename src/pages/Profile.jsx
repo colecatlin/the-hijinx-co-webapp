@@ -102,354 +102,119 @@ export default function Profile() {
     );
   }
 
+  const getRoleSpecificTab = () => {
+    switch (formData.association) {
+      case 'Driver':
+        return 'driver';
+      case 'Team Owner':
+        return 'team-owner';
+      case 'Series Owner':
+        return 'series-owner';
+      case 'Track Owner':
+        return 'track-owner';
+      default:
+        return null;
+    }
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
+
   return (
     <PageShell className="bg-white">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <SectionHeader
-          label="Your Profile"
-          title="Manage Your Account"
-          subtitle="Update your information and favorites"
-        />
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gray-50 p-6 rounded-lg"
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <SectionHeader
+              label="Your Profile"
+              title="Manage Your Account"
+              subtitle="Update your information and preferences"
+            />
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
           >
-            <h2 className="text-xl font-bold text-[#232323] mb-4 flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Basic Information
-            </h2>
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label>Email</Label>
-                <Input value={user.email} disabled className="bg-gray-100" />
-              </div>
-
-              <div>
-                <Label>Full Name</Label>
-                <Input
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label>Account Type</Label>
-                <Select
-                  value={formData.account_type}
-                  onValueChange={(value) => setFormData({ ...formData, account_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">
-                      <span className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        Individual
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="business">
-                      <span className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4" />
-                        Business
-                      </span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Association</Label>
-                <Select
-                  value={formData.association}
-                  onValueChange={(value) => setFormData({ ...formData, association: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Fan">Fan</SelectItem>
-                    <SelectItem value="Driver">Driver</SelectItem>
-                    <SelectItem value="Team Member">Team Member</SelectItem>
-                    <SelectItem value="Team Owner">Team Owner</SelectItem>
-                    <SelectItem value="Sponsor">Sponsor</SelectItem>
-                    <SelectItem value="Media">Media</SelectItem>
-                    <SelectItem value="Track Official">Track Official</SelectItem>
-                    <SelectItem value="Crew Chief">Crew Chief</SelectItem>
-                    <SelectItem value="Mechanic">Mechanic</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.account_type === 'business' && (
-                <div>
-                  <Label>Company Name</Label>
-                  <Input
-                    value={formData.company_name}
-                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  />
-                </div>
+        <form onSubmit={handleSubmit}>
+          <Tabs defaultValue="general" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+              <TabsTrigger value="general">General</TabsTrigger>
+              {getRoleSpecificTab() === 'driver' && (
+                <TabsTrigger value="driver">Driver</TabsTrigger>
               )}
+              {getRoleSpecificTab() === 'team-owner' && (
+                <TabsTrigger value="team-owner">Team</TabsTrigger>
+              )}
+              {getRoleSpecificTab() === 'series-owner' && (
+                <TabsTrigger value="series-owner">Series</TabsTrigger>
+              )}
+              {getRoleSpecificTab() === 'track-owner' && (
+                <TabsTrigger value="track-owner">Track</TabsTrigger>
+              )}
+              <TabsTrigger value="favorites">Favorites</TabsTrigger>
+            </TabsList>
 
-              <div>
-                <Label>Bio</Label>
-                <Textarea
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  rows={4}
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-            </div>
+            <TabsContent value="general">
+              <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+            </TabsContent>
 
-            {/* Association-specific fields */}
-            {formData.association === 'Driver' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Driver Information</h3>
-                <div>
-                  <Label>Car Number</Label>
-                  <Input
-                    value={formData.car_number}
-                    onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
-                    placeholder="e.g., 44"
-                  />
-                </div>
-                <div>
-                  <Label>Team Affiliation</Label>
-                  <Input
-                    value={formData.team_affiliation}
-                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
-                    placeholder="Your team name"
-                  />
-                </div>
-                <div>
-                  <Label>Vehicle Type</Label>
-                  <Input
-                    value={formData.vehicle_type}
-                    onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
-                    placeholder="e.g., Late Model, Sprint Car"
-                  />
-                </div>
-              </div>
+            {getRoleSpecificTab() === 'driver' && (
+              <TabsContent value="driver">
+                <DriverTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
             )}
 
-            {formData.association === 'Team Member' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Team Member Information</h3>
-                <div>
-                  <Label>Team Name</Label>
-                  <Input
-                    value={formData.team_affiliation}
-                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
-                    placeholder="Your team name"
-                  />
-                </div>
-                <div>
-                  <Label>Role on Team</Label>
-                  <Input
-                    value={formData.role_on_team}
-                    onChange={(e) => setFormData({ ...formData, role_on_team: e.target.value })}
-                    placeholder="e.g., Pit Crew, Manager"
-                  />
-                </div>
-              </div>
+            {getRoleSpecificTab() === 'team-owner' && (
+              <TabsContent value="team-owner">
+                <TeamOwnerTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
             )}
 
-            {formData.association === 'Team Owner' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Team Owner Information</h3>
-                <div>
-                  <Label>Team Name</Label>
-                  <Input
-                    value={formData.owned_team_name}
-                    onChange={(e) => setFormData({ ...formData, owned_team_name: e.target.value })}
-                    placeholder="Your team name"
-                  />
-                </div>
-              </div>
+            {getRoleSpecificTab() === 'series-owner' && (
+              <TabsContent value="series-owner">
+                <SeriesOwnerTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
             )}
 
-            {formData.association === 'Crew Chief' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Crew Chief Information</h3>
-                <div>
-                  <Label>Team Name</Label>
-                  <Input
-                    value={formData.team_affiliation}
-                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
-                    placeholder="Your team name"
-                  />
-                </div>
-              </div>
+            {getRoleSpecificTab() === 'track-owner' && (
+              <TabsContent value="track-owner">
+                <TrackOwnerTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
             )}
 
-            {formData.association === 'Mechanic' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Mechanic Information</h3>
-                <div>
-                  <Label>Team Name</Label>
-                  <Input
-                    value={formData.team_affiliation}
-                    onChange={(e) => setFormData({ ...formData, team_affiliation: e.target.value })}
-                    placeholder="Your team name"
-                  />
-                </div>
-              </div>
+            <TabsContent value="favorites">
+              <FavoritesTab
+                formData={formData}
+                drivers={drivers}
+                teams={teams}
+                series={series}
+                tracks={tracks}
+                toggleFavorite={toggleFavorite}
+              />
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex gap-4 mt-8">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={updateMutation.isPending}
+              className="bg-[#232323] hover:bg-[#1A3249]"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+
+            {updateMutation.isSuccess && (
+              <p className="text-sm text-green-600 flex items-center">Profile updated successfully!</p>
             )}
-
-            {formData.association === 'Sponsor' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Sponsor Information</h3>
-                <div>
-                  <Label>Sponsorship Interests</Label>
-                  <Textarea
-                    value={formData.sponsorship_interests}
-                    onChange={(e) => setFormData({ ...formData, sponsorship_interests: e.target.value })}
-                    rows={3}
-                    placeholder="What are you interested in sponsoring?"
-                  />
-                </div>
-              </div>
-            )}
-
-            {formData.association === 'Media' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Media Information</h3>
-                <div>
-                  <Label>Media Outlet</Label>
-                  <Input
-                    value={formData.media_outlet}
-                    onChange={(e) => setFormData({ ...formData, media_outlet: e.target.value })}
-                    placeholder="Your media outlet or publication"
-                  />
-                </div>
-                <div>
-                  <Label>Role</Label>
-                  <Input
-                    value={formData.media_role}
-                    onChange={(e) => setFormData({ ...formData, media_role: e.target.value })}
-                    placeholder="e.g., Reporter, Photographer, Editor"
-                  />
-                </div>
-              </div>
-            )}
-
-            {formData.association === 'Track Official' && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-[#232323]">Track Official Information</h3>
-                <div>
-                  <Label>Track Name</Label>
-                  <Input
-                    value={formData.track_name}
-                    onChange={(e) => setFormData({ ...formData, track_name: e.target.value })}
-                    placeholder="Your track name"
-                  />
-                </div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Favorites */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-gray-50 p-6 rounded-lg space-y-6"
-          >
-            <h2 className="text-xl font-bold text-[#232323]">Your Favorites</h2>
-
-            {/* Favorite Drivers */}
-            <div>
-              <Label className="text-base mb-3 block">Favorite Drivers</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {drivers.map((driver) => (
-                  <div key={driver.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.favorite_drivers.includes(driver.id)}
-                      onCheckedChange={() => toggleFavorite('drivers', driver.id)}
-                    />
-                    <label className="text-sm text-[#232323] cursor-pointer">
-                      {driver.name} {driver.number ? `#${driver.number}` : ''}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Favorite Teams */}
-            <div>
-              <Label className="text-base mb-3 block">Favorite Teams</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {teams.map((team) => (
-                  <div key={team.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.favorite_teams.includes(team.id)}
-                      onCheckedChange={() => toggleFavorite('teams', team.id)}
-                    />
-                    <label className="text-sm text-[#232323] cursor-pointer">
-                      {team.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Favorite Series */}
-            <div>
-              <Label className="text-base mb-3 block">Favorite Series</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {series.map((s) => (
-                  <div key={s.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.favorite_series.includes(s.id)}
-                      onCheckedChange={() => toggleFavorite('series', s.id)}
-                    />
-                    <label className="text-sm text-[#232323] cursor-pointer">
-                      {s.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Favorite Tracks */}
-            <div>
-              <Label className="text-base mb-3 block">Favorite Tracks</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {tracks.map((track) => (
-                  <div key={track.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.favorite_tracks.includes(track.id)}
-                      onCheckedChange={() => toggleFavorite('tracks', track.id)}
-                    />
-                    <label className="text-sm text-[#232323] cursor-pointer">
-                      {track.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          <Button
-            type="submit"
-            size="lg"
-            disabled={updateMutation.isPending}
-            className="bg-[#232323] hover:bg-[#1A3249]"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
-
-          {updateMutation.isSuccess && (
-            <p className="text-sm text-green-600">Profile updated successfully!</p>
-          )}
+          </div>
         </form>
       </div>
     </PageShell>
