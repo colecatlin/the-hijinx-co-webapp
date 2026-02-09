@@ -248,9 +248,17 @@ export default function ManageDrivers() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(createPageUrl('DriverEditor', { driverId: driver.id }))}
+                        >
+                          Edit All
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(driver)}
+                          title="Quick edit driver details"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
