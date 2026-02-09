@@ -82,10 +82,18 @@ export default function AnnouncementForm({ announcement, onCancel }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="black">Black</SelectItem>
+                <SelectItem value="white">White</SelectItem>
                 <SelectItem value="blue">Blue</SelectItem>
+                <SelectItem value="indigo">Indigo</SelectItem>
+                <SelectItem value="purple">Purple</SelectItem>
+                <SelectItem value="pink">Pink</SelectItem>
                 <SelectItem value="red">Red</SelectItem>
-                <SelectItem value="green">Green</SelectItem>
+                <SelectItem value="orange">Orange</SelectItem>
                 <SelectItem value="yellow">Yellow</SelectItem>
+                <SelectItem value="green">Green</SelectItem>
+                <SelectItem value="teal">Teal</SelectItem>
+                <SelectItem value="cyan">Cyan</SelectItem>
+                <SelectItem value="gray">Gray</SelectItem>
               </SelectContent>
             </Select>
           </div>

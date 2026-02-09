@@ -30,15 +30,23 @@ export default function AnnouncementBar() {
   const current = announcements[currentIndex];
   
   const bgColors = {
-    black: 'bg-[#232323]',
-    blue: 'bg-blue-600',
-    red: 'bg-red-600',
-    green: 'bg-green-600',
-    yellow: 'bg-yellow-500 text-black'
+    black: 'bg-[#232323] text-white',
+    white: 'bg-white text-black border-b border-gray-200',
+    blue: 'bg-blue-600 text-white',
+    indigo: 'bg-indigo-600 text-white',
+    purple: 'bg-purple-600 text-white',
+    pink: 'bg-pink-600 text-white',
+    red: 'bg-red-600 text-white',
+    orange: 'bg-orange-600 text-white',
+    yellow: 'bg-yellow-500 text-black',
+    green: 'bg-green-600 text-white',
+    teal: 'bg-teal-600 text-white',
+    cyan: 'bg-cyan-600 text-white',
+    gray: 'bg-gray-600 text-white'
   };
 
   return (
-    <div className={`${bgColors[current.background_color] || bgColors.black} text-white py-2 px-6 relative`}>
+    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-6 relative`}>
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
         {announcements.length > 1 && (
           <button
