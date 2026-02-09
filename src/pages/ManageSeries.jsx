@@ -122,6 +122,9 @@ export default function ManageSeries() {
             <p className="text-gray-600 mt-1">Define racing series and classes</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template">
+              <Download className="w-4 h-4" />
+            </Button>
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export

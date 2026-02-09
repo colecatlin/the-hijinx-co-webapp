@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import TeamForm from '@/components/management/TeamForm';
 import { Skeleton } from '@/components/ui/skeleton';
+import { downloadTemplate } from '@/components/shared/downloadTemplate';
 
 export default function ManageTeams() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,6 +132,9 @@ export default function ManageTeams() {
             <p className="text-gray-600">{teams.length} total teams</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => downloadTemplate('team', 'Team')} title="Download import template">
+              <Download className="w-4 h-4" />
+            </Button>
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
