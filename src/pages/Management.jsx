@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed } from 'lucide-react';
 
 export default function Management() {
   const sections = [
@@ -33,6 +33,12 @@ export default function Management() {
       items: [
         { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
         { name: 'Messages', page: 'ManageMessages', icon: Mail, description: 'View contact messages and inquiries' },
+      ]
+    },
+    {
+      title: 'Features',
+      items: [
+        { name: 'Food & Beverage', page: 'ManageFoodBeverage', icon: UtensilsCrossed, description: 'Manage food and beverage offerings' },
       ]
     }
   ];
