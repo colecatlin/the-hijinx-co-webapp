@@ -36,14 +36,10 @@ export default function FoodBeverageForm({ item, onSubmit, onCancel }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <Label>Icon</Label>
-            <Input
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              placeholder="e.g., Coffee, Beer, Burger"
-            />
-          </div>
+          <IconSelector
+            value={formData.icon}
+            onChange={(icon) => setFormData({ ...formData, icon })}
+          />
 
           <div>
             <Label>Title</Label>
