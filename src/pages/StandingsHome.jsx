@@ -111,13 +111,25 @@ export default function StandingsHome() {
         />
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-8">
+         <div className="flex flex-wrap gap-3 mb-8 items-center">
+          <Button
+            onClick={handlePullData}
+            disabled={syncing}
+            size="sm"
+            className="bg-[#232323] hover:bg-[#1A3249] text-white gap-2"
+          >
+            <Download className="w-4 h-4" />
+            {syncing ? 'Syncing...' : 'Pull from Google Sheets'}
+          </Button>
+
+          <div className="w-px h-6 bg-gray-200" />
+
           <Select value={String(activeSeason)} onValueChange={(v) => setSelectedSeason(Number(v))}>
-            <SelectTrigger className="w-32 rounded-none text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {availableSeasons.map(s => <SelectItem key={s} value={String(s)}>{s} Season</SelectItem>)}
-            </SelectContent>
-          </Select>
+             <SelectTrigger className="w-32 rounded-none text-xs"><SelectValue /></SelectTrigger>
+             <SelectContent>
+               {availableSeasons.map(s => <SelectItem key={s} value={String(s)}>{s} Season</SelectItem>)}
+             </SelectContent>
+           </Select>
 
           <Select value={selectedSeries} onValueChange={(v) => { setSelectedSeries(v); setSelectedClass('all'); }}>
             <SelectTrigger className="w-44 rounded-none text-xs"><SelectValue placeholder="All Series" /></SelectTrigger>
