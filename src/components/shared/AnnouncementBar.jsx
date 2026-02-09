@@ -57,16 +57,16 @@ export default function AnnouncementBar() {
   };
 
   return (
-    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-6`}>
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
-        <div className="flex items-center gap-3 text-sm">
+    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-3 sm:px-6`}>
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
           <span>{current.message}</span>
           {current.link_url && current.link_text && (
             <a
               href={current.link_url}
               target={current.link_url.startsWith('http') ? '_blank' : undefined}
               rel={current.link_url.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className="underline font-medium hover:opacity-80 transition-opacity"
+              className="underline font-medium hover:opacity-80 transition-opacity whitespace-nowrap"
             >
               {current.link_text}
             </a>
