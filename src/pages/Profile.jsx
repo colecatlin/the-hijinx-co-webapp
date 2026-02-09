@@ -75,7 +75,10 @@ export default function Profile() {
   }, [user]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
+    mutationFn: async (data) => {
+      const response = await base44.functions.invoke('updateUserProfile', { formData: data });
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
