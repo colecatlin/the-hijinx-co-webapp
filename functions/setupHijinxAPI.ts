@@ -90,8 +90,8 @@ Deno.serve(async (req) => {
       const verifiedFile = await verifyResponse.json();
       finalSpreadsheetId = verifiedFile.id;
 
-      // Add header row
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1`, {
+      // Add header row to the spreadsheet
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${finalSpreadsheetId}/values/Sheet1!A1`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
       });
 
       createdSheets[key] = {
-        spreadsheetId,
+        spreadsheetId: finalSpreadsheetId,
         sheetName: 'Sheet1',
         displayName: config.displayName,
       };
