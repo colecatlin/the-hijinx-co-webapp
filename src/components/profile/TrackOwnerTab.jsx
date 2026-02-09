@@ -8,6 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function TrackOwnerTab({ formData, setFormData }) {
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,6 +23,25 @@ export default function TrackOwnerTab({ formData, setFormData }) {
         <Flag className="w-5 h-5" />
         Track Information
       </h2>
+
+      <div>
+        <Label>Link Track Profile</Label>
+        <Select
+          value={formData.track_id || ''}
+          onValueChange={(value) => setFormData({ ...formData, track_id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select your track..." />
+          </SelectTrigger>
+          <SelectContent>
+            {tracks.map((track) => (
+              <SelectItem key={track.id} value={track.id}>
+                {track.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div>
         <Label>Track Name</Label>
