@@ -46,6 +46,11 @@ export default function SeriesForm({ series, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
+    
+    if (field === 'name' && !series) {
+      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      setFormData(prev => ({ ...prev, slug }));
+    }
   };
 
   const handleAddClass = () => {
@@ -78,11 +83,13 @@ export default function SeriesForm({ series, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
+            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
             <Input
               value={formData.slug}
-              onChange={(e) => handleChange('slug', e.target.value)}
-              placeholder="url-friendly-slug"
+              readOnly
+              disabled
+              placeholder="auto-generated from series name"
+              className="bg-gray-50 text-gray-600"
             />
           </div>
 

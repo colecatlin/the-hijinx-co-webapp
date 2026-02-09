@@ -51,6 +51,11 @@ export default function StoryForm({ story, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
+    
+    if (field === 'title' && !story) {
+      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      setFormData(prev => ({ ...prev, slug }));
+    }
   };
 
   return (
@@ -72,11 +77,13 @@ export default function StoryForm({ story, onClose }) {
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Slug</label>
+            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
             <Input
               value={formData.slug}
-              onChange={(e) => handleChange('slug', e.target.value)}
-              placeholder="url-friendly-slug"
+              readOnly
+              disabled
+              placeholder="auto-generated from title"
+              className="bg-gray-50 text-gray-600"
             />
           </div>
 
