@@ -183,129 +183,53 @@ export default function DriverProfile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2">
-            <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-              ← Back to Drivers
-            </Link>
+        <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+          ← Back to Drivers
+        </Link>
 
-            <div className="flex items-start justify-between mb-2">
-              <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                description=""
-              />
-            </div>
-            
-            {(driver.hometown_city || driver.hometown_state) && (
-              <div className="flex items-center gap-2 text-gray-600 mb-6">
-                <MapPin className="w-4 h-4" />
-                {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Discipline</div>
-                <div className="font-bold text-[#232323]">{driver.primary_discipline}</div>
-              </div>
-              {primaryProgram && seriesMap[primaryProgram.series_id] && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Primary Series</div>
-                  <div className="font-bold text-[#232323]">{seriesMap[primaryProgram.series_id].name}</div>
-                </div>
-              )}
-              {primaryProgram?.bib_number && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Number</div>
-                  <div className="font-bold text-[#232323]">#{primaryProgram.bib_number}</div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
-                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
-              )}
-              {topSpecialties.map((specialty, idx) => (
-                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{specialty}</Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {media?.headshot_url && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Driver Photo</h3>
-                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
-                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-auto max-w-[200px]" />
-                </div>
-              </div>
-            )}
-
-            {activeTeams.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Current Teams</h3>
-                <div className="space-y-2">
-                  {activeTeams.map(teamId => {
-                    const team = allTeams.find(t => t.id === teamId);
-                    if (!team) return null;
-                    return (
-                      <Link 
-                        key={teamId}
-                        to={createPageUrl('TeamProfile', { id: team.slug })}
-                        className="block text-[#232323] hover:text-[#00FFDA] transition-colors"
-                      >
-                        {team.name}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {sortedPrograms.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Active Programs</h3>
-                <div className="space-y-3">
-                  {sortedPrograms.filter(p => p.program_status === 'Active').slice(0, 3).map(prog => {
-                    const series = seriesMap[prog.series_id];
-                    return (
-                      <div key={prog.id}>
-                        <div className="font-semibold text-[#232323] text-sm">{series?.name || 'Series'}</div>
-                        {prog.class_name && <div className="text-xs text-gray-600">{prog.class_name}</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {activePartnerships.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
-                <div className="space-y-2">
-                  {activePartnerships.map(partner => (
-                    <div key={partner.id} className="text-sm text-gray-700">{partner.partner_name}</div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="bg-white border border-gray-200 p-6">
-              <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
-              <div className="flex justify-center">
-                <SocialIconsDisplay media={media} />
-              </div>
-            </div>
-          </div>
+        <div className="flex items-start justify-between mb-6">
+          <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
+          <SocialShareButtons 
+            url={window.location.href}
+            title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
+            description=""
+          />
         </div>
 
-        <div className="space-y-8">
-          <section id="section-overview" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Photo + Overview Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
+          {/* Photo */}
+          <div className="lg:col-span-1">
+            {media?.headshot_url && (
+              <div className="bg-white border border-gray-200 p-6 sticky top-20">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Driver Photo</h3>
+                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
+                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-auto" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Overview Info */}
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white border border-gray-200 p-8">
+              {(driver.hometown_city || driver.hometown_state) && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
+                  <div className="text-lg font-semibold text-[#232323] flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
+                  </div>
+                </div>
+              )}
+              {driver.location_city && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Current Racing Base</div>
+                  <div className="text-lg font-semibold text-[#232323]">
+                    {driver.location_city}{driver.location_city && driver.location_state ? ', ' : ''}{driver.location_state}
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="text-sm text-gray-600 mb-1">Date of Birth</div>
                 <div className="text-lg font-semibold text-[#232323]">
@@ -316,23 +240,104 @@ export default function DriverProfile() {
                 <div className="text-sm text-gray-600 mb-1">Nationality</div>
                 <div className="text-lg font-semibold text-[#232323]">{driver.nationality}</div>
               </div>
-              {driver.hometown_city && (
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Discipline</div>
+                <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
+              </div>
+              {primaryProgram?.bib_number && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
-                  <div className="text-lg font-semibold text-[#232323]">
-                    {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''} • {driver.hometown_country}
+                  <div className="text-sm text-gray-600 mb-1">Primary Number</div>
+                  <div className="text-lg font-semibold text-[#232323]">#{primaryProgram.bib_number}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 mt-6">
+              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
+                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
+              )}
+              {topSpecialties.map((specialty, idx) => (
+                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{specialty}</Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar content */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
+          <div className="hidden lg:block"></div>
+          <div className="lg:col-span-3">
+            <div className="space-y-6">
+            {media?.headshot_url && (
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Driver Photo</h3>
+                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
+                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-auto max-w-[200px]" />
+                </div>
+              </div>
+            )}
+
+              {activeTeams.length > 0 && (
+                <div className="bg-white border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-[#232323] mb-4">Current Teams</h3>
+                  <div className="space-y-2">
+                    {activeTeams.map(teamId => {
+                      const team = allTeams.find(t => t.id === teamId);
+                      if (!team) return null;
+                      return (
+                        <Link 
+                          key={teamId}
+                          to={createPageUrl('TeamProfile', { id: team.slug })}
+                          className="block text-[#232323] hover:text-[#00FFDA] transition-colors"
+                        >
+                          {team.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
-                <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
+
+              {sortedPrograms.length > 0 && (
+                <div className="bg-white border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-[#232323] mb-4">Active Programs</h3>
+                  <div className="space-y-3">
+                    {sortedPrograms.filter(p => p.program_status === 'Active').slice(0, 3).map(prog => {
+                      const series = seriesMap[prog.series_id];
+                      return (
+                        <div key={prog.id}>
+                          <div className="font-semibold text-[#232323] text-sm">{series?.name || 'Series'}</div>
+                          {prog.class_name && <div className="text-xs text-gray-600">{prog.class_name}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {activePartnerships.length > 0 && (
+                <div className="bg-white border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
+                  <div className="space-y-2">
+                    {activePartnerships.map(partner => (
+                      <div key={partner.id} className="text-sm text-gray-700">{partner.partner_name}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
+                <div className="flex justify-center">
+                  <SocialIconsDisplay media={media} />
+                </div>
               </div>
             </div>
-          </section>
+          </div>
+        </div>
 
-
-
+        <div className="space-y-8">
           <section id="section-programs" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
             {sortedPrograms.length > 0 ? (
