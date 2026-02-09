@@ -85,6 +85,7 @@ import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import ManageAnnouncements from './pages/ManageAnnouncements';
 import SeriesHome from './pages/SeriesHome';
+import SeriesDetail from './pages/SeriesDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -127,6 +128,7 @@ export const PAGES = {
     "TrackProfile": TrackProfile,
     "ManageAnnouncements": ManageAnnouncements,
     "SeriesHome": SeriesHome,
+    "SeriesDetail": SeriesDetail,
 }
 
 export const pagesConfig = {

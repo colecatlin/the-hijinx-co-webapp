@@ -4,21 +4,48 @@ import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+import SeriesCard from '@/components/series/SeriesCard';
 
 export default function SeriesHome() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [discipline, setDiscipline] = useState('all');
+  const [region, setRegion] = useState('all');
+  const [competitionLevel, setCompetitionLevel] = useState('all');
+  const [status, setStatus] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
 
   const { data: series = [], isLoading } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
   });
 
-  const filteredSeries = series.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  let filteredSeries = series.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDiscipline = discipline === 'all' || s.discipline === discipline;
+    const matchesRegion = region === 'all' || s.region === region;
+    const matchesLevel = competitionLevel === 'all' || s.competition_level === competitionLevel;
+    const matchesStatus = status === 'all' || s.status === status;
+    return matchesSearch && matchesDiscipline && matchesRegion && matchesLevel && matchesStatus;
+  });
+
+  // Sort
+  filteredSeries.sort((a, b) => {
+    switch (sortBy) {
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'founded':
+        return (b.founded_year || 0) - (a.founded_year || 0);
+      case 'discipline':
+        return a.discipline.localeCompare(b.discipline);
+      case 'contentValue':
+        const valueOrder = { High: 3, Medium: 2, Low: 1, Unknown: 0 };
+        return (valueOrder[b.content_value] || 0) - (valueOrder[a.content_value] || 0);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <PageShell>
@@ -26,21 +53,88 @@ export default function SeriesHome() {
         {/* Header */}
         <div className="bg-gray-50 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-12">
-            <h1 className="text-4xl lg:text-5xl font-black mb-4">Racing Series</h1>
-            <p className="text-gray-600 text-lg">Explore the world's premier motorsports series</p>
+            <h1 className="text-4xl lg:text-5xl font-black mb-4">Series</h1>
+            <p className="text-gray-600 text-lg">Championships and racing formats across motorsports</p>
           </div>
         </div>
 
-        {/* Search */}
+        {/* Filters & Search */}
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search series..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="mb-8 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search series..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Select value={discipline} onValueChange={setDiscipline}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Discipline" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Disciplines</SelectItem>
+                  <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
+                  <SelectItem value="Road Racing">Road Racing</SelectItem>
+                  <SelectItem value="Off Road">Off Road</SelectItem>
+                  <SelectItem value="Snowmobile">Snowmobile</SelectItem>
+                  <SelectItem value="Rallycross">Rallycross</SelectItem>
+                  <SelectItem value="Mixed">Mixed</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={region} onValueChange={setRegion}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Region" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Regions</SelectItem>
+                  <SelectItem value="Global">Global</SelectItem>
+                  <SelectItem value="North America">North America</SelectItem>
+                  <SelectItem value="Europe">Europe</SelectItem>
+                  <SelectItem value="Regional">Regional</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={competitionLevel} onValueChange={setCompetitionLevel}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                  <SelectItem value="Semi Pro">Semi Pro</SelectItem>
+                  <SelectItem value="Amateur">Amateur</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Historic">Historic</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="founded">Founded</SelectItem>
+                  <SelectItem value="discipline">Discipline</SelectItem>
+                  <SelectItem value="contentValue">Content Value</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Series Grid */}
@@ -53,31 +147,7 @@ export default function SeriesHome() {
           ) : filteredSeries.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredSeries.map((s) => (
-                <Link
-                  key={s.id}
-                  to={createPageUrl(`SeriesDetail?id=${s.id}`)}
-                  className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all"
-                >
-                  {s.logo_url && (
-                    <img
-                      src={s.logo_url}
-                      alt={s.name}
-                      className="h-16 mb-4 object-contain"
-                    />
-                  )}
-                  <h2 className="text-xl font-bold mb-2 group-hover:text-gray-600 transition-colors">{s.name}</h2>
-                  {s.description && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{s.description}</p>
-                  )}
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{s.classes?.length || 0} classes</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      s.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {s.status}
-                    </span>
-                  </div>
-                </Link>
+                <SeriesCard key={s.id} series={s} />
               ))}
             </div>
           ) : (
