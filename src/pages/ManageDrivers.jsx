@@ -23,6 +23,7 @@ export default function ManageDrivers() {
   const [editingDriver, setEditingDriver] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedDrivers, setSelectedDrivers] = useState([]);
+  const [selectedDriverForEdit, setSelectedDriverForEdit] = useState(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
