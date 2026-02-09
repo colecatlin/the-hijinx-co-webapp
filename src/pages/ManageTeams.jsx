@@ -6,18 +6,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import TeamForm from '@/components/management/TeamForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 
 export default function ManageTeams() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeam, setEditingTeam] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [selectedTeams, setSelectedTeams] = useState([]);
+  const [filters, setFilters] = useState({
+    discipline: 'all',
+    level: 'all',
+    status: 'all',
+    state: 'all',
+  });
+  const [sortBy, setSortBy] = useState('name');
   const queryClient = useQueryClient();
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
@@ -41,30 +53,36 @@ export default function ManageTeams() {
     },
   });
 
-  const filteredTeams = teams.filter(team => {
-    const query = searchQuery.toLowerCase();
-    return team.name?.toLowerCase().includes(query);
-  });
+  const uniqueStates = [...new Set(teams.map(t => t.headquarters_state).filter(Boolean))].sort();
 
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedTeams(filteredTeams.map(t => t.id));
-    } else {
-      setSelectedTeams([]);
-    }
-  };
+  const filteredTeams = teams
+    .filter(team => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = team.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
 
-  const handleSelectTeam = (id) => {
-    setSelectedTeams(prev => 
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
-
-  const handleBulkDelete = () => {
-    if (window.confirm(`Delete ${selectedTeams.length} selected team(s)?`)) {
-      bulkDeleteMutation.mutate(selectedTeams);
-    }
-  };
+      if (filters.discipline !== 'all' && team.primary_discipline !== filters.discipline) return false;
+      if (filters.level !== 'all' && team.team_level !== filters.level) return false;
+      if (filters.status !== 'all' && team.status !== filters.status) return false;
+      if (filters.state !== 'all' && team.headquarters_state !== filters.state) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'discipline') return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
+      if (sortBy === 'level') {
+        const order = { International: 1, National: 2, Regional: 3, Local: 4 };
+        return (order[a.team_level] || 5) - (order[b.team_level] || 5);
+      }
+      if (sortBy === 'founded') return (b.founded_year || 0) - (a.founded_year || 0);
+      if (sortBy === 'content_value') {
+        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
+        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
+      }
+      return 0;
+    });
 
   const handleEdit = (team) => {
     setEditingTeam(team);
@@ -119,16 +137,11 @@ export default function ManageTeams() {
   }
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl('Management')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-2">Manage Teams</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-black text-[#232323] mb-2">Manage Teams</h1>
             <p className="text-gray-600">{teams.length} total teams</p>
           </div>
           <div className="flex gap-2">
@@ -157,118 +170,123 @@ export default function ManageTeams() {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search teams..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          {selectedTeams.length > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={handleBulkDelete}
-              disabled={bulkDeleteMutation.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedTeams.length}
-            </Button>
-          )}
-        </div>
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                { value: 'Road Racing', label: 'Road Racing' },
+                { value: 'Rallycross', label: 'Rallycross' },
+                { value: 'Drag Racing', label: 'Drag Racing' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]
+            },
+            {
+              key: 'level',
+              label: 'Level',
+              options: [
+                { value: 'all', label: 'All Levels' },
+                { value: 'International', label: 'International' },
+                { value: 'National', label: 'National' },
+                { value: 'Regional', label: 'Regional' },
+                { value: 'Local', label: 'Local' },
+              ]
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Part Time', label: 'Part Time' },
+                { value: 'Historic', label: 'Historic' },
+              ]
+            },
+            {
+              key: 'state',
+              label: 'State',
+              options: [
+                { value: 'all', label: 'All States' },
+                ...uniqueStates.map(s => ({ value: s, label: s }))
+              ]
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'level', label: 'Level' },
+            { value: 'founded', label: 'Founded Year' },
+            { value: 'content_value', label: 'Content Value' },
+          ]}
+        />
 
         {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(10)].map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-80" />
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left w-12">
-                    <Checkbox 
-                      checked={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Discipline
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredTeams.map((team) => (
-                  <tr key={team.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <Checkbox 
-                        checked={selectedTeams.includes(team.id)}
-                        onCheckedChange={() => handleSelectTeam(team.id)}
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{team.name}</div>
-                      <div className="text-sm text-gray-500">{team.slug}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {team.headquarters_city}, {team.headquarters_state}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {team.primary_discipline}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        team.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        team.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {team.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(team)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(team)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTeams.map((team) => (
+              <div key={team.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">{team.name}</h3>
+                    <p className="text-sm text-gray-500">{team.primary_discipline}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(team)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(team)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm mb-4">
+                  <p className="text-gray-600"><span className="font-medium">Location:</span> {team.headquarters_city}, {team.headquarters_state}</p>
+                  <p className="text-gray-600"><span className="font-medium">Level:</span> {team.team_level}</p>
+                  <p className="text-gray-600"><span className="font-medium">Founded:</span> {team.founded_year || 'N/A'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                    team.status === 'Active' ? 'bg-green-100 text-green-800' :
+                    team.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {team.status}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {!isLoading && filteredTeams.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No teams found
+          <div className="text-center py-12">
+            <p className="text-gray-600">No teams found matching your filters.</p>
           </div>
         )}
       </div>
