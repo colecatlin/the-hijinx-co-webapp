@@ -3,11 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import TrackCard from '@/components/tracks/TrackCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Filter } from 'lucide-react';
 
 export default function TrackDirectory() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     track_type: 'all',
     surface: 'all',
@@ -15,6 +15,10 @@ export default function TrackDirectory() {
     status: 'all',
   });
   const [sortBy, setSortBy] = useState('name');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
@@ -61,6 +65,12 @@ export default function TrackDirectory() {
 
   const filteredTracks = tracksWithCompleteData
     .filter(track => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = track.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
+
       if (filters.track_type !== 'all' && track.track_type !== filters.track_type) return false;
       if (filters.surface !== 'all' && !track.surfaces?.includes(filters.surface)) return false;
       if (filters.state !== 'all' && track.state !== filters.state) return false;
@@ -80,6 +90,57 @@ export default function TrackDirectory() {
 
   const uniqueStates = [...new Set(tracks.map(t => t.state).filter(Boolean))].sort();
 
+  const filterConfig = [
+    {
+      key: 'track_type',
+      label: 'Track Type',
+      options: [
+        { value: 'all', label: 'All Types' },
+        { value: 'Short Course', label: 'Short Course' },
+        { value: 'Oval', label: 'Oval' },
+        { value: 'Road Course', label: 'Road Course' },
+        { value: 'Ice Oval', label: 'Ice Oval' },
+        { value: 'Mixed', label: 'Mixed' },
+      ]
+    },
+    {
+      key: 'surface',
+      label: 'Surface',
+      options: [
+        { value: 'all', label: 'All Surfaces' },
+        { value: 'Dirt', label: 'Dirt' },
+        { value: 'Asphalt', label: 'Asphalt' },
+        { value: 'Ice', label: 'Ice' },
+        { value: 'Mixed', label: 'Mixed' },
+      ]
+    },
+    {
+      key: 'state',
+      label: 'State',
+      options: [
+        { value: 'all', label: 'All States' },
+        ...uniqueStates.map(s => ({ value: s, label: s }))
+      ]
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      options: [
+        { value: 'all', label: 'All Status' },
+        { value: 'Active', label: 'Active' },
+        { value: 'Seasonal', label: 'Seasonal' },
+        { value: 'Historic', label: 'Historic' },
+      ]
+    },
+  ];
+
+  const sortOptions = [
+    { value: 'name', label: 'Name' },
+    { value: 'state', label: 'State' },
+    { value: 'track_type', label: 'Track Type' },
+    { value: 'content_value', label: 'Content Value' },
+  ];
+
   return (
     <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -88,92 +149,16 @@ export default function TrackDirectory() {
           <p className="text-gray-600">Find venues, formats, history, and what matters.</p>
         </div>
 
-        <div className="bg-white border border-gray-200 p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-semibold text-[#232323]">Filters</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Track Type</label>
-              <Select value={filters.track_type} onValueChange={(v) => setFilters({ ...filters, track_type: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Short Course">Short Course</SelectItem>
-                  <SelectItem value="Oval">Oval</SelectItem>
-                  <SelectItem value="Road Course">Road Course</SelectItem>
-                  <SelectItem value="Ice Oval">Ice Oval</SelectItem>
-                  <SelectItem value="Mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Surface</label>
-              <Select value={filters.surface} onValueChange={(v) => setFilters({ ...filters, surface: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Surfaces</SelectItem>
-                  <SelectItem value="Dirt">Dirt</SelectItem>
-                  <SelectItem value="Asphalt">Asphalt</SelectItem>
-                  <SelectItem value="Ice">Ice</SelectItem>
-                  <SelectItem value="Mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">State</label>
-              <Select value={filters.state} onValueChange={(v) => setFilters({ ...filters, state: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All States</SelectItem>
-                  {uniqueStates.map(state => (
-                    <SelectItem key={state} value={state}>{state}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Status</label>
-              <Select value={filters.status} onValueChange={(v) => setFilters({ ...filters, status: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Seasonal">Seasonal</SelectItem>
-                  <SelectItem value="Historic">Historic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-600">Sort by:</label>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="state">State</SelectItem>
-                <SelectItem value="track_type">Track Type</SelectItem>
-                <SelectItem value="content_value">Content Value</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={filterConfig}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={sortOptions}
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

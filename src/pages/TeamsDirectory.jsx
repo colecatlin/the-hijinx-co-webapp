@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tantml:react-query';
 import PageShell from '@/components/shared/PageShell';
 import TeamCard from '@/components/teams/TeamCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Filter } from 'lucide-react';
 
 export default function TeamsDirectory() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     discipline: 'all',
     level: 'all',
@@ -15,6 +15,10 @@ export default function TeamsDirectory() {
     state: 'all',
   });
   const [sortBy, setSortBy] = useState('name');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
