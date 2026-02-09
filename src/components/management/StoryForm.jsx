@@ -147,13 +147,35 @@ export default function StoryForm({ story, onClose }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Cover Image URL</label>
-            <Input
-              value={formData.cover_image}
-              onChange={(e) => handleChange('cover_image', e.target.value)}
-              placeholder="https://..."
-            />
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-2">Cover Image</label>
+            <div className="space-y-3">
+              {formData.cover_image && (
+                <div className="relative">
+                  <img src={formData.cover_image} alt="Preview" className="w-full h-48 object-cover border border-gray-200 rounded" />
+                  <button
+                    type="button"
+                    onClick={() => handleChange('cover_image', '')}
+                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 text-xs rounded hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded p-6 cursor-pointer hover:bg-gray-50">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+                <div className="flex flex-col items-center gap-2 text-gray-600">
+                  <Upload className="w-5 h-5" />
+                  <span className="text-sm">{uploading ? 'Uploading...' : 'Click to upload or drag and drop'}</span>
+                </div>
+              </label>
+            </div>
           </div>
 
           <div>
