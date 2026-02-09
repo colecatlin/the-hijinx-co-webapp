@@ -5,8 +5,9 @@ import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
@@ -72,6 +73,23 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ['upcomingEvents', driver?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.list();
+      const today = new Date().toISOString().split('T')[0];
+      return allEvents
+        .filter(event => 
+          event.date >= today && 
+          event.status === 'upcoming' &&
+          event.results?.some(r => r.driver_id === driver.id)
+        )
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 5);
+    },
+    enabled: !!driver?.id,
+  });
+
   if (isLoading) {
     return (
       <PageShell className="bg-[#FFF8F5]">
@@ -104,6 +122,7 @@ export default function DriverProfile() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'teams', label: 'Teams', icon: Users },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
@@ -324,6 +343,35 @@ export default function DriverProfile() {
                 </Badge>
               </div>
             </div>
+          </section>
+
+          <section id="section-schedule" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Upcoming Events</h2>
+            {upcomingEvents.length > 0 ? (
+              <div className="space-y-4">
+                {upcomingEvents.map(event => (
+                  <div key={event.id} className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-bold text-[#232323] mb-1">{event.name}</h3>
+                        <div className="text-sm text-gray-600">
+                          {event.series_name && <span>{event.series_name}</span>}
+                          {event.track_name && <span className="ml-2">• {event.track_name}</span>}
+                        </div>
+                      </div>
+                      <Badge className="bg-[#00FFDA] text-[#232323]">
+                        {format(new Date(event.date), 'MMM d, yyyy')}
+                      </Badge>
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-gray-600 mt-2">{event.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No upcoming events scheduled.</p>
+            )}
           </section>
 
           <section id="section-programs" className="bg-white border border-gray-200 p-8">
