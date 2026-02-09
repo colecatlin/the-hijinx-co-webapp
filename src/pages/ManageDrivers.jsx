@@ -18,6 +18,7 @@ import DriverMediaSection from '@/components/management/DriverManagement/DriverM
 import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection.jsx';
 import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection.jsx';
 import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection.jsx';
+import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
