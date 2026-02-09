@@ -74,7 +74,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Upper nav - logo */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative">
           <Link to={createPageUrl('Home')} className="flex items-center">
-            <span className="text-xl font-black tracking-tighter">HIJINX</span>
+            <span className="text-4xl font-black tracking-tighter">HIJINX</span>
           </Link>
 
           <div className="absolute right-6 lg:hidden">
