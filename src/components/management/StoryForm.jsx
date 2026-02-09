@@ -110,7 +110,7 @@ export default function StoryForm({ story, onClose }) {
                 <SelectItem value="Gear">Gear</SelectItem>
                 <SelectItem value="Travel">Travel</SelectItem>
                 <SelectItem value="Opinion">Opinion</SelectItem>
-                <SelectItem value="Photo">Photo</SelectItem>
+                <SelectItem value="Media">Media</SelectItem>
               </SelectContent>
             </Select>
           </div>
