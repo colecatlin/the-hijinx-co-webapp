@@ -12,11 +12,11 @@ import { createPageUrl } from '@/components/utils';
 import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
-import DriverProgramsSection from '@/components/management/DriverManagement/DriverProgramsSection';
-import DriverMediaSection from '@/components/management/DriverManagement/DriverMediaSection';
-import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection';
-import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection';
-import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection';
+import DriverProgramsSection from '@/components/management/DriverManagement/DriverProgramsSection.jsx';
+import DriverMediaSection from '@/components/management/DriverManagement/DriverMediaSection.jsx';
+import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection.jsx';
+import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection.jsx';
+import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection.jsx';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
