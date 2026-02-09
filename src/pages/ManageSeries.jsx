@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeriesForm from '@/components/management/SeriesForm';
+import CreateSeriesForm from '@/components/management/CreateSeriesForm';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -101,6 +102,24 @@ export default function ManageSeries() {
   };
 
   if (showForm) {
+    if (!editingSeries) {
+      return (
+        <PageShell>
+          <CreateSeriesForm
+            onClose={() => {
+              setShowForm(false);
+              setEditingSeries(null);
+            }}
+            onSeriesCreated={(newSeries) => {
+              setShowForm(false);
+              setEditingSeries(null);
+              setSelectedSeriesForEdit(newSeries);
+            }}
+          />
+        </PageShell>
+      );
+    }
+
     return (
       <PageShell>
         <SeriesForm
@@ -108,10 +127,6 @@ export default function ManageSeries() {
           onClose={() => {
             setShowForm(false);
             setEditingSeries(null);
-          }}
-          onSeriesCreated={(newSeries) => {
-            setShowForm(false);
-            setSelectedSeriesForEdit(newSeries);
           }}
         />
       </PageShell>
