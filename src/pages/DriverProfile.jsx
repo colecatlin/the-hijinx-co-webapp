@@ -1,42 +1,83 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Trophy, Flag, Play } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import { createPageUrl } from '@/components/utils';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverId = urlParams.get('id');
+  const driverSlug = urlParams.get('id');
+  const [activeSection, setActiveSection] = useState('overview');
 
-  const { data: driver, isLoading } = useQuery({
-    queryKey: ['driver', driverId],
-    queryFn: async () => {
-      const all = await base44.entities.Driver.list();
-      return all.find(d => d.id === driverId);
-    },
-    enabled: !!driverId,
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+    setActiveSection('overview');
+  }, [driverSlug]);
+
+  const { data: drivers = [], isLoading } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list(),
   });
 
-  const { data: standings = [] } = useQuery({
-    queryKey: ['driverStandings', driverId],
+  const driver = drivers.find(d => d.slug === driverSlug);
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ['driverPrograms', driver?.id],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: performance } = useQuery({
+    queryKey: ['driverPerformance', driver?.id],
     queryFn: async () => {
-      if (!driverId) return [];
-      return base44.entities.StandingsEntry.filter({ driver_id: driverId }, '-season', 20);
+      const results = await base44.entities.DriverPerformance.filter({ driver_id: driver.id });
+      return results[0] || null;
     },
-    enabled: !!driverId,
+    enabled: !!driver?.id,
+  });
+
+  const { data: partnerships = [] } = useQuery({
+    queryKey: ['driverPartnerships', driver?.id],
+    queryFn: () => base44.entities.DriverPartnership.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: media } = useQuery({
+    queryKey: ['driverMedia', driver?.id],
+    queryFn: async () => {
+      const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
+      return results[0] || null;
+    },
+    enabled: !!driver?.id,
+  });
+
+  const { data: community } = useQuery({
+    queryKey: ['driverCommunity', driver?.id],
+    queryFn: async () => {
+      const results = await base44.entities.DriverCommunity.filter({ driver_id: driver.id });
+      return results[0] || null;
+    },
+    enabled: !!driver?.id,
+  });
+
+  const { data: allTeams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   if (isLoading) {
     return (
-      <PageShell>
-        <div className="max-w-4xl mx-auto px-6 py-20">
-          <Skeleton className="h-6 w-20 mb-6" />
-          <Skeleton className="h-10 w-1/2 mb-4" />
-          <Skeleton className="h-4 w-1/3 mb-8" />
-          <Skeleton className="h-48 w-full" />
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <Skeleton className="h-12 w-64 mb-4" />
+          <Skeleton className="h-96" />
         </div>
       </PageShell>
     );
@@ -44,115 +85,476 @@ export default function DriverProfile() {
 
   if (!driver) {
     return (
-      <PageShell>
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <p className="text-gray-400">Driver not found.</p>
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-600 mb-4">Driver not found</p>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button>Back to Drivers</Button>
+          </Link>
         </div>
       </PageShell>
     );
   }
 
-  const stats = [
-    { label: 'Wins', value: driver.career_wins || 0, icon: Trophy },
-    { label: 'Podiums', value: driver.career_podiums || 0, icon: Flag },
-    { label: 'Starts', value: driver.career_starts || 0, icon: Play },
+  const sortedPrograms = [...programs].sort((a, b) => {
+    if (a.primary) return -1;
+    if (b.primary) return 1;
+    return (a.program_order || 0) - (b.program_order || 0);
+  });
+
+  const sections = [
+    { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'programs', label: 'Programs', icon: Briefcase },
+    { id: 'teams', label: 'Teams', icon: Users },
+    { id: 'performance', label: 'Performance', icon: TrendingUp },
+    { id: 'media', label: 'Media', icon: Camera },
+    { id: 'partnerships', label: 'Partnerships', icon: Heart },
+    { id: 'community', label: 'Community', icon: Heart },
   ];
 
-  return (
-    <PageShell>
-      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
-        <Link to={createPageUrl('DriverDirectory')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors">
-          <ArrowLeft className="w-3 h-3" /> Drivers
-        </Link>
+  const primaryProgram = sortedPrograms.find(p => p.primary) || sortedPrograms[0];
+  const topStrengths = performance?.strengths?.slice(0, 2) || [];
+  const activeTeams = [...new Set(programs.filter(p => p.team_id && p.program_status === 'Active').map(p => p.team_id))];
+  const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
 
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Photo */}
-          <div className="w-full md:w-48 h-48 md:h-56 bg-gray-100 shrink-0 overflow-hidden">
-            {driver.photo_url ? (
-              <img src={driver.photo_url} alt={driver.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-5xl font-black text-gray-200">{driver.number || '?'}</span>
+  return (
+    <PageShell className="bg-[#FFF8F5]">
+      {media?.hero_image_url && (
+        <div className="w-full h-[400px] relative overflow-hidden">
+          <img 
+            src={media.hero_image_url} 
+            alt={driver.display_name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
+
+      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-1 overflow-x-auto">
+            {sections.map(section => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                    if (section.id === 'overview') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      const element = document.getElementById(`section-${section.id}`);
+                      if (element) {
+                        const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                        window.scrollTo({ top: offset, behavior: 'smooth' });
+                      }
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                    activeSection === section.id
+                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                      : 'text-gray-600 hover:text-[#232323]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {section.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          <div className="lg:col-span-2">
+            <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+              ← Back to Drivers
+            </Link>
+
+            <div className="flex items-start justify-between mb-2">
+              <h1 className="text-4xl font-black text-[#232323]">{driver.display_name}</h1>
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${driver.display_name} - Driver Profile`}
+                description={driver.description_summary}
+              />
+            </div>
+            
+            {(driver.hometown_city || driver.hometown_state) && (
+              <div className="flex items-center gap-2 text-gray-600 mb-6">
+                <MapPin className="w-4 h-4" />
+                {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
               </div>
             )}
-          </div>
 
-          {/* Info */}
-          <div className="flex-1">
-            {driver.number && <span className="font-mono text-xs text-gray-400">#{driver.number}</span>}
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-1">{driver.name}</h1>
-            <div className="flex flex-wrap items-center gap-3 mt-3">
-              {driver.team_name && <span className="text-sm text-gray-600">{driver.team_name}</span>}
-              {driver.hometown && (
-                <span className="flex items-center gap-1 text-xs text-gray-400"><MapPin className="w-3 h-3" /> {driver.hometown}</span>
+            <p className="text-lg text-gray-700 leading-relaxed mb-8">
+              {driver.description_summary}
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Discipline</div>
+                <div className="font-bold text-[#232323]">{driver.primary_discipline}</div>
+              </div>
+              {primaryProgram && (
+                <div className="bg-white border border-gray-200 p-4">
+                  <div className="text-xs text-gray-600 mb-1">Primary Series</div>
+                  <div className="font-bold text-[#232323]">{primaryProgram.series_name}</div>
+                </div>
               )}
-              {driver.vehicle && <span className="text-xs text-gray-400">{driver.vehicle}</span>}
+              {primaryProgram?.vehicle_number && (
+                <div className="bg-white border border-gray-200 p-4">
+                  <div className="text-xs text-gray-600 mb-1">Number</div>
+                  <div className="font-bold text-[#232323]">#{primaryProgram.vehicle_number}</div>
+                </div>
+              )}
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Status</div>
+                <div className="font-bold text-[#232323]">{driver.status}</div>
+              </div>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-6 mt-6">
-              {stats.map((s) => (
-                <div key={s.label} className="text-center">
-                  <p className="text-2xl font-black">{s.value}</p>
-                  <p className="font-mono text-[10px] text-gray-400 tracking-wider uppercase mt-1">{s.label}</p>
-                </div>
+            <div className="flex flex-wrap gap-2">
+              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
+                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
+              )}
+              {topStrengths.map((strength, idx) => (
+                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
               ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {media?.headshot_url && (
+              <div className="bg-white border border-gray-200 p-6">
+                <img src={media.headshot_url} alt={driver.display_name} className="w-full border border-gray-200" />
+              </div>
+            )}
+
+            {activeTeams.length > 0 && (
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Current Teams</h3>
+                <div className="space-y-2">
+                  {activeTeams.map(teamId => {
+                    const team = allTeams.find(t => t.id === teamId);
+                    if (!team) return null;
+                    return (
+                      <Link 
+                        key={teamId}
+                        to={createPageUrl('TeamProfile', { id: team.slug })}
+                        className="block text-[#232323] hover:text-[#00FFDA] transition-colors"
+                      >
+                        {team.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {sortedPrograms.length > 0 && (
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Active Programs</h3>
+                <div className="space-y-3">
+                  {sortedPrograms.slice(0, 3).map(prog => (
+                    <div key={prog.id}>
+                      <div className="font-semibold text-[#232323] text-sm">{prog.series_name}</div>
+                      {prog.class_name && <div className="text-xs text-gray-600">{prog.class_name}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activePartnerships.length > 0 && (
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
+                <div className="space-y-2">
+                  {activePartnerships.map(partner => (
+                    <div key={partner.id} className="text-sm text-gray-700">{partner.partner_name}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-gray-200 p-6">
+              <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
+              <div className="flex justify-center">
+                <SocialIconsDisplay media={media} />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bio */}
-        {driver.bio && (
-          <div className="mt-10 pt-8 border-t border-gray-200">
-            <p className="text-sm text-gray-600 leading-relaxed">{driver.bio}</p>
-          </div>
-        )}
-
-        {/* Standings history */}
-        {standings.length > 0 && (
-          <div className="mt-10 pt-8 border-t border-gray-200">
-            <h2 className="font-mono text-xs tracking-[0.2em] text-gray-400 uppercase mb-4">Standings History</h2>
-            <div className="overflow-x-auto border border-gray-200">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-[10px] font-mono text-gray-400 uppercase">Season</th>
-                    <th className="px-4 py-2 text-left text-[10px] font-mono text-gray-400 uppercase">Series</th>
-                    <th className="px-4 py-2 text-left text-[10px] font-mono text-gray-400 uppercase">Class</th>
-                    <th className="px-4 py-2 text-left text-[10px] font-mono text-gray-400 uppercase">Pos</th>
-                    <th className="px-4 py-2 text-left text-[10px] font-mono text-gray-400 uppercase">Pts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((s) => (
-                    <tr key={s.id} className="border-b border-gray-100">
-                      <td className="px-4 py-2 text-sm font-medium">{s.season}</td>
-                      <td className="px-4 py-2 text-xs text-gray-500">{s.series_name}</td>
-                      <td className="px-4 py-2 text-xs text-gray-500">{s.class_name}</td>
-                      <td className="px-4 py-2 text-sm font-bold">{s.position}</td>
-                      <td className="px-4 py-2 text-sm">{s.points}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="space-y-8">
+          <section id="section-overview" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Full Name</div>
+                <div className="text-lg font-semibold text-[#232323]">{driver.first_name} {driver.last_name}</div>
+              </div>
+              {driver.hometown_city && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
+                  <div className="text-lg font-semibold text-[#232323]">
+                    {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''}
+                  </div>
+                </div>
+              )}
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
+                <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Status</div>
+                <Badge className={driver.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                  {driver.status}
+                </Badge>
+              </div>
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* Social */}
-        {driver.social_links && Object.values(driver.social_links).some(Boolean) && (
-          <div className="mt-8 flex gap-4">
-            {driver.social_links.instagram && (
-              <a href={driver.social_links.instagram} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-[#0A0A0A] font-mono">Instagram</a>
+          <section id="section-programs" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
+            {sortedPrograms.length > 0 ? (
+              <div className="space-y-4">
+                {sortedPrograms.map(prog => {
+                  const team = prog.team_id ? allTeams.find(t => t.id === prog.team_id) : null;
+                  return (
+                    <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="font-bold text-[#232323]">{prog.series_name}</div>
+                        {prog.primary && (
+                          <Badge className="bg-[#D33F49] text-white text-xs">Primary</Badge>
+                        )}
+                      </div>
+                      {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
+                      {team && (
+                        <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="text-sm text-[#00FFDA] hover:underline">
+                          {team.name}
+                        </Link>
+                      )}
+                      {prog.vehicle_number && <div className="text-sm text-gray-600">#{prog.vehicle_number}</div>}
+                      {prog.seasons_active && <div className="text-sm text-gray-600">{prog.seasons_active}</div>}
+                      {prog.program_status && (
+                        <Badge variant="outline" className="mt-2">{prog.program_status}</Badge>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-gray-500">No programs available.</p>
             )}
-            {driver.social_links.twitter && (
-              <a href={driver.social_links.twitter} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-[#0A0A0A] font-mono">Twitter</a>
+          </section>
+
+          <section id="section-teams" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Teams</h2>
+            {programs.some(p => p.team_id) ? (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#232323] mb-3">Active</h3>
+                  <div className="space-y-2">
+                    {[...new Set(programs.filter(p => p.team_id && p.program_status === 'Active').map(p => p.team_id))].map(teamId => {
+                      const team = allTeams.find(t => t.id === teamId);
+                      if (!team) return null;
+                      const teamPrograms = programs.filter(p => p.team_id === teamId && p.program_status === 'Active');
+                      return (
+                        <div key={teamId} className="border border-gray-200 p-4">
+                          <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors">
+                            {team.name}
+                          </Link>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {teamPrograms.map(p => p.series_name).join(', ')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                {programs.some(p => p.team_id && p.program_status === 'Historic') && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-3">Historic</h3>
+                    <div className="space-y-2">
+                      {[...new Set(programs.filter(p => p.team_id && p.program_status === 'Historic').map(p => p.team_id))].map(teamId => {
+                        const team = allTeams.find(t => t.id === teamId);
+                        if (!team) return null;
+                        return (
+                          <Link key={teamId} to={createPageUrl('TeamProfile', { id: team.slug })} className="block text-gray-600 hover:text-[#00FFDA] transition-colors">
+                            {team.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-500">No team information available.</p>
             )}
-            {driver.social_links.website && (
-              <a href={driver.social_links.website} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-[#0A0A0A] font-mono">Website</a>
+          </section>
+
+          <section id="section-performance" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance</h2>
+            {performance ? (
+              <>
+                {performance.championships && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Championships</div>
+                    <p className="text-gray-700">{performance.championships}</p>
+                  </div>
+                )}
+                {performance.notable_wins && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Notable Wins</div>
+                    <p className="text-gray-700">{performance.notable_wins}</p>
+                  </div>
+                )}
+                {performance.career_highlights && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Career Highlights</div>
+                    <p className="text-gray-700">{performance.career_highlights}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {performance.strengths && performance.strengths.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-2">Strengths</div>
+                      <div className="flex flex-wrap gap-2">
+                        {performance.strengths.map((strength, idx) => (
+                          <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {performance.weaknesses && performance.weaknesses.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-2">Areas for Growth</div>
+                      <div className="flex flex-wrap gap-2">
+                        {performance.weaknesses.map((weakness, idx) => (
+                          <Badge key={idx} variant="outline" className="border-[#D33F49] text-[#D33F49]">
+                            {weakness}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-500">No performance information available.</p>
             )}
-          </div>
-        )}
+          </section>
+
+          <section id="section-media" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
+            {media && (media.gallery_urls?.length > 0 || media.highlight_video_url) ? (
+              <>
+                {media.gallery_urls && media.gallery_urls.length > 0 && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Gallery</div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {media.gallery_urls.map((url, idx) => (
+                        <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full border border-gray-200" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {media.highlight_video_url && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Highlight Video</div>
+                    <div className="aspect-video">
+                      <iframe
+                        src={media.highlight_video_url}
+                        className="w-full h-full border border-gray-200"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500">No media available.</p>
+            )}
+          </section>
+
+          <section id="section-partnerships" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Partnerships</h2>
+            {partnerships.length > 0 ? (
+              <>
+                {['Title', 'Primary', 'Associate', 'Personal', 'Local'].map(type => {
+                  const typePartnerships = partnerships.filter(p => p.partner_type === type && p.active);
+                  if (typePartnerships.length === 0) return null;
+                  return (
+                    <div key={type} className="mb-6">
+                      <h3 className="text-lg font-semibold text-[#232323] mb-3">{type} Partners</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {typePartnerships.map(partner => (
+                          <div key={partner.id}>
+                            {partner.website_url ? (
+                              <a
+                                href={partner.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-[#232323] hover:text-[#00FFDA] transition-colors"
+                              >
+                                {partner.partner_name}
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : (
+                              <div className="text-[#232323]">{partner.partner_name}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <p className="text-gray-500">No partnership information available.</p>
+            )}
+          </section>
+
+          <section id="section-community" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
+            {community ? (
+              <>
+                {community.youth_programs && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Youth Programs</div>
+                    <p className="text-gray-700">{community.youth_programs}</p>
+                  </div>
+                )}
+                {community.charity_involvement && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Charity Involvement</div>
+                    <p className="text-gray-700">{community.charity_involvement}</p>
+                  </div>
+                )}
+                {community.community_notes && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Community Notes</div>
+                    <p className="text-gray-700">{community.community_notes}</p>
+                  </div>
+                )}
+                {community.legacy_notes && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-2">Legacy</div>
+                    <p className="text-gray-700">{community.legacy_notes}</p>
+                  </div>
+                )}
+                {!community.youth_programs && !community.charity_involvement && !community.community_notes && !community.legacy_notes && (
+                  <p className="text-gray-500">No community information available.</p>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500">No community information available.</p>
+            )}
+          </section>
+        </div>
       </div>
     </PageShell>
   );
