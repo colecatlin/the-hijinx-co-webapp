@@ -35,13 +35,13 @@ export default function DriverCoreDetailsSection({ driverId }) {
 
   const { data: driver, isLoading } = useQuery({
     queryKey: ['driver', driverId],
-    queryFn: () => base44.entities.Driver.list('-updated_date', 1),
+    queryFn: () => base44.entities.Driver.filter({ id: driverId }),
     enabled: !!driverId,
   });
 
   useEffect(() => {
     if (driver && driver.length > 0) {
-      const driverData = driver.find(d => d.id === driverId);
+      const driverData = driver[0];
       if (driverData) {
         setFormData({
           first_name: driverData.first_name || '',
