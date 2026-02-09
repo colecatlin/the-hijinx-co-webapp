@@ -3,10 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import DriverCard from '@/components/drivers/DriverCard';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DriverDirectory() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     discipline: 'all',
     series: 'all',
@@ -14,6 +15,10 @@ export default function DriverDirectory() {
     state: 'all'
   });
   const [sortBy, setSortBy] = useState('name');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
     queryKey: ['drivers'],
@@ -83,71 +88,60 @@ export default function DriverDirectory() {
           <p className="text-lg text-gray-600">Competitors across disciplines and series</p>
         </div>
 
-        <div className="bg-white border border-gray-200 p-6 mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <Select value={filters.discipline} onValueChange={(value) => setFilters({...filters, discipline: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="Discipline" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Disciplines</SelectItem>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                <SelectItem value="Road Racing">Road Racing</SelectItem>
-                <SelectItem value="Rallycross">Rallycross</SelectItem>
-                <SelectItem value="Drag Racing">Drag Racing</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.series} onValueChange={(value) => setFilters({...filters, series: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="Series" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Series</SelectItem>
-                {uniqueSeries.map(series => (
-                  <SelectItem key={series} value={series}>{series}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Part Time">Part Time</SelectItem>
-                <SelectItem value="Retired">Retired</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.state} onValueChange={(value) => setFilters({...filters, state: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="State" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All States</SelectItem>
-                {uniqueStates.map(state => (
-                  <SelectItem key={state} value={state}>{state}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="discipline">Discipline</SelectItem>
-                <SelectItem value="content_value">Content Value</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                { value: 'Road Racing', label: 'Road Racing' },
+                { value: 'Rallycross', label: 'Rallycross' },
+                { value: 'Drag Racing', label: 'Drag Racing' },
+              ]
+            },
+            {
+              key: 'series',
+              label: 'Series',
+              options: [
+                { value: 'all', label: 'All Series' },
+                ...uniqueSeries.map(s => ({ value: s, label: s }))
+              ]
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Part Time', label: 'Part Time' },
+                { value: 'Retired', label: 'Retired' },
+              ]
+            },
+            {
+              key: 'state',
+              label: 'State',
+              options: [
+                { value: 'all', label: 'All States' },
+                ...uniqueStates.map(s => ({ value: s, label: s }))
+              ]
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'content_value', label: 'Content Value' },
+          ]}
+        />
 
         {driversLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

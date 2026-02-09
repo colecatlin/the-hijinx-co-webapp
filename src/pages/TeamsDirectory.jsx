@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tantml:react-query';
+import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import TeamCard from '@/components/teams/TeamCard';
 import DirectoryFilters from '@/components/shared/DirectoryFilters';
@@ -47,6 +47,12 @@ export default function TeamsDirectory() {
 
   const filteredTeams = teams
     .filter(team => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = team.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
+
       if (filters.discipline !== 'all' && team.primary_discipline !== filters.discipline) return false;
       if (filters.level !== 'all' && team.team_level !== filters.level) return false;
       if (filters.status !== 'all' && team.status !== filters.status) return false;
@@ -78,95 +84,66 @@ export default function TeamsDirectory() {
           <p className="text-gray-600">Programs, rosters, results, and who is building what</p>
         </div>
 
-        <div className="bg-white border border-gray-200 p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-semibold text-[#232323]">Filters</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Discipline</label>
-              <Select value={filters.discipline} onValueChange={(v) => setFilters({ ...filters, discipline: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Disciplines</SelectItem>
-                  <SelectItem value="Off Road">Off Road</SelectItem>
-                  <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                  <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                  <SelectItem value="Road Racing">Road Racing</SelectItem>
-                  <SelectItem value="Rallycross">Rallycross</SelectItem>
-                  <SelectItem value="Drag Racing">Drag Racing</SelectItem>
-                  <SelectItem value="Mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Level</label>
-              <Select value={filters.level} onValueChange={(v) => setFilters({ ...filters, level: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="International">International</SelectItem>
-                  <SelectItem value="National">National</SelectItem>
-                  <SelectItem value="Regional">Regional</SelectItem>
-                  <SelectItem value="Local">Local</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Status</label>
-              <Select value={filters.status} onValueChange={(v) => setFilters({ ...filters, status: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Part Time">Part Time</SelectItem>
-                  <SelectItem value="Historic">Historic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">State</label>
-              <Select value={filters.state} onValueChange={(v) => setFilters({ ...filters, state: v })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All States</SelectItem>
-                  {uniqueStates.map(state => (
-                    <SelectItem key={state} value={state}>{state}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-600">Sort by:</label>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="discipline">Discipline</SelectItem>
-                <SelectItem value="level">Level</SelectItem>
-                <SelectItem value="founded">Founded</SelectItem>
-                <SelectItem value="content_value">Content Value</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                { value: 'Road Racing', label: 'Road Racing' },
+                { value: 'Rallycross', label: 'Rallycross' },
+                { value: 'Drag Racing', label: 'Drag Racing' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]
+            },
+            {
+              key: 'level',
+              label: 'Level',
+              options: [
+                { value: 'all', label: 'All Levels' },
+                { value: 'International', label: 'International' },
+                { value: 'National', label: 'National' },
+                { value: 'Regional', label: 'Regional' },
+                { value: 'Local', label: 'Local' },
+              ]
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Part Time', label: 'Part Time' },
+                { value: 'Historic', label: 'Historic' },
+              ]
+            },
+            {
+              key: 'state',
+              label: 'State',
+              options: [
+                { value: 'all', label: 'All States' },
+                ...uniqueStates.map(s => ({ value: s, label: s }))
+              ]
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'level', label: 'Level' },
+            { value: 'founded', label: 'Founded Year' },
+            { value: 'content_value', label: 'Content Value' },
+          ]}
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
