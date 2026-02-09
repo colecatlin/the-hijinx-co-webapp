@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Coffee, UtensilsCrossed, Sparkles, Beer, Utensils, Glasses } from 'lucide-react';
 
 const getIcon = (iconName) => {
@@ -20,8 +19,6 @@ const getIcon = (iconName) => {
 };
 
 export default function FoodBeverage() {
-  const [sortBy, setSortBy] = useState('status');
-  
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['foodBeverages'],
     queryFn: () => base44.entities.FoodBeverage.list(),
@@ -39,15 +36,7 @@ export default function FoodBeverage() {
     'in_concept': 'border border-blue-700 text-blue-700',
   };
 
-  const sortedItems = [...items].sort((a, b) => {
-    if (sortBy === 'status') {
-      const statusOrder = { 'active': 0, 'coming_soon': 1, 'in_concept': 2 };
-      return (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3);
-    } else if (sortBy === 'name') {
-      return a.title.localeCompare(b.title);
-    }
-    return 0;
-  });
+  const sortedItems = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
 
   return (
     <PageShell>
@@ -61,19 +50,6 @@ export default function FoodBeverage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="mb-8 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Items</h2>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="status">Sort by Status</SelectItem>
-              <SelectItem value="name">Sort by Name</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
           {isLoading ? (
             [...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 w-full" />)
