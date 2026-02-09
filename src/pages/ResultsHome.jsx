@@ -48,13 +48,25 @@ export default function ResultsHome() {
       <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
         <SectionHeader label="Motorsports" title="Results" subtitle="Race results and event data." />
 
-        <input
-          type="text"
-          placeholder="Search by event or track..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full max-w-md border-b-2 border-gray-200 focus:border-[#0A0A0A] bg-transparent py-2 text-sm outline-none mb-8 placeholder:text-gray-300"
-        />
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <Button
+            onClick={handlePullData}
+            disabled={syncing}
+            size="sm"
+            className="bg-[#232323] hover:bg-[#1A3249] text-white gap-2 w-fit"
+          >
+            <Download className="w-4 h-4" />
+            {syncing ? 'Syncing...' : 'Pull from Google Sheets'}
+          </Button>
+
+          <input
+            type="text"
+            placeholder="Search by event or track..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 border-b-2 border-gray-200 focus:border-[#0A0A0A] bg-transparent py-2 text-sm outline-none placeholder:text-gray-300"
+          />
+        </div>
 
         {isLoading ? (
           <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
