@@ -251,7 +251,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Page content */}
-      <main className="flex-1 pt-16 lg:pt-[calc(44px+4rem+41px)]">
+            <main className="flex-1 pt-[calc(44px+4rem)] lg:pt-[calc(44px+4rem+41px)]">
         {children}
       </main>
 
