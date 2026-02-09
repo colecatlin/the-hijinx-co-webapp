@@ -11,14 +11,15 @@ export default function SeriesForm({ series, onClose }) {
   const [formData, setFormData] = useState({
     name: series?.name || '',
     slug: series?.slug || '',
-    description: series?.description || '',
-    classes: series?.classes || [],
-    current_season: series?.current_season || new Date().getFullYear(),
-    logo_url: series?.logo_url || '',
-    status: series?.status || 'active',
+    governing_body: series?.governing_body || '',
+    discipline: series?.discipline || 'Mixed',
+    founded_year: series?.founded_year || new Date().getFullYear(),
+    status: series?.status || 'Active',
+    description_summary: series?.description_summary || '',
+    region: series?.region || 'Global',
+    competition_level: series?.competition_level || 'Professional',
+    content_value: series?.content_value || 'Unknown',
   });
-
-  const [classInput, setClassInput] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -53,16 +54,7 @@ export default function SeriesForm({ series, onClose }) {
     }
   };
 
-  const handleAddClass = () => {
-    if (classInput.trim() && !formData.classes.includes(classInput.trim())) {
-      setFormData({ ...formData, classes: [...formData.classes, classInput.trim()] });
-      setClassInput('');
-    }
-  };
 
-  const handleRemoveClass = (cls) => {
-    setFormData({ ...formData, classes: formData.classes.filter(c => c !== cls) });
-  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -72,7 +64,7 @@ export default function SeriesForm({ series, onClose }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div className="col-span-2">
             <label className="block text-sm font-medium mb-2">Name *</label>
             <Input
               value={formData.name}
@@ -83,13 +75,68 @@ export default function SeriesForm({ series, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Current Season</label>
+            <label className="block text-sm font-medium mb-2">Discipline *</label>
+            <Select value={formData.discipline} onValueChange={(val) => handleChange('discipline', val)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
+                <SelectItem value="Road Racing">Road Racing</SelectItem>
+                <SelectItem value="Off Road">Off Road</SelectItem>
+                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
+                <SelectItem value="Rallycross">Rallycross</SelectItem>
+                <SelectItem value="Mixed">Mixed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Competition Level *</label>
+            <Select value={formData.competition_level} onValueChange={(val) => handleChange('competition_level', val)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Professional">Professional</SelectItem>
+                <SelectItem value="Semi Pro">Semi Pro</SelectItem>
+                <SelectItem value="Amateur">Amateur</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Governing Body</label>
+            <Input
+              value={formData.governing_body}
+              onChange={(e) => handleChange('governing_body', e.target.value)}
+              placeholder="e.g., NASCAR, FIA"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Founded Year</label>
             <Input
               type="number"
-              value={formData.current_season}
-              onChange={(e) => handleChange('current_season', parseInt(e.target.value))}
+              value={formData.founded_year}
+              onChange={(e) => handleChange('founded_year', parseInt(e.target.value))}
               placeholder={new Date().getFullYear().toString()}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Region</label>
+            <Select value={formData.region} onValueChange={(val) => handleChange('region', val)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Global">Global</SelectItem>
+                <SelectItem value="North America">North America</SelectItem>
+                <SelectItem value="Europe">Europe</SelectItem>
+                <SelectItem value="Regional">Regional</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -99,52 +146,36 @@ export default function SeriesForm({ series, onClose }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Historic">Historic</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Content Value</label>
+            <Select value={formData.content_value} onValueChange={(val) => handleChange('content_value', val)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Unknown">Unknown</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Logo URL</label>
-            <Input
-              value={formData.logo_url}
-              onChange={(e) => handleChange('logo_url', e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="block text-sm font-medium mb-2">Description Summary *</label>
             <Textarea
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Series description"
+              value={formData.description_summary}
+              onChange={(e) => handleChange('description_summary', e.target.value)}
+              placeholder="2-3 sentences, max 360 characters"
               rows={3}
+              required
             />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Classes</label>
-            <div className="flex gap-2 mb-2">
-              <Input
-                value={classInput}
-                onChange={(e) => setClassInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddClass())}
-                placeholder="Add a class (e.g., Pro 4, Pro 2)"
-              />
-              <Button type="button" onClick={handleAddClass}>Add</Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.classes.map((cls) => (
-                <span key={cls} className="px-3 py-1 bg-gray-100 rounded-full text-sm flex items-center gap-2">
-                  {cls}
-                  <button type="button" onClick={() => handleRemoveClass(cls)}>
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 
