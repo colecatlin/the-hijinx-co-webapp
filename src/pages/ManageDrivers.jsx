@@ -126,8 +126,53 @@ export default function ManageDrivers() {
     e.target.value = '';
   };
 
-  if (showForm) {
+  if (showForm && !selectedDriverForEdit) {
     return <DriverForm driver={editingDriver} onClose={handleFormClose} />;
+  }
+
+  if (selectedDriverForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedDriverForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">
+                {selectedDriverForEdit.first_name} {selectedDriverForEdit.last_name}
+              </h1>
+              <p className="text-gray-600">Manage all driver data</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="programs" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="programs">Programs</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="community">Community</TabsTrigger>
+              <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
+            </TabsList>
+            <TabsContent value="programs" className="mt-6">
+              <DriverProgramsSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="media" className="mt-6">
+              <DriverMediaSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="performance" className="mt-6">
+              <DriverPerformanceSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="community" className="mt-6">
+              <DriverCommunitySection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="partnerships" className="mt-6">
+              <DriverPartnershipSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
   }
 
   return (
