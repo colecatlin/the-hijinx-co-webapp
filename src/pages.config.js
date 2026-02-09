@@ -87,6 +87,10 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import ManageDriverPrograms from './pages/ManageDriverPrograms';
+import ManageDriverMedia from './pages/ManageDriverMedia';
+import ManageDriverPerformance from './pages/ManageDriverPerformance';
+import ManageDriverCommunity from './pages/ManageDriverCommunity';
+import ManageDriverPartnership from './pages/ManageDriverPartnership';
 import __Layout from './Layout.jsx';
 
 
@@ -131,6 +135,10 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "ManageDriverPrograms": ManageDriverPrograms,
+    "ManageDriverMedia": ManageDriverMedia,
+    "ManageDriverPerformance": ManageDriverPerformance,
+    "ManageDriverCommunity": ManageDriverCommunity,
+    "ManageDriverPartnership": ManageDriverPartnership,
 }
 
 export const pagesConfig = {
