@@ -136,7 +136,7 @@ export default function ManageDrivers() {
     e.target.value = '';
   };
 
-  if (showForm && !selectedDriverForEdit) {
+  if (showForm) {
     return <DriverForm driver={editingDriver} onClose={handleFormClose} />;
   }
 
