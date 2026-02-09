@@ -20,7 +20,9 @@ const navItems = [
     { name: 'Standings', page: 'StandingsHome' },
     { name: 'Schedule', page: 'ScheduleHome' },
     { name: 'Results', page: 'ResultsHome' },
-    { name: 'Drivers', page: 'DriverDirectory' },
+  ]},
+  { name: 'Drivers', page: 'DriverDirectory' },
+  { name: 'Teams', page: 'TeamsDirectory', sub: [
     { name: 'Teams', page: 'TeamsDirectory' },
     { name: 'Tracks', page: 'TrackDirectory' },
   ]},
