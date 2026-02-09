@@ -285,88 +285,93 @@ export default function TeamProfile() {
           </div>
         </div>
 
-        {drivers.length > 0 && (
-          <section id="section-drivers" className="mb-12">
-            <h2 className="text-3xl font-black text-[#232323] mb-6">Drivers</h2>
+        <div className="space-y-8">
+          <section id="section-drivers" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Drivers</h2>
 
-            {programsWithDrivers.length > 1 && (
-              <div className="flex flex-wrap gap-2 mb-8">
-                <button
-                  onClick={() => setSelectedProgram('all')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    selectedProgram === 'all'
-                      ? 'bg-[#232323] text-white'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:border-[#00FFDA]'
-                  }`}
-                >
-                  All Drivers
-                </button>
-                {programsWithDrivers.map(prog => (
-                  <button
-                    key={prog.id}
-                    onClick={() => setSelectedProgram(prog.id)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
-                      selectedProgram === prog.id
-                        ? 'bg-[#232323] text-white'
-                        : 'bg-white border border-gray-200 text-gray-700 hover:border-[#00FFDA]'
-                    }`}
-                  >
-                    {prog.series_name}{prog.class_name ? ` • ${prog.class_name}` : ''}
-                  </button>
-                ))}
-              </div>
-            )}
+            {drivers.length > 0 ? (
+              <>
+                {programsWithDrivers.length > 1 && (
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    <button
+                      onClick={() => setSelectedProgram('all')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        selectedProgram === 'all'
+                          ? 'bg-[#232323] text-white'
+                          : 'bg-white border border-gray-200 text-gray-700 hover:border-[#00FFDA]'
+                      }`}
+                    >
+                      All Drivers
+                    </button>
+                    {programsWithDrivers.map(prog => (
+                      <button
+                        key={prog.id}
+                        onClick={() => setSelectedProgram(prog.id)}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                          selectedProgram === prog.id
+                            ? 'bg-[#232323] text-white'
+                            : 'bg-white border border-gray-200 text-gray-700 hover:border-[#00FFDA]'
+                        }`}
+                      >
+                        {prog.series_name}{prog.class_name ? ` • ${prog.class_name}` : ''}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-            {selectedProgram === 'all' ? (
-              <div className="space-y-8">
-                {sortedPrograms.map(prog => {
-                  const progDrivers = getDriversForProgram(prog.id);
-                  if (progDrivers.length === 0) return null;
-                  
-                  return (
-                    <div key={prog.id}>
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold text-[#232323]">
-                          {prog.series_name}{prog.class_name ? ` • ${prog.class_name}` : ''}
-                        </h3>
-                        {prog.seasons_active && (
-                          <div className="text-sm text-gray-600">{prog.seasons_active}</div>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {progDrivers.map(driver => (
-                          <DriverHeroCard
-                            key={driver.id}
-                            driver={driver}
-                            program={prog}
-                            onClick={() => setSelectedDriver({ driver, program: prog })}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                {selectedProgram === 'all' ? (
+                  <div className="space-y-8">
+                    {sortedPrograms.map(prog => {
+                      const progDrivers = getDriversForProgram(prog.id);
+                      if (progDrivers.length === 0) return null;
+
+                      return (
+                        <div key={prog.id}>
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold text-[#232323]">
+                              {prog.series_name}{prog.class_name ? ` • ${prog.class_name}` : ''}
+                            </h3>
+                            {prog.seasons_active && (
+                              <div className="text-sm text-gray-600">{prog.seasons_active}</div>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {progDrivers.map(driver => (
+                              <DriverHeroCard
+                                key={driver.id}
+                                driver={driver}
+                                program={prog}
+                                onClick={() => setSelectedDriver({ driver, program: prog })}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {getDriversForProgram(selectedProgram).map(driver => {
+                      const prog = programs.find(p => p.id === driver.program_id);
+                      return (
+                        <DriverHeroCard
+                          key={driver.id}
+                          driver={driver}
+                          program={prog}
+                          onClick={() => setSelectedDriver({ driver, program: prog })}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {getDriversForProgram(selectedProgram).map(driver => {
-                  const prog = programs.find(p => p.id === driver.program_id);
-                  return (
-                    <DriverHeroCard
-                      key={driver.id}
-                      driver={driver}
-                      program={prog}
-                      onClick={() => setSelectedDriver({ driver, program: prog })}
-                    />
-                  );
-                })}
-              </div>
+              <p className="text-gray-500">No drivers available.</p>
             )}
           </section>
-        )}
+        </div>
 
-        <div className="space-y-8">
-          <section id="section-overview" className="bg-white border border-gray-200 p-8">
+        <section id="section-overview" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
             {(team.status || team.owner_name || team.team_principal) ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
