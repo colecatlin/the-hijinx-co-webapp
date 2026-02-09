@@ -46,14 +46,10 @@ export default function TechForm({ item, onSubmit, onCancel }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Icon</label>
-            <Input
-              placeholder="e.g., Zap, Cpu, Wifi"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
-          </div>
+          <IconSelector
+            value={formData.icon}
+            onChange={(icon) => setFormData({ ...formData, icon })}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-2">Title *</label>
