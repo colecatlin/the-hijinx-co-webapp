@@ -41,15 +41,18 @@ export default function Layout({ children, currentPageName }) {
   const [hoveredItem, setHoveredItem] = useState(null);
   const location = useLocation();
 
+  const isLoginPage = location.pathname === '/login';
+
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
+    enabled: !isLoginPage,
   });
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    enabled: isAuthenticated === true,
+    enabled: !isLoginPage && isAuthenticated === true,
   });
 
   useEffect(() => {
