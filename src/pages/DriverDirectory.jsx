@@ -54,9 +54,9 @@ export default function DriverDirectory() {
   const sortedDrivers = [...filteredDrivers].sort((a, b) => {
     switch (sortBy) {
       case 'name':
-        return a.display_name.localeCompare(b.display_name);
+        return (a.display_name || '').localeCompare(b.display_name || '');
       case 'discipline':
-        return a.primary_discipline.localeCompare(b.primary_discipline);
+        return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
       case 'content_value':
         const valueOrder = { High: 0, Medium: 1, Low: 2, Unknown: 3 };
         return (valueOrder[a.content_value] || 3) - (valueOrder[b.content_value] || 3);
