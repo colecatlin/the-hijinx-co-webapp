@@ -57,17 +57,8 @@ export default function AnnouncementBar() {
   };
 
   return (
-    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-6 relative`}>
+    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-6`}>
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
-        {announcements.length > 1 && (
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length)}
-            className="p-1 hover:bg-white/20 rounded transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        )}
-        
         <div className="flex items-center gap-3 text-sm">
           <span>{current.message}</span>
           {current.link_url && current.link_text && (
@@ -81,30 +72,7 @@ export default function AnnouncementBar() {
             </a>
           )}
         </div>
-
-        {announcements.length > 1 && (
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % announcements.length)}
-            className="p-1 hover:bg-white/20 rounded transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
       </div>
-      
-      {announcements.length > 1 && (
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1 pb-0.5">
-          {announcements.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${
-                idx === currentIndex ? 'bg-white w-3' : 'bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
