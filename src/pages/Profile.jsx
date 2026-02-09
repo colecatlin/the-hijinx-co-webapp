@@ -434,15 +434,28 @@ export default function Profile() {
             </div>
           </motion.div>
 
-          <Button
-            type="submit"
-            size="lg"
-            disabled={updateMutation.isPending}
-            className="bg-[#232323] hover:bg-[#1A3249]"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={updateMutation.isPending}
+              className="bg-[#232323] hover:bg-[#1A3249]"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              onClick={() => base44.auth.logout()}
+              className="border-red-200 text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
 
           {updateMutation.isSuccess && (
             <p className="text-sm text-green-600">Profile updated successfully!</p>
