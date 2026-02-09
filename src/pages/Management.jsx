@@ -39,6 +39,7 @@ export default function Management() {
       title: 'Features',
       items: [
         { name: 'Food & Beverage', page: 'ManageFoodBeverage', icon: UtensilsCrossed, description: 'Manage food and beverage offerings' },
+        { name: 'Tech', page: 'ManageTech', icon: Cpu, description: 'Manage tech solutions and offerings' },
       ]
     }
   ];
