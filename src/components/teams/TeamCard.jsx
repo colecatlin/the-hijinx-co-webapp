@@ -39,8 +39,8 @@ export default function TeamCard({ team, programsCount, driversCount, performanc
   };
 
   return (
-    <Link to={createPageUrl('TeamProfile', { id: team.slug })}>
-      <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group">
+    <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="h-full block">
+      <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -64,11 +64,11 @@ export default function TeamCard({ team, programsCount, driversCount, performanc
           </Badge>
         </div>
 
-        <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+        <p className="text-sm text-gray-700 mb-4 line-clamp-2 flex-1">
           {team.description_summary}
         </p>
 
-        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 mt-auto">
           <div className="flex items-center gap-1">
             <Briefcase className="w-4 h-4" />
             <span>{programsCount} {programsCount === 1 ? 'Program' : 'Programs'}</span>
