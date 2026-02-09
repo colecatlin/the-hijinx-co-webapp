@@ -258,44 +258,7 @@ export default function TeamProfile() {
               )}
             </div>
 
-            <div className="bg-white border border-gray-200 p-6">
-              {primaryPrograms.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-bold text-[#232323] mb-3">Primary Programs</h3>
-                  {primaryPrograms.map(prog => (
-                    <div key={prog.id} className="mb-2">
-                      <div className="font-semibold text-[#232323] text-sm">{prog.series_name}</div>
-                      {prog.class_name && <div className="text-xs text-gray-600">{prog.class_name}</div>}
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {activePartners.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-bold text-[#232323] mb-3">Key Partners</h3>
-                  {activePartners.map(partner => (
-                    <div key={partner.id} className="text-sm text-[#232323] mb-1">
-                      {partner.partner_name}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                {operations?.merch_url && (
-                  <a
-                    href={operations.merch_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-[#00FFDA] hover:text-[#1A3249] transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Shop Merch
-                  </a>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
