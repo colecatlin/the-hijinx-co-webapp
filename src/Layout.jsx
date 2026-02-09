@@ -55,6 +55,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   useEffect(() => {
