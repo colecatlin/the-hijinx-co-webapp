@@ -30,7 +30,7 @@ export default function DriverCard({ driver, program, team, media }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
             <div className="text-4xl font-black text-gray-400">
-              {driver.first_name[0]}{driver.last_name[0]}
+              {driver.first_name?.[0] || ''}{driver.last_name?.[0] || ''}
             </div>
           </div>
         )}
