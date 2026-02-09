@@ -26,6 +26,9 @@ export default function DriverCoreDetailsSection({ driverId }) {
     hometown_city: '',
     hometown_state: '',
     hometown_country: '',
+    location_city: '',
+    location_state: '',
+    location_country: '',
     primary_number: '',
     primary_discipline: '',
   });
@@ -51,6 +54,9 @@ export default function DriverCoreDetailsSection({ driverId }) {
           hometown_city: driverData.hometown_city || '',
           hometown_state: driverData.hometown_state || '',
           hometown_country: driverData.hometown_country || '',
+          location_city: driverData.location_city || '',
+          location_state: driverData.location_state || '',
+          location_country: driverData.location_country || '',
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
         });
@@ -156,36 +162,75 @@ export default function DriverCoreDetailsSection({ driverId }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="hometown_city">City</Label>
-            <Input
-              id="hometown_city"
-              value={formData.hometown_city}
-              onChange={(e) => handleInputChange('hometown_city', e.target.value)}
-              placeholder="City"
-              className="mt-2"
-            />
+        <div className="border-t pt-6">
+          <h3 className="font-semibold mb-4">Hometown</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="hometown_city">City</Label>
+              <Input
+                id="hometown_city"
+                value={formData.hometown_city}
+                onChange={(e) => handleInputChange('hometown_city', e.target.value)}
+                placeholder="City"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="hometown_state">State/Region</Label>
+              <Input
+                id="hometown_state"
+                value={formData.hometown_state}
+                onChange={(e) => handleInputChange('hometown_state', e.target.value)}
+                placeholder="State"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="hometown_country">Country</Label>
+              <Input
+                id="hometown_country"
+                value={formData.hometown_country}
+                onChange={(e) => handleInputChange('hometown_country', e.target.value)}
+                placeholder="Country"
+                className="mt-2"
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="hometown_state">State/Region</Label>
-            <Input
-              id="hometown_state"
-              value={formData.hometown_state}
-              onChange={(e) => handleInputChange('hometown_state', e.target.value)}
-              placeholder="State"
-              className="mt-2"
-            />
-          </div>
-          <div>
-            <Label htmlFor="hometown_country">Country</Label>
-            <Input
-              id="hometown_country"
-              value={formData.hometown_country}
-              onChange={(e) => handleInputChange('hometown_country', e.target.value)}
-              placeholder="Country"
-              className="mt-2"
-            />
+        </div>
+
+        <div>
+          <h3 className="font-semibold mb-4">Current Racing Base</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="location_city">City</Label>
+              <Input
+                id="location_city"
+                value={formData.location_city}
+                onChange={(e) => handleInputChange('location_city', e.target.value)}
+                placeholder="City"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="location_state">State/Region</Label>
+              <Input
+                id="location_state"
+                value={formData.location_state}
+                onChange={(e) => handleInputChange('location_state', e.target.value)}
+                placeholder="State"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="location_country">Country</Label>
+              <Input
+                id="location_country"
+                value={formData.location_country}
+                onChange={(e) => handleInputChange('location_country', e.target.value)}
+                placeholder="Country"
+                className="mt-2"
+              />
+            </div>
           </div>
         </div>
 
