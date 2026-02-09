@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
+import TeamPerformanceInsights from '@/components/teams/TeamPerformanceInsights';
 import { createPageUrl } from '@/components/utils';
 
 export default function TeamProfile() {
@@ -506,6 +507,15 @@ export default function TeamProfile() {
             <section id="section-performance" className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
               
+              <div className="mb-8">
+                <TeamPerformanceInsights 
+                  team={team}
+                  performance={performance}
+                  programs={programs}
+                  roster={roster}
+                />
+              </div>
+
               {performance.championships && (
                 <div className="mb-6">
                   <div className="text-sm text-gray-600 mb-2">Championships</div>
