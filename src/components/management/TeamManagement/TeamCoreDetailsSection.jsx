@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
 
 export default function TeamCoreDetailsSection({ teamId }) {
   const [formData, setFormData] = useState({});
@@ -33,6 +34,19 @@ export default function TeamCoreDetailsSection({ teamId }) {
       setTimeout(() => setIsSaved(false), 2000);
     },
   });
+
+  const uploadMutation = useMutation({
+    mutationFn: (file) => base44.integrations.Core.UploadFile({ file }),
+    onSuccess: (data) => {
+      setFormData({ ...formData, logo_url: data.file_url });
+      toast.success('Image uploaded');
+    },
+  });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) uploadMutation.mutate(file);
+  };
 
   const handleSave = () => {
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
@@ -146,6 +160,31 @@ export default function TeamCoreDetailsSection({ teamId }) {
             onChange={(e) => setFormData({ ...formData, description_summary: e.target.value })}
             rows={4}
           />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Logo</label>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('team-logo-upload').click()}
+              disabled={uploadMutation.isPending}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Image'}
+            </Button>
+            <input
+              id="team-logo-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            {formData.logo_url && (
+              <img src={formData.logo_url} alt="Team logo" className="h-10 rounded" />
+            )}
+          </div>
         </div>
 
         <Button onClick={handleSave} disabled={updateMutation.isPending}>
