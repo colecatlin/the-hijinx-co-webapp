@@ -240,7 +240,7 @@ export default function TeamProfile() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white border border-gray-200 p-6">
+            <div className="bg-white border border-gray-200 p-6 mt-8">
               <h3 className="text-sm font-bold text-[#232323] mb-4">Team Logo</h3>
               {media?.logo_url ? (
                 <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
