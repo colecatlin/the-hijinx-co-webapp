@@ -1,0 +1,91 @@
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+export default function AnnouncementBar() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { data: announcements = [] } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: async () => {
+      const data = await base44.entities.Announcement.filter({ active: true }, '-priority');
+      return data || [];
+    },
+  });
+
+  useEffect(() => {
+    if (announcements.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % announcements.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [announcements.length]);
+
+  if (!announcements.length) return null;
+
+  const current = announcements[currentIndex];
+  
+  const bgColors = {
+    black: 'bg-[#232323]',
+    blue: 'bg-blue-600',
+    red: 'bg-red-600',
+    green: 'bg-green-600',
+    yellow: 'bg-yellow-500 text-black'
+  };
+
+  return (
+    <div className={`${bgColors[current.background_color] || bgColors.black} text-white py-2 px-6 relative`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
+        {announcements.length > 1 && (
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length)}
+            className="p-1 hover:bg-white/20 rounded transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+        
+        <div className="flex items-center gap-3 text-sm">
+          <span>{current.message}</span>
+          {current.link_url && current.link_text && (
+            <a
+              href={current.link_url}
+              target={current.link_url.startsWith('http') ? '_blank' : undefined}
+              rel={current.link_url.startsWith('http') ? 'noopener noreferrer' : undefined}
+              className="underline font-medium hover:opacity-80 transition-opacity"
+            >
+              {current.link_text}
+            </a>
+          )}
+        </div>
+
+        {announcements.length > 1 && (
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev + 1) % announcements.length)}
+            className="p-1 hover:bg-white/20 rounded transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+      
+      {announcements.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1 pb-0.5">
+          {announcements.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                idx === currentIndex ? 'bg-white w-3' : 'bg-white/40'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

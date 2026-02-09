@@ -5,6 +5,7 @@ import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SearchBar from '@/components/shared/SearchBar';
 import Footer from '@/components/shared/Footer';
+import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -65,6 +66,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <AnnouncementBar />
       {/* Top bar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
