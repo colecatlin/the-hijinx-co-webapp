@@ -31,9 +31,9 @@ export default function FoodBeverage() {
   };
 
   const statusColors = {
-    'coming_soon': 'border border-amber-400 text-amber-600',
+    'coming_soon': 'border border-purple-500 text-purple-600',
     'active': 'border border-teal-500 text-teal-600',
-    'in_concept': 'border border-gray-300 text-gray-500',
+    'in_concept': 'border border-blue-700 text-blue-700',
   };
 
   return (
