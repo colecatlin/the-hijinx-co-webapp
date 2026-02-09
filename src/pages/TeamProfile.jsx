@@ -172,7 +172,11 @@ export default function TeamProfile() {
                   key={section.id}
                   onClick={() => {
                     setActiveSection(section.id);
-                    document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth' });
+                    if (section.id === 'overview') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }}
                   className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
                     activeSection === section.id
