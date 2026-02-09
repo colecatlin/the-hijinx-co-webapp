@@ -8,6 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function TeamOwnerTab({ formData, setFormData }) {
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,6 +23,25 @@ export default function TeamOwnerTab({ formData, setFormData }) {
         <Users className="w-5 h-5" />
         Team Information
       </h2>
+
+      <div>
+        <Label>Link Team Profile</Label>
+        <Select
+          value={formData.team_id || ''}
+          onValueChange={(value) => setFormData({ ...formData, team_id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select your team..." />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((team) => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div>
         <Label>Team Name</Label>
