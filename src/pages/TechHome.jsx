@@ -39,27 +39,55 @@ export default function TechHome() {
 
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="space-y-6">
-          {products.map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="border border-gray-200 p-8 md:p-12 hover:border-[#0A0A0A] transition-colors"
-            >
+          {sortedItems.map((item, i) => {
+            const IconComponent = item.icon ? ICON_MAP[item.icon] || Cpu : Cpu;
+            const isAdmin = user?.role === 'admin';
+            const content = (
               <div className="flex items-start gap-4">
-                <p.icon className="w-6 h-6 text-gray-400 mt-1 shrink-0" />
+                <IconComponent className="w-6 h-6 text-gray-400 mt-1 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-black tracking-tight">{p.name}</h2>
-                    <span className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">{p.status}</span>
+                    <h2 className="text-2xl font-black tracking-tight">{item.title}</h2>
+                    <span className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">
+                      {item.status?.replace('_', ' ')}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-500 italic mb-3">{p.tagline}</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">{p.description}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            );
+
+            if (isAdmin) {
+              return (
+                <Link
+                  key={item.id}
+                  to={createPageUrl('ManageTech')}
+                  className="block"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="border border-gray-200 p-8 md:p-12 hover:border-[#0A0A0A] transition-colors cursor-pointer"
+                  >
+                    {content}
+                  </motion.div>
+                </Link>
+              );
+            }
+
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="border border-gray-200 p-8 md:p-12 hover:border-[#0A0A0A] transition-colors"
+              >
+                {content}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </PageShell>
