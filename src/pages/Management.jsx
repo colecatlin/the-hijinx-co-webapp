@@ -9,12 +9,7 @@ export default function Management() {
     {
       title: 'Core Entities',
       items: [
-        { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage driver profiles and info' },
-        { name: 'Driver Programs', page: 'ManageDriverPrograms', icon: Award, description: 'Link drivers to series and teams' },
-        { name: 'Driver Media', page: 'ManageDriverMedia', icon: Image, description: 'Photos and social links' },
-        { name: 'Driver Performance', page: 'ManageDriverPerformance', icon: TrendingUp, description: 'Career stats and form' },
-        { name: 'Driver Community', page: 'ManageDriverCommunity', icon: Heart, description: 'Youth programs and charity' },
-        { name: 'Driver Partnerships', page: 'ManageDriverPartnership', icon: Handshake, description: 'Sponsors and partners' },
+        { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage all driver profiles and data' },
         { name: 'Teams', page: 'ManageTeams', icon: Users, description: 'Manage team profiles and rosters' },
         { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage track information' },
       ]
