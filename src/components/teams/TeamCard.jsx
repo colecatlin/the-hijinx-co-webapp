@@ -43,10 +43,15 @@ export default function TeamCard({ team, programsCount, driversCount, performanc
       <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">{getDisciplineIcon(team.primary_discipline)}</span>
-              {media?.logo_url && (
-                <img src={media.logo_url} alt={team.name} className="h-8 w-auto object-contain" />
+            <div className="mb-3">
+              {media?.logo_url ? (
+                <img src={media.logo_url} alt={team.name} className="h-12 w-auto object-contain" />
+              ) : (
+                <div className="h-12 flex items-center">
+                  <div className="text-2xl font-black text-gray-400">
+                    {team.name.split(' ').map(w => w[0]).join('')}
+                  </div>
+                </div>
               )}
             </div>
             <h3 className="text-xl font-bold text-[#232323] mb-1 group-hover:text-[#00FFDA] transition-colors">
