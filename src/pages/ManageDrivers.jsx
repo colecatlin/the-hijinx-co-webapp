@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,6 +12,11 @@ import { createPageUrl } from '@/components/utils';
 import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
+import DriverProgramsSection from '@/components/management/DriverManagement/DriverProgramsSection';
+import DriverMediaSection from '@/components/management/DriverManagement/DriverMediaSection';
+import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection';
+import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection';
+import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
