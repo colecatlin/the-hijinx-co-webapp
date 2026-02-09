@@ -96,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Desktop nav */}
         <nav className="hidden lg:block border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-6">
-            <ul className="flex items-center gap-0">
+            <ul className="flex items-center justify-center gap-0">
               {navItems.map((item) => (
                 <li
                   key={item.name}
