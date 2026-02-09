@@ -18,6 +18,11 @@ export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const teamSlug = urlParams.get('id');
   const [activeSection, setActiveSection] = useState('overview');
+
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+    setActiveSection('overview');
+  }, [teamSlug]);
   const [selectedProgram, setSelectedProgram] = useState('all');
   const [selectedDriver, setSelectedDriver] = useState(null);
 
@@ -355,52 +360,62 @@ export default function TeamProfile() {
         <div className="space-y-8">
           <section id="section-overview" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Status</div>
-                <div className="text-lg font-semibold text-[#232323]">{team.status}</div>
+            {(team.status || team.owner_name || team.team_principal) ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Status</div>
+                  <div className="text-lg font-semibold text-[#232323]">{team.status}</div>
+                </div>
+                {team.owner_name && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Owner</div>
+                    <div className="text-lg font-semibold text-[#232323]">{team.owner_name}</div>
+                  </div>
+                )}
+                {team.team_principal && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Team Principal</div>
+                    <div className="text-lg font-semibold text-[#232323]">{team.team_principal}</div>
+                  </div>
+                )}
               </div>
-              {team.owner_name && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Owner</div>
-                  <div className="text-lg font-semibold text-[#232323]">{team.owner_name}</div>
-                </div>
-              )}
-              {team.team_principal && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Team Principal</div>
-                  <div className="text-lg font-semibold text-[#232323]">{team.team_principal}</div>
-                </div>
-              )}
-            </div>
+            ) : (
+              <p className="text-gray-500">No overview information available.</p>
+            )}
           </section>
 
           <section id="section-programs" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
-            <div className="space-y-4">
-              {sortedPrograms.map(prog => (
-                <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-bold text-[#232323]">{prog.series_name}</div>
-                    {prog.primary && (
-                      <Badge className="bg-[#D33F49] text-white text-xs">Primary</Badge>
+            {sortedPrograms.length > 0 ? (
+              <div className="space-y-4">
+                {sortedPrograms.map(prog => (
+                  <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-bold text-[#232323]">{prog.series_name}</div>
+                      {prog.primary && (
+                        <Badge className="bg-[#D33F49] text-white text-xs">Primary</Badge>
+                      )}
+                    </div>
+                    {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
+                    {prog.seasons_active && <div className="text-sm text-gray-600">{prog.seasons_active}</div>}
+                    {prog.program_status && (
+                      <Badge variant="outline" className="mt-2">{prog.program_status}</Badge>
                     )}
+                    {prog.notes && <p className="text-sm text-gray-700 mt-2">{prog.notes}</p>}
                   </div>
-                  {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
-                  {prog.seasons_active && <div className="text-sm text-gray-600">{prog.seasons_active}</div>}
-                  {prog.program_status && (
-                    <Badge variant="outline" className="mt-2">{prog.program_status}</Badge>
-                  )}
-                  {prog.notes && <p className="text-sm text-gray-700 mt-2">{prog.notes}</p>}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No programs available.</p>
+            )}
           </section>
 
           <section id="section-roster" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Full Roster</h2>
             
-            <div className="hidden md:block overflow-x-auto">
+            {roster.length > 0 ? (
+              <>
+                <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
@@ -472,223 +487,249 @@ export default function TeamProfile() {
                 );
               })}
             </div>
+              </>
+            ) : (
+              <p className="text-gray-500">No roster information available.</p>
+            )}
           </section>
 
-          {performance && (
-            <section id="section-performance" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
-              
-              <div className="mb-8">
-                <TeamPerformanceInsights 
-                  team={team}
-                  performance={performance}
-                  programs={programs}
-                  roster={roster}
-                />
-              </div>
-
-              {performance.championships && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Championships</div>
-                  <p className="text-gray-700">{performance.championships}</p>
+          <section id="section-performance" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
+            
+            {performance ? (
+              <>
+                <div className="mb-8">
+                  <TeamPerformanceInsights 
+                    team={team}
+                    performance={performance}
+                    programs={programs}
+                    roster={roster}
+                  />
                 </div>
-              )}
 
-              {performance.notable_wins && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Notable Wins</div>
-                  <p className="text-gray-700">{performance.notable_wins}</p>
+                {performance.championships && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Championships</div>
+                    <p className="text-gray-700">{performance.championships}</p>
+                  </div>
+                )}
+
+                {performance.notable_wins && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Notable Wins</div>
+                    <p className="text-gray-700">{performance.notable_wins}</p>
+                  </div>
+                )}
+
+                {performance.highlights && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Highlights</div>
+                    <p className="text-gray-700">{performance.highlights}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {performance.strengths && performance.strengths.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-2">Strengths</div>
+                      <div className="flex flex-wrap gap-2">
+                        {performance.strengths.map((strength, idx) => (
+                          <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {performance.weaknesses && performance.weaknesses.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-2">Weaknesses</div>
+                      <div className="flex flex-wrap gap-2">
+                        {performance.weaknesses.map((weakness, idx) => (
+                          <Badge key={idx} variant="outline" className="border-[#D33F49] text-[#D33F49]">
+                            {weakness}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {performance.highlights && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Highlights</div>
-                  <p className="text-gray-700">{performance.highlights}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {performance.strengths && performance.strengths.length > 0 && (
+                {performance.trend_notes && (
                   <div>
-                    <div className="text-sm text-gray-600 mb-2">Strengths</div>
-                    <div className="flex flex-wrap gap-2">
-                      {performance.strengths.map((strength, idx) => (
-                        <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
+                    <div className="text-sm text-gray-600 mb-2">Trend Notes</div>
+                    <p className="text-gray-700">{performance.trend_notes}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500">No performance information available.</p>
+            )}
+          </section>
+
+          <section id="section-partners" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Partners</h2>
+            
+            {partners.length > 0 ? (
+              <>
+                {['Title', 'Primary', 'Associate', 'Technical', 'Media', 'Local'].map(type => {
+                  const typePartners = partners.filter(p => p.partner_type === type && p.active);
+                  if (typePartners.length === 0) return null;
+                  
+                  return (
+                    <div key={type} className="mb-6">
+                      <h3 className="text-lg font-semibold text-[#232323] mb-3">{type} Partners</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {typePartners.map(partner => (
+                          <div key={partner.id}>
+                            {partner.website_url ? (
+                              <a
+                                href={partner.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-[#232323] hover:text-[#00FFDA] transition-colors"
+                              >
+                                {partner.partner_name}
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : (
+                              <div className="text-[#232323]">{partner.partner_name}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <p className="text-gray-500">No partner information available.</p>
+            )}
+          </section>
+
+          <section id="section-media" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
+            
+            {media && (media.gallery_urls?.length > 0 || media.highlight_video_url) ? (
+              <>
+                {media.gallery_urls && media.gallery_urls.length > 0 && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Gallery</div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {media.gallery_urls.map((url, idx) => (
+                        <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full border border-gray-200" />
                       ))}
                     </div>
                   </div>
                 )}
 
-                {performance.weaknesses && performance.weaknesses.length > 0 && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-2">Weaknesses</div>
-                    <div className="flex flex-wrap gap-2">
-                      {performance.weaknesses.map((weakness, idx) => (
-                        <Badge key={idx} variant="outline" className="border-[#D33F49] text-[#D33F49]">
-                          {weakness}
-                        </Badge>
-                      ))}
+                {media.highlight_video_url && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Highlight Video</div>
+                    <div className="aspect-video">
+                      <iframe
+                        src={media.highlight_video_url}
+                        className="w-full h-full border border-gray-200"
+                        allowFullScreen
+                      />
                     </div>
                   </div>
                 )}
-              </div>
+              </>
+            ) : (
+              <p className="text-gray-500">No media available.</p>
+            )}
+          </section>
 
-              {performance.trend_notes && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-2">Trend Notes</div>
-                  <p className="text-gray-700">{performance.trend_notes}</p>
-                </div>
-              )}
-            </section>
-          )}
-
-          {partners.length > 0 && (
-            <section id="section-partners" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Partners</h2>
-              
-              {['Title', 'Primary', 'Associate', 'Technical', 'Media', 'Local'].map(type => {
-                const typePartners = partners.filter(p => p.partner_type === type && p.active);
-                if (typePartners.length === 0) return null;
-                
-                return (
-                  <div key={type} className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#232323] mb-3">{type} Partners</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {typePartners.map(partner => (
-                        <div key={partner.id}>
-                          {partner.website_url ? (
-                            <a
-                              href={partner.website_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-[#232323] hover:text-[#00FFDA] transition-colors"
-                            >
-                              {partner.partner_name}
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          ) : (
-                            <div className="text-[#232323]">{partner.partner_name}</div>
-                          )}
-                        </div>
-                      ))}
+          <section id="section-operations" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
+            
+            {operations ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {operations.shop_location && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Shop Location</div>
+                      <div className="font-semibold text-[#232323]">{operations.shop_location}</div>
                     </div>
-                  </div>
-                );
-              })}
-            </section>
-          )}
-
-          {media && (
-            <section id="section-media" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
-              
-              {media.gallery_urls && media.gallery_urls.length > 0 && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Gallery</div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {media.gallery_urls.map((url, idx) => (
-                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full border border-gray-200" />
-                    ))}
-                  </div>
+                  )}
+                  {operations.hiring_status && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Hiring Status</div>
+                      <Badge className={operations.hiring_status === 'Hiring' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                        {operations.hiring_status}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {media.highlight_video_url && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Highlight Video</div>
-                  <div className="aspect-video">
-                    <iframe
-                      src={media.highlight_video_url}
-                      className="w-full h-full border border-gray-200"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              )}
-
-
-            </section>
-          )}
-
-          {operations && (
-            <section id="section-operations" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {operations.shop_location && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Shop Location</div>
-                    <div className="font-semibold text-[#232323]">{operations.shop_location}</div>
+                {operations.contact_email && (
+                  <div className="mt-6">
+                    <div className="text-sm text-gray-600 mb-2">Contact</div>
+                    <div className="text-[#232323]">{operations.contact_email}</div>
+                    {operations.contact_phone && <div className="text-[#232323]">{operations.contact_phone}</div>}
                   </div>
                 )}
-                {operations.hiring_status && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Hiring Status</div>
-                    <Badge className={operations.hiring_status === 'Hiring' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
-                      {operations.hiring_status}
-                    </Badge>
+
+                {operations.tryout_info && (
+                  <div className="mt-6">
+                    <div className="text-sm text-gray-600 mb-2">Tryout Info</div>
+                    <p className="text-gray-700">{operations.tryout_info}</p>
                   </div>
                 )}
-              </div>
 
-              {operations.contact_email && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Contact</div>
-                  <div className="text-[#232323]">{operations.contact_email}</div>
-                  {operations.contact_phone && <div className="text-[#232323]">{operations.contact_phone}</div>}
-                </div>
-              )}
+                {operations.operations_notes && (
+                  <div className="mt-6">
+                    <div className="text-sm text-gray-600 mb-2">Notes</div>
+                    <p className="text-gray-700">{operations.operations_notes}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500">No operations information available.</p>
+            )}
+          </section>
 
-              {operations.tryout_info && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Tryout Info</div>
-                  <p className="text-gray-700">{operations.tryout_info}</p>
-                </div>
-              )}
+          <section id="section-community" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
+            
+            {community ? (
+              <>
+                {community.youth_programs && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Youth Programs</div>
+                    <p className="text-gray-700">{community.youth_programs}</p>
+                  </div>
+                )}
 
-              {operations.operations_notes && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Notes</div>
-                  <p className="text-gray-700">{operations.operations_notes}</p>
-                </div>
-              )}
-            </section>
-          )}
+                {community.charity_involvement && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Charity Involvement</div>
+                    <p className="text-gray-700">{community.charity_involvement}</p>
+                  </div>
+                )}
 
-          {community && (
-            <section id="section-community" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
-              
-              {community.youth_programs && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Youth Programs</div>
-                  <p className="text-gray-700">{community.youth_programs}</p>
-                </div>
-              )}
+                {community.community_notes && (
+                  <div className="mb-6">
+                    <div className="text-sm text-gray-600 mb-2">Community Notes</div>
+                    <p className="text-gray-700">{community.community_notes}</p>
+                  </div>
+                )}
 
-              {community.charity_involvement && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Charity Involvement</div>
-                  <p className="text-gray-700">{community.charity_involvement}</p>
-                </div>
-              )}
+                {community.legacy_notes && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-2">Legacy</div>
+                    <p className="text-gray-700">{community.legacy_notes}</p>
+                  </div>
+                )}
 
-              {community.community_notes && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Community Notes</div>
-                  <p className="text-gray-700">{community.community_notes}</p>
-                </div>
-              )}
-
-              {community.legacy_notes && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-2">Legacy</div>
-                  <p className="text-gray-700">{community.legacy_notes}</p>
-                </div>
-              )}
-            </section>
-          )}
+                {!community.youth_programs && !community.charity_involvement && !community.community_notes && !community.legacy_notes && (
+                  <p className="text-gray-500">No community information available.</p>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500">No community information available.</p>
+            )}
+          </section>
         </div>
       </div>
 
