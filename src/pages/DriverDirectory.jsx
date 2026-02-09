@@ -44,11 +44,11 @@ export default function DriverDirectory() {
   const uniqueStates = [...new Set(drivers.map(d => d.hometown_state).filter(Boolean))].sort();
 
   const filteredDrivers = drivers.filter(driver => {
-    if (!driver.display_name) return false;
+    const displayName = driver.display_name || `${driver.first_name} ${driver.last_name}`;
     
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesName = driver.display_name?.toLowerCase().includes(query) ||
+      const matchesName = displayName?.toLowerCase().includes(query) ||
                           driver.first_name?.toLowerCase().includes(query) ||
                           driver.last_name?.toLowerCase().includes(query);
       if (!matchesName) return false;
@@ -69,7 +69,9 @@ export default function DriverDirectory() {
   const sortedDrivers = [...filteredDrivers].sort((a, b) => {
     switch (sortBy) {
       case 'name':
-        return (a.display_name || '').localeCompare(b.display_name || '');
+        const nameA = a.display_name || `${a.first_name} ${a.last_name}`;
+        const nameB = b.display_name || `${b.first_name} ${b.last_name}`;
+        return nameA.localeCompare(nameB);
       case 'discipline':
         return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
       case 'content_value':
