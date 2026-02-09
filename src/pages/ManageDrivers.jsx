@@ -90,8 +90,7 @@ export default function ManageDrivers() {
   };
 
   const handleEdit = (driver) => {
-    setEditingDriver(driver);
-    setShowForm(true);
+    setSelectedDriverForEdit(driver);
   };
 
   const handleDelete = async (driver) => {
