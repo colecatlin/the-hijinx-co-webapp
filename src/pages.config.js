@@ -91,6 +91,7 @@ import ManageDriverMedia from './pages/ManageDriverMedia';
 import ManageDriverPerformance from './pages/ManageDriverPerformance';
 import ManageDriverCommunity from './pages/ManageDriverCommunity';
 import ManageDriverPartnership from './pages/ManageDriverPartnership';
+import DriverEditor from './pages/DriverEditor';
 import __Layout from './Layout.jsx';
 
 
@@ -139,6 +140,7 @@ export const PAGES = {
     "ManageDriverPerformance": ManageDriverPerformance,
     "ManageDriverCommunity": ManageDriverCommunity,
     "ManageDriverPartnership": ManageDriverPartnership,
+    "DriverEditor": DriverEditor,
 }
 
 export const pagesConfig = {
