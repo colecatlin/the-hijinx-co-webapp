@@ -12,6 +12,7 @@ import { createPageUrl } from '@/components/utils';
 import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DriverProgramsSection from '@/components/management/DriverManagement/DriverProgramsSection.jsx';
 import DriverMediaSection from '@/components/management/DriverManagement/DriverMediaSection.jsx';
 import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection.jsx';
@@ -24,6 +25,7 @@ export default function ManageDrivers() {
   const [showForm, setShowForm] = useState(false);
   const [selectedDrivers, setSelectedDrivers] = useState([]);
   const [selectedDriverForEdit, setSelectedDriverForEdit] = useState(null);
+  const [editingStatuses, setEditingStatuses] = useState({});
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -46,6 +48,14 @@ export default function ManageDrivers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setSelectedDrivers([]);
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }) => base44.entities.Driver.update(id, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      setEditingStatuses({});
     },
   });
 
@@ -289,13 +299,34 @@ export default function ManageDrivers() {
                       {driver.primary_discipline}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        driver.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        driver.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {driver.status}
-                      </span>
+                      {editingStatuses[driver.id] ? (
+                        <Select 
+                          value={editingStatuses[driver.id]} 
+                          onValueChange={(value) => {
+                            updateStatusMutation.mutate({ id: driver.id, status: value });
+                          }}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
+                            <SelectItem value="Part Time">Part Time</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span 
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded cursor-pointer ${
+                            driver.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            driver.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}
+                          onClick={() => setEditingStatuses({ [driver.id]: driver.status })}
+                        >
+                          {driver.status || 'Active'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
