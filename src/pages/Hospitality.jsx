@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import { Input } from '@/components/ui/input';
@@ -8,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Hotel, Users, Check } from 'lucide-react';
 
 export default function Hospitality() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', subject: 'Hospitality Staffing Inquiry', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +35,18 @@ export default function Hospitality() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-16">
+        <div className="mb-16 pb-16 border-b border-gray-200">
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            Hospitality under Hijinx focuses on staffing and operational support for events, venues, and experiences that require reliability and attention to detail. This is practical work, built around people, systems, and consistency.
+          </p>
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            We work with a trusted network of partners and affiliations across the country, allowing us to support events in Aspen, New York, Miami, and Los Angeles, with the flexibility to travel and support projects wherever they take place.
+          </p>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            This is not volume driven staffing. It is relationship driven support, designed for environments where expectations are high and execution matters.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
           <div className="border border-gray-200 p-8">
             <Hotel className="w-5 h-5 text-gray-400 mb-4" />
@@ -43,6 +58,23 @@ export default function Hospitality() {
             <h3 className="font-bold">Staffing</h3>
             <p className="text-sm text-gray-500 mt-2">Trained, reliable staff for events of any size.</p>
           </div>
+        </div>
+
+        <div className="mb-16 pb-16 border-b border-[#1A3249]">
+          <span className="font-mono text-xs tracking-[0.3em] text-gray-400 uppercase">Staffing Tools</span>
+          <h3 className="text-xl font-black tracking-tight mt-3 mb-4">Staffing, Simplified</h3>
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            We are also developing Marble, a staffing platform designed to simplify how teams book staff, manage shifts, handle payments, and find qualified workers in one place.
+          </p>
+          <p className="text-sm text-gray-600 leading-relaxed mb-6">
+            Marble is being built to support the same hospitality standards we operate by today, just with better tools.
+          </p>
+          <button
+            onClick={() => navigate(createPageUrl('TechHome'))}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#00FFDA] text-[#232323] text-sm font-medium hover:bg-[#00e6cc] transition-colors"
+          >
+            Explore the Marble App →
+          </button>
         </div>
 
         <div className="max-w-xl">
