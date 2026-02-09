@@ -59,36 +59,33 @@ Deno.serve(async (req) => {
 
     // Create sheets for each category
     for (const [key, config] of Object.entries(sheetsConfig)) {
-      // Create spreadsheet directly in Drive with folder as parent
-      const sheetResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+      // Create sheet using Sheets API
+      const sheetResponse = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: config.displayName,
-          mimeType: 'application/vnd.google-apps.spreadsheet',
-          parents: [folderId],
+          properties: {
+            title: config.displayName,
+          },
         }),
       });
 
-      const sheetFile = await sheetResponse.json();
-      const spreadsheetId = sheetFile.id;
+      const sheet = await sheetResponse.json();
+      const spreadsheetId = sheet.spreadsheetId;
 
-      // Get the spreadsheet ID by checking if it's already a spreadsheet
-      // For newly created spreadsheets in Drive, we need a small delay then verify
-      let finalSpreadsheetId = spreadsheetId;
-      
-      // Verify the spreadsheet was created and get access to it
-      const verifyResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${spreadsheetId}?fields=id,mimeType,webViewLink`, {
+      // Move sheet to folder using Drive API - remove from root and add to folder
+      await fetch(`https://www.googleapis.com/drive/v3/files/${spreadsheetId}?removeParents=root&addParents=${folderId}`, {
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
       });
-      
-      const verifiedFile = await verifyResponse.json();
-      finalSpreadsheetId = verifiedFile.id;
+
+      const finalSpreadsheetId = spreadsheetId;
 
       // Add header row to the spreadsheet
       await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${finalSpreadsheetId}/values/Sheet1!A1`, {
