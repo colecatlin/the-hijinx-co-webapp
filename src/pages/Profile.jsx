@@ -453,7 +453,7 @@ export default function Profile() {
               type="button"
               size="lg"
               variant="outline"
-              onClick={() => base44.auth.logout()}
+              onClick={() => base44.auth.logout(createPageUrl('Home'))}
               className="border-red-200 text-red-600 hover:bg-red-50"
             >
               <LogOut className="w-4 h-4 mr-2" />
