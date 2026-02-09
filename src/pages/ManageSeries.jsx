@@ -129,16 +129,16 @@ export default function ManageSeries() {
           </div>
 
           <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-9">
-              <TabsTrigger value="core">Core</TabsTrigger>
-              <TabsTrigger value="format">Format</TabsTrigger>
-              <TabsTrigger value="classes">Classes</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="governance">Governance</TabsTrigger>
-              <TabsTrigger value="teams">Teams</TabsTrigger>
-              <TabsTrigger value="drivers">Drivers</TabsTrigger>
-              <TabsTrigger value="tracks">Tracks</TabsTrigger>
+            <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-lg">
+              <TabsTrigger value="core" className="text-xs">Core</TabsTrigger>
+              <TabsTrigger value="format" className="text-xs">Format</TabsTrigger>
+              <TabsTrigger value="classes" className="text-xs">Classes</TabsTrigger>
+              <TabsTrigger value="calendar" className="text-xs">Calendar</TabsTrigger>
+              <TabsTrigger value="media" className="text-xs">Media</TabsTrigger>
+              <TabsTrigger value="governance" className="text-xs">Governance</TabsTrigger>
+              <TabsTrigger value="teams" className="text-xs">Teams</TabsTrigger>
+              <TabsTrigger value="drivers" className="text-xs">Drivers</TabsTrigger>
+              <TabsTrigger value="tracks" className="text-xs">Tracks</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <SeriesCoreDetailsSection seriesId={selectedSeriesForEdit.id} />
