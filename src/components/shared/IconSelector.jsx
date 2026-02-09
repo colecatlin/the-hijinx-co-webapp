@@ -42,6 +42,8 @@ const ICON_MAP = {
   'Lightbulb': Lightbulb,
 };
 
+export { ICON_MAP };
+
 export default function IconSelector({ value, onChange }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showPicker, setShowPicker] = useState(false);
