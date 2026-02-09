@@ -56,21 +56,12 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Series Name</label>
-            <Input
-              value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Slug</label>
-            <Input
-              value={formData.slug || ''}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-            />
-          </div>
+        <div>
+          <label className="text-sm font-medium">Series Name</label>
+          <Input
+            value={formData.name || ''}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
