@@ -227,8 +227,7 @@ export default function ManageDrivers() {
                       />
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium">{driver.display_name}</div>
-                      <div className="text-sm text-gray-500">{driver.slug}</div>
+                      <div className="font-medium">{driver.first_name} {driver.last_name}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {driver.hometown_city}, {driver.hometown_state}
