@@ -8,6 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function DriverTab({ formData, setFormData }) {
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list(),
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,6 +23,25 @@ export default function DriverTab({ formData, setFormData }) {
         <Wind className="w-5 h-5" />
         Driver Information
       </h2>
+
+      <div>
+        <Label>Link Driver Profile</Label>
+        <Select
+          value={formData.driver_id || ''}
+          onValueChange={(value) => setFormData({ ...formData, driver_id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select your driver profile..." />
+          </SelectTrigger>
+          <SelectContent>
+            {drivers.map((driver) => (
+              <SelectItem key={driver.id} value={driver.id}>
+                {driver.first_name} {driver.last_name} {driver.primary_number && `(#${driver.primary_number})`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div>
         <Label>Car Number</Label>
