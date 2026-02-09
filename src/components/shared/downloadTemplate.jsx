@@ -1,4 +1,6 @@
-export const downloadTemplate = (entityType, displayName) => {
+import * as XLSX from 'xlsx';
+
+export const downloadTemplate = (entityType) => {
   const templates = {
     driver: [
       {
@@ -42,7 +44,7 @@ export const downloadTemplate = (entityType, displayName) => {
         founded_year: 1996,
         description_summary: "World-class racing facility hosting multiple series events annually.",
         track_type: "Oval",
-        surfaces: ["Asphalt"],
+        surfaces: "Asphalt",
         length_miles: 1.5,
         turns_count: 14,
         elevation_profile: "Flat",
@@ -65,12 +67,8 @@ export const downloadTemplate = (entityType, displayName) => {
   };
 
   const template = templates[entityType] || [];
-  const dataStr = JSON.stringify(template, null, 2);
-  const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${entityType}-template.json`;
-  link.click();
-  URL.revokeObjectURL(url);
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, entityType.charAt(0).toUpperCase() + entityType.slice(1));
+  XLSX.writeFile(wb, `${entityType}-template.xlsx`);
 };
