@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import TeamPerformanceInsights from '@/components/teams/TeamPerformanceInsights';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 
 export default function TeamProfile() {
@@ -215,6 +216,7 @@ export default function TeamProfile() {
             
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
+                <CountryFlag country={team.country} />
                 <MapPin className="w-4 h-4" />
                 {team.headquarters_city}, {team.headquarters_state}
               </div>

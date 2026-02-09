@@ -4,6 +4,7 @@ import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
+import CountryFlag from '@/components/shared/CountryFlag';
 
 export default function DriverCard({ driver, program, team, media }) {
   const getFormColor = (form) => {
@@ -46,6 +47,7 @@ export default function DriverCard({ driver, program, team, media }) {
         
         {(driver.hometown_city || driver.hometown_state) && (
           <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
+            <CountryFlag country={driver.country} />
             <MapPin className="w-3 h-3" />
             {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
           </div>

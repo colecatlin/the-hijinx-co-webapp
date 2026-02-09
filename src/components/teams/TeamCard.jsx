@@ -4,6 +4,7 @@ import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, Briefcase } from 'lucide-react';
+import CountryFlag from '@/components/shared/CountryFlag';
 
 export default function TeamCard({ team, programs = [], programsCount, driversCount, performance, media }) {
   const getDisciplineIcon = (discipline) => {
@@ -59,6 +60,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
             </h3>
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
+                <CountryFlag country={team.country} />
                 <MapPin className="w-3 h-3" />
                 {team.headquarters_city}, {team.headquarters_state}
               </div>

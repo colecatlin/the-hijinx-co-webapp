@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 
 export default function DriverProfile() {
@@ -202,6 +203,7 @@ export default function DriverProfile() {
             
             {(driver.hometown_city || driver.hometown_state) && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
+                <CountryFlag country={driver.country} />
                 <MapPin className="w-4 h-4" />
                 {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
               </div>
