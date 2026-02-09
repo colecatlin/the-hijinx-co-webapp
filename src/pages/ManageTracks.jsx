@@ -45,8 +45,8 @@ export default function ManageTracks() {
     return track.name?.toLowerCase().includes(query);
   });
 
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
+  const handleSelectAll = (checked) => {
+    if (checked) {
       setSelectedTracks(filteredTracks.map(t => t.id));
     } else {
       setSelectedTracks([]);

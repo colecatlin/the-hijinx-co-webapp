@@ -45,8 +45,8 @@ export default function ManageTeams() {
     return team.name?.toLowerCase().includes(query);
   });
 
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
+  const handleSelectAll = (checked) => {
+    if (checked) {
       setSelectedTeams(filteredTeams.map(t => t.id));
     } else {
       setSelectedTeams([]);
