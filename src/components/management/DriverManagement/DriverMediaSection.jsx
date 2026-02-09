@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2, Check } from 'lucide-react';
+import MediaUploader from '@/components/shared/MediaUploader';
 
 export default function DriverMediaSection({ driverId }) {
   const queryClient = useQueryClient();
@@ -86,33 +87,9 @@ export default function DriverMediaSection({ driverId }) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Headshot URL</Label>
-            <Input
-              value={data.headshot_url}
-              onChange={(e) => handleChange('headshot_url', e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hero Image URL</Label>
-            <Input
-              value={data.hero_image_url}
-              onChange={(e) => handleChange('hero_image_url', e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Highlight Video URL</Label>
-            <Input
-              value={data.highlight_video_url}
-              onChange={(e) => handleChange('highlight_video_url', e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-
+          <MediaUploader label="Headshot" value={data.headshot_url} onChange={(url) => handleChange('headshot_url', url)} accept="image/*" />
+          <MediaUploader label="Hero Image" value={data.hero_image_url} onChange={(url) => handleChange('hero_image_url', url)} accept="image/*" />
+          <MediaUploader label="Highlight Video" value={data.highlight_video_url} onChange={(url) => handleChange('highlight_video_url', url)} accept="video/*" />
           <div className="space-y-2">
             <Label>Website URL</Label>
             <Input
@@ -121,15 +98,8 @@ export default function DriverMediaSection({ driverId }) {
               placeholder="https://..."
             />
           </div>
-
           <div className="space-y-2 md:col-span-2">
-            <Label>Gallery URLs (one per line)</Label>
-            <Textarea
-              value={data.gallery_urls}
-              onChange={(e) => handleChange('gallery_urls', e.target.value)}
-              placeholder="https://...\nhttps://..."
-              rows={4}
-            />
+            <MediaUploader label="Gallery" value={data.gallery_urls ? data.gallery_urls.split('\n').filter(u => u) : []} onChange={(urls) => handleChange('gallery_urls', urls.join('\n'))} accept="image/*" multiple />
           </div>
         </div>
 
