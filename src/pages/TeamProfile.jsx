@@ -175,7 +175,11 @@ export default function TeamProfile() {
                     if (section.id === 'overview') {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
-                      document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth' });
+                      const element = document.getElementById(`section-${section.id}`);
+                      if (element) {
+                        const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                        window.scrollTo({ top: offset, behavior: 'smooth' });
+                      }
                     }
                   }}
                   className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
