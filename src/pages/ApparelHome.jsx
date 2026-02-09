@@ -23,7 +23,7 @@ export default function ApparelHome() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button className="bg-[#E5FF00] text-[#0A0A0A] hover:bg-white font-semibold px-8">
+              <Button className="bg-[#1DA1A1] text-white hover:bg-[#158686] font-semibold px-8">
                 Visit Store
               </Button>
             </a>
