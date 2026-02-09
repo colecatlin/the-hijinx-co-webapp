@@ -302,9 +302,9 @@ export default function ManageDrivers() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigate(createPageUrl('DriverEditor', { driverId: driver.id }))}
+                          onClick={() => setSelectedDriverForEdit(driver)}
                         >
-                          Edit All
+                          Manage
                         </Button>
                         <Button
                           variant="ghost"
