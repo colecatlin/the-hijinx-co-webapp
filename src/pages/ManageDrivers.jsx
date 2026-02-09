@@ -49,8 +49,8 @@ export default function ManageDrivers() {
     );
   });
 
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
+  const handleSelectAll = (checked) => {
+    if (checked) {
       setSelectedDrivers(filteredDrivers.map(d => d.id));
     } else {
       setSelectedDrivers([]);
