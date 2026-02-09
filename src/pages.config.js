@@ -52,6 +52,7 @@ import ApparelHome from './pages/ApparelHome';
 import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
 import DriverDirectory from './pages/DriverDirectory';
+import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
@@ -59,6 +60,11 @@ import Home from './pages/Home';
 import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
 import ManageAnnouncements from './pages/ManageAnnouncements';
+import ManageDriverCommunity from './pages/ManageDriverCommunity';
+import ManageDriverMedia from './pages/ManageDriverMedia';
+import ManageDriverPartnership from './pages/ManageDriverPartnership';
+import ManageDriverPerformance from './pages/ManageDriverPerformance';
+import ManageDriverPrograms from './pages/ManageDriverPrograms';
 import ManageDrivers from './pages/ManageDrivers';
 import ManageIssues from './pages/ManageIssues';
 import ManageSeries from './pages/ManageSeries';
@@ -86,12 +92,6 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ManageDriverPrograms from './pages/ManageDriverPrograms';
-import ManageDriverMedia from './pages/ManageDriverMedia';
-import ManageDriverPerformance from './pages/ManageDriverPerformance';
-import ManageDriverCommunity from './pages/ManageDriverCommunity';
-import ManageDriverPartnership from './pages/ManageDriverPartnership';
-import DriverEditor from './pages/DriverEditor';
 import __Layout from './Layout.jsx';
 
 
@@ -101,6 +101,7 @@ export const PAGES = {
     "Contact": Contact,
     "CreativeServices": CreativeServices,
     "DriverDirectory": DriverDirectory,
+    "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
@@ -108,6 +109,11 @@ export const PAGES = {
     "Hospitality": Hospitality,
     "Learning": Learning,
     "ManageAnnouncements": ManageAnnouncements,
+    "ManageDriverCommunity": ManageDriverCommunity,
+    "ManageDriverMedia": ManageDriverMedia,
+    "ManageDriverPartnership": ManageDriverPartnership,
+    "ManageDriverPerformance": ManageDriverPerformance,
+    "ManageDriverPrograms": ManageDriverPrograms,
     "ManageDrivers": ManageDrivers,
     "ManageIssues": ManageIssues,
     "ManageSeries": ManageSeries,
@@ -135,12 +141,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ManageDriverPrograms": ManageDriverPrograms,
-    "ManageDriverMedia": ManageDriverMedia,
-    "ManageDriverPerformance": ManageDriverPerformance,
-    "ManageDriverCommunity": ManageDriverCommunity,
-    "ManageDriverPartnership": ManageDriverPartnership,
-    "DriverEditor": DriverEditor,
 }
 
 export const pagesConfig = {

@@ -67,10 +67,12 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AnnouncementBar />
+      <div className="sticky top-0 z-50">
+        <AnnouncementBar />
+      </div>
       {/* Top bar */}
       <header
-        className={`fixed top-[44px] left-0 right-0 z-50 transition-all duration-300 ${
+        className={`sticky top-[44px] left-0 right-0 z-40 transition-all duration-300 ${
           scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
         }`}
       >
