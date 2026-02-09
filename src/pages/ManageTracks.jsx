@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
@@ -11,24 +12,14 @@ import { createPageUrl } from '@/components/utils';
 import TrackForm from '@/components/management/TrackForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
-import DirectoryFilters from '@/components/shared/DirectoryFilters';
+import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
 
 export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTrack, setEditingTrack] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState({
-    track_type: 'all',
-    surface: 'all',
-    state: 'all',
-    status: 'all',
-  });
-  const [sortBy, setSortBy] = useState('name');
+  const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
   const queryClient = useQueryClient();
-
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
@@ -42,46 +33,13 @@ export default function ManageTracks() {
     },
   });
 
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids) => {
-      await Promise.all(ids.map(id => base44.entities.Track.delete(id)));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tracks'] });
-      setSelectedTracks([]);
-    },
+  const filteredTracks = tracks.filter(track => {
+    const query = searchQuery.toLowerCase();
+    return track.name?.toLowerCase().includes(query);
   });
 
-  const uniqueStates = [...new Set(tracks.map(t => t.state).filter(Boolean))].sort();
-
-  const filteredTracks = tracks
-    .filter(track => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = track.name?.toLowerCase().includes(query);
-        if (!matchesName) return false;
-      }
-
-      if (filters.track_type !== 'all' && track.track_type !== filters.track_type) return false;
-      if (filters.surface !== 'all' && !track.surfaces?.includes(filters.surface)) return false;
-      if (filters.state !== 'all' && track.state !== filters.state) return false;
-      if (filters.status !== 'all' && track.status !== filters.status) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-      if (sortBy === 'state') return (a.state || '').localeCompare(b.state || '');
-      if (sortBy === 'track_type') return (a.track_type || '').localeCompare(b.track_type || '');
-      if (sortBy === 'content_value') {
-        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
-        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
-      }
-      return 0;
-    });
-
   const handleEdit = (track) => {
-    setEditingTrack(track);
-    setShowForm(true);
+    setSelectedTrackForEdit(track);
   };
 
   const handleDelete = async (track) => {
@@ -131,12 +89,50 @@ export default function ManageTracks() {
     return <TrackForm track={editingTrack} onClose={handleFormClose} />;
   }
 
+  if (selectedTrackForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedTrackForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">{selectedTrackForEdit.name}</h1>
+              <p className="text-gray-600">Manage all track data</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="core" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="info">Additional Info</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <TrackCoreDetailsSection trackId={selectedTrackForEdit.id} />
+            </TabsContent>
+            <TabsContent value="info" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Additional track sections coming soon</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell>
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black text-[#232323] mb-2">Manage Tracks</h1>
+        <div className="flex items-center gap-4 mb-8">
+          <Link to={createPageUrl('Management')}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-4xl font-black mb-2">Manage Tracks</h1>
             <p className="text-gray-600">{tracks.length} total tracks</p>
           </div>
           <div className="flex gap-2">
@@ -165,120 +161,96 @@ export default function ManageTracks() {
           </div>
         </div>
 
-        <DirectoryFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          filterConfig={[
-            {
-              key: 'track_type',
-              label: 'Track Type',
-              options: [
-                { value: 'all', label: 'All Types' },
-                { value: 'Short Course', label: 'Short Course' },
-                { value: 'Oval', label: 'Oval' },
-                { value: 'Road Course', label: 'Road Course' },
-                { value: 'Ice Oval', label: 'Ice Oval' },
-                { value: 'Mixed', label: 'Mixed' },
-              ]
-            },
-            {
-              key: 'surface',
-              label: 'Surface',
-              options: [
-                { value: 'all', label: 'All Surfaces' },
-                { value: 'Dirt', label: 'Dirt' },
-                { value: 'Asphalt', label: 'Asphalt' },
-                { value: 'Ice', label: 'Ice' },
-                { value: 'Mixed', label: 'Mixed' },
-              ]
-            },
-            {
-              key: 'state',
-              label: 'State',
-              options: [
-                { value: 'all', label: 'All States' },
-                ...uniqueStates.map(s => ({ value: s, label: s }))
-              ]
-            },
-            {
-              key: 'status',
-              label: 'Status',
-              options: [
-                { value: 'all', label: 'All Status' },
-                { value: 'Active', label: 'Active' },
-                { value: 'Seasonal', label: 'Seasonal' },
-                { value: 'Historic', label: 'Historic' },
-              ]
-            },
-          ]}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          sortOptions={[
-            { value: 'name', label: 'Name' },
-            { value: 'state', label: 'State' },
-            { value: 'track_type', label: 'Track Type' },
-            { value: 'content_value', label: 'Content Value' },
-          ]}
-        />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search tracks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-48" />
+          <div className="space-y-3">
+            {[...Array(10)].map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTracks.map((track) => (
-              <div key={track.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg mb-1">{track.name}</h3>
-                    <p className="text-sm text-gray-500">{track.track_type}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(track)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(track)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm mb-4">
-                  <p className="text-gray-600"><span className="font-medium">Location:</span> {track.city}, {track.state}</p>
-                  <p className="text-gray-600"><span className="font-medium">Length:</span> {track.length_miles ? `${track.length_miles} miles` : 'N/A'}</p>
-                  <p className="text-gray-600"><span className="font-medium">Surface:</span> {track.surfaces?.join(', ') || 'N/A'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                    track.status === 'Active' ? 'bg-green-100 text-green-800' :
-                    track.status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {track.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredTracks.map((track) => (
+                  <tr key={track.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{track.name}</div>
+                      <div className="text-sm text-gray-500">{track.slug}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {track.city}, {track.state}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {track.track_type}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                        track.status === 'Active' ? 'bg-green-100 text-green-800' :
+                        track.status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {track.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(track)}
+                        >
+                          Manage
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(track)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
         {!isLoading && filteredTracks.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No tracks found matching your filters.</p>
+          <div className="text-center py-12 text-gray-500">
+            No tracks found
           </div>
         )}
       </div>
