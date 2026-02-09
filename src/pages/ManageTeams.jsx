@@ -28,10 +28,40 @@ export default function ManageTeams() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Team.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setSelectedTeams([]);
+    },
+  });
+
   const filteredTeams = teams.filter(team => {
     const query = searchQuery.toLowerCase();
     return team.name?.toLowerCase().includes(query);
   });
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedTeams(filteredTeams.map(t => t.id));
+    } else {
+      setSelectedTeams([]);
+    }
+  };
+
+  const handleSelectTeam = (id) => {
+    setSelectedTeams(prev => 
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedTeams.length} selected team(s)?`)) {
+      bulkDeleteMutation.mutate(selectedTeams);
+    }
+  };
 
   const handleEdit = (team) => {
     setEditingTeam(team);

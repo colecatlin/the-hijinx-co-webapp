@@ -28,6 +28,16 @@ export default function ManageDrivers() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Driver.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      setSelectedDrivers([]);
+    },
+  });
+
   const filteredDrivers = drivers.filter(driver => {
     const query = searchQuery.toLowerCase();
     return (

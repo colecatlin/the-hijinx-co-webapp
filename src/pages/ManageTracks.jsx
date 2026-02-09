@@ -28,10 +28,40 @@ export default function ManageTracks() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Track.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tracks'] });
+      setSelectedTracks([]);
+    },
+  });
+
   const filteredTracks = tracks.filter(track => {
     const query = searchQuery.toLowerCase();
     return track.name?.toLowerCase().includes(query);
   });
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedTracks(filteredTracks.map(t => t.id));
+    } else {
+      setSelectedTracks([]);
+    }
+  };
+
+  const handleSelectTrack = (id) => {
+    setSelectedTracks(prev => 
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedTracks.length} selected track(s)?`)) {
+      bulkDeleteMutation.mutate(selectedTracks);
+    }
+  };
 
   const handleEdit = (track) => {
     setEditingTrack(track);
