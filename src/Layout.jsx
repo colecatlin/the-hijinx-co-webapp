@@ -18,6 +18,7 @@ const navItems = [
     { name: 'Advertise', page: 'OutletAdvertising' },
   ]},
   { name: 'Motorsports', page: 'MotorsportsHome', sub: [
+    { name: 'Series', page: 'SeriesHome' },
     { name: 'Standings', page: 'StandingsHome' },
     { name: 'Schedule', page: 'ScheduleHome' },
     { name: 'Results', page: 'ResultsHome' },
