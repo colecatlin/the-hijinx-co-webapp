@@ -74,7 +74,7 @@ export default function Layout({ children, currentPageName }) {
         }`}
       >
         {/* Upper nav - logo */}
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative w-full">
           <Link to={createPageUrl('Home')} className="flex items-center">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png" 
@@ -83,10 +83,39 @@ export default function Layout({ children, currentPageName }) {
             />
           </Link>
 
-          <div className="absolute right-6 lg:hidden">
+          <div className="absolute right-6 flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            {user?.role === 'admin' && (
+              <Link
+                to={createPageUrl('Management')}
+                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors hidden lg:block"
+              >
+                Management
+              </Link>
+            )}
+            {isAuthenticated ? (
+              <Link
+                to={createPageUrl('Profile')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
+              >
+                <User className="w-4 h-4" />
+              </Link>
+            ) : (
+              <button
+                onClick={() => base44.auth.redirectToLogin()}
+                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors hidden lg:block"
+              >
+                Login
+              </button>
+            )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
             >
               {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
