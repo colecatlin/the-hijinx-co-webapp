@@ -16,6 +16,20 @@ export default function DriverCard({ driver, program, team, media }) {
     return colors[form] || 'bg-gray-200 text-gray-600';
   };
 
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const age = calculateAge(driver.date_of_birth);
+
   return (
     <Link 
       to={createPageUrl('DriverProfile', { id: driver.slug })}
@@ -43,7 +57,12 @@ export default function DriverCard({ driver, program, team, media }) {
       </div>
 
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="text-xl font-bold text-[#232323] mb-1">{driver.display_name}</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xl font-bold text-[#232323]">{driver.display_name}</h3>
+          {program?.vehicle_number && (
+            <span className="text-xl font-bold text-[#232323]">#{program.vehicle_number}</span>
+          )}
+        </div>
         
         {(driver.hometown_city || driver.hometown_state) && (
           <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
@@ -53,23 +72,21 @@ export default function DriverCard({ driver, program, team, media }) {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 mb-3">
-          {program && (
-            <Badge variant="outline" className="text-xs">
-              {program.series_name}{program.class_name ? ` • ${program.class_name}` : ''}
-            </Badge>
-          )}
-          {team && (
-            <Badge variant="outline" className="text-xs">{team.name}</Badge>
-          )}
-          {program?.vehicle_number && (
-            <Badge className="bg-[#232323] text-white text-xs">#{program.vehicle_number}</Badge>
-          )}
+        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
+          {age && <span>{age} yrs</span>}
+          {age && (program?.class_name || driver.primary_discipline || program?.series_name) && <span>•</span>}
+          {program?.class_name && <span>{program.class_name}</span>}
+          {program?.class_name && (driver.primary_discipline || program?.series_name) && <span>•</span>}
+          {!program?.class_name && driver.primary_discipline && <span>{driver.primary_discipline}</span>}
+          {!program?.class_name && driver.primary_discipline && program?.series_name && <span>•</span>}
+          {program?.series_name && <span>{program.series_name}</span>}
         </div>
 
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2 flex-1">
-          {driver.description_summary}
-        </p>
+        {team && (
+          <div className="mb-4">
+            <Badge variant="outline" className="text-xs">{team.name}</Badge>
+          </div>
+        )}
 
         <Button variant="outline" className="w-full mt-auto">
           View Driver
