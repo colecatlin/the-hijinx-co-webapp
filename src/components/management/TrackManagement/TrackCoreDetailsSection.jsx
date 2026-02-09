@@ -1,0 +1,152 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+
+export default function TrackCoreDetailsSection({ trackId }) {
+  const [formData, setFormData] = useState({});
+  const [isSaved, setIsSaved] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: track } = useQuery({
+    queryKey: ['track', trackId],
+    queryFn: () => base44.entities.Track.list({ id: trackId }),
+  });
+
+  useEffect(() => {
+    if (track && track.length > 0) {
+      setFormData(track[0]);
+    }
+  }, [track]);
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => base44.entities.Track.update(trackId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['track', trackId] });
+      setIsSaved(true);
+      toast.success('Track updated');
+      setTimeout(() => setIsSaved(false), 2000);
+    },
+  });
+
+  const handleSave = () => {
+    const { id, created_date, updated_date, created_by, ...updateData } = formData;
+    updateMutation.mutate(updateData);
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Track Name</label>
+            <Input
+              value={formData.name || ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Slug</label>
+            <Input
+              value={formData.slug || ''}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="text-sm font-medium">City</label>
+            <Input
+              value={formData.city || ''}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">State</label>
+            <Input
+              value={formData.state || ''}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Country</label>
+            <Input
+              value={formData.country || 'USA'}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Track Type</label>
+            <Select value={formData.track_type || ''} onValueChange={(value) => setFormData({ ...formData, track_type: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Short Course">Short Course</SelectItem>
+                <SelectItem value="Oval">Oval</SelectItem>
+                <SelectItem value="Road Course">Road Course</SelectItem>
+                <SelectItem value="Ice Oval">Ice Oval</SelectItem>
+                <SelectItem value="Mixed">Mixed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Status</label>
+            <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Seasonal">Seasonal</SelectItem>
+                <SelectItem value="Historic">Historic</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Length (miles)</label>
+            <Input
+              type="number"
+              step="0.1"
+              value={formData.length_miles || ''}
+              onChange={(e) => setFormData({ ...formData, length_miles: parseFloat(e.target.value) })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Founded Year</label>
+            <Input
+              type="number"
+              value={formData.founded_year || ''}
+              onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Description</label>
+          <Textarea
+            value={formData.description_summary || ''}
+            onChange={(e) => setFormData({ ...formData, description_summary: e.target.value })}
+            rows={4}
+          />
+        </div>
+
+        <Button onClick={handleSave} disabled={updateMutation.isPending}>
+          {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </div>
+    </Card>
+  );
+}
