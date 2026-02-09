@@ -90,10 +90,10 @@ import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TeamsDirectory from './pages/TeamsDirectory';
-import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import ManageTech from './pages/ManageTech';
+import TechHome from './pages/TechHome';
 import __Layout from './Layout.jsx';
 
 
@@ -141,10 +141,10 @@ export const PAGES = {
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
     "TeamsDirectory": TeamsDirectory,
-    "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "ManageTech": ManageTech,
+    "TechHome": TechHome,
 }
 
 export const pagesConfig = {

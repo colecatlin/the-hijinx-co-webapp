@@ -1,27 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
-import SectionHeader from '@/components/shared/SectionHeader';
-import { Monitor, Cpu, ArrowRight } from 'lucide-react';
-
-const products = [
-  {
-    name: 'Marble App',
-    tagline: 'Organize everything.',
-    description: 'A productivity and workflow tool designed for creators and small teams. Streamline projects, manage tasks, and keep everything in one place.',
-    status: 'In Development',
-    icon: Monitor,
-  },
-  {
-    name: 'Forge MNFCTR',
-    tagline: 'Build what matters.',
-    description: 'A manufacturing and production management platform for small-batch makers. Track inventory, manage orders, and scale operations.',
-    status: 'Coming Soon',
-    icon: Cpu,
-  },
-];
+import { ArrowRight } from 'lucide-react';
+import { ICON_MAP } from '@/components/shared/IconSelector';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TechHome() {
+  const { data: techItems = [], isLoading } = useQuery({
+    queryKey: ['techItems'],
+    queryFn: () => base44.entities.Tech.list('-order'),
+  });
   return (
     <PageShell>
       <div className="bg-[#0A0A0A] text-white">
@@ -35,27 +25,48 @@ export default function TechHome() {
 
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="space-y-6">
-          {products.map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="border border-gray-200 p-8 md:p-12 hover:border-[#0A0A0A] transition-colors"
-            >
-              <div className="flex items-start gap-4">
-                <p.icon className="w-6 h-6 text-gray-400 mt-1 shrink-0" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-black tracking-tight">{p.name}</h2>
-                    <span className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">{p.status}</span>
+          {isLoading ? (
+            Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="border border-gray-200 p-8 md:p-12">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="w-6 h-6 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
                   </div>
-                  <p className="text-sm text-gray-500 italic mb-3">{p.tagline}</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">{p.description}</p>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            ))
+          ) : techItems.length === 0 ? (
+            <div className="text-center text-gray-500 py-10">
+              No tech items found.
+            </div>
+          ) : (
+            techItems.map((item, i) => {
+              const IconComponent = ICON_MAP[item.icon];
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="border border-gray-200 p-8 md:p-12 hover:border-[#0A0A0A] transition-colors"
+                >
+                  <div className="flex items-start gap-4">
+                    {IconComponent && <IconComponent className="w-6 h-6 text-gray-400 mt-1 shrink-0" />}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h2 className="text-2xl font-black tracking-tight">{item.title}</h2>
+                        <span className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">{item.status.replace(/_/g, ' ')}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </div>
       </div>
     </PageShell>
