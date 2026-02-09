@@ -18,7 +18,6 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
     description_summary: series?.description_summary || '',
     region: series?.region || 'Global',
     competition_level: series?.competition_level || 'Professional',
-    content_value: series?.content_value || 'Unknown',
   });
 
   const queryClient = useQueryClient();
@@ -152,21 +151,6 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Historic">Historic</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Content Value</label>
-            <Select value={formData.content_value} onValueChange={(val) => handleChange('content_value', val)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Unknown">Unknown</SelectItem>
               </SelectContent>
             </Select>
           </div>
