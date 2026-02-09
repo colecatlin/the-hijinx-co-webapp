@@ -13,6 +13,14 @@ import TeamForm from '@/components/management/TeamForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import TeamCoreDetailsSection from '@/components/management/TeamManagement/TeamCoreDetailsSection';
+import TeamProgramsSection from '@/components/management/TeamManagement/TeamProgramsSection';
+import TeamVehiclesSection from '@/components/management/TeamManagement/TeamVehiclesSection';
+import TeamRosterSection from '@/components/management/TeamManagement/TeamRosterSection';
+import TeamPerformanceSection from '@/components/management/TeamManagement/TeamPerformanceSection';
+import TeamPartnersSection from '@/components/management/TeamManagement/TeamPartnersSection';
+import TeamMediaSection from '@/components/management/TeamManagement/TeamMediaSection';
+import TeamOperationsSection from '@/components/management/TeamManagement/TeamOperationsSection';
+import TeamCommunitySection from '@/components/management/TeamManagement/TeamCommunitySection';
 
 export default function ManageTeams() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,17 +112,43 @@ export default function ManageTeams() {
           </div>
 
           <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="info">Additional Info</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-9">
+              <TabsTrigger value="core">Core</TabsTrigger>
+              <TabsTrigger value="programs">Programs</TabsTrigger>
+              <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+              <TabsTrigger value="roster">Roster</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="partners">Partners</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+              <TabsTrigger value="operations">Operations</TabsTrigger>
+              <TabsTrigger value="community">Community</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <TeamCoreDetailsSection teamId={selectedTeamForEdit.id} />
             </TabsContent>
-            <TabsContent value="info" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Additional team sections coming soon</p>
-              </div>
+            <TabsContent value="programs" className="mt-6">
+              <TeamProgramsSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="vehicles" className="mt-6">
+              <TeamVehiclesSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="roster" className="mt-6">
+              <TeamRosterSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="performance" className="mt-6">
+              <TeamPerformanceSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="partners" className="mt-6">
+              <TeamPartnersSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="media" className="mt-6">
+              <TeamMediaSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="operations" className="mt-6">
+              <TeamOperationsSection teamId={selectedTeamForEdit.id} />
+            </TabsContent>
+            <TabsContent value="community" className="mt-6">
+              <TeamCommunitySection teamId={selectedTeamForEdit.id} />
             </TabsContent>
           </Tabs>
         </div>
