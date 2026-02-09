@@ -19,7 +19,7 @@ export default function ApparelHome() {
               New Hijinx apparel and merchandise dropping soon. Shop our current collection in the meantime.
             </p>
             <a
-              href="https://www.hijinxco.com/store"
+              href="https://www.hijinxco.com"
               target="_blank"
               rel="noopener noreferrer"
             >
