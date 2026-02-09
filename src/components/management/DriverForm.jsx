@@ -14,14 +14,13 @@ export default function DriverForm({ driver, onClose }) {
     first_name: '',
     last_name: '',
     slug: '',
+    date_of_birth: '',
+    nationality: '',
     hometown_city: '',
     hometown_state: '',
-    country: 'USA',
-    date_of_birth: '',
-    status: 'Active',
-    description_summary: '',
+    hometown_country: 'USA',
+    primary_number: '',
     primary_discipline: '',
-    content_value: 'Unknown',
   });
 
   const queryClient = useQueryClient();
@@ -116,28 +115,50 @@ export default function DriverForm({ driver, onClose }) {
             )}
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">Nationality *</label>
+            <Input
+              value={formData.nationality}
+              onChange={(e) => handleChange('nationality', e.target.value)}
+              placeholder="e.g., USA, Canada, Mexico"
+              required
+            />
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">City</label>
+              <label className="block text-sm font-medium mb-2">Hometown City *</label>
               <Input
                 value={formData.hometown_city}
                 onChange={(e) => handleChange('hometown_city', e.target.value)}
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">State</label>
+              <label className="block text-sm font-medium mb-2">State/Region</label>
               <Input
                 value={formData.hometown_state}
                 onChange={(e) => handleChange('hometown_state', e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Country</label>
+              <label className="block text-sm font-medium mb-2">Country *</label>
               <Input
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
+                value={formData.hometown_country}
+                onChange={(e) => handleChange('hometown_country', e.target.value)}
+                required
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Primary Number *</label>
+            <Input
+              value={formData.primary_number}
+              onChange={(e) => handleChange('primary_number', e.target.value)}
+              placeholder="e.g., 24, #24"
+              required
+            />
           </div>
 
           <div>
@@ -147,56 +168,12 @@ export default function DriverForm({ driver, onClose }) {
                 <SelectValue placeholder="Select discipline" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="Open Wheel">Open Wheel</SelectItem>
+                <SelectItem value="Stock Car">Stock Car</SelectItem>
                 <SelectItem value="Off Road">Off Road</SelectItem>
                 <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                <SelectItem value="Road Racing">Road Racing</SelectItem>
                 <SelectItem value="Rallycross">Rallycross</SelectItem>
-                <SelectItem value="Drag Racing">Drag Racing</SelectItem>
-                <SelectItem value="Mixed">Mixed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Status *</label>
-            <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Part Time">Part Time</SelectItem>
-                <SelectItem value="Retired">Retired</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Description Summary * (2-3 sentences, 360 chars max)</label>
-            <Textarea
-              value={formData.description_summary}
-              onChange={(e) => handleChange('description_summary', e.target.value)}
-              required
-              rows={4}
-              maxLength={360}
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              {formData.description_summary?.length || 0}/360
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Content Value</label>
-            <Select value={formData.content_value} onValueChange={(value) => handleChange('content_value', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Unknown">Unknown</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
