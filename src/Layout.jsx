@@ -69,13 +69,12 @@ export default function Layout({ children, currentPageName }) {
     <div className="flex flex-col min-h-screen">
       <div className="sticky top-0 z-50">
         <AnnouncementBar />
-      </div>
-      {/* Top bar */}
-      <header
-        className={`sticky top-[44px] left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
-        }`}
-      >
+        {/* Top bar */}
+        <header
+          className={`transition-all duration-300 ${
+            scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
+          }`}
+        >
         {/* Upper nav - logo */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative w-full">
           <Link to={createPageUrl('Home')} className="flex items-center">
