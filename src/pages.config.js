@@ -75,6 +75,10 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import Management from './pages/Management';
+import ManageDrivers from './pages/ManageDrivers';
+import ManageTeams from './pages/ManageTeams';
+import ManageTracks from './pages/ManageTracks';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +111,10 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "Management": Management,
+    "ManageDrivers": ManageDrivers,
+    "ManageTeams": ManageTeams,
+    "ManageTracks": ManageTracks,
 }
 
 export const pagesConfig = {

@@ -1,0 +1,82 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
+import PageShell from '@/components/shared/PageShell';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail } from 'lucide-react';
+
+export default function Management() {
+  const sections = [
+    {
+      title: 'Core Entities',
+      items: [
+        { name: 'Drivers', page: 'ManageDrivers', icon: Users, description: 'Manage driver profiles and info' },
+        { name: 'Teams', page: 'ManageTeams', icon: Trophy, description: 'Manage team profiles and rosters' },
+        { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage track information' },
+      ]
+    },
+    {
+      title: 'Competition',
+      items: [
+        { name: 'Series', page: 'ManageSeries', icon: Award, description: 'Manage racing series' },
+        { name: 'Events', page: 'ManageEvents', icon: Calendar, description: 'Manage race events and schedules' },
+        { name: 'Standings', page: 'ManageStandings', icon: Trophy, description: 'Manage championship standings' },
+      ]
+    },
+    {
+      title: 'Content',
+      items: [
+        { name: 'Stories', page: 'ManageStories', icon: Newspaper, description: 'Manage outlet stories and articles' },
+        { name: 'Issues', page: 'ManageIssues', icon: Package, description: 'Manage outlet issues' },
+      ]
+    },
+    {
+      title: 'Communications',
+      items: [
+        { name: 'Messages', page: 'ManageMessages', icon: Mail, description: 'View contact messages and inquiries' },
+      ]
+    }
+  ];
+
+  return (
+    <PageShell>
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-8">
+          <h1 className="text-4xl font-black mb-2">Management</h1>
+          <p className="text-gray-600">Backend system for managing all content and data</p>
+        </div>
+
+        <div className="space-y-8">
+          {sections.map((section) => (
+            <div key={section.title}>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
+                {section.title}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      className="block p-6 bg-white border border-gray-200 rounded-lg hover:border-gray-900 hover:shadow-md transition-all group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-gray-900 transition-colors">
+                          <Icon className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </PageShell>
+  );
+}
