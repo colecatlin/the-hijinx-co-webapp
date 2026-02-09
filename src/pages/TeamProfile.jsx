@@ -137,7 +137,6 @@ export default function TeamProfile() {
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'programs', label: 'Programs', icon: Briefcase },
-    { id: 'drivers', label: 'Drivers', icon: Users },
     { id: 'roster', label: 'Roster', icon: Users },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'partners', label: 'Partners', icon: Heart },
