@@ -72,6 +72,7 @@ import ManageSeries from './pages/ManageSeries';
 import ManageStandings from './pages/ManageStandings';
 import ManageStories from './pages/ManageStories';
 import ManageTeams from './pages/ManageTeams';
+import ManageTech from './pages/ManageTech';
 import ManageTracks from './pages/ManageTracks';
 import Management from './pages/Management';
 import MotorsportsHome from './pages/MotorsportsHome';
@@ -90,10 +91,9 @@ import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TeamsDirectory from './pages/TeamsDirectory';
+import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ManageTech from './pages/ManageTech';
-import TechHome from './pages/TechHome';
 import __Layout from './Layout.jsx';
 
 
@@ -123,6 +123,7 @@ export const PAGES = {
     "ManageStandings": ManageStandings,
     "ManageStories": ManageStories,
     "ManageTeams": ManageTeams,
+    "ManageTech": ManageTech,
     "ManageTracks": ManageTracks,
     "Management": Management,
     "MotorsportsHome": MotorsportsHome,
@@ -141,10 +142,9 @@ export const PAGES = {
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
     "TeamsDirectory": TeamsDirectory,
+    "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ManageTech": ManageTech,
-    "TechHome": TechHome,
 }
 
 export const pagesConfig = {
