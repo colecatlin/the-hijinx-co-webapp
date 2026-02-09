@@ -53,6 +53,7 @@ import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
+import DriverProfile from './pages/DriverProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
@@ -91,7 +92,6 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import DriverProfile from './pages/DriverProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -102,6 +102,7 @@ export const PAGES = {
     "CreativeServices": CreativeServices,
     "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
+    "DriverProfile": DriverProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
@@ -140,7 +141,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "DriverProfile": DriverProfile,
 }
 
 export const pagesConfig = {

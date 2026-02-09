@@ -7,14 +7,35 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Check } from 'lucide-react';
+import { Check, Upload, X } from 'lucide-react';
 
-const categories = ['Racing', 'Culture', 'Business', 'Gear', 'Travel', 'Opinion', 'Photo'];
+const categories = ['Racing', 'Culture', 'Business', 'Gear', 'Travel', 'Opinion', 'Media'];
 
 export default function OutletSubmit() {
-  const [form, setForm] = useState({ name: '', email: '', title: '', category: '', pitch: '', writing_sample_url: '' });
+  const [form, setForm] = useState({ name: '', email: '', title: '', category: '', pitch: '', writing_sample_url: '', photo_urls: [] });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    setUploading(true);
+    const uploadedUrls = [];
+    
+    for (const file of files) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      uploadedUrls.push(file_url);
+    }
+    
+    setForm(prev => ({ ...prev, photo_urls: [...prev.photo_urls, ...uploadedUrls] }));
+    setUploading(false);
+  };
+
+  const removePhoto = (index) => {
+    setForm(prev => ({ ...prev, photo_urls: prev.photo_urls.filter((_, i) => i !== index) }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,6 +95,49 @@ export default function OutletSubmit() {
               <Label className="text-xs font-mono tracking-wider uppercase text-gray-500">Writing Sample Link (optional)</Label>
               <Input value={form.writing_sample_url} onChange={(e) => setForm({ ...form, writing_sample_url: e.target.value })} className="rounded-none border-gray-200 focus:border-[#0A0A0A]" />
             </div>
+
+            <div className="space-y-4 pt-4 border-t">
+              <div>
+                <Label className="text-xs font-mono tracking-wider uppercase text-gray-500 mb-3 block">Photos (optional)</Label>
+                <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded p-6 cursor-pointer hover:bg-gray-50 transition">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2 text-gray-600">
+                    <Upload className="w-5 h-5" />
+                    <span className="text-sm">{uploading ? 'Uploading...' : 'Click to upload photos or drag and drop'}</span>
+                  </div>
+                </label>
+              </div>
+
+              {form.photo_urls.length > 0 && (
+                <div className="grid grid-cols-3 gap-4">
+                  {form.photo_urls.map((url, idx) => (
+                    <div key={idx} className="relative group">
+                      <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover border border-gray-200" />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="bg-amber-50 border border-amber-200 p-4 rounded text-sm text-amber-900">
+                <p className="font-semibold mb-2">Photo Rights Notice</p>
+                <p>By submitting photos, you grant HIJINX unlimited, royalty-free usage rights to the images. You confirm that you own all rights to the photos and they are free of watermarks and third-party intellectual property.</p>
+              </div>
+            </div>
+
             <Button type="submit" disabled={loading} className="w-full rounded-none bg-[#0A0A0A] hover:bg-[#262626] h-12 text-xs tracking-wider uppercase font-medium">
               {loading ? 'Submitting...' : 'Submit Pitch'}
             </Button>
