@@ -2,31 +2,30 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book } from 'lucide-react';
 
 export default function Management() {
   const sections = [
     {
       title: 'Core Entities',
       items: [
-        { name: 'Drivers', page: 'ManageDrivers', icon: Users, description: 'Manage driver profiles and info' },
-        { name: 'Teams', page: 'ManageTeams', icon: Trophy, description: 'Manage team profiles and rosters' },
+        { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage driver profiles and info' },
+        { name: 'Teams', page: 'ManageTeams', icon: Users, description: 'Manage team profiles and rosters' },
         { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage track information' },
       ]
     },
     {
       title: 'Competition',
       items: [
-        { name: 'Series', page: 'ManageSeries', icon: Award, description: 'Manage racing series' },
-        { name: 'Events', page: 'ManageEvents', icon: Calendar, description: 'Manage race events and schedules' },
-        { name: 'Standings', page: 'ManageStandings', icon: Trophy, description: 'Manage championship standings' },
+        { name: 'Series', page: 'ManageSeries', icon: Award, description: 'Define racing series and classes' },
+        { name: 'Standings', page: 'ManageStandings', icon: BarChart3, description: 'Update championship standings' },
       ]
     },
     {
       title: 'Content',
       items: [
-        { name: 'Stories', page: 'ManageStories', icon: Newspaper, description: 'Manage outlet stories and articles' },
-        { name: 'Issues', page: 'ManageIssues', icon: Package, description: 'Manage outlet issues' },
+        { name: 'Stories', page: 'ManageStories', icon: FileText, description: 'Create and publish articles' },
+        { name: 'Issues', page: 'ManageIssues', icon: Book, description: 'Manage magazine issues' },
       ]
     },
     {
