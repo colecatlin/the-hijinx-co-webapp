@@ -7,8 +7,9 @@ import DriverModal from '@/components/teams/DriverModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Briefcase, Instagram, Youtube } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import { createPageUrl } from '@/components/utils';
 
 export default function TeamProfile() {
@@ -188,7 +189,10 @@ export default function TeamProfile() {
               ← Back to Teams
             </Link>
 
-            <h1 className="text-4xl font-black text-[#232323] mb-2">{team.name}</h1>
+            <div className="flex justify-between items-center mb-2">
+              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
+              <SocialIconsDisplay media={media} />
+            </div>
             
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
@@ -267,17 +271,6 @@ export default function TeamProfile() {
               )}
 
               <div className="space-y-2">
-                {media?.website_url && (
-                  <a
-                    href={media.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-[#00FFDA] hover:text-[#1A3249] transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Website
-                  </a>
-                )}
                 {operations?.merch_url && (
                   <a
                     href={operations.merch_url}
@@ -620,41 +613,7 @@ export default function TeamProfile() {
                 </div>
               )}
 
-              {(media.social_instagram || media.social_youtube || media.social_tiktok || media.social_x) && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-3">Social Media</div>
-                  <div className="flex flex-wrap gap-3">
-                    {media.social_instagram && (
-                      <a href={media.social_instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-[#00FFDA] rounded transition-colors">
-                        <Instagram className="w-4 h-4" />
-                        Instagram
-                      </a>
-                    )}
-                    {media.social_youtube && (
-                      <a href={media.social_youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-[#00FFDA] rounded transition-colors">
-                        <Youtube className="w-4 h-4" />
-                        YouTube
-                      </a>
-                    )}
-                    {media.social_x && (
-                      <a href={media.social_x} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-[#00FFDA] rounded transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                        X
-                      </a>
-                    )}
-                    {media.social_tiktok && (
-                      <a href={media.social_tiktok} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-[#00FFDA] rounded transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                        TikTok
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
+
             </section>
           )}
 
