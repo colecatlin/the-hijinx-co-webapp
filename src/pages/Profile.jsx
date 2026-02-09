@@ -56,6 +56,8 @@ export default function Profile() {
         vehicle_type: user.vehicle_type || '',
         role_on_team: user.role_on_team || '',
         owned_team_name: user.owned_team_name || '',
+        owned_series_name: user.owned_series_name || '',
+        owned_track_name: user.owned_track_name || '',
         sponsorship_interests: user.sponsorship_interests || '',
         media_outlet: user.media_outlet || '',
         media_role: user.media_role || '',
