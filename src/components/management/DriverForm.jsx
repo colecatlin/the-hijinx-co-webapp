@@ -13,7 +13,6 @@ export default function DriverForm({ driver, onClose }) {
   const [formData, setFormData] = useState(driver || {
     first_name: '',
     last_name: '',
-    display_name: '',
     slug: '',
     hometown_city: '',
     hometown_state: '',
@@ -60,10 +59,13 @@ export default function DriverForm({ driver, onClose }) {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Auto-generate slug from display name
-    if (field === 'display_name' && !driver) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setFormData(prev => ({ ...prev, slug }));
+    // Auto-generate slug and display name from first/last name
+    if ((field === 'first_name' || field === 'last_name') && !driver) {
+      const first = field === 'first_name' ? value : formData.first_name;
+      const last = field === 'last_name' ? value : formData.last_name;
+      const displayName = `${first} ${last}`.trim();
+      const slug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      setFormData(prev => ({ ...prev, display_name: displayName, slug }));
     }
   };
 
@@ -99,14 +101,7 @@ export default function DriverForm({ driver, onClose }) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Display Name *</label>
-            <Input
-              value={formData.display_name}
-              onChange={(e) => handleChange('display_name', e.target.value)}
-              required
-            />
-          </div>
+
 
           <div>
             <label className="block text-sm font-medium mb-2">Date of Birth</label>
