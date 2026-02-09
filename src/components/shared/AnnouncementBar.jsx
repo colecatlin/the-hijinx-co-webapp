@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 export default function AnnouncementBar() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const queryClient = useQueryClient();
 
   const { data: announcements = [] } = useQuery({
     queryKey: ['announcements'],
