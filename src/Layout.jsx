@@ -71,45 +71,16 @@ export default function Layout({ children, currentPageName }) {
           scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
         }`}
       >
-        {/* Upper nav - logo + search */}
+        {/* Upper nav - logo */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative">
           <Link to={createPageUrl('Home')} className="flex items-center">
             <span className="text-xl font-black tracking-tighter">HIJINX</span>
           </Link>
 
-          <div className="absolute right-6 flex items-center gap-3">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Search className="w-4 h-4" />
-            </button>
-            {user?.role === 'admin' && (
-              <Link
-                to={createPageUrl('Management')}
-                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-              >
-                Management
-              </Link>
-            )}
-            {isAuthenticated ? (
-              <Link
-                to={createPageUrl('Profile')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <User className="w-4 h-4" />
-              </Link>
-            ) : (
-              <button
-                onClick={() => base44.auth.redirectToLogin()}
-                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-              >
-                Login
-              </button>
-            )}
+          <div className="absolute right-6 lg:hidden">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -160,6 +131,38 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </li>
               ))}
+
+              <li className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+                {user?.role === 'admin' && (
+                  <Link
+                    to={createPageUrl('Management')}
+                    className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                  >
+                    Management
+                  </Link>
+                )}
+                {isAuthenticated ? (
+                  <Link
+                    to={createPageUrl('Profile')}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => base44.auth.redirectToLogin()}
+                    className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                  >
+                    Login
+                  </button>
+                )}
+              </li>
             </ul>
           </div>
         </nav>
