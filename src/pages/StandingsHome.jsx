@@ -65,6 +65,23 @@ export default function StandingsHome() {
     else { setSortField(field); setSortDir(1); }
   };
 
+  const handlePullData = async () => {
+    setSyncing(true);
+    try {
+      const response = await base44.functions.invoke('syncDataFromSheets', {
+        spreadsheetId: '1-3zSsjrbilWnofiKD-aGYW48uk-BpK0SJF--pV-xJa0',
+        entityType: 'StandingsEntry',
+        sheetName: 'Sheet1',
+      });
+      toast.success(`✓ ${response.data.recordsProcessed} standings synced from Google Sheet`);
+      queryClient.invalidateQueries({ queryKey: ['standings'] });
+    } catch (error) {
+      toast.error('Failed to sync data: ' + error.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const lastUpdated = filteredEntries.length > 0 
     ? filteredEntries.reduce((latest, e) => {
         const d = e.last_updated || e.updated_date;
