@@ -8,6 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function SeriesOwnerTab({ formData, setFormData }) {
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,6 +23,25 @@ export default function SeriesOwnerTab({ formData, setFormData }) {
         <Trophy className="w-5 h-5" />
         Series Information
       </h2>
+
+      <div>
+        <Label>Link Series Profile</Label>
+        <Select
+          value={formData.series_id || ''}
+          onValueChange={(value) => setFormData({ ...formData, series_id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select your series..." />
+          </SelectTrigger>
+          <SelectContent>
+            {series.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div>
         <Label>Series Name</Label>
