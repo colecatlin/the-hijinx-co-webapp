@@ -13,6 +13,11 @@ import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import SeriesCoreDetailsSection from '@/components/management/SeriesManagement/SeriesCoreDetailsSection';
+import SeriesFormatSection from '@/components/management/SeriesManagement/SeriesFormatSection';
+import SeriesClassesSection from '@/components/management/SeriesManagement/SeriesClassesSection';
+import SeriesEventsSection from '@/components/management/SeriesManagement/SeriesEventsSection';
+import SeriesMediaSection from '@/components/management/SeriesManagement/SeriesMediaSection';
+import SeriesGovernanceSection from '@/components/management/SeriesManagement/SeriesGovernanceSection';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,16 +129,48 @@ export default function ManageSeries() {
           </div>
 
           <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="info">Additional Info</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-9">
+              <TabsTrigger value="core">Core</TabsTrigger>
+              <TabsTrigger value="format">Format</TabsTrigger>
+              <TabsTrigger value="classes">Classes</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+              <TabsTrigger value="governance">Governance</TabsTrigger>
+              <TabsTrigger value="teams">Teams</TabsTrigger>
+              <TabsTrigger value="drivers">Drivers</TabsTrigger>
+              <TabsTrigger value="tracks">Tracks</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <SeriesCoreDetailsSection seriesId={selectedSeriesForEdit.id} />
             </TabsContent>
-            <TabsContent value="info" className="mt-6">
+            <TabsContent value="format" className="mt-6">
+              <SeriesFormatSection seriesId={selectedSeriesForEdit.id} />
+            </TabsContent>
+            <TabsContent value="classes" className="mt-6">
+              <SeriesClassesSection seriesId={selectedSeriesForEdit.id} />
+            </TabsContent>
+            <TabsContent value="calendar" className="mt-6">
+              <SeriesEventsSection seriesId={selectedSeriesForEdit.id} />
+            </TabsContent>
+            <TabsContent value="media" className="mt-6">
+              <SeriesMediaSection seriesId={selectedSeriesForEdit.id} />
+            </TabsContent>
+            <TabsContent value="governance" className="mt-6">
+              <SeriesGovernanceSection seriesId={selectedSeriesForEdit.id} />
+            </TabsContent>
+            <TabsContent value="teams" className="mt-6">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Additional series sections coming soon</p>
+                <p className="text-gray-600">Teams management coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="drivers" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Drivers management coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="tracks" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Tracks management coming soon</p>
               </div>
             </TabsContent>
           </Tabs>
