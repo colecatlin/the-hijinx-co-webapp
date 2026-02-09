@@ -226,11 +226,11 @@ export default function ManageTracks() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(track)}
                         >
-                          Manage
+                          <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"

@@ -227,10 +227,10 @@ export default function ManageSeries() {
                       <div className="flex gap-2 justify-end">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleEdit(s)}
                         >
-                          Manage
+                          <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
