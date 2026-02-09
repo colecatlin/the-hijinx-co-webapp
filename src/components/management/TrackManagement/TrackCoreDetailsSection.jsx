@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
 
 export default function TrackCoreDetailsSection({ trackId }) {
   const [formData, setFormData] = useState({});
@@ -33,6 +34,19 @@ export default function TrackCoreDetailsSection({ trackId }) {
       setTimeout(() => setIsSaved(false), 2000);
     },
   });
+
+  const uploadMutation = useMutation({
+    mutationFn: (file) => base44.integrations.Core.UploadFile({ file }),
+    onSuccess: (data) => {
+      setFormData({ ...formData, hero_image_url: data.file_url });
+      toast.success('Image uploaded');
+    },
+  });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) uploadMutation.mutate(file);
+  };
 
   const handleSave = () => {
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
@@ -141,6 +155,31 @@ export default function TrackCoreDetailsSection({ trackId }) {
             onChange={(e) => setFormData({ ...formData, description_summary: e.target.value })}
             rows={4}
           />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Hero Image</label>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('track-image-upload').click()}
+              disabled={uploadMutation.isPending}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Image'}
+            </Button>
+            <input
+              id="track-image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            {formData.hero_image_url && (
+              <img src={formData.hero_image_url} alt="Track image" className="h-10 rounded" />
+            )}
+          </div>
         </div>
 
         <Button onClick={handleSave} disabled={updateMutation.isPending}>
