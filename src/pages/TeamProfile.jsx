@@ -189,10 +189,7 @@ export default function TeamProfile() {
               ← Back to Teams
             </Link>
 
-            <div className="flex justify-between items-center mb-2">
-              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
-              <SocialIconsDisplay media={media} />
-            </div>
+            <h1 className="text-4xl font-black text-[#232323] mb-2">{team.name}</h1>
             
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
@@ -256,6 +253,10 @@ export default function TeamProfile() {
                   </div>
                 </div>
               )}
+              
+              <div className="flex justify-center mt-6">
+                <SocialIconsDisplay media={media} />
+              </div>
             </div>
 
             <div className="bg-white border border-gray-200 p-6">
