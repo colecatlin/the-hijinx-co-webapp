@@ -183,12 +183,12 @@ export default function DriverProfile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
+        <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+          ← Back to Drivers
+        </Link>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
-            <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-              ← Back to Drivers
-            </Link>
-
             <div className="flex items-start justify-between mb-2">
               <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
               <SocialShareButtons 
@@ -197,40 +197,54 @@ export default function DriverProfile() {
                 description=""
               />
             </div>
-            
-            {(driver.hometown_city || driver.hometown_state) && (
-              <div className="flex items-center gap-2 text-gray-600 mb-6">
-                <MapPin className="w-4 h-4" />
-                {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
-              </div>
-            )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Discipline</div>
-                <div className="font-bold text-[#232323]">{driver.primary_discipline}</div>
+            <div className="bg-white border border-gray-200 p-8 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Date of Birth</div>
+                  <div className="text-lg font-semibold text-[#232323]">
+                    {driver.date_of_birth && format(new Date(driver.date_of_birth), 'MMM d, yyyy')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Nationality</div>
+                  <div className="text-lg font-semibold text-[#232323]">{driver.nationality}</div>
+                </div>
+                {driver.hometown_city && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Hometown</div>
+                    <div className="text-lg font-semibold text-[#232323]">
+                      {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''} • {driver.hometown_country}
+                    </div>
+                  </div>
+                )}
+                {driver.location_city && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Current Racing Base</div>
+                    <div className="text-lg font-semibold text-[#232323]">
+                      {driver.location_city}{driver.location_state ? `, ${driver.location_state}` : ''} • {driver.location_country}
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
+                  <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
+                </div>
+                {primaryProgram && seriesMap[primaryProgram.series_id] && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Primary Series</div>
+                    <div className="text-lg font-semibold text-[#232323]">{seriesMap[primaryProgram.series_id].name}</div>
+                  </div>
+                )}
               </div>
-              {primaryProgram && seriesMap[primaryProgram.series_id] && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Primary Series</div>
-                  <div className="font-bold text-[#232323]">{seriesMap[primaryProgram.series_id].name}</div>
-                </div>
-              )}
-              {primaryProgram?.bib_number && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Number</div>
-                  <div className="font-bold text-[#232323]">#{primaryProgram.bib_number}</div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
-                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
-              )}
-              {topSpecialties.map((specialty, idx) => (
-                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{specialty}</Badge>
-              ))}
+              <div className="flex flex-wrap gap-2 mt-6">
+                {performance?.recent_form && performance.recent_form !== 'Unknown' && (
+                  <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
+                )}
+                {topSpecialties.map((specialty, idx) => (
+                  <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{specialty}</Badge>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -303,36 +317,6 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-8">
-          <section id="section-overview" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Date of Birth</div>
-                <div className="text-lg font-semibold text-[#232323]">
-                  {driver.date_of_birth && format(new Date(driver.date_of_birth), 'MMM d, yyyy')}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Nationality</div>
-                <div className="text-lg font-semibold text-[#232323]">{driver.nationality}</div>
-              </div>
-              {driver.hometown_city && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
-                  <div className="text-lg font-semibold text-[#232323]">
-                    {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''} • {driver.hometown_country}
-                  </div>
-                </div>
-              )}
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
-                <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
-              </div>
-            </div>
-          </section>
-
-
-
           <section id="section-programs" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
             {sortedPrograms.length > 0 ? (
