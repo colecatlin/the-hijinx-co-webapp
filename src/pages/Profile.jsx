@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, LogOut } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 import GeneralTab from '@/components/profile/GeneralTab';
 import DriverTab from '@/components/profile/DriverTab';
 import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
@@ -125,7 +126,7 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    base44.auth.logout();
+    base44.auth.logout(createPageUrl('Home'));
   };
 
   return (
