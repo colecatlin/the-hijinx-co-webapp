@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Building2, Save } from 'lucide-react';
+import { User, Building2, Save, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Profile() {
