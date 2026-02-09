@@ -226,11 +226,21 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-6">
-            {media?.headshot_url && (
-              <div className="bg-white border border-gray-200 p-6">
-                <img src={media.headshot_url} alt={driver.display_name} className="w-full border border-gray-200" />
-              </div>
-            )}
+            <div className="bg-white border border-gray-200 p-6">
+              <h3 className="text-sm font-bold text-[#232323] mb-4">Driver Photo</h3>
+              {media?.headshot_url ? (
+                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
+                  <img src={media.headshot_url} alt={driver.display_name} className="w-full h-auto max-w-[200px]" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center bg-gray-50 p-12 border border-gray-200">
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl font-black mb-2">{driver.first_name?.[0] || ''}{driver.last_name?.[0] || ''}</div>
+                    <div className="text-xs">No photo uploaded</div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {activeTeams.length > 0 && (
               <div className="bg-white border border-gray-200 p-6">
