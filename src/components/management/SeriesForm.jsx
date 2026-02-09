@@ -83,17 +83,6 @@ export default function SeriesForm({ series, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
-            <Input
-              value={formData.slug}
-              readOnly
-              disabled
-              placeholder="auto-generated from series name"
-              className="bg-gray-50 text-gray-600"
-            />
-          </div>
-
-          <div>
             <label className="block text-sm font-medium mb-2">Current Season</label>
             <Input
               type="number"

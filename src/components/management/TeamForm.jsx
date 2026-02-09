@@ -77,17 +77,6 @@ export default function TeamForm({ team, onClose }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
-            <Input
-              value={formData.slug}
-              readOnly
-              disabled
-              placeholder="auto-generated from team name"
-              className="bg-gray-50 text-gray-600"
-            />
-          </div>
-
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">City</label>

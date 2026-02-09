@@ -77,17 +77,6 @@ export default function StoryForm({ story, onClose }) {
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
-            <Input
-              value={formData.slug}
-              readOnly
-              disabled
-              placeholder="auto-generated from title"
-              className="bg-gray-50 text-gray-600"
-            />
-          </div>
-
-          <div className="col-span-2">
             <label className="block text-sm font-medium mb-2">Subtitle</label>
             <Input
               value={formData.subtitle}
