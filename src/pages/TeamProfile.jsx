@@ -42,7 +42,7 @@ export default function TeamProfile() {
     queryKey: ['teamPerformance', team?.id],
     queryFn: async () => {
       const results = await base44.entities.TeamPerformance.filter({ team_id: team.id });
-      return results[0];
+      return results[0] || null;
     },
     enabled: !!team?.id,
   });
@@ -57,7 +57,7 @@ export default function TeamProfile() {
     queryKey: ['teamMedia', team?.id],
     queryFn: async () => {
       const results = await base44.entities.TeamMedia.filter({ team_id: team.id });
-      return results[0];
+      return results[0] || null;
     },
     enabled: !!team?.id,
   });
@@ -66,7 +66,7 @@ export default function TeamProfile() {
     queryKey: ['teamOperations', team?.id],
     queryFn: async () => {
       const results = await base44.entities.TeamOperations.filter({ team_id: team.id });
-      return results[0];
+      return results[0] || null;
     },
     enabled: !!team?.id,
   });
@@ -75,7 +75,7 @@ export default function TeamProfile() {
     queryKey: ['teamCommunity', team?.id],
     queryFn: async () => {
       const results = await base44.entities.TeamCommunity.filter({ team_id: team.id });
-      return results[0];
+      return results[0] || null;
     },
     enabled: !!team?.id,
   });
