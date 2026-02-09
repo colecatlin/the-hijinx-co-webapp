@@ -25,21 +25,25 @@ export default function Profile() {
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
+    enabled: !!user,
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    enabled: !!user,
   });
 
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    enabled: !!user,
   });
 
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
+    enabled: !!user,
   });
 
   React.useEffect(() => {
