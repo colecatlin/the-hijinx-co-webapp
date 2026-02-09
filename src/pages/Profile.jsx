@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Button } from '@/components/ui/button';
