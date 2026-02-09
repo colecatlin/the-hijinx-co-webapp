@@ -18,6 +18,7 @@ export default function ManageDrivers() {
   const [showForm, setShowForm] = useState(false);
   const [selectedDrivers, setSelectedDrivers] = useState([]);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: drivers = [], isLoading } = useQuery({
     queryKey: ['drivers'],
