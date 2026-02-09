@@ -57,7 +57,7 @@ export default function CreativeServices() {
         </div>
 
         {/* Inquiry form */}
-        <div className="max-w-xl">
+        <div className="max-w-xl mx-auto">
           <h2 className="text-2xl font-black tracking-tight mb-2">Start a Project</h2>
           <p className="text-sm text-gray-400 mb-8">Tell us what you're working on.</p>
 
