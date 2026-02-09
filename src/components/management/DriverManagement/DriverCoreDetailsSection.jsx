@@ -73,6 +73,18 @@ export default function DriverCoreDetailsSection({ driverId }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return '';
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const handleSave = () => {
     if (!formData.first_name || !formData.last_name) {
       toast.error('First and last name are required');
@@ -125,6 +137,12 @@ export default function DriverCoreDetailsSection({ driverId }) {
               onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
               className="mt-2"
             />
+          </div>
+          <div>
+            <Label>Age</Label>
+            <div className="mt-2 h-9 px-3 py-2 rounded-md border border-input bg-gray-50 flex items-center text-sm">
+              {calculateAge(formData.date_of_birth) || '—'}
+            </div>
           </div>
           <div>
             <Label htmlFor="nationality">Nationality</Label>
