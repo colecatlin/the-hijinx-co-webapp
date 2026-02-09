@@ -30,8 +30,6 @@ const navItems = [
   { name: 'Learning', page: 'Learning' },
   { name: 'Hospitality', page: 'Hospitality' },
   { name: 'Food & Bev', page: 'FoodBeverage' },
-  { name: 'About', page: 'About' },
-  { name: 'Contact', page: 'Contact' },
 ];
 
 export default function Layout({ children, currentPageName }) {
