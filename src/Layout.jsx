@@ -172,9 +172,10 @@ export default function Layout({ children, currentPageName }) {
             </ul>
           </div>
         </nav>
-      </header>
+        </header>
+        </div>
 
-      {/* Mobile nav */}
+        {/* Mobile nav */}
       <AnimatePresence>
         {mobileOpen && (
           <>
