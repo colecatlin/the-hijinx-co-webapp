@@ -46,6 +46,12 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.auth.isAuthenticated(),
   });
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    enabled: isAuthenticated,
+  });
+
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
@@ -80,6 +86,14 @@ export default function Layout({ children, currentPageName }) {
             >
               <Search className="w-4 h-4" />
             </button>
+            {user?.role === 'admin' && (
+              <Link
+                to={createPageUrl('Management')}
+                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+              >
+                Management
+              </Link>
+            )}
             {isAuthenticated ? (
               <Link
                 to={createPageUrl('Profile')}
@@ -182,6 +196,16 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm font-semibold">Menu</span>
               </div>
               <nav className="px-6 py-6">
+              {user?.role === 'admin' && (
+                <div className="mb-4">
+                  <Link
+                    to={createPageUrl('Management')}
+                    className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                  >
+                    Management
+                  </Link>
+                </div>
+              )}
               {navItems.map((item) => (
                 <div key={item.name} className="mb-1">
                   <Link
@@ -207,7 +231,7 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </div>
               ))}
-            </nav>
+              </nav>
             </motion.div>
             </>
             )}

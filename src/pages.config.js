@@ -58,6 +58,10 @@ import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
 import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
+import ManageDrivers from './pages/ManageDrivers';
+import ManageTeams from './pages/ManageTeams';
+import ManageTracks from './pages/ManageTracks';
+import Management from './pages/Management';
 import MotorsportsHome from './pages/MotorsportsHome';
 import OutletAdvertising from './pages/OutletAdvertising';
 import OutletHome from './pages/OutletHome';
@@ -75,10 +79,6 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import Management from './pages/Management';
-import ManageDrivers from './pages/ManageDrivers';
-import ManageTeams from './pages/ManageTeams';
-import ManageTracks from './pages/ManageTracks';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +94,10 @@ export const PAGES = {
     "Home": Home,
     "Hospitality": Hospitality,
     "Learning": Learning,
+    "ManageDrivers": ManageDrivers,
+    "ManageTeams": ManageTeams,
+    "ManageTracks": ManageTracks,
+    "Management": Management,
     "MotorsportsHome": MotorsportsHome,
     "OutletAdvertising": OutletAdvertising,
     "OutletHome": OutletHome,
@@ -111,10 +115,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "Management": Management,
-    "ManageDrivers": ManageDrivers,
-    "ManageTeams": ManageTeams,
-    "ManageTracks": ManageTracks,
 }
 
 export const pagesConfig = {
