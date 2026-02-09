@@ -49,7 +49,7 @@ export default function Layout({ children, currentPageName }) {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated === true,
   });
 
   useEffect(() => {
