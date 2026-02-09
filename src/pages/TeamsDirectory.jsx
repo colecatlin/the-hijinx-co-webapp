@@ -182,6 +182,7 @@ export default function TeamsDirectory() {
                 <TeamCard
                   key={team.id}
                   team={team}
+                  programs={programs}
                   programsCount={programs.length}
                   driversCount={drivers.length}
                   performance={performance}
