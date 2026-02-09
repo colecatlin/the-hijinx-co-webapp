@@ -204,17 +204,36 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm font-semibold">Menu</span>
               </div>
               <nav className="px-6 py-6">
-              {user?.role === 'admin' && (
-                <div className="mb-4">
-                  <Link
-                    to={createPageUrl('Management')}
-                    className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
-                  >
-                    Management
-                  </Link>
-                </div>
-              )}
-              {navItems.map((item) => (
+               {isAuthenticated ? (
+                 <div className="mb-4">
+                   <Link
+                     to={createPageUrl('Profile')}
+                     className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                   >
+                     Profile
+                   </Link>
+                 </div>
+               ) : (
+                 <div className="mb-4">
+                   <button
+                     onClick={() => base44.auth.redirectToLogin()}
+                     className="w-full py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                   >
+                     Login
+                   </button>
+                 </div>
+               )}
+               {user?.role === 'admin' && (
+                 <div className="mb-4">
+                   <Link
+                     to={createPageUrl('Management')}
+                     className="block py-3 px-4 text-sm font-semibold bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors"
+                   >
+                     Management
+                   </Link>
+                 </div>
+               )}
+               {navItems.map((item) => (
                 <div key={item.name} className="mb-1">
                   <Link
                     to={createPageUrl(item.page)}
