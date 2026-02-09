@@ -8,6 +8,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
 
 export default function OutletStoryPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -71,25 +72,33 @@ export default function OutletStoryPage() {
         )}
 
         {/* Meta line */}
-        <div className="flex flex-wrap items-center gap-4 mt-6 pb-8 border-b border-gray-200">
-          {story.author && (
-            <span className="text-sm font-semibold">{story.author}</span>
-          )}
-          {story.author_title && (
-            <span className="text-xs text-gray-400">{story.author_title}</span>
-          )}
-          {story.published_date && (
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Calendar className="w-3 h-3" />
-              {format(new Date(story.published_date), 'MMMM d, yyyy')}
-            </span>
-          )}
-          {story.location && (
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <MapPin className="w-3 h-3" />
-              {story.location}
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pb-8 border-b border-gray-200">
+          <div className="flex flex-wrap items-center gap-4">
+            {story.author && (
+              <span className="text-sm font-semibold">{story.author}</span>
+            )}
+            {story.author_title && (
+              <span className="text-xs text-gray-400">{story.author_title}</span>
+            )}
+            {story.published_date && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <Calendar className="w-3 h-3" />
+                {format(new Date(story.published_date), 'MMMM d, yyyy')}
+              </span>
+            )}
+            {story.location && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <MapPin className="w-3 h-3" />
+                {story.location}
+              </span>
+            )}
+          </div>
+          <SocialShareButtons 
+            url={window.location.href}
+            title={story.title}
+            description={story.subtitle || story.body?.substring(0, 150)}
+            type="inline"
+          />
         </div>
 
         {/* Cover image */}

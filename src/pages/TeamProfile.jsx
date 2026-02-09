@@ -11,6 +11,7 @@ import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Brief
 import { Link } from 'react-router-dom';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import TeamPerformanceInsights from '@/components/teams/TeamPerformanceInsights';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 
 export default function TeamProfile() {
@@ -190,7 +191,14 @@ export default function TeamProfile() {
               ← Back to Teams
             </Link>
 
-            <h1 className="text-4xl font-black text-[#232323] mb-2">{team.name}</h1>
+            <div className="flex items-start justify-between mb-2">
+              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${team.name} - Team Profile`}
+                description={team.description_summary}
+              />
+            </div>
             
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
