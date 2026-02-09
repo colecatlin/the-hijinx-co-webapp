@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle2, Loader2, X } from 'lucide-react';
 
-export default function SeriesForm({ series, onClose }) {
+export default function SeriesForm({ series, onClose, onSeriesCreated }) {
   const [formData, setFormData] = useState({
     name: series?.name || '',
     slug: series?.slug || '',
@@ -24,15 +24,19 @@ export default function SeriesForm({ series, onClose }) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       if (series) {
         return base44.entities.Series.update(series.id, data);
       }
       return base44.entities.Series.create(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['series'] });
-      onClose();
+      if (!series && onSeriesCreated) {
+        onSeriesCreated(data);
+      } else {
+        onClose();
+      }
     },
   });
 
