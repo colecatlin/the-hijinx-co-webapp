@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
+import IconSelector from '@/components/shared/IconSelector';
 
 export default function TechForm({ item, onSubmit, onCancel }) {
   const [formData, setFormData] = useState(item || {
