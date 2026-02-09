@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 
-import DriverCoreDetailsSection from '@/components/management/DriverEditor/DriverCoreDetailsSection';
-import DriverProgramsSection from '@/components/management/DriverEditor/DriverProgramsSection';
-import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection';
-import DriverPerformanceSection from '@/components/management/DriverEditor/DriverPerformanceSection';
-import DriverCommunitySection from '@/components/management/DriverEditor/DriverCommunitySection';
-import DriverPartnershipSection from '@/components/management/DriverEditor/DriverPartnershipSection';
+import DriverCoreDetailsSection from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
+import DriverProgramsSection from '@/components/management/DriverEditor/DriverProgramsSection.jsx';
+import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
+import DriverPerformanceSection from '@/components/management/DriverEditor/DriverPerformanceSection.jsx';
+import DriverCommunitySection from '@/components/management/DriverEditor/DriverCommunitySection.jsx';
+import DriverPartnershipSection from '@/components/management/DriverEditor/DriverPartnershipSection.jsx';
 
 export default function DriverEditor() {
   const [searchParams] = useSearchParams();
