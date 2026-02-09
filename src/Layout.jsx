@@ -74,7 +74,11 @@ export default function Layout({ children, currentPageName }) {
         {/* Upper nav - logo */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative">
           <Link to={createPageUrl('Home')} className="flex items-center">
-            <span className="text-4xl font-black tracking-tighter">HIJINX</span>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png" 
+              alt="HIJINX" 
+              className="h-8"
+            />
           </Link>
 
           <div className="absolute right-6 lg:hidden">
