@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,6 +14,16 @@ export default function AnnouncementBar() {
       return data || [];
     },
   });
+
+  // Subscribe to real-time announcement updates
+  useEffect(() => {
+    const unsubscribe = base44.entities.Announcement.subscribe((event) => {
+      // Invalidate and refetch announcements on any change
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+    });
+
+    return unsubscribe;
+  }, [queryClient]);
 
   useEffect(() => {
     if (announcements.length <= 1) return;
