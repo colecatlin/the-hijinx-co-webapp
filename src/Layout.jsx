@@ -69,7 +69,7 @@ export default function Layout({ children, currentPageName }) {
       <AnnouncementBar />
       {/* Top bar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-[44px] left-0 right-0 z-50 transition-all duration-300 ${
           scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
         }`}
       >
@@ -250,7 +250,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Page content */}
-      <main className="flex-1 pt-16 lg:pt-[calc(4rem+41px)]">
+      <main className="flex-1 pt-16 lg:pt-[calc(44px+4rem+41px)]">
         {children}
       </main>
 
