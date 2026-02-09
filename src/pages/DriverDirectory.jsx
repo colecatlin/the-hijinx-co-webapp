@@ -39,6 +39,7 @@ export default function DriverDirectory() {
   const uniqueStates = [...new Set(drivers.map(d => d.hometown_state).filter(Boolean))].sort();
 
   const filteredDrivers = drivers.filter(driver => {
+    if (!driver.display_name) return false;
     if (filters.discipline !== 'all' && driver.primary_discipline !== filters.discipline) return false;
     if (filters.status !== 'all' && driver.status !== filters.status) return false;
     if (filters.state !== 'all' && driver.hometown_state !== filters.state) return false;
