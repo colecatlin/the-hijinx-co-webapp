@@ -58,6 +58,7 @@ import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
 import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
+import ManageAnnouncements from './pages/ManageAnnouncements';
 import ManageDrivers from './pages/ManageDrivers';
 import ManageIssues from './pages/ManageIssues';
 import ManageSeries from './pages/ManageSeries';
@@ -76,6 +77,8 @@ import OutletSubmit from './pages/OutletSubmit';
 import Profile from './pages/Profile';
 import ResultsHome from './pages/ResultsHome';
 import ScheduleHome from './pages/ScheduleHome';
+import SeriesDetail from './pages/SeriesDetail';
+import SeriesHome from './pages/SeriesHome';
 import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
@@ -83,9 +86,6 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ManageAnnouncements from './pages/ManageAnnouncements';
-import SeriesHome from './pages/SeriesHome';
-import SeriesDetail from './pages/SeriesDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -101,6 +101,7 @@ export const PAGES = {
     "Home": Home,
     "Hospitality": Hospitality,
     "Learning": Learning,
+    "ManageAnnouncements": ManageAnnouncements,
     "ManageDrivers": ManageDrivers,
     "ManageIssues": ManageIssues,
     "ManageSeries": ManageSeries,
@@ -119,6 +120,8 @@ export const PAGES = {
     "Profile": Profile,
     "ResultsHome": ResultsHome,
     "ScheduleHome": ScheduleHome,
+    "SeriesDetail": SeriesDetail,
+    "SeriesHome": SeriesHome,
     "StandingsHome": StandingsHome,
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
@@ -126,9 +129,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ManageAnnouncements": ManageAnnouncements,
-    "SeriesHome": SeriesHome,
-    "SeriesDetail": SeriesDetail,
 }
 
 export const pagesConfig = {

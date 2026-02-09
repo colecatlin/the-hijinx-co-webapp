@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
+import { downloadTemplate } from '@/components/shared/downloadTemplate';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,6 +136,9 @@ export default function ManageDrivers() {
             <p className="text-gray-600">{drivers.length} total drivers</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => downloadTemplate('driver', 'Driver')} title="Download import template">
+              <Download className="w-4 h-4" />
+            </Button>
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
