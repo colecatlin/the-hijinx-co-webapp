@@ -1,9 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import HeroMedia from './HeroMedia';
 
 export default function HeroSection() {
+  // Hero media configuration
+  const heroMedia = {
+    posterUrl: 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=1920&q=80',
+    videoUrl: null,
+    mediaType: 'image', // 'image' or 'video'
+    videoAspect: '16:9',
+    overlayIntensity: 'medium' // 'low', 'medium', 'high'
+  };
+
   return (
     <section className="relative bg-[#232323] text-[#FFF8F5] overflow-hidden">
+      <HeroMedia {...heroMedia} />
       <div className="absolute inset-0 grid-bg opacity-20" />
       <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-36">
         <motion.div
