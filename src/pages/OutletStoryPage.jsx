@@ -109,9 +109,7 @@ export default function OutletStoryPage() {
         )}
 
         {/* Body */}
-        <div className="editorial-body mt-10">
-          <ReactMarkdown>{story.body || ''}</ReactMarkdown>
-        </div>
+        <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: story.body || '' }} />
 
         {/* Tags */}
         {story.tags?.length > 0 && (
