@@ -109,6 +109,10 @@ export default function ManageSeries() {
             setShowForm(false);
             setEditingSeries(null);
           }}
+          onSeriesCreated={(newSeries) => {
+            setShowForm(false);
+            setSelectedSeriesForEdit(newSeries);
+          }}
         />
       </PageShell>
     );
