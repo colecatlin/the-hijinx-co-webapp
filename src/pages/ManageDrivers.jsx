@@ -5,6 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import DriverForm from '@/components/management/DriverForm';
@@ -14,6 +15,7 @@ export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingDriver, setEditingDriver] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedDrivers, setSelectedDrivers] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: drivers = [], isLoading } = useQuery({
@@ -46,6 +48,26 @@ export default function ManageDrivers() {
       driver.display_name?.toLowerCase().includes(query)
     );
   });
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedDrivers(filteredDrivers.map(d => d.id));
+    } else {
+      setSelectedDrivers([]);
+    }
+  };
+
+  const handleSelectDriver = (id) => {
+    setSelectedDrivers(prev => 
+      prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedDrivers.length} selected driver(s)?`)) {
+      bulkDeleteMutation.mutate(selectedDrivers);
+    }
+  };
 
   const handleEdit = (driver) => {
     setEditingDriver(driver);
@@ -86,8 +108,8 @@ export default function ManageDrivers() {
           </Button>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search drivers..."
@@ -96,6 +118,16 @@ export default function ManageDrivers() {
               className="pl-10"
             />
           </div>
+          {selectedDrivers.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedDrivers.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -109,6 +141,12 @@ export default function ManageDrivers() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -129,6 +167,12 @@ export default function ManageDrivers() {
               <tbody className="divide-y divide-gray-200">
                 {filteredDrivers.map((driver) => (
                   <tr key={driver.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedDrivers.includes(driver.id)}
+                        onCheckedChange={() => handleSelectDriver(driver.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{driver.display_name}</div>
                       <div className="text-sm text-gray-500">{driver.slug}</div>

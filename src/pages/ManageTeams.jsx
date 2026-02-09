@@ -5,6 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import TeamForm from '@/components/management/TeamForm';
@@ -14,6 +15,7 @@ export default function ManageTeams() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeam, setEditingTeam] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedTeams, setSelectedTeams] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: teams = [], isLoading } = useQuery({
@@ -102,8 +104,8 @@ export default function ManageTeams() {
           </Button>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search teams..."
@@ -112,6 +114,16 @@ export default function ManageTeams() {
               className="pl-10"
             />
           </div>
+          {selectedTeams.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedTeams.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -125,6 +137,12 @@ export default function ManageTeams() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -145,6 +163,12 @@ export default function ManageTeams() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTeams.map((team) => (
                   <tr key={team.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedTeams.includes(team.id)}
+                        onCheckedChange={() => handleSelectTeam(team.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{team.name}</div>
                       <div className="text-sm text-gray-500">{team.slug}</div>

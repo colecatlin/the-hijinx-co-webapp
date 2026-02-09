@@ -5,6 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import TrackForm from '@/components/management/TrackForm';
@@ -14,6 +15,7 @@ export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTrack, setEditingTrack] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedTracks, setSelectedTracks] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: tracks = [], isLoading } = useQuery({
@@ -102,8 +104,8 @@ export default function ManageTracks() {
           </Button>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search tracks..."
@@ -112,6 +114,16 @@ export default function ManageTracks() {
               className="pl-10"
             />
           </div>
+          {selectedTracks.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedTracks.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -125,6 +137,12 @@ export default function ManageTracks() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -145,6 +163,12 @@ export default function ManageTracks() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTracks.map((track) => (
                   <tr key={track.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedTracks.includes(track.id)}
+                        onCheckedChange={() => handleSelectTrack(track.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{track.name}</div>
                       <div className="text-sm text-gray-500">{track.slug}</div>
