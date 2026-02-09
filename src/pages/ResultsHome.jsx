@@ -13,6 +13,9 @@ import { Flag, ChevronRight, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ResultsHome() {
+  const queryClient = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
+  
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['results'],
     queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-date', 50),
@@ -22,6 +25,23 @@ export default function ResultsHome() {
   const filtered = events.filter(e =>
     !searchTerm || e.name?.toLowerCase().includes(searchTerm.toLowerCase()) || e.track_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePullData = async () => {
+    setSyncing(true);
+    try {
+      const response = await base44.functions.invoke('syncDataFromSheets', {
+        spreadsheetId: '1UdBrrszoPuxaaoDaGmK3zXb63nVgaXlnka8LriG4fKg',
+        entityType: 'Event',
+        sheetName: 'Sheet1',
+      });
+      toast.success(`✓ ${response.data.recordsProcessed} results synced from Google Sheet`);
+      queryClient.invalidateQueries({ queryKey: ['results'] });
+    } catch (error) {
+      toast.error('Failed to sync data: ' + error.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <PageShell>
