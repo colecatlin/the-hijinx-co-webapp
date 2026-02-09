@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2, Upload } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -24,6 +24,8 @@ export default function StoryForm({ story, onClose }) {
     featured: story?.featured || false,
     tags: story?.tags || [],
   });
+
+  const [uploading, setUploading] = useState(false);
 
   const queryClient = useQueryClient();
 
