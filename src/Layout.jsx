@@ -77,7 +77,7 @@ export default function Layout({ children, currentPageName }) {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png" 
               alt="HIJINX" 
-              className="h-8"
+              className="h-16"
             />
           </Link>
 
