@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import IconSelector from '@/components/shared/IconSelector';
 
 export default function FoodBeverageForm({ item, onSubmit, onCancel }) {
   const [formData, setFormData] = useState(item || {
