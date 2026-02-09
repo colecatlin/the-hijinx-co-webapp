@@ -4,14 +4,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Building2, Save } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, LogOut } from 'lucide-react';
+import GeneralTab from '@/components/profile/GeneralTab';
+import DriverTab from '@/components/profile/DriverTab';
+import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
+import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
+import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
+import FavoritesTab from '@/components/profile/FavoritesTab';
 
 export default function Profile() {
   const queryClient = useQueryClient();

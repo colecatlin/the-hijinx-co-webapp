@@ -80,7 +80,6 @@ import OutletIssuePage from './pages/OutletIssuePage';
 import OutletIssues from './pages/OutletIssues';
 import OutletStoryPage from './pages/OutletStoryPage';
 import OutletSubmit from './pages/OutletSubmit';
-import Profile from './pages/Profile';
 import ResultsHome from './pages/ResultsHome';
 import ScheduleHome from './pages/ScheduleHome';
 import SeriesDetail from './pages/SeriesDetail';
@@ -92,6 +91,7 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -129,7 +129,6 @@ export const PAGES = {
     "OutletIssues": OutletIssues,
     "OutletStoryPage": OutletStoryPage,
     "OutletSubmit": OutletSubmit,
-    "Profile": Profile,
     "ResultsHome": ResultsHome,
     "ScheduleHome": ScheduleHome,
     "SeriesDetail": SeriesDetail,
@@ -141,6 +140,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {
