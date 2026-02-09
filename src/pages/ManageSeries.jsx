@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Upload, Download } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeriesForm from '@/components/management/SeriesForm';
 
@@ -81,6 +81,38 @@ export default function ManageSeries() {
     setShowForm(true);
   };
 
+  const handleExport = () => {
+    const dataStr = JSON.stringify(series, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `series-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        const dataArray = Array.isArray(importedData) ? importedData : [importedData];
+        
+        await base44.entities.Series.bulkCreate(dataArray.map(({ id, created_date, updated_date, created_by, ...rest }) => rest));
+        queryClient.invalidateQueries({ queryKey: ['series'] });
+        alert(`Successfully imported ${dataArray.length} series`);
+      } catch (error) {
+        alert('Error importing data: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <PageShell className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -89,10 +121,27 @@ export default function ManageSeries() {
             <h1 className="text-3xl font-bold">Manage Series</h1>
             <p className="text-gray-600 mt-1">Define racing series and classes</p>
           </div>
-          <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Series
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button variant="outline" onClick={() => document.getElementById('import-series').click()}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import
+            </Button>
+            <input
+              id="import-series"
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Series
+            </Button>
+          </div>
         </div>
 
         {showForm ? (

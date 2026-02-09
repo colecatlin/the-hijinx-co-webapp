@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -81,6 +81,38 @@ export default function ManageTeams() {
     setEditingTeam(null);
   };
 
+  const handleExport = () => {
+    const dataStr = JSON.stringify(teams, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `teams-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        const dataArray = Array.isArray(importedData) ? importedData : [importedData];
+        
+        await base44.entities.Team.bulkCreate(dataArray.map(({ id, created_date, updated_date, created_by, ...rest }) => rest));
+        queryClient.invalidateQueries({ queryKey: ['teams'] });
+        alert(`Successfully imported ${dataArray.length} team(s)`);
+      } catch (error) {
+        alert('Error importing data: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   if (showForm) {
     return <TeamForm team={editingTeam} onClose={handleFormClose} />;
   }
@@ -98,10 +130,27 @@ export default function ManageTeams() {
             <h1 className="text-4xl font-black mb-2">Manage Teams</h1>
             <p className="text-gray-600">{teams.length} total teams</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="bg-gray-900">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Team
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button variant="outline" onClick={() => document.getElementById('import-teams').click()}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import
+            </Button>
+            <input
+              id="import-teams"
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button onClick={() => setShowForm(true)} className="bg-gray-900">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Team
+            </Button>
+          </div>
         </div>
 
         <div className="mb-6 flex items-center gap-3">
