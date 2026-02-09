@@ -243,10 +243,22 @@ export default function TeamProfile() {
 
           <div className="space-y-6">
             <div className="bg-white border border-gray-200 p-6">
-              {media?.logo_url && (
-                <img src={media.logo_url} alt={team.name} className="w-32 h-auto mb-6" />
+              <h3 className="text-sm font-bold text-[#232323] mb-4">Team Logo</h3>
+              {media?.logo_url ? (
+                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
+                  <img src={media.logo_url} alt={`${team.name} logo`} className="w-full h-auto max-w-[200px]" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center bg-gray-50 p-12 border border-gray-200">
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl font-black mb-2">{team.name.split(' ').map(w => w[0]).join('')}</div>
+                    <div className="text-xs">No logo uploaded</div>
+                  </div>
+                </div>
               )}
+            </div>
 
+            <div className="bg-white border border-gray-200 p-6">
               {primaryPrograms.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-sm font-bold text-[#232323] mb-3">Primary Programs</h3>
