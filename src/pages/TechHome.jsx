@@ -8,24 +8,24 @@ import { Monitor, Cpu, ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-const products = [
-  {
-    name: 'Marble App',
-    tagline: 'Organize everything.',
-    description: 'A productivity and workflow tool designed for creators and small teams. Streamline projects, manage tasks, and keep everything in one place.',
-    status: 'In Development',
-    icon: Monitor,
-  },
-  {
-    name: 'Forge MNFCTR',
-    tagline: 'Build what matters.',
-    description: 'A manufacturing and production management platform for small-batch makers. Track inventory, manage orders, and scale operations.',
-    status: 'Coming Soon',
-    icon: Cpu,
-  },
-];
+const ICON_MAP = {
+  'Monitor': Monitor,
+  'Cpu': Cpu,
+};
 
 export default function TechHome() {
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: techItems = [] } = useQuery({
+    queryKey: ['techItems'],
+    queryFn: () => base44.entities.Tech.list(),
+  });
+
+  const sortedItems = [...techItems].sort((a, b) => (a.order || 0) - (b.order || 0));
+
   return (
     <PageShell>
       <div className="bg-[#0A0A0A] text-white">
