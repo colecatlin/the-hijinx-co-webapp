@@ -19,6 +19,8 @@ export default function StandingsHome() {
   const [selectedSeason, setSelectedSeason] = useState('');
   const [sortField, setSortField] = useState('position');
   const [sortDir, setSortDir] = useState(1);
+  const [syncing, setSyncing] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['series'],
