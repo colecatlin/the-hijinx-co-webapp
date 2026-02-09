@@ -104,12 +104,13 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             )}
             {isAuthenticated ? (
-              <Link
-                to={createPageUrl('Profile')}
+              <button
+                onClick={() => base44.auth.logout(createPageUrl('Home'))}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
+                title="Logout"
               >
                 <User className="w-4 h-4" />
-              </Link>
+              </button>
             ) : (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
