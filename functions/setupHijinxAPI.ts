@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
 
     // Create sheets for each category
     for (const [key, config] of Object.entries(sheetsConfig)) {
+      // Create sheet with folder as parent
       const sheetResponse = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: {
@@ -75,6 +76,18 @@ Deno.serve(async (req) => {
       const sheet = await sheetResponse.json();
       const spreadsheetId = sheet.spreadsheetId;
 
+      // Move sheet to folder immediately
+      await fetch(`https://www.googleapis.com/drive/v3/files/${spreadsheetId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parents: [folderId],
+        }),
+      });
+
       // Add header row
       await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1`, {
         method: 'PUT',
@@ -84,18 +97,6 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           values: [config.columns],
-        }),
-      });
-
-      // Move sheet to folder
-      await fetch(`https://www.googleapis.com/drive/v3/files/${spreadsheetId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          parents: [folderId],
         }),
       });
 
