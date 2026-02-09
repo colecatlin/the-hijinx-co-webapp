@@ -78,12 +78,13 @@ export default function TeamForm({ team, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Slug *</label>
+            <label className="block text-sm font-medium mb-2">Slug (Auto-generated)</label>
             <Input
               value={formData.slug}
-              onChange={(e) => handleChange('slug', e.target.value)}
-              required
-              placeholder="url-friendly-name"
+              readOnly
+              disabled
+              placeholder="auto-generated from team name"
+              className="bg-gray-50 text-gray-600"
             />
           </div>
 
