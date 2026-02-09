@@ -287,11 +287,7 @@ export default function TeamProfile() {
         </div>
 
         <div className="space-y-8">
-          <section id="section-drivers" className="bg-white border border-gray-200 p-8">
-...
-          </section>
-
-          <section id="section-overview" className="bg-white border border-gray-200 p-8">
+           <section id="section-overview" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
             {(team.status || team.owner_name || team.team_principal) ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
