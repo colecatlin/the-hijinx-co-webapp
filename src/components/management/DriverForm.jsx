@@ -45,6 +45,18 @@ export default function DriverForm({ driver, onClose }) {
     saveMutation.mutate(formData);
   };
 
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -112,6 +124,11 @@ export default function DriverForm({ driver, onClose }) {
               value={formData.date_of_birth}
               onChange={(value) => handleChange('date_of_birth', value)}
             />
+            {formData.date_of_birth && (
+              <div className="text-sm text-gray-600 mt-2">
+                Age: {calculateAge(formData.date_of_birth)} years old
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4">
