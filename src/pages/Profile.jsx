@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, LogOut } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import GeneralTab from '@/components/profile/GeneralTab';
-import DriverTab from '@/components/profile/DriverTab';
+
 import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
 import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
 import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
@@ -49,10 +49,6 @@ export default function Profile() {
     if (user) {
       setFormData({
         full_name: user.full_name || '',
-        bio: user.bio || '',
-        account_type: user.account_type || 'individual',
-        association: user.association || '',
-        company_name: user.company_name || '',
         driver_id: user.driver_id || '',
         team_id: user.team_id || '',
         series_id: user.series_id || '',
@@ -112,18 +108,7 @@ export default function Profile() {
   }
 
   const getRoleSpecificTab = () => {
-    switch (formData.association) {
-      case 'Driver':
-        return 'driver';
-      case 'Team Owner':
-        return 'team-owner';
-      case 'Series Owner':
-        return 'series-owner';
-      case 'Track Owner':
-        return 'track-owner';
-      default:
-        return null;
-    }
+    return null;
   };
 
   const handleLogout = () => {
@@ -152,20 +137,8 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">General</TabsTrigger>
-              {getRoleSpecificTab() === 'driver' && (
-                <TabsTrigger value="driver">Driver</TabsTrigger>
-              )}
-              {getRoleSpecificTab() === 'team-owner' && (
-                <TabsTrigger value="team-owner">Team</TabsTrigger>
-              )}
-              {getRoleSpecificTab() === 'series-owner' && (
-                <TabsTrigger value="series-owner">Series</TabsTrigger>
-              )}
-              {getRoleSpecificTab() === 'track-owner' && (
-                <TabsTrigger value="track-owner">Track</TabsTrigger>
-              )}
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
               <TabsTrigger value="code-input">Code Input</TabsTrigger>
             </TabsList>
@@ -173,30 +146,6 @@ export default function Profile() {
             <TabsContent value="general">
               <GeneralTab user={user} formData={formData} setFormData={setFormData} />
             </TabsContent>
-
-            {getRoleSpecificTab() === 'driver' && (
-              <TabsContent value="driver">
-                <DriverTab formData={formData} setFormData={setFormData} />
-              </TabsContent>
-            )}
-
-            {getRoleSpecificTab() === 'team-owner' && (
-              <TabsContent value="team-owner">
-                <TeamOwnerTab formData={formData} setFormData={setFormData} />
-              </TabsContent>
-            )}
-
-            {getRoleSpecificTab() === 'series-owner' && (
-              <TabsContent value="series-owner">
-                <SeriesOwnerTab formData={formData} setFormData={setFormData} />
-              </TabsContent>
-            )}
-
-            {getRoleSpecificTab() === 'track-owner' && (
-              <TabsContent value="track-owner">
-                <TrackOwnerTab formData={formData} setFormData={setFormData} />
-              </TabsContent>
-            )}
 
             <TabsContent value="favorites">
               <FavoritesTab
