@@ -161,13 +161,12 @@ export default function DriverCard({ driver, program, team, media, performance }
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
-              <Link
-                to={buildProfileUrl('Driver', driver.slug)}
+              <button
                 onClick={handleProfileClick}
                 className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors"
               >
                 View full profile →
-              </Link>
+              </button>
             </div>
             <div className="text-right text-xs text-gray-500 font-medium">
               Back →
