@@ -2,9 +2,8 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { createPageUrl } from '@/components/utils';
-import TrackCard from '@/components/tracks/TrackCard';
+import { MapPin, TrendingUp, Star } from 'lucide-react';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function TrackLeaderboards() {
   const { data: tracks = [] } = useQuery({
@@ -41,43 +40,85 @@ export default function TrackLeaderboards() {
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl font-black text-[#232323] mb-2">Track Rankings</h2>
         <p className="text-sm text-gray-600 mb-8">Rankings update as the database grows.</p>
-
-        {/* Top 3 Featured Tracks */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {topRatedTracks.slice(0, 3).map((track, idx) => (
-            <div key={track.id} className="relative">
-              <div className="absolute -top-3 -left-3 z-10 bg-[#232323] text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
-                {idx + 1}
-              </div>
-              <div className="transform scale-105">
-                <TrackCard track={track} />
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Top Rated Tracks */}
+          <div className="bg-white border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="w-5 h-5 text-[#232323]" />
+              <h2 className="text-xl font-bold text-[#232323]">Top Rated Tracks</h2>
             </div>
-          ))}
-        </div>
+            <div className="space-y-3">
+              {topRatedTracks.map((track, idx) => (
+                <Link
+                  key={track.id}
+                  to={buildProfileUrl('Track', track.slug)}
+                  className="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                >
+                  <div className="text-lg font-bold text-gray-400 w-6">{idx + 1}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors truncate">
+                      {track.name}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <MapPin className="w-3 h-3" />
+                      {track.city}, {track.state}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-[#232323]">
+                      {track.weighted_rating 
+                        ? track.weighted_rating.toFixed(1) 
+                        : track.rating_average 
+                        ? track.rating_average.toFixed(1) 
+                        : 'N/A'}
+                    </div>
+                    {track.rating_count > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {track.rating_count} {track.rating_count === 1 ? 'vote' : 'votes'}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-        {/* Top 10 Horizontal Scroll */}
-        <div className="relative">
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-            {topRatedTracks.slice(0, 10).map((track, idx) => (
-              <div key={track.id} className="flex-shrink-0 w-64 relative">
-                <div className="absolute top-2 left-2 z-10 bg-[#232323] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                  {idx + 1}
-                </div>
-                <TrackCard track={track} />
-              </div>
-            ))}
-            <Link
-              to={createPageUrl('TrackDirectory')}
-              className="flex-shrink-0 w-64 h-full flex items-center justify-center bg-white border-2 border-dashed border-gray-300 hover:border-[#00FFDA] transition-colors group"
-            >
-              <div className="text-center p-6">
-                <p className="text-sm font-bold text-gray-600 group-hover:text-[#00FFDA] transition-colors">
-                  See full track ratings
-                </p>
-                <ArrowRight className="w-5 h-5 mx-auto mt-2 text-gray-400 group-hover:text-[#00FFDA] transition-colors" />
-              </div>
-            </Link>
+          {/* Trending Tracks */}
+          <div className="bg-white border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="w-5 h-5 text-[#232323]" />
+              <h2 className="text-xl font-bold text-[#232323]">Trending Tracks</h2>
+            </div>
+            <div className="space-y-3">
+              {trendingTracks.map((track, idx) => (
+                <Link
+                  key={track.id}
+                  to={buildProfileUrl('Track', track.slug)}
+                  className="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                >
+                  <div className="text-lg font-bold text-gray-400 w-6">{idx + 1}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors truncate">
+                      {track.name}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <MapPin className="w-3 h-3" />
+                      {track.city}, {track.state}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {track.popularity_score > 0 && (
+                      <>
+                        <div className="font-bold text-[#232323]">
+                          {track.popularity_score}
+                        </div>
+                        <div className="text-xs text-gray-500">score</div>
+                      </>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
