@@ -48,8 +48,16 @@ export default function ScheduleHome() {
             {filtered.map((event) => (
               <div key={event.id} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
                 <div className="w-16 text-center shrink-0">
-                  <span className="font-mono text-[10px] text-gray-400 uppercase">{format(new Date(event.date), 'MMM')}</span>
-                  <p className="text-2xl font-black">{format(new Date(event.date), 'd')}</p>
+                  {(() => {
+                    const dateStr = event.date?.toString();
+                    const parsedDate = dateStr ? new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8)) : null;
+                    return parsedDate ? (
+                      <>
+                        <span className="font-mono text-[10px] text-gray-400 uppercase">{format(parsedDate, 'MMM')}</span>
+                        <p className="text-2xl font-black">{format(parsedDate, 'd')}</p>
+                      </>
+                    ) : null;
+                  })()}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-sm">{event.name}</h3>
@@ -64,7 +72,13 @@ export default function ScheduleHome() {
                 </div>
                 {event.end_date && event.end_date !== event.date && (
                   <span className="text-xs text-gray-400 font-mono">
-                    {format(new Date(event.date), 'MMM d')} – {format(new Date(event.end_date), 'MMM d')}
+                    {(() => {
+                      const startDateStr = event.date?.toString();
+                      const endDateStr = event.end_date?.toString();
+                      const startDate = startDateStr ? new Date(startDateStr.slice(0, 4) + '-' + startDateStr.slice(4, 6) + '-' + startDateStr.slice(6, 8)) : null;
+                      const endDate = endDateStr ? new Date(endDateStr.slice(0, 4) + '-' + endDateStr.slice(4, 6) + '-' + endDateStr.slice(6, 8)) : null;
+                      return startDate && endDate ? `${format(startDate, 'MMM d')} – ${format(endDate, 'MMM d')}` : null;
+                    })()}
                   </span>
                 )}
               </div>
