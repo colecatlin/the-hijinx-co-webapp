@@ -10,7 +10,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Newspaper } from 'lucide-react';
 
-const categories = ['All', 'Racing', 'Culture', 'Business', 'Gear', 'Travel', 'Opinion', 'Photo'];
+const categories = ['All', 'Racing', 'Culture', 'Business', 'Gear', 'Travel', 'Opinion', 'Media'];
 
 export default function OutletHome() {
   const [activeCategory, setActiveCategory] = useState('All');
