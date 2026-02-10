@@ -145,13 +145,7 @@ export default function DriverDirectory() {
           ]}
         />
 
-        {driversLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-[400px]" />
-            ))}
-          </div>
-        ) : sortedDrivers.length > 0 ? (
+        {!driversLoading && sortedDrivers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedDrivers.map(driver => {
               const primaryProgram = allPrograms.find(p => p.driver_id === driver.id && p.primary) || 
@@ -170,7 +164,7 @@ export default function DriverDirectory() {
               );
             })}
           </div>
-        ) : null}
+        )}
       </div>
     </PageShell>
   );
