@@ -37,13 +37,19 @@ export default function DriverForm({ driver, onClose }) {
     return numericId;
   };
 
+  const generateSlugFromData = (firstName, lastName, numericId) => {
+    const slugBase = `${firstName} ${lastName}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return `${slugBase}-${numericId}`;
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (data) => {
       if (driver) {
         return base44.entities.Driver.update(driver.id, data);
       }
       const numericId = await generateUniqueNumericId();
-      return base44.entities.Driver.create({ ...data, numeric_id: numericId });
+      const slug = generateSlugFromData(data.first_name, data.last_name, numericId);
+      return base44.entities.Driver.create({ ...data, numeric_id: numericId, slug });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
@@ -70,15 +76,6 @@ export default function DriverForm({ driver, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Auto-generate slug and display name from first/last name
-    if ((field === 'first_name' || field === 'last_name') && !driver) {
-      const first = field === 'first_name' ? value : formData.first_name;
-      const last = field === 'last_name' ? value : formData.last_name;
-      const displayName = `${first} ${last}`.trim();
-      const slug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setFormData(prev => ({ ...prev, display_name: displayName, slug }));
-    }
   };
 
   return (
