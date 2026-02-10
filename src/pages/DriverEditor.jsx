@@ -20,6 +20,7 @@ export default function DriverEditor({ driverId: propDriverId }) {
   const navigate = useNavigate();
   const driverId = propDriverId || searchParams.get('id') || searchParams.get('driverId');
   const [activeTab, setActiveTab] = useState('details');
+  const isFromEntityEditor = !!propDriverId;
 
   const { data: driver, isLoading: driverLoading, error: driverError } = useQuery({
     queryKey: ['driver', driverId],
@@ -90,8 +91,8 @@ export default function DriverEditor({ driverId: propDriverId }) {
       <PageShell>
         <div className="max-w-6xl mx-auto px-6 py-12">
           <p className="text-gray-500">No driver selected.</p>
-          <Button onClick={() => navigate(createPageUrl('ManageDrivers'))} className="mt-4">
-            Back to Drivers
+          <Button onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))} className="mt-4">
+            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
           </Button>
         </div>
       </PageShell>
@@ -116,8 +117,8 @@ export default function DriverEditor({ driverId: propDriverId }) {
           <p className="text-gray-500">
             {isAccessDenied ? 'You do not have access to this driver.' : 'Driver not found.'}
           </p>
-          <Button onClick={() => navigate(createPageUrl('ManageDrivers'))} className="mt-4">
-            Back to Drivers
+          <Button onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))} className="mt-4">
+            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
           </Button>
         </div>
       </PageShell>
@@ -131,11 +132,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate(createPageUrl('ManageDrivers'))}
+            onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Drivers
+            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
           </Button>
           <h1 className="text-4xl font-bold">
             {driver.first_name} {driver.last_name}
