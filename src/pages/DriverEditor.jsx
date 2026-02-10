@@ -134,6 +134,8 @@ export default function DriverEditor({ driverId: propDriverId }) {
   // Only show access management section to admin users in the admin backend
   const showAccessManagement = currentUser?.role === 'admin' && !isFromEntityEditor;
 
+  console.log('DEBUG:', { currentUserRole: currentUser?.role, isFromEntityEditor, showAccessManagement });
+
   return (
     <PageShell>
       <div className="max-w-6xl mx-auto px-6 py-12">
