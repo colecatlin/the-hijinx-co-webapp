@@ -340,6 +340,35 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           </div>
         </div>
 
+        <div className="border-t pt-6">
+          <h3 className="font-semibold mb-4">Send Invitation</h3>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label htmlFor="invitation_email">Invite by Email</Label>
+              <Input
+                id="invitation_email"
+                type="email"
+                value={invitationEmail}
+                onChange={(e) => setInvitationEmail(e.target.value)}
+                placeholder="Enter email address"
+                className="mt-2"
+                disabled={driverId === 'new'}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                onClick={handleSendInvitation}
+                disabled={invitationMutation.isPending || driverId === 'new'}
+                variant="outline"
+                className="gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                {invitationMutation.isPending ? 'Sending...' : 'Send Invite'}
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end gap-3 pt-4">
           <Button
             onClick={handleSave}
