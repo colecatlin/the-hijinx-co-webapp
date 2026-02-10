@@ -15,10 +15,7 @@ export default function DriverForm({ driver, onClose }) {
     last_name: '',
     slug: '',
     date_of_birth: '',
-    nationality: '',
-    hometown_city: '',
-    hometown_state: '',
-    hometown_country: 'USA',
+    nationality: 'USA',
     primary_number: '',
     primary_discipline: '',
   });
@@ -117,38 +114,40 @@ export default function DriverForm({ driver, onClose }) {
 
           <div>
             <label className="block text-sm font-medium mb-2">Nationality *</label>
-            <Input
-              value={formData.nationality}
-              onChange={(e) => handleChange('nationality', e.target.value)}
-              placeholder="e.g., USA, Canada, Mexico"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Hometown City *</label>
-              <Input
-                value={formData.hometown_city}
-                onChange={(e) => handleChange('hometown_city', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">State/Region</label>
-              <Input
-                value={formData.hometown_state}
-                onChange={(e) => handleChange('hometown_state', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Country *</label>
-              <Input
-                value={formData.hometown_country}
-                onChange={(e) => handleChange('hometown_country', e.target.value)}
-                required
-              />
-            </div>
+            <Select value={formData.nationality} onValueChange={(value) => handleChange('nationality', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USA">USA</SelectItem>
+                <SelectItem value="Canada">Canada</SelectItem>
+                <SelectItem value="Mexico">Mexico</SelectItem>
+                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                <SelectItem value="Australia">Australia</SelectItem>
+                <SelectItem value="Brazil">Brazil</SelectItem>
+                <SelectItem value="France">France</SelectItem>
+                <SelectItem value="Germany">Germany</SelectItem>
+                <SelectItem value="Italy">Italy</SelectItem>
+                <SelectItem value="Spain">Spain</SelectItem>
+                <SelectItem value="Japan">Japan</SelectItem>
+                <SelectItem value="China">China</SelectItem>
+                <SelectItem value="India">India</SelectItem>
+                <SelectItem value="Russia">Russia</SelectItem>
+                <SelectItem value="Sweden">Sweden</SelectItem>
+                <SelectItem value="Norway">Norway</SelectItem>
+                <SelectItem value="Finland">Finland</SelectItem>
+                <SelectItem value="Netherlands">Netherlands</SelectItem>
+                <SelectItem value="Belgium">Belgium</SelectItem>
+                <SelectItem value="Austria">Austria</SelectItem>
+                <SelectItem value="Switzerland">Switzerland</SelectItem>
+                <SelectItem value="Denmark">Denmark</SelectItem>
+                <SelectItem value="Poland">Poland</SelectItem>
+                <SelectItem value="Argentina">Argentina</SelectItem>
+                <SelectItem value="Chile">Chile</SelectItem>
+                <SelectItem value="New Zealand">New Zealand</SelectItem>
+                <SelectItem value="South Africa">South Africa</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

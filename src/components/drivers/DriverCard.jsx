@@ -19,7 +19,6 @@ export default function DriverCard({ driver, program, team, media, performance }
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
-  const hometown = [driver.hometown_city, driver.hometown_state].filter(Boolean).join(', ');
 
   return (
     <div 
@@ -90,15 +89,15 @@ export default function DriverCard({ driver, program, team, media, performance }
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <CountryFlag country={driver.nationality || driver.hometown_country} />
+              <CountryFlag country={driver.nationality} />
               <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight">
                 {driver.first_name} {driver.last_name}
               </h3>
             </div>
-            {hometown && (
+            {driver.nationality && (
               <div className="flex items-center gap-1 text-xs text-gray-600">
                 <MapPin className="w-3 h-3" />
-                {hometown}
+                {driver.nationality}
               </div>
             )}
           </div>
