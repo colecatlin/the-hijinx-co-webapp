@@ -71,9 +71,12 @@ export default function DriverCard({ driver, program, team, media, performance }
             </div>
 
             {/* Name Bar */}
-            <div className="bg-white border-t border-gray-300 px-4 py-3">
+            <div className="bg-white border-t border-gray-300 px-4 py-3 relative">
               <div className="text-xl font-black text-[#232323] tracking-tight text-center uppercase">
                 {driver.first_name} {driver.last_name}
+              </div>
+              <div className="absolute bottom-3 right-4 text-xs text-gray-500 font-medium">
+                Read more →
               </div>
             </div>
           </div>
@@ -152,7 +155,7 @@ export default function DriverCard({ driver, program, team, media, performance }
 
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-3">
               <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                 THE OUTLET
               </div>
@@ -163,6 +166,9 @@ export default function DriverCard({ driver, program, team, media, performance }
               >
                 View full profile →
               </Link>
+            </div>
+            <div className="text-right text-xs text-gray-500 font-medium">
+              Back →
             </div>
           </div>
         </div>
