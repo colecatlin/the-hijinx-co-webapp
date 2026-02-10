@@ -56,6 +56,7 @@ import Diagnostics from './pages/Diagnostics';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
+import EntityEditor from './pages/EntityEditor';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
@@ -76,7 +77,6 @@ import ManageStories from './pages/ManageStories';
 import ManageTeams from './pages/ManageTeams';
 import ManageTech from './pages/ManageTech';
 import ManageTracks from './pages/ManageTracks';
-import Management from './pages/Management';
 import MotorsportsHome from './pages/MotorsportsHome';
 import OutletAdvertising from './pages/OutletAdvertising';
 import OutletHome from './pages/OutletHome';
@@ -96,7 +96,8 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import EntityEditor from './pages/EntityEditor';
+import Management from './pages/Management';
+import ManageEntityAccess from './pages/ManageEntityAccess';
 import __Layout from './Layout.jsx';
 
 
@@ -110,6 +111,7 @@ export const PAGES = {
     "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
+    "EntityEditor": EntityEditor,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
@@ -130,7 +132,6 @@ export const PAGES = {
     "ManageTeams": ManageTeams,
     "ManageTech": ManageTech,
     "ManageTracks": ManageTracks,
-    "Management": Management,
     "MotorsportsHome": MotorsportsHome,
     "OutletAdvertising": OutletAdvertising,
     "OutletHome": OutletHome,
@@ -150,7 +151,8 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "EntityEditor": EntityEditor,
+    "Management": Management,
+    "ManageEntityAccess": ManageEntityAccess,
 }
 
 export const pagesConfig = {
