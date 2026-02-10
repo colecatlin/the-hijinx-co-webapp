@@ -179,3 +179,12 @@ export default function DriverCoreDetailsSection({ driver }) {
     </Card>
   );
 }
+
+export function DriverCoreDetailsSectionWithManagers({ driver }) {
+  return (
+    <div className="space-y-6">
+      <DriverCoreDetailsSection driver={driver} />
+      <DriverManagersSection driverId={driver.id} />
+    </div>
+  );
+}
