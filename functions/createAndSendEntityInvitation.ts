@@ -9,10 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { email, entity_type, entity_id, entity_name, expiration_days = 30 } = await req.json();
+    const { email, entity_type, entity_id, entity_name, access_code, role = 'editor', expiration_days = 30 } = await req.json();
 
-    if (!email || !entity_type || !entity_id || !entity_name) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!email || !entity_type || !entity_id || !entity_name || !access_code) {
+      return Response.json({ error: 'Missing required fields: email, entity_type, entity_id, entity_name, access_code' }, { status: 400 });
     }
 
     // Generate unique 8-digit invitation code
@@ -32,6 +32,17 @@ Deno.serve(async (req) => {
       expiration_date: expirationDate.toISOString(),
       status: 'pending',
       invited_by: user.email,
+    });
+
+    // Create EntityCollaborator record with access_code
+    await base44.asServiceRole.entities.EntityCollaborator.create({
+      user_id: user.id,
+      user_email: email,
+      entity_type,
+      entity_id,
+      entity_name,
+      access_code,
+      role,
     });
 
     // Send invitation email via Gmail

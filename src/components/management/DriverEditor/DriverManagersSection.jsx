@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Plus, X } from 'lucide-react';
+import DriverAccessForm from './DriverAccessForm';
 
-export default function DriverManagersSection({ driverId }) {
+export default function DriverManagersSection({ driverId, driver }) {
+  const [showForm, setShowForm] = useState(false);
   const { data: managers = [], isLoading } = useQuery({
     queryKey: ['driverManagers', driverId],
     queryFn: () => base44.entities.EntityCollaborator.filter({
@@ -34,7 +37,30 @@ export default function DriverManagersSection({ driverId }) {
         <CardTitle>Access Management</CardTitle>
         <CardDescription>Users with access to manage this driver</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
+        {showForm && driver && <DriverAccessForm driver={driver} />}
+
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            variant={showForm ? 'outline' : 'default'}
+            size="sm"
+            className="gap-2"
+          >
+            {showForm ? (
+              <>
+                <X className="w-4 h-4" />
+                Cancel
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Grant Access
+              </>
+            )}
+          </Button>
+        </div>
+
         {managers.length === 0 ? (
           <p className="text-sm text-gray-500">No users have access to manage this driver yet.</p>
         ) : (
