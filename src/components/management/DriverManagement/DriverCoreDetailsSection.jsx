@@ -163,7 +163,7 @@ export default function DriverCoreDetailsSection({ driverId }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="date_of_birth">Date of Birth</Label>
+            <Label htmlFor="date_of_birth">Date of Birth (mm/dd/yyyy)</Label>
             <Input
               id="date_of_birth"
               type="date"

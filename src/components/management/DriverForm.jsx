@@ -102,7 +102,7 @@ export default function DriverForm({ driver, onClose }) {
 
 
           <div>
-            <label className="block text-sm font-medium mb-2">Date of Birth</label>
+            <label className="block text-sm font-medium mb-2">Date of Birth (mm/dd/yyyy)</label>
             <DateInput
               value={formData.date_of_birth}
               onChange={(value) => handleChange('date_of_birth', value)}

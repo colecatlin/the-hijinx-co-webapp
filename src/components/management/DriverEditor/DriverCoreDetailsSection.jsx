@@ -94,7 +94,7 @@ export default function DriverCoreDetailsSection({ driver }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Date of Birth</Label>
+            <Label>Date of Birth (mm/dd/yyyy)</Label>
             <DateInput
               value={data.date_of_birth}
               onChange={(value) => handleChange('date_of_birth', value)}
