@@ -155,10 +155,7 @@ export default function DriverCard({ driver, program, team, media, performance }
 
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                THE OUTLET
-              </div>
+            <div className="flex items-center justify-end mb-3">
               <Link
                 to={buildProfileUrl('Driver', driver.slug)}
                 onClick={handleProfileClick}
