@@ -65,18 +65,46 @@ Deno.serve(async (req) => {
               const eventDate = event.dtstart.split('T')[0];
               const endDate = event.dtend ? event.dtend.split('T')[0] : eventDate;
               
-              await base44.asServiceRole.entities.Event.create({
-                name: event.summary,
-                slug: event.summary.toLowerCase().replace(/\s+/g, '-') + '-' + eventDate,
-                series_id: seriesId,
-                series_name: seriesName,
-                date: eventDate,
-                end_date: endDate,
-                season: new Date(event.dtstart).getFullYear(),
-                status: new Date(eventDate) > new Date() ? 'upcoming' : 'completed',
-                description: event.location || ''
-              });
-              results.eventsCreated++;
+              // Extract track name and find or create track
+              let trackId = null;
+              if (event.location) {
+                const trackMatch = event.location.match(/@ (.+?)(?:\s|$)/);
+                const trackName = trackMatch ? trackMatch[1].trim() : event.location;
+                
+                let track = await base44.asServiceRole.entities.Track.filter({ name: trackName }, '-created_date', 1);
+                if (!track[0]) {
+                  const newTrack = await base44.asServiceRole.entities.Track.create({
+                    name: trackName,
+                    slug: trackName.toLowerCase().replace(/\s+/g, '-'),
+                    city: 'Unknown',
+                    state: 'Unknown',
+                    country: 'USA',
+                    status: 'Active',
+                    description_summary: `${trackName} - NASCAR track`,
+                    track_type: 'Oval',
+                    surfaces: ['Asphalt']
+                  });
+                  trackId = newTrack.id;
+                } else {
+                  trackId = track[0].id;
+                }
+              }
+              
+              if (trackId) {
+                await base44.asServiceRole.entities.Event.create({
+                  name: event.summary,
+                  slug: event.summary.toLowerCase().replace(/\s+/g, '-') + '-' + eventDate,
+                  series_id: seriesId,
+                  series_name: seriesName,
+                  track_id: trackId,
+                  date: eventDate,
+                  end_date: endDate,
+                  season: new Date(event.dtstart).getFullYear(),
+                  status: new Date(eventDate) > new Date() ? 'upcoming' : 'completed',
+                  description: event.location || ''
+                });
+                results.eventsCreated++;
+              }
             }
           } catch (error) {
             results.errors.push(`Event ${event.summary}: ${error.message}`);
