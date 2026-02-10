@@ -106,9 +106,11 @@ export default function SeriesFlipCard({ series, media }) {
         >
           {/* Header */}
           <div className="mb-6">
-            <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight mb-1">
-              {series.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight">
+                {series.name}
+              </h3>
+            </div>
             <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${disciplineColors[series.discipline] || 'bg-gray-100 text-gray-800'}`}>
               {series.discipline}
             </div>

@@ -92,17 +92,16 @@ export default function TrackFlipCard({ track, disciplines = [], media }) {
         >
           {/* Header */}
           <div className="mb-6">
-            <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight mb-2">
-              {track.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight">
+                {track.name}
+              </h3>
+            </div>
             {location && (
-              <div className="flex items-center gap-1 text-xs text-gray-600 mb-2">
+              <div className="flex items-center gap-1 text-xs text-gray-600">
                 <MapPin className="w-3 h-3" />
                 {location}
               </div>
-            )}
-            {track.country && (
-              <div className="text-xs text-gray-600">{track.country}</div>
             )}
           </div>
 
