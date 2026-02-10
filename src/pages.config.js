@@ -97,6 +97,7 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import ManageAccess from './pages/ManageAccess';
 import __Layout from './Layout.jsx';
 
 
@@ -151,6 +152,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "ManageAccess": ManageAccess,
 }
 
 export const pagesConfig = {
