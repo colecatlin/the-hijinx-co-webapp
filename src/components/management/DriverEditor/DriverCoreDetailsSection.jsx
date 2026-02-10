@@ -45,7 +45,9 @@ export default function DriverCoreDetailsSection({ driver }) {
     first_name: driver.first_name || '',
     last_name: driver.last_name || '',
     date_of_birth: driver.date_of_birth || '',
-    nationality: driver.nationality || 'USA',
+    hometown_city: driver.hometown_city || '',
+    hometown_state: driver.hometown_state || '',
+    hometown_country: driver.hometown_country || 'USA',
     primary_number: driver.primary_number || '',
     primary_discipline: driver.primary_discipline || '',
   });
@@ -109,8 +111,26 @@ export default function DriverCoreDetailsSection({ driver }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Nationality</Label>
-            <Select value={data.nationality} onValueChange={(value) => handleChange('nationality', value)}>
+            <Label>Hometown City</Label>
+            <Input
+              value={data.hometown_city}
+              onChange={(e) => handleChange('hometown_city', e.target.value)}
+              placeholder="City"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Hometown State/Region</Label>
+            <Input
+              value={data.hometown_state}
+              onChange={(e) => handleChange('hometown_state', e.target.value)}
+              placeholder="State or region"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Hometown Country</Label>
+            <Select value={data.hometown_country} onValueChange={(value) => handleChange('hometown_country', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>

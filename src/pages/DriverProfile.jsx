@@ -208,10 +208,12 @@ export default function DriverProfile() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Nationality</div>
+                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
                   <div className="flex items-center gap-2">
-                    <CountryFlag country={driver.nationality} />
-                    <div className="text-lg font-semibold text-[#232323]">{driver.nationality}</div>
+                    <CountryFlag country={driver.hometown_country} />
+                    <div className="text-lg font-semibold text-[#232323]">
+                      {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''}, {driver.hometown_country}
+                    </div>
                   </div>
                 </div>
                 {driver.location_city && (
