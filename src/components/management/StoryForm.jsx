@@ -20,7 +20,9 @@ export default function StoryForm({ story, onClose }) {
     photo_credit: story?.photo_credit || '',
     category: story?.category || 'Racing',
     cover_image: story?.cover_image || '',
-    location: story?.location || '',
+    location_city: story?.location_city || '',
+    location_state: story?.location_state || '',
+    location_country: story?.location_country || '',
     status: story?.status || 'draft',
     featured: story?.featured || false,
     tags: story?.tags || [],
@@ -201,11 +203,29 @@ export default function StoryForm({ story, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Location</label>
+            <label className="block text-sm font-medium mb-2">Location City</label>
             <Input
-              value={formData.location}
-              onChange={(e) => handleChange('location', e.target.value)}
-              placeholder="Dateline location"
+              value={formData.location_city}
+              onChange={(e) => handleChange('location_city', e.target.value)}
+              placeholder="e.g., New York"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Location State</label>
+            <Input
+              value={formData.location_state}
+              onChange={(e) => handleChange('location_state', e.target.value)}
+              placeholder="e.g., NY"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Location Country</label>
+            <Input
+              value={formData.location_country}
+              onChange={(e) => handleChange('location_country', e.target.value)}
+              placeholder="e.g., USA"
             />
           </div>
 
