@@ -43,6 +43,16 @@ export default function DriverDirectory() {
   const uniqueSeries = [...new Set(allPrograms.map(p => p.series_name))].sort();
   const uniqueStates = [...new Set(drivers.map(d => d.hometown_state).filter(Boolean))].sort();
 
+  // Pre-compute program map for efficiency
+  const programsByDriver = React.useMemo(() => {
+    const map = {};
+    allPrograms.forEach(p => {
+      if (!map[p.driver_id]) map[p.driver_id] = [];
+      map[p.driver_id].push(p);
+    });
+    return map;
+  }, [allPrograms]);
+
   const filteredDrivers = drivers.filter(driver => {
     const displayName = driver.display_name || `${driver.first_name} ${driver.last_name}`;
     
@@ -59,7 +69,7 @@ export default function DriverDirectory() {
     if (filters.state !== 'all' && driver.hometown_state !== filters.state) return false;
     
     if (filters.series !== 'all') {
-      const driverPrograms = allPrograms.filter(p => p.driver_id === driver.id);
+      const driverPrograms = programsByDriver[driver.id] || [];
       if (!driverPrograms.some(p => p.series_name === filters.series)) return false;
     }
     
@@ -148,8 +158,8 @@ export default function DriverDirectory() {
         {!driversLoading && sortedDrivers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedDrivers.map(driver => {
-              const primaryProgram = allPrograms.find(p => p.driver_id === driver.id && p.primary) || 
-                                    allPrograms.find(p => p.driver_id === driver.id);
+              const driverPrograms = programsByDriver[driver.id] || [];
+              const primaryProgram = driverPrograms.find(p => p.primary) || driverPrograms[0];
               const team = primaryProgram?.team_id ? allTeams.find(t => t.id === primaryProgram.team_id) : null;
               const media = allMedia.find(m => m.driver_id === driver.id);
               

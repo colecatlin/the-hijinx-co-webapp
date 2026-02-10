@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, Loader2, Upload } from 'lucide-react';
+import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -27,6 +27,7 @@ export default function StoryForm({ story, onClose }) {
   });
 
   const [uploading, setUploading] = useState(false);
+  const [tagInput, setTagInput] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -69,6 +70,17 @@ export default function StoryForm({ story, onClose }) {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setFormData(prev => ({ ...prev, cover_image: file_url }));
     setUploading(false);
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tag) => {
+    setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
   };
 
   return (
@@ -205,6 +217,38 @@ export default function StoryForm({ story, onClose }) {
               onChange={(val) => handleChange('body', val)}
               className="bg-white"
             />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-2">Tags</label>
+            <div className="flex gap-2 mb-2">
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                placeholder="Add a tag and press Enter"
+              />
+              <Button type="button" onClick={handleAddTag} variant="outline">
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag) => (
+                <div
+                  key={tag}
+                  className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded text-sm"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:text-red-500"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

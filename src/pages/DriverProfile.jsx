@@ -16,8 +16,21 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-    const firstName = urlParams.get('first');
-    const lastName = urlParams.get('last');
+    const firstName = urlParams.get('first')?.trim().toLowerCase();
+    const lastName = urlParams.get('last')?.trim().toLowerCase();
+
+    if (!firstName || !lastName) {
+      return (
+        <PageShell className="bg-[#FFF8F5]">
+          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+            <p className="text-gray-600 mb-4">Driver not found</p>
+            <Link to={createPageUrl('DriverDirectory')}>
+              <Button>Back to Drivers</Button>
+            </Link>
+          </div>
+        </PageShell>
+      );
+    }
     const [activeSection, setActiveSection] = useState('overview');
 
     React.useEffect(() => {
@@ -31,8 +44,8 @@ export default function DriverProfile() {
     });
 
     const driver = drivers.find(d => 
-      d.first_name.toLowerCase() === firstName && 
-      d.last_name.toLowerCase() === lastName
+      d.first_name?.toLowerCase() === firstName && 
+      d.last_name?.toLowerCase() === lastName
     );
 
   const { data: programs = [] } = useQuery({
