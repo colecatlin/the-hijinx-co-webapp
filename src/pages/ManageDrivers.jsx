@@ -105,10 +105,15 @@ export default function ManageDrivers() {
     setEditingDriver(null);
   };
 
-  const handleSaveSuccess = () => {
-    setSelectedDriverForEdit(null);
+  const handleSaveSuccess = (newDriverId) => {
+    if (newDriverId) {
+      setSelectedDriverForEdit({ id: newDriverId });
+      toast.success('Driver created successfully!');
+    } else {
+      setSelectedDriverForEdit(null);
+      toast.success('Driver updated successfully!');
+    }
     queryClient.invalidateQueries({ queryKey: ['drivers'] });
-    toast.success('Driver saved successfully!');
   };
 
   const handleExport = () => {

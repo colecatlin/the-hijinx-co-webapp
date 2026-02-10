@@ -113,13 +113,16 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
       }
       return base44.entities.Driver.update(driverId, data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
+    onSuccess: (data) => {
+      const idToInvalidate = driverId === 'new' ? data.id : driverId;
+      queryClient.invalidateQueries({ queryKey: ['driver', idToInvalidate] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       toast.success('Driver details saved');
       if (driverId === 'new' && onSaveSuccess) {
+        onSaveSuccess(data.id);
+      } else if (onSaveSuccess) {
         onSaveSuccess();
       }
     },
