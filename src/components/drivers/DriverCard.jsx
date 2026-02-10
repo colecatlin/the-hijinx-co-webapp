@@ -1,97 +1,172 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { MapPin } from 'lucide-react';
 
-export default function DriverCard({ driver, program, team, media }) {
-  const getFormColor = (form) => {
-    const colors = {
-      'Hot': 'bg-[#D33F49] text-white',
-      'Steady': 'bg-[#00FFDA] text-[#232323]',
-      'Slump': 'bg-gray-300 text-gray-700'
-    };
-    return colors[form] || 'bg-gray-200 text-gray-600';
+export default function DriverCard({ driver, program, team, media, performance }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const handleFlip = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsFlipped(!isFlipped);
   };
 
-  const calculateAge = (dateOfBirth) => {
-    if (!dateOfBirth) return null;
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+  const handleProfileClick = (e) => {
+    e.stopPropagation();
   };
 
-  const age = calculateAge(driver.date_of_birth);
+  const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
+  const hometown = [driver.hometown_city, driver.hometown_state].filter(Boolean).join(', ');
 
   return (
-    <Link 
-      to={buildProfileUrl('Driver', driver.slug)}
-      className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all h-full flex flex-col"
+    <div 
+      className="relative h-[480px] cursor-pointer"
+      style={{ perspective: '1000px' }}
+      onClick={handleFlip}
     >
-      <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-        {media?.headshot_url ? (
-          <img 
-            src={media.headshot_url} 
-            alt={driver.display_name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <div className="text-4xl font-black text-gray-400">
-              {driver.first_name?.[0] || ''}{driver.last_name?.[0] || ''}
+      <motion.div
+        className="relative w-full h-full"
+        style={{ transformStyle: 'preserve-3d' }}
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+      >
+        {/* FRONT OF CARD */}
+        <div
+          className="absolute inset-0 bg-white border border-gray-300"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className="relative h-full flex flex-col">
+            {/* Image Section */}
+            <div className="flex-1 relative overflow-hidden bg-gray-100">
+              {media?.headshot_url || media?.hero_image_url ? (
+                <img 
+                  src={media.headshot_url || media.hero_image_url} 
+                  alt={`${driver.first_name} ${driver.last_name}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
+                  <div className="text-6xl font-black text-gray-400 mb-4">
+                    {driver.first_name?.[0] || ''}{driver.last_name?.[0] || ''}
+                  </div>
+                  {bibNumber && (
+                    <div className="text-8xl font-black text-gray-300">
+                      {bibNumber}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Bib Number Overlay */}
+              {bibNumber && (media?.headshot_url || media?.hero_image_url) && (
+                <div className="absolute top-4 right-4 bg-white/95 px-4 py-2 border border-gray-300">
+                  <div className="text-4xl font-black text-[#232323] leading-none">
+                    {bibNumber}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Name Bar */}
+            <div className="bg-white border-t border-gray-300 px-4 py-3">
+              <div className="text-xl font-black text-[#232323] tracking-tight text-center uppercase">
+                {driver.first_name} {driver.last_name}
+              </div>
             </div>
           </div>
-        )}
-        {driver.status !== 'Active' && (
-          <div className="absolute top-2 right-2">
-            <Badge className="bg-gray-500 text-white">{driver.status}</Badge>
-          </div>
-        )}
-      </div>
+        </div>
 
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xl font-bold text-[#232323]">{driver.display_name}</h3>
-          {program?.vehicle_number && (
-            <span className="text-xl font-bold text-[#232323]">#{program.vehicle_number}</span>
+        {/* BACK OF CARD */}
+        <div
+          className="absolute inset-0 bg-[#FAFAFA] border border-gray-300 p-6 flex flex-col"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        >
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <CountryFlag country={driver.nationality || driver.hometown_country} />
+              <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight">
+                {driver.first_name} {driver.last_name}
+              </h3>
+            </div>
+            {hometown && (
+              <div className="flex items-center gap-1 text-xs text-gray-600">
+                <MapPin className="w-3 h-3" />
+                {hometown}
+              </div>
+            )}
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {program?.series_name && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
+                <div className="text-sm font-bold text-[#232323]">{program.series_name}</div>
+              </div>
+            )}
+            {program?.class_name && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Class</div>
+                <div className="text-sm font-bold text-[#232323]">{program.class_name}</div>
+              </div>
+            )}
+            {team?.name && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Team</div>
+                <div className="text-sm font-bold text-[#232323]">{team.name}</div>
+              </div>
+            )}
+            {driver.primary_discipline && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Discipline</div>
+                <div className="text-sm font-bold text-[#232323]">{driver.primary_discipline}</div>
+              </div>
+            )}
+            {performance?.career_wins && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wins</div>
+                <div className="text-sm font-bold text-[#232323]">{performance.career_wins}</div>
+              </div>
+            )}
+            {performance?.career_podiums && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Podiums</div>
+                <div className="text-sm font-bold text-[#232323]">{performance.career_podiums}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Bio Section */}
+          {performance?.bio_summary && (
+            <div className="mb-6 flex-1">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">About</div>
+              <p className="text-xs text-gray-700 leading-relaxed line-clamp-4">
+                {performance.bio_summary}
+              </p>
+            </div>
           )}
-        </div>
-        
-        {(driver.hometown_city || driver.hometown_state) && (
-          <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
-            <CountryFlag country={driver.country} />
-            <MapPin className="w-3 h-3" />
-            {driver.hometown_city}{driver.hometown_city && driver.hometown_state ? ', ' : ''}{driver.hometown_state}
+
+          {/* Footer */}
+          <div className="mt-auto pt-4 border-t border-gray-300">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                THE OUTLET
+              </div>
+              <Link
+                to={buildProfileUrl('Driver', driver.slug)}
+                onClick={handleProfileClick}
+                className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors"
+              >
+                View full profile →
+              </Link>
+            </div>
           </div>
-        )}
-
-        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
-          {age && <span>{age} yrs</span>}
-          {age && (program?.class_name || driver.primary_discipline || program?.series_name) && <span>•</span>}
-          {program?.class_name && <span>{program.class_name}</span>}
-          {program?.class_name && (driver.primary_discipline || program?.series_name) && <span>•</span>}
-          {!program?.class_name && driver.primary_discipline && <span>{driver.primary_discipline}</span>}
-          {!program?.class_name && driver.primary_discipline && program?.series_name && <span>•</span>}
-          {program?.series_name && <span>{program.series_name}</span>}
         </div>
-
-        {team && (
-          <div className="mb-4">
-            <Badge variant="outline" className="text-xs">{team.name}</Badge>
-          </div>
-        )}
-
-        <Button variant="outline" className="w-full mt-auto">
-          View Driver
-        </Button>
-      </div>
-    </Link>
+      </motion.div>
+    </div>
   );
 }
