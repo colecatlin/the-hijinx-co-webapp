@@ -137,25 +137,13 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="favorites">Favorites</TabsTrigger>
               <TabsTrigger value="code-input">Code Input</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
               <GeneralTab user={user} formData={formData} setFormData={setFormData} />
-            </TabsContent>
-
-            <TabsContent value="favorites">
-              <FavoritesTab
-                formData={formData}
-                drivers={drivers}
-                teams={teams}
-                series={series}
-                tracks={tracks}
-                toggleFavorite={toggleFavorite}
-              />
             </TabsContent>
 
             <TabsContent value="code-input">
