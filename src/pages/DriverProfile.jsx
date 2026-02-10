@@ -205,12 +205,12 @@ export default function DriverProfile() {
 
             <div className="bg-white border border-gray-200 p-8 mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Date of Birth</div>
-                  <div className="text-lg font-semibold text-[#232323]">
-                    {driver.date_of_birth && format(new Date(driver.date_of_birth), 'MMM d, yyyy')}
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Age</div>
+                    <div className="text-lg font-semibold text-[#232323]">
+                      {driver.date_of_birth ? new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear() : 'N/A'}
+                    </div>
                   </div>
-                </div>
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Hometown</div>
                   <div className="flex items-center gap-2">
