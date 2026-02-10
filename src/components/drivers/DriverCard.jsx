@@ -9,9 +9,7 @@ export default function DriverCard({ driver, program, team, media, performance }
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
-  const handleFlip = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
 
@@ -27,7 +25,11 @@ export default function DriverCard({ driver, program, team, media, performance }
     <div 
       className="relative h-[480px] cursor-pointer"
       style={{ perspective: '1000px' }}
-      onClick={handleFlip}
+      onClick={(e) => {
+        if (!e.target.closest('button')) {
+          handleFlip();
+        }
+      }}
     >
       <motion.div
         className="relative w-full h-full"
