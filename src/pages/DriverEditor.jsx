@@ -15,10 +15,10 @@ import DriverPerformanceSection from '@/components/management/DriverEditor/Drive
 import DriverCommunitySection from '@/components/management/DriverEditor/DriverCommunitySection.jsx';
 import DriverPartnershipSection from '@/components/management/DriverEditor/DriverPartnershipSection.jsx';
 
-export default function DriverEditor() {
+export default function DriverEditor({ driverId: propDriverId }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const driverId = searchParams.get('id') || searchParams.get('driverId');
+  const driverId = propDriverId || searchParams.get('id') || searchParams.get('driverId');
   const [activeTab, setActiveTab] = useState('details');
 
   const { data: driver, isLoading: driverLoading, error: driverError } = useQuery({
