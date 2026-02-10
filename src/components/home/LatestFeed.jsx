@@ -28,19 +28,7 @@ export default function LatestFeed() {
         </Link>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-5 w-full" />
-            </div>
-          ))}
-        </div>
-      ) : stories.length === 0 ? (
-        <p className="text-sm text-gray-400">No published stories yet.</p>
-      ) : (
+      {!isLoading && stories.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stories.map((story) => (
             <Link
