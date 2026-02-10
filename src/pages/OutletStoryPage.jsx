@@ -60,6 +60,20 @@ export default function OutletStoryPage() {
           <ArrowLeft className="w-3 h-3" /> Back to The Outlet
         </Link>
 
+        {story.cover_image && (
+          <div className="mb-8">
+            <img src={story.cover_image} alt={story.title} className="w-full" />
+            {(story.location_city || story.location_state || story.location_country) && (
+              <div className="mt-3">
+                <span className="flex items-center gap-1 text-xs font-bold text-black">
+                  <MapPin className="w-3 h-3" />
+                  {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase block">
           {story.category}
         </span>
@@ -92,20 +106,7 @@ export default function OutletStoryPage() {
           />
         </div>
 
-        {/* Cover image */}
-        {story.cover_image && (
-          <div className="mt-8">
-            <img src={story.cover_image} alt={story.title} className="w-full" />
-            {(story.location_city || story.location_state || story.location_country) && (
-              <div className="mt-3">
-                <span className="flex items-center gap-1 text-xs font-bold text-black">
-                  <MapPin className="w-3 h-3" />
-                  {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
+
 
         {/* Body */}
         <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
