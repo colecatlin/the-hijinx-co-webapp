@@ -104,10 +104,13 @@ export default function DriverEditor() {
   }
 
   if (!driver) {
+    const isAccessDenied = driverError?.response?.status === 403;
     return (
       <PageShell>
         <div className="max-w-6xl mx-auto px-6 py-12">
-          <p className="text-gray-500">Driver not found.</p>
+          <p className="text-gray-500">
+            {isAccessDenied ? 'You do not have access to this driver.' : 'Driver not found.'}
+          </p>
           <Button onClick={() => navigate(createPageUrl('ManageDrivers'))} className="mt-4">
             Back to Drivers
           </Button>
