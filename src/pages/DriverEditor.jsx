@@ -156,7 +156,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
           </TabsList>
 
           <TabsContent value="details">
-            <DriverCoreDetailsSectionWithManagers driver={driver} />
+            {isFromEntityEditor ? (
+              <DriverCoreDetailsSection driver={driver} />
+            ) : (
+              <DriverCoreDetailsSectionWithManagers driver={driver} />
+            )}
           </TabsContent>
 
           <TabsContent value="programs">
