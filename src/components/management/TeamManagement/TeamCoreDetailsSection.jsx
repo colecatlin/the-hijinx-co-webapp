@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import RemoveAccessSection from '@/components/management/RemoveAccessSection';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 
@@ -228,5 +229,7 @@ export default function TeamCoreDetailsSection({ teamId }) {
         </Button>
       </div>
     </Card>
+
+    <RemoveAccessSection entityType="Team" entityId={teamId} />
   );
 }

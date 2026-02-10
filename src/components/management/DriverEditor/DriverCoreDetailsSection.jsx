@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import DateInput from '@/components/shared/DateInput';
 import CountryFlag from '@/components/shared/CountryFlag';
+import RemoveAccessSection from '@/components/management/RemoveAccessSection';
 import { Loader2, Check } from 'lucide-react';
 
 const COUNTRIES = [
@@ -176,5 +177,7 @@ export default function DriverCoreDetailsSection({ driver }) {
         </div>
       </CardContent>
     </Card>
+
+    <RemoveAccessSection entityType="Driver" entityId={driver.id} />
   );
 }
