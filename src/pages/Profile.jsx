@@ -14,6 +14,7 @@ import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
 import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
 import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
+import CodeInputTab from '@/components/profile/CodeInputTab';
 
 export default function Profile() {
   const queryClient = useQueryClient();
@@ -151,7 +152,7 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
               <TabsTrigger value="general">General</TabsTrigger>
               {getRoleSpecificTab() === 'driver' && (
                 <TabsTrigger value="driver">Driver</TabsTrigger>
@@ -166,6 +167,7 @@ export default function Profile() {
                 <TabsTrigger value="track-owner">Track</TabsTrigger>
               )}
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
+              <TabsTrigger value="code-input">Code Input</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
@@ -205,6 +207,10 @@ export default function Profile() {
                 tracks={tracks}
                 toggleFavorite={toggleFavorite}
               />
+            </TabsContent>
+
+            <TabsContent value="code-input">
+              <CodeInputTab user={user} />
             </TabsContent>
           </Tabs>
 

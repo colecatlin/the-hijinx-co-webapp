@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import About from './pages/About';
+import AcceptInvitation from './pages/AcceptInvitation';
 import ApparelHome from './pages/ApparelHome';
 import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
@@ -95,12 +96,12 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import AcceptInvitation from './pages/AcceptInvitation';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "About": About,
+    "AcceptInvitation": AcceptInvitation,
     "ApparelHome": ApparelHome,
     "Contact": Contact,
     "CreativeServices": CreativeServices,
@@ -148,7 +149,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "AcceptInvitation": AcceptInvitation,
 }
 
 export const pagesConfig = {

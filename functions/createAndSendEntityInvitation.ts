@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
     const gmailToken = await base44.asServiceRole.connectors.getAccessToken('gmail');
 
     const subject = `Invitation to manage ${entity_name}`;
-    const acceptLink = `${new URL(req.url).origin}/AcceptInvitation?code=${code}`;
     const formattedExpiration = expirationDate.toLocaleDateString();
 
     const htmlBody = `
@@ -47,10 +46,11 @@ Deno.serve(async (req) => {
           <h2>You're invited to manage ${entity_name}</h2>
           <p>Hello,</p>
           <p>You've been invited to manage <strong>${entity_name}</strong> (${entity_type}) on our platform.</p>
-          <p style="margin-top: 20px;">
-            <a href="${acceptLink}" style="display: inline-block; padding: 12px 24px; background-color: #232323; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Accept Invitation</a>
+          <p style="margin-top: 20px; padding: 16px; background-color: #f5f5f5; border-left: 4px solid #232323; border-radius: 4px;">
+            <strong>Your invitation code:</strong><br>
+            <span style="font-size: 24px; font-weight: bold; font-family: monospace; letter-spacing: 2px; color: #232323;">${code}</span>
           </p>
-          <p>Or copy this code: <strong>${code}</strong></p>
+          <p>Enter this code in the "Code Input" tab on your profile to gain access to manage this entity.</p>
           <p style="color: #666; font-size: 14px;">This invitation expires on ${formattedExpiration}.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;">
           <p style="color: #999; font-size: 12px;">If you didn't expect this invitation, you can safely ignore this email.</p>
