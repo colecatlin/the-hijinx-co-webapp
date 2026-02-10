@@ -5,7 +5,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     // Fetch the .ics file
-    const icsUrl = 'https://ics.ecal.com/ecal-sub/698b948296aa600002feb809/NASCAR.ics';
+    const icsUrl = 'https://ics.ecal.com/ecal-sub/698b96d08270af0002843434/NASCAR.ics';
     const response = await fetch(icsUrl);
     const icsText = await response.text();
     
