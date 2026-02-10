@@ -17,15 +17,42 @@ const DISCIPLINES = [
   'Other'
 ];
 
+const COUNTRIES = [
+  'USA',
+  'Canada',
+  'Mexico',
+  'United Kingdom',
+  'Australia',
+  'Brazil',
+  'France',
+  'Germany',
+  'Italy',
+  'Spain',
+  'Japan',
+  'China',
+  'India',
+  'Russia',
+  'Sweden',
+  'Norway',
+  'Finland',
+  'Netherlands',
+  'Belgium',
+  'Austria',
+  'Switzerland',
+  'Denmark',
+  'Poland',
+  'Argentina',
+  'Chile',
+  'New Zealand',
+  'South Africa'
+];
+
 export default function DriverCoreDetailsSection({ driverId }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     date_of_birth: '',
-    nationality: '',
-    hometown_city: '',
-    hometown_state: '',
-    hometown_country: '',
+    nationality: 'USA',
     location_city: '',
     location_state: '',
     location_country: '',
@@ -50,10 +77,7 @@ export default function DriverCoreDetailsSection({ driverId }) {
           first_name: driverData.first_name || '',
           last_name: driverData.last_name || '',
           date_of_birth: driverData.date_of_birth || '',
-          nationality: driverData.nationality || '',
-          hometown_city: driverData.hometown_city || '',
-          hometown_state: driverData.hometown_state || '',
-          hometown_country: driverData.hometown_country || '',
+          nationality: driverData.nationality || 'USA',
           location_city: driverData.location_city || '',
           location_state: driverData.location_state || '',
           location_country: driverData.location_country || '',
@@ -152,49 +176,16 @@ export default function DriverCoreDetailsSection({ driverId }) {
           </div>
           <div>
             <Label htmlFor="nationality">Nationality</Label>
-            <Input
-              id="nationality"
-              value={formData.nationality}
-              onChange={(e) => handleInputChange('nationality', e.target.value)}
-              placeholder="Nationality"
-              className="mt-2"
-            />
-          </div>
-        </div>
-
-        <div className="border-t pt-6">
-          <h3 className="font-semibold mb-4">Hometown</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="hometown_city">City</Label>
-              <Input
-                id="hometown_city"
-                value={formData.hometown_city}
-                onChange={(e) => handleInputChange('hometown_city', e.target.value)}
-                placeholder="City"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="hometown_state">State/Region</Label>
-              <Input
-                id="hometown_state"
-                value={formData.hometown_state}
-                onChange={(e) => handleInputChange('hometown_state', e.target.value)}
-                placeholder="State"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="hometown_country">Country</Label>
-              <Input
-                id="hometown_country"
-                value={formData.hometown_country}
-                onChange={(e) => handleInputChange('hometown_country', e.target.value)}
-                placeholder="Country"
-                className="mt-2"
-              />
-            </div>
+            <Select value={formData.nationality} onValueChange={(value) => handleInputChange('nationality', value)}>
+              <SelectTrigger id="nationality" className="mt-2">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

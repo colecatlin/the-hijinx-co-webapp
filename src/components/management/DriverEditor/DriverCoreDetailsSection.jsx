@@ -10,15 +10,42 @@ import DateInput from '@/components/shared/DateInput';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { Loader2, Check } from 'lucide-react';
 
+const COUNTRIES = [
+  'USA',
+  'Canada',
+  'Mexico',
+  'United Kingdom',
+  'Australia',
+  'Brazil',
+  'France',
+  'Germany',
+  'Italy',
+  'Spain',
+  'Japan',
+  'China',
+  'India',
+  'Russia',
+  'Sweden',
+  'Norway',
+  'Finland',
+  'Netherlands',
+  'Belgium',
+  'Austria',
+  'Switzerland',
+  'Denmark',
+  'Poland',
+  'Argentina',
+  'Chile',
+  'New Zealand',
+  'South Africa'
+];
+
 export default function DriverCoreDetailsSection({ driver }) {
   const [data, setData] = useState({
     first_name: driver.first_name || '',
     last_name: driver.last_name || '',
     date_of_birth: driver.date_of_birth || '',
-    nationality: driver.nationality || '',
-    hometown_city: driver.hometown_city || '',
-    hometown_state: driver.hometown_state || '',
-    hometown_country: driver.hometown_country || '',
+    nationality: driver.nationality || 'USA',
     primary_number: driver.primary_number || '',
     primary_discipline: driver.primary_discipline || '',
   });
@@ -83,11 +110,16 @@ export default function DriverCoreDetailsSection({ driver }) {
 
           <div className="space-y-2">
             <Label>Nationality</Label>
-            <Input
-              value={data.nationality}
-              onChange={(e) => handleChange('nationality', e.target.value)}
-              placeholder="Country"
-            />
+            <Select value={data.nationality} onValueChange={(value) => handleChange('nationality', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -105,33 +137,6 @@ export default function DriverCoreDetailsSection({ driver }) {
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hometown City</Label>
-            <Input
-              value={data.hometown_city}
-              onChange={(e) => handleChange('hometown_city', e.target.value)}
-              placeholder="City"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hometown State/Region</Label>
-            <Input
-              value={data.hometown_state}
-              onChange={(e) => handleChange('hometown_state', e.target.value)}
-              placeholder="State or region"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hometown Country</Label>
-            <Input
-              value={data.hometown_country}
-              onChange={(e) => handleChange('hometown_country', e.target.value)}
-              placeholder="Country"
-            />
           </div>
         </div>
 
