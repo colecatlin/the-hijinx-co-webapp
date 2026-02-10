@@ -72,38 +72,40 @@ export default function OutletStoryPage() {
         )}
 
         {/* Meta line */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pb-8 border-b border-gray-200">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex flex-col">
-              {story.author && (
-                <span className="text-sm font-semibold">{story.author}</span>
-              )}
-              {story.photo_credit && (
-                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
-              )}
-            </div>
-            {story.author_title && (
-              <span className="text-xs text-gray-400">{story.author_title}</span>
+        <div className="mt-6 pb-8 border-b border-gray-200">
+          {/* First row: Published by and Photo by */}
+          <div className="flex flex-wrap items-center gap-6 mb-4">
+            {story.author && (
+              <span className="text-sm text-gray-700">Published by <span className="font-semibold">{story.author}</span></span>
             )}
-            {story.published_date && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                <Calendar className="w-3 h-3" />
-                {format(new Date(story.published_date), 'MMMM d, yyyy')}
-              </span>
-            )}
-            {story.location && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                <MapPin className="w-3 h-3" />
-                {story.location}
-              </span>
+            {story.photo_credit && (
+              <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
             )}
           </div>
-          <SocialShareButtons 
-            url={window.location.href}
-            title={story.title}
-            description={story.subtitle || story.body?.substring(0, 150)}
-            type="inline"
-          />
+
+          {/* Second row: Location, Date, and Social */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              {story.location && (
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <MapPin className="w-3 h-3" />
+                  {story.location}
+                </span>
+              )}
+              {story.published_date && (
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <Calendar className="w-3 h-3" />
+                  {format(new Date(story.published_date), 'MMMM d, yyyy')}
+                </span>
+              )}
+            </div>
+            <SocialShareButtons 
+              url={window.location.href}
+              title={story.title}
+              description={story.subtitle || story.body?.substring(0, 150)}
+              type="inline"
+            />
+          </div>
         </div>
 
         {/* Cover image */}
