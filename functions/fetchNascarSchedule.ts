@@ -128,3 +128,13 @@ function parseICS(icsText) {
   
   return events.filter(e => e.summary && e.dtstart);
 }
+
+function extractSeriesName(eventSummary) {
+  // Extract series from event title
+  if (eventSummary.includes('Cup')) return 'NASCAR Cup Series';
+  if (eventSummary.includes('Xfinity')) return 'NASCAR Xfinity Series';
+  if (eventSummary.includes('Truck')) return 'NASCAR Truck Series';
+  if (eventSummary.includes('Craftsman')) return 'NASCAR Craftsman Truck Series';
+  if (eventSummary.includes('IndyCar')) return 'IndyCar';
+  return 'NASCAR';
+}
