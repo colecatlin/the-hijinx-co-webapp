@@ -8,6 +8,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import DOMPurify from 'dompurify';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 
 export default function OutletStoryPage() {
@@ -16,7 +17,7 @@ export default function OutletStoryPage() {
 
   const { data: story, isLoading } = useQuery({
     queryKey: ['story', storyId],
-    queryFn: () => base44.entities.OutletStory.list().then(s => s.find(x => x.id === storyId)),
+    queryFn: () => base44.entities.OutletStory.filter({ id: storyId }).then(results => results[0] || null),
     enabled: !!storyId,
   });
 
@@ -107,7 +108,7 @@ export default function OutletStoryPage() {
         )}
 
         {/* Body */}
-        <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: story.body || '' }} />
+        <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
 
         {/* Tags */}
         {story.tags?.length > 0 && (

@@ -77,11 +77,13 @@ export default function DriverProfile() {
   const { data: allTeams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    enabled: !!driver?.id && programs.length > 0,
   });
 
   const { data: allSeries = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    enabled: !!driver?.id && programs.length > 0,
   });
 
   if (isLoading) {
@@ -121,7 +123,7 @@ export default function DriverProfile() {
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'media', label: 'Media', icon: Camera },
     { id: 'partnerships', label: 'Partnerships', icon: Heart },
-    { id: 'community', label: 'Community', icon: Heart },
+    { id: 'community', label: 'Community', icon: Users },
   ];
 
   const primaryProgram = sortedPrograms.find(p => p.is_primary) || sortedPrograms[0];
