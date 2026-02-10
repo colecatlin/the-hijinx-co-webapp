@@ -23,6 +23,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
   const [activeTab, setActiveTab] = useState('details');
   const isFromEntityEditor = !!propDriverId;
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: driver, isLoading: driverLoading, error: driverError } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: async () => {
@@ -126,6 +131,9 @@ export default function DriverEditor({ driverId: propDriverId }) {
     );
   }
 
+  // Only show access management section to admin users in the admin backend
+  const showAccessManagement = currentUser?.role === 'admin' && !isFromEntityEditor;
+
   return (
     <PageShell>
       <div className="max-w-6xl mx-auto px-6 py-12">
@@ -157,10 +165,10 @@ export default function DriverEditor({ driverId: propDriverId }) {
           </TabsList>
 
           <TabsContent value="details">
-            {isFromEntityEditor ? (
-              <DriverCoreDetailsSection driver={driver} />
-            ) : (
+            {showAccessManagement ? (
               <DriverCoreDetailsSectionWithManagers driver={driver} />
+            ) : (
+              <DriverCoreDetailsSection driver={driver} />
             )}
           </TabsContent>
 
