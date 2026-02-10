@@ -9,6 +9,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 
 import { DriverCoreDetailsSectionWithManagers } from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
+import DriverCoreDetailsSection from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
 import DriverProgramsSection from '@/components/management/DriverEditor/DriverProgramsSection.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
 import DriverPerformanceSection from '@/components/management/DriverEditor/DriverPerformanceSection.jsx';
