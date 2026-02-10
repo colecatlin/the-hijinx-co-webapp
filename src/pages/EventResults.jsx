@@ -22,6 +22,22 @@ export default function EventResults() {
     enabled: !!eventId,
   });
 
+  // Fetch related entities for links
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+    enabled: !!event?.track_id,
+  });
+
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+    enabled: !!event?.series_id,
+  });
+
+  const track = tracks.find(t => t.id === event?.track_id);
+  const seriesItem = series.find(s => s.id === event?.series_id);
+
   if (isLoading) {
     return (
       <PageShell>
