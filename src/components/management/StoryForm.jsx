@@ -56,7 +56,11 @@ export default function StoryForm({ story, onClose }) {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    if (field === 'status' && value === 'published' && !formData.published_date) {
+      setFormData({ ...formData, [field]: value, published_date: new Date().toISOString() });
+    } else {
+      setFormData({ ...formData, [field]: value });
+    }
     
     if (field === 'title' && !story) {
       const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
