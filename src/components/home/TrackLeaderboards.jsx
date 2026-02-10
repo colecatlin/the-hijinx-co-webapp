@@ -43,15 +43,25 @@ export default function TrackLeaderboards() {
         <p className="text-sm text-gray-600 mb-8">Rankings update as the database grows.</p>
 
         {/* Top 3 Featured Tracks */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {topRatedTracks.slice(0, 3).map((track, idx) => (
-            <div key={track.id} className="relative">
+            <div key={track.id} className="relative h-96">
               <div className="absolute -top-3 -left-3 z-10 bg-[#232323] text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
                 {idx + 1}
               </div>
-              <div className="transform scale-105">
-                <TrackCard track={track} />
+              <TrackCard track={track} />
+            </div>
+          ))}
+        </div>
+
+        {/* Ranks 4 and 5 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+          {topRatedTracks.slice(3, 5).map((track, idx) => (
+            <div key={track.id} className="relative h-44">
+              <div className="absolute -top-2 -left-2 z-10 bg-[#232323] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                {idx + 4}
               </div>
+              <TrackCard track={track} />
             </div>
           ))}
         </div>
