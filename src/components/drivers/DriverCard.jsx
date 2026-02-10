@@ -75,8 +75,10 @@ export default function DriverCard({ driver, program, team, media, performance }
               <div className="text-xl font-black text-[#232323] tracking-tight text-center uppercase">
                 {driver.first_name} {driver.last_name}
               </div>
-              <div className="absolute bottom-3 right-4 text-xs text-gray-500 font-medium">
-                Read more →
+              <div className="absolute bottom-3 right-4 text-gray-500">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
           </div>
