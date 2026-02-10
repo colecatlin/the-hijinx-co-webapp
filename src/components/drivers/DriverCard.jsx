@@ -17,7 +17,7 @@ export default function DriverCard({ driver, program, team, media, performance }
   const handleProfileClick = (e) => {
     e.stopPropagation();
     const slug = driver.slug || `${driver.first_name.toLowerCase()}-${driver.last_name.toLowerCase()}`;
-    navigate(createPageUrl(`DriverProfile?slug=${slug}`));
+    navigate(createPageUrl('DriverProfile', { slug }));
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
