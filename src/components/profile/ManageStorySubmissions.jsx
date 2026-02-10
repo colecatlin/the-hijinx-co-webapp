@@ -60,24 +60,24 @@ export default function ManageStorySubmissions({ user }) {
 
       <div className="divide-y divide-gray-200">
         {submissions.map((submission) => (
-          <div key={submission.id} className="p-6">
+          <div key={submission.id} className="p-4 sm:p-6">
             <button
               onClick={() => setExpandedId(expandedId === submission.id ? null : submission.id)}
-              className="w-full text-left flex items-start justify-between hover:bg-gray-50 p-0"
+              className="w-full text-left flex items-start justify-between hover:bg-gray-50 p-0 gap-2"
             >
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-2">{submission.title}</h3>
-                <div className="flex gap-3 items-center">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 line-clamp-2">{submission.title}</h3>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center">
                   <Badge className={getStatusColor(submission.status)}>
                     {submission.status}
                   </Badge>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {new Date(submission.created_date).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               <ChevronDown 
-                className={`w-5 h-5 text-gray-400 transition-transform ${
+                className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform flex-shrink-0 mt-1 ${
                   expandedId === submission.id ? 'rotate-180' : ''
                 }`}
               />
@@ -86,23 +86,23 @@ export default function ManageStorySubmissions({ user }) {
             {expandedId === submission.id && (
               <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Category</h4>
-                  <p className="text-sm text-gray-600">{submission.category}</p>
+                  <h4 className="font-semibold text-xs sm:text-sm text-gray-700 mb-1">Category</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{submission.category}</p>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Pitch</h4>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{submission.pitch}</p>
+                  <h4 className="font-semibold text-xs sm:text-sm text-gray-700 mb-1">Pitch</h4>
+                  <p className="text-xs sm:text-sm text-gray-600 whitespace-pre-wrap">{submission.pitch}</p>
                 </div>
 
                 {submission.writing_sample_url && (
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-1">Writing Sample</h4>
+                    <h4 className="font-semibold text-xs sm:text-sm text-gray-700 mb-1">Writing Sample</h4>
                     <a
                       href={submission.writing_sample_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
+                      className="text-xs sm:text-sm text-blue-600 hover:underline break-all"
                     >
                       View Sample
                     </a>
@@ -111,14 +111,14 @@ export default function ManageStorySubmissions({ user }) {
 
                 {submission.photo_urls?.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-2">Photos</h4>
-                    <div className="grid grid-cols-3 gap-2">
+                    <h4 className="font-semibold text-xs sm:text-sm text-gray-700 mb-2">Photos</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {submission.photo_urls.map((url, idx) => (
                         <img
                           key={idx}
                           src={url}
                           alt={`Photo ${idx + 1}`}
-                          className="w-full h-24 object-cover rounded"
+                          className="w-full h-20 sm:h-24 object-cover rounded"
                         />
                       ))}
                     </div>
@@ -127,14 +127,14 @@ export default function ManageStorySubmissions({ user }) {
 
                 {submission.status === 'declined' && submission.decline_reason && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <h4 className="font-semibold text-sm text-red-900 mb-1">Decline Reason</h4>
-                    <p className="text-sm text-red-800 whitespace-pre-wrap">{submission.decline_reason}</p>
+                    <h4 className="font-semibold text-xs sm:text-sm text-red-900 mb-1">Decline Reason</h4>
+                    <p className="text-xs sm:text-sm text-red-800 whitespace-pre-wrap">{submission.decline_reason}</p>
                   </div>
                 )}
 
                 {submission.status === 'accepted' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-800 font-medium">✓ Your story has been accepted and published!</p>
+                    <p className="text-xs sm:text-sm text-green-800 font-medium">✓ Your story has been accepted and published!</p>
                   </div>
                 )}
               </div>

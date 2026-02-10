@@ -95,13 +95,13 @@ export default function StorySubmissionForm({ user }) {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">Submit a Story for Approval</h2>
+        <h2 className="text-lg sm:text-xl font-bold">Submit a Story for Approval</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium mb-2">Title *</label>
             <Input
