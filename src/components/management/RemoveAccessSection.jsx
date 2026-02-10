@@ -28,6 +28,10 @@ export default function RemoveAccessSection({ entityType, entityId }) {
       });
       setDeletingId(null);
     },
+    onError: (error) => {
+      console.error('Failed to remove access:', error);
+      setDeletingId(null);
+    },
   });
 
   if (isLoading) {
