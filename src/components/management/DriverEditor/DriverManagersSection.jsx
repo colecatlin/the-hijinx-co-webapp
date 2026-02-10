@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Loader2, Plus, X, Trash2 } from 'lucide-react';
 import DriverAccessForm from './DriverAccessForm';
 
 export default function DriverManagersSection({ driverId, driver }) {
   const [showForm, setShowForm] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: managers = [], isLoading } = useQuery({
     queryKey: ['driverManagers', driverId],
     queryFn: () => base44.entities.EntityCollaborator.filter({
@@ -17,7 +24,16 @@ export default function DriverManagersSection({ driverId, driver }) {
     }),
   });
 
-  if (isLoading) {
+  const deleteMutation = useMutation({
+    mutationFn: (managerId) => base44.entities.EntityCollaborator.delete(managerId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverManagers', driverId] });
+    },
+  });
+
+  const isAdmin = currentUser?.role === 'admin';
+
+  if (isLoading || userLoading) {
     return (
       <Card>
         <CardHeader>
@@ -29,6 +45,11 @@ export default function DriverManagersSection({ driverId, driver }) {
         </CardContent>
       </Card>
     );
+  }
+
+  // Only show this section to admins
+  if (!isAdmin) {
+    return null;
   }
 
   return (
@@ -73,9 +94,24 @@ export default function DriverManagersSection({ driverId, driver }) {
                 <div>
                   <p className="text-sm font-medium text-gray-900">{manager.user_email}</p>
                 </div>
-                <Badge variant={manager.role === 'owner' ? 'default' : 'secondary'}>
-                  {manager.role}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={manager.role === 'owner' ? 'default' : 'secondary'}>
+                    {manager.role}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deleteMutation.mutate(manager.id)}
+                    disabled={deleteMutation.isPending}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {deleteMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
