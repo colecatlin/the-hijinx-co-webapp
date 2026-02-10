@@ -155,7 +155,7 @@ export default function DriverEditor({ driverId: propDriverId }) {
           </TabsList>
 
           <TabsContent value="details">
-            <DriverCoreDetailsSection driver={driver} />
+            <DriverCoreDetailsSectionWithManagers driver={driver} />
           </TabsContent>
 
           <TabsContent value="programs">
