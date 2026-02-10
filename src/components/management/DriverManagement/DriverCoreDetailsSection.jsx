@@ -53,6 +53,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     first_name: '',
     last_name: '',
     date_of_birth: '',
+    contact_email: '',
     hometown_city: '',
     hometown_state: '',
     hometown_country: 'USA',
@@ -79,6 +80,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         first_name: '',
         last_name: '',
         date_of_birth: '',
+        contact_email: '',
         hometown_city: '',
         hometown_state: '',
         hometown_country: 'USA',
@@ -95,6 +97,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           first_name: driverData.first_name || '',
           last_name: driverData.last_name || '',
           date_of_birth: driverData.date_of_birth || '',
+          contact_email: driverData.contact_email || '',
           hometown_city: driverData.hometown_city || '',
           hometown_state: driverData.hometown_state || '',
           hometown_country: driverData.hometown_country || 'USA',
@@ -151,16 +154,25 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   };
 
   const invitationMutation = useMutation({
-    mutationFn: (email) => base44.functions.invoke('createAndSendEntityInvitation', {
-      email,
-      entity_type: 'Driver',
-      entity_id: driverId,
-      entity_name: `${formData.first_name} ${formData.last_name}`,
-      expiration_days: 30
-    }),
+    mutationFn: async (email) => {
+      await base44.functions.invoke('createAndSendEntityInvitation', {
+        email,
+        entity_type: 'Driver',
+        entity_id: driverId,
+        entity_name: `${formData.first_name} ${formData.last_name}`,
+        expiration_days: 30
+      });
+      // Save email to driver contact_email field
+      return base44.functions.invoke('updateEntitySafely', {
+        entity_type: 'Driver',
+        entity_id: driverId,
+        data: { contact_email: email }
+      });
+    },
     onSuccess: () => {
       toast.success('Invitation sent successfully');
       setInvitationEmail('');
+      queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
     },
     onError: (error) => {
       toast.error(`Failed to send invitation: ${error.message}`);
@@ -238,6 +250,18 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               {calculateAge(formData.date_of_birth) || '—'}
             </div>
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="contact_email">Contact Email</Label>
+          <Input
+            id="contact_email"
+            type="email"
+            value={formData.contact_email}
+            onChange={(e) => handleInputChange('contact_email', e.target.value)}
+            placeholder="Contact email address"
+            className="mt-2"
+          />
         </div>
 
         <div className="border-t pt-6">
