@@ -34,13 +34,6 @@ Deno.serve(async (req) => {
       invited_by: user.email,
     });
 
-    // Invite user via Base44 platform
-    try {
-      await base44.users.inviteUser(email, 'user');
-    } catch (inviteError) {
-      console.log('User may already exist or invite failed:', inviteError.message);
-    }
-
     // Send invitation email via Gmail
     const gmailToken = await base44.asServiceRole.connectors.getAccessToken('gmail');
 

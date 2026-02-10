@@ -34,6 +34,7 @@ export default function AcceptInvitation() {
     const urlCode = params.get('code');
     if (urlCode) {
       setInvitationCode(urlCode);
+      setCode(urlCode);
     }
 
     if (userLoading) return;
@@ -45,11 +46,14 @@ export default function AcceptInvitation() {
       }, 1500);
     } else {
       setStep('verify');
+      if (urlCode && user && !isVerifying) {
+        handleVerifyCode(urlCode);
+      }
     }
-  }, [isAuthenticated, userLoading, location]);
+  }, [isAuthenticated, userLoading, location, user, isVerifying]);
 
-  const handleVerifyCode = async () => {
-    if (!code || code.length !== 8) {
+  const handleVerifyCode = async (codeToVerify = code) => {
+    if (!codeToVerify || codeToVerify.length !== 8) {
       setVerificationError('Please enter an 8-digit code');
       return;
     }
@@ -59,7 +63,7 @@ export default function AcceptInvitation() {
 
     try {
       const result = await base44.functions.invoke('verifyInvitationCode', {
-        code,
+        code: codeToVerify,
         email: user.email,
       });
 
