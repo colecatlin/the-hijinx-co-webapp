@@ -24,12 +24,26 @@ export default function DriverForm({ driver, onClose }) {
 
   const queryClient = useQueryClient();
 
+  const generateUniqueNumericId = async () => {
+    let numericId;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      numericId = String(Math.floor(Math.random() * 90000000) + 10000000);
+      const existing = await base44.entities.Driver.filter({ numeric_id: numericId });
+      isUnique = existing.length === 0;
+    }
+    
+    return numericId;
+  };
+
   const saveMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       if (driver) {
         return base44.entities.Driver.update(driver.id, data);
       }
-      return base44.entities.Driver.create(data);
+      const numericId = await generateUniqueNumericId();
+      return base44.entities.Driver.create({ ...data, numeric_id: numericId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
