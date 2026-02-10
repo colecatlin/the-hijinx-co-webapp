@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, ExternalLink, Calendar, Users, TrendingUp, Camera, Settings, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import RateTrackModule from '@/components/tracks/RateTrackModule';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -269,6 +270,8 @@ export default function TrackProfile() {
                 </a>
               )}
             </div>
+
+            <RateTrackModule track={track} />
           </div>
         </div>
 
