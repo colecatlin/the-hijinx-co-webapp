@@ -16,9 +16,9 @@ export default function DriverCard({ driver, program, team, media, performance }
   };
 
   const handleProfileClick = (e) => {
-    e.preventDefault();
     e.stopPropagation();
-    navigate(buildProfileUrl('Driver', driver.slug));
+    const url = buildProfileUrl('Driver', driver.slug);
+    window.location.href = url;
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
