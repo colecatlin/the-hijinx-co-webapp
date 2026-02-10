@@ -175,12 +175,20 @@ export default function DriverProfile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
             <div className="flex items-start justify-between mb-2">
-              <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                description=""
-              />
+              <div className="flex items-center gap-3">
+                <CountryFlag country={driver.hometown_country} />
+                <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <SocialShareButtons 
+                  url={window.location.href}
+                  title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
+                  description=""
+                />
+                {primaryProgram?.bib_number && (
+                  <div className="text-sm font-semibold text-gray-600">#{primaryProgram.bib_number}</div>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-6">
