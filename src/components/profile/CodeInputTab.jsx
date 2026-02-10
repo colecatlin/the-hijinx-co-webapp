@@ -48,20 +48,22 @@ export default function CodeInputTab({ user }) {
     setSuccess(null);
 
     try {
-      const result = await base44.functions.invoke('verifyInvitationCode', {
+      const result = await base44.functions.invoke('verifyAccessCode', {
         code,
-        email: user.email,
       });
 
       if (result.data.success) {
-        setSuccess(result.data.data);
-        toast.success(`Access granted to ${result.data.data.entity_name}!`);
+        setSuccess({
+          entity_name: result.data.entity.name || `${result.data.entity.first_name} ${result.data.entity.last_name}`,
+          entityType: result.data.entityType,
+        });
+        toast.success(`Access granted!`);
         setCode('');
         setEntityType('');
         setTimeout(() => setSuccess(null), 5000);
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.error || 'Failed to verify code. Please check and try again.';
+      const errorMsg = err.response?.data?.error || 'Invalid access code';
       setError(errorMsg);
       toast.error('Verification failed');
     } finally {
