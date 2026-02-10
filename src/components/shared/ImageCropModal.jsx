@@ -1,14 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-
-if (!React) {
-  throw new Error('React is not properly imported');
-}
 
 const createImage = (url) =>
   new Promise((resolve, reject) => {
