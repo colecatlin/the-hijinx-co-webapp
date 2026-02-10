@@ -16,7 +16,7 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlug = urlParams.get('id');
+  const driverSlug = urlParams.get('slug');
   const [activeSection, setActiveSection] = useState('overview');
 
   React.useEffect(() => {
