@@ -73,23 +73,22 @@ export default function OutletStoryPage() {
 
         {/* Meta line */}
         <div className="mt-6 pb-8 border-b border-gray-200">
-          {/* First row: Published by, Photo by, and Social */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div className="flex flex-wrap items-center gap-6">
-              {story.author && (
-                <span className="text-xs text-gray-400">Published by {story.author}</span>
-              )}
-              {story.photo_credit && (
-                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
-              )}
-            </div>
-            <SocialShareButtons 
-              url={window.location.href}
-              title={story.title}
-              description={story.subtitle || story.body?.substring(0, 150)}
-              type="inline"
-            />
+          {/* Stacked: Published by and Photo by */}
+          <div className="flex flex-col gap-2 mb-4">
+            {story.author && (
+              <span className="text-xs text-gray-400">Published by {story.author}</span>
+            )}
+            {story.photo_credit && (
+              <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
+            )}
           </div>
+          {/* Social buttons below */}
+          <SocialShareButtons 
+            url={window.location.href}
+            title={story.title}
+            description={story.subtitle || story.body?.substring(0, 150)}
+            type="inline"
+          />
         </div>
 
         {/* Cover image */}
@@ -98,7 +97,7 @@ export default function OutletStoryPage() {
             <img src={story.cover_image} alt={story.title} className="w-full" />
             {story.location && (
               <div className="mt-3">
-                <span className="flex items-center gap-1 text-xs text-gray-400">
+                <span className="flex items-center gap-1 text-xs font-bold text-black">
                   <MapPin className="w-3 h-3" />
                   {story.location}
                 </span>
