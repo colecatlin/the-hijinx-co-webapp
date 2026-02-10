@@ -1,62 +1,182 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import SectionHeader from '@/components/shared/SectionHeader';
-import EmptyState from '@/components/shared/EmptyState';
+import TeamCard from '@/components/teams/TeamCard';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Search, ArrowRight } from 'lucide-react';
 
 export default function TeamDirectory() {
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    discipline: 'all',
+    level: 'all',
+    status: 'all',
+    state: 'all',
+  });
+  const [sortBy, setSortBy] = useState('name');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.filter({ status: 'active' }, 'name', 100),
+    queryFn: () => base44.entities.Team.list(),
   });
 
-  const filtered = teams.filter(t =>
-    !search || t.name?.toLowerCase().includes(search.toLowerCase()) || t.location?.toLowerCase().includes(search.toLowerCase())
-  );
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['teamPrograms'],
+    queryFn: () => base44.entities.TeamProgram.list(),
+  });
+
+  const { data: allRoster = [] } = useQuery({
+    queryKey: ['teamRoster'],
+    queryFn: () => base44.entities.TeamRoster.list(),
+  });
+
+  const { data: allPerformance = [] } = useQuery({
+    queryKey: ['teamPerformance'],
+    queryFn: () => base44.entities.TeamPerformance.list(),
+  });
+
+  const { data: allMedia = [] } = useQuery({
+    queryKey: ['teamMedia'],
+    queryFn: () => base44.entities.TeamMedia.list(),
+  });
+
+  const filteredTeams = teams
+    .filter(team => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = team.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
+
+      if (filters.discipline !== 'all' && team.primary_discipline !== filters.discipline) return false;
+      if (filters.level !== 'all' && team.team_level !== filters.level) return false;
+      if (filters.status !== 'all' && team.status !== filters.status) return false;
+      if (filters.state !== 'all' && team.headquarters_state !== filters.state) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'discipline') return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
+      if (sortBy === 'level') {
+        const order = { International: 1, National: 2, Regional: 3, Local: 4 };
+        return (order[a.team_level] || 5) - (order[b.team_level] || 5);
+      }
+      if (sortBy === 'founded') return (b.founded_year || 0) - (a.founded_year || 0);
+      if (sortBy === 'content_value') {
+        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
+        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
+      }
+      return 0;
+    });
+
+  const uniqueStates = [...new Set(teams.map(t => t.headquarters_state).filter(Boolean))].sort();
 
   return (
-    <PageShell>
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
-        <SectionHeader label="Motorsports" title="Team Directory" subtitle="Teams competing across all series." />
-
-        <div className="flex items-center gap-2 border-b-2 border-gray-200 focus-within:border-[#0A0A0A] max-w-md mb-10 transition-colors">
-          <Search className="w-4 h-4 text-gray-300" />
-          <input type="text" placeholder="Search teams..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 py-2 text-sm bg-transparent outline-none placeholder:text-gray-300" />
+    <PageShell className="bg-[#FFF8F5]">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-8">
+          <h1 className="text-4xl font-black text-[#232323] mb-2">Teams</h1>
+          <p className="text-gray-600">Programs, rosters, results, and who is building what</p>
         </div>
 
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                { value: 'Road Racing', label: 'Road Racing' },
+                { value: 'Rallycross', label: 'Rallycross' },
+                { value: 'Drag Racing', label: 'Drag Racing' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]
+            },
+            {
+              key: 'level',
+              label: 'Level',
+              options: [
+                { value: 'all', label: 'All Levels' },
+                { value: 'International', label: 'International' },
+                { value: 'National', label: 'National' },
+                { value: 'Regional', label: 'Regional' },
+                { value: 'Local', label: 'Local' },
+              ]
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Part Time', label: 'Part Time' },
+                { value: 'Historic', label: 'Historic' },
+              ]
+            },
+            {
+              key: 'state',
+              label: 'State',
+              options: [
+                { value: 'all', label: 'All States' },
+                ...uniqueStates.map(s => ({ value: s, label: s }))
+              ]
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'level', label: 'Level' },
+            { value: 'founded', label: 'Founded Year' },
+            { value: 'content_value', label: 'Content Value' },
+          ]}
+        />
+
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
-          </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState icon={Building2} title="No teams found" message="Teams will appear here once added." />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((team) => (
-              <Link key={team.id} to={createPageUrl('TeamProfile') + `?id=${team.id}`}
-                className="group flex items-center gap-4 p-5 border border-gray-200 hover:border-[#0A0A0A] transition-colors">
-                <div className="w-14 h-14 bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                  {team.logo_url ? (
-                    <img src={team.logo_url} alt={team.name} className="w-full h-full object-contain p-1" />
-                  ) : (
-                    <span className="text-lg font-black text-gray-300">{team.name?.[0]}</span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm group-hover:underline truncate">{team.name}</h3>
-                  <p className="text-[10px] text-gray-400 mt-1">{team.location}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#0A0A0A] transition-colors shrink-0" />
-              </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-80" />
             ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTeams.map(team => {
+              const programs = allPrograms.filter(p => p.team_id === team.id);
+              const drivers = allRoster.filter(r => r.team_id === team.id && r.role === 'Driver' && r.active);
+              const performance = allPerformance.find(p => p.team_id === team.id);
+              const media = allMedia.find(m => m.team_id === team.id);
+              
+              return (
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  programs={programs}
+                  programsCount={programs.length}
+                  driversCount={drivers.length}
+                  performance={performance}
+                  media={media}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {!isLoading && filteredTeams.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No teams found matching your filters.</p>
           </div>
         )}
       </div>

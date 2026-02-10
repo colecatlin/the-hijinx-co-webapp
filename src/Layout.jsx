@@ -22,7 +22,7 @@ const navItems = [
             { name: 'Standings', page: 'StandingsHome' },
             { name: 'Schedule', page: 'ScheduleHome' },
             { name: 'Results', page: 'ResultsHome' },
-            { name: 'Teams', page: 'TeamsDirectory' },
+            { name: 'Teams', page: 'TeamDirectory' },
             { name: 'Tracks', page: 'TrackDirectory' },
           ]},
   { name: 'Apparel', page: 'ApparelHome' },

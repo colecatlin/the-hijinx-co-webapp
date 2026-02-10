@@ -94,7 +94,6 @@ import SeriesHome from './pages/SeriesHome';
 import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
-import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
@@ -149,7 +148,6 @@ export const PAGES = {
     "StandingsHome": StandingsHome,
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
-    "TeamsDirectory": TeamsDirectory,
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
