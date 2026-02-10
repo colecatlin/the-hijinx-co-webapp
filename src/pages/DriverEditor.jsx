@@ -24,6 +24,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
   const { data: driver, isLoading: driverLoading, error: driverError } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: async () => {
+      if (propDriverId) {
+        // Called from EntityEditor with direct ID
+        return base44.entities.Driver.get(driverId);
+      }
+      // Called directly with access code check
       const response = await base44.functions.invoke('getDriverWithAccess', { driverId });
       return response.data.driver;
     },
