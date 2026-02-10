@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Generate unique invitation code
-    const code = crypto.randomUUID();
+    // Generate unique 8-digit invitation code
+    const code = String(Math.floor(Math.random() * 100000000)).padStart(8, '0');
 
     // Calculate expiration date
     const expirationDate = new Date();
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     const gmailToken = await base44.asServiceRole.connectors.getAccessToken('gmail');
 
     const subject = `Invitation to manage ${entity_name}`;
-    const acceptLink = `${new URL(req.url).origin}/accept-invitation?code=${code}`;
+    const acceptLink = `${new URL(req.url).origin}${createPageUrl('AcceptInvitation')}?code=${code}`;
     const formattedExpiration = expirationDate.toLocaleDateString();
 
     const htmlBody = `
