@@ -32,6 +32,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invitation has expired' }, { status: 400 });
     }
 
+    // Fetch the entity to get its numeric_id if not in invitation
+    const accessCode = invitation.access_code || await (async () => {
+      const entity = await base44.asServiceRole.entities[invitation.entity_type].get(invitation.entity_id);
+      return entity?.numeric_id;
+    })();
+
+    if (!accessCode) {
+      return Response.json({ error: 'Entity access code not found' }, { status: 404 });
+    }
+
     // Create EntityCollaborator record (user becomes owner)
     const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
       user_id: user.id,
@@ -39,6 +49,7 @@ Deno.serve(async (req) => {
       entity_type: invitation.entity_type,
       entity_id: invitation.entity_id,
       entity_name: invitation.entity_name,
+      access_code: accessCode,
       role: 'owner'
     });
 
