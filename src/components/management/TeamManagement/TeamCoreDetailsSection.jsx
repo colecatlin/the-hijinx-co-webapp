@@ -85,6 +85,7 @@ export default function TeamCoreDetailsSection({ teamId }) {
   };
 
   return (
+    <>
     <Card className="p-6">
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -230,6 +231,9 @@ export default function TeamCoreDetailsSection({ teamId }) {
       </div>
     </Card>
 
-    <RemoveAccessSection entityType="Team" entityId={teamId} />
+    <div className="mt-6">
+      <RemoveAccessSection entityType="Team" entityId={teamId} />
+    </div>
+    </>
   );
 }

@@ -70,12 +70,13 @@ export default function DriverCoreDetailsSection({ driver }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Core Details</CardTitle>
-        <CardDescription>Manage basic driver information</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Core Details</CardTitle>
+          <CardDescription>Manage basic driver information</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>First Name</Label>
@@ -178,6 +179,9 @@ export default function DriverCoreDetailsSection({ driver }) {
       </CardContent>
     </Card>
 
-    <RemoveAccessSection entityType="Driver" entityId={driver.id} />
+    <div className="mt-6">
+      <RemoveAccessSection entityType="Driver" entityId={driver.id} />
+    </div>
+    </>
   );
 }

@@ -85,6 +85,7 @@ export default function TrackCoreDetailsSection({ trackId }) {
   };
 
   return (
+    <>
     <Card className="p-6">
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -225,6 +226,9 @@ export default function TrackCoreDetailsSection({ trackId }) {
       </div>
     </Card>
 
-    <RemoveAccessSection entityType="Track" entityId={trackId} />
+    <div className="mt-6">
+      <RemoveAccessSection entityType="Track" entityId={trackId} />
+    </div>
+    </>
   );
 }

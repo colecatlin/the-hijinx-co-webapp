@@ -55,6 +55,7 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   };
 
   return (
+    <>
     <Card className="p-6">
       <div className="space-y-4">
         <div>
@@ -174,6 +175,9 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
       </div>
     </Card>
 
-    <RemoveAccessSection entityType="Series" entityId={seriesId} />
+    <div className="mt-6">
+      <RemoveAccessSection entityType="Series" entityId={seriesId} />
+    </div>
+    </>
   );
 }
