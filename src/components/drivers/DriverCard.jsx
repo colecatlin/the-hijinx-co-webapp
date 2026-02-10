@@ -33,7 +33,7 @@ export default function DriverCard({ driver, program, team, media, performance }
     >
       <motion.div
         className="relative w-full h-full"
-        style={{ transformStyle: 'preserve-3d' }}
+        style={{ transformStyle: 'preserve-3d', pointerEvents: 'auto' }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.4, ease: 'easeInOut' }}
       >
@@ -163,8 +163,9 @@ export default function DriverCard({ driver, program, team, media, performance }
           <div className="mt-auto pt-4 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
               <button
+                type="button"
                 onClick={handleProfileClick}
-                className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors"
+                className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
               >
                 View full profile →
               </button>
