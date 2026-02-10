@@ -1,128 +1,182 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
-import { Users, Search, MapPin } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import SectionHeader from '@/components/shared/SectionHeader';
+import TeamCard from '@/components/teams/TeamCard';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TeamsDirectory() {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    discipline: 'all',
+    level: 'all',
+    status: 'all',
+    state: 'all',
+  });
+  const [sortBy, setSortBy] = useState('name');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
   });
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['teamPrograms'],
+    queryFn: () => base44.entities.TeamProgram.list(),
   });
 
-  const isAdmin = user?.role === 'admin';
-
-  const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(search.toLowerCase()) ||
-      team.base_city?.toLowerCase().includes(search.toLowerCase());
-    
-    let matchesStatus = true;
-    if (!isAdmin) {
-      matchesStatus = team.status === 'Active';
-    } else if (statusFilter !== 'all') {
-      matchesStatus = team.status === statusFilter;
-    }
-
-    return matchesSearch && matchesStatus;
+  const { data: allRoster = [] } = useQuery({
+    queryKey: ['teamRoster'],
+    queryFn: () => base44.entities.TeamRoster.list(),
   });
+
+  const { data: allPerformance = [] } = useQuery({
+    queryKey: ['teamPerformance'],
+    queryFn: () => base44.entities.TeamPerformance.list(),
+  });
+
+  const { data: allMedia = [] } = useQuery({
+    queryKey: ['teamMedia'],
+    queryFn: () => base44.entities.TeamMedia.list(),
+  });
+
+  const filteredTeams = teams
+    .filter(team => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = team.name?.toLowerCase().includes(query);
+        if (!matchesName) return false;
+      }
+
+      if (filters.discipline !== 'all' && team.primary_discipline !== filters.discipline) return false;
+      if (filters.level !== 'all' && team.team_level !== filters.level) return false;
+      if (filters.status !== 'all' && team.status !== filters.status) return false;
+      if (filters.state !== 'all' && team.headquarters_state !== filters.state) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'discipline') return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
+      if (sortBy === 'level') {
+        const order = { International: 1, National: 2, Regional: 3, Local: 4 };
+        return (order[a.team_level] || 5) - (order[b.team_level] || 5);
+      }
+      if (sortBy === 'founded') return (b.founded_year || 0) - (a.founded_year || 0);
+      if (sortBy === 'content_value') {
+        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
+        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
+      }
+      return 0;
+    });
+
+  const uniqueStates = [...new Set(teams.map(t => t.headquarters_state).filter(Boolean))].sort();
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <SectionHeader
-          title="Teams"
-          subtitle="Racing teams and organizations"
-        />
-
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search teams..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          {isAdmin && (
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Draft">Draft</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
+        <div className="mb-8">
+          <h1 className="text-4xl font-black text-[#232323] mb-2">Teams</h1>
+          <p className="text-gray-600">Programs, rosters, results, and who is building what</p>
         </div>
+
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
+                { value: 'Road Racing', label: 'Road Racing' },
+                { value: 'Rallycross', label: 'Rallycross' },
+                { value: 'Drag Racing', label: 'Drag Racing' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]
+            },
+            {
+              key: 'level',
+              label: 'Level',
+              options: [
+                { value: 'all', label: 'All Levels' },
+                { value: 'International', label: 'International' },
+                { value: 'National', label: 'National' },
+                { value: 'Regional', label: 'Regional' },
+                { value: 'Local', label: 'Local' },
+              ]
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Part Time', label: 'Part Time' },
+                { value: 'Historic', label: 'Historic' },
+              ]
+            },
+            {
+              key: 'state',
+              label: 'State',
+              options: [
+                { value: 'all', label: 'All States' },
+                ...uniqueStates.map(s => ({ value: s, label: s }))
+              ]
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'level', label: 'Level' },
+            { value: 'founded', label: 'Founded Year' },
+            { value: 'content_value', label: 'Content Value' },
+          ]}
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-56" />
+              <Skeleton key={i} className="h-80" />
             ))}
-          </div>
-        ) : filteredTeams.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-500">No teams found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTeams.map(team => (
-              <Link
-                key={team.id}
-                to={createPageUrl('TeamDetail', { slug: team.slug })}
-                className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="aspect-video bg-gray-100 overflow-hidden">
-                  {team.hero_image ? (
-                    <img
-                      src={team.hero_image}
-                      alt={team.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Users className="w-12 h-12" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
-                      {team.name}
-                    </h3>
-                    <Badge variant={team.status === 'Active' ? 'default' : 'outline'}>
-                      {team.status}
-                    </Badge>
-                  </div>
-                  {team.base_city && (
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {team.base_city}{team.base_state_region && `, ${team.base_state_region}`}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
+            {filteredTeams.map(team => {
+              const programs = allPrograms.filter(p => p.team_id === team.id);
+              const drivers = allRoster.filter(r => r.team_id === team.id && r.role === 'Driver' && r.active);
+              const performance = allPerformance.find(p => p.team_id === team.id);
+              const media = allMedia.find(m => m.team_id === team.id);
+              
+              return (
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  programs={programs}
+                  programsCount={programs.length}
+                  driversCount={drivers.length}
+                  performance={performance}
+                  media={media}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {!isLoading && filteredTeams.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No teams found matching your filters.</p>
           </div>
         )}
       </div>
