@@ -160,6 +160,8 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         entity_type: 'Driver',
         entity_id: driverId,
         entity_name: `${formData.first_name} ${formData.last_name}`,
+        access_code: driver?.[0]?.numeric_id,
+        role: 'editor',
         expiration_days: 30
       });
       // Save email to driver contact_email field
