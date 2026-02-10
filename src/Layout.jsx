@@ -11,27 +11,12 @@ import { useQuery } from '@tanstack/react-query';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
-  { name: 'The Outlet', page: 'OutletHome', sub: [
-    { name: 'Stories', page: 'OutletHome' },
-    { name: 'Issue Archive', page: 'OutletIssues' },
-    { name: 'Submit a Story', page: 'OutletSubmit' },
-    { name: 'Advertise', page: 'OutletAdvertising' },
-  ]},
-  { name: 'Motorsports', page: 'MotorsportsHome', sub: [
-            { name: 'Drivers', page: 'DriverDirectory' },
-            { name: 'Series', page: 'SeriesHome' },
-            { name: 'Standings', page: 'StandingsHome' },
-            { name: 'Schedule', page: 'ScheduleHome' },
-            { name: 'Results', page: 'ResultsHome' },
-            { name: 'Teams', page: 'TeamsDirectory' },
-            { name: 'Tracks', page: 'TrackDirectory' },
-          ]},
-  { name: 'Apparel', page: 'ApparelHome' },
-  { name: 'Creative', page: 'CreativeServices' },
-  { name: 'Tech', page: 'TechHome' },
-  { name: 'Learning', page: 'Learning' },
-  { name: 'Hospitality', page: 'Hospitality' },
-  { name: 'Food & Bev', page: 'FoodBeverage' },
+  { name: 'Tracks', page: 'Tracks' },
+  { name: 'Series', page: 'SeriesDirectory' },
+  { name: 'Teams', page: 'TeamsDirectory' },
+  { name: 'Drivers', page: 'DriversDirectory' },
+  { name: 'Events', page: 'EventsDirectory' },
+  { name: 'Get Involved', page: 'GetInvolved' },
 ];
 
 export default function Layout({ children, currentPageName }) {
