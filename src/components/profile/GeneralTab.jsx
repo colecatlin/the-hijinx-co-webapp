@@ -18,16 +18,16 @@ export default function GeneralTab({ user, formData, setFormData }) {
 
       <div className="space-y-4">
         <div>
-          <Label>Email</Label>
-          <Input value={user.email} disabled className="bg-gray-100" />
-        </div>
-
-        <div>
           <Label>Full Name</Label>
           <Input
             value={formData.full_name}
             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
           />
+        </div>
+
+        <div>
+          <Label>Email</Label>
+          <Input value={user.email} disabled className="bg-gray-100" />
         </div>
 
 
