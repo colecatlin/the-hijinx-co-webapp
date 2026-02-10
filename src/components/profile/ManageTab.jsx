@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit2, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 
 export default function ManageTab({ user }) {
+  const navigate = useNavigate();
   const { data: collaborators = [], isLoading } = useQuery({
     queryKey: ['entityCollaborators', user?.email],
     queryFn: () => base44.entities.EntityCollaborator.filter({ user_email: user.email }),
@@ -89,7 +92,7 @@ export default function ManageTab({ user }) {
                     };
                     const page = pageMap[collaborator.entity_type];
                     if (page) {
-                      window.location.href = `/?page=${page}&id=${collaborator.entity_id}`;
+                      navigate(createPageUrl(page, { id: collaborator.entity_id }));
                     }
                   }}
                 >
