@@ -16,20 +16,24 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlug = urlParams.get('slug');
-  const [activeSection, setActiveSection] = useState('overview');
+    const firstName = urlParams.get('first');
+    const lastName = urlParams.get('last');
+    const [activeSection, setActiveSection] = useState('overview');
 
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-    setActiveSection('overview');
-  }, [driverSlug]);
+    React.useEffect(() => {
+      window.scrollTo(0, 0);
+      setActiveSection('overview');
+    }, [firstName, lastName]);
 
-  const { data: drivers = [], isLoading } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-  });
+    const { data: drivers = [], isLoading } = useQuery({
+      queryKey: ['drivers'],
+      queryFn: () => base44.entities.Driver.list(),
+    });
 
-  const driver = drivers.find(d => d.slug === driverSlug);
+    const driver = drivers.find(d => 
+      d.first_name.toLowerCase() === firstName && 
+      d.last_name.toLowerCase() === lastName
+    );
 
   const { data: programs = [] } = useQuery({
     queryKey: ['driverPrograms', driver?.id],
