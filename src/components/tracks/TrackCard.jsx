@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Flag } from 'lucide-react';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function TrackCard({ track, disciplines = [], media }) {
   return (
     <Link
-      to={createPageUrl('TrackProfile', { id: track.slug })}
+      to={buildProfileUrl('Track', track.slug)}
       className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
     >
       <div className="p-5">

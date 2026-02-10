@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { ChevronRight } from 'lucide-react';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function SeriesCard({ series }) {
   const disciplineColors = {
@@ -15,7 +15,7 @@ export default function SeriesCard({ series }) {
 
   return (
     <Link
-      to={createPageUrl(`SeriesDetail?slug=${series.slug}`)}
+      to={buildProfileUrl('Series', series.slug)}
       className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all"
     >
       <div className="mb-4">

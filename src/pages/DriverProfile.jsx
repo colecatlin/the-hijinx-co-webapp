@@ -12,6 +12,7 @@ import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -268,7 +269,7 @@ export default function DriverProfile() {
                     return (
                       <Link 
                         key={teamId}
-                        to={createPageUrl('TeamProfile', { id: team.slug })}
+                        to={buildProfileUrl('Team', team.slug)}
                         className="block text-[#232323] hover:text-[#00FFDA] transition-colors"
                       >
                         {team.name}
@@ -342,7 +343,7 @@ export default function DriverProfile() {
                               </div>
                               <div className="text-sm text-gray-600">#{prog.bib_number} • {prog.class_name}</div>
                               {team && (
-                                <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="text-sm text-[#00FFDA] hover:underline">
+                                <Link to={buildProfileUrl('Team', team.slug)} className="text-sm text-[#00FFDA] hover:underline">
                                   {team.name}
                                 </Link>
                               )}
@@ -377,7 +378,7 @@ export default function DriverProfile() {
                           const teamPrograms = programs.filter(p => p.team_id === teamId && p.program_status === status);
                           return (
                             <div key={teamId} className="border border-gray-200 p-4">
-                              <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors">
+                              <Link to={buildProfileUrl('Team', team.slug)} className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors">
                                 {team.name}
                               </Link>
                               <div className="text-sm text-gray-600 mt-1">

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function DriverCard({ driver, program, team, media }) {
   const getFormColor = (form) => {
@@ -32,7 +32,7 @@ export default function DriverCard({ driver, program, team, media }) {
 
   return (
     <Link 
-      to={createPageUrl('DriverProfile', { id: driver.slug })}
+      to={buildProfileUrl('Driver', driver.slug)}
       className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all h-full flex flex-col"
     >
       <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">

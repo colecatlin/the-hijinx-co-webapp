@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, Briefcase } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function TeamCard({ team, programs = [], programsCount, driversCount, performance, media }) {
   const getDisciplineIcon = (discipline) => {
@@ -40,7 +40,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
   };
 
   return (
-    <Link to={createPageUrl('TeamProfile', { id: team.slug })} className="h-full block">
+    <Link to={buildProfileUrl('Team', team.slug)} className="h-full block">
       <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
