@@ -170,11 +170,7 @@ export default function DriverDirectory() {
               );
             })}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No drivers found matching your filters.</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </PageShell>
   );
