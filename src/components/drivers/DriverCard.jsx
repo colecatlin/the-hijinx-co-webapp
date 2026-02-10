@@ -16,7 +16,6 @@ export default function DriverCard({ driver, program, team, media, performance }
   };
 
   const handleProfileClick = (e) => {
-    e.preventDefault();
     e.stopPropagation();
     navigate(buildProfileUrl('Driver', driver.slug));
   };
