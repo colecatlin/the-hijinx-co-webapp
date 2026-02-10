@@ -13,7 +13,6 @@ const navItems = [
   { name: 'Home', page: 'Home' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
-    { name: 'Issue Archive', page: 'OutletIssues' },
     { name: 'Submit a Story', page: 'OutletSubmit' },
     { name: 'Advertise', page: 'OutletAdvertising' },
   ]},
