@@ -180,11 +180,7 @@ export default function DriverProfile() {
                 <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <SocialShareButtons 
-                  url={window.location.href}
-                  title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                  description=""
-                />
+
                 {primaryProgram?.bib_number && (
                   <div className="text-sm font-semibold text-gray-600">#{primaryProgram.bib_number}</div>
                 )}
