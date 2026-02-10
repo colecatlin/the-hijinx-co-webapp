@@ -50,13 +50,15 @@ export default function ScheduleHome() {
                 <div className="w-16 text-center shrink-0">
                   {(() => {
                     const dateStr = event.date?.toString();
-                    const parsedDate = dateStr ? new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8)) : null;
-                    return parsedDate ? (
+                    if (!dateStr || dateStr.length !== 8) return null;
+                    const parsedDate = new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8));
+                    if (isNaN(parsedDate.getTime())) return null;
+                    return (
                       <>
                         <span className="font-mono text-[10px] text-gray-400 uppercase">{format(parsedDate, 'MMM')}</span>
                         <p className="text-2xl font-black">{format(parsedDate, 'd')}</p>
                       </>
-                    ) : null;
+                    );
                   })()}
                 </div>
                 <div className="flex-1">
@@ -75,9 +77,11 @@ export default function ScheduleHome() {
                     {(() => {
                       const startDateStr = event.date?.toString();
                       const endDateStr = event.end_date?.toString();
-                      const startDate = startDateStr ? new Date(startDateStr.slice(0, 4) + '-' + startDateStr.slice(4, 6) + '-' + startDateStr.slice(6, 8)) : null;
-                      const endDate = endDateStr ? new Date(endDateStr.slice(0, 4) + '-' + endDateStr.slice(4, 6) + '-' + endDateStr.slice(6, 8)) : null;
-                      return startDate && endDate ? `${format(startDate, 'MMM d')} – ${format(endDate, 'MMM d')}` : null;
+                      if (!startDateStr || !endDateStr || startDateStr.length !== 8 || endDateStr.length !== 8) return null;
+                      const startDate = new Date(startDateStr.slice(0, 4) + '-' + startDateStr.slice(4, 6) + '-' + startDateStr.slice(6, 8));
+                      const endDate = new Date(endDateStr.slice(0, 4) + '-' + endDateStr.slice(4, 6) + '-' + endDateStr.slice(6, 8));
+                      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return null;
+                      return `${format(startDate, 'MMM d')} – ${format(endDate, 'MMM d')}`;
                     })()}
                   </span>
                 )}
