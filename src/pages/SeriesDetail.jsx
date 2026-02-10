@@ -6,6 +6,9 @@ import PageShell from '@/components/shared/PageShell';
 import SeriesNavigation from '@/components/series/SeriesNavigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink } from 'lucide-react';
+import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
@@ -39,9 +42,27 @@ export default function SeriesDetail() {
     enabled: !!series?.id,
   });
 
-  const { data: events } = useQuery({
+  const { data: seriesEvents } = useQuery({
     queryKey: ['seriesEvents', series?.id],
     queryFn: () => base44.entities.SeriesEvent.filter({ series_id: series.id }),
+    enabled: !!series?.id,
+  });
+
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ['upcomingSeriesEvents', series?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.filter({ series_id: series.id, status: 'Upcoming' }, 'date_start', 5);
+      return allEvents;
+    },
+    enabled: !!series?.id,
+  });
+
+  const { data: pastEvents = [] } = useQuery({
+    queryKey: ['pastSeriesEvents', series?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.filter({ series_id: series.id, status: 'Completed' }, '-date_start', 5);
+      return allEvents;
+    },
     enabled: !!series?.id,
   });
 
@@ -199,20 +220,64 @@ export default function SeriesDetail() {
           )}
 
           {/* Calendar Section */}
-          {activeSection === 'calendar' && events && events.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-black mb-6">Calendar</h2>
-              <div className="space-y-4">
-                {events.map(event => (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-6 flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold mb-2">{event.event_name}</h3>
-                      {event.start_date && <p className="text-sm text-gray-600">{event.start_date}</p>}
-                      {event.is_championship_decider && <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">Championship Decider</span>}
-                    </div>
+          {activeSection === 'calendar' && (
+            <div className="space-y-8">
+              <h2 className="text-3xl font-black">Calendar</h2>
+              
+              {upcomingEvents.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold">Upcoming Events</h3>
+                    <Link to={`${createPageUrl('ScheduleHome')}?series=${series.id}`} className="text-sm text-blue-600 hover:text-blue-800">
+                      See All Events →
+                    </Link>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-3">
+                    {upcomingEvents.map(event => (
+                      <div key={event.id} className="border border-gray-200 rounded-lg p-5">
+                        <h4 className="font-bold mb-1">{event.name}</h4>
+                        <div className="text-sm text-gray-600">
+                          {format(new Date(event.date_start), 'MMM d, yyyy')}
+                          {event.date_end && event.date_end !== event.date_start && 
+                            ` – ${format(new Date(event.date_end), 'MMM d, yyyy')}`}
+                        </div>
+                        {event.track_name && <div className="text-sm text-gray-600">{event.track_name}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pastEvents.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Past Events</h3>
+                  <div className="space-y-2">
+                    {pastEvents.map(event => (
+                      <div key={event.id} className="text-sm border-l-2 border-gray-300 pl-4 py-1">
+                        <div className="font-medium">{event.name}</div>
+                        <div className="text-gray-600">{format(new Date(event.date_start), 'MMM d, yyyy')} • {event.track_name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {seriesEvents && seriesEvents.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Event Schedule</h3>
+                  <div className="space-y-4">
+                    {seriesEvents.map(event => (
+                      <div key={event.id} className="border border-gray-200 rounded-lg p-6 flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold mb-2">{event.event_name}</h3>
+                          {event.start_date && <p className="text-sm text-gray-600">{event.start_date}</p>}
+                          {event.is_championship_decider && <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">Championship Decider</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

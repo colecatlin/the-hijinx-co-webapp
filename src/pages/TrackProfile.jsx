@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, ExternalLink, Calendar, Users, TrendingUp, Camera, Settings, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { format } from 'date-fns';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,9 +28,27 @@ export default function TrackProfile() {
     enabled: !!track?.id,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: trackEvents = [] } = useQuery({
     queryKey: ['trackEvents', track?.id],
     queryFn: () => base44.entities.TrackEvent.filter({ track_id: track.id }),
+    enabled: !!track?.id,
+  });
+
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ['upcomingEvents', track?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.filter({ track_id: track.id, status: 'Upcoming' }, 'date_start', 5);
+      return allEvents;
+    },
+    enabled: !!track?.id,
+  });
+
+  const { data: pastEvents = [] } = useQuery({
+    queryKey: ['pastEvents', track?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.filter({ track_id: track.id, status: 'Completed' }, '-date_start', 5);
+      return allEvents;
+    },
     enabled: !!track?.id,
   });
 
@@ -99,7 +118,7 @@ export default function TrackProfile() {
     );
   }
 
-  const signatureEvents = events.filter(e => e.is_signature).slice(0, 3);
+  const signatureEvents = trackEvents.filter(e => e.is_signature).slice(0, 3);
   const topSeries = series.slice(0, 4);
 
   const sections = [
@@ -319,7 +338,45 @@ export default function TrackProfile() {
 
           {/* Events */}
           <section id="section-events" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Events and Involvement</h2>
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Events at this Track</h2>
+            
+            {upcomingEvents.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#232323]">Upcoming Events</h3>
+                  <Link to={`${createPageUrl('ScheduleHome')}?track=${track.id}`} className="text-sm text-[#00FFDA] hover:text-[#1A3249]">
+                    See All Events →
+                  </Link>
+                </div>
+                <div className="space-y-3">
+                  {upcomingEvents.map(event => (
+                    <div key={event.id} className="border border-gray-200 p-4">
+                      <div className="font-semibold text-[#232323] mb-1">{event.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {format(new Date(event.date_start), 'MMM d, yyyy')}
+                        {event.date_end && event.date_end !== event.date_start && 
+                          ` – ${format(new Date(event.date_end), 'MMM d, yyyy')}`}
+                      </div>
+                      {event.series_name && <div className="text-sm text-gray-600">{event.series_name}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {pastEvents.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-[#232323] mb-3">Past Events</h3>
+                <div className="space-y-2">
+                  {pastEvents.map(event => (
+                    <div key={event.id} className="text-sm border-l-2 border-gray-200 pl-3">
+                      <div className="font-medium text-[#232323]">{event.name}</div>
+                      <div className="text-gray-600">{format(new Date(event.date_start), 'MMM d, yyyy')}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {signatureEvents.length > 0 && (
               <div className="mb-6">
@@ -336,11 +393,11 @@ export default function TrackProfile() {
               </div>
             )}
 
-            {events.filter(e => !e.is_signature).length > 0 && (
+            {trackEvents.filter(e => !e.is_signature).length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-[#232323] mb-3">Other Events</h3>
+                <h3 className="text-lg font-semibold text-[#232323] mb-3">Other Regular Events</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {events.filter(e => !e.is_signature).map(event => (
+                  {trackEvents.filter(e => !e.is_signature).map(event => (
                     <div key={event.id} className="text-sm">
                       <div className="font-medium text-[#232323]">{event.name}</div>
                       {event.event_type && <div className="text-gray-600">{event.event_type}</div>}
