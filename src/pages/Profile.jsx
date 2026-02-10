@@ -15,6 +15,7 @@ import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
 import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
 import CodeInputTab from '@/components/profile/CodeInputTab';
+import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
 
 export default function Profile() {
   const queryClient = useQueryClient();
@@ -154,10 +155,11 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="manage">Manage</TabsTrigger>
               <TabsTrigger value="code-input">Code Input</TabsTrigger>
+              <TabsTrigger value="story">Story</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
@@ -170,6 +172,10 @@ export default function Profile() {
 
             <TabsContent value="code-input">
               <CodeInputTab user={user} />
+            </TabsContent>
+
+            <TabsContent value="story">
+              <StorySubmissionForm user={user} />
             </TabsContent>
           </Tabs>
 
