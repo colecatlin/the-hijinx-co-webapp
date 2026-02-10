@@ -64,6 +64,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   });
 
   const [isSaved, setIsSaved] = useState(false);
+  const [invitationEmail, setInvitationEmail] = useState('');
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
