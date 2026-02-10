@@ -73,30 +73,14 @@ export default function OutletStoryPage() {
 
         {/* Meta line */}
         <div className="mt-6 pb-8 border-b border-gray-200">
-          {/* First row: Published by and Photo by */}
-          <div className="flex flex-wrap items-center gap-6 mb-4">
-            {story.author && (
-              <span className="text-sm text-gray-700">Published by <span className="font-semibold">{story.author}</span></span>
-            )}
-            {story.photo_credit && (
-              <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
-            )}
-          </div>
-
-          {/* Second row: Location, Date, and Social */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-4">
-              {story.location && (
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <MapPin className="w-3 h-3" />
-                  {story.location}
-                </span>
+          {/* First row: Published by, Photo by, and Social */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-6">
+              {story.author && (
+                <span className="text-xs text-gray-400">Published by {story.author}</span>
               )}
-              {story.published_date && (
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <Calendar className="w-3 h-3" />
-                  {format(new Date(story.published_date), 'MMMM d, yyyy')}
-                </span>
+              {story.photo_credit && (
+                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
               )}
             </div>
             <SocialShareButtons 
@@ -112,6 +96,14 @@ export default function OutletStoryPage() {
         {story.cover_image && (
           <div className="mt-8">
             <img src={story.cover_image} alt={story.title} className="w-full" />
+            {story.location && (
+              <div className="mt-3">
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <MapPin className="w-3 h-3" />
+                  {story.location}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
