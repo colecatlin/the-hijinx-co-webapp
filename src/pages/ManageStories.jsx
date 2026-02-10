@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageShell from '@/components/shared/PageShell';
 import StoryForm from '@/components/management/StoryForm';
+import StorySubmissionsReview from '@/components/management/StorySubmissionsReview';
 
 export default function ManageStories() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,12 +87,14 @@ export default function ManageStories() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Manage Stories</h1>
-            <p className="text-gray-600 mt-1">Create and edit outlet stories</p>
+            <p className="text-gray-600 mt-1">Create, edit, and review outlet stories</p>
           </div>
-          <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Story
-          </Button>
+          {!showForm && (
+            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Story
+            </Button>
+          )}
         </div>
 
         {showForm ? (
@@ -102,7 +106,13 @@ export default function ManageStories() {
             }}
           />
         ) : (
-          <>
+          <Tabs defaultValue="stories" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="stories">Stories</TabsTrigger>
+              <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="stories" className="space-y-6">
             <div className="flex gap-3 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -204,7 +214,12 @@ export default function ManageStories() {
                 </table>
               </div>
             )}
-          </>
+            </TabsContent>
+
+            <TabsContent value="submissions">
+              <StorySubmissionsReview />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </PageShell>
