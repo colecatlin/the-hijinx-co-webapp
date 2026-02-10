@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Loader2, Check } from 'lucide-react';
 import MediaUploader from '@/components/shared/MediaUploader';
+import ImageCropModal from '@/components/shared/ImageCropModal';
 
 export default function DriverMediaSection({ driverId }) {
   const queryClient = useQueryClient();
@@ -51,6 +52,8 @@ export default function DriverMediaSection({ driverId }) {
   }, [mediaRecord]);
 
   const [saved, setSaved] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -79,6 +82,16 @@ export default function DriverMediaSection({ driverId }) {
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleHeadshotUpload = (url) => {
+    setTempHeadshotUrl(url);
+    setCropModalOpen(true);
+  };
+
+  const handleCropSave = (croppedUrl) => {
+    handleChange('headshot_url', croppedUrl);
+    setTempHeadshotUrl(null);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -87,7 +100,7 @@ export default function DriverMediaSection({ driverId }) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MediaUploader label="Headshot" value={data.headshot_url} onChange={(url) => handleChange('headshot_url', url)} accept="image/*" />
+          <MediaUploader label="Headshot" value={data.headshot_url} onChange={handleHeadshotUpload} accept="image/*" />
           <MediaUploader label="Hero Image" value={data.hero_image_url} onChange={(url) => handleChange('hero_image_url', url)} accept="image/*" />
           <MediaUploader label="Highlight Video" value={data.highlight_video_url} onChange={(url) => handleChange('highlight_video_url', url)} accept="video/*" />
           <div className="space-y-2">
@@ -179,6 +192,17 @@ export default function DriverMediaSection({ driverId }) {
             {saved ? 'Saved' : 'Save Changes'}
           </Button>
         </div>
+
+        <ImageCropModal
+          open={cropModalOpen}
+          onClose={() => {
+            setCropModalOpen(false);
+            setTempHeadshotUrl(null);
+          }}
+          imageUrl={tempHeadshotUrl}
+          onSave={handleCropSave}
+          aspectRatio={3/4}
+        />
       </CardContent>
     </Card>
   );
