@@ -98,6 +98,8 @@ import Tracks from './pages/Tracks';
 import SeriesDirectory from './pages/SeriesDirectory';
 import DriversDirectory from './pages/DriversDirectory';
 import EventsDirectory from './pages/EventsDirectory';
+import TrackDetail from './pages/TrackDetail';
+import GetInvolved from './pages/GetInvolved';
 import __Layout from './Layout.jsx';
 
 
@@ -153,6 +155,8 @@ export const PAGES = {
     "SeriesDirectory": SeriesDirectory,
     "DriversDirectory": DriversDirectory,
     "EventsDirectory": EventsDirectory,
+    "TrackDetail": TrackDetail,
+    "GetInvolved": GetInvolved,
 }
 
 export const pagesConfig = {
