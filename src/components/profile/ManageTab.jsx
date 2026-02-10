@@ -82,18 +82,7 @@ export default function ManageTab({ user }) {
                   size="sm"
                   className="ml-4"
                   onClick={() => {
-                    // Navigate to entity editor based on type
-                    const pageMap = {
-                      Driver: 'DriverEditor',
-                      Team: 'ManageTeams',
-                      Track: 'ManageTracks',
-                      Series: 'ManageSeries',
-                      Event: 'ManageEvents',
-                    };
-                    const page = pageMap[collaborator.entity_type];
-                    if (page) {
-                      navigate(createPageUrl(page, { id: collaborator.entity_id }));
-                    }
+                    navigate(createPageUrl('EntityEditor', { id: collaborator.access_code }));
                   }}
                 >
                   <Edit2 className="w-4 h-4" />
