@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
 
 export default function DriverCard({ driver, program, team, media, performance }) {
@@ -16,7 +17,7 @@ export default function DriverCard({ driver, program, team, media, performance }
   const handleProfileClick = (e) => {
     e.stopPropagation();
     const slug = driver.slug || `${driver.first_name.toLowerCase()}-${driver.last_name.toLowerCase()}`;
-    navigate(buildProfileUrl('Driver', slug));
+    navigate(createPageUrl(`DriverProfile?slug=${slug}`));
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
