@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
                   date: eventDate,
                   end_date: endDate,
                   season: new Date(event.dtstart).getFullYear(),
-                  status: 'upcoming',
+                  status: new Date(endDate) < new Date() ? 'completed' : 'upcoming',
                   description: event.location || ''
                 });
                 results.eventsCreated++;
