@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     const gmailToken = await base44.asServiceRole.connectors.getAccessToken('gmail');
 
     const subject = `Invitation to manage ${entity_name}`;
-    const acceptLink = `${new URL(req.url).origin}${createPageUrl('AcceptInvitation')}?code=${code}`;
+    const acceptLink = `${new URL(req.url).origin}/AcceptInvitation?code=${code}`;
     const formattedExpiration = expirationDate.toLocaleDateString();
 
     const htmlBody = `
