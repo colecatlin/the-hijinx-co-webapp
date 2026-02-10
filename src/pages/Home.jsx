@@ -3,6 +3,7 @@ import PageShell from '@/components/shared/PageShell';
 import HeroSection from '@/components/home/HeroSection';
 import VerticalGrid from '@/components/home/VerticalGrid';
 import LatestFeed from '@/components/home/LatestFeed';
+import TrackLeaderboards from '@/components/home/TrackLeaderboards';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
       <HeroSection />
       <VerticalGrid />
       <LatestFeed />
+      <TrackLeaderboards />
 
       {/* Newsletter CTA */}
       <section className="bg-[#232323] text-[#FFF8F5]">
