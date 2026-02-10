@@ -31,7 +31,7 @@ export default function CodeInputTab({ user }) {
   const [success, setSuccess] = useState(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     
     if (!entityType || !code) {
       setError('Please select an entity type and enter a code');
@@ -83,7 +83,7 @@ export default function CodeInputTab({ user }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             <div>
               <Label htmlFor="entity-type">Entity Type</Label>
               <Select value={entityType} onValueChange={setEntityType}>
@@ -135,7 +135,7 @@ export default function CodeInputTab({ user }) {
             )}
 
             <Button
-              type="submit"
+              onClick={handleSubmit}
               disabled={isVerifying || !entityType || code.length !== 8}
               className="w-full bg-[#232323] hover:bg-[#1A3249]"
             >
@@ -148,7 +148,7 @@ export default function CodeInputTab({ user }) {
                 'Verify Code'
               )}
             </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
