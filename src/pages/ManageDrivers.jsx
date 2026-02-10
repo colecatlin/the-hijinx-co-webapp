@@ -19,6 +19,7 @@ import DriverPerformanceSection from '@/components/management/DriverManagement/D
 import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection.jsx';
 import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection.jsx';
 import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
+import { toast } from 'sonner';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,6 +105,12 @@ export default function ManageDrivers() {
     setEditingDriver(null);
   };
 
+  const handleSaveSuccess = () => {
+    setSelectedDriverForEdit(null);
+    queryClient.invalidateQueries({ queryKey: ['drivers'] });
+    toast.success('Driver saved successfully!');
+  };
+
   const handleExport = () => {
     const dataStr = JSON.stringify(drivers, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -166,22 +173,22 @@ export default function ManageDrivers() {
               <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} />
+              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="programs" className="mt-6">
-              <DriverProgramsSection driverId={selectedDriverForEdit.id} />
+              <DriverProgramsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="media" className="mt-6">
-              <DriverMediaSection driverId={selectedDriverForEdit.id} />
+              <DriverMediaSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="performance" className="mt-6">
-              <DriverPerformanceSection driverId={selectedDriverForEdit.id} />
+              <DriverPerformanceSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="community" className="mt-6">
-              <DriverCommunitySection driverId={selectedDriverForEdit.id} />
+              <DriverCommunitySection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="partnerships" className="mt-6">
-              <DriverPartnershipSection driverId={selectedDriverForEdit.id} />
+              <DriverPartnershipSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
           </Tabs>
         </div>
@@ -221,7 +228,7 @@ export default function ManageDrivers() {
               onChange={handleImport}
               className="hidden"
             />
-            <Button onClick={() => setSelectedDriverForEdit({ first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
+            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
               <Plus className="w-4 h-4 mr-2" />
               Add Driver
             </Button>

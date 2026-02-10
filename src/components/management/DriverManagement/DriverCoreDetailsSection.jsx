@@ -47,7 +47,7 @@ const COUNTRIES = [
   'South Africa'
 ];
 
-export default function DriverCoreDetailsSection({ driverId }) {
+export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -68,11 +68,25 @@ export default function DriverCoreDetailsSection({ driverId }) {
   const { data: driver, isLoading } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: () => base44.entities.Driver.filter({ id: driverId }),
-    enabled: !!driverId,
+    enabled: driverId && driverId !== 'new',
   });
 
   useEffect(() => {
-    if (driver && driver.length > 0) {
+    if (driverId === 'new') {
+      setFormData({
+        first_name: '',
+        last_name: '',
+        date_of_birth: '',
+        hometown_city: '',
+        hometown_state: '',
+        hometown_country: 'USA',
+        location_city: '',
+        location_state: '',
+        location_country: '',
+        primary_number: '',
+        primary_discipline: '',
+      });
+    } else if (driver && driver.length > 0) {
       const driverData = driver[0];
       if (driverData) {
         setFormData({
@@ -93,13 +107,21 @@ export default function DriverCoreDetailsSection({ driverId }) {
   }, [driver, driverId]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Driver.update(driverId, data),
+    mutationFn: (data) => {
+      if (driverId === 'new') {
+        return base44.entities.Driver.create(data);
+      }
+      return base44.entities.Driver.update(driverId, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       toast.success('Driver details saved');
+      if (driverId === 'new' && onSaveSuccess) {
+        onSaveSuccess();
+      }
     },
   });
 
