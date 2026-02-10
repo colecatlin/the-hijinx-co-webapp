@@ -17,6 +17,7 @@ export default function StoryForm({ story, onClose }) {
     body: story?.body || '',
     author: story?.author || '',
     author_title: story?.author_title || '',
+    photo_credit: story?.photo_credit || '',
     category: story?.category || 'Racing',
     cover_image: story?.cover_image || '',
     location: story?.location || '',
@@ -144,6 +145,15 @@ export default function StoryForm({ story, onClose }) {
               value={formData.author_title}
               onChange={(e) => handleChange('author_title', e.target.value)}
               placeholder="Senior Writer, Contributor, etc."
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-2">Photo Credit</label>
+            <Input
+              value={formData.photo_credit}
+              onChange={(e) => handleChange('photo_credit', e.target.value)}
+              placeholder="Photographer or company name"
             />
           </div>
 

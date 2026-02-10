@@ -74,9 +74,14 @@ export default function OutletStoryPage() {
         {/* Meta line */}
         <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pb-8 border-b border-gray-200">
           <div className="flex flex-wrap items-center gap-4">
-            {story.author && (
-              <span className="text-sm font-semibold">{story.author}</span>
-            )}
+            <div className="flex flex-col">
+              {story.author && (
+                <span className="text-sm font-semibold">{story.author}</span>
+              )}
+              {story.photo_credit && (
+                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
+              )}
+            </div>
             {story.author_title && (
               <span className="text-xs text-gray-400">{story.author_title}</span>
             )}
