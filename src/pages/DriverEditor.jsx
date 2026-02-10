@@ -21,9 +21,12 @@ export default function DriverEditor() {
   const driverId = searchParams.get('id') || searchParams.get('driverId');
   const [activeTab, setActiveTab] = useState('details');
 
-  const { data: driver, isLoading: driverLoading } = useQuery({
+  const { data: driver, isLoading: driverLoading, error: driverError } = useQuery({
     queryKey: ['driver', driverId],
-    queryFn: () => base44.entities.Driver.get(driverId),
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getDriverWithAccess', { driverId });
+      return response.data.driver;
+    },
     enabled: !!driverId,
   });
 
