@@ -104,7 +104,7 @@ export default function OutletHome() {
                   {story.author && <span className="text-xs font-medium text-gray-600">{story.author}</span>}
                   {story.published_date && (
                     <span className="text-xs text-gray-400">
-                      · {format(new Date(story.published_date), 'MMM d, yyyy')}
+                      · {format(new Date(story.published_date), 'MMM d, yyyy · h:mm a')}
                     </span>
                   )}
                 </div>

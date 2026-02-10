@@ -91,7 +91,7 @@ export default function OutletStoryPage() {
           {/* Stacked: Date, Published by, and Photo by */}
           <div className="flex flex-col gap-2 mb-4">
             {story.published_date && (
-              <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy')}</span>
+              <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
             )}
             {story.author && (
               <span className="text-xs text-gray-400">Published by {story.author}</span>
