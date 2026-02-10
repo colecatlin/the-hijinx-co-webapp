@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Users, Search, MapPin } from 'lucide-react';
+import { Trophy, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +11,13 @@ import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TeamsDirectory() {
+export default function SeriesDirectory() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: teams = [], isLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+  const { data: series = [], isLoading } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
   });
 
   const { data: user } = useQuery({
@@ -27,15 +27,15 @@ export default function TeamsDirectory() {
 
   const isAdmin = user?.role === 'admin';
 
-  const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(search.toLowerCase()) ||
-      team.base_city?.toLowerCase().includes(search.toLowerCase());
+  const filteredSeries = series.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.discipline?.toLowerCase().includes(search.toLowerCase());
     
     let matchesStatus = true;
     if (!isAdmin) {
-      matchesStatus = team.status === 'Active';
+      matchesStatus = s.status === 'Active';
     } else if (statusFilter !== 'all') {
-      matchesStatus = team.status === statusFilter;
+      matchesStatus = s.status === statusFilter;
     }
 
     return matchesSearch && matchesStatus;
@@ -45,15 +45,15 @@ export default function TeamsDirectory() {
     <PageShell>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <SectionHeader
-          title="Teams"
-          subtitle="Racing teams and organizations"
+          title="Series"
+          subtitle="Racing championships and competitions"
         />
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search teams..."
+              placeholder="Search series..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -77,50 +77,34 @@ export default function TeamsDirectory() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-56" />
+              <Skeleton key={i} className="h-48" />
             ))}
           </div>
-        ) : filteredTeams.length === 0 ? (
+        ) : filteredSeries.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500">No teams found</p>
+            <p className="text-gray-500">No series found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTeams.map(team => (
+            {filteredSeries.map(s => (
               <Link
-                key={team.id}
-                to={createPageUrl('TeamDetail', { slug: team.slug })}
-                className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                key={s.id}
+                to={createPageUrl('SeriesDetail', { slug: s.slug })}
+                className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
-                <div className="aspect-video bg-gray-100 overflow-hidden">
-                  {team.hero_image ? (
-                    <img
-                      src={team.hero_image}
-                      alt={team.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Users className="w-12 h-12" />
-                    </div>
-                  )}
+                <div className="flex items-start justify-between mb-3">
+                  <Trophy className="w-8 h-8 text-gray-400" />
+                  <Badge variant={s.status === 'Active' ? 'default' : 'outline'}>
+                    {s.status}
+                  </Badge>
                 </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
-                      {team.name}
-                    </h3>
-                    <Badge variant={team.status === 'Active' ? 'default' : 'outline'}>
-                      {team.status}
-                    </Badge>
-                  </div>
-                  {team.base_city && (
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {team.base_city}{team.base_state_region && `, ${team.base_state_region}`}
-                    </p>
-                  )}
-                </div>
+                <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                  {s.name}
+                </h3>
+                <p className="text-sm text-gray-600">{s.discipline}</p>
+                {s.sanctioning_body && (
+                  <p className="text-xs text-gray-500 mt-1">{s.sanctioning_body}</p>
+                )}
               </Link>
             ))}
           </div>

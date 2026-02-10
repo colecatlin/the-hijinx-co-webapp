@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Users, Search, MapPin } from 'lucide-react';
+import { User, Search, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +11,13 @@ import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TeamsDirectory() {
+export default function DriversDirectory() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: teams = [], isLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+  const { data: drivers = [], isLoading } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list(),
   });
 
   const { data: user } = useQuery({
@@ -27,15 +27,15 @@ export default function TeamsDirectory() {
 
   const isAdmin = user?.role === 'admin';
 
-  const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(search.toLowerCase()) ||
-      team.base_city?.toLowerCase().includes(search.toLowerCase());
+  const filteredDrivers = drivers.filter(driver => {
+    const matchesSearch = driver.name.toLowerCase().includes(search.toLowerCase()) ||
+      driver.hometown_city?.toLowerCase().includes(search.toLowerCase());
     
     let matchesStatus = true;
     if (!isAdmin) {
-      matchesStatus = team.status === 'Active';
+      matchesStatus = driver.status === 'Active';
     } else if (statusFilter !== 'all') {
-      matchesStatus = team.status === statusFilter;
+      matchesStatus = driver.status === statusFilter;
     }
 
     return matchesSearch && matchesStatus;
@@ -45,15 +45,15 @@ export default function TeamsDirectory() {
     <PageShell>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <SectionHeader
-          title="Teams"
-          subtitle="Racing teams and organizations"
+          title="Drivers"
+          subtitle="Professional racing drivers and competitors"
         />
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search teams..."
+              placeholder="Search drivers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -75,49 +75,52 @@ export default function TeamsDirectory() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-56" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-64" />
             ))}
           </div>
-        ) : filteredTeams.length === 0 ? (
+        ) : filteredDrivers.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500">No teams found</p>
+            <p className="text-gray-500">No drivers found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTeams.map(team => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredDrivers.map(driver => (
               <Link
-                key={team.id}
-                to={createPageUrl('TeamDetail', { slug: team.slug })}
+                key={driver.id}
+                to={createPageUrl('DriverDetail', { slug: driver.slug })}
                 className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
               >
-                <div className="aspect-video bg-gray-100 overflow-hidden">
-                  {team.hero_image ? (
+                <div className="aspect-square bg-gray-100 overflow-hidden">
+                  {driver.hero_image ? (
                     <img
-                      src={team.hero_image}
-                      alt={team.name}
+                      src={driver.hero_image}
+                      alt={driver.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Users className="w-12 h-12" />
+                      <User className="w-12 h-12" />
                     </div>
                   )}
                 </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
-                      {team.name}
+                    <h3 className="font-semibold text-base group-hover:text-blue-600 transition-colors">
+                      {driver.name}
                     </h3>
-                    <Badge variant={team.status === 'Active' ? 'default' : 'outline'}>
-                      {team.status}
+                    <Badge variant={driver.status === 'Active' ? 'default' : 'outline'} className="text-xs">
+                      {driver.status}
                     </Badge>
                   </div>
-                  {team.base_city && (
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
+                  {driver.primary_discipline && (
+                    <p className="text-xs text-gray-600 mb-1">{driver.primary_discipline}</p>
+                  )}
+                  {driver.hometown_city && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
-                      {team.base_city}{team.base_state_region && `, ${team.base_state_region}`}
+                      {driver.hometown_city}{driver.hometown_state_region && `, ${driver.hometown_state_region}`}
                     </p>
                   )}
                 </div>

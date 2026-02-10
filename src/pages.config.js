@@ -94,6 +94,10 @@ import TeamsDirectory from './pages/TeamsDirectory';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import Tracks from './pages/Tracks';
+import SeriesDirectory from './pages/SeriesDirectory';
+import DriversDirectory from './pages/DriversDirectory';
+import EventsDirectory from './pages/EventsDirectory';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +149,10 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "Tracks": Tracks,
+    "SeriesDirectory": SeriesDirectory,
+    "DriversDirectory": DriversDirectory,
+    "EventsDirectory": EventsDirectory,
 }
 
 export const pagesConfig = {
