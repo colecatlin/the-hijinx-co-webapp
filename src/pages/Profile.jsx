@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, LogOut } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import GeneralTab from '@/components/profile/GeneralTab';
-
+import ManageTab from '@/components/profile/ManageTab';
 import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
 import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
 import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
@@ -154,13 +154,18 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="manage">Manage</TabsTrigger>
               <TabsTrigger value="code-input">Code Input</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
               <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+            </TabsContent>
+
+            <TabsContent value="manage">
+              <ManageTab user={user} />
             </TabsContent>
 
             <TabsContent value="code-input">
