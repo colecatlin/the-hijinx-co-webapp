@@ -39,7 +39,7 @@ export default function CountryFlag({ country, className = "w-4 h-3" }) {
 
   return (
     <img
-      src={`https://flagcdn.com/w20/${countryCode}.png`}
+      src={`https://flagcdn.com/w160/${countryCode}.png`}
       alt={`${country} flag`}
       className={className}
     />
