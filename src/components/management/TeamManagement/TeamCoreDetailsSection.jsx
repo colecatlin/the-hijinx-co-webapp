@@ -9,6 +9,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 
+const COUNTRIES = [
+  'USA',
+  'Canada',
+  'Mexico',
+  'United Kingdom',
+  'Australia',
+  'Brazil',
+  'France',
+  'Germany',
+  'Italy',
+  'Spain',
+  'Japan',
+  'China',
+  'India',
+  'Russia',
+  'Sweden',
+  'Norway',
+  'Finland',
+  'Netherlands',
+  'Belgium',
+  'Austria',
+  'Switzerland',
+  'Denmark',
+  'Poland',
+  'Argentina',
+  'Chile',
+  'New Zealand',
+  'South Africa'
+];
+
 export default function TeamCoreDetailsSection({ teamId }) {
   const [formData, setFormData] = useState({});
   const [isSaved, setIsSaved] = useState(false);
@@ -90,10 +120,16 @@ export default function TeamCoreDetailsSection({ teamId }) {
           </div>
           <div>
             <label className="text-sm font-medium">Country</label>
-            <Input
-              value={formData.country || 'USA'}
-              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-            />
+            <Select value={formData.country || 'USA'} onValueChange={(value) => setFormData({ ...formData, country: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

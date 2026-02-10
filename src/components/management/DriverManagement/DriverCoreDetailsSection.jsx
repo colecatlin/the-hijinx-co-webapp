@@ -269,13 +269,16 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
             </div>
             <div>
               <Label htmlFor="location_country">Country</Label>
-              <Input
-                id="location_country"
-                value={formData.location_country}
-                onChange={(e) => handleInputChange('location_country', e.target.value)}
-                placeholder="Country"
-                className="mt-2"
-              />
+              <Select value={formData.location_country} onValueChange={(value) => handleInputChange('location_country', value)}>
+                <SelectTrigger id="location_country" className="mt-2">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
