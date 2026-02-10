@@ -18,7 +18,7 @@ import DriverPartnershipSection from '@/components/management/DriverEditor/Drive
 export default function DriverEditor() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const driverId = searchParams.get('driverId');
+  const driverId = searchParams.get('id') || searchParams.get('driverId');
   const [activeTab, setActiveTab] = useState('details');
 
   const { data: driver, isLoading: driverLoading } = useQuery({
