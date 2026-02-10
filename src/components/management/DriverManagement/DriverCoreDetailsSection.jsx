@@ -146,12 +146,41 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     return age;
   };
 
+  const invitationMutation = useMutation({
+    mutationFn: (email) => base44.functions.invoke('createAndSendEntityInvitation', {
+      email,
+      entity_type: 'Driver',
+      entity_id: driverId,
+      entity_name: `${formData.first_name} ${formData.last_name}`,
+      expiration_days: 30
+    }),
+    onSuccess: () => {
+      toast.success('Invitation sent successfully');
+      setInvitationEmail('');
+    },
+    onError: (error) => {
+      toast.error(`Failed to send invitation: ${error.message}`);
+    },
+  });
+
   const handleSave = () => {
     if (!formData.first_name || !formData.last_name) {
       toast.error('First and last name are required');
       return;
     }
     updateMutation.mutate(formData);
+  };
+
+  const handleSendInvitation = () => {
+    if (!invitationEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
+    if (driverId === 'new') {
+      toast.error('Please save the driver first before sending invitations');
+      return;
+    }
+    invitationMutation.mutate(invitationEmail);
   };
 
   if (isLoading) {
