@@ -23,9 +23,8 @@ export default function DriverEditor() {
 
   const { data: driver, isLoading: driverLoading } = useQuery({
     queryKey: ['driver', driverId],
-    queryFn: () => base44.entities.Driver.filter({ id: driverId }, '-updated_date', 1),
+    queryFn: () => base44.entities.Driver.get(driverId),
     enabled: !!driverId,
-    select: (data) => data[0],
   });
 
   const { data: programs = [], isLoading: programsLoading } = useQuery({
