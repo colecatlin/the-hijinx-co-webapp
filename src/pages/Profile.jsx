@@ -48,7 +48,14 @@ export default function Profile() {
   React.useEffect(() => {
     if (user) {
       setFormData({
-        full_name: user.full_name || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        display_name: user.display_name || '',
+        birth_date: user.birth_date || null,
+        city: user.city || '',
+        state: user.state || '',
+        country: user.country || '',
+        newsletter_subscriber: user.newsletter_subscriber || false,
         driver_id: user.driver_id || '',
         team_id: user.team_id || '',
         series_id: user.series_id || '',
@@ -74,6 +81,16 @@ export default function Profile() {
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
+      await base44.auth.updateMe({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        display_name: data.display_name,
+        birth_date: data.birth_date,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+        newsletter_subscriber: data.newsletter_subscriber,
+      });
       const response = await base44.functions.invoke('updateUserProfile', { formData: data });
       return response.data;
     },

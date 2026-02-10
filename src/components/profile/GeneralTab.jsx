@@ -1,8 +1,14 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { User, CalendarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export default function GeneralTab({ user, formData, setFormData }) {
   return (
@@ -17,20 +23,101 @@ export default function GeneralTab({ user, formData, setFormData }) {
       </h2>
 
       <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="first_name">First Name</Label>
+            <Input
+              id="first_name"
+              value={formData.first_name || ''}
+              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="last_name">Last Name</Label>
+            <Input
+              id="last_name"
+              value={formData.last_name || ''}
+              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            />
+          </div>
+        </div>
+
         <div>
-          <Label>Full Name</Label>
+          <Label htmlFor="display_name">Display Name</Label>
           <Input
-            value={formData.full_name}
-            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+            id="display_name"
+            value={formData.display_name || ''}
+            onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
+            placeholder="e.g., RacingFanatic23"
           />
         </div>
 
         <div>
-          <Label>Email</Label>
-          <Input value={user.email} disabled className="bg-gray-100" />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" value={user.email} disabled className="bg-gray-100" />
         </div>
 
+        <div>
+          <Label htmlFor="birth_date">Date of Birth</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !formData.birth_date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {formData.birth_date ? format(new Date(formData.birth_date), "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={formData.birth_date ? new Date(formData.birth_date) : undefined}
+                onSelect={(date) => setFormData({ ...formData, birth_date: date ? format(date, 'yyyy-MM-dd') : null })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              value={formData.city || ''}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="state">State/Region</Label>
+            <Input
+              id="state"
+              value={formData.state || ''}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              value={formData.country || ''}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="newsletter_subscriber"
+            checked={formData.newsletter_subscriber || false}
+            onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })}
+          />
+          <Label htmlFor="newsletter_subscriber" className="cursor-pointer">Subscribe to newsletter</Label>
+        </div>
       </div>
     </motion.div>
   );
