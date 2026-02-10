@@ -12,62 +12,85 @@ Deno.serve(async (req) => {
     // Parse ICS format
     const events = parseICS(icsText);
     
-    // Create or update events in the database
-    const nascarSeries = await base44.asServiceRole.entities.Series.filter({ name: 'NASCAR' }, '-created_date', 1);
-    let seriesId = nascarSeries[0]?.id;
-    
-    // If NASCAR series doesn't exist, create it
-    if (!seriesId) {
-      const newSeries = await base44.asServiceRole.entities.Series.create({
-        name: 'NASCAR',
-        slug: 'nascar',
-        discipline: 'Asphalt Oval',
-        competition_level: 'Professional',
-        description_summary: 'NASCAR racing events and schedule',
-        region: 'North America',
-        founded_year: 1948,
-        status: 'Active'
-      });
-      seriesId = newSeries.id;
+    // Group events by series
+    const seriesByName = {};
+    for (const event of events) {
+      const seriesName = extractSeriesName(event.summary);
+      if (!seriesByName[seriesName]) {
+        seriesByName[seriesName] = [];
+      }
+      seriesByName[seriesName].push(event);
     }
     
-    // Process events
-    const createdEvents = [];
-    for (const event of events) {
+    // Create/update series and their events
+    const results = {
+      seriesCreated: 0,
+      eventsCreated: 0,
+      errors: []
+    };
+    
+    for (const [seriesName, seriesEvents] of Object.entries(seriesByName)) {
       try {
-        const eventData = {
-          name: event.summary,
-          slug: event.summary.toLowerCase().replace(/\s+/g, '-'),
-          series_id: seriesId,
-          series_name: 'NASCAR',
-          date: event.dtstart.split('T')[0],
-          end_date: event.dtend ? event.dtend.split('T')[0] : event.dtstart.split('T')[0],
-          season: new Date(event.dtstart).getFullYear(),
-          status: 'upcoming',
-          description: event.description || ''
-        };
+        // Find or create series
+        let series = await base44.asServiceRole.entities.Series.filter({ name: seriesName }, '-created_date', 1);
+        let seriesId;
         
-        // Check if event already exists
-        const existing = await base44.asServiceRole.entities.Event.filter(
-          { name: event.summary, series_id: seriesId },
-          '-created_date',
-          1
-        );
+        if (!series[0]) {
+          const newSeries = await base44.asServiceRole.entities.Series.create({
+            name: seriesName,
+            slug: seriesName.toLowerCase().replace(/\s+/g, '-'),
+            discipline: 'Asphalt Oval',
+            competition_level: 'Professional',
+            description_summary: `${seriesName} racing series`,
+            region: 'North America',
+            founded_year: 1948,
+            status: 'Active'
+          });
+          seriesId = newSeries.id;
+          results.seriesCreated++;
+        } else {
+          seriesId = series[0].id;
+        }
         
-        if (!existing[0]) {
-          const created = await base44.asServiceRole.entities.Event.create(eventData);
-          createdEvents.push(created);
+        // Create events for this series
+        for (const event of seriesEvents) {
+          try {
+            const existing = await base44.asServiceRole.entities.Event.filter(
+              { name: event.summary, series_id: seriesId },
+              '-created_date',
+              1
+            );
+            
+            if (!existing[0]) {
+              const eventDate = event.dtstart.split('T')[0];
+              const endDate = event.dtend ? event.dtend.split('T')[0] : eventDate;
+              
+              await base44.asServiceRole.entities.Event.create({
+                name: event.summary,
+                slug: event.summary.toLowerCase().replace(/\s+/g, '-') + '-' + eventDate,
+                series_id: seriesId,
+                series_name: seriesName,
+                date: eventDate,
+                end_date: endDate,
+                season: new Date(event.dtstart).getFullYear(),
+                status: new Date(eventDate) > new Date() ? 'upcoming' : 'completed',
+                description: event.location || ''
+              });
+              results.eventsCreated++;
+            }
+          } catch (error) {
+            results.errors.push(`Event ${event.summary}: ${error.message}`);
+          }
         }
       } catch (error) {
-        console.error('Error creating event:', error);
+        results.errors.push(`Series ${seriesName}: ${error.message}`);
       }
     }
     
     return Response.json({
       success: true,
-      eventsProcessed: events.length,
-      eventsCreated: createdEvents.length,
-      message: `Successfully processed ${events.length} NASCAR events`
+      ...results,
+      message: `Successfully processed ${Object.keys(seriesByName).length} NASCAR series with ${events.length} total events`
     });
   } catch (error) {
     return Response.json({
