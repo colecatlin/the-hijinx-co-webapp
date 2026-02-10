@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import RemoveAccessSection from '@/components/management/RemoveAccessSection';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 
@@ -55,7 +54,6 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   };
 
   return (
-    <>
     <Card className="p-6">
       <div className="space-y-4">
         <div>
@@ -174,10 +172,5 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
         </Button>
       </div>
     </Card>
-
-    <div className="mt-6">
-      <RemoveAccessSection entityType="Series" entityId={seriesId} />
-    </div>
-    </>
   );
 }
