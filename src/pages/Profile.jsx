@@ -16,6 +16,7 @@ import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
 import CodeInputTab from '@/components/profile/CodeInputTab';
 import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
+import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions';
 
 export default function Profile() {
   const queryClient = useQueryClient();
@@ -174,8 +175,18 @@ export default function Profile() {
               <CodeInputTab user={user} />
             </TabsContent>
 
-            <TabsContent value="story">
-              <StorySubmissionForm user={user} />
+            <TabsContent value="story" className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Submit a Story</h2>
+                <p className="text-gray-600 mb-6">Share your story with our editorial team for review</p>
+                <StorySubmissionForm user={user} />
+              </div>
+
+              <div className="pt-6 border-t">
+                <h2 className="text-2xl font-bold mb-2">Your Submissions</h2>
+                <p className="text-gray-600 mb-6">View the status of your submitted stories</p>
+                <ManageStorySubmissions user={user} />
+              </div>
             </TabsContent>
           </Tabs>
 
