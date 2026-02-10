@@ -88,8 +88,11 @@ export default function OutletStoryPage() {
 
         {/* Meta line */}
         <div className="mt-6 pb-8 border-b border-gray-200">
-          {/* Stacked: Published by and Photo by */}
+          {/* Stacked: Date, Published by, and Photo by */}
           <div className="flex flex-col gap-2 mb-4">
+            {story.published_date && (
+              <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy')}</span>
+            )}
             {story.author && (
               <span className="text-xs text-gray-400">Published by {story.author}</span>
             )}
