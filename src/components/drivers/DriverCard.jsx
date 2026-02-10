@@ -7,6 +7,7 @@ import { MapPin } from 'lucide-react';
 
 export default function DriverCard({ driver, program, team, media, performance }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const navigate = useNavigate();
 
   const handleFlip = (e) => {
     e.preventDefault();
@@ -15,7 +16,9 @@ export default function DriverCard({ driver, program, team, media, performance }
   };
 
   const handleProfileClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
+    navigate(buildProfileUrl('Driver', driver.slug));
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
