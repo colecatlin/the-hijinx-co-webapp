@@ -113,7 +113,11 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
       if (driverId === 'new') {
         return base44.entities.Driver.create(data);
       }
-      return base44.entities.Driver.update(driverId, data);
+      return base44.functions.invoke('updateEntitySafely', {
+        entity_type: 'Driver',
+        entity_id: driverId,
+        data
+      });
     },
     onSuccess: (data) => {
       const idToInvalidate = driverId === 'new' ? data.id : driverId;
