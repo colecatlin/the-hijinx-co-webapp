@@ -84,6 +84,21 @@ export default function DriverProfile() {
     enabled: !!driver?.id,
   });
 
+  const { data: programs = [] } = useQuery({
+    queryKey: ['driverPrograms', driver?.id],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
+  const getSeriesName = (seriesId) => {
+    return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
+  };
+
 
 
   if (isLoading) {
