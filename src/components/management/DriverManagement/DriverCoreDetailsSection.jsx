@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Mail } from 'lucide-react';
+import { Mail, Plus, Trash2, Star } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const DISCIPLINES = [
   'Open Wheel',
@@ -66,12 +67,40 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
   const [isSaved, setIsSaved] = useState(false);
   const [invitationEmail, setInvitationEmail] = useState('');
+  const [showProgramForm, setShowProgramForm] = useState(false);
+  const [editingProgramId, setEditingProgramId] = useState(null);
+  const [programForm, setProgramForm] = useState({
+    series_id: '',
+    team_id: '',
+    class_name: '',
+    bib_number: '',
+    season_start_year: new Date().getFullYear(),
+    season_end_year: null,
+    program_status: 'Active',
+    is_primary: false,
+  });
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: () => base44.entities.Driver.filter({ id: driverId }),
     enabled: driverId && driverId !== 'new',
+  });
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ['driverPrograms', driverId],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }, '-updated_date', 100),
+    enabled: driverId && driverId !== 'new',
+  });
+
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   useEffect(() => {
@@ -200,6 +229,77 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     }
     invitationMutation.mutate(invitationEmail);
   };
+
+  const createProgramMutation = useMutation({
+    mutationFn: (data) => base44.entities.DriverProgram.create({ ...data, driver_id: driverId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      resetProgramForm();
+      toast.success('Program added');
+    },
+  });
+
+  const updateProgramMutation = useMutation({
+    mutationFn: (data) => base44.entities.DriverProgram.update(editingProgramId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      resetProgramForm();
+      toast.success('Program updated');
+    },
+  });
+
+  const deleteProgramMutation = useMutation({
+    mutationFn: (id) => base44.entities.DriverProgram.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      toast.success('Program deleted');
+    },
+  });
+
+  const resetProgramForm = () => {
+    setShowProgramForm(false);
+    setEditingProgramId(null);
+    setProgramForm({
+      series_id: '',
+      team_id: '',
+      class_name: '',
+      bib_number: '',
+      season_start_year: new Date().getFullYear(),
+      season_end_year: null,
+      program_status: 'Active',
+      is_primary: false,
+    });
+  };
+
+  const handleEditProgram = (program) => {
+    setProgramForm({
+      series_id: program.series_id,
+      team_id: program.team_id || '',
+      class_name: program.class_name,
+      bib_number: program.bib_number,
+      season_start_year: program.season_start_year,
+      season_end_year: program.season_end_year,
+      program_status: program.program_status,
+      is_primary: program.is_primary,
+    });
+    setEditingProgramId(program.id);
+    setShowProgramForm(true);
+  };
+
+  const handleSubmitProgram = () => {
+    if (!programForm.series_id || !programForm.class_name || !programForm.bib_number) {
+      toast.error('Series, class, and bib number are required');
+      return;
+    }
+    if (editingProgramId) {
+      updateProgramMutation.mutate(programForm);
+    } else {
+      createProgramMutation.mutate(programForm);
+    }
+  };
+
+  const getSeriesName = (seriesId) => series.find((s) => s.id === seriesId)?.name || 'Unknown';
+  const getTeamName = (teamId) => teams.find((t) => t.id === teamId)?.name || 'Unknown';
 
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
@@ -368,6 +468,173 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Racing Programs</h3>
+            {driverId !== 'new' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowProgramForm(!showProgramForm)}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Program
+              </Button>
+            )}
+          </div>
+
+          {driverId === 'new' && (
+            <p className="text-sm text-gray-500 mb-4">Save driver details first to add programs</p>
+          )}
+
+          {driverId !== 'new' && showProgramForm && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Series *</Label>
+                  <Select value={programForm.series_id} onValueChange={(value) => setProgramForm({ ...programForm, series_id: value })}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select series" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {series.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Team</Label>
+                  <Select value={programForm.team_id} onValueChange={(value) => setProgramForm({ ...programForm, team_id: value })}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select team (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={null}>None</SelectItem>
+                      {teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Class *</Label>
+                  <Input
+                    value={programForm.class_name}
+                    onChange={(e) => setProgramForm({ ...programForm, class_name: e.target.value })}
+                    placeholder="e.g., Pro 4"
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Number *</Label>
+                  <Input
+                    value={programForm.bib_number}
+                    onChange={(e) => setProgramForm({ ...programForm, bib_number: e.target.value })}
+                    placeholder="Car number"
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Start Year</Label>
+                  <Input
+                    type="number"
+                    value={programForm.season_start_year}
+                    onChange={(e) => setProgramForm({ ...programForm, season_start_year: parseInt(e.target.value) })}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">End Year</Label>
+                  <Input
+                    type="number"
+                    value={programForm.season_end_year || ''}
+                    onChange={(e) => setProgramForm({ ...programForm, season_end_year: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="Ongoing"
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={programForm.program_status} onValueChange={(value) => setProgramForm({ ...programForm, program_status: value })}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Past">Past</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={programForm.is_primary}
+                      onCheckedChange={(checked) => setProgramForm({ ...programForm, is_primary: checked })}
+                    />
+                    <span className="text-xs">Primary Program</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSubmitProgram}
+                  disabled={createProgramMutation.isPending || updateProgramMutation.isPending}
+                >
+                  {editingProgramId ? 'Update' : 'Add'} Program
+                </Button>
+                <Button size="sm" variant="outline" onClick={resetProgramForm}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {driverId !== 'new' && programs.length > 0 && (
+            <div className="space-y-2">
+              {programs.map((program) => (
+                <div key={program.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{getSeriesName(program.series_id)}</span>
+                      {program.is_primary && (
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">
+                      {program.class_name} • #{program.bib_number} • {program.season_start_year}–{program.season_end_year || 'Present'}
+                      {program.team_id && ` • ${getTeamName(program.team_id)}`}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditProgram(program)} className="h-8 px-2">
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Delete this program?')) {
+                          deleteProgramMutation.mutate(program.id);
+                        }
+                      }}
+                      className="h-8 px-2"
+                    >
+                      <Trash2 className="w-3 h-3 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {driverId !== 'new' && programs.length === 0 && !showProgramForm && (
+            <p className="text-sm text-gray-500">No programs added yet</p>
+          )}
         </div>
 
         <div className="border-t pt-6">
