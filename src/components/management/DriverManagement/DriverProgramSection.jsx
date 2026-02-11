@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,54 +6,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-
-const DISCIPLINES = [
-  'Stock Car',
-  'Off Road',
-  'Dirt Oval',
-  'Snowmobile',
-  'Dirt Bike',
-  'Open Wheel',
-  'Sports Car',
-  'Touring Car',
-  'Rally',
-  'Drag',
-  'Motorcycle',
-  'Karting',
-  'Water',
-  'Alternative'
-];
+import { Trash2, Plus } from 'lucide-react';
 
 export default function DriverProgramSection({ driverId }) {
+  const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
+    series_id: '',
     team_id: '',
     class_name: '',
+    bib_number: '',
+    season_start_year: new Date().getFullYear(),
+    season_end_year: null,
+    program_status: 'Active',
+    is_primary: false,
   });
-  const [isSaved, setIsSaved] = useState(false);
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
-  const [showAddClass, setShowAddClass] = useState(false);
-  const [newClassName, setNewClassName] = useState('');
-  const [classList, setClassList] = useState([
-    'Pro 4',
-    'Pro 2',
-    'Pro Lite',
-    'Super Stock',
-    'Stock Full',
-    'Mod Kart',
-    'Turbo',
-    'Pro Buggy',
-    'Trophy Truck',
-    'Class 1'
-  ]);
 
   const queryClient = useQueryClient();
 
-  const { data: driver, isLoading } = useQuery({
-    queryKey: ['driver', driverId],
-    queryFn: () => base44.entities.Driver.filter({ id: driverId }),
+  const { data: programs = [], isLoading } = useQuery({
+    queryKey: ['driverPrograms', driverId],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
     enabled: driverId && driverId !== 'new',
+  });
+
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
   });
 
   const { data: teams = [] } = useQuery({
@@ -61,30 +43,41 @@ export default function DriverProgramSection({ driverId }) {
     queryFn: () => base44.entities.Team.list(),
   });
 
-  useEffect(() => {
-    if (driver && driver.length > 0) {
-      const driverData = driver[0];
-      setFormData({
-        team_id: driverData.team_id || '',
-        class_name: driverData.class_name || '',
-      });
-    }
-  }, [driver]);
-
-  const updateMutation = useMutation({
-    mutationFn: (data) => {
-      return base44.functions.invoke('updateEntitySafely', {
-        entity_type: 'Driver',
-        entity_id: driverId,
-        data
-      });
-    },
+  const createProgramMutation = useMutation({
+    mutationFn: (data) => base44.entities.DriverProgram.create({
+      ...data,
+      driver_id: driverId,
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
-      queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-      toast.success('Program information saved');
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      setFormData({
+        series_id: '',
+        team_id: '',
+        class_name: '',
+        bib_number: '',
+        season_start_year: new Date().getFullYear(),
+        season_end_year: null,
+        program_status: 'Active',
+        is_primary: false,
+      });
+      setShowAddForm(false);
+      toast.success('Program added');
+    },
+  });
+
+  const updateProgramMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.DriverProgram.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      toast.success('Program updated');
+    },
+  });
+
+  const deleteProgramMutation = useMutation({
+    mutationFn: (id) => base44.entities.DriverProgram.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      toast.success('Program deleted');
     },
   });
 
@@ -93,7 +86,7 @@ export default function DriverProgramSection({ driverId }) {
       name,
       slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       description_summary: 'New team',
-      primary_discipline: driver?.[0]?.primary_discipline || 'Stock Car',
+      primary_discipline: 'Stock Car',
       team_level: 'Regional',
       status: 'Active'
     }),
@@ -106,25 +99,30 @@ export default function DriverProgramSection({ driverId }) {
     },
   });
 
-  const handleSave = () => {
-    updateMutation.mutate(formData);
+  const handleAddProgram = () => {
+    if (!formData.series_id || !formData.class_name || !formData.bib_number) {
+      toast.error('Series, class, and bib number are required');
+      return;
+    }
+    createProgramMutation.mutate(formData);
   };
 
-  const handleAddClass = () => {
-    if (newClassName) {
-      setClassList([...classList, newClassName]);
-      const updatedData = { ...formData, class_name: newClassName };
-      setFormData(updatedData);
-      updateMutation.mutate(updatedData);
-      setNewClassName('');
-      setShowAddClass(false);
-    }
+  const togglePrimary = (program) => {
+    updateProgramMutation.mutate({
+      id: program.id,
+      data: { is_primary: !program.is_primary }
+    });
   };
 
-  const handleAddTeam = () => {
-    if (newTeamName) {
-      createTeamMutation.mutate(newTeamName);
-    }
+  const getSeriesName = (seriesId) => {
+    const s = series.find(s => s.id === seriesId);
+    return s ? s.name : 'Unknown Series';
+  };
+
+  const getTeamName = (teamId) => {
+    if (!teamId) return '—';
+    const t = teams.find(t => t.id === teamId);
+    return t ? t.name : 'Unknown Team';
   };
 
   if (isLoading) {
@@ -136,10 +134,10 @@ export default function DriverProgramSection({ driverId }) {
       <Card>
         <CardHeader>
           <CardTitle>Programs</CardTitle>
-          <CardDescription>Save driver details first to manage program information</CardDescription>
+          <CardDescription>Save driver details first to manage programs</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">Please save the driver's core details before assigning programs.</p>
+          <p className="text-sm text-gray-500">Please save the driver's core details before adding programs.</p>
         </CardContent>
       </Card>
     );
@@ -148,119 +146,246 @@ export default function DriverProgramSection({ driverId }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Programs</CardTitle>
-        <CardDescription>Manage driver's racing programs, team, and class</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Programs</CardTitle>
+            <CardDescription>Manage driver's racing programs across series, teams, and classes</CardDescription>
+          </div>
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Program
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          <Label htmlFor="team_id">Team</Label>
-          {showAddTeam ? (
-            <div className="flex gap-2 mt-2">
-              <Input
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-                placeholder="New team name"
-                className="flex-1"
+        {showAddForm && (
+          <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+            <h3 className="font-semibold text-sm">New Program</h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="series_id">Series *</Label>
+                <Select value={formData.series_id} onValueChange={(value) => setFormData({ ...formData, series_id: value })}>
+                  <SelectTrigger id="series_id" className="mt-2">
+                    <SelectValue placeholder="Select series" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {series.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="team_id">Team</Label>
+                {showAddTeam ? (
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      placeholder="New team name"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={() => createTeamMutation.mutate(newTeamName)}
+                      disabled={!newTeamName || createTeamMutation.isPending}
+                      size="sm"
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowAddTeam(false);
+                        setNewTeamName('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={formData.team_id} onValueChange={(value) => setFormData({ ...formData, team_id: value })}>
+                      <SelectTrigger id="team_id" className="mt-2">
+                        <SelectValue placeholder="Select team (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>None</SelectItem>
+                        {teams.map(t => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddTeam(true)}
+                      className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                    >
+                      + Add new team
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="class_name">Class *</Label>
+                <Input
+                  id="class_name"
+                  value={formData.class_name}
+                  onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
+                  placeholder="e.g., Pro 4, Stock Full"
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="bib_number">Bib/Car Number *</Label>
+                <Input
+                  id="bib_number"
+                  value={formData.bib_number}
+                  onChange={(e) => setFormData({ ...formData, bib_number: e.target.value })}
+                  placeholder="e.g., 23"
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="season_start_year">Start Year *</Label>
+                <Input
+                  id="season_start_year"
+                  type="number"
+                  value={formData.season_start_year}
+                  onChange={(e) => setFormData({ ...formData, season_start_year: parseInt(e.target.value) })}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="season_end_year">End Year</Label>
+                <Input
+                  id="season_end_year"
+                  type="number"
+                  value={formData.season_end_year || ''}
+                  onChange={(e) => setFormData({ ...formData, season_end_year: e.target.value ? parseInt(e.target.value) : null })}
+                  placeholder="Leave blank for Present"
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="program_status">Status</Label>
+                <Select value={formData.program_status} onValueChange={(value) => setFormData({ ...formData, program_status: value })}>
+                  <SelectTrigger id="program_status" className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Past">Past</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="is_primary"
+                checked={formData.is_primary}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_primary: checked })}
               />
+              <Label htmlFor="is_primary" className="cursor-pointer">Primary Program</Label>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
               <Button
-                onClick={handleAddTeam}
-                disabled={!newTeamName || createTeamMutation.isPending}
+                onClick={handleAddProgram}
+                disabled={createProgramMutation.isPending}
+                className="bg-gray-900 hover:bg-gray-800"
               >
-                Add
+                {createProgramMutation.isPending ? 'Adding...' : 'Add Program'}
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => {
-                  setShowAddTeam(false);
-                  setNewTeamName('');
+                  setShowAddForm(false);
+                  setFormData({
+                    series_id: '',
+                    team_id: '',
+                    class_name: '',
+                    bib_number: '',
+                    season_start_year: new Date().getFullYear(),
+                    season_end_year: null,
+                    program_status: 'Active',
+                    is_primary: false,
+                  });
                 }}
               >
                 Cancel
               </Button>
             </div>
-          ) : (
-            <>
-              <Select value={formData.team_id} onValueChange={(value) => setFormData({ ...formData, team_id: value })}>
-                <SelectTrigger id="team_id" className="mt-2">
-                  <SelectValue placeholder="Select team (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>None</SelectItem>
-                  {teams.map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => setShowAddTeam(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-              >
-                + Add new team
-              </button>
-            </>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div>
-          <Label htmlFor="class_name">Class</Label>
-          {showAddClass ? (
-            <div className="flex gap-2 mt-2">
-              <Input
-                value={newClassName}
-                onChange={(e) => setNewClassName(e.target.value)}
-                placeholder="New class name"
-                className="flex-1"
-              />
-              <Button
-                onClick={handleAddClass}
-                disabled={!newClassName}
-              >
-                Add
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowAddClass(false);
-                  setNewClassName('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Select value={formData.class_name} onValueChange={(value) => setFormData({ ...formData, class_name: value })}>
-                <SelectTrigger id="class_name" className="mt-2">
-                  <SelectValue placeholder="Select class (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>None</SelectItem>
-                  {classList.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => setShowAddClass(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-              >
-                + Add new class
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="bg-gray-900 hover:bg-gray-800"
-          >
-            {updateMutation.isPending ? 'Saving...' : isSaved ? '✓ Saved' : 'Save Changes'}
-          </Button>
-        </div>
+        {programs.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-sm">No programs added yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {programs.map((program) => (
+              <div key={program.id} className="border rounded-lg p-4 bg-white">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{getSeriesName(program.series_id)}</h4>
+                      {program.is_primary && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Primary</span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        program.program_status === 'Active' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {program.program_status}
+                      </span>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
+                      <div><span className="font-medium">Team:</span> {getTeamName(program.team_id)}</div>
+                      <div><span className="font-medium">Class:</span> {program.class_name}</div>
+                      <div><span className="font-medium">Number:</span> {program.bib_number}</div>
+                      <div><span className="font-medium">Years:</span> {program.season_start_year} - {program.season_end_year || 'Present'}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => togglePrimary(program)}
+                      disabled={updateProgramMutation.isPending}
+                    >
+                      {program.is_primary ? 'Unset Primary' : 'Set Primary'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteProgramMutation.mutate(program.id)}
+                      disabled={deleteProgramMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
