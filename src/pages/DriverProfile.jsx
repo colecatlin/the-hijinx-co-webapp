@@ -5,7 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
@@ -136,6 +136,7 @@ export default function DriverProfile() {
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'media', label: 'Media', icon: Camera },
     { id: 'partnerships', label: 'Partnerships', icon: Heart },
+    { id: 'social', label: 'Social Media', icon: Share2 },
     { id: 'community', label: 'Community', icon: Users },
   ];
 
@@ -537,6 +538,22 @@ export default function DriverProfile() {
               </>
             ) : (
               <p className="text-gray-500">No partnership information available.</p>
+            )}
+          </section>
+
+          <section id="section-social" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Social Media</h2>
+            {media && (media.instagram || media.facebook || media.tiktok || media.x || media.threads || media.youtube || media.website) ? (
+              <div className="flex flex-col items-center gap-6">
+                <div className="flex justify-center">
+                  <SocialIconsDisplay media={media} />
+                </div>
+                <div className="text-sm text-gray-600 text-center">
+                  Connect with {driver.first_name} on social media
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">No social media information available.</p>
             )}
           </section>
 
