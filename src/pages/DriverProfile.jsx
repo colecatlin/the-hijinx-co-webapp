@@ -137,9 +137,9 @@ export default function DriverProfile() {
           ← Back to Drivers
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-2 -mt-0.5">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <CountryFlag country={driver.hometown_country} />
                 <h1 className="text-4xl font-black text-[#232323] leading-none">{driver.first_name} {driver.last_name}</h1>
@@ -227,7 +227,7 @@ export default function DriverProfile() {
             </div>
           </div>
 
-          <div className="space-y-6 relative">
+          <div className="space-y-6 relative -mt-1">
             <div className="absolute -top-12 right-0 z-10">
               <SocialShareButtons 
                 url={window.location.href}
