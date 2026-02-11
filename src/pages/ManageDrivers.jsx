@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
 import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
-import DriverTeamSection from '@/components/management/DriverManagement/DriverTeamSection.jsx';
+import DriverProgramSection from '@/components/management/DriverManagement/DriverProgramSection.jsx';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -169,14 +169,14 @@ export default function ManageDrivers() {
           <Tabs defaultValue="core" className="mt-6">
             <TabsList>
               <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="team">Team</TabsTrigger>
+              <TabsTrigger value="programs">Programs</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
-            <TabsContent value="team" className="mt-6">
-              <DriverTeamSection driverId={selectedDriverForEdit.id} />
+            <TabsContent value="programs" className="mt-6">
+              <DriverProgramSection driverId={selectedDriverForEdit.id} />
             </TabsContent>
             <TabsContent value="access" className="mt-6">
               <DriverAccessSection driverId={selectedDriverForEdit.id} />

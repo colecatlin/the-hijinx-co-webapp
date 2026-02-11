@@ -25,7 +25,7 @@ const DISCIPLINES = [
   'Alternative'
 ];
 
-export default function DriverTeamSection({ driverId }) {
+export default function DriverProgramSection({ driverId }) {
   const [formData, setFormData] = useState({
     team_id: '',
     class_name: '',
@@ -84,7 +84,7 @@ export default function DriverTeamSection({ driverId }) {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
-      toast.success('Team information saved');
+      toast.success('Program information saved');
     },
   });
 
@@ -135,11 +135,11 @@ export default function DriverTeamSection({ driverId }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Team Information</CardTitle>
-          <CardDescription>Save driver details first to manage team information</CardDescription>
+          <CardTitle>Programs</CardTitle>
+          <CardDescription>Save driver details first to manage program information</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">Please save the driver's core details before assigning a team.</p>
+          <p className="text-sm text-gray-500">Please save the driver's core details before assigning programs.</p>
         </CardContent>
       </Card>
     );
@@ -148,8 +148,8 @@ export default function DriverTeamSection({ driverId }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Team Information</CardTitle>
-        <CardDescription>Manage driver's team affiliation and class</CardDescription>
+        <CardTitle>Programs</CardTitle>
+        <CardDescription>Manage driver's racing programs, team, and class</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
