@@ -25,45 +25,7 @@ export default function TrackDirectory() {
     queryFn: () => base44.entities.Track.list(),
   });
 
-  const { data: allDisciplines = [] } = useQuery({
-    queryKey: ['trackToDisciplines'],
-    queryFn: () => base44.entities.TrackToDiscipline.list(),
-  });
-
-  const { data: trackMedia = [] } = useQuery({
-    queryKey: ['trackMedia'],
-    queryFn: () => base44.entities.TrackMedia.list(),
-  });
-
-  const { data: trackOperations = [] } = useQuery({
-    queryKey: ['trackOperations'],
-    queryFn: () => base44.entities.TrackOperations.list(),
-  });
-
-  const { data: trackCommunity = [] } = useQuery({
-    queryKey: ['trackCommunity'],
-    queryFn: () => base44.entities.TrackCommunity.list(),
-  });
-
-  const { data: trackPerformance = [] } = useQuery({
-    queryKey: ['trackPerformance'],
-    queryFn: () => base44.entities.TrackPerformance.list(),
-  });
-
-  const getDisciplinesForTrack = (trackId) => {
-    return allDisciplines.filter(d => d.track_id === trackId);
-  };
-
-  // Filter tracks with complete data
-  const tracksWithCompleteData = tracks.filter(track => {
-    const hasMedia = trackMedia.some(m => m.track_id === track.id);
-    const hasOperations = trackOperations.some(o => o.track_id === track.id);
-    const hasCommunity = trackCommunity.some(c => c.track_id === track.id);
-    const hasPerformance = trackPerformance.some(p => p.track_id === track.id);
-    return hasMedia && hasOperations && hasCommunity && hasPerformance;
-  });
-
-  const filteredTracks = tracksWithCompleteData
+  const filteredTracks = tracks
     .filter(track => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -168,17 +130,9 @@ export default function TrackDirectory() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTracks.map(track => {
-              const media = trackMedia.find(m => m.track_id === track.id);
-              return (
-                <TrackCard
-                  key={track.id}
-                  track={track}
-                  disciplines={getDisciplinesForTrack(track.id)}
-                  media={media}
-                />
-              );
-            })}
+            {filteredTracks.map(track => (
+              <TrackCard key={track.id} track={track} />
+            ))}
           </div>
         )}
 
