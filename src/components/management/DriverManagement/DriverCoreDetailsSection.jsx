@@ -83,6 +83,10 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     program_status: 'Active',
     is_primary: false,
   });
+  const [showAddSeries, setShowAddSeries] = useState(false);
+  const [showAddTeam, setShowAddTeam] = useState(false);
+  const [newSeriesName, setNewSeriesName] = useState('');
+  const [newTeamName, setNewTeamName] = useState('');
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
@@ -232,6 +236,41 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
       toast.success('Program deleted');
+    },
+  });
+
+  const createSeriesMutation = useMutation({
+    mutationFn: (name) => base44.entities.Series.create({
+      name,
+      discipline: formData.primary_discipline || 'Other',
+      competition_level: 'Regional',
+      description_summary: 'New series',
+      status: 'Active'
+    }),
+    onSuccess: (newSeries) => {
+      queryClient.invalidateQueries({ queryKey: ['series'] });
+      setProgramForm({ ...programForm, series_id: newSeries.id });
+      setNewSeriesName('');
+      setShowAddSeries(false);
+      toast.success('Series created');
+    },
+  });
+
+  const createTeamMutation = useMutation({
+    mutationFn: (name) => base44.entities.Team.create({
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description_summary: 'New team',
+      primary_discipline: formData.primary_discipline || 'Other',
+      team_level: 'Regional',
+      status: 'Active'
+    }),
+    onSuccess: (newTeam) => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setProgramForm({ ...programForm, team_id: newTeam.id });
+      setNewTeamName('');
+      setShowAddTeam(false);
+      toast.success('Team created');
     },
   });
 
@@ -520,30 +559,108 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs">Series *</Label>
-                  <Select value={programForm.series_id} onValueChange={(value) => setProgramForm({ ...programForm, series_id: value })}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Select series" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {series.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {showAddSeries ? (
+                    <div className="flex gap-1">
+                      <Input
+                        value={newSeriesName}
+                        onChange={(e) => setNewSeriesName(e.target.value)}
+                        placeholder="New series name"
+                        className="h-9 text-sm"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => createSeriesMutation.mutate(newSeriesName)}
+                        disabled={!newSeriesName || createSeriesMutation.isPending}
+                        className="h-9"
+                      >
+                        Add
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setShowAddSeries(false);
+                          setNewSeriesName('');
+                        }}
+                        className="h-9"
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Select value={programForm.series_id} onValueChange={(value) => setProgramForm({ ...programForm, series_id: value })}>
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="Select series" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {series.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddSeries(true)}
+                        className="text-xs text-blue-600 hover:text-blue-700 mt-1"
+                      >
+                        + Add new series
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">Team</Label>
-                  <Select value={programForm.team_id} onValueChange={(value) => setProgramForm({ ...programForm, team_id: value })}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Select team (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={null}>None</SelectItem>
-                      {teams.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {showAddTeam ? (
+                    <div className="flex gap-1">
+                      <Input
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                        placeholder="New team name"
+                        className="h-9 text-sm"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => createTeamMutation.mutate(newTeamName)}
+                        disabled={!newTeamName || createTeamMutation.isPending}
+                        className="h-9"
+                      >
+                        Add
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setShowAddTeam(false);
+                          setNewTeamName('');
+                        }}
+                        className="h-9"
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Select value={programForm.team_id} onValueChange={(value) => setProgramForm({ ...programForm, team_id: value })}>
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="Select team (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={null}>None</SelectItem>
+                          {teams.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddTeam(true)}
+                        className="text-xs text-blue-600 hover:text-blue-700 mt-1"
+                      >
+                        + Add new team
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">Class *</Label>
