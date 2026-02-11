@@ -131,8 +131,6 @@ export default function DriverProfile() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'programs', label: 'Programs', icon: Briefcase },
-    { id: 'teams', label: 'Teams', icon: Users },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'media', label: 'Media', icon: Camera },
     { id: 'partnerships', label: 'Partnerships', icon: Heart },
@@ -339,88 +337,6 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-8">
-          <section id="section-programs" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
-            {sortedPrograms.length > 0 ? (
-              <div className="space-y-6">
-                {['Active', 'Past'].map(status => {
-                  const statusPrograms = sortedPrograms.filter(p => p.program_status === status);
-                  if (statusPrograms.length === 0) return null;
-                  return (
-                    <div key={status}>
-                      <h3 className="text-lg font-semibold text-[#232323] mb-3">{status} Programs</h3>
-                      <div className="space-y-4">
-                        {statusPrograms.map(prog => {
-                          const series = seriesMap[prog.series_id];
-                          const team = prog.team_id ? teamMap[prog.team_id] : null;
-                          const seasonRange = prog.season_end_year ? `${prog.season_start_year}–${prog.season_end_year}` : `${prog.season_start_year}–Present`;
-                          return (
-                            <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="font-bold text-[#232323]">{series?.name || 'Series'}</div>
-                                {prog.is_primary && (
-                                  <Badge className="bg-[#D33F49] text-white text-xs">Primary</Badge>
-                                )}
-                              </div>
-                              <div className="text-sm text-gray-600">#{prog.bib_number} • {prog.class_name}</div>
-                              {team && (
-                                <Link to={buildProfileUrl('Team', team.slug)} className="text-sm text-[#00FFDA] hover:underline">
-                                  {team.name}
-                                </Link>
-                              )}
-                              <div className="text-sm text-gray-600 mt-1">{seasonRange}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500">No programs available.</p>
-            )}
-          </section>
-
-          <section id="section-teams" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Teams</h2>
-            {programs.some(p => p.team_id) ? (
-              <div className="space-y-6">
-                {['Active', 'Past'].map(status => {
-                  const teamIds = [...new Set(programs.filter(p => p.team_id && p.program_status === status).map(p => p.team_id))];
-                  if (teamIds.length === 0) return null;
-                  return (
-                    <div key={status}>
-                      <h3 className="text-lg font-semibold text-[#232323] mb-3">{status} Teams</h3>
-                      <div className="space-y-2">
-                        {teamIds.map(teamId => {
-                          const team = teamMap[teamId];
-                          if (!team) return null;
-                          const teamPrograms = programs.filter(p => p.team_id === teamId && p.program_status === status);
-                          return (
-                            <div key={teamId} className="border border-gray-200 p-4">
-                              <Link to={buildProfileUrl('Team', team.slug)} className="font-semibold text-[#232323] hover:text-[#00FFDA] transition-colors">
-                                {team.name}
-                              </Link>
-                              <div className="text-sm text-gray-600 mt-1">
-                                {teamPrograms.map(p => {
-                                  const series = seriesMap[p.series_id];
-                                  return series?.name || 'Series';
-                                }).join(', ')}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500">No team information available.</p>
-            )}
-          </section>
-
           <section id="section-performance" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance</h2>
             {performance ? (
