@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Flag } from 'lucide-react';
-import { buildProfileUrl } from '@/components/utils/routingContract';
+import { MapPin } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 
-export default function TrackCard({ track, disciplines = [], media }) {
+export default function TrackCard({ track }) {
   return (
     <Link
-      to={buildProfileUrl('Track', track.slug)}
+      to={createPageUrl(`TrackProfile?id=${track.id}`)}
       className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
     >
       <div className="p-5">
@@ -37,16 +37,6 @@ export default function TrackCard({ track, disciplines = [], media }) {
           )}
         </div>
 
-        {disciplines.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {disciplines.map((disc, idx) => (
-              <Badge key={idx} className="bg-[#232323] text-white text-xs">
-                {disc.discipline_name}
-              </Badge>
-            ))}
-          </div>
-        )}
-
         <div className="flex flex-wrap gap-2 mb-3">
           {track.track_type && (
             <Badge variant="outline" className="text-xs border-gray-300">
@@ -66,10 +56,10 @@ export default function TrackCard({ track, disciplines = [], media }) {
         </div>
       </div>
 
-      {media?.hero_image_url && (
+      {track.hero_image_url && (
         <div className="absolute bottom-4 right-4 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg">
           <img 
-            src={media.hero_image_url} 
+            src={track.hero_image_url} 
             alt={track.name}
             className="w-full h-full object-cover"
           />
