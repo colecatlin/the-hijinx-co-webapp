@@ -407,16 +407,29 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="contact_email">Contact Email</Label>
-          <Input
-            id="contact_email"
-            type="email"
-            value={formData.contact_email}
-            onChange={(e) => handleInputChange('contact_email', e.target.value)}
-            placeholder="Contact email address"
-            className="mt-2"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="contact_email">Contact Email</Label>
+            <Input
+              id="contact_email"
+              type="email"
+              value={formData.contact_email}
+              onChange={(e) => handleInputChange('contact_email', e.target.value)}
+              placeholder="Contact email address"
+              className="mt-2"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="represented_by">Represented By</Label>
+            <Input
+              id="represented_by"
+              value={formData.represented_by}
+              onChange={(e) => handleInputChange('represented_by', e.target.value)}
+              placeholder="Agent or manager name"
+              className="mt-2"
+            />
+          </div>
         </div>
 
         <div className="border-t pt-6">
