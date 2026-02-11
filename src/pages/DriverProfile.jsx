@@ -260,7 +260,7 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-6 relative -mt-1">
-            <div className="fixed top-32 right-6 z-10 lg:absolute lg:top-0 lg:right-0">
+            <div className="absolute -top-12 right-0 z-10">
               <SocialShareButtons 
                 url={window.location.href}
                 title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
