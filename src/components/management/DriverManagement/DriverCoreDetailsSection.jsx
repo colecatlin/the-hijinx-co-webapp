@@ -71,6 +71,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     location_country: '',
     primary_number: '',
     primary_discipline: '',
+    team_id: '',
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -93,6 +94,11 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     enabled: driverId && driverId !== 'new',
   });
 
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   useEffect(() => {
     if (driverId === 'new') {
       setFormData({
@@ -109,6 +115,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         location_country: '',
         primary_number: '',
         primary_discipline: '',
+        team_id: '',
       });
       setHeadshotUrl('');
     } else if (driver && driver.length > 0) {
@@ -128,7 +135,8 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           location_country: driverData.location_country || '',
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
-        });
+          team_id: driverData.team_id || '',
+          });
       }
     }
   }, [driver, driverId]);
@@ -404,6 +412,21 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="team_id">Team</Label>
+          <Select value={formData.team_id} onValueChange={(value) => handleInputChange('team_id', value)}>
+            <SelectTrigger id="team_id" className="mt-2">
+              <SelectValue placeholder="Select team (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={null}>None</SelectItem>
+              {teams.map(t => (
+                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
