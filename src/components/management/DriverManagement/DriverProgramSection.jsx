@@ -17,10 +17,9 @@ export default function DriverProgramSection({ driverId }) {
     team_id: '',
     class_name: '',
     bib_number: '',
-    season_start_year: new Date().getFullYear(),
-    season_end_year: null,
+    start_month_year: '',
+    end_month_year: '',
     program_status: 'Active',
-    is_primary: false,
   });
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
@@ -57,10 +56,9 @@ export default function DriverProgramSection({ driverId }) {
         team_id: '',
         class_name: '',
         bib_number: '',
-        season_start_year: new Date().getFullYear(),
-        season_end_year: null,
+        start_month_year: '',
+        end_month_year: '',
         program_status: 'Active',
-        is_primary: false,
       });
       setShowAddForm(false);
       toast.success('Program added');
@@ -120,18 +118,11 @@ export default function DriverProgramSection({ driverId }) {
   });
 
   const handleAddProgram = () => {
-    if (!formData.series_id || !formData.class_name || !formData.bib_number) {
-      toast.error('Series, class, and bib number are required');
+    if (!formData.series_id || !formData.class_name || !formData.bib_number || !formData.start_month_year) {
+      toast.error('Series, class, bib number, and start date are required');
       return;
     }
     createProgramMutation.mutate(formData);
-  };
-
-  const togglePrimary = (program) => {
-    updateProgramMutation.mutate({
-      id: program.id,
-      data: { is_primary: !program.is_primary }
-    });
   };
 
   const getSeriesName = (seriesId) => {
@@ -315,24 +306,25 @@ export default function DriverProgramSection({ driverId }) {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="season_start_year">Start Year *</Label>
+                <Label htmlFor="start_month_year">Start Month/Year *</Label>
                 <Input
-                  id="season_start_year"
-                  type="number"
-                  value={formData.season_start_year}
-                  onChange={(e) => setFormData({ ...formData, season_start_year: parseInt(e.target.value) })}
+                  id="start_month_year"
+                  type="text"
+                  value={formData.start_month_year}
+                  onChange={(e) => setFormData({ ...formData, start_month_year: e.target.value })}
+                  placeholder="MM/YYYY"
                   className="mt-2"
                 />
               </div>
 
               <div>
-                <Label htmlFor="season_end_year">End Year</Label>
+                <Label htmlFor="end_month_year">End Month/Year</Label>
                 <Input
-                  id="season_end_year"
-                  type="number"
-                  value={formData.season_end_year || ''}
-                  onChange={(e) => setFormData({ ...formData, season_end_year: e.target.value ? parseInt(e.target.value) : null })}
-                  placeholder="Leave blank for Present"
+                  id="end_month_year"
+                  type="text"
+                  value={formData.end_month_year}
+                  onChange={(e) => setFormData({ ...formData, end_month_year: e.target.value })}
+                  placeholder="MM/YYYY (blank for Present)"
                   className="mt-2"
                 />
               </div>
@@ -349,15 +341,6 @@ export default function DriverProgramSection({ driverId }) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="is_primary"
-                checked={formData.is_primary}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_primary: checked })}
-              />
-              <Label htmlFor="is_primary" className="cursor-pointer">Primary Program</Label>
             </div>
 
             <div className="flex gap-3 pt-4 border-t">
@@ -377,10 +360,9 @@ export default function DriverProgramSection({ driverId }) {
                     team_id: '',
                     class_name: '',
                     bib_number: '',
-                    season_start_year: new Date().getFullYear(),
-                    season_end_year: null,
+                    start_month_year: '',
+                    end_month_year: '',
                     program_status: 'Active',
-                    is_primary: false,
                   });
                 }}
               >
@@ -402,9 +384,6 @@ export default function DriverProgramSection({ driverId }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">{getSeriesName(program.series_id)}</h4>
-                      {program.is_primary && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Primary</span>
-                      )}
                       <span className={`text-xs px-2 py-0.5 rounded ${
                         program.program_status === 'Active' 
                           ? 'bg-green-100 text-green-700' 
@@ -417,18 +396,10 @@ export default function DriverProgramSection({ driverId }) {
                       <div><span className="font-medium">Team:</span> {getTeamName(program.team_id)}</div>
                       <div><span className="font-medium">Class:</span> {program.class_name}</div>
                       <div><span className="font-medium">Number:</span> {program.bib_number}</div>
-                      <div><span className="font-medium">Years:</span> {program.season_start_year} - {program.season_end_year || 'Present'}</div>
+                      <div><span className="font-medium">Dates:</span> {program.start_month_year} - {program.end_month_year || 'Present'}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => togglePrimary(program)}
-                      disabled={updateProgramMutation.isPending}
-                    >
-                      {program.is_primary ? 'Unset Primary' : 'Set Primary'}
-                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
