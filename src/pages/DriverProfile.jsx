@@ -167,41 +167,6 @@ export default function DriverProfile() {
         </div>
       )}
 
-      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 overflow-x-auto">
-            {sections.map(section => {
-              const Icon = section.icon;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    if (section.id === 'overview') {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                      const element = document.getElementById(`section-${section.id}`);
-                      if (element) {
-                        const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                        window.scrollTo({ top: offset, behavior: 'smooth' });
-                      }
-                    }
-                  }}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                    activeSection === section.id
-                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                      : 'text-gray-600 hover:text-[#232323]'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {section.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-6 py-12">
         <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
           ← Back to Drivers
@@ -215,6 +180,39 @@ export default function DriverProfile() {
               {driver.primary_number && (
                 <div className="text-4xl font-black text-[#232323] leading-none ml-auto">#{driver.primary_number}</div>
               )}
+            </div>
+
+            <div className="border-b border-gray-200 mb-8">
+              <div className="flex gap-1 overflow-x-auto">
+                {sections.map(section => {
+                  const Icon = section.icon;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => {
+                        setActiveSection(section.id);
+                        if (section.id === 'overview') {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                          const element = document.getElementById(`section-${section.id}`);
+                          if (element) {
+                            const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                            window.scrollTo({ top: offset, behavior: 'smooth' });
+                          }
+                        }
+                      }}
+                      className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                        activeSection === section.id
+                          ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                          : 'text-gray-600 hover:text-[#232323]'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {section.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="bg-white border border-gray-200 p-8 mb-8">
