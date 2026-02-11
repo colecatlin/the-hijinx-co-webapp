@@ -114,16 +114,32 @@ export default function DriverCard({ driver, program, team, media, performance }
                 {driver.first_name} {driver.last_name}
               </h3>
             </div>
-            {hometown && (
-              <div className="flex items-center gap-1 text-xs text-gray-600">
-                <MapPin className="w-3 h-3" />
-                {hometown}
-              </div>
-            )}
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          {/* Overview Details */}
+          <div className="space-y-3 flex-1">
+            {driver.date_of_birth && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
+                <div className="text-sm font-bold text-[#232323]">
+                  {new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear()}
+                </div>
+              </div>
+            )}
+            {hometown && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Hometown</div>
+                <div className="text-sm font-bold text-[#232323]">{hometown}</div>
+              </div>
+            )}
+            {(driver.location_city || driver.location_state) && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
+                <div className="text-sm font-bold text-[#232323]">
+                  {[driver.location_city, driver.location_state].filter(Boolean).join(', ')}
+                </div>
+              </div>
+            )}
             {program?.series_name && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
@@ -142,29 +158,13 @@ export default function DriverCard({ driver, program, team, media, performance }
                 <div className="text-sm font-bold text-[#232323]">{team.name}</div>
               </div>
             )}
-            {performance?.career_wins && (
+            {driver.represented_by && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wins</div>
-                <div className="text-sm font-bold text-[#232323]">{performance.career_wins}</div>
-              </div>
-            )}
-            {performance?.career_podiums && (
-              <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Podiums</div>
-                <div className="text-sm font-bold text-[#232323]">{performance.career_podiums}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Represented By</div>
+                <div className="text-sm font-bold text-[#232323]">{driver.represented_by}</div>
               </div>
             )}
           </div>
-
-          {/* Bio Section */}
-          {performance?.bio_summary && (
-            <div className="mb-6 flex-1">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">About</div>
-              <p className="text-xs text-gray-700 leading-relaxed line-clamp-4">
-                {performance.bio_summary}
-              </p>
-            </div>
-          )}
 
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
