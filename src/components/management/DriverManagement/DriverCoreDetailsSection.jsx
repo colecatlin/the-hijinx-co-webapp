@@ -78,6 +78,8 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const [headshotUrl, setHeadshotUrl] = useState('');
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
+  const [showAddTeam, setShowAddTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
@@ -219,6 +221,24 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
       toast.success('Headshot updated');
     }
   };
+
+  const createTeamMutation = useMutation({
+    mutationFn: (name) => base44.entities.Team.create({
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description_summary: 'New team',
+      primary_discipline: formData.primary_discipline || 'Stock Car',
+      team_level: 'Regional',
+      status: 'Active'
+    }),
+    onSuccess: (newTeam) => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setFormData({ ...formData, team_id: newTeam.id });
+      setNewTeamName('');
+      setShowAddTeam(false);
+      toast.success('Team created');
+    },
+  });
 
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
