@@ -269,8 +269,7 @@ export default function DriverProfile() {
             </div>
             {media?.headshot_url && (
               <div className="bg-white">
-
-                <div className="w-full h-[320px] relative bg-gray-50 overflow-hidden">
+                <div className="w-full h-[480px] relative bg-gray-50 overflow-hidden">
                   <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover" />
                 </div>
               </div>
