@@ -24,6 +24,8 @@ export default function DriverProgramSection({ driverId }) {
   });
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
+  const [showAddSeries, setShowAddSeries] = useState(false);
+  const [newSeriesName, setNewSeriesName] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -84,7 +86,7 @@ export default function DriverProgramSection({ driverId }) {
   const createTeamMutation = useMutation({
     mutationFn: (name) => base44.entities.Team.create({
       name,
-      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 8),
       description_summary: 'New team',
       primary_discipline: 'Stock Car',
       team_level: 'Regional',
@@ -96,6 +98,24 @@ export default function DriverProgramSection({ driverId }) {
       setNewTeamName('');
       setShowAddTeam(false);
       toast.success('Team created');
+    },
+  });
+
+  const createSeriesMutation = useMutation({
+    mutationFn: (name) => base44.entities.Series.create({
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 8),
+      description_summary: 'New series',
+      discipline: 'Stock Car',
+      competition_level: 'Amateur',
+      status: 'Active'
+    }),
+    onSuccess: (newSeries) => {
+      queryClient.invalidateQueries({ queryKey: ['series'] });
+      setFormData({ ...formData, series_id: newSeries.id });
+      setNewSeriesName('');
+      setShowAddSeries(false);
+      toast.success('Series created');
     },
   });
 
@@ -167,16 +187,53 @@ export default function DriverProgramSection({ driverId }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="series_id">Series *</Label>
-                <Select value={formData.series_id} onValueChange={(value) => setFormData({ ...formData, series_id: value })}>
-                  <SelectTrigger id="series_id" className="mt-2">
-                    <SelectValue placeholder="Select series" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {series.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {showAddSeries ? (
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      value={newSeriesName}
+                      onChange={(e) => setNewSeriesName(e.target.value)}
+                      placeholder="New series name"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={() => createSeriesMutation.mutate(newSeriesName)}
+                      disabled={!newSeriesName || createSeriesMutation.isPending}
+                      size="sm"
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowAddSeries(false);
+                        setNewSeriesName('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={formData.series_id} onValueChange={(value) => setFormData({ ...formData, series_id: value })}>
+                      <SelectTrigger id="series_id" className="mt-2">
+                        <SelectValue placeholder="Select series" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {series.map(s => (
+                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddSeries(true)}
+                      className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                    >
+                      + Add new series
+                    </button>
+                  </>
+                )}
               </div>
 
               <div>
