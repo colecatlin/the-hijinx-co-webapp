@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -8,14 +8,9 @@ import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Flag, ChevronRight, Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { Flag, ChevronRight } from 'lucide-react';
 
 export default function ResultsHome() {
-  const queryClient = useQueryClient();
-  const [syncing, setSyncing] = useState(false);
-  
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['results'],
     queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-date', 50),
@@ -26,45 +21,18 @@ export default function ResultsHome() {
     !searchTerm || e.name?.toLowerCase().includes(searchTerm.toLowerCase()) || e.track_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handlePullData = async () => {
-    setSyncing(true);
-    try {
-      const response = await base44.functions.invoke('syncDataFromSheets', {
-        spreadsheetId: '1UdBrrszoPuxaaoDaGmK3zXb63nVgaXlnka8LriG4fKg',
-        entityType: 'Event',
-        sheetName: 'Sheet1',
-      });
-      toast.success(`✓ ${response.data.recordsProcessed} results synced from Google Sheet`);
-      queryClient.invalidateQueries({ queryKey: ['results'] });
-    } catch (error) {
-      toast.error('Failed to sync data: ' + error.message);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
         <SectionHeader label="Motorsports" title="Results" subtitle="Race results and event data." />
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Button
-            onClick={handlePullData}
-            disabled={syncing}
-            size="sm"
-            className="bg-[#232323] hover:bg-[#1A3249] text-white gap-2 w-fit"
-          >
-            <Download className="w-4 h-4" />
-            {syncing ? 'Syncing...' : 'Pull from Google Sheets'}
-          </Button>
-
+        <div className="mb-8">
           <input
             type="text"
             placeholder="Search by event or track..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 border-b-2 border-gray-200 focus:border-[#0A0A0A] bg-transparent py-2 text-sm outline-none placeholder:text-gray-300"
+            className="w-full border-b-2 border-gray-200 focus:border-[#0A0A0A] bg-transparent py-2 text-sm outline-none placeholder:text-gray-300"
           />
         </div>
 
