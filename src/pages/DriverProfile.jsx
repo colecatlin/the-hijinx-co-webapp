@@ -239,7 +239,7 @@ export default function DriverProfile() {
               <div className="bg-white border border-gray-200">
 
                 <div className="w-full h-[320px] relative bg-gray-50 border-t border-gray-200 overflow-hidden">
-                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover object-center" />
+                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover object-top" />
                 </div>
               </div>
             )}
