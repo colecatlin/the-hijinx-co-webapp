@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Mail, Plus, Trash2, Star } from 'lucide-react';
+import { Plus, Trash2, Star } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import MediaUploader from '@/components/shared/MediaUploader';
 import ImageCropModal from '@/components/shared/ImageCropModal';
@@ -68,7 +68,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   });
 
   const [isSaved, setIsSaved] = useState(false);
-  const [invitationEmail, setInvitationEmail] = useState('');
   const [showProgramForm, setShowProgramForm] = useState(false);
   const [headshotUrl, setHeadshotUrl] = useState('');
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -202,52 +201,12 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     return age;
   };
 
-  const invitationMutation = useMutation({
-    mutationFn: async (email) => {
-      await base44.functions.invoke('createAndSendEntityInvitation', {
-        email,
-        entity_type: 'Driver',
-        entity_id: driverId,
-        entity_name: `${formData.first_name} ${formData.last_name}`,
-        access_code: driver?.[0]?.numeric_id,
-        role: 'editor',
-        expiration_days: 30
-      });
-      // Save email to driver contact_email field
-      return base44.functions.invoke('updateEntitySafely', {
-        entity_type: 'Driver',
-        entity_id: driverId,
-        data: { contact_email: email }
-      });
-    },
-    onSuccess: () => {
-      toast.success('Invitation sent successfully');
-      setInvitationEmail('');
-      queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
-    },
-    onError: (error) => {
-      toast.error(`Failed to send invitation: ${error.message}`);
-    },
-  });
-
   const handleSave = () => {
     if (!formData.first_name || !formData.last_name) {
       toast.error('First and last name are required');
       return;
     }
     updateMutation.mutate(formData);
-  };
-
-  const handleSendInvitation = () => {
-    if (!invitationEmail) {
-      toast.error('Please enter an email address');
-      return;
-    }
-    if (driverId === 'new') {
-      toast.error('Please save the driver first before sending invitations');
-      return;
-    }
-    invitationMutation.mutate(invitationEmail);
   };
 
   const createProgramMutation = useMutation({
@@ -703,36 +662,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           )}
         </div>
 
-        <div className="border-t pt-6">
-          <h3 className="font-semibold mb-4">Send Invitation</h3>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Label htmlFor="invitation_email">Invite by Email</Label>
-              <Input
-                id="invitation_email"
-                type="email"
-                value={invitationEmail}
-                onChange={(e) => setInvitationEmail(e.target.value)}
-                placeholder="Enter email address"
-                className="mt-2"
-                disabled={driverId === 'new'}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                onClick={handleSendInvitation}
-                disabled={invitationMutation.isPending || driverId === 'new'}
-                variant="outline"
-                className="gap-2"
-              >
-                <Mail className="w-4 h-4" />
-                {invitationMutation.isPending ? 'Sending...' : 'Send Invite'}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             onClick={handleSave}
             disabled={updateMutation.isPending}

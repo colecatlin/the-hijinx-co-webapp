@@ -13,7 +13,9 @@ import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
+import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -163,9 +165,18 @@ export default function ManageDrivers() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-          </div>
+          <Tabs defaultValue="core" className="mt-6">
+            <TabsList>
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="access">Access</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
+            </TabsContent>
+            <TabsContent value="access" className="mt-6">
+              <DriverAccessSection driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+          </Tabs>
         </div>
       </PageShell>
     );
