@@ -207,18 +207,22 @@ export default function TrackForm({ track, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Content Value</label>
-            <Select value={formData.content_value} onValueChange={(value) => handleChange('content_value', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Unknown">Unknown</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="block text-sm font-medium mb-2">Affiliated Race Series</label>
+            <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded p-3">
+              {series.length === 0 ? (
+                <p className="text-sm text-gray-500">No series available</p>
+              ) : (
+                series.map((s) => (
+                  <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    <Checkbox
+                      checked={formData.series_ids.includes(s.id)}
+                      onCheckedChange={() => handleSeriesToggle(s.id)}
+                    />
+                    <span className="text-sm">{s.name}</span>
+                  </label>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">
