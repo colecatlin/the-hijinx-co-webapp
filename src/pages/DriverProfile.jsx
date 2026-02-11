@@ -469,42 +469,6 @@ export default function DriverProfile() {
             )}
           </section>
 
-          <section id="section-community" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
-            {community ? (
-              <>
-                {community.youth_programs && (
-                  <div className="mb-6">
-                    <div className="text-sm text-gray-600 mb-2">Youth Programs</div>
-                    <p className="text-gray-700">{community.youth_programs}</p>
-                  </div>
-                )}
-                {community.charity_involvement && (
-                  <div className="mb-6">
-                    <div className="text-sm text-gray-600 mb-2">Charity Involvement</div>
-                    <p className="text-gray-700">{community.charity_involvement}</p>
-                  </div>
-                )}
-                {community.community_notes && (
-                  <div className="mb-6">
-                    <div className="text-sm text-gray-600 mb-2">Community Notes</div>
-                    <p className="text-gray-700">{community.community_notes}</p>
-                  </div>
-                )}
-                {community.legacy_notes && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-2">Legacy</div>
-                    <p className="text-gray-700">{community.legacy_notes}</p>
-                  </div>
-                )}
-                {!community.youth_programs && !community.charity_involvement && !community.community_notes && !community.legacy_notes && (
-                  <p className="text-gray-500">No community information available.</p>
-                )}
-              </>
-            ) : (
-              <p className="text-gray-500">No community information available.</p>
-            )}
-          </section>
         </div>
       </div>
     </PageShell>
