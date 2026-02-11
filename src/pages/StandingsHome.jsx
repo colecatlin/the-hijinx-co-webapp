@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -8,10 +8,8 @@ import SectionHeader from '@/components/shared/SectionHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, ArrowUpDown, Clock, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Trophy, ArrowUpDown, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 
 export default function StandingsHome() {
   const [selectedSeries, setSelectedSeries] = useState('all');
@@ -19,8 +17,6 @@ export default function StandingsHome() {
   const [selectedSeason, setSelectedSeason] = useState('');
   const [sortField, setSortField] = useState('position');
   const [sortDir, setSortDir] = useState(1);
-  const [syncing, setSyncing] = useState(false);
-  const queryClient = useQueryClient();
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['series'],
@@ -65,23 +61,6 @@ export default function StandingsHome() {
     else { setSortField(field); setSortDir(1); }
   };
 
-  const handlePullData = async () => {
-    setSyncing(true);
-    try {
-      const response = await base44.functions.invoke('syncDataFromSheets', {
-        spreadsheetId: '1-3zSsjrbilWnofiKD-aGYW48uk-BpK0SJF--pV-xJa0',
-        entityType: 'StandingsEntry',
-        sheetName: 'Sheet1',
-      });
-      toast.success(`✓ ${response.data.recordsProcessed} standings synced from Google Sheet`);
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-    } catch (error) {
-      toast.error('Failed to sync data: ' + error.message);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const lastUpdated = filteredEntries.length > 0 
     ? filteredEntries.reduce((latest, e) => {
         const d = e.last_updated || e.updated_date;
@@ -112,18 +91,6 @@ export default function StandingsHome() {
 
         {/* Filters */}
          <div className="flex flex-wrap gap-3 mb-8 items-center">
-          <Button
-            onClick={handlePullData}
-            disabled={syncing}
-            size="sm"
-            className="bg-[#232323] hover:bg-[#1A3249] text-white gap-2"
-          >
-            <Download className="w-4 h-4" />
-            {syncing ? 'Syncing...' : 'Pull from Google Sheets'}
-          </Button>
-
-          <div className="w-px h-6 bg-gray-200" />
-
           <Select value={String(activeSeason)} onValueChange={(v) => setSelectedSeason(Number(v))}>
              <SelectTrigger className="w-32 rounded-none text-xs"><SelectValue /></SelectTrigger>
              <SelectContent>
