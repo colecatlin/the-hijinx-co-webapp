@@ -72,6 +72,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     primary_number: '',
     primary_discipline: '',
     team_id: '',
+    class_name: '',
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -118,6 +119,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         primary_number: '',
         primary_discipline: '',
         team_id: '',
+        class_name: '',
       });
       setHeadshotUrl('');
     } else if (driver && driver.length > 0) {
@@ -138,6 +140,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
           team_id: driverData.team_id || '',
+          class_name: driverData.class_name || '',
           });
       }
     }
@@ -482,6 +485,17 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               </button>
             </>
           )}
+        </div>
+
+        <div>
+          <Label htmlFor="class_name">Class</Label>
+          <Input
+            id="class_name"
+            value={formData.class_name}
+            onChange={(e) => handleInputChange('class_name', e.target.value)}
+            placeholder="e.g., Pro 4, Super Stock"
+            className="mt-2"
+          />
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
