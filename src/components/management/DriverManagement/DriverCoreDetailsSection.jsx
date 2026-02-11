@@ -512,7 +512,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="primary_number">Primary Number</Label>
+            <Label htmlFor="primary_number">Car/Bib Number</Label>
             <Input
               id="primary_number"
               value={formData.primary_number}
