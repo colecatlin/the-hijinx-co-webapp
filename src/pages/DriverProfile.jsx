@@ -138,9 +138,9 @@ export default function DriverProfile() {
           ← Back to Drivers
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
-            <Separator className="mb-6" />
+            <Separator className="mb-3" />
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <CountryFlag country={driver.hometown_country} />
@@ -151,7 +151,7 @@ export default function DriverProfile() {
               )}
             </div>
 
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-6">
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
               {sections.map(section => {
                 const Icon = section.icon;
                 return (
@@ -182,11 +182,11 @@ export default function DriverProfile() {
               })}
             </div>
 
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-4">
               <SocialIconsDisplay media={media} />
             </div>
 
-            <div className="bg-white border border-gray-200 p-8 mb-8">
+            <div className="bg-white border border-gray-200 p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Age</div>
@@ -265,7 +265,7 @@ export default function DriverProfile() {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
           <section id="section-social" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Social Media</h2>
             {media && (media.instagram || media.facebook || media.tiktok || media.x || media.threads || media.youtube || media.website) ? (
