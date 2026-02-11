@@ -81,6 +81,20 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
+  const [showAddClass, setShowAddClass] = useState(false);
+  const [newClassName, setNewClassName] = useState('');
+  const [classList, setClassList] = useState([
+    'Pro 4',
+    'Pro 2',
+    'Pro Lite',
+    'Super Stock',
+    'Stock Full',
+    'Mod Kart',
+    'Turbo',
+    'Pro Buggy',
+    'Trophy Truck',
+    'Class 1'
+  ]);
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
@@ -489,13 +503,59 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
         <div>
           <Label htmlFor="class_name">Class</Label>
-          <Input
-            id="class_name"
-            value={formData.class_name}
-            onChange={(e) => handleInputChange('class_name', e.target.value)}
-            placeholder="e.g., Pro 4, Super Stock"
-            className="mt-2"
-          />
+          {showAddClass ? (
+            <div className="flex gap-2 mt-2">
+              <Input
+                value={newClassName}
+                onChange={(e) => setNewClassName(e.target.value)}
+                placeholder="New class name"
+                className="flex-1"
+              />
+              <Button
+                onClick={() => {
+                  if (newClassName) {
+                    setClassList([...classList, newClassName]);
+                    setFormData({ ...formData, class_name: newClassName });
+                    setNewClassName('');
+                    setShowAddClass(false);
+                  }
+                }}
+                disabled={!newClassName}
+              >
+                Add
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowAddClass(false);
+                  setNewClassName('');
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Select value={formData.class_name} onValueChange={(value) => handleInputChange('class_name', value)}>
+                <SelectTrigger id="class_name" className="mt-2">
+                  <SelectValue placeholder="Select class (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>None</SelectItem>
+                  {classList.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button
+                type="button"
+                onClick={() => setShowAddClass(true)}
+                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+              >
+                + Add new class
+              </button>
+            </>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
