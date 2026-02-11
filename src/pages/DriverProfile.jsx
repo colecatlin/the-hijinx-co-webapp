@@ -5,7 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2 } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
@@ -226,7 +226,10 @@ export default function DriverProfile() {
                     </div>
                   </div>
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Hometown</div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <Home className="w-4 h-4" />
+                    Hometown
+                  </div>
                   <div className="flex items-center gap-2">
                     <CountryFlag country={driver.hometown_country} />
                     <div className="text-lg font-semibold text-[#232323]">
@@ -236,7 +239,10 @@ export default function DriverProfile() {
                 </div>
                 {driver.location_city && (
                   <div>
-                    <div className="text-sm text-gray-600 mb-1">Current Racing Base</div>
+                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                      <MapPin className="w-4 h-4" />
+                      Location
+                    </div>
                     <div className="text-lg font-semibold text-[#232323]">
                       {driver.location_city}{driver.location_state ? `, ${driver.location_state}` : ''} • {driver.location_country}
                     </div>
