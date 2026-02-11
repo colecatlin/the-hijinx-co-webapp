@@ -137,8 +137,8 @@ export default function DriverProfile() {
           ← Back to Drivers
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2 relative -mt-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-start">
+          <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <CountryFlag country={driver.hometown_country} />
@@ -236,8 +236,11 @@ export default function DriverProfile() {
               />
             </div>
             {media?.headshot_url && (
-              <div className="border border-gray-200 overflow-hidden">
-                <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-[320px] object-cover object-top block" />
+              <div className="bg-white border border-gray-200">
+
+                <div className="w-full h-[320px] relative bg-gray-50 border-t border-gray-200 overflow-hidden">
+                  <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover" />
+                </div>
               </div>
             )}
 
