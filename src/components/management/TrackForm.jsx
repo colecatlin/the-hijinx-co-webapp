@@ -12,7 +12,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 export default function TrackForm({ track, onClose }) {
   const [formData, setFormData] = useState(track || {
     name: '',
-    slug: '',
     city: '',
     state: '',
     country: 'USA',
@@ -23,11 +22,16 @@ export default function TrackForm({ track, onClose }) {
     surfaces: [],
     length_miles: null,
     turns_count: null,
-    elevation_profile: 'Unknown',
-    content_value: 'Unknown',
+    series_ids: [],
   });
 
   const queryClient = useQueryClient();
+
+  const { data: series } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+    initialData: [],
+  });
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
