@@ -88,7 +88,7 @@ export default function DriverProfile() {
 
   if (isLoading) {
     return (
-      <PageShell className="bg-[#FFF8F5]">
+      <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <Skeleton className="h-12 w-64 mb-4" />
           <Skeleton className="h-96" />
@@ -99,7 +99,7 @@ export default function DriverProfile() {
 
   if (!driver) {
     return (
-      <PageShell className="bg-[#FFF8F5]">
+      <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
           <p className="text-gray-600 mb-4">Driver not found</p>
           <Link to={createPageUrl('DriverDirectory')}>
@@ -121,7 +121,7 @@ export default function DriverProfile() {
   const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
           <img 
