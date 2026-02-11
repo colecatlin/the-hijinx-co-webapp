@@ -131,11 +131,7 @@ export default function DriverProfile() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'media', label: 'Media', icon: Camera },
-    { id: 'partnerships', label: 'Partnerships', icon: Heart },
     { id: 'social', label: 'Social Media', icon: Share2 },
-    { id: 'community', label: 'Community', icon: Users },
   ];
 
   const primaryProgram = sortedPrograms.find(p => p.is_primary) || sortedPrograms[0];
