@@ -48,11 +48,7 @@ export default function DriverProfile() {
       d.last_name?.toLowerCase() === lastName
     );
 
-  const { data: programs = [] } = useQuery({
-    queryKey: ['driverPrograms', driver?.id],
-    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-  });
+
 
   const { data: performance } = useQuery({
     queryKey: ['driverPerformance', driver?.id],
@@ -87,17 +83,7 @@ export default function DriverProfile() {
     enabled: !!driver?.id,
   });
 
-  const { data: allTeams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    enabled: !!driver?.id && programs.length > 0,
-  });
 
-  const { data: allSeries = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    enabled: !!driver?.id && programs.length > 0,
-  });
 
   if (isLoading) {
     return (
@@ -123,31 +109,15 @@ export default function DriverProfile() {
     );
   }
 
-  const sortedPrograms = [...programs].sort((a, b) => {
-    if (a.is_primary) return -1;
-    if (b.is_primary) return 1;
-    return 0;
-  });
+
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'social', label: 'Social Media', icon: Share2 },
   ];
 
-  const primaryProgram = sortedPrograms.find(p => p.is_primary) || sortedPrograms[0];
   const topSpecialties = performance?.specialties?.slice(0, 2) || [];
-  const activeTeams = [...new Set(programs.filter(p => p.team_id && p.program_status === 'Active').map(p => p.team_id))];
   const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
-
-  const seriesMap = allSeries.reduce((acc, series) => {
-    acc[series.id] = series;
-    return acc;
-  }, {});
-
-  const teamMap = allTeams.reduce((acc, team) => {
-    acc[team.id] = team;
-    return acc;
-  }, {});
 
   return (
     <PageShell className="bg-[#FFF8F5]">
@@ -180,8 +150,8 @@ export default function DriverProfile() {
                   title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
                   description=""
                 />
-                {primaryProgram?.bib_number && (
-                  <div className="text-sm font-semibold text-gray-600">#{primaryProgram.bib_number}</div>
+                {driver.primary_number && (
+                  <div className="text-sm font-semibold text-gray-600">#{driver.primary_number}</div>
                 )}
               </div>
             </div>
@@ -252,12 +222,6 @@ export default function DriverProfile() {
                   <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
                   <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
                 </div>
-                {primaryProgram && seriesMap[primaryProgram.series_id] && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Primary Series</div>
-                    <div className="text-lg font-semibold text-[#232323]">{seriesMap[primaryProgram.series_id].name}</div>
-                  </div>
-                )}
               </div>
               <div className="flex flex-wrap gap-2 mt-6">
                 {performance?.recent_form && performance.recent_form !== 'Unknown' && (
@@ -280,43 +244,7 @@ export default function DriverProfile() {
               </div>
             )}
 
-            {activeTeams.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Current Teams</h3>
-                <div className="space-y-2">
-                  {activeTeams.map(teamId => {
-                    const team = allTeams.find(t => t.id === teamId);
-                    if (!team) return null;
-                    return (
-                      <Link 
-                        key={teamId}
-                        to={buildProfileUrl('Team', team.slug)}
-                        className="block text-[#232323] hover:text-[#00FFDA] transition-colors"
-                      >
-                        {team.name}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
-            {sortedPrograms.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Active Programs</h3>
-                <div className="space-y-3">
-                  {sortedPrograms.filter(p => p.program_status === 'Active').slice(0, 3).map(prog => {
-                    const series = seriesMap[prog.series_id];
-                    return (
-                      <div key={prog.id}>
-                        <div className="font-semibold text-[#232323] text-sm">{series?.name || 'Series'}</div>
-                        {prog.class_name && <div className="text-xs text-gray-600">{prog.class_name}</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {activePartnerships.length > 0 && (
               <div className="bg-white border border-gray-200 p-6">
