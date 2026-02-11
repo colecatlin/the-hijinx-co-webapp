@@ -133,12 +133,6 @@ export default function DriverCard({ driver, program, team, media, performance }
                 <div className="text-sm font-bold text-[#232323]">{team.name}</div>
               </div>
             )}
-            {driver.primary_discipline && (
-              <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Discipline</div>
-                <div className="text-sm font-bold text-[#232323]">{driver.primary_discipline}</div>
-              </div>
-            )}
             {performance?.career_wins && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wins</div>
