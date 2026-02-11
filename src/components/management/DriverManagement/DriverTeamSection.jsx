@@ -110,6 +110,23 @@ export default function DriverTeamSection({ driverId }) {
     updateMutation.mutate(formData);
   };
 
+  const handleAddClass = () => {
+    if (newClassName) {
+      setClassList([...classList, newClassName]);
+      const updatedData = { ...formData, class_name: newClassName };
+      setFormData(updatedData);
+      updateMutation.mutate(updatedData);
+      setNewClassName('');
+      setShowAddClass(false);
+    }
+  };
+
+  const handleAddTeam = () => {
+    if (newTeamName) {
+      createTeamMutation.mutate(newTeamName);
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -146,7 +163,7 @@ export default function DriverTeamSection({ driverId }) {
                 className="flex-1"
               />
               <Button
-                onClick={() => createTeamMutation.mutate(newTeamName)}
+                onClick={handleAddTeam}
                 disabled={!newTeamName || createTeamMutation.isPending}
               >
                 Add
@@ -196,14 +213,7 @@ export default function DriverTeamSection({ driverId }) {
                 className="flex-1"
               />
               <Button
-                onClick={() => {
-                  if (newClassName) {
-                    setClassList([...classList, newClassName]);
-                    setFormData({ ...formData, class_name: newClassName });
-                    setNewClassName('');
-                    setShowAddClass(false);
-                  }
-                }}
+                onClick={handleAddClass}
                 disabled={!newClassName}
               >
                 Add

@@ -71,30 +71,12 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     location_country: '',
     primary_number: '',
     primary_discipline: '',
-    team_id: '',
-    class_name: '',
   });
 
   const [isSaved, setIsSaved] = useState(false);
   const [headshotUrl, setHeadshotUrl] = useState('');
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
-  const [showAddTeam, setShowAddTeam] = useState(false);
-  const [newTeamName, setNewTeamName] = useState('');
-  const [showAddClass, setShowAddClass] = useState(false);
-  const [newClassName, setNewClassName] = useState('');
-  const [classList, setClassList] = useState([
-    'Pro 4',
-    'Pro 2',
-    'Pro Lite',
-    'Super Stock',
-    'Stock Full',
-    'Mod Kart',
-    'Turbo',
-    'Pro Buggy',
-    'Trophy Truck',
-    'Class 1'
-  ]);
   const queryClient = useQueryClient();
 
   const { data: driver, isLoading } = useQuery({
@@ -109,11 +91,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     queryKey: ['driverMedia', driverId],
     queryFn: () => base44.entities.DriverMedia.filter({ driver_id: driverId }),
     enabled: driverId && driverId !== 'new',
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
   });
 
   useEffect(() => {
@@ -132,8 +109,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         location_country: '',
         primary_number: '',
         primary_discipline: '',
-        team_id: '',
-        class_name: '',
       });
       setHeadshotUrl('');
     } else if (driver && driver.length > 0) {
@@ -153,8 +128,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           location_country: driverData.location_country || '',
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
-          team_id: driverData.team_id || '',
-          class_name: driverData.class_name || '',
           });
       }
     }
@@ -238,24 +211,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
       toast.success('Headshot updated');
     }
   };
-
-  const createTeamMutation = useMutation({
-    mutationFn: (name) => base44.entities.Team.create({
-      name,
-      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      description_summary: 'New team',
-      primary_discipline: formData.primary_discipline || 'Stock Car',
-      team_level: 'Regional',
-      status: 'Active'
-    }),
-    onSuccess: (newTeam) => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      setFormData({ ...formData, team_id: newTeam.id });
-      setNewTeamName('');
-      setShowAddTeam(false);
-      toast.success('Team created');
-    },
-  });
 
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
@@ -449,113 +404,6 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="team_id">Team</Label>
-          {showAddTeam ? (
-            <div className="flex gap-2 mt-2">
-              <Input
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-                placeholder="New team name"
-                className="flex-1"
-              />
-              <Button
-                onClick={() => createTeamMutation.mutate(newTeamName)}
-                disabled={!newTeamName || createTeamMutation.isPending}
-              >
-                Add
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowAddTeam(false);
-                  setNewTeamName('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Select value={formData.team_id} onValueChange={(value) => handleInputChange('team_id', value)}>
-                <SelectTrigger id="team_id" className="mt-2">
-                  <SelectValue placeholder="Select team (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>None</SelectItem>
-                  {teams.map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => setShowAddTeam(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-              >
-                + Add new team
-              </button>
-            </>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="class_name">Class</Label>
-          {showAddClass ? (
-            <div className="flex gap-2 mt-2">
-              <Input
-                value={newClassName}
-                onChange={(e) => setNewClassName(e.target.value)}
-                placeholder="New class name"
-                className="flex-1"
-              />
-              <Button
-                onClick={() => {
-                  if (newClassName) {
-                    setClassList([...classList, newClassName]);
-                    setFormData({ ...formData, class_name: newClassName });
-                    setNewClassName('');
-                    setShowAddClass(false);
-                  }
-                }}
-                disabled={!newClassName}
-              >
-                Add
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowAddClass(false);
-                  setNewClassName('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Select value={formData.class_name} onValueChange={(value) => handleInputChange('class_name', value)}>
-                <SelectTrigger id="class_name" className="mt-2">
-                  <SelectValue placeholder="Select class (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>None</SelectItem>
-                  {classList.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => setShowAddClass(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-              >
-                + Add new class
-              </button>
-            </>
-          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
