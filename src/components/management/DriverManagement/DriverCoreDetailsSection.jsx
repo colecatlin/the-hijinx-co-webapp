@@ -436,17 +436,52 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
         <div>
           <Label htmlFor="team_id">Team</Label>
-          <Select value={formData.team_id} onValueChange={(value) => handleInputChange('team_id', value)}>
-            <SelectTrigger id="team_id" className="mt-2">
-              <SelectValue placeholder="Select team (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={null}>None</SelectItem>
-              {teams.map(t => (
-                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {showAddTeam ? (
+            <div className="flex gap-2 mt-2">
+              <Input
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                placeholder="New team name"
+                className="flex-1"
+              />
+              <Button
+                onClick={() => createTeamMutation.mutate(newTeamName)}
+                disabled={!newTeamName || createTeamMutation.isPending}
+              >
+                Add
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowAddTeam(false);
+                  setNewTeamName('');
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Select value={formData.team_id} onValueChange={(value) => handleInputChange('team_id', value)}>
+                <SelectTrigger id="team_id" className="mt-2">
+                  <SelectValue placeholder="Select team (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>None</SelectItem>
+                  {teams.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button
+                type="button"
+                onClick={() => setShowAddTeam(true)}
+                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+              >
+                + Add new team
+              </button>
+            </>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
