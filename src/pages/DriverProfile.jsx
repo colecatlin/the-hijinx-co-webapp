@@ -222,6 +222,20 @@ export default function DriverProfile() {
                   <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
                   <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
                 </div>
+                {driver.class_name && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Class</div>
+                    <div className="text-lg font-semibold text-[#232323]">{driver.class_name}</div>
+                  </div>
+                )}
+                {programs.length > 0 && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Series</div>
+                    <div className="text-lg font-semibold text-[#232323]">
+                      {getSeriesName(programs[0].series_id)}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex flex-wrap gap-2 mt-6">
                 {performance?.recent_form && performance.recent_form !== 'Unknown' && (
