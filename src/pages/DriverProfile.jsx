@@ -180,7 +180,11 @@ export default function DriverProfile() {
                 <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
               </div>
               <div className="flex flex-col items-end gap-2">
-
+                <SocialShareButtons 
+                  url={window.location.href}
+                  title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
+                  description=""
+                />
                 {primaryProgram?.bib_number && (
                   <div className="text-sm font-semibold text-gray-600">#{primaryProgram.bib_number}</div>
                 )}
@@ -326,15 +330,8 @@ export default function DriverProfile() {
 
             <div className="bg-white border border-gray-200 p-6">
               <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
-              <div className="space-y-4">
-                <SocialShareButtons 
-                  url={window.location.href}
-                  title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                  description=""
-                />
-                <div className="flex justify-center">
-                  <SocialIconsDisplay media={media} />
-                </div>
+              <div className="flex justify-center">
+                <SocialIconsDisplay media={media} />
               </div>
             </div>
           </div>
