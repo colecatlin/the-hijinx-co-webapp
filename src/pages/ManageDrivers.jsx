@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,11 +13,6 @@ import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import DriverProgramsSection from '@/components/management/DriverManagement/DriverProgramsSection.jsx';
-import DriverMediaSection from '@/components/management/DriverManagement/DriverMediaSection.jsx';
-import DriverPerformanceSection from '@/components/management/DriverManagement/DriverPerformanceSection.jsx';
-import DriverCommunitySection from '@/components/management/DriverManagement/DriverCommunitySection.jsx';
-import DriverPartnershipSection from '@/components/management/DriverManagement/DriverPartnershipSection.jsx';
 import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
 import { toast } from 'sonner';
 
@@ -168,30 +163,9 @@ export default function ManageDrivers() {
             </div>
           </div>
 
-          <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="community">Community</TabsTrigger>
-              <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-            <TabsContent value="media" className="mt-6">
-              <DriverMediaSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-            <TabsContent value="performance" className="mt-6">
-              <DriverPerformanceSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-            <TabsContent value="community" className="mt-6">
-              <DriverCommunitySection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-            <TabsContent value="partnerships" className="mt-6">
-              <DriverPartnershipSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-          </Tabs>
+          <div className="mt-6">
+            <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
+          </div>
         </div>
       </PageShell>
     );
