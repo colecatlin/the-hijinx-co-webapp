@@ -97,6 +97,15 @@ export default function DriverCard({ driver, program, team, media, performance }
           className="absolute inset-0 bg-[#FAFAFA] border border-gray-300 p-6 flex flex-col"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
+          {/* Bib Number - Same position as front */}
+          {bibNumber && (
+            <div className="absolute top-4 right-4 bg-white px-4 py-2 border border-gray-300">
+              <div className="text-4xl font-black text-[#232323] leading-none">
+                {bibNumber}
+              </div>
+            </div>
+          )}
+          
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
