@@ -267,7 +267,8 @@ export default function DriverProfile() {
 
         <div className="space-y-4">
           <section id="section-social" className="bg-white p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Social Media</h2>
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Social Media</h2>
             {media && (media.instagram || media.facebook || media.tiktok || media.x || media.threads || media.youtube || media.website) ? (
               <div className="flex flex-col items-center gap-6">
                 <div className="flex justify-center">
