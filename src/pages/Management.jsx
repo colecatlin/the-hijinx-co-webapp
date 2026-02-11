@@ -10,15 +10,6 @@ export default function Management() {
       title: 'Core Entities',
       items: [
         { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage all driver profiles and data' },
-        { name: 'Teams', page: 'ManageTeams', icon: Users, description: 'Manage team profiles and rosters' },
-        { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage track information' },
-      ]
-    },
-    {
-      title: 'Competition',
-      items: [
-        { name: 'Series', page: 'ManageSeries', icon: Award, description: 'Define racing series and classes' },
-        { name: 'Standings', page: 'ManageStandings', icon: BarChart3, description: 'Update championship standings' },
       ]
     },
     {
