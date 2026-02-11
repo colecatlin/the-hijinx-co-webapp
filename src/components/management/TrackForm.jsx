@@ -193,11 +193,10 @@ export default function TrackForm({ track, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description Summary * (2-3 sentences, 360 chars max)</label>
+            <label className="block text-sm font-medium mb-2">Description Summary (2-3 sentences, 360 chars max)</label>
             <Textarea
               value={formData.description_summary}
               onChange={(e) => handleChange('description_summary', e.target.value)}
-              required
               rows={4}
               maxLength={360}
             />
