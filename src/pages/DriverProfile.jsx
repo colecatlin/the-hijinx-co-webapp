@@ -326,13 +326,6 @@ export default function DriverProfile() {
                 </div>
               </div>
             )}
-
-            <div className="bg-white border border-gray-200 p-6">
-              <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
-              <div className="flex justify-center">
-                <SocialIconsDisplay media={media} />
-              </div>
-            </div>
           </div>
         </div>
 
