@@ -46,7 +46,7 @@ export default function TrackCoreDetailsSection({ trackId }) {
 
   const { data: track } = useQuery({
     queryKey: ['track', trackId],
-    queryFn: () => base44.entities.Track.list({ id: trackId }),
+    queryFn: () => base44.entities.Track.filter({ id: trackId }),
   });
 
   useEffect(() => {
