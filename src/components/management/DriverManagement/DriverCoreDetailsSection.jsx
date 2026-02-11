@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Mail, Plus, Trash2, Star } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import MediaUploader from '@/components/shared/MediaUploader';
+import ImageCropModal from '@/components/shared/ImageCropModal';
 
 const DISCIPLINES = [
   'Open Wheel',
@@ -68,6 +70,9 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const [isSaved, setIsSaved] = useState(false);
   const [invitationEmail, setInvitationEmail] = useState('');
   const [showProgramForm, setShowProgramForm] = useState(false);
+  const [headshotUrl, setHeadshotUrl] = useState('');
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
   const [editingProgramId, setEditingProgramId] = useState(null);
   const [programForm, setProgramForm] = useState({
     series_id: '',
@@ -103,6 +108,12 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: mediaRecords = [] } = useQuery({
+    queryKey: ['driverMedia', driverId],
+    queryFn: () => base44.entities.DriverMedia.filter({ driver_id: driverId }),
+    enabled: driverId && driverId !== 'new',
+  });
+
   useEffect(() => {
     if (driverId === 'new') {
       setFormData({
@@ -119,6 +130,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         primary_number: '',
         primary_discipline: '',
       });
+      setHeadshotUrl('');
     } else if (driver && driver.length > 0) {
       const driverData = driver[0];
       if (driverData) {
@@ -139,6 +151,12 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
       }
     }
   }, [driver, driverId]);
+
+  useEffect(() => {
+    if (mediaRecords.length > 0) {
+      setHeadshotUrl(mediaRecords[0].headshot_url || '');
+    }
+  }, [mediaRecords]);
 
   const updateMutation = useMutation({
     mutationFn: (data) => {
@@ -301,6 +319,27 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const getSeriesName = (seriesId) => series.find((s) => s.id === seriesId)?.name || 'Unknown';
   const getTeamName = (teamId) => teams.find((t) => t.id === teamId)?.name || 'Unknown';
 
+  const handleHeadshotUpload = (url) => {
+    setTempHeadshotUrl(url);
+    setCropModalOpen(true);
+  };
+
+  const handleCropSave = async (croppedUrl) => {
+    setHeadshotUrl(croppedUrl);
+    setTempHeadshotUrl(null);
+    
+    if (driverId !== 'new') {
+      const mediaRecord = mediaRecords[0];
+      if (mediaRecord) {
+        await base44.entities.DriverMedia.update(mediaRecord.id, { headshot_url: croppedUrl });
+      } else {
+        await base44.entities.DriverMedia.create({ driver_id: driverId, headshot_url: croppedUrl });
+      }
+      queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
+      toast.success('Headshot updated');
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -312,6 +351,18 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         <CardDescription>Edit basic driver information</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="mb-6">
+          <MediaUploader 
+            label="Driver Photo" 
+            value={headshotUrl} 
+            onChange={handleHeadshotUpload} 
+            accept="image/*"
+          />
+          {driverId === 'new' && (
+            <p className="text-xs text-gray-500 mt-2">Save driver details first to upload photo</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="first_name">First Name</Label>
@@ -675,6 +726,17 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
             {updateMutation.isPending ? 'Saving...' : isSaved ? '✓ Saved' : 'Save Changes'}
           </Button>
         </div>
+
+        <ImageCropModal
+          open={cropModalOpen}
+          onClose={() => {
+            setCropModalOpen(false);
+            setTempHeadshotUrl(null);
+          }}
+          imageUrl={tempHeadshotUrl}
+          onSave={handleCropSave}
+          aspectRatio={3/4}
+        />
       </CardContent>
     </Card>
   );
