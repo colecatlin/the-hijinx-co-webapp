@@ -4,21 +4,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Save, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import TrackForm from '@/components/management/TrackForm';
 import { Skeleton } from '@/components/ui/skeleton';
-import { downloadTemplate } from '@/components/shared/downloadTemplate';
-import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
+import TrackForm from '@/components/management/TrackForm';
+
+const TRACK_TYPES = ['Short Course', 'Oval', 'Road Course', 'Ice Oval', 'Mixed'];
+const SURFACES = ['Dirt', 'Asphalt', 'Ice', 'Mixed'];
+const STATUSES = ['Active', 'Seasonal', 'Historic'];
 
 export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [editingTrack, setEditingTrack] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({});
   const queryClient = useQueryClient();
 
   const { data: tracks = [], isLoading } = useQuery({
@@ -28,98 +30,39 @@ export default function ManageTracks() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Track.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracks'] }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Track.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tracks'] });
+      setEditingId(null);
     },
   });
 
-  const filteredTracks = tracks.filter(track => {
-    const query = searchQuery.toLowerCase();
-    return track.name?.toLowerCase().includes(query);
-  });
+  const filteredTracks = tracks.filter(track =>
+    track.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleEdit = (track) => {
-    setSelectedTrackForEdit(track);
+    setEditingId(track.id);
+    setEditData({ ...track });
   };
 
-  const handleDelete = async (track) => {
+  const handleSave = async () => {
+    const { id, created_date, updated_date, created_by, ...dataToSave } = editData;
+    updateMutation.mutate({ id: editingId, data: dataToSave });
+  };
+
+  const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
       deleteMutation.mutate(track.id);
     }
   };
 
-  const handleFormClose = () => {
-    setShowForm(false);
-    setEditingTrack(null);
-  };
-
-  const handleExport = () => {
-    const dataStr = JSON.stringify(tracks, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tracks-export-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const importedData = JSON.parse(event.target.result);
-        const dataArray = Array.isArray(importedData) ? importedData : [importedData];
-        
-        await base44.entities.Track.bulkCreate(dataArray.map(({ id, created_date, updated_date, created_by, ...rest }) => rest));
-        queryClient.invalidateQueries({ queryKey: ['tracks'] });
-        alert(`Successfully imported ${dataArray.length} track(s)`);
-      } catch (error) {
-        alert('Error importing data: ' + error.message);
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
   if (showForm) {
-    return <TrackForm track={editingTrack} onClose={handleFormClose} />;
-  }
-
-  if (selectedTrackForEdit) {
-    return (
-      <PageShell>
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedTrackForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedTrackForEdit.name}</h1>
-              <p className="text-gray-600">Manage all track data</p>
-            </div>
-          </div>
-
-          <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="info">Additional Info</TabsTrigger>
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <TrackCoreDetailsSection trackId={selectedTrackForEdit.id} />
-            </TabsContent>
-            <TabsContent value="info" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Additional track sections coming soon</p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </PageShell>
-    );
+    return <TrackForm onClose={() => setShowForm(false)} />;
   }
 
   return (
@@ -135,30 +78,10 @@ export default function ManageTracks() {
             <h1 className="text-4xl font-black mb-2">Manage Tracks</h1>
             <p className="text-gray-600">{tracks.length} total tracks</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => downloadTemplate('track', 'Track')} title="Download import template">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-tracks').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-tracks"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button onClick={() => setShowForm(true)} className="bg-gray-900">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Track
-            </Button>
-          </div>
+          <Button onClick={() => setShowForm(true)} className="bg-gray-900">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Track
+          </Button>
         </div>
 
         <div className="mb-6 flex items-center gap-3">
@@ -180,71 +103,144 @@ export default function ManageTracks() {
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredTracks.map((track) => (
-                  <tr key={track.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{track.name}</div>
-                      <div className="text-sm text-gray-500">{track.slug}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {track.city}, {track.state}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {track.track_type}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        track.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        track.status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {track.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(track)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(track)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
+          <div className="space-y-3">
+            {filteredTracks.map((track) => (
+              <div key={track.id} className="bg-white border border-gray-200 rounded-lg p-6">
+                {editingId === track.id ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label="Name"
+                        placeholder="Track name"
+                        value={editData.name || ''}
+                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                      />
+                      <Input
+                        label="City"
+                        placeholder="City"
+                        value={editData.city || ''}
+                        onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                      />
+                      <Input
+                        label="State"
+                        placeholder="State"
+                        value={editData.state || ''}
+                        onChange={(e) => setEditData({ ...editData, state: e.target.value })}
+                      />
+                      <Input
+                        label="Country"
+                        placeholder="Country"
+                        value={editData.country || ''}
+                        onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Track Type</label>
+                        <Select value={editData.track_type || ''} onValueChange={(v) => setEditData({ ...editData, track_type: v })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TRACK_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Status</label>
+                        <Select value={editData.status || 'Active'} onValueChange={(v) => setEditData({ ...editData, status: v })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Description</label>
+                      <Textarea
+                        placeholder="Track description"
+                        value={editData.description_summary || ''}
+                        onChange={(e) => setEditData({ ...editData, description_summary: e.target.value })}
+                        className="h-24"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        placeholder="Length (miles)"
+                        value={editData.length_miles || ''}
+                        onChange={(e) => setEditData({ ...editData, length_miles: e.target.value ? parseFloat(e.target.value) : '' })}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Turns count"
+                        value={editData.turns_count || ''}
+                        onChange={(e) => setEditData({ ...editData, turns_count: e.target.value ? parseInt(e.target.value) : '' })}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        placeholder="Contact email"
+                        value={editData.contact_email || ''}
+                        onChange={(e) => setEditData({ ...editData, contact_email: e.target.value })}
+                      />
+                      <Input
+                        placeholder="Contact phone"
+                        value={editData.contact_phone || ''}
+                        onChange={(e) => setEditData({ ...editData, contact_phone: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={() => setEditingId(null)}>
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSave} className="bg-gray-900">
+                        <Save className="w-4 h-4 mr-2" />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-bold">{track.name}</h3>
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                          track.status === 'Active' ? 'bg-green-100 text-green-800' :
+                          track.status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {track.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {track.city}, {track.state} • {track.track_type}
+                      </p>
+                      {track.description_summary && (
+                        <p className="text-sm text-gray-600">{track.description_summary}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(track)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(track)}>
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
