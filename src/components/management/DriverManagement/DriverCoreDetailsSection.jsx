@@ -472,7 +472,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         </div>
 
         <div>
-          <h3 className="font-semibold mb-4">Current Racing Base</h3>
+          <h3 className="font-semibold mb-4">Location</h3>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="location_city">City</Label>
