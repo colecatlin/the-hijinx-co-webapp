@@ -6,6 +6,10 @@ import TrackCard from '@/components/tracks/TrackCard';
 import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const TRACK_TYPES = ['Short Course', 'Oval', 'Road Course', 'Ice Oval', 'Mixed'];
+const SURFACES = ['Dirt', 'Asphalt', 'Ice', 'Mixed'];
+const STATUSES = ['Active', 'Seasonal', 'Historic'];
+
 export default function TrackDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -43,10 +47,6 @@ export default function TrackDirectory() {
       if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'state') return (a.state || '').localeCompare(b.state || '');
       if (sortBy === 'track_type') return (a.track_type || '').localeCompare(b.track_type || '');
-      if (sortBy === 'content_value') {
-        const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
-        return (order[a.content_value] || 4) - (order[b.content_value] || 4);
-      }
       return 0;
     });
 
@@ -58,11 +58,7 @@ export default function TrackDirectory() {
       label: 'Track Type',
       options: [
         { value: 'all', label: 'All Types' },
-        { value: 'Short Course', label: 'Short Course' },
-        { value: 'Oval', label: 'Oval' },
-        { value: 'Road Course', label: 'Road Course' },
-        { value: 'Ice Oval', label: 'Ice Oval' },
-        { value: 'Mixed', label: 'Mixed' },
+        ...TRACK_TYPES.map(t => ({ value: t, label: t }))
       ]
     },
     {
@@ -70,10 +66,7 @@ export default function TrackDirectory() {
       label: 'Surface',
       options: [
         { value: 'all', label: 'All Surfaces' },
-        { value: 'Dirt', label: 'Dirt' },
-        { value: 'Asphalt', label: 'Asphalt' },
-        { value: 'Ice', label: 'Ice' },
-        { value: 'Mixed', label: 'Mixed' },
+        ...SURFACES.map(s => ({ value: s, label: s }))
       ]
     },
     {
@@ -89,9 +82,7 @@ export default function TrackDirectory() {
       label: 'Status',
       options: [
         { value: 'all', label: 'All Status' },
-        { value: 'Active', label: 'Active' },
-        { value: 'Seasonal', label: 'Seasonal' },
-        { value: 'Historic', label: 'Historic' },
+        ...STATUSES.map(s => ({ value: s, label: s }))
       ]
     },
   ];
@@ -100,7 +91,6 @@ export default function TrackDirectory() {
     { value: 'name', label: 'Name' },
     { value: 'state', label: 'State' },
     { value: 'track_type', label: 'Track Type' },
-    { value: 'content_value', label: 'Content Value' },
   ];
 
   return (
@@ -108,7 +98,7 @@ export default function TrackDirectory() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-black text-[#232323] mb-2">Tracks</h1>
-          <p className="text-gray-600">Find venues, formats, history, and what matters.</p>
+          <p className="text-lg text-gray-600">Explore racing venues worldwide.</p>
         </div>
 
         <DirectoryFilters
