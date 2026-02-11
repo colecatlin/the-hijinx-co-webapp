@@ -209,13 +209,12 @@ export default function DriverProfile() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
-            <div className="flex items-start justify-between mb-2">
-              <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                description=""
-              />
+            <div className="flex items-center gap-3 mb-2">
+              <CountryFlag country={driver.hometown_country} />
+              <h1 className="text-4xl font-black text-[#232323] leading-none">{driver.first_name} {driver.last_name}</h1>
+              {driver.primary_number && (
+                <div className="text-4xl font-black text-[#232323] leading-none ml-auto">#{driver.primary_number}</div>
+              )}
             </div>
 
             <div className="bg-white border border-gray-200 p-8 mb-8">
@@ -266,10 +265,16 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-6">
+            <div className="flex justify-end">
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
+                description=""
+              />
+            </div>
             {media?.headshot_url && (
               <div className="bg-white border border-gray-200">
-                <h3 className="text-sm font-bold text-[#232323] p-6 pb-4">Driver Photo</h3>
-                <div className="w-full h-[320px] relative bg-gray-50 border-t border-gray-200 overflow-hidden">
+                <div className="w-full h-[320px] relative bg-gray-50 overflow-hidden">
                   <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover" />
                 </div>
               </div>
