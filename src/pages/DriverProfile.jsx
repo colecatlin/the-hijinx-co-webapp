@@ -5,6 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -139,6 +140,7 @@ export default function DriverProfile() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-start">
           <div className="lg:col-span-2">
+            <Separator className="mb-6" />
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <CountryFlag country={driver.hometown_country} />
