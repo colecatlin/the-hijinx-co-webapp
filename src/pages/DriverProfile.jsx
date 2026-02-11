@@ -151,13 +151,6 @@ export default function DriverProfile() {
               )}
             </div>
 
-            <div className="bg-white border border-gray-200 p-6 mb-8">
-              <h3 className="text-sm font-bold text-[#232323] mb-4">Connect</h3>
-              <div className="flex justify-center">
-                <SocialIconsDisplay media={media} />
-              </div>
-            </div>
-
             <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-6">
               {sections.map(section => {
                 const Icon = section.icon;
@@ -187,6 +180,10 @@ export default function DriverProfile() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="flex justify-center mb-8">
+              <SocialIconsDisplay media={media} />
             </div>
 
             <div className="bg-white border border-gray-200 p-8 mb-8">
