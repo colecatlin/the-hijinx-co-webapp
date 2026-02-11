@@ -186,7 +186,7 @@ export default function DriverProfile() {
               <SocialIconsDisplay media={media} />
             </div>
 
-            <div className="bg-white border border-gray-200 p-8 mb-4">
+            <div className="bg-white p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Age</div>
@@ -242,9 +242,9 @@ export default function DriverProfile() {
               />
             </div>
             {media?.headshot_url && (
-              <div className="bg-white border border-gray-200">
+              <div className="bg-white">
 
-                <div className="w-full h-[320px] relative bg-gray-50 border-t border-gray-200 overflow-hidden">
+                <div className="w-full h-[320px] relative bg-gray-50 overflow-hidden">
                   <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover" />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function DriverProfile() {
 
 
             {activePartnerships.length > 0 && (
-              <div className="bg-white border border-gray-200 p-6">
+              <div className="bg-white p-6">
                 <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
                 <div className="space-y-2">
                   {activePartnerships.map(partner => (
@@ -266,7 +266,7 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-4">
-          <section id="section-social" className="bg-white border border-gray-200 p-8">
+          <section id="section-social" className="bg-white p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Social Media</h2>
             {media && (media.instagram || media.facebook || media.tiktok || media.x || media.threads || media.youtube || media.website) ? (
               <div className="flex flex-col items-center gap-6">
