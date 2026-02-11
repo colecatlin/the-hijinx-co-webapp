@@ -11,12 +11,20 @@ import MediaUploader from '@/components/shared/MediaUploader';
 import ImageCropModal from '@/components/shared/ImageCropModal';
 
 const DISCIPLINES = [
-  'Open Wheel',
   'Stock Car',
   'Off Road',
+  'Dirt Oval',
   'Snowmobile',
-  'Rallycross',
-  'Other'
+  'Dirt Bike',
+  'Open Wheel',
+  'Sports Car',
+  'Touring Car',
+  'Rally',
+  'Drag',
+  'Motorcycle',
+  'Karting',
+  'Water',
+  'Alternative'
 ];
 
 const COUNTRIES = [
