@@ -144,16 +144,9 @@ export default function DriverProfile() {
                 <CountryFlag country={driver.hometown_country} />
                 <h1 className="text-4xl font-black text-[#232323]">{driver.first_name} {driver.last_name}</h1>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <SocialShareButtons 
-                  url={window.location.href}
-                  title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                  description=""
-                />
-                {driver.primary_number && (
-                  <div className="text-sm font-semibold text-gray-600">#{driver.primary_number}</div>
-                )}
-              </div>
+              {driver.primary_number && (
+                <div className="text-sm font-semibold text-gray-600">#{driver.primary_number}</div>
+              )}
             </div>
 
             <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-6">
@@ -235,6 +228,13 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-6">
+            <div className="flex justify-end mb-4">
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
+                description=""
+              />
+            </div>
             {media?.headshot_url && (
               <div className="bg-white border border-gray-200">
 
