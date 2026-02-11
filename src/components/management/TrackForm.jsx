@@ -53,11 +53,15 @@ export default function TrackForm({ track, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'name' && !track) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setFormData(prev => ({ ...prev, slug }));
-    }
+  };
+
+  const handleSeriesToggle = (seriesId) => {
+    setFormData(prev => ({
+      ...prev,
+      series_ids: prev.series_ids.includes(seriesId)
+        ? prev.series_ids.filter(id => id !== seriesId)
+        : [...prev.series_ids, seriesId]
+    }));
   };
 
   const handleSurfaceToggle = (surface) => {
