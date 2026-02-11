@@ -424,7 +424,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
               id="represented_by"
               value={formData.represented_by}
               onChange={(e) => handleInputChange('represented_by', e.target.value)}
-              placeholder="Agent or manager name"
+              placeholder="Agent, manager, or agency name"
               className="mt-2"
             />
           </div>
