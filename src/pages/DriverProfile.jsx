@@ -206,51 +206,47 @@ export default function DriverProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Age</div>
-                    <div className="text-lg font-semibold text-[#232323]">
+                    <div className="text-lg font-semibold text-[#232323] mb-4">
                       {driver.date_of_birth ? new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear() : 'N/A'}
                     </div>
+                    {driver.class_name && (
+                      <div className="mb-4">
+                        <div className="text-sm text-gray-600 mb-1">Class</div>
+                        <div className="text-lg font-semibold text-[#232323]">{driver.class_name}</div>
+                      </div>
+                    )}
+                    {programs.length > 0 && (
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">Series</div>
+                        <div className="text-lg font-semibold text-[#232323]">
+                          {getSeriesName(programs[0].series_id)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 <div>
                   <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
                     <Home className="w-4 h-4" />
                     Hometown
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-4">
                     <CountryFlag country={driver.hometown_country} />
                     <div className="text-lg font-semibold text-[#232323]">
                       {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''}, {driver.hometown_country}
                     </div>
                   </div>
+                  {driver.location_city && (
+                    <div>
+                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                        <MapPin className="w-4 h-4" />
+                        Location
+                      </div>
+                      <div className="text-lg font-semibold text-[#232323]">
+                        {driver.location_city}{driver.location_state ? `, ${driver.location_state}` : ''} • {driver.location_country}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {driver.location_city && (
-                  <div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                      <MapPin className="w-4 h-4" />
-                      Location
-                    </div>
-                    <div className="text-lg font-semibold text-[#232323]">
-                      {driver.location_city}{driver.location_state ? `, ${driver.location_state}` : ''} • {driver.location_country}
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Primary Discipline</div>
-                  <div className="text-lg font-semibold text-[#232323]">{driver.primary_discipline}</div>
-                </div>
-                {driver.class_name && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Class</div>
-                    <div className="text-lg font-semibold text-[#232323]">{driver.class_name}</div>
-                  </div>
-                )}
-                {programs.length > 0 && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Series</div>
-                    <div className="text-lg font-semibold text-[#232323]">
-                      {getSeriesName(programs[0].series_id)}
-                    </div>
-                  </div>
-                )}
               </div>
               <div className="flex flex-wrap gap-2 mt-6">
                 {performance?.recent_form && performance.recent_form !== 'Unknown' && (
