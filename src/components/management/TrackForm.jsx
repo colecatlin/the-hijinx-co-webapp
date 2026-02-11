@@ -178,34 +178,18 @@ export default function TrackForm({ track, onClose }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Status *</label>
-              <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Seasonal">Seasonal</SelectItem>
-                  <SelectItem value="Historic">Historic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Elevation Profile</label>
-              <Select value={formData.elevation_profile} onValueChange={(value) => handleChange('elevation_profile', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Flat">Flat</SelectItem>
-                  <SelectItem value="Moderate">Moderate</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Unknown">Unknown</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Status *</label>
+            <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Seasonal">Seasonal</SelectItem>
+                <SelectItem value="Historic">Historic</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
