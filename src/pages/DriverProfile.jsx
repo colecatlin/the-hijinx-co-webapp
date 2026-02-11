@@ -186,6 +186,7 @@ export default function DriverProfile() {
               <SocialIconsDisplay media={media} />
             </div>
 
+            <Separator className="mb-3" />
             <div className="bg-white p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
