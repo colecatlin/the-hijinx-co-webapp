@@ -100,6 +100,7 @@ import TrackProfile from './pages/TrackProfile';
 import Tracks from './pages/Tracks';
 import TrackHub from './pages/TrackHub';
 import EventHub from './pages/EventHub';
+import ManagementDashboard from './pages/ManagementDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -157,6 +158,7 @@ export const PAGES = {
     "Tracks": Tracks,
     "TrackHub": TrackHub,
     "EventHub": EventHub,
+    "ManagementDashboard": ManagementDashboard,
 }
 
 export const pagesConfig = {
