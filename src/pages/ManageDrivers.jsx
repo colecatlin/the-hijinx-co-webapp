@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
 import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
 import DriverProgramSection from '@/components/management/DriverManagement/DriverProgramSection.jsx';
+import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
 import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
 import { toast } from 'sonner';
@@ -180,7 +181,7 @@ export default function ManageDrivers() {
               <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
             </TabsContent>
             <TabsContent value="programs" className="mt-6">
-              <DriverProgramSection driverId={selectedDriverForEdit.id} />
+              <DriverProgramsList driverId={selectedDriverForEdit.id} />
             </TabsContent>
             <TabsContent value="media" className="mt-6">
               <DriverMediaSection driverId={selectedDriverForEdit.id} />
