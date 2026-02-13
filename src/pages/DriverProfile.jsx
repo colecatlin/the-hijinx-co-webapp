@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home } from 'lucide-react';
+import StatsSection from '@/components/drivers/StatsSection';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
@@ -127,8 +128,27 @@ export default function DriverProfile() {
 
 
 
+  const { data: results = [] } = useQuery({
+    queryKey: ['driverResults', driver?.id],
+    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+    enabled: !!driver?.id && results.length > 0,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+    enabled: !!driver?.id && results.length > 0,
+  });
+
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'stats', label: 'Stats', icon: TrendingUp },
     { id: 'social', label: 'Social Media', icon: Share2 },
   ];
 
@@ -291,6 +311,17 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-4">
+          <section id="section-stats" className="bg-white p-8">
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Stats</h2>
+            <StatsSection 
+              driver={driver}
+              results={results}
+              sessions={sessions}
+              events={events}
+            />
+          </section>
+
           <section id="section-social" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Social Media</h2>

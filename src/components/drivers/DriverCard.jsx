@@ -6,7 +6,7 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
 
-export default function DriverCard({ driver, program, team, media, performance }) {
+export default function DriverCard({ driver, program, team, media, performance, overallStats }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
@@ -89,6 +89,30 @@ export default function DriverCard({ driver, program, team, media, performance }
                 </svg>
               </div>
             </div>
+
+            {/* Stats Footer */}
+            {overallStats?.available && (
+              <div className="bg-gray-50 border-t border-gray-300 px-4 py-2">
+                <div className="flex justify-around text-center">
+                  <div>
+                    <div className="text-lg font-black text-[#232323]">{overallStats.wins}</div>
+                    <div className="text-xs text-gray-600">W</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-[#232323]">{overallStats.podiums}</div>
+                    <div className="text-xs text-gray-600">P</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-[#232323]">{overallStats.top5}</div>
+                    <div className="text-xs text-gray-600">T5</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-[#232323]">{overallStats.top10}</div>
+                    <div className="text-xs text-gray-600">T10</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
