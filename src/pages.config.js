@@ -95,15 +95,16 @@ import Profile from './pages/Profile';
 import ResultsDirectory from './pages/ResultsDirectory';
 import ResultsHome from './pages/ResultsHome';
 import ScheduleHome from './pages/ScheduleHome';
+import SeriesDetail from './pages/SeriesDetail';
 import SeriesHome from './pages/SeriesHome';
 import SessionProfile from './pages/SessionProfile';
 import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
+import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
-import SeriesDetail from './pages/SeriesDetail';
 import TrackProfile from './pages/TrackProfile';
-import TeamProfile from './pages/TeamProfile';
+import DriverStats from './pages/DriverStats';
 import __Layout from './Layout.jsx';
 
 
@@ -156,15 +157,16 @@ export const PAGES = {
     "ResultsDirectory": ResultsDirectory,
     "ResultsHome": ResultsHome,
     "ScheduleHome": ScheduleHome,
+    "SeriesDetail": SeriesDetail,
     "SeriesHome": SeriesHome,
     "SessionProfile": SessionProfile,
     "StandingsHome": StandingsHome,
     "TeamDirectory": TeamDirectory,
+    "TeamProfile": TeamProfile,
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
-    "SeriesDetail": SeriesDetail,
     "TrackProfile": TrackProfile,
-    "TeamProfile": TeamProfile,
+    "DriverStats": DriverStats,
 }
 
 export const pagesConfig = {
