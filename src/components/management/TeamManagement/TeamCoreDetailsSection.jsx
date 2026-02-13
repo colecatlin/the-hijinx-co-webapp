@@ -39,7 +39,7 @@ const COUNTRIES = [
   'South Africa'
 ];
 
-export default function TeamCoreDetailsSection({ teamId }) {
+export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [formData, setFormData] = useState({});
   const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
@@ -61,7 +61,9 @@ export default function TeamCoreDetailsSection({ teamId }) {
     onSuccess: (newTeam) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success('Team created');
-      window.location.reload();
+      if (onTeamCreated) {
+        onTeamCreated(newTeam);
+      }
     },
   });
 

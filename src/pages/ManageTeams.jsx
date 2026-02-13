@@ -134,7 +134,10 @@ export default function ManageTeams() {
               <TabsTrigger value="community" disabled={tabsLocked}>Community</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <TeamCoreDetailsSection teamId={selectedTeamForEdit.id} />
+              <TeamCoreDetailsSection 
+                teamId={selectedTeamForEdit.id} 
+                onTeamCreated={(newTeam) => setSelectedTeamForEdit(newTeam)}
+              />
             </TabsContent>
             <TabsContent value="programs" className="mt-6">
               <TeamProgramsSection teamId={selectedTeamForEdit.id} />
