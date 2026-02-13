@@ -97,6 +97,11 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import EventDirectory from './pages/EventDirectory';
+import ResultsDirectory from './pages/ResultsDirectory';
+import ManageEvents from './pages/ManageEvents';
+import ManageSessions from './pages/ManageSessions';
+import ManageResults from './pages/ManageResults';
 import __Layout from './Layout.jsx';
 
 
@@ -151,6 +156,11 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "EventDirectory": EventDirectory,
+    "ResultsDirectory": ResultsDirectory,
+    "ManageEvents": ManageEvents,
+    "ManageSessions": ManageSessions,
+    "ManageResults": ManageResults,
 }
 
 export const pagesConfig = {
