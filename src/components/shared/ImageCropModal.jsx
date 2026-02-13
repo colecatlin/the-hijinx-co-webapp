@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const createImage = (url) =>
   new Promise((resolve, reject) => {
@@ -61,9 +62,11 @@ export default function ImageCropModal({ open, onClose, imageUrl, onSave, aspect
       const { data } = await base44.integrations.Core.UploadFile({ file });
       
       onSave(data.file_url);
+      toast.success('Image updated! Click "Save Changes" to finalize.');
       onClose();
     } catch (error) {
       console.error('Error cropping image:', error);
+      toast.error('Failed to save image. Please try again.');
     } finally {
       setUploading(false);
     }
