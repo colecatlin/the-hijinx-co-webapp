@@ -122,7 +122,7 @@ export default function DriverMediaSection({ driverId }) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MediaUploader label="Headshot" value={data.headshot_url} onChange={handleHeadshotUpload} accept="image/*" />
+          <MediaUploader label="Driver Photo" value={data.headshot_url} onChange={handleHeadshotUpload} accept="image/*" />
           <MediaUploader label="Hero Image" value={data.hero_image_url} onChange={(url) => handleChange('hero_image_url', url)} accept="image/*" />
           <MediaUploader label="Highlight Video" value={data.highlight_video_url} onChange={(url) => handleChange('highlight_video_url', url)} accept="video/*" />
           <div className="space-y-2">
