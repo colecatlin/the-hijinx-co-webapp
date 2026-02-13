@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
 export default function ManageSessions() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSessionForEdit, setSelectedSessionForEdit] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: sessions = [], isLoading } = useQuery({
@@ -25,6 +27,47 @@ export default function ManageSessions() {
   const filteredSessions = sessions.filter(session =>
     session.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (selectedSessionForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedSessionForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">{selectedSessionForEdit.name}</h1>
+              <p className="text-gray-600">Manage all session data</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="core" className="mt-6">
+            <TabsList>
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="results">Results</TabsTrigger>
+              <TabsTrigger value="stats">Stats</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Session core details editor coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="results" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Results management coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="stats" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Stats management coming soon</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -87,7 +130,7 @@ export default function ManageSessions() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedSessionForEdit(session)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button

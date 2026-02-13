@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
 export default function ManageResults() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedResultForEdit, setSelectedResultForEdit] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: results = [], isLoading } = useQuery({
@@ -36,6 +38,41 @@ export default function ManageResults() {
     const driverName = getDriverName(result.driver_id);
     return driverName.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  if (selectedResultForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedResultForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">Edit Result</h1>
+              <p className="text-gray-600">Manage result details</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="core" className="mt-6">
+            <TabsList>
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="timing">Timing</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Result core details editor coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="timing" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Timing details editor coming soon</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
+  }
 
   const handleExport = () => {
     const dataStr = JSON.stringify(results, null, 2);
@@ -149,7 +186,7 @@ export default function ManageResults() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedResultForEdit(result)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button

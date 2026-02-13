@@ -4,23 +4,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Save, X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import TrackForm from '@/components/management/TrackForm';
-
-const TRACK_TYPES = ['Short Course', 'Oval', 'Road Course', 'Ice Oval', 'Mixed'];
-const SURFACES = ['Dirt', 'Asphalt', 'Ice', 'Mixed'];
-const STATUSES = ['Active', 'Seasonal', 'Historic'];
+import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
 
 export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+  const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: tracks = [], isLoading } = useQuery({
@@ -33,27 +28,9 @@ export default function ManageTracks() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracks'] }),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Track.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tracks'] });
-      setEditingId(null);
-    },
-  });
-
   const filteredTracks = tracks.filter(track =>
     track.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleEdit = (track) => {
-    setEditingId(track.id);
-    setEditData({ ...track });
-  };
-
-  const handleSave = async () => {
-    const { id, created_date, updated_date, created_by, ...dataToSave } = editData;
-    updateMutation.mutate({ id: editingId, data: dataToSave });
-  };
 
   const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
@@ -63,6 +40,45 @@ export default function ManageTracks() {
 
   if (showForm) {
     return <TrackForm onClose={() => setShowForm(false)} />;
+  }
+
+  if (selectedTrackForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedTrackForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">{selectedTrackForEdit.name}</h1>
+              <p className="text-gray-600">Manage all track data</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="core" className="mt-6">
+            <TabsList>
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+              <TabsTrigger value="operations">Operations</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <TrackCoreDetailsSection trackId={selectedTrackForEdit.id} />
+            </TabsContent>
+            <TabsContent value="media" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Track media editor coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="operations" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Track operations editor coming soon</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
   }
 
   return (

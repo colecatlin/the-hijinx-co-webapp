@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -11,6 +12,7 @@ import { format } from 'date-fns';
 
 export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEventForEdit, setSelectedEventForEdit] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
@@ -26,6 +28,47 @@ export default function ManageEvents() {
   const filteredEvents = events.filter(event =>
     event.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (selectedEventForEdit) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedEventForEdit(null)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black mb-2">{selectedEventForEdit.name}</h1>
+              <p className="text-gray-600">Manage all event data</p>
+            </div>
+          </div>
+
+          <Tabs defaultValue="core" className="mt-6">
+            <TabsList>
+              <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="sessions">Sessions</TabsTrigger>
+              <TabsTrigger value="results">Results</TabsTrigger>
+            </TabsList>
+            <TabsContent value="core" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Event core details editor coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="sessions" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Sessions management coming soon</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="results" className="mt-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-gray-600">Results management coming soon</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -90,7 +133,7 @@ export default function ManageEvents() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedEventForEdit(event)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
