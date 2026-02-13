@@ -57,6 +57,8 @@ import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
 import EntityEditor from './pages/EntityEditor';
+import EventDirectory from './pages/EventDirectory';
+import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
@@ -70,9 +72,12 @@ import ManageDriverPartnership from './pages/ManageDriverPartnership';
 import ManageDriverPerformance from './pages/ManageDriverPerformance';
 import ManageDriverPrograms from './pages/ManageDriverPrograms';
 import ManageDrivers from './pages/ManageDrivers';
+import ManageEvents from './pages/ManageEvents';
 import ManageFoodBeverage from './pages/ManageFoodBeverage';
 import ManageIssues from './pages/ManageIssues';
+import ManageResults from './pages/ManageResults';
 import ManageSeries from './pages/ManageSeries';
+import ManageSessions from './pages/ManageSessions';
 import ManageStandings from './pages/ManageStandings';
 import ManageStories from './pages/ManageStories';
 import ManageTeams from './pages/ManageTeams';
@@ -87,23 +92,18 @@ import OutletIssues from './pages/OutletIssues';
 import OutletStoryPage from './pages/OutletStoryPage';
 import OutletSubmit from './pages/OutletSubmit';
 import Profile from './pages/Profile';
+import ResultsDirectory from './pages/ResultsDirectory';
 import ResultsHome from './pages/ResultsHome';
 import ScheduleHome from './pages/ScheduleHome';
 import SeriesDetail from './pages/SeriesDetail';
 import SeriesHome from './pages/SeriesHome';
+import SessionProfile from './pages/SessionProfile';
 import StandingsHome from './pages/StandingsHome';
 import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import EventDirectory from './pages/EventDirectory';
-import ResultsDirectory from './pages/ResultsDirectory';
-import ManageEvents from './pages/ManageEvents';
-import ManageSessions from './pages/ManageSessions';
-import ManageResults from './pages/ManageResults';
-import EventProfile from './pages/EventProfile';
-import SessionProfile from './pages/SessionProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -118,6 +118,8 @@ export const PAGES = {
     "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
     "EntityEditor": EntityEditor,
+    "EventDirectory": EventDirectory,
+    "EventProfile": EventProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
@@ -131,9 +133,12 @@ export const PAGES = {
     "ManageDriverPerformance": ManageDriverPerformance,
     "ManageDriverPrograms": ManageDriverPrograms,
     "ManageDrivers": ManageDrivers,
+    "ManageEvents": ManageEvents,
     "ManageFoodBeverage": ManageFoodBeverage,
     "ManageIssues": ManageIssues,
+    "ManageResults": ManageResults,
     "ManageSeries": ManageSeries,
+    "ManageSessions": ManageSessions,
     "ManageStandings": ManageStandings,
     "ManageStories": ManageStories,
     "ManageTeams": ManageTeams,
@@ -148,23 +153,18 @@ export const PAGES = {
     "OutletStoryPage": OutletStoryPage,
     "OutletSubmit": OutletSubmit,
     "Profile": Profile,
+    "ResultsDirectory": ResultsDirectory,
     "ResultsHome": ResultsHome,
     "ScheduleHome": ScheduleHome,
     "SeriesDetail": SeriesDetail,
     "SeriesHome": SeriesHome,
+    "SessionProfile": SessionProfile,
     "StandingsHome": StandingsHome,
     "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "EventDirectory": EventDirectory,
-    "ResultsDirectory": ResultsDirectory,
-    "ManageEvents": ManageEvents,
-    "ManageSessions": ManageSessions,
-    "ManageResults": ManageResults,
-    "EventProfile": EventProfile,
-    "SessionProfile": SessionProfile,
 }
 
 export const pagesConfig = {

@@ -98,6 +98,10 @@ export default function ManageTeams() {
   }
 
   if (selectedTeamForEdit) {
+    const isNewTeam = selectedTeamForEdit.id === 'new';
+    const hasCoreDetails = selectedTeamForEdit.name && selectedTeamForEdit.slug && selectedTeamForEdit.headquarters_city;
+    const tabsLocked = isNewTeam || !hasCoreDetails;
+
     return (
       <PageShell>
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -106,22 +110,28 @@ export default function ManageTeams() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedTeamForEdit.name}</h1>
+              <h1 className="text-4xl font-black mb-2">{selectedTeamForEdit.name || 'New Team'}</h1>
               <p className="text-gray-600">Manage all team data</p>
             </div>
           </div>
 
+          {tabsLocked && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+              Complete the core details first to unlock other sections
+            </div>
+          )}
+
           <Tabs defaultValue="core" className="w-full">
             <TabsList className="grid w-full grid-cols-9">
               <TabsTrigger value="core">Core</TabsTrigger>
-              <TabsTrigger value="programs">Programs</TabsTrigger>
-              <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
-              <TabsTrigger value="roster">Roster</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="partners">Partners</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="operations">Operations</TabsTrigger>
-              <TabsTrigger value="community">Community</TabsTrigger>
+              <TabsTrigger value="programs" disabled={tabsLocked}>Programs</TabsTrigger>
+              <TabsTrigger value="vehicles" disabled={tabsLocked}>Vehicles</TabsTrigger>
+              <TabsTrigger value="roster" disabled={tabsLocked}>Roster</TabsTrigger>
+              <TabsTrigger value="performance" disabled={tabsLocked}>Performance</TabsTrigger>
+              <TabsTrigger value="partners" disabled={tabsLocked}>Partners</TabsTrigger>
+              <TabsTrigger value="media" disabled={tabsLocked}>Media</TabsTrigger>
+              <TabsTrigger value="operations" disabled={tabsLocked}>Operations</TabsTrigger>
+              <TabsTrigger value="community" disabled={tabsLocked}>Community</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <TeamCoreDetailsSection teamId={selectedTeamForEdit.id} />
