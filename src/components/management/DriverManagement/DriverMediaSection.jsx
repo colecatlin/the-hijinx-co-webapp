@@ -90,6 +90,7 @@ export default function DriverMediaSection({ driverId }) {
   const handleCropSave = (croppedUrl) => {
     handleChange('headshot_url', croppedUrl);
     setTempHeadshotUrl(null);
+    setCropModalOpen(false);
   };
 
   return (
