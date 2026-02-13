@@ -107,20 +107,20 @@ export default function TrackCoreDetailsSection({ trackId }) {
           <div>
             <label className="text-sm font-medium">City</label>
             <Input
-              value={formData.city || ''}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              value={formData.location_city || ''}
+              onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
             />
           </div>
           <div>
             <label className="text-sm font-medium">State</label>
             <Input
-              value={formData.state || ''}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              value={formData.location_state || ''}
+              onChange={(e) => setFormData({ ...formData, location_state: e.target.value })}
             />
           </div>
           <div>
             <label className="text-sm font-medium">Country</label>
-            <Select value={formData.country || 'USA'} onValueChange={(value) => setFormData({ ...formData, country: value })}>
+            <Select value={formData.location_country || 'USA'} onValueChange={(value) => setFormData({ ...formData, location_country: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
@@ -133,7 +133,7 @@ export default function TrackCoreDetailsSection({ trackId }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium">Track Type</label>
             <Select value={formData.track_type || ''} onValueChange={(value) => setFormData({ ...formData, track_type: value })}>
@@ -141,24 +141,42 @@ export default function TrackCoreDetailsSection({ trackId }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Short Course">Short Course</SelectItem>
                 <SelectItem value="Oval">Oval</SelectItem>
                 <SelectItem value="Road Course">Road Course</SelectItem>
-                <SelectItem value="Ice Oval">Ice Oval</SelectItem>
+                <SelectItem value="Street Circuit">Street Circuit</SelectItem>
+                <SelectItem value="Short Track">Short Track</SelectItem>
+                <SelectItem value="Speedway">Speedway</SelectItem>
+                <SelectItem value="Off-Road">Off-Road</SelectItem>
+                <SelectItem value="Dirt Track">Dirt Track</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Surface Type</label>
+            <Select value={formData.surface_type || ''} onValueChange={(value) => setFormData({ ...formData, surface_type: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Asphalt">Asphalt</SelectItem>
+                <SelectItem value="Concrete">Concrete</SelectItem>
+                <SelectItem value="Dirt">Dirt</SelectItem>
+                <SelectItem value="Clay">Clay</SelectItem>
                 <SelectItem value="Mixed">Mixed</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
             <label className="text-sm font-medium">Status</label>
-            <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+            <Select value={formData.status || 'Active'} onValueChange={(value) => setFormData({ ...formData, status: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
                 <SelectItem value="Seasonal">Seasonal</SelectItem>
-                <SelectItem value="Historic">Historic</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,16 +188,44 @@ export default function TrackCoreDetailsSection({ trackId }) {
             <Input
               type="number"
               step="0.1"
-              value={formData.length_miles || ''}
-              onChange={(e) => setFormData({ ...formData, length_miles: parseFloat(e.target.value) })}
+              value={formData.length || ''}
+              onChange={(e) => setFormData({ ...formData, length: parseFloat(e.target.value) })}
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Founded Year</label>
+            <label className="text-sm font-medium">Banking</label>
             <Input
-              type="number"
-              value={formData.founded_year || ''}
-              onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+              value={formData.banking || ''}
+              onChange={(e) => setFormData({ ...formData, banking: e.target.value })}
+              placeholder="e.g., 14 degrees"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="text-sm font-medium">Website URL</label>
+            <Input
+              value={formData.website_url || ''}
+              onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Contact Email</label>
+            <Input
+              type="email"
+              value={formData.contact_email || ''}
+              onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+              placeholder="contact@track.com"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Phone</label>
+            <Input
+              value={formData.phone || ''}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+1 (555) 123-4567"
             />
           </div>
         </div>
@@ -187,34 +233,38 @@ export default function TrackCoreDetailsSection({ trackId }) {
         <div>
           <label className="text-sm font-medium">Description</label>
           <Textarea
-            value={formData.description_summary || ''}
-            onChange={(e) => setFormData({ ...formData, description_summary: e.target.value })}
+            value={formData.description || ''}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={4}
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium">Hero Image</label>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => document.getElementById('track-image-upload').click()}
-              disabled={uploadMutation.isPending}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {uploadMutation.isPending ? 'Uploading...' : 'Upload Image'}
-            </Button>
-            <input
-              id="track-image-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            {formData.hero_image_url && (
-              <img src={formData.hero_image_url} alt="Track image" className="h-10 rounded" />
-            )}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Logo URL</label>
+            <div className="flex items-center gap-3">
+              <Input
+                value={formData.logo_url || ''}
+                onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                placeholder="https://..."
+              />
+              {formData.logo_url && (
+                <img src={formData.logo_url} alt="Track logo" className="h-10 rounded" />
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Image URL</label>
+            <div className="flex items-center gap-3">
+              <Input
+                value={formData.image_url || ''}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                placeholder="https://..."
+              />
+              {formData.image_url && (
+                <img src={formData.image_url} alt="Track image" className="h-10 rounded" />
+              )}
+            </div>
           </div>
         </div>
 
