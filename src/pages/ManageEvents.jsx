@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import AddEventForm from '@/components/management/AddEventForm';
+import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
 
 export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,9 +81,7 @@ export default function ManageEvents() {
               <TabsTrigger value="results">Results</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Event core details editor coming soon</p>
-              </div>
+              <EventCoreDetailsSection event={selectedEventForEdit} />
             </TabsContent>
             <TabsContent value="sessions" className="mt-6">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
