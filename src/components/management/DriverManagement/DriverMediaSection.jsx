@@ -87,10 +87,31 @@ export default function DriverMediaSection({ driverId }) {
     setCropModalOpen(true);
   };
 
-  const handleCropSave = (croppedUrl) => {
-    handleChange('headshot_url', croppedUrl);
-    setTempHeadshotUrl(null);
-    setCropModalOpen(false);
+  const handleCropSave = async (croppedUrl) => {
+    const payload = {
+      ...data,
+      headshot_url: croppedUrl,
+      gallery_urls: data.gallery_urls
+        .split('\n')
+        .map((url) => url.trim())
+        .filter((url) => url),
+    };
+
+    try {
+      if (mediaRecord?.id) {
+        await base44.entities.DriverMedia.update(mediaRecord.id, payload);
+      } else {
+        await base44.entities.DriverMedia.create({ ...payload, driver_id: driverId });
+      }
+      queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
+      handleChange('headshot_url', croppedUrl);
+    } catch (error) {
+      console.error('Failed to save headshot:', error);
+      throw error;
+    } finally {
+      setTempHeadshotUrl(null);
+      setCropModalOpen(false);
+    }
   };
 
   return (
