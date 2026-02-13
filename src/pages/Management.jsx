@@ -7,12 +7,11 @@ import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User,
 export default function Management() {
   const sections = [
     {
-        title: 'Core Entities',
-        items: [
-          { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage all driver profiles and data' },
-          { name: 'Motorsports Data', page: 'ManagementDashboard', icon: BarChart3, description: 'Manage tracks, events, results & records' },
-        ]
-      },
+      title: 'Core Entities',
+      items: [
+        { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage all driver profiles and data' },
+      ]
+    },
     {
       title: 'Content',
       items: [

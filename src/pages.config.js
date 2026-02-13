@@ -97,15 +97,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import Tracks from './pages/Tracks';
-import TrackHub from './pages/TrackHub';
-import EventHub from './pages/EventHub';
-import ManagementDashboard from './pages/ManagementDashboard';
-import Standings from './pages/Standings';
-import Results from './pages/Results';
-import Timing from './pages/Timing';
-import ManageTracksBackend from './pages/ManageTracksBackend';
-import TrackEditor from './pages/TrackEditor';
 import __Layout from './Layout.jsx';
 
 
@@ -160,15 +151,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "Tracks": Tracks,
-    "TrackHub": TrackHub,
-    "EventHub": EventHub,
-    "ManagementDashboard": ManagementDashboard,
-    "Standings": Standings,
-    "Results": Results,
-    "Timing": Timing,
-    "ManageTracksBackend": ManageTracksBackend,
-    "TrackEditor": TrackEditor,
 }
 
 export const pagesConfig = {

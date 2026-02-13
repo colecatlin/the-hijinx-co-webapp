@@ -6,8 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home, Map } from 'lucide-react';
-import DriverTracksTab from '@/components/drivers/DriverTracksTab';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
@@ -130,7 +129,6 @@ export default function DriverProfile() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'tracks', label: 'Tracks', icon: MapPin },
     { id: 'social', label: 'Social Media', icon: Share2 },
   ];
 
@@ -293,12 +291,6 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-4">
-          <section id="section-tracks" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Tracks</h2>
-            <DriverTracksTab driverId={driver.id} />
-          </section>
-
           <section id="section-social" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Social Media</h2>

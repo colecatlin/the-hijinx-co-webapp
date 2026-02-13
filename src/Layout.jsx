@@ -18,7 +18,6 @@ const navItems = [
   ]},
   { name: 'Motorsports', page: 'MotorsportsHome', sub: [
     { name: 'Drivers', page: 'DriverDirectory' },
-    { name: 'Tracks', page: 'Tracks' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
