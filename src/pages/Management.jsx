@@ -10,6 +10,12 @@ export default function Management() {
       title: 'Core Entities',
       items: [
         { name: 'Drivers', page: 'ManageDrivers', icon: User, description: 'Manage all driver profiles and data' },
+        { name: 'Teams', page: 'ManageTeams', icon: Users, description: 'Manage racing teams and organizations' },
+        { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage racing venues and facilities' },
+        { name: 'Series', page: 'ManageSeries', icon: Trophy, description: 'Manage racing series and championships' },
+        { name: 'Events', page: 'ManageEvents', icon: Calendar, description: 'Manage race events and schedules' },
+        { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Manage race sessions and timing' },
+        { name: 'Results', page: 'ManageResults', icon: Award, description: 'Manage race results and standings' },
       ]
     },
     {
