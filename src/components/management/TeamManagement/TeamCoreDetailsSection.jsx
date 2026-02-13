@@ -42,6 +42,7 @@ const COUNTRIES = [
 export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [formData, setFormData] = useState({});
   const [isSaved, setIsSaved] = useState(false);
+  const [errors, setErrors] = useState({});
   const queryClient = useQueryClient();
 
   const { data: team } = useQuery({
@@ -103,7 +104,24 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     setFormData({ ...formData, name, slug });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name?.trim()) newErrors.name = 'Team name is required';
+    if (!formData.headquarters_city?.trim()) newErrors.headquarters_city = 'City is required';
+    if (!formData.headquarters_state?.trim()) newErrors.headquarters_state = 'State is required';
+    if (!formData.country?.trim()) newErrors.country = 'Country is required';
+    if (!formData.primary_discipline) newErrors.primary_discipline = 'Discipline is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
+    if (!validateForm()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
     if (teamId === 'new') {
       createMutation.mutate(updateData);
@@ -117,11 +135,13 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium">Team Name</label>
+            <label className="text-sm font-medium">Team Name *</label>
             <Input
               value={formData.name || ''}
               onChange={(e) => handleNameChange(e.target.value)}
+              className={errors.name ? 'border-red-500' : ''}
             />
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
           <div>
             <label className="text-sm font-medium">Slug (auto-generated)</label>
@@ -135,23 +155,27 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium">City</label>
+            <label className="text-sm font-medium">City *</label>
             <Input
               value={formData.headquarters_city || ''}
               onChange={(e) => setFormData({ ...formData, headquarters_city: e.target.value })}
+              className={errors.headquarters_city ? 'border-red-500' : ''}
             />
+            {errors.headquarters_city && <p className="text-xs text-red-500 mt-1">{errors.headquarters_city}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium">State</label>
+            <label className="text-sm font-medium">State *</label>
             <Input
               value={formData.headquarters_state || ''}
               onChange={(e) => setFormData({ ...formData, headquarters_state: e.target.value })}
+              className={errors.headquarters_state ? 'border-red-500' : ''}
             />
+            {errors.headquarters_state && <p className="text-xs text-red-500 mt-1">{errors.headquarters_state}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium">Country</label>
-            <Select value={formData.country || 'USA'} onValueChange={(value) => setFormData({ ...formData, country: value })}>
-              <SelectTrigger>
+            <label className="text-sm font-medium">Country *</label>
+            <Select value={formData.country || ''} onValueChange={(value) => setFormData({ ...formData, country: value })}>
+              <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent>
@@ -160,14 +184,15 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
                 ))}
               </SelectContent>
             </Select>
+            {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium">Discipline</label>
+            <label className="text-sm font-medium">Discipline *</label>
             <Select value={formData.primary_discipline || ''} onValueChange={(value) => setFormData({ ...formData, primary_discipline: value })}>
-              <SelectTrigger>
+              <SelectTrigger className={errors.primary_discipline ? 'border-red-500' : ''}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -180,6 +205,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
                 <SelectItem value="Mixed">Mixed</SelectItem>
               </SelectContent>
             </Select>
+            {errors.primary_discipline && <p className="text-xs text-red-500 mt-1">{errors.primary_discipline}</p>}
           </div>
           <div>
             <label className="text-sm font-medium">Level</label>
