@@ -105,6 +105,7 @@ import Standings from './pages/Standings';
 import Results from './pages/Results';
 import Timing from './pages/Timing';
 import ManageTracksBackend from './pages/ManageTracksBackend';
+import TrackEditor from './pages/TrackEditor';
 import __Layout from './Layout.jsx';
 
 
@@ -167,6 +168,7 @@ export const PAGES = {
     "Results": Results,
     "Timing": Timing,
     "ManageTracksBackend": ManageTracksBackend,
+    "TrackEditor": TrackEditor,
 }
 
 export const pagesConfig = {
