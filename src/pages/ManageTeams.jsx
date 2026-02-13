@@ -188,7 +188,7 @@ export default function ManageTeams() {
               onChange={handleImport}
               className="hidden"
             />
-            <Button onClick={() => setShowForm(true)} className="bg-gray-900">
+            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
               <Plus className="w-4 h-4 mr-2" />
               Add Team
             </Button>
