@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Loader2, Check } from 'lucide-react';
 
-export default function DriverMediaSection({ driverId, media }) {
+export default function DriverMediaSection({ driverId }) {
+  const { data: media = [] } = useQuery({
+    queryKey: ['driverMedia', driverId],
+    queryFn: () => base44.entities.DriverMedia.filter({ driver_id: driverId }),
+    enabled: !!driverId && driverId !== 'new',
+  });
+
   const mediaRecord = media[0];
   const [data, setData] = useState({
     headshot_url: mediaRecord?.headshot_url || '',
@@ -26,6 +32,24 @@ export default function DriverMediaSection({ driverId, media }) {
 
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    if (mediaRecord) {
+      setData({
+        headshot_url: mediaRecord.headshot_url || '',
+        hero_image_url: mediaRecord.hero_image_url || '',
+        gallery_urls: mediaRecord.gallery_urls?.join('\n') || '',
+        highlight_video_url: mediaRecord.highlight_video_url || '',
+        social_instagram: mediaRecord.social_instagram || '',
+        social_x: mediaRecord.social_x || '',
+        social_youtube: mediaRecord.social_youtube || '',
+        social_facebook: mediaRecord.social_facebook || '',
+        social_threads: mediaRecord.social_threads || '',
+        website_url: mediaRecord.website_url || '',
+        media_notes: mediaRecord.media_notes || '',
+      });
+    }
+  }, [mediaRecord]);
 
   const mutation = useMutation({
     mutationFn: async () => {
