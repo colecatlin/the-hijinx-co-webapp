@@ -61,12 +61,12 @@ export default function ImageCropModal({ open, onClose, imageUrl, onSave, aspect
       const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
       const { data } = await base44.integrations.Core.UploadFile({ file });
       
-      onSave(data.file_url);
-      toast.success('Image updated! Click "Save Changes" to finalize.');
+      await onSave(data.file_url);
+      toast.success('Photo saved successfully!');
       onClose();
     } catch (error) {
-      console.error('Error cropping image:', error);
-      toast.error('Failed to save image. Please try again.');
+      console.error('Error saving image:', error);
+      toast.error(`Failed to save photo: ${error.message || 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
