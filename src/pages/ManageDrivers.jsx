@@ -18,6 +18,7 @@ import DriverCoreDetailsSection from '@/components/management/DriverManagement/D
 import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
 import DriverProgramSection from '@/components/management/DriverManagement/DriverProgramSection.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
+import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -185,7 +186,7 @@ export default function ManageDrivers() {
               <DriverMediaSection driverId={selectedDriverForEdit.id} />
             </TabsContent>
             <TabsContent value="stats" className="mt-6">
-              {/* Stats content coming soon */}
+              <DriverStatsManagement driverId={selectedDriverForEdit.id} />
             </TabsContent>
             <TabsContent value="access" className="mt-6">
               <DriverAccessSection driverId={selectedDriverForEdit.id} />
