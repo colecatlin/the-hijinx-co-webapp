@@ -97,6 +97,9 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import Tracks from './pages/Tracks';
+import TrackHub from './pages/TrackHub';
+import EventHub from './pages/EventHub';
 import __Layout from './Layout.jsx';
 
 
@@ -151,6 +154,9 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "Tracks": Tracks,
+    "TrackHub": TrackHub,
+    "EventHub": EventHub,
 }
 
 export const pagesConfig = {
