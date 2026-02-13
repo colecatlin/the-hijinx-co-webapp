@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import SeriesNavigation from '@/components/series/SeriesNavigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, ExternalLink, Calendar, Trophy, Users, Share2 } from 'lucide-react';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import { createPageUrl } from '@/components/utils';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
@@ -95,60 +98,105 @@ export default function SeriesDetail() {
   const mediaItem = media?.[0];
 
   return (
-    <PageShell>
-      <div className="bg-white">
-        {/* Header */}
-        <div className="bg-gray-50 border-b border-gray-200 pt-8 pb-12">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-3 gap-8 mb-8">
-              <div className="col-span-2">
-                <div className="mb-4">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${disciplineColors[series.discipline]}`}>
-                    {series.discipline}
-                  </span>
-                </div>
-                <h1 className="text-5xl font-black mb-4">{series.name}</h1>
-                <p className="text-gray-600 text-lg mb-6">{series.description_summary}</p>
+    <PageShell className="bg-white">
+      {mediaItem?.hero_image_url && (
+        <div className="w-full h-[400px] relative overflow-hidden">
+          <img 
+            src={mediaItem.hero_image_url} 
+            alt={series.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
 
-                <div className="grid grid-cols-4 gap-4 bg-white border border-gray-200 rounded-lg p-6">
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Founded</div>
-                    <div className="text-lg font-black">{series.founded_year || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Governing Body</div>
-                    <div className="text-sm font-medium">{series.governing_body || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Competition Level</div>
-                    <div className="text-sm font-medium">{series.competition_level}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Region</div>
-                    <div className="text-sm font-medium">{series.region}</div>
-                  </div>
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <Link to={createPageUrl('SeriesHome')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+          ← Back to Series
+        </Link>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+          <div className="lg:col-span-2">
+            <Separator className="mb-3" />
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-4xl font-black text-[#232323] leading-none">{series.name}</h1>
+            </div>
+
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
+              {sections.map(section => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      if (section.id === 'overview') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        const element = document.getElementById(`section-${section.id}`);
+                        if (element) {
+                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                          window.scrollTo({ top: offset, behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeSection === section.id
+                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                        : 'text-gray-600 hover:text-[#232323]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {section.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <Separator className="mb-3" />
+            <div className="bg-white p-8 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Discipline</div>
+                  <div className="text-lg font-semibold text-[#232323] mb-4">{series.discipline}</div>
+                  
+                  <div className="text-sm text-gray-600 mb-1">Founded</div>
+                  <div className="text-lg font-semibold text-[#232323]">{series.founded_year || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Region</div>
+                  <div className="text-lg font-semibold text-[#232323] mb-4">{series.region}</div>
+                  
+                  <div className="text-sm text-gray-600 mb-1">Competition Level</div>
+                  <div className="text-lg font-semibold text-[#232323]">{series.competition_level}</div>
                 </div>
               </div>
-
-              {mediaItem?.logo_url && (
-                <div className="col-span-1">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6 flex items-center justify-center h-full">
-                    <img src={mediaItem.logo_url} alt={series.name} className="max-h-32 object-contain" />
-                  </div>
-                </div>
-              )}
             </div>
+          </div>
+
+          <div className="space-y-6 relative -mt-1">
+            <div className="absolute -top-12 right-0 z-10">
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${series.name} - Series Profile`}
+                description={series.description_summary}
+              />
+            </div>
+            {mediaItem?.logo_url && (
+              <div className="bg-white">
+                <div className="w-full h-[480px] relative bg-gray-50 overflow-hidden flex items-center justify-center p-8">
+                  <img src={mediaItem.logo_url} alt={series.name} className="max-w-full max-h-full object-contain" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <SeriesNavigation activeSection={activeSection} onSectionChange={setActiveSection} />
-
-        {/* Content Sections */}
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          {/* Format Section */}
+        <div className="space-y-4">
           {activeSection === 'format' && format?.[0] && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Race Format</h2>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Race Format</h2>
               {format[0].race_weekend_format && (
                 <div>
                   <h3 className="font-bold mb-2">Race Weekend Format</h3>
@@ -173,13 +221,13 @@ export default function SeriesDetail() {
                   <p className="text-gray-600">{format[0].vehicle_rules_summary}</p>
                 </div>
               )}
-            </div>
+            </section>
           )}
 
-          {/* Classes Section */}
           {activeSection === 'classes' && classes && classes.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-black mb-6">Classes</h2>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Classes</h2>
               <div className="space-y-4">
                 {classes.map(cls => (
                   <div key={cls.id} className="border border-gray-200 rounded-lg p-6">
@@ -195,13 +243,13 @@ export default function SeriesDetail() {
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Calendar Section */}
           {activeSection === 'calendar' && events && events.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-black mb-6">Calendar</h2>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Calendar</h2>
               <div className="space-y-4">
                 {events.map(event => (
                   <div key={event.id} className="border border-gray-200 rounded-lg p-6 flex items-start justify-between">
@@ -213,21 +261,21 @@ export default function SeriesDetail() {
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Standings Placeholder */}
           {activeSection === 'standings' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Standings</h2>
-              <p className="text-gray-600">Standings coming soon</p>
-            </div>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3 text-center">Standings</h2>
+              <p className="text-gray-600 text-center">Standings coming soon</p>
+            </section>
           )}
 
-          {/* Media Section */}
           {activeSection === 'media' && mediaItem && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Media</h2>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Media</h2>
               {mediaItem.hero_image_url && (
                 <div className="rounded-lg overflow-hidden">
                   <img src={mediaItem.hero_image_url} alt={series.name} className="w-full h-96 object-cover" />
@@ -245,13 +293,13 @@ export default function SeriesDetail() {
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}
-            </div>
+            </section>
           )}
 
-          {/* Governance Section */}
           {activeSection === 'governance' && governance?.[0] && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Governance</h2>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Governance</h2>
               {governance[0].sanctioning_body && (
                 <div>
                   <h3 className="font-bold mb-2">Sanctioning Body</h3>
@@ -276,39 +324,39 @@ export default function SeriesDetail() {
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}
-            </div>
+            </section>
           )}
 
-          {/* Overview (Default) */}
           {activeSection === 'overview' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Overview</h2>
-              <p className="text-gray-600">Select a section above to view more information</p>
-            </div>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3 text-center">Overview</h2>
+              <p className="text-gray-600 text-center">Select a section above to view more information</p>
+            </section>
           )}
 
-          {/* Teams Placeholder */}
           {activeSection === 'teams' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Teams</h2>
-              <p className="text-gray-600">Teams coming soon</p>
-            </div>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3 text-center">Teams</h2>
+              <p className="text-gray-600 text-center">Teams coming soon</p>
+            </section>
           )}
 
-          {/* Drivers Placeholder */}
           {activeSection === 'drivers' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Drivers</h2>
-              <p className="text-gray-600">Drivers coming soon</p>
-            </div>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3 text-center">Drivers</h2>
+              <p className="text-gray-600 text-center">Drivers coming soon</p>
+            </section>
           )}
 
-          {/* Tracks Placeholder */}
           {activeSection === 'tracks' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Tracks</h2>
-              <p className="text-gray-600">Tracks coming soon</p>
-            </div>
+            <section className="bg-white p-8">
+              <Separator className="mb-3" />
+              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3 text-center">Tracks</h2>
+              <p className="text-gray-600 text-center">Tracks coming soon</p>
+            </section>
           )}
         </div>
       </div>
