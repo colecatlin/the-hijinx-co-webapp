@@ -150,7 +150,7 @@ export default function TeamProfile() {
   const topStrengths = performance?.strengths?.slice(0, 2) || [];
 
   return (
-    <PageShell className="bg-white">
+    <PageShell className="bg-[#FFF8F5]">
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
           <img 
@@ -162,148 +162,133 @@ export default function TeamProfile() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('TeamDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-          ← Back to Teams
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
-          <div className="lg:col-span-2">
-            <Separator className="mb-3" />
-            <div className="flex items-center justify-between mb-2">
-              {team.headquarters_city && team.headquarters_state && (
-                <div className="flex items-center gap-2">
-                  <CountryFlag country={team.country} />
-                  <h1 className="text-4xl font-black text-[#232323] leading-none">{team.name}</h1>
-                </div>
-              )}
-              {!team.headquarters_city && <h1 className="text-4xl font-black text-[#232323] leading-none">{team.name}</h1>}
-            </div>
-
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
-              {sections.map(section => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSection(section.id);
-                      if (section.id === 'overview') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        const element = document.getElementById(`section-${section.id}`);
-                        if (element) {
-                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                          window.scrollTo({ top: offset, behavior: 'smooth' });
-                        }
+      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-1 overflow-x-auto">
+            {sections.map(section => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                    if (section.id === 'overview') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      const element = document.getElementById(`section-${section.id}`);
+                      if (element) {
+                        const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                        window.scrollTo({ top: offset, behavior: 'smooth' });
                       }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeSection === section.id
-                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                        : 'text-gray-600 hover:text-[#232323]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-center mb-4">
-              <SocialIconsDisplay media={media} />
-            </div>
-
-            <Separator className="mb-3" />
-            <div className="bg-white p-8 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  {team.founded_year && (
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600 mb-1">Founded</div>
-                      <div className="text-lg font-semibold text-[#232323]">{team.founded_year}</div>
-                    </div>
-                  )}
-                  <div className="mb-4">
-                    <div className="text-sm text-gray-600 mb-1">Level</div>
-                    <div className="text-lg font-semibold text-[#232323]">{team.team_level}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Discipline</div>
-                    <div className="text-lg font-semibold text-[#232323]">{team.primary_discipline}</div>
-                  </div>
-                </div>
-                <div>
-                  {team.headquarters_city && team.headquarters_state && (
-                    <div>
-                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                        <MapPin className="w-4 h-4" />
-                        Location
-                      </div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <CountryFlag country={team.country} />
-                        <div className="text-lg font-semibold text-[#232323]">
-                          {team.headquarters_city}, {team.headquarters_state}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {team.ownership_type && (
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Ownership</div>
-                      <div className="text-lg font-semibold text-[#232323]">{team.ownership_type}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-6">
-                {performance?.recent_form && performance.recent_form !== 'Unknown' && (
-                  <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
-                )}
-                {performance?.reliability && performance.reliability !== 'Unknown' && (
-                  <Badge className="bg-[#1A3249] text-white">{performance.reliability}</Badge>
-                )}
-                {topStrengths.map((strength, idx) => (
-                  <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
-                ))}
-              </div>
-            </div>
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                    activeSection === section.id
+                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                      : 'text-gray-600 hover:text-[#232323]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {section.label}
+                </button>
+              );
+            })}
           </div>
+        </div>
+      </div>
 
-          <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          <div className="lg:col-span-2">
+            <Link to={createPageUrl('TeamsDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+              ← Back to Teams
+            </Link>
+
+            <div className="flex items-start justify-between mb-2">
+              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
               <SocialShareButtons 
                 url={window.location.href}
                 title={`${team.name} - Team Profile`}
                 description={team.description_summary}
               />
             </div>
-            {media?.logo_url && (
-              <div className="bg-white">
-                <div className="w-full h-[480px] relative bg-gray-50 overflow-hidden flex items-center justify-center p-8">
-                  <img src={media.logo_url} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain" />
-                </div>
+            
+            {team.headquarters_city && team.headquarters_state && (
+              <div className="flex items-center gap-2 text-gray-600 mb-6">
+                <CountryFlag country={team.country} />
+                <MapPin className="w-4 h-4" />
+                {team.headquarters_city}, {team.headquarters_state}
               </div>
             )}
 
-            {activePartners.length > 0 && (
-              <div className="bg-white p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
-                <div className="space-y-2">
-                  {activePartners.map(partner => (
-                    <div key={partner.id} className="text-sm text-gray-700">{partner.partner_name}</div>
-                  ))}
+            <p className="text-lg text-gray-700 leading-relaxed mb-8">
+              {team.description_summary}
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              {team.founded_year && (
+                <div className="bg-white border border-gray-200 p-4">
+                  <div className="text-xs text-gray-600 mb-1">Founded</div>
+                  <div className="font-bold text-[#232323]">{team.founded_year}</div>
                 </div>
+              )}
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Level</div>
+                <div className="font-bold text-[#232323]">{team.team_level}</div>
               </div>
-            )}
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Discipline</div>
+                <div className="font-bold text-[#232323]">{team.primary_discipline}</div>
+              </div>
+              {team.ownership_type && (
+                <div className="bg-white border border-gray-200 p-4">
+                  <div className="text-xs text-gray-600 mb-1">Ownership</div>
+                  <div className="font-bold text-[#232323]">{team.ownership_type}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
+                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
+              )}
+              {performance?.reliability && performance.reliability !== 'Unknown' && (
+                <Badge className="bg-[#1A3249] text-white">{performance.reliability}</Badge>
+              )}
+              {topStrengths.map((strength, idx) => (
+                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 p-6 mt-8">
+              <h3 className="text-sm font-bold text-[#232323] mb-4">Team Logo</h3>
+              {media?.logo_url ? (
+                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
+                  <img src={media.logo_url} alt={`${team.name} logo`} className="w-full h-auto max-w-[200px]" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center bg-gray-50 p-12 border border-gray-200">
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl font-black mb-2">{team.name.split(' ').map(w => w[0]).join('')}</div>
+                    <div className="text-xs">No logo uploaded</div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-center mt-6">
+                <SocialIconsDisplay media={media} />
+              </div>
+            </div>
+
+
           </div>
         </div>
 
-        <div className="space-y-4">
-           <section id="section-overview" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Overview</h2>
+        <div className="space-y-8">
+           <section id="section-overview" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
             {(team.status || team.owner_name || team.team_principal) ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -328,9 +313,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-programs" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Programs</h2>
+          <section id="section-programs" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
             {sortedPrograms.length > 0 ? (
               <div className="space-y-4">
                 {sortedPrograms.map(prog => (
@@ -355,9 +339,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-roster" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Full Roster</h2>
+          <section id="section-roster" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Full Roster</h2>
             
             {roster.length > 0 ? (
               <>
@@ -439,9 +422,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-performance" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Performance Snapshot</h2>
+          <section id="section-performance" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
             
             {performance ? (
               <>
@@ -513,9 +495,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-partners" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Partners</h2>
+          <section id="section-partners" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Partners</h2>
             
             {partners.length > 0 ? (
               <>
@@ -554,9 +535,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-media" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Media</h2>
+          <section id="section-media" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
             
             {media && (media.gallery_urls?.length > 0 || media.highlight_video_url) ? (
               <>
@@ -589,9 +569,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-operations" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Operations</h2>
+          <section id="section-operations" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
             
             {operations ? (
               <>
@@ -639,9 +618,8 @@ export default function TeamProfile() {
             )}
           </section>
 
-          <section id="section-community" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Community</h2>
+          <section id="section-community" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
             
             {community ? (
               <>

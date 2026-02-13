@@ -113,7 +113,8 @@ export default function TrackProfile() {
   ];
 
   return (
-    <PageShell className="bg-white">
+    <PageShell className="bg-[#FFF8F5]">
+      {/* Header Image */}
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
           <img 
@@ -125,95 +126,93 @@ export default function TrackProfile() {
         </div>
       )}
 
+      {/* Sticky sub nav */}
+      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-1 overflow-x-auto">
+            {sections.map(section => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                    document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                    activeSection === section.id
+                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                      : 'text-gray-600 hover:text-[#232323]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {section.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-          ← Back to Tracks
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+        {/* Hero Section - One Screen Summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          {/* Left Column - Primary Info */}
           <div className="lg:col-span-2">
-            <Separator className="mb-3" />
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-4xl font-black text-[#232323] leading-none">{track.name}</h1>
+            <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
+              ← Back to Tracks
+            </Link>
+
+            <h1 className="text-4xl font-black text-[#232323] mb-2">{track.name}</h1>
+            
+            <div className="flex items-center gap-2 text-gray-600 mb-6">
+              <MapPin className="w-4 h-4" />
+              {track.city}, {track.state}
             </div>
 
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
-              {sections.map(section => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSection(section.id);
-                      if (section.id === 'overview') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        const element = document.getElementById(`section-${section.id}`);
-                        if (element) {
-                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                          window.scrollTo({ top: offset, behavior: 'smooth' });
-                        }
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeSection === section.id
-                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                        : 'text-gray-600 hover:text-[#232323]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
-                );
-              })}
+            <p className="text-lg text-gray-700 leading-relaxed mb-8">
+              {track.description_summary}
+            </p>
+
+            {/* Quick Specs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Surface</div>
+                <div className="font-bold text-[#232323]">
+                  {track.surfaces?.join(', ') || 'N/A'}
+                </div>
+              </div>
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Length</div>
+                <div className="font-bold text-[#232323]">{track.length_miles || 'N/A'} mi</div>
+              </div>
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Turns</div>
+                <div className="font-bold text-[#232323]">{track.turns_count || 'N/A'}</div>
+              </div>
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="text-xs text-gray-600 mb-1">Season</div>
+                <div className="font-bold text-[#232323]">{track.status || 'N/A'}</div>
+              </div>
             </div>
 
-            <Separator className="mb-3" />
-            <div className="bg-white p-8 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Surface</div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">{track.surfaces?.join(', ') || 'N/A'}</div>
-                  
-                  <div className="text-sm text-gray-600 mb-1">Length</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.length_miles || 'N/A'} mi</div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">
-                    {track.city}, {track.state}
-                  </div>
-                  
-                  <div className="text-sm text-gray-600 mb-1">Status</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.status || 'N/A'}</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-6">
-                {track.elevation_profile && track.elevation_profile !== 'Unknown' && (
-                  <Badge className="bg-[#1A3249] text-white">{track.elevation_profile} Elevation</Badge>
-                )}
-                {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
-                  <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
-                )}
-                {track.atmosphere?.map((atm, idx) => (
-                  atm !== 'Unknown' && <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge>
-                ))}
-              </div>
+            {/* Track Character Tags */}
+            <div className="flex flex-wrap gap-2">
+              {track.elevation_profile && track.elevation_profile !== 'Unknown' && (
+                <Badge className="bg-[#1A3249] text-white">{track.elevation_profile} Elevation</Badge>
+              )}
+              {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
+                <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
+              )}
+              {track.atmosphere?.map((atm, idx) => (
+                atm !== 'Unknown' && <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10">
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${track.name} - Track Profile`}
-                description={track.description_summary}
-              />
-            </div>
-            <div className="bg-white p-6">
+          {/* Right Column - Data Panel */}
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 p-6">
               <h3 className="text-sm font-bold text-[#232323] mb-4">Disciplines</h3>
               <div className="flex flex-wrap gap-2 mb-4">
                 {disciplines.map(disc => (
@@ -273,10 +272,11 @@ export default function TrackProfile() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <section id="section-overview" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Overview</h2>
+        {/* Below Fold Sections */}
+        <div className="space-y-8">
+          {/* Overview */}
+          <section id="section-overview" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {track.founded_year && (
                 <div>
@@ -317,9 +317,9 @@ export default function TrackProfile() {
             )}
           </section>
 
-          <section id="section-events" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Events and Involvement</h2>
+          {/* Events */}
+          <section id="section-events" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Events and Involvement</h2>
             
             {signatureEvents.length > 0 && (
               <div className="mb-6">
@@ -368,10 +368,10 @@ export default function TrackProfile() {
             )}
           </section>
 
+          {/* Performance */}
           {performance && (
-            <section id="section-performance" className="bg-white p-8">
-              <Separator className="mb-3" />
-              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Performance Snapshot</h2>
+            <section id="section-performance" className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
               
               {performance.lap_record_driver && (
                 <div className="mb-6 p-4 bg-[#FFF8F5] border border-gray-200">
@@ -420,9 +420,9 @@ export default function TrackProfile() {
             </section>
           )}
 
-          <section id="section-fan" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Fan Experience</h2>
+          {/* Fan Experience */}
+          <section id="section-fan" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Fan Experience</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {track.viewing_quality && (
                 <div>
@@ -445,10 +445,10 @@ export default function TrackProfile() {
             )}
           </section>
 
+          {/* Media */}
           {media && (
-            <section id="section-media" className="bg-white p-8">
-              <Separator className="mb-3" />
-              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Media</h2>
+            <section id="section-media" className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {media.hero_image_url && (
@@ -491,10 +491,10 @@ export default function TrackProfile() {
             </section>
           )}
 
+          {/* Operations */}
           {operations && (
-            <section id="section-operations" className="bg-white p-8">
-              <Separator className="mb-3" />
-              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Operations</h2>
+            <section id="section-operations" className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {track.ownership_type && (
@@ -545,10 +545,10 @@ export default function TrackProfile() {
             </section>
           )}
 
+          {/* Community */}
           {community && (
-            <section id="section-community" className="bg-white p-8">
-              <Separator className="mb-3" />
-              <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Community</h2>
+            <section id="section-community" className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
               
               {community.youth_programs && (
                 <div className="mb-6">

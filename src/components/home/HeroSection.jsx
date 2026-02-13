@@ -14,27 +14,13 @@ export default function HeroSection() {
           <span className="font-mono text-xs tracking-[0.3em] text-[#FFF8F5] opacity-70 uppercase">
             The Hijinx Co LLC
           </span>
-          <motion.h1 
-            className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight mt-4 max-w-5xl leading-[0.95]"
-            animate={{ 
-              rotateY: [0, 360],
-            }}
-            transition={{ 
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-            style={{ 
-              transformStyle: "preserve-3d",
-              perspective: "1000px"
-            }}
-          >
+          <h1 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight mt-4 max-w-5xl leading-[0.95]">
             Media. Motorsports.
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFF8F5] to-[#FFF8F5]/50">
               Culture. Built&nbsp;Different.
             </span>
-          </motion.h1>
+          </h1>
           <p className="text-[#FFF8F5] opacity-80 text-base md:text-lg mt-6 max-w-xl leading-relaxed">
             A multi-vertical platform operating at the intersection of editorial publishing, 
             competitive motorsports, technology, and lifestyle.
