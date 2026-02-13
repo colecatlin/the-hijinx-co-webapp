@@ -78,6 +78,18 @@ export default function TeamCoreDetailsSection({ teamId }) {
     if (file) uploadMutation.mutate(file);
   };
 
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  const handleNameChange = (name) => {
+    const slug = generateSlug(name);
+    setFormData({ ...formData, name, slug });
+  };
+
   const handleSave = () => {
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
     updateMutation.mutate(updateData);
@@ -91,14 +103,15 @@ export default function TeamCoreDetailsSection({ teamId }) {
             <label className="text-sm font-medium">Team Name</label>
             <Input
               value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => handleNameChange(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Slug</label>
+            <label className="text-sm font-medium">Slug (auto-generated)</label>
             <Input
               value={formData.slug || ''}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              className="bg-gray-50"
             />
           </div>
         </div>
