@@ -145,7 +145,77 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
           />
         </div>
 
-        <div>
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold mb-4">Social Media & Contact</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Website</label>
+              <Input
+                value={formData.website_url || ''}
+                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Contact Email</label>
+              <Input
+                value={formData.contact_email || ''}
+                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                placeholder="contact@series.com"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Phone</label>
+              <Input
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Facebook</label>
+              <Input
+                value={formData.social_facebook || ''}
+                onChange={(e) => setFormData({ ...formData, social_facebook: e.target.value })}
+                placeholder="Facebook URL"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Instagram</label>
+              <Input
+                value={formData.social_instagram || ''}
+                onChange={(e) => setFormData({ ...formData, social_instagram: e.target.value })}
+                placeholder="@handle or URL"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">X (Twitter)</label>
+              <Input
+                value={formData.social_x || ''}
+                onChange={(e) => setFormData({ ...formData, social_x: e.target.value })}
+                placeholder="@handle or URL"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">YouTube</label>
+              <Input
+                value={formData.social_youtube || ''}
+                onChange={(e) => setFormData({ ...formData, social_youtube: e.target.value })}
+                placeholder="Channel URL"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">LinkedIn</label>
+              <Input
+                value={formData.social_linkedin || ''}
+                onChange={(e) => setFormData({ ...formData, social_linkedin: e.target.value })}
+                placeholder="Profile URL"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
           <label className="text-sm font-medium">Logo</label>
           <div className="flex items-center gap-3">
             <Button
