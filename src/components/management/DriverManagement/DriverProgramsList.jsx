@@ -6,10 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Pencil } from 'lucide-react';
 
 export default function DriverProgramsList({ driverId }) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProgram, setEditingProgram] = useState(null);
   const [formData, setFormData] = useState({
     series_id: '',
     series_name: '',
@@ -48,6 +49,15 @@ export default function DriverProgramsList({ driverId }) {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.DriverProgram.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
+      setEditingProgram(null);
+      resetForm();
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.DriverProgram.delete(id),
     onSuccess: () => {
@@ -71,7 +81,26 @@ export default function DriverProgramsList({ driverId }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createMutation.mutate(formData);
+    if (editingProgram) {
+      updateMutation.mutate({ id: editingProgram.id, data: formData });
+    } else {
+      createMutation.mutate(formData);
+    }
+  };
+
+  const handleEdit = (program) => {
+    setEditingProgram(program);
+    setFormData({
+      series_id: program.series_id || '',
+      series_name: program.series_name || '',
+      team_id: program.team_id || '',
+      team_name: program.team_name || '',
+      class_name: program.class_name || '',
+      season: program.season || '',
+      car_number: program.car_number || '',
+      status: program.status || 'active',
+      notes: program.notes || ''
+    });
   };
 
   if (isLoading) {
@@ -143,14 +172,23 @@ export default function DriverProgramsList({ driverId }) {
                       <p className="mt-2 text-sm text-gray-600">{program.notes}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteMutation.mutate(program.id)}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(program)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteMutation.mutate(program.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -158,10 +196,16 @@ export default function DriverProgramsList({ driverId }) {
         )}
       </Card>
 
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+      <Dialog open={showAddModal || !!editingProgram} onOpenChange={(open) => {
+        if (!open) {
+          setShowAddModal(false);
+          setEditingProgram(null);
+          resetForm();
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add Driver Program</DialogTitle>
+            <DialogTitle>{editingProgram ? 'Edit Driver Program' : 'Add Driver Program'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-4">
@@ -277,12 +321,16 @@ export default function DriverProgramsList({ driverId }) {
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
+              <Button type="button" variant="outline" onClick={() => {
+                setShowAddModal(false);
+                setEditingProgram(null);
+                resetForm();
+              }}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Add Program
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {editingProgram ? 'Update Program' : 'Add Program'}
               </Button>
             </div>
           </form>
