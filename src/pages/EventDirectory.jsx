@@ -76,7 +76,11 @@ export default function EventDirectory() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map(event => (
-              <div key={event.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+              <Link 
+                key={event.id} 
+                to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="font-bold text-lg">{event.name}</h3>
                   <span className={`px-2 py-1 text-xs rounded ${
@@ -100,7 +104,7 @@ export default function EventDirectory() {
                     <div>Round {event.round_number}</div>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

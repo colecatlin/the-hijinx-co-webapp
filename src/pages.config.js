@@ -102,6 +102,8 @@ import ResultsDirectory from './pages/ResultsDirectory';
 import ManageEvents from './pages/ManageEvents';
 import ManageSessions from './pages/ManageSessions';
 import ManageResults from './pages/ManageResults';
+import EventProfile from './pages/EventProfile';
+import SessionProfile from './pages/SessionProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -161,6 +163,8 @@ export const PAGES = {
     "ManageEvents": ManageEvents,
     "ManageSessions": ManageSessions,
     "ManageResults": ManageResults,
+    "EventProfile": EventProfile,
+    "SessionProfile": SessionProfile,
 }
 
 export const pagesConfig = {
