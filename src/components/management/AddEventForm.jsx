@@ -53,10 +53,20 @@ export default function AddEventForm({ tracks, onCancel, onSuccess }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Event.create(data),
+    mutationFn: (data) => {
+      const submitData = { ...data };
+      if (!submitData.track_id) delete submitData.track_id;
+      if (!submitData.end_date) delete submitData.end_date;
+      if (!submitData.round_number) delete submitData.round_number;
+      return base44.entities.Event.create(submitData);
+    },
     onSuccess: (newEvent) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       onSuccess(newEvent);
+    },
+    onError: (error) => {
+      console.error('Event creation error:', error);
+      alert('Error creating event: ' + (error.message || 'Unknown error'));
     },
   });
 
