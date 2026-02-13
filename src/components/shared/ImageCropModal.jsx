@@ -59,9 +59,14 @@ export default function ImageCropModal({ open, onClose, imageUrl, onSave, aspect
       const croppedBlob = await getCroppedImg(imageUrl, croppedAreaPixels);
       
       const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
-      const { data } = await base44.integrations.Core.UploadFile({ file });
+      const response = await base44.integrations.Core.UploadFile({ file });
       
-      await onSave(data.file_url);
+      const fileUrl = response.file_url || response.data?.file_url;
+      if (!fileUrl) {
+        throw new Error('No file URL returned from upload');
+      }
+      
+      await onSave(fileUrl);
       toast.success('Photo saved successfully!');
       onClose();
     } catch (error) {
