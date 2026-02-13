@@ -47,6 +47,7 @@ export default function TeamCoreDetailsSection({ teamId }) {
   const { data: team } = useQuery({
     queryKey: ['team', teamId],
     queryFn: () => base44.entities.Team.list({ id: teamId }),
+    enabled: teamId !== 'new',
   });
 
   useEffect(() => {
@@ -55,10 +56,20 @@ export default function TeamCoreDetailsSection({ teamId }) {
     }
   }, [team]);
 
+  const createMutation = useMutation({
+    mutationFn: (data) => base44.entities.Team.create(data),
+    onSuccess: (newTeam) => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      toast.success('Team created');
+      window.location.reload();
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Team.update(teamId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team', teamId] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
       setIsSaved(true);
       toast.success('Team updated');
       setTimeout(() => setIsSaved(false), 2000);
@@ -92,7 +103,11 @@ export default function TeamCoreDetailsSection({ teamId }) {
 
   const handleSave = () => {
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
-    updateMutation.mutate(updateData);
+    if (teamId === 'new') {
+      createMutation.mutate(updateData);
+    } else {
+      updateMutation.mutate(updateData);
+    }
   };
 
   return (
@@ -236,8 +251,8 @@ export default function TeamCoreDetailsSection({ teamId }) {
           </div>
         </div>
 
-        <Button onClick={handleSave} disabled={updateMutation.isPending}>
-          {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+        <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
+          {isSaved ? 'Saved' : (updateMutation.isPending || createMutation.isPending) ? 'Saving...' : teamId === 'new' ? 'Create Team' : 'Save Changes'}
         </Button>
       </div>
     </Card>
