@@ -197,18 +197,25 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   };
 
   const handleCropSave = async (croppedUrl) => {
-    setHeadshotUrl(croppedUrl);
-    setTempHeadshotUrl(null);
-    
-    if (driverId !== 'new') {
-      const mediaRecord = mediaRecords[0];
-      if (mediaRecord) {
-        await base44.entities.DriverMedia.update(mediaRecord.id, { headshot_url: croppedUrl });
-      } else {
-        await base44.entities.DriverMedia.create({ driver_id: driverId, headshot_url: croppedUrl });
+    try {
+      setHeadshotUrl(croppedUrl);
+      
+      if (driverId !== 'new') {
+        const mediaRecord = mediaRecords[0];
+        if (mediaRecord) {
+          await base44.entities.DriverMedia.update(mediaRecord.id, { headshot_url: croppedUrl });
+        } else {
+          await base44.entities.DriverMedia.create({ driver_id: driverId, headshot_url: croppedUrl });
+        }
+        queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
+        toast.success('Headshot updated');
       }
-      queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
-      toast.success('Headshot updated');
+      
+      setCropModalOpen(false);
+      setTempHeadshotUrl(null);
+    } catch (error) {
+      console.error('Error saving headshot:', error);
+      toast.error('Failed to save headshot');
     }
   };
 
