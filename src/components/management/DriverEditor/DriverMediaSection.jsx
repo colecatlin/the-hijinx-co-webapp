@@ -26,6 +26,7 @@ export default function DriverMediaSection({ driverId }) {
     social_youtube: mediaRecord?.social_youtube || '',
     social_facebook: mediaRecord?.social_facebook || '',
     social_threads: mediaRecord?.social_threads || '',
+    social_linkedin: mediaRecord?.social_linkedin || '',
     website_url: mediaRecord?.website_url || '',
     media_notes: mediaRecord?.media_notes || '',
   });
@@ -45,6 +46,7 @@ export default function DriverMediaSection({ driverId }) {
         social_youtube: mediaRecord.social_youtube || '',
         social_facebook: mediaRecord.social_facebook || '',
         social_threads: mediaRecord.social_threads || '',
+        social_linkedin: mediaRecord.social_linkedin || '',
         website_url: mediaRecord.website_url || '',
         media_notes: mediaRecord.media_notes || '',
       });
@@ -178,6 +180,15 @@ export default function DriverMediaSection({ driverId }) {
                 value={data.social_threads}
                 onChange={(e) => handleChange('social_threads', e.target.value)}
                 placeholder="@handle or URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>LinkedIn</Label>
+              <Input
+                value={data.social_linkedin}
+                onChange={(e) => handleChange('social_linkedin', e.target.value)}
+                placeholder="Profile URL"
               />
             </div>
           </div>
