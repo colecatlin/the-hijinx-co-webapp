@@ -1,5 +1,5 @@
 import React from 'react';
-import { Instagram, Youtube, Facebook, Globe } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Globe, Linkedin } from 'lucide-react';
 
 const SocialIcon = ({ Icon, href, label }) => {
   const commonClasses = "p-2 rounded-full transition-colors";
@@ -61,6 +61,7 @@ export default function SocialIconsDisplay({ media }) {
         href={media?.social_threads}
         label="Threads"
       />
+      <SocialIcon Icon={Linkedin} href={media?.social_linkedin} label="LinkedIn" />
       <SocialIcon Icon={Youtube} href={media?.social_youtube} label="YouTube" />
       <SocialIcon Icon={Globe} href={media?.website_url} label="Website" />
     </div>
