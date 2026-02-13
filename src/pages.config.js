@@ -101,6 +101,10 @@ import Tracks from './pages/Tracks';
 import TrackHub from './pages/TrackHub';
 import EventHub from './pages/EventHub';
 import ManagementDashboard from './pages/ManagementDashboard';
+import Standings from './pages/Standings';
+import Results from './pages/Results';
+import Timing from './pages/Timing';
+import ManageTracksBackend from './pages/ManageTracksBackend';
 import __Layout from './Layout.jsx';
 
 
@@ -159,6 +163,10 @@ export const PAGES = {
     "TrackHub": TrackHub,
     "EventHub": EventHub,
     "ManagementDashboard": ManagementDashboard,
+    "Standings": Standings,
+    "Results": Results,
+    "Timing": Timing,
+    "ManageTracksBackend": ManageTracksBackend,
 }
 
 export const pagesConfig = {
