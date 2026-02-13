@@ -9,10 +9,12 @@ import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
+import AddEventForm from '@/components/management/AddEventForm';
 
 export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventForEdit, setSelectedEventForEdit] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
@@ -25,9 +27,37 @@ export default function ManageEvents() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
   });
 
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
   const filteredEvents = events.filter(event =>
     event.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (showAddForm) {
+    return (
+      <PageShell>
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setShowAddForm(false)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <h1 className="text-4xl font-black">Add Event</h1>
+          </div>
+          <AddEventForm
+            tracks={tracks}
+            onCancel={() => setShowAddForm(false)}
+            onSuccess={(newEvent) => {
+              setShowAddForm(false);
+              setSelectedEventForEdit(newEvent);
+            }}
+          />
+        </div>
+      </PageShell>
+    );
+  }
 
   if (selectedEventForEdit) {
     return (
@@ -83,7 +113,7 @@ export default function ManageEvents() {
             <h1 className="text-4xl font-black mb-2">Manage Events</h1>
             <p className="text-gray-600">{events.length} total events</p>
           </div>
-          <Button className="bg-gray-900">
+          <Button onClick={() => setShowAddForm(true)} className="bg-gray-900">
             <Plus className="w-4 h-4 mr-2" />
             Add Event
           </Button>
