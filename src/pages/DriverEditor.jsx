@@ -15,6 +15,8 @@ import DriverMediaSection from '@/components/management/DriverEditor/DriverMedia
 import DriverPerformanceSection from '@/components/management/DriverEditor/DriverPerformanceSection.jsx';
 import DriverCommunitySection from '@/components/management/DriverEditor/DriverCommunitySection.jsx';
 import DriverPartnershipSection from '@/components/management/DriverEditor/DriverPartnershipSection.jsx';
+import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList';
+import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay';
 
 export default function DriverEditor({ driverId: propDriverId }) {
   const [searchParams] = useSearchParams();
@@ -151,9 +153,10 @@ export default function DriverEditor({ driverId: propDriverId }) {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-7 mb-8">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="programs">Programs</TabsTrigger>
+            <TabsTrigger value="results">Race Results</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="community">Community</TabsTrigger>
@@ -166,6 +169,13 @@ export default function DriverEditor({ driverId: propDriverId }) {
 
           <TabsContent value="programs">
             <DriverProgramsSection driverId={driverId} programs={programs} series={series} teams={teams} />
+          </TabsContent>
+
+          <TabsContent value="results">
+            <div className="space-y-6">
+              <DriverProgramsList driverId={driverId} />
+              <DriverClaimsDisplay driverId={driverId} />
+            </div>
           </TabsContent>
 
           <TabsContent value="media">
