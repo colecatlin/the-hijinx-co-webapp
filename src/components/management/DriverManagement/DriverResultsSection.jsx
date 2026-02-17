@@ -110,6 +110,7 @@ export default function DriverResultsSection({ driverId }) {
   const handleSubmit = () => {
     const payload = {
       ...form,
+      session_id: form.session_id || null,
       position: form.position !== '' ? Number(form.position) : null,
       laps_completed: form.laps_completed !== '' ? Number(form.laps_completed) : null,
       points: form.points !== '' ? Number(form.points) : null,
