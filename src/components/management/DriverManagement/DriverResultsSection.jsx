@@ -121,25 +121,41 @@ export default function DriverResultsSection({ driverId }) {
     }
   };
 
-  const getSessionLabel = (sessionId) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session) return 'Unknown Session';
-    const event = events.find(e => e.id === session.event_id);
-    return `${event?.name || 'Unknown Event'} — ${session.name} (${session.session_type})`;
+  const getResultLabel = (result) => {
+    if (result.session_id) {
+      const session = sessions.find(s => s.id === result.session_id);
+      if (session) {
+        const event = events.find(e => e.id === session.event_id);
+        return `${event?.name || 'Unknown Event'} — ${session.name}`;
+      }
+    }
+    if (result.event_id) {
+      const event = events.find(e => e.id === result.event_id);
+      return event?.name || 'Unknown Event';
+    }
+    return '—';
   };
 
-  const getEventDate = (sessionId) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session) return '';
-    const event = events.find(e => e.id === session.event_id);
-    return event?.event_date || '';
+  const getResultDate = (result) => {
+    if (result.session_id) {
+      const session = sessions.find(s => s.id === result.session_id);
+      if (session) {
+        const event = events.find(e => e.id === session.event_id);
+        return event?.event_date || '';
+      }
+    }
+    if (result.event_id) {
+      const event = events.find(e => e.id === result.event_id);
+      return event?.event_date || '';
+    }
+    return '';
   };
 
   // Sort results by event date desc
   const sortedResults = [...results].sort((a, b) => {
-    const dateA = getEventDate(a.session_id);
-    const dateB = getEventDate(b.session_id);
-    return dateB.localeCompare(dateA);
+    const dateA = getResultDate(a);
+    const dateB = getResultDate(b);
+    return (dateB || '').localeCompare(dateA || '');
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
