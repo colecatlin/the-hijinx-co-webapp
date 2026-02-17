@@ -111,7 +111,8 @@ export default function DriverResultsSection({ driverId }) {
         points: r.points ?? '',
         _expanded: true,
         _key: r.id,
-      }))
+        };
+      })
     );
     setShowDialog(true);
   };
