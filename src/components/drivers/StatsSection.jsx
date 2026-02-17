@@ -37,7 +37,7 @@ function calculateOverallPerformance(results, sessions, events) {
 
   const hasMainOrRace = validResults.some(({ session }) => session && FINAL_SESSION_TYPES.has(session.session_type));
   const hasNoSession = validResults.some(({ session }) => !session);
-  const hasHeat = validResults.some(({ session }) => session && session.session_type === 'Heat');
+  const hasHeat = validResults.some(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
 
   let finalResults, basisType;
 
