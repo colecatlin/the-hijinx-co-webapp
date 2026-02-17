@@ -135,9 +135,11 @@ export default function DriverResultsSection({ driverId }) {
     };
 
     for (const entry of sessionEntries) {
+      // Find the matching session by type within the selected event
+      const matchedSession = filteredSessions.find(s => s.session_type === entry.session_type);
       const payload = {
         ...base,
-        session_id: entry.session_id || null,
+        session_id: matchedSession?.id || entry.session_id || null,
         position: entry.position !== '' ? Number(entry.position) : null,
         status_text: entry.status_text,
         laps_completed: entry.laps_completed !== '' ? Number(entry.laps_completed) : null,
