@@ -80,8 +80,8 @@ function calculateOverallPerformance(results, sessions, events) {
 function calculateFilteredStats(results, sessions, events, filters) {
   const enriched = results
     .map(r => ({ r, ...getResultEvent(r, sessions, events) }))
-    .filter(({ r, session, event }) => {
-      if (!isCountable(r, session)) return false;
+    .filter(({ r, event }) => {
+      if (!isCountable(r, sessions)) return false;
       if (!event) return false;
       if (filters.season !== 'all' && event.season !== filters.season) return false;
       if (filters.series !== 'all' && r.series !== filters.series) return false;
@@ -90,9 +90,9 @@ function calculateFilteredStats(results, sessions, events, filters) {
       return true;
     });
 
-  const heatResults = enriched.filter(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
-  const mainResults = enriched.filter(({ session }) => isFinalResult(session));
-  const lcqResults = enriched.filter(({ session }) => session && session.session_type === 'LCQ');
+  const heatResults = enriched.filter(({ r }) => HEAT_SESSION_TYPES.has(getSessionType(r, sessions)));
+  const mainResults = enriched.filter(({ r }) => isFinalResult(r, sessions));
+  const lcqResults = enriched.filter(({ r }) => getSessionType(r, sessions) === 'LCQ');
 
   const countableMain = mainResults.filter(({ r }) =>
     r.position && r.status_text !== 'DNF' && r.status_text !== 'DSQ'
