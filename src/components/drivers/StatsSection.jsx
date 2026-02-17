@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const FINAL_SESSION_TYPES = new Set(['Final']);
+const HEAT_SESSION_TYPES = new Set(['Heat', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4']);
 
 function getResultEvent(result, sessions, events) {
   if (result.session_id) {
