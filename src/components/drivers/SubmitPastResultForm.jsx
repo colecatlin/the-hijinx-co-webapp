@@ -12,14 +12,14 @@ import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-export default function SubmitPastResultForm({ driverId, onCancel }) {
+export default function SubmitPastResultForm({ driverId, programContext, onCancel }) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     event_name_claimed: '',
     event_date_claimed: null,
     track_name_claimed: '',
-    series_name_claimed: '',
-    class_name_claimed: '',
+    series_name_claimed: programContext?.series_name || '',
+    class_name_claimed: programContext?.class_name || '',
     position_claimed: '',
     laps_completed_claimed: '',
     best_lap_time_claimed: '',
@@ -64,7 +64,14 @@ export default function SubmitPastResultForm({ driverId, onCancel }) {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold">Submit Past Race Result</h3>
+        <div>
+          <h3 className="text-xl font-bold">Submit Past Race Result</h3>
+          {programContext && (
+            <p className="text-sm text-gray-600 mt-1">
+              For: {programContext.series_name} - {programContext.season}
+            </p>
+          )}
+        </div>
         <Button variant="ghost" size="icon" onClick={onCancel}>
           <X className="w-4 h-4" />
         </Button>

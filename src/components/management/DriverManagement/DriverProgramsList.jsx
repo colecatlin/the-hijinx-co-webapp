@@ -6,11 +6,13 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Loader2, Pencil } from 'lucide-react';
+import { Plus, Trash2, Loader2, Pencil, FileText } from 'lucide-react';
+import SubmitPastResultForm from '@/components/drivers/SubmitPastResultForm';
 
 export default function DriverProgramsList({ driverId }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProgram, setEditingProgram] = useState(null);
+  const [addingResultForProgram, setAddingResultForProgram] = useState(null);
   const [formData, setFormData] = useState({
     series_id: '',
     series_name: '',
@@ -174,6 +176,14 @@ export default function DriverProgramsList({ driverId }) {
                   </div>
                   <div className="flex gap-2">
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddingResultForProgram(program)}
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      Add Result
+                    </Button>
+                    <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(program)}
@@ -195,6 +205,16 @@ export default function DriverProgramsList({ driverId }) {
           </div>
         )}
       </Card>
+
+      {addingResultForProgram && (
+        <div className="mt-6">
+          <SubmitPastResultForm
+            driverId={driverId}
+            programContext={addingResultForProgram}
+            onCancel={() => setAddingResultForProgram(null)}
+          />
+        </div>
+      )}
 
       <Dialog open={showAddModal || !!editingProgram} onOpenChange={(open) => {
         if (!open) {
