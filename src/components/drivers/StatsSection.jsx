@@ -78,7 +78,7 @@ function calculateFilteredStats(results, sessions, events, filters) {
       return true;
     });
 
-  const heatResults = enriched.filter(({ session }) => session && session.session_type === 'Heat');
+  const heatResults = enriched.filter(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
   const mainResults = enriched.filter(({ session }) => isFinalResult(session));
   const lcqResults = enriched.filter(({ session }) => session && session.session_type === 'LCQ');
 
