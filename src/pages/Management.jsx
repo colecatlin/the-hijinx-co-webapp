@@ -16,6 +16,7 @@ export default function Management() {
         { name: 'Events', page: 'ManageEvents', icon: Calendar, description: 'Manage race events and schedules' },
         { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Manage race sessions and timing' },
         { name: 'Results', page: 'ManageResults', icon: Award, description: 'Manage race results and standings' },
+        { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review driver-submitted results' },
       ]
     },
     {

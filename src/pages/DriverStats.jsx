@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
@@ -6,11 +6,14 @@ import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trophy, TrendingUp, Award, Target } from 'lucide-react';
+import { ArrowLeft, Trophy, TrendingUp, Award, Target, Plus, FileText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SubmitPastResultForm from '@/components/drivers/SubmitPastResultForm';
+import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay';
 
 export default function DriverStats() {
   const { slug } = useParams();
+  const [showSubmitForm, setShowSubmitForm] = useState(false);
 
   const { data: drivers = [], isLoading: loadingDriver } = useQuery({
     queryKey: ['driver', slug],
@@ -30,6 +33,13 @@ export default function DriverStats() {
     queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
     enabled: !!driver?.id,
   });
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const isOwner = user?.email === driver?.owner_user_id || user?.role === 'admin';
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions'],
@@ -106,12 +116,29 @@ export default function DriverStats() {
           </Button>
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            {driver.first_name} {driver.last_name}
-          </h1>
-          <p className="text-xl text-gray-600">Career Statistics</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">
+              {driver.first_name} {driver.last_name}
+            </h1>
+            <p className="text-xl text-gray-600">Career Statistics</p>
+          </div>
+          {isOwner && !showSubmitForm && (
+            <Button onClick={() => setShowSubmitForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Submit Past Result
+            </Button>
+          )}
         </div>
+
+        {showSubmitForm && (
+          <div className="mb-6">
+            <SubmitPastResultForm
+              driverId={driver.id}
+              onCancel={() => setShowSubmitForm(false)}
+            />
+          </div>
+        )}
 
         {!stats ? (
           <Card className="p-12 text-center">
@@ -123,6 +150,12 @@ export default function DriverStats() {
             <TabsList>
               <TabsTrigger value="overall">Overall Stats</TabsTrigger>
               <TabsTrigger value="programs">By Program</TabsTrigger>
+              {isOwner && (
+                <TabsTrigger value="claims">
+                  <FileText className="w-4 h-4 mr-2" />
+                  My Submissions
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="overall" className="space-y-6">
@@ -244,6 +277,19 @@ export default function DriverStats() {
                 ))
               )}
             </TabsContent>
+
+            {isOwner && (
+              <TabsContent value="claims" className="space-y-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-bold mb-4">Submitted Results Awaiting Verification</h3>
+                  <p className="text-sm text-gray-600 mb-6">
+                    These are results you've submitted that are pending review by administrators.
+                    Once verified, they will appear in your official statistics.
+                  </p>
+                  <DriverClaimsDisplay driverId={driver.id} />
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
         )}
       </div>
