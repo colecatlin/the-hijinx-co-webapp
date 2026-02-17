@@ -188,7 +188,7 @@ export default function ManageDrivers() {
             </TabsContent>
             <TabsContent value="results" className="mt-6">
               <div className="space-y-6">
-                <DriverProgramsList driverId={selectedDriverForEdit.id} />
+                <DriverResultsSection driverId={selectedDriverForEdit.id} />
                 <DriverClaimsDisplay driverId={selectedDriverForEdit.id} />
               </div>
             </TabsContent>
