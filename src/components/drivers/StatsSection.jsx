@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const FINAL_SESSION_TYPES = new Set(['Main', 'Race', 'Feature']);
+const FINAL_SESSION_TYPES = new Set(['Final']);
 
 function getResultEvent(result, sessions, events) {
   if (result.session_id) {

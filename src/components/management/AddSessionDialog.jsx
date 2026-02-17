@@ -7,19 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const EMPTY = { name: '', session_type: 'Race', laps: '', status: 'scheduled' };
+const EMPTY = { name: '', session_type: 'Heat', laps: '', status: 'scheduled' };
 
 const SESSION_NAME_OPTIONS = [
+  { name: 'Practice 1', type: 'Practice' },
+  { name: 'Practice 2', type: 'Practice' },
+  { name: 'Qualifying 1', type: 'Qualifying' },
+  { name: 'Qualifying 2', type: 'Qualifying' },
   { name: 'Heat 1', type: 'Heat' },
   { name: 'Heat 2', type: 'Heat' },
   { name: 'Heat 3', type: 'Heat' },
   { name: 'Heat 4', type: 'Heat' },
   { name: 'LCQ', type: 'LCQ' },
-  { name: 'Final', type: 'Feature' },
-  { name: 'Practice', type: 'Practice' },
-  { name: 'Qualifying', type: 'Qualifying' },
-  { name: 'Race', type: 'Race' },
-  { name: 'Main', type: 'Main' },
+  { name: 'Final', type: 'Final' },
 ];
 
 export default function AddSessionDialog({ open, onClose, onSessionCreated, eventId, initialSession }) {
@@ -32,7 +32,7 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
     if (open) {
       setForm(initialSession ? {
         name: initialSession.name || '',
-        session_type: initialSession.session_type || 'Race',
+        session_type: initialSession.session_type || 'Heat',
         laps: initialSession.laps ?? '',
         status: initialSession.status || 'scheduled',
       } : EMPTY);
@@ -137,10 +137,8 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
                 <SelectItem value="Practice">Practice</SelectItem>
                 <SelectItem value="Qualifying">Qualifying</SelectItem>
                 <SelectItem value="Heat">Heat</SelectItem>
-                <SelectItem value="LCQ">LCQ (Last Chance Qualifier)</SelectItem>
-                <SelectItem value="Main">Main</SelectItem>
-                <SelectItem value="Race">Race</SelectItem>
-                <SelectItem value="Feature">Feature</SelectItem>
+                <SelectItem value="LCQ">LCQ</SelectItem>
+                <SelectItem value="Final">Final</SelectItem>
               </SelectContent>
             </Select>
           </div>

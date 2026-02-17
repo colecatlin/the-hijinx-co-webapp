@@ -396,20 +396,12 @@ export default function DriverResultsSection({ driverId }) {
                           <Label className="text-xs">Session <span className="text-gray-400 font-normal">(optional)</span></Label>
                           <Select
                             value={entry.session_id}
-                            onValueChange={v => {
-                              if (v === '__add_session__') {
-                                setAddingSessionForIndex(entry._key);
-                                setShowAddSessionDialog(true);
-                              } else {
-                                updateEntry(entry._key, 'session_id', v);
-                              }
-                            }}
+                            onValueChange={v => updateEntry(entry._key, 'session_id', v)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select session..." />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="__add_session__" className="text-blue-600 font-medium">+ Create New Session</SelectItem>
                               {filteredSessions.map(s => (
                                 <SelectItem key={s.id} value={s.id}>
                                   {s.name} ({s.session_type})
