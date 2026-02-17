@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home, GitCompare } from 'lucide-react';
 import StatsSection from '@/components/drivers/StatsSection';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -15,6 +16,8 @@ import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -33,7 +36,10 @@ export default function DriverProfile() {
         </PageShell>
       );
     }
+    const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('overview');
+    const [showCompareDialog, setShowCompareDialog] = useState(false);
+    const [compareDriverId, setCompareDriverId] = useState('');
 
     React.useEffect(() => {
       window.scrollTo(0, 0);
@@ -169,9 +175,19 @@ export default function DriverProfile() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-          ← Back to Drivers
-        </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+            ← Back to Drivers
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCompareDialog(true)}
+          >
+            <GitCompare className="w-4 h-4 mr-2" />
+            Compare Driver
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
@@ -341,6 +357,46 @@ export default function DriverProfile() {
 
         </div>
       </div>
+
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Compare with Another Driver</DialogTitle>
+            <DialogDescription>
+              Select a driver to compare with {driver.first_name} {driver.last_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select value={compareDriverId} onValueChange={setCompareDriverId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a driver to compare" />
+              </SelectTrigger>
+              <SelectContent>
+                {drivers.filter(d => d.id !== driver.id).map(d => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.first_name} {d.last_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowCompareDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!compareDriverId}
+              onClick={() => {
+                if (compareDriverId) {
+                  navigate(`${createPageUrl('DriverComparison')}?driver1=${driver.id}&driver2=${compareDriverId}`);
+                }
+              }}
+            >
+              Compare
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

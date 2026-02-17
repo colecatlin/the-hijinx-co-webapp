@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import DriverCard from '@/components/drivers/DriverCard';
 import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { GitCompare } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 
 export default function DriverDirectory() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     discipline: 'all',
@@ -15,9 +20,29 @@ export default function DriverDirectory() {
     state: 'all'
   });
   const [sortBy, setSortBy] = useState('name');
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedDrivers, setSelectedDrivers] = useState([]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleDriverSelection = (driverId) => {
+    setSelectedDrivers(prev => {
+      if (prev.includes(driverId)) {
+        return prev.filter(id => id !== driverId);
+      }
+      if (prev.length < 2) {
+        return [...prev, driverId];
+      }
+      return prev;
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedDrivers.length === 2) {
+      navigate(`${createPageUrl('DriverComparison')}?driver1=${selectedDrivers[0]}&driver2=${selectedDrivers[1]}`);
+    }
   };
 
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
@@ -96,8 +121,36 @@ export default function DriverDirectory() {
     <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-[#232323] mb-2">Drivers</h1>
-          <p className="text-lg text-gray-600">Competitors across disciplines and series</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-black text-[#232323] mb-2">Drivers</h1>
+              <p className="text-lg text-gray-600">Competitors across disciplines and series</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {compareMode && selectedDrivers.length === 2 && (
+                <Button onClick={handleCompare} className="bg-green-600 hover:bg-green-700">
+                  Compare Selected
+                </Button>
+              )}
+              <Button
+                variant={compareMode ? "default" : "outline"}
+                onClick={() => {
+                  setCompareMode(!compareMode);
+                  setSelectedDrivers([]);
+                }}
+              >
+                <GitCompare className="w-4 h-4 mr-2" />
+                {compareMode ? 'Cancel' : 'Compare Drivers'}
+              </Button>
+            </div>
+          </div>
+          {compareMode && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
+                Select 2 drivers to compare ({selectedDrivers.length}/2 selected)
+              </p>
+            </div>
+          )}
         </div>
 
         <DirectoryFilters
@@ -162,15 +215,32 @@ export default function DriverDirectory() {
               const primaryProgram = driverPrograms.find(p => p.primary) || driverPrograms[0];
               const team = primaryProgram?.team_id ? allTeams.find(t => t.id === primaryProgram.team_id) : null;
               const media = allMedia.find(m => m.driver_id === driver.id);
+              const isSelected = selectedDrivers.includes(driver.id);
               
               return (
-                <DriverCard
-                  key={driver.id}
-                  driver={driver}
-                  program={primaryProgram}
-                  team={team}
-                  media={media}
-                />
+                <div key={driver.id} className="relative">
+                  {compareMode && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <button
+                        onClick={() => toggleDriverSelection(driver.id)}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          isSelected 
+                            ? 'bg-blue-600 border-blue-600 text-white' 
+                            : 'bg-white border-gray-300 hover:border-blue-400'
+                        }`}
+                        disabled={!isSelected && selectedDrivers.length >= 2}
+                      >
+                        {isSelected && '✓'}
+                      </button>
+                    </div>
+                  )}
+                  <DriverCard
+                    driver={driver}
+                    program={primaryProgram}
+                    team={team}
+                    media={media}
+                  />
+                </div>
               );
             })}
           </div>
