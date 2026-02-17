@@ -263,7 +263,7 @@ export default function DriverResultsSection({ driverId }) {
                     return (
                       <tr key={result.id} className="hover:bg-gray-50">
                         <td className="px-4 py-2">
-                          {session ? `${session.name} (${session.session_type})` : '—'}
+                          {result.session_type || (session ? `${session.name} (${session.session_type})` : '—')}
                         </td>
                         <td className="px-4 py-2 text-center">
                           {result.position ? (
