@@ -345,7 +345,7 @@ export default function DriverResultsSection({ driverId }) {
                 <Select value={form.status_text} onValueChange={v => setForm(f => ({ ...f, status_text: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Running">Running (Finished)</SelectItem>
+                    <SelectItem value="Running">Finished</SelectItem>
                     <SelectItem value="DNF">DNF</SelectItem>
                     <SelectItem value="DNS">DNS</SelectItem>
                     <SelectItem value="DSQ">DSQ</SelectItem>
