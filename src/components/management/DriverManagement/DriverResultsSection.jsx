@@ -200,10 +200,10 @@ export default function DriverResultsSection({ driverId }) {
               {sortedResults.map(result => (
                 <tr key={result.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <div className="font-medium">{getSessionLabel(result.session_id)}</div>
-                    {getEventDate(result.session_id) && (
-                      <div className="text-xs text-gray-500">{getEventDate(result.session_id)}</div>
-                    )}
+                   <div className="font-medium">{getResultLabel(result)}</div>
+                   {getResultDate(result) && (
+                     <div className="text-xs text-gray-500">{getResultDate(result)}</div>
+                   )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {result.position ? (
