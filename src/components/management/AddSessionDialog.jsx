@@ -128,7 +128,7 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isPending || !form.name || !eventId}>
+          <Button onClick={handleSubmit} disabled={createMutation.isPending || !form.name || !eventId || availableOptions.length === 0}>
             {createMutation.isPending ? 'Adding...' : 'Add Session'}
           </Button>
         </DialogFooter>
