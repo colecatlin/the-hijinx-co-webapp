@@ -20,6 +20,7 @@ import DriverProgramSection from '@/components/management/DriverManagement/Drive
 import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
 import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
+import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -173,6 +174,7 @@ export default function ManageDrivers() {
             <TabsList>
               <TabsTrigger value="core">Core Details</TabsTrigger>
               <TabsTrigger value="programs">Programs</TabsTrigger>
+              <TabsTrigger value="results">Race Results</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
               <TabsTrigger value="stats">Stats</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
@@ -182,6 +184,12 @@ export default function ManageDrivers() {
             </TabsContent>
             <TabsContent value="programs" className="mt-6">
               <DriverProgramsList driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="results" className="mt-6">
+              <div className="space-y-6">
+                <DriverProgramsList driverId={selectedDriverForEdit.id} />
+                <DriverClaimsDisplay driverId={selectedDriverForEdit.id} />
+              </div>
             </TabsContent>
             <TabsContent value="media" className="mt-6">
               <DriverMediaSection driverId={selectedDriverForEdit.id} />
