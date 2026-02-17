@@ -33,15 +33,26 @@ export default function DriverResultsSection({ driverId }) {
     queryFn: () => base44.entities.Results.filter({ driver_id: driverId }),
   });
 
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
+  const { data: programs = [] } = useQuery({
+    queryKey: ['driverPrograms', driverId],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
   });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  // Derive selected program's details for auto-filling series/class
+  const selectedProgram = programs.find(p => p.id === form.program_id);
+
+  // Sessions filtered by selected event
+  const filteredSessions = sessions.filter(s => s.event_id === form.event_id);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Results.create({ ...data, driver_id: driverId }),
