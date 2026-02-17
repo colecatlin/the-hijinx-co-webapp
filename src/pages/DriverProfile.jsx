@@ -179,14 +179,6 @@ export default function DriverProfile() {
           <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
             ← Back to Drivers
           </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCompareDialog(true)}
-          >
-            <GitCompare className="w-4 h-4 mr-2" />
-            Compare Driver
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
