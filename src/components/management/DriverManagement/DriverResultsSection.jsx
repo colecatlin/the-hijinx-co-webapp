@@ -395,21 +395,19 @@ export default function DriverResultsSection({ driverId }) {
                     {/* Body */}
                     {entry._expanded && (
                       <div className="px-3 py-3 space-y-3">
-                        {/* Session selector */}
+                        {/* Session type selector */}
                         <div className="space-y-1">
-                          <Label className="text-xs">Session <span className="text-gray-400 font-normal">(optional)</span></Label>
+                          <Label className="text-xs">Session Type</Label>
                           <Select
-                            value={entry.session_id}
-                            onValueChange={v => updateEntry(entry._key, 'session_id', v)}
+                            value={entry.session_type}
+                            onValueChange={v => updateEntry(entry._key, 'session_type', v)}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select session..." />
+                              <SelectValue placeholder="Select session type..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {filteredSessions.map(s => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.name} ({s.session_type})
-                                </SelectItem>
+                              {SESSION_TYPES.map(t => (
+                                <SelectItem key={t} value={t}>{t}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
