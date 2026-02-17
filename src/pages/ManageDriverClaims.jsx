@@ -35,8 +35,98 @@ export default function ManageDriverClaims() {
     queryFn: () => base44.auth.me(),
   });
 
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['allTracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['allEvents'],
+    queryFn: () => base44.entities.Event.list(),
+  });
+
   const updateClaimMutation = useMutation({
     mutationFn: async ({ claimId, status, notes }) => {
+      const claim = claims.find(c => c.id === claimId);
+      
+      // If verifying, create necessary entities and results
+      if (status === 'verified' && claim) {
+        let trackId = null;
+        let eventId = null;
+        let sessionId = null;
+
+        // Create or find Track
+        if (claim.track_name_claimed) {
+          const existingTrack = tracks.find(t => 
+            t.name.toLowerCase() === claim.track_name_claimed.toLowerCase()
+          );
+          
+          if (existingTrack) {
+            trackId = existingTrack.id;
+          } else {
+            const newTrack = await base44.asServiceRole.entities.Track.create({
+              name: claim.track_name_claimed,
+              location_city: 'Unknown',
+              location_country: 'Unknown',
+              track_type: 'Other',
+              surface_type: 'Asphalt',
+              status: 'Active',
+            });
+            trackId = newTrack.id;
+          }
+        }
+
+        // Create or find Event
+        const existingEvent = events.find(e => 
+          e.name.toLowerCase() === claim.event_name_claimed.toLowerCase() &&
+          e.event_date === claim.event_date_claimed
+        );
+
+        if (existingEvent) {
+          eventId = existingEvent.id;
+        } else {
+          const newEvent = await base44.asServiceRole.entities.Event.create({
+            name: claim.event_name_claimed,
+            event_date: claim.event_date_claimed,
+            series: claim.series_name_claimed || 'Unknown',
+            track_id: trackId || undefined,
+            status: 'completed',
+          });
+          eventId = newEvent.id;
+        }
+
+        // Create Session
+        const newSession = await base44.asServiceRole.entities.Session.create({
+          event_id: eventId,
+          session_type: 'Main',
+          name: 'Main Event',
+          status: 'completed',
+        });
+        sessionId = newSession.id;
+
+        // Create Results entry
+        const newResult = await base44.asServiceRole.entities.Results.create({
+          driver_id: claim.driver_id,
+          session_id: sessionId,
+          position: claim.position_claimed,
+          series: claim.series_name_claimed || undefined,
+          class: claim.class_name_claimed || undefined,
+          laps_completed: claim.laps_completed_claimed || undefined,
+          best_lap_time: claim.best_lap_time_claimed || undefined,
+          status_text: 'Running',
+        });
+
+        // Update claim with verified result reference
+        return await base44.entities.DriverClaim.update(claimId, {
+          status,
+          reviewer_notes: notes,
+          reviewed_by: user?.email,
+          reviewed_date: new Date().toISOString(),
+          verified_result_id: newResult.id,
+        });
+      }
+
+      // For non-verified statuses, just update the claim
       return await base44.entities.DriverClaim.update(claimId, {
         status,
         reviewer_notes: notes,
@@ -46,6 +136,8 @@ export default function ManageDriverClaims() {
     },
     onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['allDriverClaims'] });
+      queryClient.invalidateQueries({ queryKey: ['allEvents'] });
+      queryClient.invalidateQueries({ queryKey: ['allTracks'] });
       
       // Send email notification to driver
       const claim = claims.find(c => c.id === variables.claimId);
