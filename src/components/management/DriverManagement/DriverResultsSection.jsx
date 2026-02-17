@@ -21,7 +21,7 @@ const EMPTY_SESSION_ENTRY = {
   _key: Date.now(),
 };
 
-const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
+const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
 
 const EMPTY_FORM = {
   program_id: '',
