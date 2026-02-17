@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Pencil, Trash2, Trophy } from 'lucide-react';
 
 const EMPTY_FORM = {
+  program_id: '',
+  event_id: '',
   session_id: '',
   position: '',
   status_text: 'Running',
