@@ -143,13 +143,13 @@ export default function DriverProfile() {
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list(),
-    enabled: !!driver?.id && results.length > 0,
+    enabled: !!driver?.id,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
-    enabled: !!driver?.id && results.length > 0,
+    enabled: !!driver?.id,
   });
 
   const sections = [
