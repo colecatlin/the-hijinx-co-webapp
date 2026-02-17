@@ -83,7 +83,11 @@ export default function DriverResultsSection({ driverId }) {
 
   const openEdit = (result) => {
     setEditingResult(result);
+    // Find the event_id from the session if available
+    const session = sessions.find(s => s.id === result.session_id);
     setForm({
+      program_id: result.program_id || '',
+      event_id: session?.event_id || result.event_id || '',
       session_id: result.session_id || '',
       position: result.position ?? '',
       status_text: result.status_text || 'Running',
