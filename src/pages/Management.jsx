@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart } from 'lucide-react';
 
 export default function Management() {
   const sections = [
@@ -38,6 +38,12 @@ export default function Management() {
       items: [
         { name: 'Food & Beverage', page: 'ManageFoodBeverage', icon: UtensilsCrossed, description: 'Manage food and beverage offerings' },
         { name: 'Tech', page: 'ManageTech', icon: Cpu, description: 'Manage tech solutions and offerings' },
+      ]
+    },
+    {
+      title: 'Analytics',
+      items: [
+        { name: 'Analytics Dashboard', page: 'AnalyticsDashboard', icon: LineChart, description: 'View insights and data trends' },
       ]
     }
   ];
