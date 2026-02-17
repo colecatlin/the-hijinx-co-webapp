@@ -56,6 +56,7 @@ import Diagnostics from './pages/Diagnostics';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
+import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
 import EventDirectory from './pages/EventDirectory';
 import EventProfile from './pages/EventProfile';
@@ -104,7 +105,7 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import DriverStats from './pages/DriverStats';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -118,6 +119,7 @@ export const PAGES = {
     "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
+    "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
     "EventDirectory": EventDirectory,
     "EventProfile": EventProfile,
@@ -166,7 +168,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "DriverStats": DriverStats,
+    "AnalyticsDashboard": AnalyticsDashboard,
 }
 
 export const pagesConfig = {
