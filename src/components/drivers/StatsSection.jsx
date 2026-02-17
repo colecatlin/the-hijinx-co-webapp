@@ -46,7 +46,7 @@ function calculateOverallPerformance(results, sessions, events) {
     finalResults = validResults.filter(({ session }) => isFinalResult(session));
   } else if (hasHeat) {
     basisType = 'Heats';
-    finalResults = validResults.filter(({ session }) => session && session.session_type === 'Heat');
+    finalResults = validResults.filter(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
   } else {
     return { available: false };
   }
