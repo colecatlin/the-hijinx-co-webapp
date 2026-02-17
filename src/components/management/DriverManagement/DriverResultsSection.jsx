@@ -1,0 +1,307 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Pencil, Trash2, Trophy } from 'lucide-react';
+
+const EMPTY_FORM = {
+  session_id: '',
+  position: '',
+  status_text: 'Running',
+  team_name: '',
+  series: '',
+  class: '',
+  laps_completed: '',
+  best_lap_time: '',
+  points: '',
+};
+
+export default function DriverResultsSection({ driverId }) {
+  const queryClient = useQueryClient();
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingResult, setEditingResult] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  const { data: results = [], isLoading } = useQuery({
+    queryKey: ['driverResults', driverId],
+    queryFn: () => base44.entities.Results.filter({ driver_id: driverId }),
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data) => base44.entities.Results.create({ ...data, driver_id: driverId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverResults', driverId] });
+      closeDialog();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Results.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['driverResults', driverId] });
+      closeDialog();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Results.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['driverResults', driverId] }),
+  });
+
+  const openAdd = () => {
+    setEditingResult(null);
+    setForm(EMPTY_FORM);
+    setShowDialog(true);
+  };
+
+  const openEdit = (result) => {
+    setEditingResult(result);
+    setForm({
+      session_id: result.session_id || '',
+      position: result.position ?? '',
+      status_text: result.status_text || 'Running',
+      team_name: result.team_name || '',
+      series: result.series || '',
+      class: result.class || '',
+      laps_completed: result.laps_completed ?? '',
+      best_lap_time: result.best_lap_time || '',
+      points: result.points ?? '',
+    });
+    setShowDialog(true);
+  };
+
+  const closeDialog = () => {
+    setShowDialog(false);
+    setEditingResult(null);
+    setForm(EMPTY_FORM);
+  };
+
+  const handleSubmit = () => {
+    const payload = {
+      ...form,
+      position: form.position !== '' ? Number(form.position) : null,
+      laps_completed: form.laps_completed !== '' ? Number(form.laps_completed) : null,
+      points: form.points !== '' ? Number(form.points) : null,
+    };
+    if (editingResult) {
+      updateMutation.mutate({ id: editingResult.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
+  const getSessionLabel = (sessionId) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return 'Unknown Session';
+    const event = events.find(e => e.id === session.event_id);
+    return `${event?.name || 'Unknown Event'} — ${session.name} (${session.session_type})`;
+  };
+
+  const getEventDate = (sessionId) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return '';
+    const event = events.find(e => e.id === session.event_id);
+    return event?.event_date || '';
+  };
+
+  // Sort results by event date desc
+  const sortedResults = [...results].sort((a, b) => {
+    const dateA = getEventDate(a.session_id);
+    const dateB = getEventDate(b.session_id);
+    return dateB.localeCompare(dateA);
+  });
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Race Results</h3>
+          <p className="text-sm text-gray-500">{results.length} result{results.length !== 1 ? 's' : ''} recorded</p>
+        </div>
+        <Button onClick={openAdd} className="bg-gray-900">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Result
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-8 text-gray-500">Loading results...</div>
+      ) : sortedResults.length === 0 ? (
+        <div className="text-center py-12 border-2 border-dashed rounded-lg text-gray-500">
+          <Trophy className="w-8 h-8 mx-auto mb-2 opacity-30" />
+          <p>No results yet. Add the first race result.</p>
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-semibold">Event / Session</th>
+                <th className="text-center px-4 py-3 font-semibold">Pos</th>
+                <th className="text-left px-4 py-3 font-semibold">Status</th>
+                <th className="text-left px-4 py-3 font-semibold">Series</th>
+                <th className="text-left px-4 py-3 font-semibold">Class</th>
+                <th className="text-center px-4 py-3 font-semibold">Laps</th>
+                <th className="text-center px-4 py-3 font-semibold">Best Lap</th>
+                <th className="text-center px-4 py-3 font-semibold">Pts</th>
+                <th className="text-right px-4 py-3 font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {sortedResults.map(result => (
+                <tr key={result.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="font-medium">{getSessionLabel(result.session_id)}</div>
+                    {getEventDate(result.session_id) && (
+                      <div className="text-xs text-gray-500">{getEventDate(result.session_id)}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {result.position ? (
+                      <span className={`font-bold text-base ${result.position === 1 ? 'text-yellow-500' : result.position <= 3 ? 'text-gray-500' : ''}`}>
+                        {result.position}
+                      </span>
+                    ) : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      result.status_text === 'Running' ? 'bg-green-100 text-green-800' :
+                      result.status_text === 'DNF' ? 'bg-red-100 text-red-800' :
+                      result.status_text === 'DNS' ? 'bg-yellow-100 text-yellow-800' :
+                      result.status_text === 'DSQ' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {result.status_text || '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{result.series || '—'}</td>
+                  <td className="px-4 py-3 text-gray-600">{result.class || '—'}</td>
+                  <td className="px-4 py-3 text-center text-gray-600">{result.laps_completed ?? '—'}</td>
+                  <td className="px-4 py-3 text-center text-gray-600 font-mono text-xs">{result.best_lap_time || '—'}</td>
+                  <td className="px-4 py-3 text-center text-gray-600">{result.points ?? '—'}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(result)}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { if (confirm('Delete this result?')) deleteMutation.mutate(result.id); }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Dialog open={showDialog} onOpenChange={closeDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingResult ? 'Edit Result' : 'Add Race Result'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label>Session</Label>
+              <Select value={form.session_id} onValueChange={v => setForm(f => ({ ...f, session_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select session..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {sessions.map(session => {
+                    const event = events.find(e => e.id === session.event_id);
+                    return (
+                      <SelectItem key={session.id} value={session.id}>
+                        {event?.name || 'Unknown Event'} — {session.name}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Finishing Position</Label>
+                <Input type="number" min="1" placeholder="e.g. 1" value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>Status</Label>
+                <Select value={form.status_text} onValueChange={v => setForm(f => ({ ...f, status_text: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Running">Running (Finished)</SelectItem>
+                    <SelectItem value="DNF">DNF</SelectItem>
+                    <SelectItem value="DNS">DNS</SelectItem>
+                    <SelectItem value="DSQ">DSQ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Series</Label>
+                <Input placeholder="e.g. SCORE" value={form.series} onChange={e => setForm(f => ({ ...f, series: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>Class</Label>
+                <Input placeholder="e.g. Pro 4" value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label>Team Name</Label>
+              <Input placeholder="Team name at time of race" value={form.team_name} onChange={e => setForm(f => ({ ...f, team_name: e.target.value }))} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label>Laps</Label>
+                <Input type="number" min="0" placeholder="0" value={form.laps_completed} onChange={e => setForm(f => ({ ...f, laps_completed: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>Best Lap</Label>
+                <Input placeholder="1:23.456" value={form.best_lap_time} onChange={e => setForm(f => ({ ...f, best_lap_time: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>Points</Label>
+                <Input type="number" min="0" placeholder="0" value={form.points} onChange={e => setForm(f => ({ ...f, points: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
+              <Button onClick={handleSubmit} disabled={isPending || !form.session_id}>
+                {isPending ? 'Saving...' : editingResult ? 'Save Changes' : 'Add Result'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
