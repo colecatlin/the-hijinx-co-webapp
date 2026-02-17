@@ -49,6 +49,7 @@
  */
 import About from './pages/About';
 import AcceptInvitation from './pages/AcceptInvitation';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ApparelHome from './pages/ApparelHome';
 import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
@@ -67,6 +68,7 @@ import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
 import ManageAccess from './pages/ManageAccess';
 import ManageAnnouncements from './pages/ManageAnnouncements';
+import ManageDriverClaims from './pages/ManageDriverClaims';
 import ManageDriverCommunity from './pages/ManageDriverCommunity';
 import ManageDriverMedia from './pages/ManageDriverMedia';
 import ManageDriverPartnership from './pages/ManageDriverPartnership';
@@ -105,14 +107,14 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import AnalyticsDashboard from './pages/AnalyticsDashboard';
-import ManageDriverClaims from './pages/ManageDriverClaims';
+import DriverComparison from './pages/DriverComparison';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "About": About,
     "AcceptInvitation": AcceptInvitation,
+    "AnalyticsDashboard": AnalyticsDashboard,
     "ApparelHome": ApparelHome,
     "Contact": Contact,
     "CreativeServices": CreativeServices,
@@ -131,6 +133,7 @@ export const PAGES = {
     "Learning": Learning,
     "ManageAccess": ManageAccess,
     "ManageAnnouncements": ManageAnnouncements,
+    "ManageDriverClaims": ManageDriverClaims,
     "ManageDriverCommunity": ManageDriverCommunity,
     "ManageDriverMedia": ManageDriverMedia,
     "ManageDriverPartnership": ManageDriverPartnership,
@@ -169,8 +172,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "AnalyticsDashboard": AnalyticsDashboard,
-    "ManageDriverClaims": ManageDriverClaims,
+    "DriverComparison": DriverComparison,
 }
 
 export const pagesConfig = {
