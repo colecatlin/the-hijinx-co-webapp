@@ -118,9 +118,9 @@ function calculateProgramBreakdown(results, sessions, events) {
   const programs = {};
 
   results.forEach(r => {
-    const { session } = getResultEvent(r, sessions, events);
-    if (!isCountable(r, session)) return;
+    if (!isCountable(r, sessions)) return;
 
+    const st = getSessionType(r, sessions);
     const key = r.team_name
       ? `${r.team_name}|${r.series}|${r.class}`
       : `${r.series}|${r.class}`;
@@ -137,10 +137,10 @@ function calculateProgramBreakdown(results, sessions, events) {
 
     programs[key].starts++;
 
-    if (session && HEAT_SESSION_TYPES.has(session.session_type)) {
+    if (st && HEAT_SESSION_TYPES.has(st)) {
       programs[key].heats++;
       if (r.position) programs[key].heatFinishes++;
-    } else if (isFinalResult(session)) {
+    } else if (isFinalResult(r, sessions)) {
       programs[key].finals++;
       if (r.position) programs[key].finalFinishes++;
       if (r.status_text === 'DNF') programs[key].dnfs++;
@@ -150,7 +150,7 @@ function calculateProgramBreakdown(results, sessions, events) {
         if (r.position <= 5) programs[key].top5s++;
         if (r.position <= 10) programs[key].top10s++;
       }
-    } else if (session?.session_type === 'LCQ') {
+    } else if (st === 'LCQ') {
       programs[key].lcqs++;
       if (r.position) programs[key].lcqFinishes++;
     }
