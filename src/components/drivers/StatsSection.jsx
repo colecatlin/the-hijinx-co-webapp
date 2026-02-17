@@ -45,20 +45,20 @@ function isFinalResult(result, sessions) {
 function calculateOverallPerformance(results, sessions, events) {
   const validResults = results
     .map(r => ({ r, ...getResultEvent(r, sessions, events) }))
-    .filter(({ r, session }) => isCountable(r, session));
+    .filter(({ r }) => isCountable(r, sessions));
 
-  const hasMainOrRace = validResults.some(({ session }) => session && FINAL_SESSION_TYPES.has(session.session_type));
-  const hasNoSession = validResults.some(({ session }) => !session);
-  const hasHeat = validResults.some(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
+  const hasMainOrRace = validResults.some(({ r }) => FINAL_SESSION_TYPES.has(getSessionType(r, sessions)));
+  const hasNoSessionType = validResults.some(({ r }) => !getSessionType(r, sessions));
+  const hasHeat = validResults.some(({ r }) => HEAT_SESSION_TYPES.has(getSessionType(r, sessions)));
 
   let finalResults, basisType;
 
-  if (hasMainOrRace || hasNoSession) {
+  if (hasMainOrRace || hasNoSessionType) {
     basisType = 'Finals';
-    finalResults = validResults.filter(({ session }) => isFinalResult(session));
+    finalResults = validResults.filter(({ r }) => isFinalResult(r, sessions));
   } else if (hasHeat) {
     basisType = 'Heats';
-    finalResults = validResults.filter(({ session }) => session && HEAT_SESSION_TYPES.has(session.session_type));
+    finalResults = validResults.filter(({ r }) => HEAT_SESSION_TYPES.has(getSessionType(r, sessions)));
   } else {
     return { available: false };
   }
