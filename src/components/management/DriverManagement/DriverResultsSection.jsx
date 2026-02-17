@@ -28,6 +28,7 @@ export default function DriverResultsSection({ driverId }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [showAddEventDialog, setShowAddEventDialog] = useState(false);
   const [showAddSessionDialog, setShowAddSessionDialog] = useState(false);
+  const [sessionToEdit, setSessionToEdit] = useState(null);
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['driverResults', driverId],
@@ -51,6 +52,7 @@ export default function DriverResultsSection({ driverId }) {
 
   const selectedProgram = programs.find(p => p.id === form.program_id);
   const filteredSessions = sessions.filter(s => s.event_id === form.event_id);
+  const selectedSession = sessions.find(s => s.id === form.session_id);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Results.create({ ...data, driver_id: driverId }),
@@ -99,6 +101,7 @@ export default function DriverResultsSection({ driverId }) {
     setShowDialog(false);
     setEditingResult(null);
     setForm(EMPTY_FORM);
+    setSessionToEdit(null);
   };
 
   const handleSubmit = () => {
@@ -108,7 +111,6 @@ export default function DriverResultsSection({ driverId }) {
       position: form.position !== '' ? Number(form.position) : null,
       laps_completed: form.laps_completed !== '' ? Number(form.laps_completed) : null,
       points: form.points !== '' ? Number(form.points) : null,
-      // Auto-populate from selected program
       series: selectedProgram?.series_name || '',
       class: selectedProgram?.class_name || '',
       team_name: selectedProgram?.team_name || '',
@@ -309,13 +311,28 @@ export default function DriverResultsSection({ driverId }) {
               </Select>
             </div>
 
-            {/* Session (optional) */}
+            {/* Session */}
             <div className="space-y-1">
-              <Label>Session <span className="text-gray-400 text-xs font-normal">(optional)</span></Label>
+              <div className="flex items-center justify-between">
+                <Label>Session <span className="text-gray-400 text-xs font-normal">(optional)</span></Label>
+                {selectedSession && (
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:underline"
+                    onClick={() => {
+                      setSessionToEdit(selectedSession);
+                      setShowAddSessionDialog(true);
+                    }}
+                  >
+                    Edit Session
+                  </button>
+                )}
+              </div>
               <Select
                 value={form.session_id}
                 onValueChange={v => {
                   if (v === '__add_session__') {
+                    setSessionToEdit(null);
                     setShowAddSessionDialog(true);
                   } else {
                     setForm(f => ({ ...f, session_id: v }));
@@ -395,12 +412,14 @@ export default function DriverResultsSection({ driverId }) {
 
       <AddSessionDialog
         open={showAddSessionDialog}
-        onClose={() => setShowAddSessionDialog(false)}
-        onSessionCreated={(newSessionId) => {
-          setForm(f => ({ ...f, session_id: newSessionId }));
+        onClose={() => { setShowAddSessionDialog(false); setSessionToEdit(null); }}
+        onSessionCreated={(sessionId) => {
+          setForm(f => ({ ...f, session_id: sessionId }));
           setShowAddSessionDialog(false);
+          setSessionToEdit(null);
         }}
         eventId={form.event_id}
+        initialSession={sessionToEdit}
       />
     </div>
   );
