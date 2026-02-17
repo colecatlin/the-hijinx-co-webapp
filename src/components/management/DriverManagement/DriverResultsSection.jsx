@@ -255,21 +255,81 @@ export default function DriverResultsSection({ driverId }) {
             <DialogTitle>{editingResult ? 'Edit Result' : 'Add Race Result'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+
+            {/* Step 1: Program */}
             <div className="space-y-1">
-              <Label>Session</Label>
-              <Select value={form.session_id} onValueChange={v => setForm(f => ({ ...f, session_id: v }))}>
+              <Label>Program <span className="text-red-500">*</span></Label>
+              <Select
+                value={form.program_id}
+                onValueChange={v => {
+                  const prog = programs.find(p => p.id === v);
+                  setForm(f => ({
+                    ...f,
+                    program_id: v,
+                    event_id: '',
+                    session_id: '',
+                    series: prog?.series_name || f.series,
+                    class: prog?.class_name || f.class,
+                    team_name: prog?.team_name || f.team_name,
+                  }));
+                }}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select session..." />
+                  <SelectValue placeholder="Select program..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {sessions.map(session => {
-                    const event = events.find(e => e.id === session.event_id);
-                    return (
-                      <SelectItem key={session.id} value={session.id}>
-                        {event?.name || 'Unknown Event'} — {session.name}
-                      </SelectItem>
-                    );
-                  })}
+                  {programs.map(prog => (
+                    <SelectItem key={prog.id} value={prog.id}>
+                      {prog.series_name} — {prog.class_name || 'No Class'} ({prog.season})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedProgram && (
+                <p className="text-xs text-gray-500">
+                  Series: {selectedProgram.series_name} · Class: {selectedProgram.class_name || '—'} · Car #{selectedProgram.car_number || '—'}
+                </p>
+              )}
+            </div>
+
+            {/* Step 2: Event */}
+            <div className="space-y-1">
+              <Label>Event <span className="text-red-500">*</span></Label>
+              <Select
+                value={form.event_id}
+                onValueChange={v => setForm(f => ({ ...f, event_id: v, session_id: '' }))}
+                disabled={!form.program_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={form.program_id ? "Select event..." : "Select a program first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.sort((a, b) => (b.event_date || '').localeCompare(a.event_date || '')).map(event => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.name}{event.event_date ? ` — ${event.event_date}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Step 3: Session (optional) */}
+            <div className="space-y-1">
+              <Label>Session <span className="text-gray-400 text-xs font-normal">(optional — for future T&S integration)</span></Label>
+              <Select
+                value={form.session_id}
+                onValueChange={v => setForm(f => ({ ...f, session_id: v }))}
+                disabled={!form.event_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={form.event_id ? (filteredSessions.length ? "Select session..." : "No sessions for this event") : "Select an event first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredSessions.map(session => (
+                    <SelectItem key={session.id} value={session.id}>
+                      {session.name} ({session.session_type})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -282,9 +342,7 @@ export default function DriverResultsSection({ driverId }) {
               <div className="space-y-1">
                 <Label>Status</Label>
                 <Select value={form.status_text} onValueChange={v => setForm(f => ({ ...f, status_text: v }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Running">Running (Finished)</SelectItem>
                     <SelectItem value="DNF">DNF</SelectItem>
@@ -328,7 +386,7 @@ export default function DriverResultsSection({ driverId }) {
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={isPending || !form.session_id}>
+              <Button onClick={handleSubmit} disabled={isPending || !form.program_id || !form.event_id}>
                 {isPending ? 'Saving...' : editingResult ? 'Save Changes' : 'Add Result'}
               </Button>
             </div>
