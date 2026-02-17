@@ -9,7 +9,6 @@ import { base44 } from '@/api/base44Client';
 
 const EMPTY = { name: '', session_type: 'Race', laps: '', status: 'scheduled' };
 
-// Predefined session name options with their auto-detected types
 const SESSION_NAME_OPTIONS = [
   { name: 'Heat 1', type: 'Heat' },
   { name: 'Heat 2', type: 'Heat' },
@@ -23,18 +22,31 @@ const SESSION_NAME_OPTIONS = [
   { name: 'Main', type: 'Main' },
 ];
 
-export default function AddSessionDialog({ open, onClose, onSessionCreated, eventId }) {
+export default function AddSessionDialog({ open, onClose, onSessionCreated, eventId, initialSession }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState(EMPTY);
   const [duplicateError, setDuplicateError] = useState('');
+  const isEditing = !!initialSession;
 
-  // Fetch existing sessions for this event to check duplicates
+  useEffect(() => {
+    if (open) {
+      setForm(initialSession ? {
+        name: initialSession.name || '',
+        session_type: initialSession.session_type || 'Race',
+        laps: initialSession.laps ?? '',
+        status: initialSession.status || 'scheduled',
+      } : EMPTY);
+      setDuplicateError('');
+    }
+  }, [open, initialSession]);
+
   const { data: allSessions = [] } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list(),
   });
+
   const existingSessionNames = allSessions
-    .filter(s => s.event_id === eventId)
+    .filter(s => s.event_id === eventId && s.id !== initialSession?.id)
     .map(s => s.name.toLowerCase());
 
   const createMutation = useMutation({
@@ -42,6 +54,16 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
     onSuccess: (newSession) => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSessionCreated(newSession.id);
+      setForm(EMPTY);
+      setDuplicateError('');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      onSessionCreated(initialSession.id);
       setForm(EMPTY);
       setDuplicateError('');
     },
@@ -63,20 +85,26 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
       event_id: eventId,
       laps: form.laps !== '' ? Number(form.laps) : undefined,
     };
-    createMutation.mutate(payload);
+    if (isEditing) {
+      updateMutation.mutate({ id: initialSession.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
   };
 
   const handleClose = () => { setForm(EMPTY); setDuplicateError(''); onClose(); };
 
-  const availableOptions = SESSION_NAME_OPTIONS.filter(
-    o => !existingSessionNames.includes(o.name.toLowerCase())
-  );
+  const availableOptions = isEditing
+    ? SESSION_NAME_OPTIONS
+    : SESSION_NAME_OPTIONS.filter(o => !existingSessionNames.includes(o.name.toLowerCase()));
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add New Session</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Session' : 'Add New Session'}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3 py-2">
           <div className="space-y-1">
@@ -88,10 +116,17 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
                   <SelectItem key={o.name} value={o.name}>{o.name}</SelectItem>
                 ))}
                 {availableOptions.length === 0 && (
-                  <SelectItem value={null} disabled>All sessions already added</SelectItem>
+                  <SelectItem value="_none" disabled>All sessions already added</SelectItem>
                 )}
               </SelectContent>
             </Select>
+            {/* Allow typing a custom name */}
+            <Input
+              placeholder="Or type a custom name..."
+              value={form.name}
+              onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setDuplicateError(''); }}
+              className="mt-1"
+            />
             {duplicateError && <p className="text-xs text-red-500">{duplicateError}</p>}
           </div>
           <div className="space-y-1">
@@ -128,8 +163,8 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isPending || !form.name || !eventId || availableOptions.length === 0}>
-            {createMutation.isPending ? 'Adding...' : 'Add Session'}
+          <Button onClick={handleSubmit} disabled={isPending || !form.name || !eventId}>
+            {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Session'}
           </Button>
         </DialogFooter>
       </DialogContent>
