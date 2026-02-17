@@ -167,11 +167,7 @@ export default function DriverResultsSection({ driverId }) {
   };
 
   const getEntryLabel = (entry) => {
-    if (entry.session_id) {
-      const s = sessions.find(s => s.id === entry.session_id);
-      return s ? `${s.name} (${s.session_type})` : 'Unknown Session';
-    }
-    return 'No session selected';
+    return entry.session_type || 'No session type selected';
   };
 
   // For the results table: group by event
