@@ -98,9 +98,12 @@ export default function DriverResultsSection({ driverId }) {
       event_id: eventId,
     });
     setSessionEntries(
-      eventResults.map(r => ({
+      eventResults.map(r => {
+        const s = sessions.find(sess => sess.id === r.session_id);
+        return {
         _resultId: r.id,
         session_id: r.session_id || '',
+        session_type: s?.session_type || '',
         position: r.position ?? '',
         status_text: r.status_text || 'Running',
         laps_completed: r.laps_completed ?? '',
