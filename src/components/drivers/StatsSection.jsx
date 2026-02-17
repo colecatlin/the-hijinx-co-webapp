@@ -4,6 +4,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const FINAL_SESSION_TYPES = new Set(['Final']);
 const HEAT_SESSION_TYPES = new Set(['Heat', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4']);
 
+// Returns the effective session_type for a result, preferring the stored value on the result itself
+function getSessionType(result, sessions) {
+  if (result.session_type) return result.session_type;
+  if (result.session_id) {
+    const session = sessions.find(s => s.id === result.session_id);
+    if (session) return session.session_type;
+  }
+  return null;
+}
+
 function getResultEvent(result, sessions, events) {
   if (result.session_id) {
     const session = sessions.find(s => s.id === result.session_id);
@@ -19,15 +29,17 @@ function getResultEvent(result, sessions, events) {
   return { session: null, event: null };
 }
 
-function isCountable(result, session) {
+function isCountable(result, sessions) {
   if (result.status_text === 'DNS') return false;
-  if (session && session.session_type === 'Practice') return false;
+  const st = getSessionType(result, sessions);
+  if (st === 'Practice') return false;
   return true;
 }
 
-function isFinalResult(session) {
-  if (!session) return true; // no session = treat as a race result
-  return FINAL_SESSION_TYPES.has(session.session_type);
+function isFinalResult(result, sessions) {
+  const st = getSessionType(result, sessions);
+  if (!st) return true; // no session type = treat as a race result
+  return FINAL_SESSION_TYPES.has(st);
 }
 
 function calculateOverallPerformance(results, sessions, events) {
