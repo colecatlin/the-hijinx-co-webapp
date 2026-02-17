@@ -21,6 +21,7 @@ import DriverProgramsList from '@/components/management/DriverManagement/DriverP
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
 import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
+import DriverResultsSection from '@/components/management/DriverManagement/DriverResultsSection.jsx';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
