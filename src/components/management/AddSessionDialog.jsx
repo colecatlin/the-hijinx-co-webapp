@@ -4,14 +4,38 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const EMPTY = { name: '', session_type: 'Race', laps: '', status: 'scheduled' };
 
+// Predefined session name options with their auto-detected types
+const SESSION_NAME_OPTIONS = [
+  { name: 'Heat 1', type: 'Heat' },
+  { name: 'Heat 2', type: 'Heat' },
+  { name: 'Heat 3', type: 'Heat' },
+  { name: 'Heat 4', type: 'Heat' },
+  { name: 'LCQ', type: 'LCQ' },
+  { name: 'Final', type: 'Feature' },
+  { name: 'Practice', type: 'Practice' },
+  { name: 'Qualifying', type: 'Qualifying' },
+  { name: 'Race', type: 'Race' },
+  { name: 'Main', type: 'Main' },
+];
+
 export default function AddSessionDialog({ open, onClose, onSessionCreated, eventId }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState(EMPTY);
+  const [duplicateError, setDuplicateError] = useState('');
+
+  // Fetch existing sessions for this event to check duplicates
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+  const existingSessionNames = allSessions
+    .filter(s => s.event_id === eventId)
+    .map(s => s.name.toLowerCase());
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Session.create(data),
@@ -19,10 +43,21 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSessionCreated(newSession.id);
       setForm(EMPTY);
+      setDuplicateError('');
     },
   });
 
+  const handleNameChange = (name) => {
+    const option = SESSION_NAME_OPTIONS.find(o => o.name === name);
+    setForm(f => ({ ...f, name, session_type: option ? option.type : f.session_type }));
+    setDuplicateError('');
+  };
+
   const handleSubmit = () => {
+    if (existingSessionNames.includes(form.name.toLowerCase())) {
+      setDuplicateError(`A session named "${form.name}" already exists for this event.`);
+      return;
+    }
     const payload = {
       ...form,
       event_id: eventId,
@@ -31,7 +66,11 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
     createMutation.mutate(payload);
   };
 
-  const handleClose = () => { setForm(EMPTY); onClose(); };
+  const handleClose = () => { setForm(EMPTY); setDuplicateError(''); onClose(); };
+
+  const availableOptions = SESSION_NAME_OPTIONS.filter(
+    o => !existingSessionNames.includes(o.name.toLowerCase())
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -42,7 +81,18 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
         <div className="grid gap-3 py-2">
           <div className="space-y-1">
             <Label>Session Name <span className="text-red-500">*</span></Label>
-            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Heat 1" />
+            <Select value={form.name} onValueChange={handleNameChange}>
+              <SelectTrigger><SelectValue placeholder="Select session..." /></SelectTrigger>
+              <SelectContent>
+                {availableOptions.map(o => (
+                  <SelectItem key={o.name} value={o.name}>{o.name}</SelectItem>
+                ))}
+                {availableOptions.length === 0 && (
+                  <SelectItem value={null} disabled>All sessions already added</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {duplicateError && <p className="text-xs text-red-500">{duplicateError}</p>}
           </div>
           <div className="space-y-1">
             <Label>Session Type <span className="text-red-500">*</span></Label>
