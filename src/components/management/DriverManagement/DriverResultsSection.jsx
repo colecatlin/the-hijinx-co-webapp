@@ -140,6 +140,7 @@ export default function DriverResultsSection({ driverId }) {
       const payload = {
         ...base,
         session_id: matchedSession?.id || entry.session_id || null,
+        session_type: entry.session_type || null,
         position: entry.position !== '' ? Number(entry.position) : null,
         status_text: entry.status_text,
         laps_completed: entry.laps_completed !== '' ? Number(entry.laps_completed) : null,
