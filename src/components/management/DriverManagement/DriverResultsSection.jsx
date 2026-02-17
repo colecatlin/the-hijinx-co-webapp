@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Trophy } from 'lucide-react';
+import AddEventDialog from '../AddEventDialog';
+import AddSessionDialog from '../AddSessionDialog';
 
 const EMPTY_FORM = {
   program_id: '',
@@ -14,9 +16,6 @@ const EMPTY_FORM = {
   session_id: '',
   position: '',
   status_text: 'Running',
-  team_name: '',
-  series: '',
-  class: '',
   laps_completed: '',
   best_lap_time: '',
   points: '',
@@ -27,6 +26,8 @@ export default function DriverResultsSection({ driverId }) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingResult, setEditingResult] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [showAddEventDialog, setShowAddEventDialog] = useState(false);
+  const [showAddSessionDialog, setShowAddSessionDialog] = useState(false);
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['driverResults', driverId],
@@ -48,10 +49,7 @@ export default function DriverResultsSection({ driverId }) {
     queryFn: () => base44.entities.Session.list(),
   });
 
-  // Derive selected program's details for auto-filling series/class
   const selectedProgram = programs.find(p => p.id === form.program_id);
-
-  // Sessions filtered by selected event
   const filteredSessions = sessions.filter(s => s.event_id === form.event_id);
 
   const createMutation = useMutation({
@@ -83,7 +81,6 @@ export default function DriverResultsSection({ driverId }) {
 
   const openEdit = (result) => {
     setEditingResult(result);
-    // Find the event_id from the session if available
     const session = sessions.find(s => s.id === result.session_id);
     setForm({
       program_id: result.program_id || '',
@@ -91,9 +88,6 @@ export default function DriverResultsSection({ driverId }) {
       session_id: result.session_id || '',
       position: result.position ?? '',
       status_text: result.status_text || 'Running',
-      team_name: result.team_name || '',
-      series: result.series || '',
-      class: result.class || '',
       laps_completed: result.laps_completed ?? '',
       best_lap_time: result.best_lap_time || '',
       points: result.points ?? '',
@@ -114,6 +108,10 @@ export default function DriverResultsSection({ driverId }) {
       position: form.position !== '' ? Number(form.position) : null,
       laps_completed: form.laps_completed !== '' ? Number(form.laps_completed) : null,
       points: form.points !== '' ? Number(form.points) : null,
+      // Auto-populate from selected program
+      series: selectedProgram?.series_name || '',
+      class: selectedProgram?.class_name || '',
+      team_name: selectedProgram?.team_name || '',
     };
     if (editingResult) {
       updateMutation.mutate({ id: editingResult.id, data: payload });
@@ -152,7 +150,6 @@ export default function DriverResultsSection({ driverId }) {
     return '';
   };
 
-  // Sort results by event date desc
   const sortedResults = [...results].sort((a, b) => {
     const dateA = getResultDate(a);
     const dateB = getResultDate(b);
@@ -201,10 +198,10 @@ export default function DriverResultsSection({ driverId }) {
               {sortedResults.map(result => (
                 <tr key={result.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                   <div className="font-medium">{getResultLabel(result)}</div>
-                   {getResultDate(result) && (
-                     <div className="text-xs text-gray-500">{getResultDate(result)}</div>
-                   )}
+                    <div className="font-medium">{getResultLabel(result)}</div>
+                    {getResultDate(result) && (
+                      <div className="text-xs text-gray-500">{getResultDate(result)}</div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {result.position ? (
@@ -221,7 +218,7 @@ export default function DriverResultsSection({ driverId }) {
                       result.status_text === 'DSQ' ? 'bg-purple-100 text-purple-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
-                      {result.status_text || '—'}
+                      {result.status_text === 'Running' ? 'Finished' : result.status_text || '—'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{result.series || '—'}</td>
@@ -257,22 +254,13 @@ export default function DriverResultsSection({ driverId }) {
           </DialogHeader>
           <div className="space-y-4 py-2">
 
-            {/* Step 1: Program */}
+            {/* Program */}
             <div className="space-y-1">
               <Label>Program <span className="text-red-500">*</span></Label>
               <Select
                 value={form.program_id}
                 onValueChange={v => {
-                  const prog = programs.find(p => p.id === v);
-                  setForm(f => ({
-                    ...f,
-                    program_id: v,
-                    event_id: '',
-                    session_id: '',
-                    series: prog?.series_name || f.series,
-                    class: prog?.class_name || f.class,
-                    team_name: prog?.team_name || f.team_name,
-                  }));
+                  setForm(f => ({ ...f, program_id: v, event_id: '', session_id: '' }));
                 }}
               >
                 <SelectTrigger>
@@ -288,23 +276,30 @@ export default function DriverResultsSection({ driverId }) {
               </Select>
               {selectedProgram && (
                 <p className="text-xs text-gray-500">
-                  Series: {selectedProgram.series_name} · Class: {selectedProgram.class_name || '—'} · Car #{selectedProgram.car_number || '—'}
+                  Team: {selectedProgram.team_name || '—'} · Series: {selectedProgram.series_name} · Class: {selectedProgram.class_name || '—'} · Car #{selectedProgram.car_number || '—'}
                 </p>
               )}
             </div>
 
-            {/* Step 2: Event */}
+            {/* Event */}
             <div className="space-y-1">
               <Label>Event <span className="text-red-500">*</span></Label>
               <Select
                 value={form.event_id}
-                onValueChange={v => setForm(f => ({ ...f, event_id: v, session_id: '' }))}
+                onValueChange={v => {
+                  if (v === '__add_event__') {
+                    setShowAddEventDialog(true);
+                  } else {
+                    setForm(f => ({ ...f, event_id: v, session_id: '' }));
+                  }
+                }}
                 disabled={!form.program_id}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={form.program_id ? "Select event..." : "Select a program first"} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__add_event__" className="text-blue-600 font-medium">+ Create New Event</SelectItem>
                   {events.sort((a, b) => (b.event_date || '').localeCompare(a.event_date || '')).map(event => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.name}{event.event_date ? ` — ${event.event_date}` : ''}
@@ -314,18 +309,25 @@ export default function DriverResultsSection({ driverId }) {
               </Select>
             </div>
 
-            {/* Step 3: Session (optional) */}
+            {/* Session (optional) */}
             <div className="space-y-1">
-              <Label>Session <span className="text-gray-400 text-xs font-normal">(optional — for future T&S integration)</span></Label>
+              <Label>Session <span className="text-gray-400 text-xs font-normal">(optional)</span></Label>
               <Select
                 value={form.session_id}
-                onValueChange={v => setForm(f => ({ ...f, session_id: v }))}
+                onValueChange={v => {
+                  if (v === '__add_session__') {
+                    setShowAddSessionDialog(true);
+                  } else {
+                    setForm(f => ({ ...f, session_id: v }));
+                  }
+                }}
                 disabled={!form.event_id}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={form.event_id ? (filteredSessions.length ? "Select session..." : "No sessions for this event") : "Select an event first"} />
+                  <SelectValue placeholder={form.event_id ? (filteredSessions.length ? "Select session..." : "No sessions — create one") : "Select an event first"} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__add_session__" className="text-blue-600 font-medium">+ Create New Session</SelectItem>
                   {filteredSessions.map(session => (
                     <SelectItem key={session.id} value={session.id}>
                       {session.name} ({session.session_type})
@@ -356,33 +358,18 @@ export default function DriverResultsSection({ driverId }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Series</Label>
-                <Input placeholder="e.g. SCORE" value={form.series} onChange={e => setForm(f => ({ ...f, series: e.target.value }))} />
+                <Label>Laps Completed</Label>
+                <Input type="number" min="0" placeholder="0" value={form.laps_completed} onChange={e => setForm(f => ({ ...f, laps_completed: e.target.value }))} />
               </div>
               <div className="space-y-1">
-                <Label>Class</Label>
-                <Input placeholder="e.g. Pro 4" value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))} />
+                <Label>Best Lap Time</Label>
+                <Input placeholder="1:23.456" value={form.best_lap_time} onChange={e => setForm(f => ({ ...f, best_lap_time: e.target.value }))} />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Team Name</Label>
-              <Input placeholder="Team name at time of race" value={form.team_name} onChange={e => setForm(f => ({ ...f, team_name: e.target.value }))} />
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label>Laps</Label>
-                <Input type="number" min="0" placeholder="0" value={form.laps_completed} onChange={e => setForm(f => ({ ...f, laps_completed: e.target.value }))} />
-              </div>
-              <div className="space-y-1">
-                <Label>Best Lap</Label>
-                <Input placeholder="1:23.456" value={form.best_lap_time} onChange={e => setForm(f => ({ ...f, best_lap_time: e.target.value }))} />
-              </div>
-              <div className="space-y-1">
-                <Label>Points</Label>
-                <Input type="number" min="0" placeholder="0" value={form.points} onChange={e => setForm(f => ({ ...f, points: e.target.value }))} />
-              </div>
+              <Label className="text-gray-400">Points <span className="text-xs font-normal">(auto-calculated in future)</span></Label>
+              <Input type="number" min="0" placeholder="—" value={form.points} disabled className="bg-gray-50 text-gray-400" />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -394,6 +381,27 @@ export default function DriverResultsSection({ driverId }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AddEventDialog
+        open={showAddEventDialog}
+        onClose={() => setShowAddEventDialog(false)}
+        onEventCreated={(newEventId) => {
+          setForm(f => ({ ...f, event_id: newEventId, session_id: '' }));
+          setShowAddEventDialog(false);
+        }}
+        series={selectedProgram?.series_name}
+        season={selectedProgram?.season}
+      />
+
+      <AddSessionDialog
+        open={showAddSessionDialog}
+        onClose={() => setShowAddSessionDialog(false)}
+        onSessionCreated={(newSessionId) => {
+          setForm(f => ({ ...f, session_id: newSessionId }));
+          setShowAddSessionDialog(false);
+        }}
+        eventId={form.event_id}
+      />
     </div>
   );
 }
