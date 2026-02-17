@@ -125,7 +125,7 @@ function calculateProgramBreakdown(results, sessions, events) {
 
     programs[key].starts++;
 
-    if (session?.session_type === 'Heat') {
+    if (session && HEAT_SESSION_TYPES.has(session.session_type)) {
       programs[key].heats++;
       if (r.position) programs[key].heatFinishes++;
     } else if (isFinalResult(session)) {
