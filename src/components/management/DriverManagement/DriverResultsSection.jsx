@@ -11,7 +11,7 @@ import AddEventDialog from '../AddEventDialog';
 import AddSessionDialog from '../AddSessionDialog';
 
 const EMPTY_SESSION_ENTRY = {
-  session_id: '',
+  session_type: '',
   position: '',
   status_text: 'Running',
   laps_completed: '',
@@ -20,6 +20,8 @@ const EMPTY_SESSION_ENTRY = {
   _expanded: true,
   _key: Date.now(),
 };
+
+const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
 
 const EMPTY_FORM = {
   program_id: '',
