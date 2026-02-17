@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// A result is "valid" if it has an event (via session or direct event_id)
-// and is not DNS / Practice
+const FINAL_SESSION_TYPES = new Set(['Main', 'Race', 'Feature']);
+
 function getResultEvent(result, sessions, events) {
   if (result.session_id) {
     const session = sessions.find(s => s.id === result.session_id);
@@ -25,24 +25,20 @@ function isCountable(result, session) {
 }
 
 function isFinalResult(session) {
-  if (!session) return true; // no session = treat as a final/race result
-  return session.session_type === 'Main' || session.session_type === 'Race';
+  if (!session) return true; // no session = treat as a race result
+  return FINAL_SESSION_TYPES.has(session.session_type);
 }
 
 function calculateOverallPerformance(results, sessions, events) {
-  // Filter to countable results
   const validResults = results
     .map(r => ({ r, ...getResultEvent(r, sessions, events) }))
     .filter(({ r, session }) => isCountable(r, session));
 
-  const hasMainOrRace = validResults.some(({ session }) =>
-    session && (session.session_type === 'Main' || session.session_type === 'Race')
-  );
+  const hasMainOrRace = validResults.some(({ session }) => session && FINAL_SESSION_TYPES.has(session.session_type));
   const hasNoSession = validResults.some(({ session }) => !session);
   const hasHeat = validResults.some(({ session }) => session && session.session_type === 'Heat');
 
-  let finalResults;
-  let basisType;
+  let finalResults, basisType;
 
   if (hasMainOrRace || hasNoSession) {
     basisType = 'Finals';
@@ -74,10 +70,10 @@ function calculateFilteredStats(results, sessions, events, filters) {
     .filter(({ r, session, event }) => {
       if (!isCountable(r, session)) return false;
       if (!event) return false;
-      if (filters.season && filters.season !== 'all' && event.season !== filters.season) return false;
-      if (filters.series && filters.series !== 'all' && r.series !== filters.series) return false;
-      if (filters.class && filters.class !== 'all' && r.class !== filters.class) return false;
-      if (filters.team && filters.team !== 'all' && r.team_name !== filters.team) return false;
+      if (filters.season !== 'all' && event.season !== filters.season) return false;
+      if (filters.series !== 'all' && r.series !== filters.series) return false;
+      if (filters.class !== 'all' && r.class !== filters.class) return false;
+      if (filters.team !== 'all' && r.team_name !== filters.team) return false;
       return true;
     });
 
@@ -109,7 +105,7 @@ function calculateProgramBreakdown(results, sessions, events) {
   const programs = {};
 
   results.forEach(r => {
-    const { session, event } = getResultEvent(r, sessions, events);
+    const { session } = getResultEvent(r, sessions, events);
     if (!isCountable(r, session)) return;
 
     const key = r.team_name
@@ -166,8 +162,7 @@ export default function StatsSection({ driver, results, sessions, events }) {
   const programBreakdown = useMemo(() => calculateProgramBreakdown(results, sessions, events), [results, sessions, events]);
 
   const seasons = useMemo(() => {
-    const fromEvents = events.map(e => e.season);
-    return [...new Set(fromEvents)].filter(Boolean).sort().reverse();
+    return [...new Set(events.map(e => e.season))].filter(Boolean).sort().reverse();
   }, [events]);
 
   const allSeries = useMemo(() => [...new Set(results.map(r => r.series))].filter(Boolean).sort(), [results]);
@@ -183,7 +178,7 @@ export default function StatsSection({ driver, results, sessions, events }) {
       {overall.available && (
         <div>
           <h3 className="text-lg font-bold text-[#232323] mb-2">Overall Performance</h3>
-          <p className="text-sm text-gray-600 mb-4">Basis {overall.basisType}</p>
+          <p className="text-sm text-gray-600 mb-4">Basis: {overall.basisType}</p>
           <div className="grid grid-cols-4 gap-4">
             {[['Wins', overall.wins], ['Podiums', overall.podiums], ['Top 5', overall.top5], ['Top 10', overall.top10]].map(([label, val]) => (
               <div key={label} className="bg-gray-50 p-4 rounded border border-gray-200">
@@ -198,28 +193,28 @@ export default function StatsSection({ driver, results, sessions, events }) {
       <div>
         <h3 className="text-lg font-bold text-[#232323] mb-4">Performance Metrics</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <Select value={filters.season} onValueChange={v => setFilters({ ...filters, season: v })}>
+          <Select value={filters.season} onValueChange={v => setFilters(f => ({ ...f, season: v }))}>
             <SelectTrigger><SelectValue placeholder="Season" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Seasons</SelectItem>
               {seasons.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={filters.series} onValueChange={v => setFilters({ ...filters, series: v })}>
+          <Select value={filters.series} onValueChange={v => setFilters(f => ({ ...f, series: v }))}>
             <SelectTrigger><SelectValue placeholder="Series" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Series</SelectItem>
               {allSeries.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={filters.class} onValueChange={v => setFilters({ ...filters, class: v })}>
+          <Select value={filters.class} onValueChange={v => setFilters(f => ({ ...f, class: v }))}>
             <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Classes</SelectItem>
               {classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={filters.team} onValueChange={v => setFilters({ ...filters, team: v })}>
+          <Select value={filters.team} onValueChange={v => setFilters(f => ({ ...f, team: v }))}>
             <SelectTrigger><SelectValue placeholder="Team" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Teams</SelectItem>
