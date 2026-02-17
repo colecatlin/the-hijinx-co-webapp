@@ -103,7 +103,7 @@ export default function DriverResultsSection({ driverId }) {
         return {
           _resultId: r.id,
           session_id: r.session_id || '',
-          session_type: s?.session_type || '',
+          session_type: r.session_type || s?.session_type || '',
           position: r.position ?? '',
           status_text: r.status_text || 'Running',
           laps_completed: r.laps_completed ?? '',
