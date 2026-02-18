@@ -96,29 +96,14 @@ export default function TrackForm({ track, onClose }) {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">City</label>
-              <Input
-                value={formData.location_city}
-                onChange={(e) => handleChange('location_city', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">State</label>
-              <Input
-                value={formData.location_state}
-                onChange={(e) => handleChange('location_state', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Country</label>
-              <Input
-                value={formData.location_country}
-                onChange={(e) => handleChange('location_country', e.target.value)}
-              />
-            </div>
-          </div>
+          <LocationFields
+            cityValue={formData.location_city}
+            stateValue={formData.location_state}
+            countryValue={formData.location_country}
+            onCityChange={(v) => handleChange('location_city', v)}
+            onStateChange={(v) => handleChange('location_state', v)}
+            onCountryChange={(v) => handleChange('location_country', v)}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-2">Track Type *</label>
