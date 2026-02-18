@@ -4,7 +4,7 @@ import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const DEFAULT_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80';
+const DEFAULT_BG = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1600&q=80';
 
 export default function ApparelSection() {
   const { data: settings = [] } = useQuery({
