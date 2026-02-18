@@ -18,6 +18,7 @@ import { createPageUrl } from '@/components/utils';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ScheduleSection from '@/components/schedule/ScheduleSection';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
