@@ -250,20 +250,7 @@ export default function ScheduleSection({ entityType, entityId, entityName, cale
                     )}
                   </div>
                 </div>
-                {isOwner && (
-                  <div className="flex items-center gap-1 ml-4 shrink-0">
-                    <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(event)}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => { if (confirm('Delete this event?')) deleteEventMutation.mutate(event.id); }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                    </Button>
-                  </div>
-                )}
+
               </div>
             );
           })}
