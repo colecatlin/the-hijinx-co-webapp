@@ -368,7 +368,7 @@ export default function DriverProfile() {
               entityName={`${driver.first_name} ${driver.last_name}`}
               calendarId={driver.calendar_id}
               onCalendarCreated={handleCalendarCreated}
-              isOwner={true}
+              isOwner={user?.role === 'admin'}
             />
           </section>
 
