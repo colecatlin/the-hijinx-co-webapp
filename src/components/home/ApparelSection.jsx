@@ -17,22 +17,22 @@ export default function ApparelSection() {
       </div>
 
       {/* Accent stripe */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1DA1A1]" />
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00FFDA]" />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-        <p className="text-[#1DA1A1] text-xs font-bold tracking-[0.25em] uppercase mb-4">
+        <p className="text-[#00FFDA] text-xs font-bold tracking-[0.25em] uppercase mb-4">
           HIJINX CO.
         </p>
         <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none mb-4">
           LIFESTYLE<br />APPAREL
         </h2>
-        <p className="text-[#1DA1A1] text-lg md:text-xl font-semibold tracking-widest uppercase mt-6 mb-8">
+        <p className="text-[#00FFDA] text-lg md:text-xl font-semibold tracking-widest uppercase mt-6 mb-8">
           IN MOTION. ON PURPOSE.
         </p>
         <Link
           to={createPageUrl('ApparelHome')}
-          className="inline-flex items-center gap-2 bg-[#1DA1A1] text-white px-6 py-3 text-sm font-black tracking-wide uppercase hover:bg-white hover:text-[#0A0A0A] transition-colors"
+          className="inline-flex items-center gap-2 bg-[#00FFDA] text-[#0A0A0A] px-6 py-3 text-sm font-black tracking-wide uppercase hover:bg-white transition-colors"
         >
           Shop Now <ArrowRight className="w-4 h-4" />
         </Link>
