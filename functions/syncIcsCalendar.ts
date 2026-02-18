@@ -101,14 +101,15 @@ Deno.serve(async (req) => {
         trackMap[trackName] = existing.id;
       } else {
         const slug = slugify(trackName);
-        const created = await base44.asServiceRole.entities.Track.create({
+        const trackPayload = {
           name: trackName,
-          slug,
+          slug: slug,
           location_city: trackName,
           location_country: 'United States',
           track_type: 'Other',
           status: 'Active',
-        });
+        };
+        const created = await base44.asServiceRole.entities.Track.create(trackPayload);
         trackMap[trackName] = created.id;
         stats.tracks++;
       }
