@@ -156,10 +156,9 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="manage">Manage</TabsTrigger>
-              <TabsTrigger value="code-input">Code Input</TabsTrigger>
+              <TabsTrigger value="access">Access</TabsTrigger>
               <TabsTrigger value="story">Story</TabsTrigger>
             </TabsList>
 
@@ -167,12 +166,11 @@ export default function Profile() {
               <GeneralTab user={user} formData={formData} setFormData={setFormData} />
             </TabsContent>
 
-            <TabsContent value="manage">
+            <TabsContent value="access" className="space-y-8">
               <ManageTab user={user} />
-            </TabsContent>
-
-            <TabsContent value="code-input">
-              <CodeInputTab user={user} />
+              <div className="pt-6 border-t">
+                <CodeInputTab user={user} />
+              </div>
             </TabsContent>
 
             <TabsContent value="story" className="space-y-8">
