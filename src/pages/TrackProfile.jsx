@@ -376,6 +376,19 @@ export default function TrackProfile() {
             )}
           </section>
 
+          {/* Schedule */}
+          <section id="section-schedule" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Race Schedule</h2>
+            <ScheduleSection
+              entityType="Track"
+              entityId={track.id}
+              entityName={track.name}
+              calendarId={track.calendar_id}
+              onCalendarCreated={handleTrackCalendarCreated}
+              isOwner={true}
+            />
+          </section>
+
           {/* Performance */}
           {performance && (
             <section id="section-performance" className="bg-white border border-gray-200 p-8">
