@@ -204,7 +204,6 @@ export default function DriverDirectory() {
           sortOptions={[
             { value: 'name', label: 'Name' },
             { value: 'discipline', label: 'Discipline' },
-            { value: 'content_value', label: 'Content Value' },
           ]}
         />
 
