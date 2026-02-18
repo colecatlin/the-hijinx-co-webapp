@@ -104,8 +104,10 @@ Deno.serve(async (req) => {
         const created = await base44.asServiceRole.entities.Series.create({
           name: seriesName,
           slug: slugify(seriesName),
+          discipline: 'Stock Car',
+          region: 'United States',
           status: 'Active',
-          season: '2026',
+          season_year: '2026',
         });
         seriesMap[seriesName] = created.id;
         stats.series++;
