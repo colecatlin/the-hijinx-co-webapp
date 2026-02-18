@@ -11,10 +11,10 @@ export default function Home() {
   return (
     <PageShell>
       <HeroSection />
-      <VerticalGrid />
       <MotorsportsStrip />
       <LatestFeed />
       <ApparelSection />
+      <VerticalGrid />
 
       {/* Newsletter CTA */}
       <section className="bg-[#232323] text-[#FFF8F5]">
