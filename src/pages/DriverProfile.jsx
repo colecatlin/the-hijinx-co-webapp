@@ -156,8 +156,15 @@ export default function DriverProfile() {
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'stats', label: 'Stats', icon: TrendingUp },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'social', label: 'Social Media', icon: Share2 },
   ];
+
+  const handleCalendarCreated = async (calendarId) => {
+    await base44.functions.invoke('saveEntityCalendarId', {
+      entityType: 'Driver', entityId: driver.id, calendarId
+    });
+  };
 
   const topSpecialties = performance?.specialties?.slice(0, 2) || [];
   const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
