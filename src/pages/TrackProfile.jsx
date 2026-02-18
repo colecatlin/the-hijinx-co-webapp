@@ -106,12 +106,19 @@ export default function TrackProfile() {
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'fan', label: 'Fan Experience', icon: Users },
     { id: 'media', label: 'Media', icon: Camera },
     { id: 'operations', label: 'Operations', icon: Settings },
     { id: 'community', label: 'Community', icon: Heart },
   ];
+
+  const handleTrackCalendarCreated = async (calendarId) => {
+    await base44.functions.invoke('saveEntityCalendarId', {
+      entityType: 'Track', entityId: track.id, calendarId
+    });
+  };
 
   return (
     <PageShell className="bg-[#FFF8F5]">
