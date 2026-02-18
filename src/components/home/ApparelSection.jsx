@@ -35,7 +35,7 @@ export default function ApparelSection() {
           <p className="text-[#00FFDA] text-xs font-bold tracking-[0.25em] uppercase mb-4">
             HIJINX CO.
           </p>
-          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none mb-4">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter leading-none mb-4">
             LIFESTYLE<br />APPAREL
           </h2>
           <p className="text-[#00FFDA] text-lg md:text-xl font-semibold tracking-widest uppercase mt-6 mb-8">

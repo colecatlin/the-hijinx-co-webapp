@@ -8,7 +8,7 @@ export default function About() {
       <div className="bg-[#0A0A0A] text-white">
         <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
           <span className="font-mono text-xs tracking-[0.3em] text-gray-500 uppercase">About</span>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight mt-3 max-w-4xl leading-[0.95]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight mt-3 max-w-4xl leading-[0.95]">
             We build at the intersection of media, motorsports, and culture.
           </h1>
         </div>
