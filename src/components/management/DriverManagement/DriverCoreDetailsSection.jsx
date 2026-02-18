@@ -9,52 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import MediaUploader from '@/components/shared/MediaUploader';
 import ImageCropModal from '@/components/shared/ImageCropModal';
+import LocationFields from '@/components/shared/LocationFields';
 
 const DISCIPLINES = [
-  'Stock Car',
-  'Off Road',
-  'Dirt Oval',
-  'Snowmobile',
-  'Dirt Bike',
-  'Open Wheel',
-  'Sports Car',
-  'Touring Car',
-  'Rally',
-  'Drag',
-  'Motorcycle',
-  'Karting',
-  'Water',
-  'Alternative'
-];
-
-const COUNTRIES = [
-  'USA',
-  'Canada',
-  'Mexico',
-  'United Kingdom',
-  'Australia',
-  'Brazil',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Japan',
-  'China',
-  'India',
-  'Russia',
-  'Sweden',
-  'Norway',
-  'Finland',
-  'Netherlands',
-  'Belgium',
-  'Austria',
-  'Switzerland',
-  'Denmark',
-  'Poland',
-  'Argentina',
-  'Chile',
-  'New Zealand',
-  'South Africa'
+  'Stock Car', 'Off Road', 'Dirt Oval', 'Snowmobile', 'Dirt Bike', 'Open Wheel',
+  'Sports Car', 'Touring Car', 'Rally', 'Drag', 'Motorcycle', 'Karting', 'Water', 'Alternative'
 ];
 
 export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
