@@ -48,6 +48,17 @@ export default function DriverProfile() {
       setActiveSection('overview');
     }, [firstName, lastName]);
 
+    const { data: isAuthenticated } = useQuery({
+      queryKey: ['isAuthenticated'],
+      queryFn: () => base44.auth.isAuthenticated(),
+    });
+
+    const { data: user } = useQuery({
+      queryKey: ['currentUser'],
+      queryFn: () => base44.auth.me(),
+      enabled: !!isAuthenticated,
+    });
+
     const { data: drivers = [], isLoading } = useQuery({
       queryKey: ['drivers'],
       queryFn: () => base44.entities.Driver.list(),
