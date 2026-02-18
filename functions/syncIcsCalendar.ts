@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
         const created = await base44.asServiceRole.entities.Track.create({
           name: trackName,
           slug,
+          location_city: trackName,
           location_country: 'United States',
           track_type: 'Other',
           status: 'Active',
