@@ -83,29 +83,33 @@ export default function GeneralTab({ user, formData, setFormData }) {
         </div>
 
         <div>
-          <Label htmlFor="birth_date">Date of Birth</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !formData.birth_date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.birth_date ? format(new Date(formData.birth_date), "PPP") : "Pick a date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={formData.birth_date ? new Date(formData.birth_date) : undefined}
-                onSelect={(date) => setFormData({ ...formData, birth_date: date ? format(date, 'yyyy-MM-dd') : null })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <Label>Date of Birth</Label>
+          <div className="grid grid-cols-3 gap-2 mt-1">
+            <Select value={month} onValueChange={(v) => handleDatePart('month', v)}>
+              <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((m, i) => (
+                  <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={day} onValueChange={(v) => handleDatePart('day', v)}>
+              <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+              <SelectContent>
+                {DAYS.map(d => (
+                  <SelectItem key={d} value={String(d)}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={year} onValueChange={(v) => handleDatePart('year', v)}>
+              <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+              <SelectContent>
+                {YEARS.map(y => (
+                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
