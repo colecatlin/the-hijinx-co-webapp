@@ -225,22 +225,16 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="date_of_birth">Date of Birth (mm/dd/yyyy)</Label>
-            <Input
-              id="date_of_birth"
-              type="date"
+        <div className="space-y-2">
+          <Label>Date of Birth</Label>
+          <div className="flex items-center gap-4">
+            <DateInput
               value={formData.date_of_birth}
-              onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-              className="mt-2"
+              onChange={(value) => handleInputChange('date_of_birth', value)}
             />
-          </div>
-          <div>
-            <Label>Age</Label>
-            <div className="mt-2 h-9 px-3 py-2 rounded-md border border-input bg-gray-50 flex items-center text-sm">
-              {calculateAge(formData.date_of_birth) || '—'}
-            </div>
+            {formData.date_of_birth && (
+              <span className="text-sm text-gray-500">Age: {calculateAge(formData.date_of_birth)}</span>
+            )}
           </div>
         </div>
 
