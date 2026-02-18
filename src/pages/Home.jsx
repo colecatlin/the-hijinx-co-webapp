@@ -3,6 +3,7 @@ import PageShell from '@/components/shared/PageShell';
 import HeroSection from '@/components/home/HeroSection';
 import VerticalGrid from '@/components/home/VerticalGrid';
 import LatestFeed from '@/components/home/LatestFeed';
+import MotorsportsStrip from '@/components/home/MotorsportsStrip';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
     <PageShell>
       <HeroSection />
       <VerticalGrid />
+      <MotorsportsStrip />
       <LatestFeed />
 
       {/* Newsletter CTA */}
