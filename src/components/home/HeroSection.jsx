@@ -17,7 +17,7 @@ export default function HeroSection() {
           <span className="font-mono text-xs tracking-[0.3em] text-[#FFF8F5] opacity-70 uppercase">
             The Hijinx Co LLC
           </span>
-          <h1 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight mt-4 max-w-5xl leading-[0.95]">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mt-4 max-w-5xl leading-[0.95]">
             Media. Motorsports.
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00FFDA] to-[#FFF8F5]/60">
