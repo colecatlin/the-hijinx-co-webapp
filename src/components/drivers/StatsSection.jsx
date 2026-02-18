@@ -269,7 +269,7 @@ export default function StatsSection({ driver, results, sessions, events }) {
                       <div className="text-xs text-gray-600">{prog.team ? `${prog.series} • ${prog.class}` : prog.class}</div>
                     </td>
                     {[prog.starts, prog.wins, prog.podiums, prog.top5s, prog.top10s,
-                      `${prog.dnfPercent}%`, `${prog.heatFinishPercent}%`, `${prog.finalFinishPercent}%`, `${prog.lcqFinishPercent}%`
+                     `${prog.finalFinishPercent}%`
                     ].map((val, i) => (
                       <td key={i} className="text-center px-3 py-2">{val}</td>
                     ))}
