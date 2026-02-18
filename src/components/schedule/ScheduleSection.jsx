@@ -174,30 +174,7 @@ export default function ScheduleSection({ entityType, entityId, entityName, cale
               Embed
             </Button>
           )}
-          {isOwner && (
-            <>
-              {!calendarId ? (
-                <Button
-                  size="sm"
-                  className="bg-[#232323] text-white"
-                  onClick={() => createCalendarMutation.mutate()}
-                  disabled={createCalendarMutation.isPending}
-                >
-                  {createCalendarMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4 mr-1" />
-                  )}
-                  Setup Schedule
-                </Button>
-              ) : (
-                <Button size="sm" className="bg-[#232323] text-white" onClick={handleOpenAdd}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Event
-                </Button>
-              )}
-            </>
-          )}
+
         </div>
       </div>
 
