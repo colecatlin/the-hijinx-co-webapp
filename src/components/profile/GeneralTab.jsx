@@ -7,13 +7,6 @@ import { motion } from 'framer-motion';
 import DateInput from '@/components/shared/DateInput';
 
 export default function GeneralTab({ user, formData, setFormData }) {
-  const { month, day, year } = parseDateParts(formData.birth_date);
-
-  const handleDatePart = (part, value) => {
-    const updated = { month, day, year, [part]: value };
-    setFormData({ ...formData, birth_date: buildDateStr(updated.month, updated.day, updated.year) });
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
