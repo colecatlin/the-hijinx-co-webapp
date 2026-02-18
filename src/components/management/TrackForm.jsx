@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import LocationFields from '@/components/shared/LocationFields';
 
 export default function TrackForm({ track, onClose }) {
   const [formData, setFormData] = useState(track || {
