@@ -72,6 +72,16 @@ export default function ManageStories() {
     }
   };
 
+  const handlePostToLinkedIn = async (story) => {
+    try {
+      toast.loading('Posting to LinkedIn...', { id: 'linkedin-post' });
+      await base44.functions.invoke('postStoryToLinkedIn', { story_id: story.id });
+      toast.success('Posted to LinkedIn!', { id: 'linkedin-post' });
+    } catch (e) {
+      toast.error('Failed to post to LinkedIn', { id: 'linkedin-post' });
+    }
+  };
+
   const handleEdit = (story) => {
     setEditingStory(story);
     setShowForm(true);
