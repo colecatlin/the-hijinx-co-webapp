@@ -430,6 +430,18 @@ export default function TeamProfile() {
             )}
           </section>
 
+          <section id="section-schedule" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Race Schedule</h2>
+            <ScheduleSection
+              entityType="Team"
+              entityId={team.id}
+              entityName={team.name}
+              calendarId={team.calendar_id}
+              onCalendarCreated={handleTeamCalendarCreated}
+              isOwner={true}
+            />
+          </section>
+
           <section id="section-performance" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
             
