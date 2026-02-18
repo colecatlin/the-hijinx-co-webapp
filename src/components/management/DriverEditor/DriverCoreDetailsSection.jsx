@@ -82,36 +82,18 @@ export default function DriverCoreDetailsSection({ driver }) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Hometown City</Label>
-            <Input
-              value={data.hometown_city}
-              onChange={(e) => handleChange('hometown_city', e.target.value)}
-              placeholder="City"
+          <div className="col-span-1 md:col-span-2">
+            <LocationFields
+              cityValue={data.hometown_city}
+              stateValue={data.hometown_state}
+              countryValue={data.hometown_country}
+              onCityChange={(v) => handleChange('hometown_city', v)}
+              onStateChange={(v) => handleChange('hometown_state', v)}
+              onCountryChange={(v) => handleChange('hometown_country', v)}
+              cityLabel="Hometown City"
+              stateLabel="State/Region"
+              countryLabel="Country"
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hometown State/Region</Label>
-            <Input
-              value={data.hometown_state}
-              onChange={(e) => handleChange('hometown_state', e.target.value)}
-              placeholder="State or region"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Hometown Country</Label>
-            <Select value={data.hometown_country} onValueChange={(value) => handleChange('hometown_country', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">
