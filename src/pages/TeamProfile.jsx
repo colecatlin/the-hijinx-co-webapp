@@ -139,12 +139,19 @@ export default function TeamProfile() {
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'programs', label: 'Programs', icon: Briefcase },
     { id: 'roster', label: 'Roster', icon: Users },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'partners', label: 'Partners', icon: Heart },
     { id: 'media', label: 'Media', icon: Camera },
     { id: 'operations', label: 'Operations', icon: Settings },
     { id: 'community', label: 'Community', icon: Heart },
   ];
+
+  const handleTeamCalendarCreated = async (calendarId) => {
+    await base44.functions.invoke('saveEntityCalendarId', {
+      entityType: 'Team', entityId: team.id, calendarId
+    });
+  };
 
   const primaryPrograms = sortedPrograms.filter(p => p.primary || sortedPrograms.indexOf(p) < 3).slice(0, 3);
   const activePartners = partners.filter(p => p.active).slice(0, 4);
