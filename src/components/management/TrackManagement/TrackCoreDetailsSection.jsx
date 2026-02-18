@@ -74,35 +74,14 @@ export default function TrackCoreDetailsSection({ trackId }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium">City</label>
-            <Input
-              value={formData.location_city || ''}
-              onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">State</label>
-            <Input
-              value={formData.location_state || ''}
-              onChange={(e) => setFormData({ ...formData, location_state: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Country</label>
-            <Select value={formData.location_country || 'USA'} onValueChange={(value) => setFormData({ ...formData, location_country: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <LocationFields
+          cityValue={formData.location_city}
+          stateValue={formData.location_state}
+          countryValue={formData.location_country || 'USA'}
+          onCityChange={(v) => setFormData({ ...formData, location_city: v })}
+          onStateChange={(v) => setFormData({ ...formData, location_state: v })}
+          onCountryChange={(v) => setFormData({ ...formData, location_country: v })}
+        />
 
         <div className="grid grid-cols-3 gap-4">
           <div>
