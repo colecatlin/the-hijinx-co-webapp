@@ -270,80 +270,32 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
         <div className="border-t pt-6">
           <h3 className="font-semibold mb-4">Hometown</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="hometown_city">City</Label>
-              <Input
-                id="hometown_city"
-                value={formData.hometown_city}
-                onChange={(e) => handleInputChange('hometown_city', e.target.value)}
-                placeholder="City"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="hometown_state">State/Region</Label>
-              <Input
-                id="hometown_state"
-                value={formData.hometown_state}
-                onChange={(e) => handleInputChange('hometown_state', e.target.value)}
-                placeholder="State"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="hometown_country">Country</Label>
-              <Select value={formData.hometown_country} onValueChange={(value) => handleInputChange('hometown_country', value)}>
-                <SelectTrigger id="hometown_country" className="mt-2">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <LocationFields
+            cityValue={formData.hometown_city}
+            stateValue={formData.hometown_state}
+            countryValue={formData.hometown_country}
+            onCityChange={(v) => handleInputChange('hometown_city', v)}
+            onStateChange={(v) => handleInputChange('hometown_state', v)}
+            onCountryChange={(v) => handleInputChange('hometown_country', v)}
+            cityLabel="City"
+            stateLabel="State/Region"
+            countryLabel="Country"
+          />
         </div>
 
         <div>
           <h3 className="font-semibold mb-4">Location</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="location_city">City</Label>
-              <Input
-                id="location_city"
-                value={formData.location_city}
-                onChange={(e) => handleInputChange('location_city', e.target.value)}
-                placeholder="City"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="location_state">State/Region</Label>
-              <Input
-                id="location_state"
-                value={formData.location_state}
-                onChange={(e) => handleInputChange('location_state', e.target.value)}
-                placeholder="State"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="location_country">Country</Label>
-              <Select value={formData.location_country} onValueChange={(value) => handleInputChange('location_country', value)}>
-                <SelectTrigger id="location_country" className="mt-2">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <LocationFields
+            cityValue={formData.location_city}
+            stateValue={formData.location_state}
+            countryValue={formData.location_country}
+            onCityChange={(v) => handleInputChange('location_city', v)}
+            onStateChange={(v) => handleInputChange('location_state', v)}
+            onCountryChange={(v) => handleInputChange('location_country', v)}
+            cityLabel="City"
+            stateLabel="State/Region"
+            countryLabel="Country"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
