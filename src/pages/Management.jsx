@@ -51,6 +51,7 @@ export default function Management() {
       title: 'Site Settings',
       items: [
         { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
+        { name: 'Calendar Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal calendars into Tracks, Series, and Events' },
       ]
     }
   ];
