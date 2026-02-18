@@ -54,6 +54,7 @@ import ApparelHome from './pages/ApparelHome';
 import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
 import Diagnostics from './pages/Diagnostics';
+import DriverComparison from './pages/DriverComparison';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
@@ -107,7 +108,7 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import DriverComparison from './pages/DriverComparison';
+import ScheduleEmbed from './pages/ScheduleEmbed';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +120,7 @@ export const PAGES = {
     "Contact": Contact,
     "CreativeServices": CreativeServices,
     "Diagnostics": Diagnostics,
+    "DriverComparison": DriverComparison,
     "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
@@ -172,7 +174,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "DriverComparison": DriverComparison,
+    "ScheduleEmbed": ScheduleEmbed,
 }
 
 export const pagesConfig = {
