@@ -78,29 +78,17 @@ export default function TeamForm({ team, onClose }) {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">City</label>
-              <Input
-                value={formData.headquarters_city}
-                onChange={(e) => handleChange('headquarters_city', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">State</label>
-              <Input
-                value={formData.headquarters_state}
-                onChange={(e) => handleChange('headquarters_state', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Country</label>
-              <Input
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
-              />
-            </div>
-          </div>
+          <LocationFields
+            cityValue={formData.headquarters_city}
+            stateValue={formData.headquarters_state}
+            countryValue={formData.country}
+            onCityChange={(v) => handleChange('headquarters_city', v)}
+            onStateChange={(v) => handleChange('headquarters_state', v)}
+            onCountryChange={(v) => handleChange('country', v)}
+            cityLabel="City"
+            stateLabel="State"
+            countryLabel="Country"
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
