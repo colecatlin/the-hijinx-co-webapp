@@ -7,7 +7,7 @@ import DriverModal from '@/components/teams/DriverModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Briefcase } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Settings, Camera, Briefcase, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import TeamPerformanceInsights from '@/components/teams/TeamPerformanceInsights';
