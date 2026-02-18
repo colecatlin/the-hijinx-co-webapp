@@ -14,8 +14,8 @@ export default function ApparelHome() {
             transition={{ duration: 0.6 }}
           >
             <span className="font-mono text-xs tracking-[0.3em] text-gray-500 uppercase mb-6 block">Apparel</span>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">Coming Soon</h1>
-            <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto mb-12">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6">Coming Soon</h1>
+            <p className="text-gray-400 text-base md:text-xl max-w-xl mx-auto mb-12">
               New Hijinx apparel and merchandise dropping soon. Shop our current collection in the meantime.
             </p>
             <a
