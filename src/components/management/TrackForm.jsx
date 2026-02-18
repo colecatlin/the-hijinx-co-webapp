@@ -12,9 +12,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 export default function TrackForm({ track, onClose }) {
   const [formData, setFormData] = useState(track || {
     name: '',
-    city: '',
-    state: '',
-    country: 'USA',
+    location_city: '',
+    location_state: '',
+    location_country: 'USA',
     status: 'Active',
     founded_year: null,
     description_summary: '',
