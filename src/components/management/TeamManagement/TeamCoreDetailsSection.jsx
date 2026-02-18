@@ -124,40 +124,17 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium">City *</label>
-            <Input
-              value={formData.headquarters_city || ''}
-              onChange={(e) => setFormData({ ...formData, headquarters_city: e.target.value })}
-              className={errors.headquarters_city ? 'border-red-500' : ''}
-            />
-            {errors.headquarters_city && <p className="text-xs text-red-500 mt-1">{errors.headquarters_city}</p>}
-          </div>
-          <div>
-            <label className="text-sm font-medium">State *</label>
-            <Input
-              value={formData.headquarters_state || ''}
-              onChange={(e) => setFormData({ ...formData, headquarters_state: e.target.value })}
-              className={errors.headquarters_state ? 'border-red-500' : ''}
-            />
-            {errors.headquarters_state && <p className="text-xs text-red-500 mt-1">{errors.headquarters_state}</p>}
-          </div>
-          <div>
-            <label className="text-sm font-medium">Country *</label>
-            <Select value={formData.country || ''} onValueChange={(value) => setFormData({ ...formData, country: value })}>
-              <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
-          </div>
-        </div>
+        <LocationFields
+          cityValue={formData.headquarters_city}
+          stateValue={formData.headquarters_state}
+          countryValue={formData.country || 'USA'}
+          onCityChange={(v) => setFormData({ ...formData, headquarters_city: v })}
+          onStateChange={(v) => setFormData({ ...formData, headquarters_state: v })}
+          onCountryChange={(v) => setFormData({ ...formData, country: v })}
+          cityLabel="City *"
+          stateLabel="State *"
+          countryLabel="Country *"
+        />
 
         <div className="grid grid-cols-3 gap-4">
           <div>
