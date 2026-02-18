@@ -256,7 +256,7 @@ export default function StatsSection({ driver, results, sessions, events }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['Program', 'Starts', 'Wins', 'Podiums', 'Top 5s', 'Top 10s', 'DNF %', 'Heat %', 'Final %', 'LCQ %'].map(h => (
+                  {['Program', 'Starts', 'Wins', 'Podiums', 'Top 5s', 'Top 10s', 'Final %'].map(h => (
                     <th key={h} className={`px-3 py-2 font-semibold text-gray-700 ${h === 'Program' ? 'text-left' : 'text-center'}`}>{h}</th>
                   ))}
                 </tr>
