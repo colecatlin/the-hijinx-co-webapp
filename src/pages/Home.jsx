@@ -14,6 +14,7 @@ export default function Home() {
       <VerticalGrid />
       <MotorsportsStrip />
       <LatestFeed />
+      <ApparelSection />
 
       {/* Newsletter CTA */}
       <section className="bg-[#232323] text-[#FFF8F5]">
