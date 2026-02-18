@@ -203,6 +203,16 @@ export default function ManageStories() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2 justify-end">
+                            {story.status === 'published' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handlePostToLinkedIn(story)}
+                                title="Post to LinkedIn"
+                              >
+                                <Linkedin className="w-4 h-4 text-[#0077b5]" />
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="ghost"
