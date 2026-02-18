@@ -55,31 +55,11 @@ export default function GeneralTab({ user, formData, setFormData }) {
 
         <div>
           <Label>Date of Birth</Label>
-          <div className="grid grid-cols-3 gap-2 mt-1">
-            <Select value={month} onValueChange={(v) => handleDatePart('month', v)}>
-              <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-              <SelectContent>
-                {MONTHS.map((m, i) => (
-                  <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={day} onValueChange={(v) => handleDatePart('day', v)}>
-              <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
-              <SelectContent>
-                {DAYS.map(d => (
-                  <SelectItem key={d} value={String(d)}>{d}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={year} onValueChange={(v) => handleDatePart('year', v)}>
-              <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
-              <SelectContent>
-                {YEARS.map(y => (
-                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="mt-1">
+            <DateInput
+              value={formData.birth_date}
+              onChange={(value) => setFormData({ ...formData, birth_date: value })}
+            />
           </div>
         </div>
 
