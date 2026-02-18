@@ -346,6 +346,19 @@ export default function DriverProfile() {
             />
           </section>
 
+          <section id="section-schedule" className="bg-white p-8">
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Race Schedule</h2>
+            <ScheduleSection
+              entityType="Driver"
+              entityId={driver.id}
+              entityName={`${driver.first_name} ${driver.last_name}`}
+              calendarId={driver.calendar_id}
+              onCalendarCreated={handleCalendarCreated}
+              isOwner={true}
+            />
+          </section>
+
           <section id="section-social" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Social Media</h2>
