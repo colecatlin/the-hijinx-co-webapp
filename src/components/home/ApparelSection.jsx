@@ -31,12 +31,9 @@ export default function ApparelSection() {
           <p className="text-[#00FFDA] text-lg md:text-xl font-semibold tracking-widest uppercase mt-6 mb-8">
             IN MOTION. ON PURPOSE.
           </p>
-          <Link
-            to={createPageUrl('ApparelHome')}
-            className="inline-flex items-center gap-2 bg-[#00FFDA] text-[#0A0A0A] px-6 py-3 text-sm font-black tracking-wide uppercase hover:bg-white transition-colors"
-          >
-            Shop Now <ArrowRight className="w-4 h-4" />
-          </Link>
+          <span className="inline-flex items-center gap-2 bg-[#00FFDA] text-[#0A0A0A] px-6 py-3 text-sm font-black tracking-wide uppercase opacity-80 cursor-default">
+            Coming Soon
+          </span>
         </div>
       </div>
     </section>
