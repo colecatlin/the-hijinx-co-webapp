@@ -1,15 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+
+const DEFAULT_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80';
 
 export default function ApparelSection() {
+  const { data: settings = [] } = useQuery({
+    queryKey: ['homepageSettings'],
+    queryFn: () => base44.entities.HomepageSettings.list(),
+  });
+
+  const bgUrl = settings.find(s => s.key === 'apparel_bg')?.image_url || DEFAULT_BG;
+
   return (
     <section className="relative overflow-hidden bg-[#0A0A0A] min-h-[480px] flex items-center">
       {/* Background image with overlay */}
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80"
+          src={bgUrl}
           alt="Apparel background"
           className="w-full h-full object-cover opacity-30"
         />
