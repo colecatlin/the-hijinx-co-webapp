@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
 import DateInput from '@/components/shared/DateInput';
+import LocationFields from '@/components/shared/LocationFields';
 
 export default function DriverForm({ driver, onClose }) {
   const [formData, setFormData] = useState(driver || {
