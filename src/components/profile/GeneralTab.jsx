@@ -2,31 +2,9 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
-];
-const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
-const currentYear = new Date().getFullYear();
-const YEARS = Array.from({ length: 100 }, (_, i) => currentYear - i);
-
-function parseDateParts(dateStr) {
-  if (!dateStr) return { month: '', day: '', year: '' };
-  const d = new Date(dateStr);
-  if (isNaN(d)) return { month: '', day: '', year: '' };
-  return { month: String(d.getUTCMonth() + 1), day: String(d.getUTCDate()), year: String(d.getUTCFullYear()) };
-}
-
-function buildDateStr(month, day, year) {
-  if (!month || !day || !year) return null;
-  const m = String(month).padStart(2, '0');
-  const d = String(day).padStart(2, '0');
-  return `${year}-${m}-${d}`;
-}
+import DateInput from '@/components/shared/DateInput';
 
 export default function GeneralTab({ user, formData, setFormData }) {
   const { month, day, year } = parseDateParts(formData.birth_date);
