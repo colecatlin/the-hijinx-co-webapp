@@ -10,36 +10,7 @@ import DateInput from '@/components/shared/DateInput';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { Loader2, Check } from 'lucide-react';
 import DriverManagersSection from './DriverManagersSection';
-
-const COUNTRIES = [
-  'USA',
-  'Canada',
-  'Mexico',
-  'United Kingdom',
-  'Australia',
-  'Brazil',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Japan',
-  'China',
-  'India',
-  'Russia',
-  'Sweden',
-  'Norway',
-  'Finland',
-  'Netherlands',
-  'Belgium',
-  'Austria',
-  'Switzerland',
-  'Denmark',
-  'Poland',
-  'Argentina',
-  'Chile',
-  'New Zealand',
-  'South Africa'
-];
+import LocationFields from '@/components/shared/LocationFields';
 
 export default function DriverCoreDetailsSection({ driver }) {
   const [data, setData] = useState({
