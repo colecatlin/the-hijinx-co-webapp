@@ -8,36 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
-
-const COUNTRIES = [
-  'USA',
-  'Canada',
-  'Mexico',
-  'United Kingdom',
-  'Australia',
-  'Brazil',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Japan',
-  'China',
-  'India',
-  'Russia',
-  'Sweden',
-  'Norway',
-  'Finland',
-  'Netherlands',
-  'Belgium',
-  'Austria',
-  'Switzerland',
-  'Denmark',
-  'Poland',
-  'Argentina',
-  'Chile',
-  'New Zealand',
-  'South Africa'
-];
+import LocationFields from '@/components/shared/LocationFields';
 
 export default function TrackCoreDetailsSection({ trackId }) {
   const [formData, setFormData] = useState({});
