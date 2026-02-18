@@ -99,22 +99,22 @@ export default function TrackForm({ track, onClose }) {
             <div>
               <label className="block text-sm font-medium mb-2">City</label>
               <Input
-                value={formData.city}
-                onChange={(e) => handleChange('city', e.target.value)}
+                value={formData.location_city}
+                onChange={(e) => handleChange('location_city', e.target.value)}
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">State</label>
               <Input
-                value={formData.state}
-                onChange={(e) => handleChange('state', e.target.value)}
+                value={formData.location_state}
+                onChange={(e) => handleChange('location_state', e.target.value)}
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Country</label>
               <Input
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
+                value={formData.location_country}
+                onChange={(e) => handleChange('location_country', e.target.value)}
               />
             </div>
           </div>
