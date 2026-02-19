@@ -146,7 +146,14 @@ export default function DriverCard({ driver, program, team, media, performance, 
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
                 <div className="text-sm font-bold text-[#232323]">
-                  {new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear()}
+                  {(() => {
+                    const today = new Date();
+                    const dob = new Date(driver.date_of_birth);
+                    let age = today.getFullYear() - dob.getFullYear();
+                    const m = today.getMonth() - dob.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+                    return age;
+                  })()}
                 </div>
               </div>
             )}
