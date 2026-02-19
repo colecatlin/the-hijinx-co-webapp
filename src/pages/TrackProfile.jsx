@@ -179,7 +179,7 @@ export default function TrackProfile() {
             </div>
 
             <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              {track.description_summary}
+              {track.description}
             </p>
 
             {/* Quick Specs */}
@@ -187,19 +187,19 @@ export default function TrackProfile() {
               <div className="bg-white border border-gray-200 p-4">
                 <div className="text-xs text-gray-600 mb-1">Surface</div>
                 <div className="font-bold text-[#232323]">
-                  {track.surfaces?.join(', ') || 'N/A'}
+                  {track.surface_type || 'N/A'}
                 </div>
               </div>
               <div className="bg-white border border-gray-200 p-4">
                 <div className="text-xs text-gray-600 mb-1">Length</div>
-                <div className="font-bold text-[#232323]">{track.length_miles || 'N/A'} mi</div>
+                <div className="font-bold text-[#232323]">{track.length ? `${track.length} mi` : 'N/A'}</div>
               </div>
               <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Turns</div>
-                <div className="font-bold text-[#232323]">{track.turns_count || 'N/A'}</div>
+                <div className="text-xs text-gray-600 mb-1">Type</div>
+                <div className="font-bold text-[#232323]">{track.track_type || 'N/A'}</div>
               </div>
               <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Season</div>
+                <div className="text-xs text-gray-600 mb-1">Status</div>
                 <div className="font-bold text-[#232323]">{track.status || 'N/A'}</div>
               </div>
             </div>
