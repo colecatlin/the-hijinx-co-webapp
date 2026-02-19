@@ -97,6 +97,24 @@ Return null for any fields not found on the page.`;
     if (aiResponse.hometown_country) updatePayload.hometown_country = aiResponse.hometown_country;
     if (aiResponse.primary_number) updatePayload.primary_number = aiResponse.primary_number;
 
+    // Map manufacturer string to valid enum value
+    if (aiResponse.manufacturer) {
+      const mfr = aiResponse.manufacturer.trim();
+      const validMfrs = ['Chevrolet', 'Ford', 'Toyota', 'Honda'];
+      const matched = validMfrs.find(v => mfr.toLowerCase().includes(v.toLowerCase()));
+      if (matched) updatePayload.manufacturer = matched;
+    }
+
+    // Try to match team_name to an existing Team record
+    if (aiResponse.team_name) {
+      const teams = await base44.asServiceRole.entities.Team.list();
+      const matchedTeam = teams.find(t =>
+        t.name?.toLowerCase().includes(aiResponse.team_name.toLowerCase()) ||
+        aiResponse.team_name.toLowerCase().includes(t.name?.toLowerCase())
+      );
+      if (matchedTeam) updatePayload.team_id = matchedTeam.id;
+    }
+
     await base44.asServiceRole.entities.Driver.update(driverId, updatePayload);
 
     // Update DriverMedia if social data found
