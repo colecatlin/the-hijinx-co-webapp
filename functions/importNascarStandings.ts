@@ -106,34 +106,47 @@ Return ALL drivers — the complete list. Do not truncate.`;
 
     // --- Upsert Drivers ---
     const existingDrivers = await base44.asServiceRole.entities.Driver.list();
-    const driverMap = {}; // "firstname lastname" -> id
-    for (const d of existingDrivers) {
-      const key = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
-      driverMap[key] = d.id;
-    }
 
     const driversCreated = [];
     const driversSkipped = [];
+    const duplicatesFound = [];
 
     for (const d of drivers) {
       if (!d.first_name || !d.last_name) continue;
-      const key = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
 
+      const nameKey = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
       const teamId = d.team_name ? teamMap[d.team_name.toLowerCase().trim()] : null;
 
-      if (driverMap[key]) {
+      // Find ALL existing drivers with the same name (there may be multiple)
+      const nameMatches = existingDrivers.filter(e =>
+        `${e.first_name} ${e.last_name}`.toLowerCase().trim() === nameKey
+      );
+
+      if (nameMatches.length > 0) {
+        // Use the first/best match (prefer one with a real date_of_birth set)
+        const existing = nameMatches.find(e => e.date_of_birth && e.date_of_birth !== '2000-01-01') || nameMatches[0];
+
+        if (nameMatches.length > 1) {
+          duplicatesFound.push(`${d.first_name} ${d.last_name} (${nameMatches.length} records found)`);
+        }
+
         // Update team_id and primary_number if missing
-        const existing = existingDrivers.find(e => `${e.first_name} ${e.last_name}`.toLowerCase().trim() === key);
-        if (existing && (!existing.team_id || !existing.primary_number)) {
+        if (!existing.team_id || !existing.primary_number || !existing.manufacturer) {
+          const mfr = d.manufacturer?.trim();
+          const validMfrs = ['Chevrolet', 'Ford', 'Toyota', 'Honda'];
+          const matchedMfr = mfr ? validMfrs.find(v => mfr.toLowerCase().includes(v.toLowerCase())) : null;
+
           await base44.asServiceRole.entities.Driver.update(existing.id, {
             ...(teamId && !existing.team_id ? { team_id: teamId } : {}),
             ...(!existing.primary_number && d.car_number ? { primary_number: d.car_number } : {}),
+            ...(!existing.manufacturer && matchedMfr ? { manufacturer: matchedMfr } : {}),
           });
         }
         driversSkipped.push(`${d.first_name} ${d.last_name}`);
         continue;
       }
 
+      // No match found — safe to create
       await base44.asServiceRole.entities.Driver.create({
         first_name: d.first_name,
         last_name: d.last_name,
