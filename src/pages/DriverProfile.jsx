@@ -115,9 +115,16 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Series.list(),
   });
 
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   const getSeriesName = (seriesId) => {
     return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
   };
+
+  const driverTeam = teams.find(t => t.id === driver?.team_id);
 
 
 
