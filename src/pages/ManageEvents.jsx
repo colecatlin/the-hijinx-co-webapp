@@ -139,6 +139,10 @@ export default function ManageEvents() {
             <h1 className="text-4xl font-black mb-2">Manage Events</h1>
             <p className="text-gray-600">{events.length} total events</p>
           </div>
+          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50">
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Generate
+          </Button>
           <Button onClick={() => setShowAddForm(true)} className="bg-gray-900">
             <Plus className="w-4 h-4 mr-2" />
             Add Event
