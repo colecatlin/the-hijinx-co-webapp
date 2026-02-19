@@ -75,7 +75,7 @@ For EACH track return:
         await base44.asServiceRole.entities.Track.update(match.id, {
           location_city: enriched.location_city || match.location_city,
           location_state: enriched.location_state ?? match.location_state,
-          location_country: enriched.location_country || match.location_country || 'United States',
+          location_country: enriched.location_country || match.location_country,
           track_type: enriched.track_type || match.track_type,
           surface_type: enriched.surface_type || match.surface_type,
           length: enriched.length ?? match.length,
