@@ -39,6 +39,31 @@ export default function ManageEvents() {
     event.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (showAIGenerator) {
+    return (
+      <PageShell>
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" onClick={() => setShowAIGenerator(false)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <h1 className="text-4xl font-black">AI Event Generator</h1>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <AIEventGenerator
+              tracks={tracks}
+              onCancel={() => setShowAIGenerator(false)}
+              onSuccess={(newEvent) => {
+                setShowAIGenerator(false);
+                setSelectedEventForEdit(newEvent);
+              }}
+            />
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   if (showAddForm) {
     return (
       <PageShell>
