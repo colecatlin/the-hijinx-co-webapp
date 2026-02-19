@@ -193,6 +193,7 @@ Deno.serve(async (req) => {
             status: 'Active',
             hometown_city: 'Unknown',
             hometown_country: 'United States',
+            date_of_birth: '2000-01-01',
             slug: slugify(`${driverData.first} ${driverData.last}`),
           });
           driverMap.set(fullKey, driver);
