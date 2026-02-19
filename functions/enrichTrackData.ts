@@ -15,68 +15,74 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, message: 'No tracks found', updated: 0 });
     }
 
-    const trackNames = tracks.map(t => t.name);
+    const BATCH_SIZE = 5;
+    let updated = 0;
+    const allEnriched = [];
 
-    const prompt = `You are a motorsports data expert with access to the internet. Look up accurate, real-world information for each of the following racing tracks/venues and return complete data for all of them.
-
-Track names to research:
-${trackNames.map((n, i) => `${i + 1}. ${n}`).join('\n')}
-
-For each track, provide:
-- name: exact track name as given in the list above
-- location_city: the actual city/town where the track is physically located (NOT the track name itself)
-- location_state: 2-letter US state abbreviation (e.g. "FL", "CA"), or regional code for international (e.g. "CDMX" for Mexico City), or null if unknown
-- location_country: full country name (e.g. "United States", "Mexico", "Canada")
-- track_type: one of exactly: "Oval", "Road Course", "Street Circuit", "Short Track", "Speedway", "Off-Road", "Dirt Track", "Other"
-- surface_type: one of exactly: "Asphalt", "Concrete", "Dirt", "Clay", "Mixed"
-- length: track length in miles as a decimal number (null if genuinely unknown)
-- description: 1-2 sentence factual description of the track including its history and significance
-
-Return ALL tracks in the response, even ones you already know well.`;
-
-    const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          tracks: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                location_city: { type: 'string' },
-                location_state: { type: ['string', 'null'] },
-                location_country: { type: 'string' },
-                track_type: { type: 'string' },
-                surface_type: { type: ['string', 'null'] },
-                length: { type: ['number', 'null'] },
-                description: { type: ['string', 'null'] },
-              }
+    const schema = {
+      type: 'object',
+      properties: {
+        tracks: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              location_city: { type: 'string' },
+              location_state: { type: ['string', 'null'] },
+              location_country: { type: 'string' },
+              track_type: { type: 'string' },
+              surface_type: { type: ['string', 'null'] },
+              length: { type: ['number', 'null'] },
+              description: { type: ['string', 'null'] },
             }
           }
         }
       }
-    });
+    };
 
-    const enrichedTracks = aiResponse.tracks || [];
-    let updated = 0;
+    for (let i = 0; i < tracks.length; i += BATCH_SIZE) {
+      const batch = tracks.slice(i, i + BATCH_SIZE);
+      const batchNames = batch.map(t => t.name);
 
-    for (const enriched of enrichedTracks) {
-      const match = tracks.find(t => t.name === enriched.name);
-      if (!match) continue;
+      const prompt = `You are a motorsports data expert. Search the internet and look up accurate, real-world information for each of these racing tracks/venues:
 
-      await base44.asServiceRole.entities.Track.update(match.id, {
-        location_city: enriched.location_city || match.location_city,
-        location_state: enriched.location_state ?? match.location_state,
-        location_country: enriched.location_country || match.location_country || 'United States',
-        track_type: enriched.track_type || match.track_type,
-        surface_type: enriched.surface_type || match.surface_type,
-        length: enriched.length ?? match.length,
-        description: enriched.description || match.description,
+${batchNames.map((n, idx) => `${idx + 1}. ${n}`).join('\n')}
+
+For EACH track return:
+- name: exact track name as listed
+- location_city: actual city/town where the track is physically located (NOT the track name)
+- location_state: 2-letter US state code (e.g. "FL"), regional code for international, or null
+- location_country: full country name (e.g. "United States", "Mexico")
+- track_type: one of: "Oval", "Road Course", "Street Circuit", "Short Track", "Speedway", "Off-Road", "Dirt Track", "Other"
+- surface_type: one of: "Asphalt", "Concrete", "Dirt", "Clay", "Mixed"
+- length: length in miles as a number (null if unknown)
+- description: 1-2 sentence factual description`;
+
+      const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt,
+        add_context_from_internet: true,
+        response_json_schema: schema,
       });
-      updated++;
+
+      const enrichedBatch = aiResponse.tracks || [];
+      allEnriched.push(...enrichedBatch);
+
+      for (const enriched of enrichedBatch) {
+        const match = batch.find(t => t.name === enriched.name);
+        if (!match) continue;
+
+        await base44.asServiceRole.entities.Track.update(match.id, {
+          location_city: enriched.location_city || match.location_city,
+          location_state: enriched.location_state ?? match.location_state,
+          location_country: enriched.location_country || match.location_country || 'United States',
+          track_type: enriched.track_type || match.track_type,
+          surface_type: enriched.surface_type || match.surface_type,
+          length: enriched.length ?? match.length,
+          description: enriched.description || match.description,
+        });
+        updated++;
+      }
     }
 
     return Response.json({
@@ -84,7 +90,7 @@ Return ALL tracks in the response, even ones you already know well.`;
       message: `AI-enriched ${updated} of ${tracks.length} tracks`,
       updated,
       total: tracks.length,
-      enrichedData: enrichedTracks,
+      enrichedData: allEnriched,
     });
 
   } catch (error) {
