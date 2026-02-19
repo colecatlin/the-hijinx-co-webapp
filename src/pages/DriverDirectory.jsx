@@ -17,7 +17,9 @@ export default function DriverDirectory() {
     discipline: 'all',
     series: 'all',
     status: 'all',
-    state: 'all'
+    state: 'all',
+    manufacturer: 'all',
+    country: 'all',
   });
   const [sortBy, setSortBy] = useState('name');
   const [compareMode, setCompareMode] = useState(false);
