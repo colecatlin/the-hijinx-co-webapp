@@ -1,0 +1,172 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const series = body.series || 'nascar-cup-series'; // nascar-cup-series | nascar-oreilly-auto-parts-series | nascar-craftsman-truck-series
+
+    // Use AI to scrape the NASCAR standings page and extract structured data
+    const scrapeSchema = {
+      type: 'object',
+      properties: {
+        drivers: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              position: { type: 'number' },
+              car_number: { type: 'string' },
+              first_name: { type: 'string' },
+              last_name: { type: 'string' },
+              manufacturer: { type: 'string' },
+              team_name: { type: 'string' },
+              points: { type: 'number' },
+            }
+          }
+        },
+        manufacturers: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              points: { type: 'number' },
+            }
+          }
+        },
+        season: { type: 'string' },
+        series_name: { type: 'string' },
+      }
+    };
+
+    const prompt = `Fetch and parse the NASCAR standings page at https://www.nascar.com/standings/${series}/
+
+Extract ALL drivers from the driver standings table. For each driver get:
+- position (finishing rank in standings)
+- car_number (the car/number badge shown)
+- first_name (driver first name)
+- last_name (driver last name)
+- manufacturer (Toyota, Ford, Chevrolet, etc.)
+- team_name (the team that owns the car — look this up from your knowledge if not shown on the page. For example: car #45 Toyota is 23XI Racing, #22 Ford is Team Penske, #9 Chevy is Hendrick Motorsports, etc.)
+- points (current standings points)
+
+Also extract the manufacturer standings (name and points).
+
+Also extract the season year and series name (e.g. "NASCAR Cup Series").
+
+Return complete data for all drivers listed on the page.`;
+
+    const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt,
+      add_context_from_internet: true,
+      response_json_schema: scrapeSchema,
+    });
+
+    const { drivers = [], manufacturers = [], season, series_name } = aiResponse;
+
+    // --- Upsert Teams ---
+    const existingTeams = await base44.asServiceRole.entities.Team.list();
+    const teamMap = {}; // name -> id
+
+    for (const t of existingTeams) {
+      teamMap[t.name.toLowerCase().trim()] = t.id;
+    }
+
+    // Collect unique team names from standings
+    const uniqueTeamNames = [...new Set(drivers.map(d => d.team_name).filter(Boolean))];
+    const teamsCreated = [];
+    const teamsSkipped = [];
+
+    for (const teamName of uniqueTeamNames) {
+      const key = teamName.toLowerCase().trim();
+      if (teamMap[key]) {
+        teamsSkipped.push(teamName);
+        continue;
+      }
+      const created = await base44.asServiceRole.entities.Team.create({
+        name: teamName,
+        primary_discipline: 'Asphalt Oval',
+        team_level: 'National',
+        country: 'United States',
+        status: 'Active',
+        headquarters_city: '',
+        headquarters_state: '',
+      });
+      teamMap[key] = created.id;
+      teamsCreated.push(teamName);
+    }
+
+    // --- Upsert Drivers ---
+    const existingDrivers = await base44.asServiceRole.entities.Driver.list();
+    const driverMap = {}; // "firstname lastname" -> id
+    for (const d of existingDrivers) {
+      const key = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
+      driverMap[key] = d.id;
+    }
+
+    const driversCreated = [];
+    const driversSkipped = [];
+
+    for (const d of drivers) {
+      if (!d.first_name || !d.last_name) continue;
+      const key = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
+
+      const teamId = d.team_name ? teamMap[d.team_name.toLowerCase().trim()] : null;
+
+      if (driverMap[key]) {
+        // Update team_id and primary_number if missing
+        const existing = existingDrivers.find(e => `${e.first_name} ${e.last_name}`.toLowerCase().trim() === key);
+        if (existing && (!existing.team_id || !existing.primary_number)) {
+          await base44.asServiceRole.entities.Driver.update(existing.id, {
+            ...(teamId && !existing.team_id ? { team_id: teamId } : {}),
+            ...(!existing.primary_number && d.car_number ? { primary_number: d.car_number } : {}),
+          });
+        }
+        driversSkipped.push(`${d.first_name} ${d.last_name}`);
+        continue;
+      }
+
+      await base44.asServiceRole.entities.Driver.create({
+        first_name: d.first_name,
+        last_name: d.last_name,
+        primary_number: d.car_number || '',
+        primary_discipline: 'Stock Car',
+        status: 'Active',
+        team_id: teamId || null,
+        hometown_city: '',
+        hometown_country: 'United States',
+        date_of_birth: '2000-01-01',
+      });
+      driversCreated.push(`${d.first_name} ${d.last_name}`);
+    }
+
+    return Response.json({
+      success: true,
+      season,
+      series_name,
+      drivers: {
+        found: drivers.length,
+        created: driversCreated.length,
+        skipped: driversSkipped.length,
+        created_names: driversCreated,
+      },
+      teams: {
+        found: uniqueTeamNames.length,
+        created: teamsCreated.length,
+        skipped: teamsSkipped.length,
+        created_names: teamsCreated,
+      },
+      manufacturers,
+    });
+
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
