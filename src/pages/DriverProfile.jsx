@@ -257,6 +257,37 @@ export default function DriverProfile() {
             </div>
 
             <Separator className="mb-3" />
+
+            {/* Car / Team / Manufacturer strip */}
+            {(driver.primary_number || driverTeam || driver.manufacturer) && (
+              <div className="flex flex-wrap gap-6 mb-4 px-1">
+                {driver.primary_number && (
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Car #</div>
+                    <div className="text-2xl font-black text-[#232323]">#{driver.primary_number}</div>
+                  </div>
+                )}
+                {driverTeam && (
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Team</div>
+                    <Link
+                      to={`${createPageUrl('TeamProfile')}?id=${driverTeam.id}`}
+                      className="text-2xl font-black text-[#232323] hover:text-[#00FFDA] transition-colors"
+                    >
+                      {driverTeam.name}
+                    </Link>
+                  </div>
+                )}
+                {driver.manufacturer && (
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Manufacturer</div>
+                    <div className="text-2xl font-black text-[#232323]">{driver.manufacturer}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Separator className="mb-3" />
             <div className="bg-white p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
