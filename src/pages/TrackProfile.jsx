@@ -175,7 +175,7 @@ export default function TrackProfile() {
             
             <div className="flex items-center gap-2 text-gray-600 mb-6">
               <MapPin className="w-4 h-4" />
-              {track.city}, {track.state}
+              {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
             </div>
 
             <p className="text-lg text-gray-700 leading-relaxed mb-8">
