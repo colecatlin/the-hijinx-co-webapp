@@ -116,17 +116,33 @@ export default function DriverDirectory() {
 
   const sortedDrivers = [...filteredDrivers].sort((a, b) => {
     switch (sortBy) {
-      case 'name':
+      case 'name_asc': {
         const nameA = a.display_name || `${a.first_name} ${a.last_name}`;
         const nameB = b.display_name || `${b.first_name} ${b.last_name}`;
         return nameA.localeCompare(nameB);
+      }
+      case 'name_desc': {
+        const nameA = a.display_name || `${a.first_name} ${a.last_name}`;
+        const nameB = b.display_name || `${b.first_name} ${b.last_name}`;
+        return nameB.localeCompare(nameA);
+      }
+      case 'name':
+      default: {
+        const nameA = a.display_name || `${a.first_name} ${a.last_name}`;
+        const nameB = b.display_name || `${b.first_name} ${b.last_name}`;
+        return nameA.localeCompare(nameB);
+      }
+      case 'number': {
+        const numA = parseInt(a.primary_number) || 9999;
+        const numB = parseInt(b.primary_number) || 9999;
+        return numA - numB;
+      }
       case 'discipline':
         return (a.primary_discipline || '').localeCompare(b.primary_discipline || '');
-      case 'content_value':
-        const valueOrder = { High: 0, Medium: 1, Low: 2, Unknown: 3 };
-        return (valueOrder[a.content_value] || 3) - (valueOrder[b.content_value] || 3);
-      default:
-        return 0;
+      case 'newest':
+        return new Date(b.created_date) - new Date(a.created_date);
+      case 'oldest':
+        return new Date(a.created_date) - new Date(b.created_date);
     }
   });
 
