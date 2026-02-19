@@ -18,7 +18,7 @@ export default function TrackCard({ track, disciplines = [], media }) {
             </h3>
             <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
               <MapPin className="w-3 h-3" />
-              {track.city}, {track.state}
+              {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
             </div>
           </div>
           {track.status && (
