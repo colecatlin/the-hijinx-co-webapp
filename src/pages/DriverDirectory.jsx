@@ -67,8 +67,10 @@ export default function DriverDirectory() {
     queryFn: () => base44.entities.DriverMedia.list(),
   });
 
-  const uniqueSeries = [...new Set(allPrograms.map(p => p.series_name))].sort();
+  const uniqueSeries = [...new Set(allPrograms.map(p => p.series_name).filter(Boolean))].sort();
   const uniqueStates = [...new Set(drivers.map(d => d.hometown_state).filter(Boolean))].sort();
+  const uniqueCountries = [...new Set(drivers.map(d => d.hometown_country).filter(Boolean))].sort();
+  const uniqueManufacturers = [...new Set(drivers.map(d => d.manufacturer).filter(Boolean))].sort();
 
   // Pre-compute program map for efficiency
   const programsByDriver = React.useMemo(() => {
