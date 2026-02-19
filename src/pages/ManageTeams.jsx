@@ -253,6 +253,14 @@ export default function ManageTeams() {
           </div>
         </div>
 
+        {importResult && (
+          <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+            {importResult.success
+              ? `✓ ${importResult.series_name} (${importResult.season}) — Teams: ${importResult.teams?.created} created, ${importResult.teams?.skipped} already existed.`
+              : importResult.error}
+          </div>
+        )}
+
         {enrichResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${enrichResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
             {enrichResult.message || enrichResult.error}
