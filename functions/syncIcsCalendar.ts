@@ -114,6 +114,7 @@ Deno.serve(async (req) => {
       }
     }
 
+    const eventsToCreate = [];
     for (const icsEvent of icsEvents) {
       const summary = icsEvent['SUMMARY'] || '';
       const location = icsEvent['LOCATION'] || '';
@@ -135,17 +136,22 @@ Deno.serve(async (req) => {
 
       if (alreadyExists) { stats.skipped++; continue; }
 
-      await base44.asServiceRole.entities.Event.create({
+      const eventObj = {
         name: summary,
         track_id: trackId,
         series: seriesName,
         season: '2026',
         event_date: eventDate,
-        end_date: (endDate && endDate !== eventDate) ? endDate : undefined,
         status: new Date(eventDate) < new Date() ? 'completed' : 'upcoming',
         round_number: roundNumber,
-      });
-      stats.events++;
+      };
+      if (endDate && endDate !== eventDate) eventObj.end_date = endDate;
+      eventsToCreate.push(eventObj);
+    }
+
+    if (eventsToCreate.length > 0) {
+      await base44.asServiceRole.entities.Event.bulkCreate(eventsToCreate);
+      stats.events = eventsToCreate.length;
     }
 
     return Response.json({
