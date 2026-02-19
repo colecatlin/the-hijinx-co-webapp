@@ -48,20 +48,21 @@ Deno.serve(async (req) => {
 
     const prompt = `Fetch and parse the NASCAR standings page at https://www.nascar.com/standings/${series}/
 
-Extract ALL drivers from the driver standings table. For each driver get:
+IMPORTANT: Extract EVERY SINGLE driver listed on the page — do not stop early. There are typically 35-40 drivers in Cup Series standings. Make sure you capture all of them including those near the bottom of the standings table.
+
+For each driver get:
 - position (finishing rank in standings)
 - car_number (the car/number badge shown)
 - first_name (driver first name)
 - last_name (driver last name)
 - manufacturer (Toyota, Ford, Chevrolet, etc.)
-- team_name (the team that owns the car — look this up from your knowledge if not shown on the page. For example: car #45 Toyota is 23XI Racing, #22 Ford is Team Penske, #9 Chevy is Hendrick Motorsports, etc.)
+- team_name (the team that owns the car — use your knowledge if not shown. e.g. #45 Toyota = 23XI Racing, #22 Ford = Team Penske, #9 Chevy = Hendrick Motorsports, #19 Toyota = Joe Gibbs Racing, #10 Ford = Stewart-Haas Racing / Haas Factory Team, #17 Ford = RFK Racing, #20 Toyota = Joe Gibbs Racing, #23 Toyota = 23XI Racing, #2 Ford = Team Penske, #12 Ford = Team Penske, #1 Chevy = Trackhouse Racing, #99 Ford = Haas Factory Team, #77 Chevy = Spire Motorsports, etc.)
 - points (current standings points)
 
 Also extract the manufacturer standings (name and points).
-
 Also extract the season year and series name (e.g. "NASCAR Cup Series").
 
-Return complete data for all drivers listed on the page.`;
+Return ALL drivers — the complete list. Do not truncate.`;
 
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
