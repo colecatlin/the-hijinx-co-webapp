@@ -13,8 +13,7 @@ Deno.serve(async (req) => {
 
     // Find tracks that need enrichment (missing city/state or city === name)
     const tracksToEnrich = tracks.filter(t => {
-      const d = t.data;
-      return !d.location_state || d.location_city === d.name || !d.location_city || !d.track_type || d.track_type === 'Speedway' && !d.length;
+      return !t.location_state || t.location_city === t.name || !t.location_city || !t.surface_type || !t.length;
     });
 
     if (tracksToEnrich.length === 0) {
@@ -22,7 +21,7 @@ Deno.serve(async (req) => {
     }
 
     // Build a list of track names for AI lookup
-    const trackNames = tracksToEnrich.map(t => t.data.name);
+    const trackNames = tracksToEnrich.map(t => t.name);
 
     const prompt = `You are a motorsports data expert. For each of the following racing tracks/venues, provide accurate factual data.
 
