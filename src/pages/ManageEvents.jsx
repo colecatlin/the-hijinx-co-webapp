@@ -5,12 +5,13 @@ import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import AddEventForm from '@/components/management/AddEventForm';
 import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
+import AIEventGenerator from '@/components/management/AIEventGenerator';
 
 export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
