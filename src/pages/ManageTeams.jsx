@@ -214,12 +214,27 @@ export default function ManageTeams() {
               onChange={handleImport}
               className="hidden"
             />
+            <Button
+              onClick={handleEnrich}
+              disabled={enriching}
+              variant="outline"
+              className="border-purple-300 text-purple-700 hover:bg-purple-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {enriching ? 'Enriching...' : 'AI Enrich'}
+            </Button>
             <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
               <Plus className="w-4 h-4 mr-2" />
               Add Team
             </Button>
           </div>
         </div>
+
+        {enrichResult && (
+          <div className={`mb-4 p-3 rounded-lg text-sm ${enrichResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+            {enrichResult.message || enrichResult.error}
+          </div>
+        )}
 
         <div className="mb-6 flex items-center gap-3">
           <div className="relative flex-1">
