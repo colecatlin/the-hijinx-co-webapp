@@ -31,8 +31,22 @@ export default function ManageDrivers() {
   const [selectedDrivers, setSelectedDrivers] = useState([]);
   const [selectedDriverForEdit, setSelectedDriverForEdit] = useState(null);
   const [editingStatuses, setEditingStatuses] = useState({});
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const [importSeries, setImportSeries] = useState('nascar-cup-series');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const handleNascarImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    const res = await base44.functions.invoke('importNascarStandings', { series: importSeries });
+    setImporting(false);
+    setImportResult(res.data);
+    if (res.data?.success) {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+    }
+  };
 
   const { data: drivers = [], isLoading } = useQuery({
     queryKey: ['drivers'],
