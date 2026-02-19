@@ -69,6 +69,7 @@ import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
 import ManageAccess from './pages/ManageAccess';
 import ManageAnnouncements from './pages/ManageAnnouncements';
+import ManageCalendarSync from './pages/ManageCalendarSync';
 import ManageDriverClaims from './pages/ManageDriverClaims';
 import ManageDriverCommunity from './pages/ManageDriverCommunity';
 import ManageDriverMedia from './pages/ManageDriverMedia';
@@ -110,7 +111,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ManageCalendarSync from './pages/ManageCalendarSync';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +137,7 @@ export const PAGES = {
     "Learning": Learning,
     "ManageAccess": ManageAccess,
     "ManageAnnouncements": ManageAnnouncements,
+    "ManageCalendarSync": ManageCalendarSync,
     "ManageDriverClaims": ManageDriverClaims,
     "ManageDriverCommunity": ManageDriverCommunity,
     "ManageDriverMedia": ManageDriverMedia,
@@ -178,7 +179,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ManageCalendarSync": ManageCalendarSync,
 }
 
 export const pagesConfig = {
