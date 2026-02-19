@@ -170,6 +170,7 @@ Return ALL drivers — the complete list. Do not truncate.`;
         created: driversCreated.length,
         skipped: driversSkipped.length,
         created_names: driversCreated,
+        duplicates_detected: duplicatesFound,
       },
       teams: {
         found: uniqueTeamNames.length,
