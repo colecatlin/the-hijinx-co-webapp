@@ -120,32 +120,47 @@ Deno.serve(async (req) => {
 
     const stats = { tracks: 0, series: 0, events: 0, skipped: 0 };
 
-    const trackNames = [...new Set(icsEvents.map(e => e['LOCATION']).filter(Boolean))];
+    // Build a set of unique track names (extracted from location strings like "Series @ Track")
+    const locationToTrackName = {};
+    for (const e of icsEvents) {
+      const loc = e['LOCATION'];
+      if (loc) locationToTrackName[loc] = extractTrackName(loc);
+    }
+    const uniqueTrackNames = [...new Set(Object.values(locationToTrackName).filter(Boolean))];
     const seriesNames = [...new Set(icsEvents.map(e => extractSeriesName(e['SUMMARY'] || '')).filter(Boolean))];
 
     const existingTracks = await base44.asServiceRole.entities.Track.list();
     const existingSeries = await base44.asServiceRole.entities.Series.list();
     const existingEvents = await base44.asServiceRole.entities.Event.list();
 
-    const trackMap = {};
-    const seriesMap = {};
+    const trackMap = {}; // keyed by original location string
+    const trackNameToId = {};
 
-    for (const trackName of trackNames) {
+    for (const trackName of uniqueTrackNames) {
       const existing = existingTracks.find(t => t.name?.toLowerCase() === trackName.toLowerCase());
       if (existing) {
-        trackMap[trackName] = existing.id;
+        trackNameToId[trackName] = existing.id;
       } else {
+        const td = TRACK_DATA[trackName] || {};
         const created = await base44.asServiceRole.entities.Track.create({
           name: trackName,
           slug: slugify(trackName),
-          location_city: trackName,
+          location_city: td.city || trackName,
+          location_state: td.state || null,
           location_country: 'United States',
-          track_type: 'Other',
+          track_type: td.type || 'Speedway',
+          surface_type: td.surface || null,
+          length: td.length || null,
           status: 'Active',
         });
-        trackMap[trackName] = created.id;
+        trackNameToId[trackName] = created.id;
         stats.tracks++;
       }
+    }
+
+    // Map original location strings to track IDs
+    for (const [loc, tName] of Object.entries(locationToTrackName)) {
+      trackMap[loc] = trackNameToId[tName] || null;
     }
 
     for (const seriesName of seriesNames) {
