@@ -187,22 +187,10 @@ export default function DriverDirectory() {
         <DirectoryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          searchPlaceholder="Search by name, number, series, team, hometown..."
           filters={filters}
           onFilterChange={handleFilterChange}
           filterConfig={[
-            {
-              key: 'discipline',
-              label: 'Discipline',
-              options: [
-                { value: 'all', label: 'All Disciplines' },
-                { value: 'Off Road', label: 'Off Road' },
-                { value: 'Snowmobile', label: 'Snowmobile' },
-                { value: 'Asphalt Oval', label: 'Asphalt Oval' },
-                { value: 'Road Racing', label: 'Road Racing' },
-                { value: 'Rallycross', label: 'Rallycross' },
-                { value: 'Drag Racing', label: 'Drag Racing' },
-              ]
-            },
             {
               key: 'series',
               label: 'Series',
@@ -212,13 +200,42 @@ export default function DriverDirectory() {
               ]
             },
             {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Stock Car', label: 'Stock Car' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Dirt Oval', label: 'Dirt Oval' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Dirt Bike', label: 'Dirt Bike' },
+                { value: 'Open Wheel', label: 'Open Wheel' },
+                { value: 'Sports Car', label: 'Sports Car' },
+                { value: 'Touring Car', label: 'Touring Car' },
+                { value: 'Rally', label: 'Rally' },
+                { value: 'Drag', label: 'Drag' },
+                { value: 'Motorcycle', label: 'Motorcycle' },
+                { value: 'Karting', label: 'Karting' },
+                { value: 'Water', label: 'Water' },
+                { value: 'Alternative', label: 'Alternative' },
+              ]
+            },
+            {
+              key: 'manufacturer',
+              label: 'Manufacturer',
+              options: [
+                { value: 'all', label: 'All Manufacturers' },
+                ...uniqueManufacturers.map(m => ({ value: m, label: m }))
+              ]
+            },
+            {
               key: 'status',
               label: 'Status',
               options: [
                 { value: 'all', label: 'All Status' },
                 { value: 'Active', label: 'Active' },
                 { value: 'Part Time', label: 'Part Time' },
-                { value: 'Retired', label: 'Retired' },
+                { value: 'Inactive', label: 'Inactive' },
               ]
             },
             {
@@ -229,12 +246,24 @@ export default function DriverDirectory() {
                 ...uniqueStates.map(s => ({ value: s, label: s }))
               ]
             },
+            {
+              key: 'country',
+              label: 'Country',
+              options: [
+                { value: 'all', label: 'All Countries' },
+                ...uniqueCountries.map(c => ({ value: c, label: c }))
+              ]
+            },
           ]}
           sortBy={sortBy}
           onSortChange={setSortBy}
           sortOptions={[
-            { value: 'name', label: 'Name' },
+            { value: 'name_asc', label: 'Name A–Z' },
+            { value: 'name_desc', label: 'Name Z–A' },
+            { value: 'number', label: 'Car Number' },
             { value: 'discipline', label: 'Discipline' },
+            { value: 'newest', label: 'Newest' },
+            { value: 'oldest', label: 'Oldest' },
           ]}
         />
 
