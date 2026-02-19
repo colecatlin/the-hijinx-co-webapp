@@ -163,6 +163,8 @@ Deno.serve(async (req) => {
       trackMap[loc] = trackNameToId[tName] || null;
     }
 
+    const seriesMap = {};
+
     for (const seriesName of seriesNames) {
       const existing = existingSeries.find(s => s.name?.toLowerCase() === seriesName.toLowerCase());
       if (existing) {
