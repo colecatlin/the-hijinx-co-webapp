@@ -84,24 +84,33 @@ export default function DriverDirectory() {
 
   const filteredDrivers = drivers.filter(driver => {
     const displayName = driver.display_name || `${driver.first_name} ${driver.last_name}`;
-    
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesName = displayName?.toLowerCase().includes(query) ||
                           driver.first_name?.toLowerCase().includes(query) ||
                           driver.last_name?.toLowerCase().includes(query);
-      if (!matchesName) return false;
+      const matchesNumber = driver.primary_number?.toString().includes(query);
+      const matchesTeam = allTeams.find(t => t.id === driver.team_id)?.name?.toLowerCase().includes(query);
+      const matchesHometown = driver.hometown_city?.toLowerCase().includes(query) ||
+                              driver.hometown_state?.toLowerCase().includes(query);
+      const matchesSeries = (programsByDriver[driver.id] || []).some(p =>
+        p.series_name?.toLowerCase().includes(query)
+      );
+      if (!matchesName && !matchesNumber && !matchesTeam && !matchesHometown && !matchesSeries) return false;
     }
 
     if (filters.discipline !== 'all' && driver.primary_discipline !== filters.discipline) return false;
     if (filters.status !== 'all' && driver.status !== filters.status) return false;
     if (filters.state !== 'all' && driver.hometown_state !== filters.state) return false;
-    
+    if (filters.country !== 'all' && driver.hometown_country !== filters.country) return false;
+    if (filters.manufacturer !== 'all' && driver.manufacturer !== filters.manufacturer) return false;
+
     if (filters.series !== 'all') {
       const driverPrograms = programsByDriver[driver.id] || [];
       if (!driverPrograms.some(p => p.series_name === filters.series)) return false;
     }
-    
+
     return true;
   });
 
