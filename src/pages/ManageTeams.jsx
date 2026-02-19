@@ -27,7 +27,20 @@ export default function ManageTeams() {
   const [editingTeam, setEditingTeam] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedTeamForEdit, setSelectedTeamForEdit] = useState(null);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichResult, setEnrichResult] = useState(null);
   const queryClient = useQueryClient();
+
+  const handleEnrich = async () => {
+    setEnriching(true);
+    setEnrichResult(null);
+    const res = await base44.functions.invoke('enrichTeamData');
+    setEnriching(false);
+    setEnrichResult(res.data);
+    if (res.data?.success) {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    }
+  };
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
