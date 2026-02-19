@@ -11,40 +11,28 @@ Deno.serve(async (req) => {
 
     const tracks = await base44.asServiceRole.entities.Track.list();
 
-    // Find tracks that need enrichment (missing city/state or city === name)
-    const tracksToEnrich = tracks.filter(t => {
-      return !t.location_state || t.location_city === t.name || !t.location_city || !t.surface_type || !t.length;
-    });
-
-    if (tracksToEnrich.length === 0) {
-      return Response.json({ success: true, message: 'All tracks already have complete data', updated: 0 });
+    if (tracks.length === 0) {
+      return Response.json({ success: true, message: 'No tracks found', updated: 0 });
     }
 
-    // Build a list of track names for AI lookup
-    const trackNames = tracksToEnrich.map(t => t.name);
+    const trackNames = tracks.map(t => t.name);
 
-    const prompt = `You are a motorsports data expert. For each of the following racing tracks/venues, provide accurate factual data.
+    const prompt = `You are a motorsports data expert with access to the internet. Look up accurate, real-world information for each of the following racing tracks/venues and return complete data for all of them.
 
-Track names:
+Track names to research:
 ${trackNames.map((n, i) => `${i + 1}. ${n}`).join('\n')}
 
 For each track, provide:
-- name: exact track name as given
-- location_city: the actual city where the track is located (NOT the track name)
-- location_state: 2-letter US state code, or full name for international locations (e.g., "Mexico City" area = "CDMX"), or null if not in US
-- location_country: country name (e.g., "United States", "Mexico", "Canada")
-- track_type: one of "Oval", "Road Course", "Street Circuit", "Short Track", "Speedway", "Off-Road", "Dirt Track", "Other"
-- surface_type: one of "Asphalt", "Concrete", "Dirt", "Clay", "Mixed"
-- length: track length in miles as a number (null if unknown)
-- description: 1-2 sentence description of the track
+- name: exact track name as given in the list above
+- location_city: the actual city/town where the track is physically located (NOT the track name itself)
+- location_state: 2-letter US state abbreviation (e.g. "FL", "CA"), or regional code for international (e.g. "CDMX" for Mexico City), or null if unknown
+- location_country: full country name (e.g. "United States", "Mexico", "Canada")
+- track_type: one of exactly: "Oval", "Road Course", "Street Circuit", "Short Track", "Speedway", "Off-Road", "Dirt Track", "Other"
+- surface_type: one of exactly: "Asphalt", "Concrete", "Dirt", "Clay", "Mixed"
+- length: track length in miles as a decimal number (null if genuinely unknown)
+- description: 1-2 sentence factual description of the track including its history and significance
 
-Notes:
-- "EchoPark Speedway" is the former Atlanta Motor Speedway reconfigured as a superspeedway in Hampton, GA
-- "San Diego Street Course" is a street circuit in San Diego, CA
-- "Circuit of The Americas" (COTA) is in Austin, TX
-- "Autódromo Hermanos Rodríguez" is in Mexico City, Mexico
-- "Michigan Speedway" is in Brooklyn, MI (2.0 mile oval)
-- Use accurate real-world data for all tracks`;
+Return ALL tracks in the response, even ones you already know well.`;
 
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
@@ -76,7 +64,7 @@ Notes:
     let updated = 0;
 
     for (const enriched of enrichedTracks) {
-      const match = tracksToEnrich.find(t => t.name === enriched.name);
+      const match = tracks.find(t => t.name === enriched.name);
       if (!match) continue;
 
       await base44.asServiceRole.entities.Track.update(match.id, {
@@ -93,9 +81,9 @@ Notes:
 
     return Response.json({
       success: true,
-      message: `Enriched ${updated} tracks with AI data`,
+      message: `AI-enriched ${updated} of ${tracks.length} tracks`,
       updated,
-      tracksProcessed: trackNames,
+      total: tracks.length,
       enrichedData: enrichedTracks,
     });
 
