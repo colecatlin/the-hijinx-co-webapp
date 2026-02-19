@@ -229,6 +229,15 @@ export default function ManageTeams() {
               className="hidden"
             />
             <Button
+              onClick={handleNascarImport}
+              disabled={importing}
+              variant="outline"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {importing ? 'Importing...' : 'NASCAR Import'}
+            </Button>
+            <Button
               onClick={handleEnrich}
               disabled={enriching}
               variant="outline"
