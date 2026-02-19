@@ -139,6 +139,7 @@ Return null for any fields not found on the page.`;
       nascar_url: nascarUrl,
       extracted: aiResponse,
       updated_fields: updatePayload,
+      team_matched: updatePayload.team_id ? aiResponse.team_name : null,
     });
 
   } catch (error) {
