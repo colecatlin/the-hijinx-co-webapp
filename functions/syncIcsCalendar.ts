@@ -41,6 +41,58 @@ function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+// Extract just the track name from a location string like "NASCAR Cup Series @ Daytona International Speedway"
+function extractTrackName(location) {
+  if (!location) return null;
+  const atIdx = location.indexOf(' @ ');
+  if (atIdx !== -1) return location.substring(atIdx + 3).trim();
+  return location.trim();
+}
+
+// Known NASCAR track data: name -> { city, state, track_type, surface_type, length }
+const TRACK_DATA = {
+  'Daytona International Speedway':       { city: 'Daytona Beach',     state: 'FL', type: 'Speedway',    surface: 'Asphalt',   length: 2.5 },
+  'Atlanta Motor Speedway':               { city: 'Hampton',           state: 'GA', type: 'Speedway',    surface: 'Asphalt',   length: 1.54 },
+  'Las Vegas Motor Speedway':             { city: 'Las Vegas',         state: 'NV', type: 'Speedway',    surface: 'Asphalt',   length: 1.5 },
+  'Circuit of the Americas':              { city: 'Austin',            state: 'TX', type: 'Road Course', surface: 'Asphalt',   length: 3.41 },
+  'Bristol Motor Speedway':               { city: 'Bristol',           state: 'TN', type: 'Short Track', surface: 'Concrete',  length: 0.533 },
+  'Martinsville Speedway':                { city: 'Ridgeway',          state: 'VA', type: 'Short Track', surface: 'Asphalt',   length: 0.526 },
+  'Talladega Superspeedway':              { city: 'Talladega',         state: 'AL', type: 'Speedway',    surface: 'Asphalt',   length: 2.66 },
+  'Dover Motor Speedway':                 { city: 'Dover',             state: 'DE', type: 'Short Track', surface: 'Concrete',  length: 1.0 },
+  'Kansas Speedway':                      { city: 'Kansas City',       state: 'KS', type: 'Speedway',    surface: 'Asphalt',   length: 1.5 },
+  'Charlotte Motor Speedway':             { city: 'Concord',           state: 'NC', type: 'Speedway',    surface: 'Asphalt',   length: 1.5 },
+  'Sonoma Raceway':                       { city: 'Sonoma',            state: 'CA', type: 'Road Course', surface: 'Asphalt',   length: 1.99 },
+  'Nashville Superspeedway':              { city: 'Lebanon',           state: 'TN', type: 'Speedway',    surface: 'Concrete',  length: 1.33 },
+  'New Hampshire Motor Speedway':         { city: 'Loudon',            state: 'NH', type: 'Short Track', surface: 'Asphalt',   length: 1.058 },
+  'Pocono Raceway':                       { city: 'Long Pond',         state: 'PA', type: 'Speedway',    surface: 'Asphalt',   length: 2.5 },
+  'Michigan International Speedway':      { city: 'Brooklyn',          state: 'MI', type: 'Speedway',    surface: 'Asphalt',   length: 2.0 },
+  'Richmond Raceway':                     { city: 'Richmond',          state: 'VA', type: 'Short Track', surface: 'Asphalt',   length: 0.75 },
+  'Watkins Glen International':           { city: 'Watkins Glen',      state: 'NY', type: 'Road Course', surface: 'Asphalt',   length: 2.45 },
+  'Indianapolis Motor Speedway':          { city: 'Indianapolis',      state: 'IN', type: 'Speedway',    surface: 'Asphalt',   length: 2.5 },
+  'Lucas Oil Indianapolis Raceway Park':  { city: 'Indianapolis',      state: 'IN', type: 'Short Track', surface: 'Asphalt',   length: 0.686 },
+  'Lucas Oil Indianapolis Raceway Par':   { city: 'Indianapolis',      state: 'IN', type: 'Short Track', surface: 'Asphalt',   length: 0.686 },
+  'World Wide Technology Raceway':        { city: 'Madison',           state: 'IL', type: 'Short Track', surface: 'Asphalt',   length: 1.25 },
+  'North Wilkesboro Speedway':            { city: 'North Wilkesboro',  state: 'NC', type: 'Short Track', surface: 'Asphalt',   length: 0.625 },
+  'Phoenix Raceway':                      { city: 'Avondale',          state: 'AZ', type: 'Short Track', surface: 'Asphalt',   length: 1.0 },
+  'Homestead-Miami Speedway':             { city: 'Homestead',         state: 'FL', type: 'Speedway',    surface: 'Asphalt',   length: 1.5 },
+  'Auto Club Speedway':                   { city: 'Fontana',           state: 'CA', type: 'Speedway',    surface: 'Asphalt',   length: 2.0 },
+  'Rockingham Speedway':                  { city: 'Rockingham',        state: 'NC', type: 'Speedway',    surface: 'Asphalt',   length: 1.017 },
+  'Bowman Gray Stadium':                  { city: 'Winston-Salem',     state: 'NC', type: 'Short Track', surface: 'Asphalt',   length: 0.25 },
+  'Iowa Speedway':                        { city: 'Newton',            state: 'IA', type: 'Short Track', surface: 'Asphalt',   length: 0.875 },
+  'Gateway Motorsports Park':             { city: 'Madison',           state: 'IL', type: 'Speedway',    surface: 'Asphalt',   length: 1.25 },
+  'Chicagoland Speedway':                 { city: 'Joliet',            state: 'IL', type: 'Speedway',    surface: 'Asphalt',   length: 1.5 },
+  'Texas Motor Speedway':                 { city: 'Fort Worth',        state: 'TX', type: 'Speedway',    surface: 'Concrete',  length: 1.5 },
+  'Auto Club Speedway':                   { city: 'Fontana',           state: 'CA', type: 'Speedway',    surface: 'Asphalt',   length: 2.0 },
+  'Grand Prix of St. Petersburg':         { city: 'St. Petersburg',    state: 'FL', type: 'Street Circuit', surface: 'Asphalt', length: 1.8 },
+  'Lime Rock Park':                       { city: 'Lakeville',         state: 'CT', type: 'Road Course', surface: 'Asphalt',   length: 1.53 },
+  'Mid-Ohio Sports Car Course':           { city: 'Lexington',         state: 'OH', type: 'Road Course', surface: 'Asphalt',   length: 2.258 },
+  'Road America':                         { city: 'Elkhart Lake',      state: 'WI', type: 'Road Course', surface: 'Asphalt',   length: 4.048 },
+  'Portland International Raceway':       { city: 'Portland',          state: 'OR', type: 'Road Course', surface: 'Asphalt',   length: 1.967 },
+  'Indianapolis Motor Speedway Road Course': { city: 'Indianapolis',   state: 'IN', type: 'Road Course', surface: 'Asphalt',   length: 2.439 },
+  'Laguna Seca Raceway':                  { city: 'Salinas',           state: 'CA', type: 'Road Course', surface: 'Asphalt',   length: 2.238 },
+  'WeatherTech Raceway Laguna Seca':      { city: 'Salinas',           state: 'CA', type: 'Road Course', surface: 'Asphalt',   length: 2.238 },
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
