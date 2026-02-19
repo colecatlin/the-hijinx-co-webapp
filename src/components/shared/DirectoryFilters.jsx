@@ -19,7 +19,8 @@ import {
 
 export default function DirectoryFilters({ 
   searchQuery, 
-  onSearchChange, 
+  onSearchChange,
+  searchPlaceholder = 'Search...',
   filters, 
   onFilterChange, 
   filterConfig,
