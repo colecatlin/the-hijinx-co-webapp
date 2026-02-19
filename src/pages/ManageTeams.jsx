@@ -42,6 +42,20 @@ export default function ManageTeams() {
     }
   };
 
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+
+  const handleNascarImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    const res = await base44.functions.invoke('importNascarStandings', { series: 'nascar-cup-series' });
+    setImporting(false);
+    setImportResult(res.data);
+    if (res.data?.success) {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    }
+  };
+
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('-updated_date', 500),
