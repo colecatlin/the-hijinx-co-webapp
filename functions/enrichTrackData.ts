@@ -76,17 +76,17 @@ Notes:
     let updated = 0;
 
     for (const enriched of enrichedTracks) {
-      const match = tracksToEnrich.find(t => t.data.name === enriched.name);
+      const match = tracksToEnrich.find(t => t.name === enriched.name);
       if (!match) continue;
 
       await base44.asServiceRole.entities.Track.update(match.id, {
-        location_city: enriched.location_city || match.data.location_city,
-        location_state: enriched.location_state ?? match.data.location_state,
-        location_country: enriched.location_country || match.data.location_country || 'United States',
-        track_type: enriched.track_type || match.data.track_type,
-        surface_type: enriched.surface_type || match.data.surface_type,
-        length: enriched.length ?? match.data.length,
-        description: enriched.description || match.data.description,
+        location_city: enriched.location_city || match.location_city,
+        location_state: enriched.location_state ?? match.location_state,
+        location_country: enriched.location_country || match.location_country || 'United States',
+        track_type: enriched.track_type || match.track_type,
+        surface_type: enriched.surface_type || match.surface_type,
+        length: enriched.length ?? match.length,
+        description: enriched.description || match.description,
       });
       updated++;
     }
