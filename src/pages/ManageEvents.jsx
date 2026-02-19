@@ -17,6 +17,7 @@ export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventForEdit, setSelectedEventForEdit] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
