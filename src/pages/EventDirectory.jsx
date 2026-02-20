@@ -82,8 +82,8 @@ export default function EventDirectory() {
                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-bold text-lg">{event.name}</h3>
-                  <span className={`px-2 py-1 text-xs rounded ${
+                  <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
+                  <span className={`shrink-0 ml-2 px-2 py-1 text-xs rounded ${
                     event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
                     event.status === 'in_progress' ? 'bg-green-100 text-green-800' :
                     event.status === 'completed' ? 'bg-gray-100 text-gray-800' :
@@ -92,16 +92,14 @@ export default function EventDirectory() {
                     {event.status}
                   </span>
                 </div>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-1 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+                    {event.round_number && <span className="text-gray-400">· Rd {event.round_number}</span>}
                   </div>
                   {event.series && (
-                    <div className="font-medium text-gray-900">{event.series}</div>
-                  )}
-                  {event.round_number && (
-                    <div>Round {event.round_number}</div>
+                    <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
                   )}
                 </div>
               </Link>
