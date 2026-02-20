@@ -38,8 +38,6 @@ export default function ManageEvents() {
     queryFn: () => base44.entities.Track.list(),
   });
 
-  const today = new Date().toISOString().split('T')[0];
-
   const filteredEvents = useMemo(() => {
     let result = events.filter(event =>
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -50,14 +48,16 @@ export default function ManageEvents() {
       result = result.filter(e => e.status === 'completed' || e.status === 'cancelled');
     }
     result = [...result].sort((a, b) => {
-      if (sortBy === 'date_desc') return new Date(b.event_date || 0) - new Date(a.event_date || 0);
-      if (sortBy === 'date_asc') return new Date(a.event_date || 0) - new Date(b.event_date || 0);
+      const dateA = a.event_date ? new Date(a.event_date + 'T12:00:00') : new Date(0);
+      const dateB = b.event_date ? new Date(b.event_date + 'T12:00:00') : new Date(0);
+      if (sortBy === 'date_desc') return dateB - dateA;
+      if (sortBy === 'date_asc') return dateA - dateB;
       if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '');
       return 0;
     });
     return result;
-  }, [events, searchQuery, sortBy]);
+  }, [events, searchQuery, sortBy, statusFilter]);
 
   if (showAIGenerator) {
     return (
