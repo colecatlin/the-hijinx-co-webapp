@@ -221,6 +221,8 @@ Deno.serve(async (req) => {
         event_date: eventDate,
         status: new Date(eventDate) < new Date() ? 'completed' : 'upcoming',
         round_number: roundNumber,
+        external_uid: uid || undefined,
+        location_note: location || undefined,
       };
       if (endDate && endDate !== eventDate) eventObj.end_date = endDate;
       eventsToCreate.push(eventObj);
