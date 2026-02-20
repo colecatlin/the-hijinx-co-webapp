@@ -45,9 +45,9 @@ export default function ManageEvents() {
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     if (statusFilter === 'upcoming') {
-      result = result.filter(e => e.event_date >= today || e.status === 'upcoming' || e.status === 'in_progress');
+      result = result.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
     } else if (statusFilter === 'finished') {
-      result = result.filter(e => e.event_date < today || e.status === 'completed' || e.status === 'cancelled');
+      result = result.filter(e => e.status === 'completed' || e.status === 'cancelled');
     }
     result = [...result].sort((a, b) => {
       if (sortBy === 'date_desc') return new Date(b.event_date || 0) - new Date(a.event_date || 0);
