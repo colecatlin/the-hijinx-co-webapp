@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, RefreshCw, CheckCircle, AlertCircle, Loader2, Calendar } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import EventDuplicateScanner from '@/components/management/EventDuplicateScanner';
 
 const DEFAULT_CALENDARS = [
   {
