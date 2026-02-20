@@ -214,8 +214,7 @@ export default function ManageEvents() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Event</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Status</th>
                   <th className="px-6 py-3 text-right text-xs font-bold uppercase">Actions</th>
@@ -224,10 +223,14 @@ export default function ManageEvents() {
               <tbody className="divide-y">
                 {filteredEvents.map(event => (
                   <tr key={event.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium">{event.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{event.series}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{event.name}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-600">
+                        {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+                      </div>
+                      {event.series && <div className="text-xs text-gray-400 mt-0.5">{event.series}</div>}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 text-xs rounded ${
