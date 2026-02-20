@@ -59,6 +59,15 @@ function detectSeries(summary) {
   return 'NASCAR';
 }
 
+// Extract just the event name without series prefix (e.g., "NASCAR Cup Series - Las Vegas" -> "Las Vegas")
+function extractEventName(summary, seriesName) {
+  if (!summary) return '';
+  let name = summary.trim();
+  // Remove series name prefix if present (case-insensitive)
+  const seriesPattern = new RegExp(`^${seriesName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-–]\\s*`, 'i');
+  return name.replace(seriesPattern, '').trim();
+}
+
 function extractEventDate(dtstart) {
   if (!dtstart) return null;
   const parsed = parseICSDate(dtstart);
