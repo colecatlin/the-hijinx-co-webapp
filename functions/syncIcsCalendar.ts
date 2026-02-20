@@ -183,12 +183,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Build lookup maps for deduplication
+    const existingByUid = new Map();
+    const existingByNameDate = new Map();
+    for (const e of existingEvents) {
+      if (e.external_uid) existingByUid.set(e.external_uid, e);
+      existingByNameDate.set(`${e.name}__${e.event_date}`, e);
+    }
+
     const eventsToCreate = [];
     for (const icsEvent of icsEvents) {
       const summary = icsEvent['SUMMARY'] || '';
       const location = icsEvent['LOCATION'] || '';
       const dtStart = icsEvent['DTSTART'] || '';
       const dtEnd = icsEvent['DTEND'] || '';
+      const uid = icsEvent['UID'] || null;
 
       if (!summary || !dtStart) { stats.skipped++; continue; }
 
@@ -198,10 +207,9 @@ Deno.serve(async (req) => {
       const endDate = parseICSDate(dtEnd);
       const trackId = trackMap[location] || null;
 
-      const alreadyExists = existingEvents.find(e =>
-        e.name === summary ||
-        (e.event_date === eventDate && e.series === seriesName && e.round_number === roundNumber)
-      );
+      // Deduplicate: prefer external_uid match, fall back to exact name+date match
+      const alreadyExists = (uid && existingByUid.has(uid)) ||
+        existingByNameDate.has(`${summary}__${eventDate}`);
 
       if (alreadyExists) { stats.skipped++; continue; }
 
