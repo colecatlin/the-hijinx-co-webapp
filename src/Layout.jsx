@@ -22,7 +22,7 @@ const navItems = [
     { name: 'Tracks', page: 'TrackDirectory' },
     { name: 'Series', page: 'SeriesHome' },
     { name: 'Events', page: 'EventDirectory' },
-    { name: 'Results', page: 'ResultsDirectory' },
+    { name: 'Results', page: 'ResultsHome' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
