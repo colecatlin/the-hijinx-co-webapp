@@ -14,15 +14,16 @@ export default function ScheduleHome() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['schedule'],
-    queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'date', 100),
+    queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'event_date', 100),
   });
 
   const { data: series = [] } = useQuery({
     queryKey: ['seriesSchedule'],
-    queryFn: () => base44.entities.Series.filter({ status: 'active' }),
+    queryFn: () => base44.entities.Series.filter({ status: 'Active' }),
   });
 
-  const filtered = seriesFilter === 'all' ? events : events.filter(e => e.series_id === seriesFilter);
+  const uniqueSeries = [...new Set(events.map(e => e.series).filter(Boolean))];
+  const filtered = seriesFilter === 'all' ? events : events.filter(e => e.series === seriesFilter);
 
   return (
     <PageShell>
