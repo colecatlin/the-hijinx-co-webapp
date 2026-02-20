@@ -15,7 +15,11 @@ export default function ResultsHome() {
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['results-events'],
-    queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-date', 50),
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const all = await base44.entities.Event.list('-event_date', 200);
+      return all.filter(e => e.event_date && e.event_date <= today);
+    },
   });
 
   const { data: allResults = [], isLoading: resultsLoading } = useQuery({
