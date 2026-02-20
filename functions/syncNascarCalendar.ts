@@ -123,9 +123,10 @@ Deno.serve(async (req) => {
       const eventDate = extractEventDate(icsEv.dtstart);
       const endDate = extractEventDate(icsEv.dtend);
       const season = extractSeason(icsEv.dtstart);
+      const eventName = extractEventName(icsEv.summary, seriesName);
 
       const eventData = {
-        name: icsEv.summary,
+        name: eventName,
         series: seriesName,
         season: season,
         event_date: eventDate,
