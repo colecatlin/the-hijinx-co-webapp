@@ -153,6 +153,11 @@ export default function ManageCalendarSync() {
         )}
       </div>
 
+      {/* Duplicate Scanner */}
+      <div className="mb-8">
+        <EventDuplicateScanner />
+      </div>
+
       {/* Add new calendar */}
       <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
         <h2 className="font-semibold text-[#232323] mb-4 flex items-center gap-2">
