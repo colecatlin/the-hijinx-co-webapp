@@ -104,7 +104,7 @@ export default function ResultsHome() {
           <div className="space-y-3">
             {filtered.map((event) => {
               const podium = podiumByEvent[event.id] || [];
-              const dateStr = event.date ? format(new Date(event.date), 'MM/dd/yy') : null;
+              const dateStr = event.event_date ? format(new Date(event.event_date), 'MM/dd/yy') : null;
 
               return (
                 <div key={event.id} className="flex items-stretch border border-gray-100 hover:border-gray-300 transition-colors group">
