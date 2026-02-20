@@ -50,8 +50,8 @@ export default function ManageEvents() {
     result = [...result].sort((a, b) => {
       const dateA = a.event_date ? new Date(a.event_date + 'T12:00:00') : new Date(0);
       const dateB = b.event_date ? new Date(b.event_date + 'T12:00:00') : new Date(0);
-      if (sortBy === 'date_desc') return dateB - dateA;
-      if (sortBy === 'date_asc') return dateA - dateB;
+      if (sortBy === 'date_desc') return dateA - dateB;
+      if (sortBy === 'date_asc') return dateB - dateA;
       if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '');
       return 0;
