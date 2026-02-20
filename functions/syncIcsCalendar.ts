@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
           location_state: td.state || null,
           location_country: 'United States',
           track_type: td.type || 'Speedway',
-          surface_type: td.surface || null,
+          surface_type: td.surface || 'Asphalt',
           length: td.length || null,
           status: 'Active',
         });
@@ -167,13 +167,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Map original location strings to track IDs
-    for (const [loc, tName] of Object.entries(locationToTrackName)) {
-      trackMap[loc] = trackNameToId[tName] || null;
+    for (const loc of Object.keys(locationToTrackName)) {
+      trackMap[loc] = trackNameToId[locationToTrackName[loc]];
     }
 
     const seriesMap = {};
-
     for (const seriesName of seriesNames) {
       const existing = existingSeries.find(s => s.name?.toLowerCase() === seriesName.toLowerCase());
       if (existing) {
@@ -215,15 +213,16 @@ Deno.serve(async (req) => {
       const eventDate = parseICSDate(dtStart);
       const endDate = parseICSDate(dtEnd);
       const trackId = trackMap[location] || null;
+      const eventName = extractEventName(summary, seriesName);
 
       // Deduplicate: prefer external_uid match, fall back to exact name+date match
       const alreadyExists = (uid && existingByUid.has(uid)) ||
-        existingByNameDate.has(`${summary}__${eventDate}`);
+        existingByNameDate.has(`${eventName}__${eventDate}`);
 
       if (alreadyExists) { stats.skipped++; continue; }
 
       const eventObj = {
-        name: summary,
+        name: eventName,
         track_id: trackId,
         series: seriesName,
         season: '2026',
@@ -243,10 +242,10 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({
-      success: true,
-      message: `Sync complete for: ${calendarName}`,
+      message: `${calendarName} synced successfully`,
       stats,
     });
+
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
