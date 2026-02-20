@@ -124,6 +124,17 @@ export default function DriverProfile() {
     return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
   };
 
+  // Get all unique series for this driver, sorted by popularity_rank
+  const driverSeriesList = programs
+    .map(p => allSeries.find(s => s.id === p.series_id))
+    .filter(Boolean)
+    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i) // dedupe
+    .sort((a, b) => {
+      const rankA = a.popularity_rank ?? 9999;
+      const rankB = b.popularity_rank ?? 9999;
+      return rankA - rankB;
+    });
+
   const driverTeam = teams.find(t => t.id === driver?.team_id);
 
 
