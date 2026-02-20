@@ -12,6 +12,8 @@ import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import AddEventForm from '@/components/management/AddEventForm';
 import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
+import EventSessionsSection from '@/components/management/EventManagement/EventSessionsSection';
+import EventResultsSection from '@/components/management/EventManagement/EventResultsSection';
 import AIEventGenerator from '@/components/management/AIEventGenerator';
 
 export default function ManageEvents() {
