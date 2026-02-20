@@ -312,11 +312,15 @@ export default function DriverProfile() {
                         <div className="text-lg font-semibold text-[#232323]">{driver.class_name}</div>
                       </div>
                     )}
-                    {programs.length > 0 && (
+                    {driverSeriesList.length > 0 && (
                       <div>
                         <div className="text-sm text-gray-600 mb-1">Series</div>
-                        <div className="text-lg font-semibold text-[#232323]">
-                          {getSeriesName(programs[0].series_id)}
+                        <div className="flex flex-col gap-1">
+                          {driverSeriesList.map(s => (
+                            <div key={s.id} className="text-lg font-semibold text-[#232323] leading-tight">
+                              {s.name}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
