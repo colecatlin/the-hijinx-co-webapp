@@ -49,15 +49,12 @@ export default function ScheduleHome() {
             {filtered.map((event) => (
               <div key={event.id} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
                 <div className="w-16 text-center shrink-0">
-                  {(() => {
-                    const dateStr = event.date?.toString();
-                    if (!dateStr || dateStr.length !== 8) return null;
-                    const parsedDate = new Date(dateStr.slice(0, 4) + '-' + dateStr.slice(4, 6) + '-' + dateStr.slice(6, 8));
-                    if (isNaN(parsedDate.getTime())) return null;
+                  {event.event_date && (() => {
+                    const d = parseISO(event.event_date);
                     return (
                       <>
-                        <span className="font-mono text-[10px] text-gray-400 uppercase">{format(parsedDate, 'MMM')}</span>
-                        <p className="text-2xl font-black">{format(parsedDate, 'd')}</p>
+                        <span className="font-mono text-[10px] text-gray-400 uppercase">{format(d, 'MMM')}</span>
+                        <p className="text-2xl font-black">{format(d, 'd')}</p>
                       </>
                     );
                   })()}
@@ -65,25 +62,17 @@ export default function ScheduleHome() {
                 <div className="flex-1">
                   <h3 className="font-bold text-sm">{event.name}</h3>
                   <div className="flex flex-wrap items-center gap-3 mt-1">
-                    {event.series_name && <span className="font-mono text-[10px] text-gray-400 tracking-wider">{event.series_name}</span>}
-                    {event.track_name && (
+                    {event.series && <span className="font-mono text-[10px] text-gray-400 tracking-wider">{event.series}</span>}
+                    {event.location_note && (
                       <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                        <MapPin className="w-3 h-3" /> {event.track_name}
+                        <MapPin className="w-3 h-3" /> {event.location_note}
                       </span>
                     )}
                   </div>
                 </div>
-                {event.end_date && event.end_date !== event.date && (
+                {event.end_date && event.end_date !== event.event_date && (
                   <span className="text-xs text-gray-400 font-mono">
-                    {(() => {
-                      const startDateStr = event.date?.toString();
-                      const endDateStr = event.end_date?.toString();
-                      if (!startDateStr || !endDateStr || startDateStr.length !== 8 || endDateStr.length !== 8) return null;
-                      const startDate = new Date(startDateStr.slice(0, 4) + '-' + startDateStr.slice(4, 6) + '-' + startDateStr.slice(6, 8));
-                      const endDate = new Date(endDateStr.slice(0, 4) + '-' + endDateStr.slice(4, 6) + '-' + endDateStr.slice(6, 8));
-                      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return null;
-                      return `${format(startDate, 'MMM d')} – ${format(endDate, 'MMM d')}`;
-                    })()}
+                    {format(parseISO(event.event_date), 'MMM d')} – {format(parseISO(event.end_date), 'MMM d')}
                   </span>
                 )}
               </div>
