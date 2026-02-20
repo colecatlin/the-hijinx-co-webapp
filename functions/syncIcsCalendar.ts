@@ -32,6 +32,15 @@ function extractSeriesName(summary) {
   return match ? match[1].trim() : summary.trim();
 }
 
+// Extract just the event name without series prefix (e.g., "NASCAR Cup Series - Las Vegas" -> "Las Vegas")
+function extractEventName(summary, seriesName) {
+  if (!summary) return '';
+  let name = summary.trim();
+  // Remove series name prefix if present (case-insensitive)
+  const seriesPattern = new RegExp(`^${seriesName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[-–]\\s*`, 'i');
+  return name.replace(seriesPattern, '').trim();
+}
+
 function extractRoundNumber(summary) {
   const match = summary.match(/Race\s*(\d+)/i);
   return match ? parseInt(match[1]) : null;
