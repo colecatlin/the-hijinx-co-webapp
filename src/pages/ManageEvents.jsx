@@ -133,14 +133,10 @@ export default function ManageEvents() {
               <EventCoreDetailsSection event={selectedEventForEdit} />
             </TabsContent>
             <TabsContent value="sessions" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Sessions management coming soon</p>
-              </div>
+              <EventSessionsSection event={selectedEventForEdit} />
             </TabsContent>
             <TabsContent value="results" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Results management coming soon</p>
-              </div>
+              <EventResultsSection event={selectedEventForEdit} />
             </TabsContent>
           </Tabs>
         </div>
