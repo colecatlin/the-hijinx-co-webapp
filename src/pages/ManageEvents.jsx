@@ -20,6 +20,7 @@ export default function ManageEvents() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [sortBy, setSortBy] = useState('date_desc');
+  const [statusFilter, setStatusFilter] = useState('all');
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
