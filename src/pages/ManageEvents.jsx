@@ -169,6 +169,22 @@ export default function ManageEvents() {
           </Button>
         </div>
 
+        <div className="mb-4 flex gap-2">
+          {['all', 'upcoming', 'finished'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setStatusFilter(f)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                statusFilter === f
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              {f === 'all' ? 'All' : f === 'upcoming' ? 'Upcoming' : 'Finished'}
+            </button>
+          ))}
+        </div>
+
         <div className="mb-6 flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
