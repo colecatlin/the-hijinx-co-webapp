@@ -73,7 +73,7 @@ export default function EventResults() {
           {event.track_name && (
             <span className="flex items-center gap-1 text-xs text-gray-400"><MapPin className="w-3 h-3" /> {event.track_name}</span>
           )}
-          <span className="flex items-center gap-1 text-xs text-gray-400"><Calendar className="w-3 h-3" /> {format(new Date(event.date), 'MMMM d, yyyy')}</span>
+          {event.event_date && <span className="flex items-center gap-1 text-xs text-gray-400"><Calendar className="w-3 h-3" /> {format(new Date(event.event_date), 'MMMM d, yyyy')}</span>}
         </div>
 
         {event.results?.length > 0 ? (
