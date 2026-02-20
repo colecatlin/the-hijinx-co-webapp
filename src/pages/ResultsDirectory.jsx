@@ -57,7 +57,10 @@ export default function ResultsDirectory() {
     return map;
   }, [events, allResults, drivers]);
 
-  const filtered = events.filter(e => {
+  // Only show events that have at least one result record
+  const eventsWithResults = events.filter(e => allResults.some(r => r.event_id === e.id));
+
+  const filtered = eventsWithResults.filter(e => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     if (e.name?.toLowerCase().includes(term)) return true;
