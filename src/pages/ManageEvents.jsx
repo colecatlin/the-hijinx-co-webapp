@@ -37,9 +37,19 @@ export default function ManageEvents() {
     queryFn: () => base44.entities.Track.list(),
   });
 
-  const filteredEvents = events.filter(event =>
-    event.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEvents = useMemo(() => {
+    let result = events.filter(event =>
+      event.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'date_desc') return (b.event_date || '').localeCompare(a.event_date || '');
+      if (sortBy === 'date_asc') return (a.event_date || '').localeCompare(b.event_date || '');
+      if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '');
+      return 0;
+    });
+    return result;
+  }, [events, searchQuery, sortBy]);
 
   if (showAIGenerator) {
     return (
