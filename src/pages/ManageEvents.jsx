@@ -42,8 +42,8 @@ export default function ManageEvents() {
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     result = [...result].sort((a, b) => {
-      if (sortBy === 'date_desc') return (b.event_date || '').localeCompare(a.event_date || '');
-      if (sortBy === 'date_asc') return (a.event_date || '').localeCompare(b.event_date || '');
+      if (sortBy === 'date_desc') return new Date(b.event_date || 0) - new Date(a.event_date || 0);
+      if (sortBy === 'date_asc') return new Date(a.event_date || 0) - new Date(b.event_date || 0);
       if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '');
       return 0;
