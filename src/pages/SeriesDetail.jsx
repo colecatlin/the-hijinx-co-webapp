@@ -1,70 +1,39 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import SeriesNavigation from '@/components/series/SeriesNavigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
   const slug = searchParams.get('slug');
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const { data: series, isLoading: seriesLoading } = useQuery({
+  const { data: series, isLoading } = useQuery({
     queryKey: ['series', slug],
     queryFn: async () => {
-      const allSeries = await base44.entities.Series.list();
-      return allSeries.find(s => s.slug === slug);
+      const all = await base44.entities.Series.list();
+      return all.find(s => s.slug === slug);
     },
     enabled: !!slug,
   });
 
-  const { data: format } = useQuery({
-    queryKey: ['seriesFormat', series?.id],
-    queryFn: () => base44.entities.SeriesFormat.filter({ series_id: series.id }),
-    enabled: !!series?.id,
+  const { data: events = [] } = useQuery({
+    queryKey: ['seriesEvents', series?.name],
+    queryFn: () => base44.entities.Event.filter({ series: series.name }, 'event_date', 100),
+    enabled: !!series?.name,
   });
 
-  const { data: classes } = useQuery({
-    queryKey: ['seriesClasses', series?.id],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-  });
-
-  const { data: seasons } = useQuery({
-    queryKey: ['seriesSeasons', series?.id],
-    queryFn: () => base44.entities.SeriesSeason.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-  });
-
-  const { data: events } = useQuery({
-    queryKey: ['seriesEvents', series?.id],
-    queryFn: () => base44.entities.SeriesEvent.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-  });
-
-  const { data: media } = useQuery({
-    queryKey: ['seriesMedia', series?.id],
-    queryFn: () => base44.entities.SeriesMedia.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-  });
-
-  const { data: governance } = useQuery({
-    queryKey: ['seriesGovernance', series?.id],
-    queryFn: () => base44.entities.SeriesGovernance.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-  });
-
-  if (seriesLoading) {
+  if (isLoading) {
     return (
       <PageShell>
-        <div className="bg-white pt-8">
-          <div className="max-w-7xl mx-auto px-6">
-            <Skeleton className="h-12 w-1/3 mb-4" />
-            <Skeleton className="h-32 w-full" />
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <Skeleton className="h-12 w-1/3 mb-4" />
+          <Skeleton className="h-32 w-full" />
         </div>
       </PageShell>
     );
@@ -77,237 +46,207 @@ export default function SeriesDetail() {
           <div className="text-center">
             <h1 className="text-2xl font-black mb-2">Series Not Found</h1>
             <p className="text-gray-600">The series you're looking for doesn't exist.</p>
+            <Link to={createPageUrl('SeriesHome')} className="text-sm text-blue-600 underline mt-4 inline-block">Back to Series</Link>
           </div>
         </div>
       </PageShell>
     );
   }
 
-  const disciplineColors = {
-    'Asphalt Oval': 'bg-blue-100 text-blue-800',
-    'Road Racing': 'bg-red-100 text-red-800',
-    'Off Road': 'bg-orange-100 text-orange-800',
-    'Snowmobile': 'bg-cyan-100 text-cyan-800',
-    'Rallycross': 'bg-purple-100 text-purple-800',
-    'Mixed': 'bg-gray-100 text-gray-800',
-  };
+  const tabs = ['overview', 'schedule'];
 
-  const mediaItem = media?.[0];
+  const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
+  const pastEvents = events.filter(e => e.status === 'completed' || e.status === 'cancelled');
 
   return (
     <PageShell>
       <div className="bg-white">
         {/* Header */}
-        <div className="bg-gray-50 border-b border-gray-200 pt-8 pb-12">
+        <div className="bg-[#0A0A0A] text-white pt-12 pb-16">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-3 gap-8 mb-8">
-              <div className="col-span-2">
-                <div className="mb-4">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${disciplineColors[series.discipline]}`}>
-                    {series.discipline}
+            <Link to={createPageUrl('SeriesHome')} className="text-xs font-mono text-gray-500 hover:text-white mb-6 inline-block tracking-wider">
+              ← SERIES
+            </Link>
+            <div className="flex items-start gap-6">
+              {series.logo_url && (
+                <img src={series.logo_url} alt={series.name} className="w-20 h-20 object-contain bg-white rounded-lg p-2 shrink-0" />
+              )}
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <span className="font-mono text-[10px] tracking-[0.2em] text-gray-500 uppercase">{series.discipline}</span>
+                  <span className={`px-2 py-0.5 text-[10px] font-mono tracking-wider ${series.status === 'Active' ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-400'}`}>
+                    {series.status}
                   </span>
                 </div>
-                <h1 className="text-5xl font-black mb-4">{series.name}</h1>
-                <p className="text-gray-600 text-lg mb-6">{series.description_summary}</p>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">{series.name}</h1>
+                {series.full_name && series.full_name !== series.name && (
+                  <p className="text-gray-400 text-sm mb-3">{series.full_name}</p>
+                )}
+                {series.description && (
+                  <p className="text-gray-400 text-sm max-w-2xl leading-relaxed">{series.description}</p>
+                )}
 
-                <div className="grid grid-cols-4 gap-4 bg-white border border-gray-200 rounded-lg p-6">
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Founded</div>
-                    <div className="text-lg font-black">{series.founded_year || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Governing Body</div>
-                    <div className="text-sm font-medium">{series.governing_body || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Competition Level</div>
-                    <div className="text-sm font-medium">{series.competition_level}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Region</div>
-                    <div className="text-sm font-medium">{series.region}</div>
-                  </div>
+                {/* Socials */}
+                <div className="flex items-center gap-3 mt-4">
+                  {series.website_url && (
+                    <a href={series.website_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                      <Globe className="w-4 h-4" />
+                    </a>
+                  )}
+                  {series.social_instagram && (
+                    <a href={`https://instagram.com/${series.social_instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {series.social_x && (
+                    <a href={`https://x.com/${series.social_x.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                      <Twitter className="w-4 h-4" />
+                    </a>
+                  )}
+                  {series.social_youtube && (
+                    <a href={series.social_youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                      <Youtube className="w-4 h-4" />
+                    </a>
+                  )}
+                  {series.social_facebook && (
+                    <a href={series.social_facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
-
-              {mediaItem?.logo_url && (
-                <div className="col-span-1">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6 flex items-center justify-center h-full">
-                    <img src={mediaItem.logo_url} alt={series.name} className="max-h-32 object-contain" />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        <SeriesNavigation activeSection={activeSection} onSectionChange={setActiveSection} />
+        {/* Stats bar */}
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap gap-8">
+            {series.region && (
+              <div>
+                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Region</div>
+                <div className="text-sm font-semibold mt-0.5">{series.region}</div>
+              </div>
+            )}
+            {series.series_level && (
+              <div>
+                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Level</div>
+                <div className="text-sm font-semibold mt-0.5">{series.series_level}</div>
+              </div>
+            )}
+            {series.sanctioning_body && (
+              <div>
+                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Sanctioning Body</div>
+                <div className="text-sm font-semibold mt-0.5">{series.sanctioning_body}</div>
+              </div>
+            )}
+            {series.season_year && (
+              <div>
+                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Season</div>
+                <div className="text-sm font-semibold mt-0.5">{series.season_year}</div>
+              </div>
+            )}
+            <div>
+              <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Events</div>
+              <div className="text-sm font-semibold mt-0.5">{events.length}</div>
+            </div>
+          </div>
+        </div>
 
-        {/* Content Sections */}
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          {/* Format Section */}
-          {activeSection === 'format' && format?.[0] && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Race Format</h2>
-              {format[0].race_weekend_format && (
+        {/* Nav tabs */}
+        <div className="border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex gap-0">
+              {tabs.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-3 text-xs font-medium uppercase tracking-wider transition-colors ${
+                    activeTab === tab
+                      ? 'text-[#0A0A0A] border-b-2 border-[#0A0A0A]'
+                      : 'text-gray-500 hover:text-[#0A0A0A]'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-6 py-10">
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {series.description && (
                 <div>
-                  <h3 className="font-bold mb-2">Race Weekend Format</h3>
-                  <p className="text-gray-600">{format[0].race_weekend_format}</p>
+                  <h2 className="text-lg font-black tracking-tight mb-3">About</h2>
+                  <p className="text-sm text-gray-600 leading-relaxed">{series.description}</p>
                 </div>
               )}
-              {format[0].points_system_summary && (
-                <div>
-                  <h3 className="font-bold mb-2">Points System</h3>
-                  <p className="text-gray-600">{format[0].points_system_summary}</p>
-                </div>
-              )}
-              {format[0].playoff_format && (
-                <div>
-                  <h3 className="font-bold mb-2">Playoff Format</h3>
-                  <p className="text-gray-600">{format[0].playoff_format}</p>
-                </div>
-              )}
-              {format[0].vehicle_rules_summary && (
-                <div>
-                  <h3 className="font-bold mb-2">Vehicle Rules</h3>
-                  <p className="text-gray-600">{format[0].vehicle_rules_summary}</p>
-                </div>
-              )}
+              <div className="space-y-4">
+                {upcomingEvents.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-black tracking-tight mb-3">Upcoming Events</h2>
+                    <div className="space-y-2">
+                      {upcomingEvents.slice(0, 5).map(event => (
+                        <div key={event.id} className="border border-gray-200 p-3 flex items-center gap-3">
+                          <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{event.name}</div>
+                            <div className="text-xs text-gray-400">{event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'TBA'}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {upcomingEvents.length > 5 && (
+                      <button onClick={() => setActiveTab('schedule')} className="text-xs text-gray-500 underline mt-2">
+                        View all {upcomingEvents.length} events →
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Classes Section */}
-          {activeSection === 'classes' && classes && classes.length > 0 && (
+          {activeTab === 'schedule' && (
             <div>
-              <h2 className="text-3xl font-black mb-6">Classes</h2>
-              <div className="space-y-4">
-                {classes.map(cls => (
-                  <div key={cls.id} className="border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-bold">{cls.class_name}</h3>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${cls.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {cls.active ? 'Active' : 'Inactive'}
+              <h2 className="text-lg font-black tracking-tight mb-6">Full Schedule</h2>
+              {events.length === 0 ? (
+                <p className="text-gray-500 text-sm">No events scheduled yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {events.map(event => (
+                    <div key={event.id} className="border border-gray-200 p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
+                      <div className="w-16 text-center shrink-0">
+                        {event.event_date && (
+                          <>
+                            <div className="font-mono text-[10px] text-gray-400 uppercase">{format(parseISO(event.event_date), 'MMM')}</div>
+                            <div className="text-2xl font-black">{format(parseISO(event.event_date), 'd')}</div>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-bold">{event.name}</div>
+                        {event.location_note && (
+                          <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                            <MapPin className="w-3 h-3" /> {event.location_note}
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                        event.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
+                        event.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                        event.status === 'in_progress' ? 'bg-green-100 text-green-700' :
+                        'bg-red-100 text-red-600'
+                      }`}>
+                        {event.status}
                       </span>
                     </div>
-                    {cls.level && <p className="text-sm text-gray-600 mb-1">Level: {cls.level}</p>}
-                    {cls.vehicle_type && <p className="text-sm text-gray-600">Vehicle: {cls.vehicle_type}</p>}
-                    {cls.notes && <p className="text-sm text-gray-700 mt-3">{cls.notes}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Calendar Section */}
-          {activeSection === 'calendar' && events && events.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-black mb-6">Calendar</h2>
-              <div className="space-y-4">
-                {events.map(event => (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-6 flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold mb-2">{event.event_name}</h3>
-                      {event.start_date && <p className="text-sm text-gray-600">{event.start_date}</p>}
-                      {event.is_championship_decider && <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">Championship Decider</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Standings Placeholder */}
-          {activeSection === 'standings' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Standings</h2>
-              <p className="text-gray-600">Standings coming soon</p>
-            </div>
-          )}
-
-          {/* Media Section */}
-          {activeSection === 'media' && mediaItem && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Media</h2>
-              {mediaItem.hero_image_url && (
-                <div className="rounded-lg overflow-hidden">
-                  <img src={mediaItem.hero_image_url} alt={series.name} className="w-full h-96 object-cover" />
+                  ))}
                 </div>
               )}
-              {mediaItem.broadcast_partners && (
-                <div>
-                  <h3 className="font-bold mb-2">Broadcast Partners</h3>
-                  <p className="text-gray-600">{mediaItem.broadcast_partners}</p>
-                </div>
-              )}
-              {mediaItem.website_url && (
-                <a href={mediaItem.website_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
-                  Visit Website
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Governance Section */}
-          {activeSection === 'governance' && governance?.[0] && (
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black">Governance</h2>
-              {governance[0].sanctioning_body && (
-                <div>
-                  <h3 className="font-bold mb-2">Sanctioning Body</h3>
-                  <p className="text-gray-600">{governance[0].sanctioning_body}</p>
-                </div>
-              )}
-              {governance[0].ownership && (
-                <div>
-                  <h3 className="font-bold mb-2">Ownership</h3>
-                  <p className="text-gray-600">{governance[0].ownership}</p>
-                </div>
-              )}
-              {governance[0].leadership && (
-                <div>
-                  <h3 className="font-bold mb-2">Leadership</h3>
-                  <p className="text-gray-600">{governance[0].leadership}</p>
-                </div>
-              )}
-              {governance[0].rulebook_url && (
-                <a href={governance[0].rulebook_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
-                  Rulebook
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Overview (Default) */}
-          {activeSection === 'overview' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Overview</h2>
-              <p className="text-gray-600">Select a section above to view more information</p>
-            </div>
-          )}
-
-          {/* Teams Placeholder */}
-          {activeSection === 'teams' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Teams</h2>
-              <p className="text-gray-600">Teams coming soon</p>
-            </div>
-          )}
-
-          {/* Drivers Placeholder */}
-          {activeSection === 'drivers' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Drivers</h2>
-              <p className="text-gray-600">Drivers coming soon</p>
-            </div>
-          )}
-
-          {/* Tracks Placeholder */}
-          {activeSection === 'tracks' && (
-            <div className="text-center py-12">
-              <h2 className="text-3xl font-black mb-4">Tracks</h2>
-              <p className="text-gray-600">Tracks coming soon</p>
             </div>
           )}
         </div>
