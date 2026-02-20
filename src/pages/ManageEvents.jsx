@@ -25,7 +25,7 @@ export default function ManageEvents() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list('event_date', 500),
+    queryFn: () => base44.entities.Event.list('id', 500),
   });
 
   const deleteMutation = useMutation({
