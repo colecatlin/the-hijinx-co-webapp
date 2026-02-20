@@ -161,8 +161,8 @@ export default function ManageEvents() {
           </Button>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search events..."
@@ -171,6 +171,18 @@ export default function ManageEvents() {
               className="pl-10"
             />
           </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-48">
+              <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date_desc">Date (Newest First)</SelectItem>
+              <SelectItem value="date_asc">Date (Oldest First)</SelectItem>
+              <SelectItem value="name_asc">Name (A–Z)</SelectItem>
+              <SelectItem value="name_desc">Name (Z–A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isLoading ? (
