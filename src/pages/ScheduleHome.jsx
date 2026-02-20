@@ -35,7 +35,7 @@ export default function ScheduleHome() {
             <SelectTrigger className="w-44 rounded-none text-xs"><SelectValue placeholder="All Series" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Series</SelectItem>
-              {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              {uniqueSeries.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
