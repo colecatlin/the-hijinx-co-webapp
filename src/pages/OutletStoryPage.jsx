@@ -10,6 +10,7 @@ import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import DOMPurify from 'dompurify';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import AdvertisementCard from '@/components/outlet/AdvertisementCard';
 
 export default function OutletStoryPage() {
   const urlParams = new URLSearchParams(window.location.search);
