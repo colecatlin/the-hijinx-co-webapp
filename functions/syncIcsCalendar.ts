@@ -114,6 +114,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const icsUrl = body.icsUrl;
     const calendarName = body.calendarName || icsUrl;
+    const seriesNameOverride = body.seriesName || null; // If provided, all events in this feed belong to this single series
 
     if (!icsUrl) {
       return Response.json({ error: 'icsUrl is required' }, { status: 400 });
