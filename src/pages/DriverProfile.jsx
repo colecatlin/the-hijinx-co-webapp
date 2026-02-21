@@ -201,6 +201,19 @@ export default function DriverProfile() {
   const topSpecialties = performance?.specialties?.slice(0, 2) || [];
   const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
 
+  const searchDriverPhotos = async () => {
+    try {
+      const response = await base44.functions.invoke('searchDriverPhotos', {
+        firstName: driver.first_name,
+        lastName: driver.last_name
+      });
+      return response.data?.images || [];
+    } catch (error) {
+      console.error('Failed to search photos:', error);
+      return [];
+    }
+  };
+
   return (
     <PageShell className="bg-white">
       {media?.hero_image_url && (
@@ -384,6 +397,18 @@ export default function DriverProfile() {
                 <div className="w-full h-[480px] relative bg-gray-50 overflow-hidden">
                   <img src={media.headshot_url} alt={`${driver.first_name} ${driver.last_name}`} className="w-full h-full object-cover" />
                 </div>
+              </div>
+            )}
+
+            {!media?.headshot_url && (
+              <div className="bg-white p-6">
+                <Button
+                  onClick={searchDriverPhotos}
+                  className="w-full bg-[#232323] hover:bg-[#1A3249]"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Search for Driver Photos
+                </Button>
               </div>
             )}
 
