@@ -137,7 +137,9 @@ Deno.serve(async (req) => {
       if (loc) locationToTrackName[loc] = extractTrackName(loc);
     }
     const uniqueTrackNames = [...new Set(Object.values(locationToTrackName).filter(Boolean))];
-    const seriesNames = [...new Set(icsEvents.map(e => extractSeriesName(e['SUMMARY'] || '')).filter(Boolean))];
+    const seriesNames = seriesNameOverride
+      ? [seriesNameOverride]
+      : [...new Set(icsEvents.map(e => extractSeriesName(e['SUMMARY'] || '')).filter(Boolean))];
 
     const existingTracks = await base44.asServiceRole.entities.Track.list();
     const existingSeries = await base44.asServiceRole.entities.Series.list();
@@ -172,13 +174,25 @@ Deno.serve(async (req) => {
       trackMap[loc] = trackNameToId[locationToTrackName[loc]];
     }
 
+    // Match or create exactly ONE series per sync (only if seriesNameOverride is provided)
     const seriesMap = {};
     for (const seriesName of seriesNames) {
       const existing = existingSeries.find(s => s.name?.toLowerCase() === seriesName.toLowerCase());
       if (existing) {
         seriesMap[seriesName] = existing.id;
+      } else if (seriesNameOverride && stats.series === 0) {
+        // Only create one new series — the one explicitly named for this calendar feed
+        const created = await base44.asServiceRole.entities.Series.create({
+          name: seriesName,
+          slug: slugify(seriesName),
+          discipline: 'Stock Car',
+          region: 'United States',
+          status: 'Active',
+          season_year: '2026',
+        });
+        seriesMap[seriesName] = created.id;
+        stats.series++;
       }
-      // No new Series entities are created — events are only linked to existing series
     }
 
     // Build lookup maps for deduplication
