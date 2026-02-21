@@ -218,7 +218,7 @@ If you cannot find reliable data for this specific race, return empty results ar
       // --- 3c: Match drivers ---
       const recordsToCreate = [];
       for (const r of parsedResults) {
-        const nameLower = (r.driver_name || '').toLowerCase().trim();
+        const nameLower = normalize(r.driver_name || '');
         let dbDriver = driverByFullName[nameLower];
 
         if (!dbDriver) {
