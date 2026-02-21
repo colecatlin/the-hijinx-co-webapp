@@ -24,6 +24,7 @@ export default function StoryForm({ story, onClose }) {
     location_state: story?.location_state || '',
     location_country: story?.location_country || '',
     status: story?.status || 'draft',
+    scheduled_publish_date: story?.scheduled_publish_date || '',
     featured: story?.featured || false,
     tags: story?.tags || [],
   });
@@ -57,7 +58,9 @@ export default function StoryForm({ story, onClose }) {
 
   const handleChange = (field, value) => {
     if (field === 'status' && value === 'published' && !formData.published_date) {
-      setFormData({ ...formData, [field]: value, published_date: new Date().toISOString() });
+      setFormData({ ...formData, [field]: value, published_date: new Date().toISOString(), scheduled_publish_date: '' });
+    } else if (field === 'status' && value === 'scheduled' && !formData.scheduled_publish_date) {
+      setFormData({ ...formData, [field]: value, scheduled_publish_date: new Date().toISOString() });
     } else {
       setFormData({ ...formData, [field]: value });
     }
@@ -142,11 +145,26 @@ export default function StoryForm({ story, onClose }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {formData.status === 'scheduled' && (
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-2">Publish Date & Time</label>
+              <Input
+                type="datetime-local"
+                value={formData.scheduled_publish_date ? new Date(formData.scheduled_publish_date).toISOString().slice(0, 16) : ''}
+                onChange={(e) => {
+                  const datetime = new Date(e.target.value).toISOString();
+                  handleChange('scheduled_publish_date', datetime);
+                }}
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium mb-2">Author</label>
