@@ -231,8 +231,19 @@ If you cannot find reliable data for this specific race, return empty results ar
           if (!stats.drivers_unmatched.includes(r.driver_name)) stats.drivers_unmatched.push(r.driver_name);
         }
 
+        // Find DriverProgram for this driver in this series
+        let programId = null;
+        if (dbDriver) {
+          const prog = dbPrograms.find(p =>
+            p.driver_id === dbDriver.id &&
+            (p.series_name === seriesName || p.season === season_year.toString())
+          );
+          programId = prog?.id || null;
+        }
+
         recordsToCreate.push({
           driver_id: dbDriver?.id || null,
+          program_id: programId || 'placeholder',
           event_id: dbEvent.id,
           series: seriesName,
           session_type: 'Final',
