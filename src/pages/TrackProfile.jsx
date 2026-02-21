@@ -23,6 +23,15 @@ export default function TrackProfile() {
 
   const track = tracks.find(t => t.slug === trackSlug);
 
+  const { data: allEvents = [] } = useQuery({
+    queryKey: ['allEvents'],
+    queryFn: () => base44.entities.Event.list(),
+    enabled: !!track?.id,
+  });
+
+  // Events at this track
+  const trackEventIds = allEvents.filter(e => e.track_id === track?.id).map(e => e.id);
+
   const { data: disciplines = [] } = useQuery({
     queryKey: ['trackDisciplines', track?.id],
     queryFn: () => base44.entities.TrackToDiscipline.filter({ track_id: track.id }),
