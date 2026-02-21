@@ -22,6 +22,12 @@ export default function OutletStoryPage() {
     enabled: !!storyId,
   });
 
+  const { data: ads } = useQuery({
+    queryKey: ['advertisements'],
+    queryFn: () => base44.entities.Advertisement.filter({ status: 'published' }),
+    initialData: [],
+  });
+
   if (isLoading) {
     return (
       <PageShell>
