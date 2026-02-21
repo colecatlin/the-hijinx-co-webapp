@@ -13,6 +13,7 @@ const DEFAULT_CALENDARS = [
     id: 'nascar-default',
     name: 'NASCAR 2026',
     url: 'https://ics.ecal.com/ecal-sub/69962d012067a000022ac699/NASCAR.ics',
+    seriesName: 'NASCAR Cup Series',
   },
 ];
 
