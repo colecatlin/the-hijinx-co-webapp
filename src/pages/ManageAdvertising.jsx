@@ -183,7 +183,7 @@ export default function ManageAdvertising() {
               )}
             </div>
 
-            {isLoading ? (
+            {messagesLoading ? (
               <div className="space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-20 w-full" />
