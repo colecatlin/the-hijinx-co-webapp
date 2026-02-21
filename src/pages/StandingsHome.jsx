@@ -62,11 +62,11 @@ export default function StandingsHome() {
     else { setSortField(field); setSortDir(1); }
   };
 
-  const lastUpdated = filteredEntries.length > 0 
+  const lastUpdated = filteredEntries.length > 0
     ? filteredEntries.reduce((latest, e) => {
-        const d = e.last_updated || e.updated_date;
+        const d = e.last_calculated || e.updated_date;
         return d && d > latest ? d : latest;
-      }, '') 
+      }, '')
     : null;
 
   const SortHeader = ({ field, children }) => (
