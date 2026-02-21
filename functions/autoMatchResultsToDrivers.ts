@@ -9,29 +9,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch all drivers
+    // Fetch all drivers and results once
     const drivers = await base44.entities.Driver.list();
+    const allResults = await base44.entities.Results.list();
 
     let updatedCount = 0;
 
-    // For each driver, check if there are any results with matching name but no driver_id
-    for (const driver of drivers) {
-      if (!driver.first_name || !driver.last_name) continue;
+    // For each result without driver_id, try to match to a driver by name
+    for (const result of allResults) {
+      if (result.driver_id) continue; // Skip if already linked
+      if (!result.driver_first_name || !result.driver_last_name) continue;
 
-      // Find all results matching this driver's name
-      const matchingResults = await base44.entities.Results.filter({});
-      
-      for (const result of matchingResults) {
-        // Check if result matches driver by name but doesn't have driver_id set
-        const nameMatches = 
-          result.driver_first_name?.toLowerCase() === driver.first_name.toLowerCase() &&
-          result.driver_last_name?.toLowerCase() === driver.last_name.toLowerCase();
+      // Find matching driver
+      const matchingDriver = drivers.find(d => 
+        d.first_name?.toLowerCase() === result.driver_first_name.toLowerCase() &&
+        d.last_name?.toLowerCase() === result.driver_last_name.toLowerCase()
+      );
 
-        if (nameMatches && !result.driver_id) {
-          // Link this result to the driver
-          await base44.entities.Results.update(result.id, { driver_id: driver.id });
-          updatedCount++;
-        }
+      if (matchingDriver) {
+        await base44.entities.Results.update(result.id, { driver_id: matchingDriver.id });
+        updatedCount++;
       }
     }
 
