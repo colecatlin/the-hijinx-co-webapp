@@ -174,10 +174,8 @@ export default function ResultsHome() {
               <EmptyState icon={Flag} title="No results yet" message="Completed event results will appear here." />
             ) : (
               <div className="space-y-3">
-                        {filterEvents(finishedEvents).map((event) => (
-                          <div key={event.id} onClick={() => {}} className="cursor-pointer">
-                            <EventRow event={event} showLink={true} />
-                          </div>
+                {filterEvents(finishedEvents).map((event) => (
+                  <EventRow key={event.id} event={event} showLink={true} />
                 ))}
               </div>
             )}
