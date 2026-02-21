@@ -62,6 +62,11 @@ export default function DriverDirectory() {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
   const { data: allMedia = [] } = useQuery({
     queryKey: ['driverMedia'],
     queryFn: () => base44.entities.DriverMedia.list(),

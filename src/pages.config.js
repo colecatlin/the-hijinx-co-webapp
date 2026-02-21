@@ -81,6 +81,7 @@ import ManageEvents from './pages/ManageEvents';
 import ManageFoodBeverage from './pages/ManageFoodBeverage';
 import ManageHomepage from './pages/ManageHomepage';
 import ManageIssues from './pages/ManageIssues';
+import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageResults from './pages/ManageResults';
 import ManageSeries from './pages/ManageSeries';
 import ManageSessions from './pages/ManageSessions';
@@ -110,7 +111,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import ManagePointsConfig from './pages/ManagePointsConfig';
 import __Layout from './Layout.jsx';
 
 
@@ -149,6 +149,7 @@ export const PAGES = {
     "ManageFoodBeverage": ManageFoodBeverage,
     "ManageHomepage": ManageHomepage,
     "ManageIssues": ManageIssues,
+    "ManagePointsConfig": ManagePointsConfig,
     "ManageResults": ManageResults,
     "ManageSeries": ManageSeries,
     "ManageSessions": ManageSessions,
@@ -178,7 +179,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "ManagePointsConfig": ManagePointsConfig,
 }
 
 export const pagesConfig = {
