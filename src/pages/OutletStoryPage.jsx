@@ -61,7 +61,7 @@ export default function OutletStoryPage() {
       <PageShell>
         <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
           {ads?.length > 0 && (
-            <aside className="space-y-8 flex-shrink-0 w-[12%]">
+            <aside className="hidden lg:block space-y-8 flex-shrink-0 w-[12%]">
               {ads.filter((_, i) => i % 2 === 0).map((ad) => (
                 <AdvertisementCard key={ad.id} ad={ad} />
               ))}
@@ -143,7 +143,7 @@ export default function OutletStoryPage() {
       </article>
 
       {ads?.length > 0 && (
-        <aside className="space-y-8 flex-shrink-0 w-[12%]">
+        <aside className="hidden lg:block space-y-8 flex-shrink-0 w-[12%]">
           {ads.filter((_, i) => i % 2 === 1).map((ad) => (
             <AdvertisementCard key={ad.id} ad={ad} />
           ))}
