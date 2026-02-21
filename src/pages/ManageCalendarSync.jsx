@@ -60,6 +60,7 @@ export default function ManageCalendarSync() {
       const res = await base44.functions.invoke('syncIcsCalendar', {
         icsUrl: cal.url,
         calendarName: cal.name,
+        seriesName: cal.seriesName || null,
       });
       setSyncResults(r => ({ ...r, [cal.id]: { success: true, stats: res.data.stats, message: res.data.message } }));
     } catch (err) {
