@@ -2,29 +2,16 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 
-export default function AdvertisementCard({ ad }) {
+const FlipCard = ({ ad, bgColor, textColor, height }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
-  const bgColor = ad.background_color || '#FAFAFA';
-  const textColor = ad.text_color || '#232323';
-
-  const getCardHeight = () => {
-    const ratio = ad.aspect_ratio || '1:1';
-    if (ratio === '4:5') return 'h-96';
-    return 'h-80'; // 1:1 default
-  };
 
   return (
     <div 
-      className={`relative ${getCardHeight()} cursor-pointer`}
+      className={`relative ${height} cursor-pointer`}
       style={{ perspective: '1000px' }}
       onClick={(e) => {
         if (!e.target.closest('a') && !e.target.closest('button')) {
-          handleFlip();
+          setIsFlipped(!isFlipped);
         }
       }}
     >
@@ -91,5 +78,68 @@ export default function AdvertisementCard({ ad }) {
         </div>
       </motion.div>
     </div>
+  );
+};
+
+const StaticCard = ({ ad, bgColor, textColor, height }) => {
+  return (
+    <div 
+      className={`relative ${height} bg-white border border-gray-300 p-4 flex flex-col justify-between`}
+      style={{ backgroundColor: bgColor }}
+    >
+      {ad.cover_image_url && (
+        <div className="w-full h-32 mb-3 overflow-hidden bg-gray-200 -mx-4 -mt-4">
+          <img 
+            src={ad.cover_image_url} 
+            alt={ad.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      <div className="flex-1 flex flex-col justify-between">
+        <div>
+          <h3 className="text-lg font-black" style={{ color: textColor }}>
+            {ad.title}
+          </h3>
+          {ad.tagline && (
+            <p className="text-xs mt-2 text-gray-600">{ad.tagline}</p>
+          )}
+          {ad.body && (
+            <p className="text-xs mt-3 leading-relaxed" style={{ color: textColor }}>
+              {ad.body}
+            </p>
+          )}
+        </div>
+        <a
+          href={ad.call_to_action_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#232323] text-white text-xs font-semibold rounded hover:bg-[#1A3249] transition-colors mt-4"
+        >
+          {ad.call_to_action_text}
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    </div>
+  );
+};
+
+export default function AdvertisementCard({ ad }) {
+  const bgColor = ad.background_color || '#FAFAFA';
+  const textColor = ad.text_color || '#232323';
+  const displayStyle = ad.display_style || 'flip';
+
+  const getCardHeight = () => {
+    const ratio = ad.aspect_ratio || '1:1';
+    if (ratio === '4:5') return 'h-96';
+    return 'h-80'; // 1:1 default
+  };
+
+  const height = getCardHeight();
+
+  return displayStyle === 'flip' ? (
+    <FlipCard ad={ad} bgColor={bgColor} textColor={textColor} height={height} />
+  ) : (
+    <StaticCard ad={ad} bgColor={bgColor} textColor={textColor} height={height} />
   );
 }
