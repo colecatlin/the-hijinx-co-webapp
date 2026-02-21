@@ -9,6 +9,7 @@ import { MapPin, ExternalLink, Calendar, Users, TrendingUp, Camera, Settings, He
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
+import ResultsPanel from '@/components/results/ResultsPanel';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);

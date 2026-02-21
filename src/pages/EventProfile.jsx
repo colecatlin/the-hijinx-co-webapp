@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
+import ResultsPanel from '@/components/results/ResultsPanel';
 
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
