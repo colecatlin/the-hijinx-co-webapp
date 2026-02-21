@@ -1,118 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Series slug mappings for nascar.com URLs
-const SERIES_SLUGS = {
-  1: 'nascar-cup-series',
-  2: 'nascar-oreilly-auto-parts-series',
-  3: 'nascar-craftsman-truck-series',
-};
-
-// Series name mappings for matching our DB Series records
 const SERIES_NAMES = {
   1: 'NASCAR Cup Series',
   2: "NASCAR O'Reilly Auto Parts Series",
   3: 'NASCAR Craftsman Truck Series',
 };
 
+const SERIES_SEARCH_NAMES = {
+  1: 'NASCAR Cup Series',
+  2: 'NASCAR Xfinity Series',
+  3: 'NASCAR Craftsman Truck Series',
+};
+
 function slugify(str) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-// Parse the race results markdown from nascar.com race center page
-function parseRaceResults(markdown) {
-  const results = [];
-
-  // Look for result rows: position, driver name, car number, start pos, final status, laps completed, laps led, points
-  // Pattern from the markdown: position ## DriverName ### ![carNum](...) | startPos FinalStatus lapsCompleted lapsLed points playoffPoints
-  const lines = markdown.split('\n');
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i].trim();
-
-    // Match position lines like: 1, 2, 3... followed by ## DriverName
-    const posMatch = line.match(/^(\d+)$/);
-    if (posMatch) {
-      const position = parseInt(posMatch[1]);
-      // Next meaningful line should be driver name: ## DRIVER NAME
-      let j = i + 1;
-      while (j < lines.length && lines[j].trim() === '') j++;
-      const nameLine = lines[j] ? lines[j].trim() : '';
-      const nameMatch = nameLine.match(/^##\s+(.+)$/);
-      if (nameMatch) {
-        const driverName = nameMatch[1].trim();
-        // Next line: ### ![carNum](...) | startPos
-        j++;
-        while (j < lines.length && lines[j].trim() === '') j++;
-        const carLine = lines[j] ? lines[j].trim() : '';
-        const carMatch = carLine.match(/!\[([^\]]+)\]/);
-        const carNumber = carMatch ? carMatch[1] : '';
-
-        // Parse the data values after | in carLine or subsequent lines
-        // They appear as: startPos FinalStatus lapsCompleted lapsLed points playoffPoints
-        j++;
-        while (j < lines.length && lines[j].trim() === '') j++;
-        const dataLine = lines[j] ? lines[j].trim() : '';
-
-        // Extract status - it's usually one of: Running, DNF, DNQ, DNS, DSQ, Accident, etc.
-        const statusMatch = dataLine.match(/\b(Running|DNF|DNS|DNQ|DSQ|Accident|Mechanical|Crash|Engine|Suspension|Disqualified|Overheating)\b/i);
-        const finalStatus = statusMatch ? statusMatch[1] : 'Running';
-
-        // Extract numbers from data line
-        const nums = dataLine.match(/\d+/g) || [];
-        const startPos = nums[0] ? parseInt(nums[0]) : null;
-        const lapsCompleted = nums[1] ? parseInt(nums[1]) : null;
-        const lapsLed = nums[2] ? parseInt(nums[2]) : 0;
-        const points = nums[3] ? parseInt(nums[3]) : null;
-
-        results.push({
-          position,
-          driver_name: driverName,
-          car_number: carNumber,
-          start_position: startPos,
-          status_text: finalStatus,
-          laps_completed: lapsCompleted,
-          laps_led: lapsLed,
-          points,
-        });
-
-        i = j + 1;
-        continue;
-      }
-    }
-    i++;
-  }
-
-  return results;
-}
-
-// Alternative simpler parser for the structured markdown format
-function parseRaceResultsSimple(markdown) {
-  const results = [];
-
-  // The markdown has blocks like:
-  // 1\n## Harrison Burton\n### ![20](...) |\n10\nRunning\n250\n81\n51\n0
-  // Let's use a regex to find all result blocks
-  const blockRegex = /(?:^|\n)(\d+)\s*\n##\s+([A-Z][^\n]+)\n###\s+!\[([^\]]*)\][^\n]*\n\n?(\d+)\n([A-Za-z]+)\n(\d+)\n(\d+)\n(\d+)\n(\d+)/gm;
-
-  let match;
-  while ((match = blockRegex.exec(markdown)) !== null) {
-    results.push({
-      position: parseInt(match[1]),
-      driver_name: match[2].trim(),
-      car_number: match[3].trim(),
-      start_position: parseInt(match[4]),
-      status_text: match[5].trim(),
-      laps_completed: parseInt(match[6]),
-      laps_led: parseInt(match[7]),
-      points: parseInt(match[8]),
-    });
-  }
-
-  return results;
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 Deno.serve(async (req) => {
@@ -126,23 +27,24 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const {
-      series_id = 1,       // 1=Cup, 2=Xfinity, 3=Trucks
+      series_id = 1,        // 1=Cup, 2=Xfinity, 3=Trucks
       season_year = 2026,
-      race_slug,           // e.g. "daytona-500" — if provided, only import this race
-      race_id,             // NASCAR race_id — if provided, look up the slug
+      race_name,            // e.g. "Daytona 500" — specific race to import
+      race_id,              // NASCAR race_id from schedule feed — specific race
+      import_all = false,   // import all completed races in the schedule
       dry_run = false,
     } = body;
 
-    const seriesSlug = SERIES_SLUGS[series_id];
     const seriesName = SERIES_NAMES[series_id];
+    const seriesSearchName = SERIES_SEARCH_NAMES[series_id];
 
-    if (!seriesSlug) {
+    if (!seriesName) {
       return Response.json({ error: `Unknown series_id: ${series_id}` }, { status: 400 });
     }
 
     const log = [];
 
-    // Step 1: Fetch the schedule to get race info
+    // Step 1: Fetch schedule to get list of completed races
     const scheduleUrl = `https://cf.nascar.com/cacher/${season_year}/${series_id}/schedule-feed.json`;
     log.push(`Fetching schedule: ${scheduleUrl}`);
 
@@ -152,10 +54,10 @@ Deno.serve(async (req) => {
     }
 
     const schedule = await scheduleRes.json();
-
-    // Get unique race entries (run_type=3 = Race, filter past races)
     const now = new Date();
-    const races = schedule
+
+    // Get unique completed races (run_type=3 = Race)
+    const allRaces = schedule
       .filter(e => e.run_type === 3)
       .filter(e => new Date(e.start_time_utc) < now)
       .reduce((acc, e) => {
@@ -163,35 +65,46 @@ Deno.serve(async (req) => {
         return acc;
       }, []);
 
-    log.push(`Found ${races.length} completed race(s) in schedule`);
+    log.push(`Found ${allRaces.length} completed race(s) in schedule`);
 
-    // Filter to specific race if requested
-    let targetRaces = races;
+    // Determine which races to process
+    let targetRaces = [];
     if (race_id) {
-      targetRaces = races.filter(r => r.race_id === race_id);
-      if (!targetRaces.length) {
-        return Response.json({ error: `Race ID ${race_id} not found or not yet completed` }, { status: 404 });
-      }
-    } else if (race_slug) {
-      // If a slug is provided directly, we create a synthetic race entry
-      targetRaces = [{ race_id: null, race_name: race_slug, track_name: null, start_time: null }];
+      const found = allRaces.find(r => r.race_id === race_id);
+      if (!found) return Response.json({ error: `Race ID ${race_id} not found or not completed` }, { status: 404 });
+      targetRaces = [found];
+    } else if (race_name) {
+      // Manual race name provided — find best match in schedule or use as-is
+      const nameLower = race_name.toLowerCase();
+      const found = allRaces.find(r => r.race_name?.toLowerCase().includes(nameLower) || nameLower.includes(r.race_name?.toLowerCase()));
+      targetRaces = [found || { race_name, track_name: '', start_time: null, race_id: null }];
+    } else if (import_all) {
+      targetRaces = allRaces;
+    } else {
+      // Default: import most recent completed race only
+      targetRaces = [allRaces[allRaces.length - 1]];
     }
 
-    // Step 2: Load existing DB data for matching
-    const [dbDrivers, dbEvents, dbSeries] = await Promise.all([
+    log.push(`Processing ${targetRaces.length} race(s)`);
+
+    // Step 2: Load existing DB data
+    const [dbDrivers, dbEvents, dbSeriesArr] = await Promise.all([
       base44.asServiceRole.entities.Driver.list(),
       base44.asServiceRole.entities.Event.list(),
       base44.asServiceRole.entities.Series.filter({ name: seriesName }),
     ]);
 
-    const dbSeriesRecord = dbSeries[0];
-    log.push(`DB series record: ${dbSeriesRecord ? dbSeriesRecord.id : 'NOT FOUND'}`);
+    const dbSeriesRecord = dbSeriesArr[0];
+    log.push(`Series in DB: ${dbSeriesRecord ? dbSeriesRecord.id : 'NOT FOUND'}`);
 
-    // Build driver lookup by full name and car number
-    const driverByName = {};
+    // Build driver lookup maps
+    const driverByFullName = {};
+    const driverByLastName = {};
     for (const d of dbDrivers) {
-      const fullName = `${d.first_name} ${d.last_name}`.toLowerCase();
-      driverByName[fullName] = d;
+      const full = `${d.first_name} ${d.last_name}`.toLowerCase();
+      driverByFullName[full] = d;
+      const last = d.last_name.toLowerCase();
+      if (!driverByLastName[last]) driverByLastName[last] = d;
     }
 
     const stats = {
@@ -204,119 +117,84 @@ Deno.serve(async (req) => {
 
     // Step 3: Process each race
     for (const race of targetRaces) {
-      const raceSlug = race_slug || slugify(race.race_name);
-      const pageUrl = `https://www.nascar.com/results/racecenter/${season_year}/${seriesSlug}/${raceSlug}/`;
+      const raceName = race.race_name || race_name;
+      const trackName = race.track_name || '';
+      const raceDate = race.start_time ? race.start_time.split('T')[0] : null;
 
-      log.push(`\nFetching results page: ${pageUrl}`);
+      log.push(`\n--- Processing: ${raceName} (${raceDate || 'unknown date'}) at ${trackName} ---`);
 
-      let pageMarkdown;
-      try {
-        const pageRes = await fetch(pageUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            'Accept': 'text/html',
-          }
-        });
-        pageMarkdown = await pageRes.text();
-      } catch (err) {
-        log.push(`  ERROR fetching page: ${err.message}`);
-        continue;
-      }
+      // Step 3a: Use LLM + internet to get race results
+      log.push(`  Querying LLM with internet search for results...`);
 
-      // Try to parse results from the HTML/text
-      // The race center page returns full HTML — look for result data in script tags or structured HTML
-      // NASCAR Race Center loads data via JavaScript, so we'll look for embedded JSON data
       let parsedResults = [];
+      try {
+        const prompt = `Find the official race results for the following NASCAR race:
+- Series: ${seriesSearchName}
+- Race: ${raceName}
+- Track: ${trackName}
+- Season: ${season_year}
+${raceDate ? `- Date: ${raceDate}` : ''}
 
-      // Look for JSON data embedded in the page (NASCAR injects race data as JSON)
-      const jsonMatch = pageMarkdown.match(/window\.__INITIAL_STATE__\s*=\s*({.+?});/s) ||
-                        pageMarkdown.match(/window\.raceData\s*=\s*({.+?});/s) ||
-                        pageMarkdown.match(/"results"\s*:\s*(\[.+?\])/s);
+Return the COMPLETE finishing order with all drivers. For each driver return:
+- position (finishing position, 1 = winner)
+- driver_name (full name, e.g. "Kyle Larson")
+- car_number (e.g. "5")
+- status_text (e.g. "Running", "Accident", "Engine", "DNF", "Disqualified")
+- laps_completed (number of laps completed)
+- points (championship points earned, if available)
 
-      if (jsonMatch) {
-        try {
-          const data = JSON.parse(jsonMatch[1]);
-          log.push(`  Found embedded JSON data`);
-          // Extract results from various possible structures
-          const resultsArr = data.results || data.raceResults || data;
-          if (Array.isArray(resultsArr)) {
-            parsedResults = resultsArr.map((r, idx) => ({
-              position: r.finishing_position || r.position || idx + 1,
-              driver_name: r.driver?.full_name || r.full_name || r.name || '',
-              car_number: r.vehicle_number || r.car_number || '',
-              start_position: r.starting_position || r.start_position,
-              status_text: r.status || r.final_status || 'Running',
-              laps_completed: r.laps_completed,
-              laps_led: r.laps_led || 0,
-              points: r.points,
-            }));
-          }
-        } catch (e) {
-          log.push(`  JSON parse error: ${e.message}`);
-        }
-      }
+If you cannot find reliable data for this specific race, return an empty results array.`;
 
-      // Fall back to InvokeLLM to extract results from the HTML if no embedded JSON
-      if (!parsedResults.length) {
-        log.push(`  No embedded JSON found, using LLM to extract results...`);
-        try {
-          // Truncate HTML to first 50k chars
-          const truncated = pageMarkdown.substring(0, 50000);
-          const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-            prompt: `Extract the race results table from this NASCAR race page HTML/text. 
-Return ONLY a JSON array of objects with these fields: 
-{ "position": number, "driver_name": string, "car_number": string, "start_position": number, "status_text": string, "laps_completed": number, "laps_led": number, "points": number }
-
-If the page shows no race results (e.g. 404 or no results table), return an empty array [].
-
-PAGE CONTENT:
-${truncated}`,
-            response_json_schema: {
-              type: 'object',
-              properties: {
-                results: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      position: { type: 'number' },
-                      driver_name: { type: 'string' },
-                      car_number: { type: 'string' },
-                      start_position: { type: 'number' },
-                      status_text: { type: 'string' },
-                      laps_completed: { type: 'number' },
-                      laps_led: { type: 'number' },
-                      points: { type: 'number' },
-                    }
+        const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              race_name: { type: 'string' },
+              track: { type: 'string' },
+              date: { type: 'string' },
+              total_laps: { type: 'number' },
+              results: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    position: { type: 'number' },
+                    driver_name: { type: 'string' },
+                    car_number: { type: 'string' },
+                    status_text: { type: 'string' },
+                    laps_completed: { type: 'number' },
+                    points: { type: 'number' },
                   }
                 }
               }
             }
-          });
-          parsedResults = llmResult?.results || [];
-          log.push(`  LLM extracted ${parsedResults.length} results`);
-        } catch (e) {
-          log.push(`  LLM error: ${e.message}`);
-        }
-      }
+          }
+        });
 
-      if (!parsedResults.length) {
-        log.push(`  No results found for ${raceSlug}, skipping`);
-        stats.events_unmatched.push(raceSlug);
+        parsedResults = llmResponse?.results || [];
+        log.push(`  LLM returned ${parsedResults.length} result entries`);
+        if (llmResponse?.race_name) log.push(`  Confirmed race: ${llmResponse.race_name} at ${llmResponse.track} on ${llmResponse.date}`);
+
+      } catch (e) {
+        log.push(`  LLM error: ${e.message}`);
         continue;
       }
 
-      // Find matching Event in DB
-      const eventName = race.race_name || raceSlug;
-      const trackName = race.track_name || '';
-      const raceDate = race.start_time ? race.start_time.split('T')[0] : null;
+      if (!parsedResults.length) {
+        log.push(`  No results returned, skipping`);
+        stats.events_unmatched.push(raceName);
+        continue;
+      }
 
-      // Match event by name similarity or date
+      // Step 3b: Find matching Event in DB
       let dbEvent = null;
       for (const e of dbEvents) {
         const eName = (e.name || '').toLowerCase();
-        const searchName = eventName.toLowerCase();
-        if (eName.includes(searchName.substring(0, 10)) || searchName.includes(eName.substring(0, 10))) {
+        const searchName = raceName.toLowerCase();
+        // Match by name overlap or date+series
+        if (eName.includes(searchName.substring(0, 12)) || searchName.includes(eName.substring(0, 12))) {
           dbEvent = e;
           break;
         }
@@ -324,19 +202,21 @@ ${truncated}`,
           dbEvent = e;
           break;
         }
+        if (trackName && e.event_date === raceDate && (e.name || '').toLowerCase().includes(slugify(trackName).substring(0, 8))) {
+          dbEvent = e;
+          break;
+        }
       }
 
       if (!dbEvent) {
-        log.push(`  WARNING: No matching Event found for "${eventName}" (${raceDate})`);
-        stats.events_unmatched.push(eventName);
-        // Still proceed — create results without event_id if needed, or skip
-        // We'll skip for now since event_id is required
+        log.push(`  WARNING: No matching Event in DB for "${raceName}"`);
+        stats.events_unmatched.push(raceName);
         continue;
       }
 
-      log.push(`  Matched event: ${dbEvent.name} (${dbEvent.id})`);
+      log.push(`  Matched DB event: "${dbEvent.name}" (${dbEvent.id})`);
 
-      // Check for existing results for this event
+      // Check for existing results
       const existingResults = await base44.asServiceRole.entities.Results.filter({ event_id: dbEvent.id });
       if (existingResults.length > 0) {
         log.push(`  Already have ${existingResults.length} results for this event, skipping`);
@@ -344,20 +224,17 @@ ${truncated}`,
         continue;
       }
 
-      // Match drivers and build result records
+      // Step 3c: Match drivers and build records
       const resultRecords = [];
       for (const r of parsedResults) {
-        const nameLower = r.driver_name.toLowerCase();
-        let dbDriver = driverByName[nameLower];
+        const nameLower = (r.driver_name || '').toLowerCase().trim();
+        let dbDriver = driverByFullName[nameLower];
 
-        // Try partial match if exact fails
+        // Try last name match if full name fails
         if (!dbDriver) {
-          for (const [key, d] of Object.entries(driverByName)) {
-            if (nameLower.includes(key.split(' ')[1]) || key.includes(nameLower.split(' ').pop())) {
-              dbDriver = d;
-              break;
-            }
-          }
+          const parts = nameLower.split(' ');
+          const lastName = parts[parts.length - 1];
+          dbDriver = driverByLastName[lastName];
         }
 
         if (!dbDriver) {
@@ -368,26 +245,28 @@ ${truncated}`,
         }
 
         resultRecords.push({
-          driver_id: dbDriver?.id || null,
+          driver_id: dbDriver?.id || 'unmatched',
           event_id: dbEvent.id,
           series: seriesName,
           session_type: 'Final',
           position: r.position,
-          status_text: r.status_text,
+          status_text: r.status_text || 'Running',
           laps_completed: r.laps_completed,
-          points: r.points,
-          team_name: '',
+          points: r.points || null,
+          team_name: r.team_name || '',
         });
       }
 
       if (!dry_run) {
-        // Bulk create results
         for (const record of resultRecords) {
           await base44.asServiceRole.entities.Results.create(record);
         }
         log.push(`  Created ${resultRecords.length} result records`);
+        // Mark event as completed
+        await base44.asServiceRole.entities.Event.update(dbEvent.id, { status: 'completed' });
       } else {
-        log.push(`  [DRY RUN] Would create ${resultRecords.length} result records`);
+        log.push(`  [DRY RUN] Would create ${resultRecords.length} records`);
+        log.push(`  Sample: ${JSON.stringify(resultRecords[0])}`);
       }
 
       stats.results_created += resultRecords.length;
