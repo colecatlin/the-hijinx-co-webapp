@@ -62,7 +62,7 @@ export default function MotorsportsHome() {
   ];
 
   const nextEvent = upcomingEvents[0];
-  const daysUntil = nextEvent ? differenceInDays(parseISO(nextEvent.event_date), new Date()) : null;
+  const daysUntil = nextEvent ? differenceInDays(parseISO(nextEvent.event_date), parseISO(new Date().toISOString().split('T')[0])) : null;
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
@@ -153,7 +153,7 @@ export default function MotorsportsHome() {
             </div>
             <div className="space-y-2">
               {upcomingEvents.slice(0, 6).map((event, i) => {
-                const days = differenceInDays(parseISO(event.event_date), new Date());
+                const days = differenceInDays(parseISO(event.event_date), parseISO(new Date().toISOString().split('T')[0]));
                 const isToday = days === 0;
                 const isSoon = days <= 3;
                 return (
