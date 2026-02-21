@@ -89,9 +89,9 @@ export default function OutletStoryPage() {
 
   return (
     <PageShell>
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 py-12 md:py-20 px-6 lg:px-0">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 py-12 md:py-20 max-w-7xl mx-auto w-full">
         {/* Main story content - extends to edges */}
-        <article className="flex-1 lg:max-w-3xl">
+        <article className="flex-1 lg:max-w-3xl px-6 lg:px-0">
           <Link
             to={createPageUrl('OutletHome')}
             className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors"
@@ -113,69 +113,69 @@ export default function OutletStoryPage() {
             </div>
           )}
 
-          <div className="flex-1 space-y-10">
-          <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase block">
-            {story.category}
-          </span>
+          <div className="space-y-10">
+            <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase block">
+              {story.category}
+            </span>
 
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-[1.05]">
-            {story.title}
-          </h1>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-[1.05]">
+              {story.title}
+            </h1>
 
-          {story.subtitle && (
-            <p className="text-lg text-gray-500 mt-4">{story.subtitle}</p>
-          )}
+            {story.subtitle && (
+              <p className="text-lg text-gray-500 mt-4">{story.subtitle}</p>
+            )}
 
-          {/* Meta line */}
-          <div className="mt-6 pb-8 border-b border-gray-200">
-            {/* Stacked: Date, Published by, and Photo by */}
-            <div className="flex flex-col gap-2 mb-4">
-              {story.published_date && (
-                <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
-              )}
-              {story.author && (
-                <span className="text-xs text-gray-400">Published by {story.author}</span>
-              )}
-              {story.photo_credit && (
-                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
-              )}
+            {/* Meta line */}
+            <div className="mt-6 pb-8 border-b border-gray-200">
+              {/* Stacked: Date, Published by, and Photo by */}
+              <div className="flex flex-col gap-2 mb-4">
+                {story.published_date && (
+                  <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
+                )}
+                {story.author && (
+                  <span className="text-xs text-gray-400">Published by {story.author}</span>
+                )}
+                {story.photo_credit && (
+                  <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
+                )}
+              </div>
+              {/* Social buttons below */}
+              <SocialShareButtons 
+                url={window.location.href}
+                title={story.title}
+                description={story.subtitle || story.body?.substring(0, 150)}
+                type="inline"
+              />
             </div>
-            {/* Social buttons below */}
-            <SocialShareButtons 
-              url={window.location.href}
-              title={story.title}
-              description={story.subtitle || story.body?.substring(0, 150)}
-              type="inline"
-            />
-          </div>
 
-          {/* Body */}
-          <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
+            {/* Body */}
+            <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
 
-          {/* Tags */}
-          {story.tags?.length > 0 && (
-            <div className="flex items-center gap-2 mt-12 pt-8 border-t border-gray-200">
-              <Tag className="w-3 h-3 text-gray-400" />
-              {story.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          </div>
-
-          {/* Sidebar - Advertisements (always reserve space) */}
-          <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit">
-            {ads.length > 0 && (
-              <div className="space-y-4">
-                {ads.map((ad) => (
-                  <AdvertisementCard key={ad.id} ad={ad} />
+            {/* Tags */}
+            {story.tags?.length > 0 && (
+              <div className="flex items-center gap-2 mt-12 pt-8 border-t border-gray-200">
+                <Tag className="w-3 h-3 text-gray-400" />
+                {story.tags.map((tag) => (
+                  <span key={tag} className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">
+                    {tag}
+                  </span>
                 ))}
               </div>
             )}
-          </aside>
-      </article>
+          </div>
+        </article>
+
+        {/* Sidebar - Advertisements (always reserve space) */}
+        <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit px-6 lg:px-0">
+          {ads.length > 0 && (
+            <div className="space-y-4">
+              {ads.map((ad) => (
+                <AdvertisementCard key={ad.id} ad={ad} />
+              ))}
+            </div>
+          )}
+        </aside>
       </div>
     </PageShell>
   );
