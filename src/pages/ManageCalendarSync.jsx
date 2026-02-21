@@ -167,23 +167,31 @@ export default function ManageCalendarSync() {
         <h2 className="font-semibold text-[#232323] mb-4 flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Calendar
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div className="space-y-1">
-            <Label>Calendar Name</Label>
-            <Input
-              placeholder="e.g. NASCAR Cup Series 2026"
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>ICS / Webcal URL</Label>
-            <Input
-              placeholder="webcal:// or https://"
-              value={newUrl}
-              onChange={e => setNewUrl(e.target.value)}
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="space-y-1">
+          <Label>Calendar Name</Label>
+          <Input
+            placeholder="e.g. NASCAR Cup Series 2026"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Series Name <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <Input
+            placeholder="e.g. NASCAR Cup Series"
+            value={newSeriesName}
+            onChange={e => setNewSeriesName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>ICS / Webcal URL</Label>
+          <Input
+            placeholder="webcal:// or https://"
+            value={newUrl}
+            onChange={e => setNewUrl(e.target.value)}
+          />
+        </div>
         </div>
         <Button
           onClick={addCalendar}
