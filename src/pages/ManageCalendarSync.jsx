@@ -129,10 +129,9 @@ export default function ManageCalendarSync() {
                       <>
                         <div className="font-medium">{result.message}</div>
                         <div className="flex gap-3 mt-1 text-xs">
-                          <span>+{result.stats.tracks} tracks</span>
-                          <span>+{result.stats.series} series</span>
-                          <span>+{result.stats.events} events</span>
-                          <span>{result.stats.skipped} skipped</span>
+                        <span>+{result.stats.tracks} tracks</span>
+                        <span>+{result.stats.events} events</span>
+                        <span>{result.stats.skipped} skipped</span>
                         </div>
                       </>
                     ) : (
