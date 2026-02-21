@@ -47,7 +47,7 @@ export default function ScheduleHome() {
         ) : (
           <div className="space-y-3">
             {filtered.map((event) => (
-              <div key={event.id} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
+              <a key={event.id} href={createPageUrl('EventProfile', { id: event.id })} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
                 <div className="w-16 text-center shrink-0">
                   {event.event_date && (() => {
                     const d = parseISO(event.event_date);
