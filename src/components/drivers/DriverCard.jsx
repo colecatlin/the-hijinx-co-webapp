@@ -6,7 +6,24 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
 
-export default function DriverCard({ driver, program, team, media, performance, overallStats }) {
+// Series priority order (lower rank = higher tier)
+const SERIES_PRIORITY = {
+  'NASCAR Cup Series': 1,
+  "NASCAR O'Reilly Auto Parts Series": 2,
+  'NASCAR Xfinity Series': 2,
+  'NASCAR Craftsman Truck Series': 3,
+};
+
+function sortedSeriesNames(programs, allSeries = []) {
+  const seriesNames = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
+  return seriesNames.sort((a, b) => {
+    const rankA = allSeries.find(s => s.name === a)?.popularity_rank ?? SERIES_PRIORITY[a] ?? 99;
+    const rankB = allSeries.find(s => s.name === b)?.popularity_rank ?? SERIES_PRIORITY[b] ?? 99;
+    return rankA - rankB;
+  });
+}
+
+export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
