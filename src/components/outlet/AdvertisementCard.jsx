@@ -12,9 +12,15 @@ export default function AdvertisementCard({ ad }) {
   const bgColor = ad.background_color || '#FAFAFA';
   const textColor = ad.text_color || '#232323';
 
+  const getCardHeight = () => {
+    const ratio = ad.aspect_ratio || '1:1';
+    if (ratio === '4:5') return 'h-96';
+    return 'h-80'; // 1:1 default
+  };
+
   return (
     <div 
-      className="relative h-80 cursor-pointer"
+      className={`relative ${getCardHeight()} cursor-pointer`}
       style={{ perspective: '1000px' }}
       onClick={(e) => {
         if (!e.target.closest('a') && !e.target.closest('button')) {
