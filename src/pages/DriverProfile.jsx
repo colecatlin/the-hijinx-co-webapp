@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home, GitCompare } from 'lucide-react';
+import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home, GitCompare, Flag } from 'lucide-react';
 import StatsSection from '@/components/drivers/StatsSection';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -187,6 +187,7 @@ export default function DriverProfile() {
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'stats', label: 'Stats', icon: TrendingUp },
+    { id: 'results', label: 'Results', icon: Flag },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'social', label: 'Social Media', icon: Share2 },
   ];
