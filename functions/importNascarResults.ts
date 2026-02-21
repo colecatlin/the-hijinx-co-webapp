@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// v2 - LLM internet search approach
 const SERIES_NAMES = {
   1: 'NASCAR Cup Series',
   2: "NASCAR O'Reilly Auto Parts Series",
