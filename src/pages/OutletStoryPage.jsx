@@ -89,33 +89,31 @@ export default function OutletStoryPage() {
 
   return (
     <PageShell>
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 py-12 md:py-20">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 py-12 md:py-20 px-6 lg:px-0">
         {/* Main story content - extends to edges */}
         <article className="flex-1 lg:max-w-3xl">
-        <div className="px-6 lg:px-0">
           <Link
             to={createPageUrl('OutletHome')}
             className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors"
           >
             <ArrowLeft className="w-3 h-3" /> Back to The Outlet
           </Link>
-        </div>
 
-        {story.cover_image && (
-          <div className="mb-8 -mx-6 lg:mx-0">
-            <img src={story.cover_image} alt={story.title} className="w-screen lg:w-full" />
-            {(story.location_city || story.location_state || story.location_country) && (
-              <div className="mt-3 px-6 lg:px-0">
-                <span className="flex items-center gap-1 text-xs font-bold text-black">
-                  <MapPin className="w-3 h-3" />
-                  {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
+          {story.cover_image && (
+            <div className="mb-8 -mx-6 lg:mx-0">
+              <img src={story.cover_image} alt={story.title} className="w-screen lg:w-full" />
+              {(story.location_city || story.location_state || story.location_country) && (
+                <div className="mt-3 px-6 lg:px-0">
+                  <span className="flex items-center gap-1 text-xs font-bold text-black">
+                    <MapPin className="w-3 h-3" />
+                    {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
-        <div className="px-6 lg:px-0 flex-1 space-y-10">
+          <div className="flex-1 space-y-10">
           <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase block">
             {story.category}
           </span>
@@ -165,18 +163,18 @@ export default function OutletStoryPage() {
               ))}
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Sidebar - Advertisements */}
-        {ads.length > 0 && (
-          <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit">
-            <div className="space-y-4 px-6 lg:px-0">
-              {ads.map((ad) => (
-                <AdvertisementCard key={ad.id} ad={ad} />
-              ))}
-            </div>
-          </aside>
-        )}
+          {/* Sidebar - Advertisements */}
+          {ads.length > 0 && (
+            <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit">
+              <div className="space-y-4">
+                {ads.map((ad) => (
+                  <AdvertisementCard key={ad.id} ad={ad} />
+                ))}
+              </div>
+            </aside>
+          )}
       </article>
       </div>
     </PageShell>
