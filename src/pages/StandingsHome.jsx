@@ -138,12 +138,13 @@ export default function StandingsHome() {
                 <tr>
                   <SortHeader field="position">Pos</SortHeader>
                   <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Bib #</th>
                   {selectedSeries === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>}
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Team</th>
-                  <SortHeader field="points">Pts</SortHeader>
+                  {selectedClass === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>}
+                  <SortHeader field="total_points">Pts</SortHeader>
                   <SortHeader field="wins">Wins</SortHeader>
                   <SortHeader field="podiums">Podiums</SortHeader>
-                  <SortHeader field="starts">Starts</SortHeader>
+                  <SortHeader field="events_counted">Starts</SortHeader>
                 </tr>
               </thead>
               <tbody>
