@@ -20,6 +20,7 @@ export default function AdvertisementForm({ advertisement, onSuccess, onCancel }
     tagline: '',
     cover_image_url: '',
     aspect_ratio: '1:1',
+    display_style: 'flip',
     body: '',
     call_to_action_text: '',
     call_to_action_url: '',
@@ -148,20 +149,37 @@ export default function AdvertisementForm({ advertisement, onSuccess, onCancel }
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="aspect_ratio">Image Aspect Ratio</Label>
-        <Select
-          value={formData.aspect_ratio}
-          onValueChange={(value) => setFormData((prev) => ({ ...prev, aspect_ratio: value }))}
-        >
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder="Select aspect ratio" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1:1">1:1 (Square)</SelectItem>
-            <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="aspect_ratio">Image Aspect Ratio</Label>
+          <Select
+            value={formData.aspect_ratio}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, aspect_ratio: value }))}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select aspect ratio" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1:1">1:1 (Square)</SelectItem>
+              <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="display_style">Display Style</Label>
+          <Select
+            value={formData.display_style}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, display_style: value }))}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select display style" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="flip">Flip Card</SelectItem>
+              <SelectItem value="static">Static</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div>
