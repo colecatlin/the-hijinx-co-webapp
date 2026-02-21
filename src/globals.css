@@ -56,7 +56,7 @@ body {
 .editorial-body p {
   font-family: 'Times New Roman', Times, serif;
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.5;
   margin-bottom: 1.5rem;
   color: var(--hijinx-gray-700);
 }
