@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
 
       if (!summary || !dtStart) { stats.skipped++; continue; }
 
-      const seriesName = extractSeriesName(summary);
+      const seriesName = seriesNameOverride || extractSeriesName(summary);
       const roundNumber = extractRoundNumber(summary);
       const eventDate = parseICSDate(dtStart);
       const endDate = parseICSDate(dtEnd);
