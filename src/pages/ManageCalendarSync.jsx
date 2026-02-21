@@ -29,6 +29,7 @@ export default function ManageCalendarSync() {
 
   const [newName, setNewName] = useState('');
   const [newUrl, setNewUrl] = useState('');
+  const [newSeriesName, setNewSeriesName] = useState('');
   const [syncResults, setSyncResults] = useState({});
 
   const saveCalendars = (updated) => {
