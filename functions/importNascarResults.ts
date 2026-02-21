@@ -12,10 +12,6 @@ const SERIES_SEARCH_NAMES = {
   3: 'NASCAR Craftsman Truck Series',
 };
 
-function slugify(str) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -27,77 +23,70 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const {
-      series_id = 1,        // 1=Cup, 2=Xfinity, 3=Trucks
+      series_id = 1,
       season_year = 2026,
-      race_name,            // e.g. "Daytona 500" — specific race to import
-      race_id,              // NASCAR race_id from schedule feed — specific race
-      import_all = false,   // import all completed races in the schedule
+      race_name,       // specific race name e.g. "Daytona 500"
+      race_id,         // specific NASCAR race_id from schedule feed
+      import_all = false,
       dry_run = false,
     } = body;
 
     const seriesName = SERIES_NAMES[series_id];
     const seriesSearchName = SERIES_SEARCH_NAMES[series_id];
-
     if (!seriesName) {
       return Response.json({ error: `Unknown series_id: ${series_id}` }, { status: 400 });
     }
 
     const log = [];
 
-    // Step 1: Fetch schedule to get list of completed races
+    // --- Step 1: Fetch NASCAR schedule feed ---
     const scheduleUrl = `https://cf.nascar.com/cacher/${season_year}/${series_id}/schedule-feed.json`;
     log.push(`Fetching schedule: ${scheduleUrl}`);
 
     const scheduleRes = await fetch(scheduleUrl);
     if (!scheduleRes.ok) {
-      return Response.json({ error: `Failed to fetch schedule: ${scheduleRes.status}` }, { status: 500 });
+      return Response.json({ error: `Schedule fetch failed: ${scheduleRes.status}` }, { status: 500 });
     }
 
     const schedule = await scheduleRes.json();
     const now = new Date();
 
-    // Get unique completed races (run_type=3 = Race)
-    const allRaces = schedule
-      .filter(e => e.run_type === 3)
-      .filter(e => new Date(e.start_time_utc) < now)
+    // Deduplicate: only race sessions (run_type=3), already completed
+    const completedRaces = schedule
+      .filter(e => e.run_type === 3 && new Date(e.start_time_utc) < now)
       .reduce((acc, e) => {
         if (!acc.find(r => r.race_id === e.race_id)) acc.push(e);
         return acc;
       }, []);
 
-    log.push(`Found ${allRaces.length} completed race(s) in schedule`);
+    log.push(`Found ${completedRaces.length} completed race(s)`);
 
-    // Determine which races to process
-    let targetRaces = [];
+    // --- Determine which races to process ---
+    let targetRaces;
     if (race_id) {
-      const found = allRaces.find(r => r.race_id === race_id);
-      if (!found) return Response.json({ error: `Race ID ${race_id} not found or not completed` }, { status: 404 });
+      const found = completedRaces.find(r => r.race_id === race_id);
+      if (!found) return Response.json({ error: `Race ID ${race_id} not found` }, { status: 404 });
       targetRaces = [found];
     } else if (race_name) {
-      // Manual race name provided — find best match in schedule or use as-is
       const nameLower = race_name.toLowerCase();
-      const found = allRaces.find(r => r.race_name?.toLowerCase().includes(nameLower) || nameLower.includes(r.race_name?.toLowerCase()));
-      targetRaces = [found || { race_name, track_name: '', start_time: null, race_id: null }];
+      const found = completedRaces.find(r => (r.race_name || '').toLowerCase().includes(nameLower));
+      targetRaces = [found || { race_name, track_name: '', start_time: null }];
     } else if (import_all) {
-      targetRaces = allRaces;
+      targetRaces = completedRaces;
     } else {
-      // Default: import most recent completed race only
-      targetRaces = [allRaces[allRaces.length - 1]];
+      // Default: most recent race
+      targetRaces = [completedRaces[completedRaces.length - 1]];
     }
 
-    log.push(`Processing ${targetRaces.length} race(s)`);
+    log.push(`Will process ${targetRaces.length} race(s)`);
 
-    // Step 2: Load existing DB data
-    const [dbDrivers, dbEvents, dbSeriesArr] = await Promise.all([
+    // --- Step 2: Load DB data for matching ---
+    const [dbDrivers, dbEvents] = await Promise.all([
       base44.asServiceRole.entities.Driver.list(),
       base44.asServiceRole.entities.Event.list(),
-      base44.asServiceRole.entities.Series.filter({ name: seriesName }),
     ]);
 
-    const dbSeriesRecord = dbSeriesArr[0];
-    log.push(`Series in DB: ${dbSeriesRecord ? dbSeriesRecord.id : 'NOT FOUND'}`);
-
-    // Build driver lookup maps
+    // Driver lookup maps
     const driverByFullName = {};
     const driverByLastName = {};
     for (const d of dbDrivers) {
@@ -115,46 +104,44 @@ Deno.serve(async (req) => {
       events_unmatched: [],
     };
 
-    // Step 3: Process each race
+    // --- Step 3: Process each race ---
     for (const race of targetRaces) {
-      const raceName = race.race_name || race_name;
+      const rName = race.race_name || race_name || 'Unknown Race';
       const trackName = race.track_name || '';
       const raceDate = race.start_time ? race.start_time.split('T')[0] : null;
 
-      log.push(`\n--- Processing: ${raceName} (${raceDate || 'unknown date'}) at ${trackName} ---`);
+      log.push(`\n=== ${rName} | ${trackName} | ${raceDate || 'no date'} ===`);
 
-      // Step 3a: Use LLM + internet to get race results
-      log.push(`  Querying LLM with internet search for results...`);
-
+      // --- 3a: LLM internet search for results ---
+      log.push(`  Querying LLM with internet context...`);
       let parsedResults = [];
+
       try {
-        const prompt = `Find the official race results for the following NASCAR race:
-- Series: ${seriesSearchName}
-- Race: ${raceName}
-- Track: ${trackName}
-- Season: ${season_year}
-${raceDate ? `- Date: ${raceDate}` : ''}
+        const llmResp = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `Look up the official race results for this NASCAR race and return the complete finishing order:
 
-Return the COMPLETE finishing order with all drivers. For each driver return:
-- position (finishing position, 1 = winner)
-- driver_name (full name, e.g. "Kyle Larson")
-- car_number (e.g. "5")
-- status_text (e.g. "Running", "Accident", "Engine", "DNF", "Disqualified")
-- laps_completed (number of laps completed)
-- points (championship points earned, if available)
+Series: ${seriesSearchName}
+Race: ${rName}
+Track: ${trackName}
+Season: ${season_year}
+${raceDate ? `Date: ${raceDate}` : ''}
 
-If you cannot find reliable data for this specific race, return an empty results array.`;
+Return all drivers in finishing order. For each driver include:
+- position: finishing position (1 = winner)  
+- driver_name: full name (e.g. "Kyle Larson")
+- car_number: car/truck number (e.g. "5")
+- status_text: finish status — one of: Running, Accident, Engine, Transmission, Handling, Suspension, Overheating, DNF, DNS, Disqualified
+- laps_completed: number of laps completed
+- points: championship points earned (if available, otherwise null)
 
-        const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt,
+If you cannot find reliable data for this specific race, return empty results array.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: 'object',
             properties: {
-              race_name: { type: 'string' },
-              track: { type: 'string' },
-              date: { type: 'string' },
-              total_laps: { type: 'number' },
+              confirmed_race: { type: 'string' },
+              confirmed_winner: { type: 'string' },
+              confirmed_date: { type: 'string' },
               results: {
                 type: 'array',
                 items: {
@@ -173,9 +160,9 @@ If you cannot find reliable data for this specific race, return an empty results
           }
         });
 
-        parsedResults = llmResponse?.results || [];
-        log.push(`  LLM returned ${parsedResults.length} result entries`);
-        if (llmResponse?.race_name) log.push(`  Confirmed race: ${llmResponse.race_name} at ${llmResponse.track} on ${llmResponse.date}`);
+        parsedResults = llmResp?.results || [];
+        log.push(`  LLM returned ${parsedResults.length} drivers`);
+        if (llmResp?.confirmed_winner) log.push(`  Winner: ${llmResp.confirmed_winner} on ${llmResp.confirmed_date}`);
 
       } catch (e) {
         log.push(`  LLM error: ${e.message}`);
@@ -184,103 +171,92 @@ If you cannot find reliable data for this specific race, return an empty results
 
       if (!parsedResults.length) {
         log.push(`  No results returned, skipping`);
-        stats.events_unmatched.push(raceName);
+        stats.events_unmatched.push(rName);
         continue;
       }
 
-      // Step 3b: Find matching Event in DB
+      // --- 3b: Match event in DB ---
       let dbEvent = null;
+      const rNameLower = rName.toLowerCase();
+
       for (const e of dbEvents) {
         const eName = (e.name || '').toLowerCase();
-        const searchName = raceName.toLowerCase();
-        // Match by name overlap or date+series
-        if (eName.includes(searchName.substring(0, 12)) || searchName.includes(eName.substring(0, 12))) {
-          dbEvent = e;
-          break;
+        // Try name overlap (first 10 chars)
+        if (eName.includes(rNameLower.substring(0, 10)) || rNameLower.includes(eName.substring(0, 10))) {
+          dbEvent = e; break;
         }
+        // Try date + series match
         if (raceDate && e.event_date === raceDate && e.series === seriesName) {
-          dbEvent = e;
-          break;
+          dbEvent = e; break;
         }
-        if (trackName && e.event_date === raceDate && (e.name || '').toLowerCase().includes(slugify(trackName).substring(0, 8))) {
-          dbEvent = e;
-          break;
+        // Try track name in event name
+        if (trackName && eName.includes(trackName.toLowerCase().substring(0, 8))) {
+          dbEvent = e; break;
         }
       }
 
       if (!dbEvent) {
-        log.push(`  WARNING: No matching Event in DB for "${raceName}"`);
-        stats.events_unmatched.push(raceName);
+        log.push(`  WARNING: No DB event match for "${rName}"`);
+        stats.events_unmatched.push(rName);
         continue;
       }
 
       log.push(`  Matched DB event: "${dbEvent.name}" (${dbEvent.id})`);
 
-      // Check for existing results
-      const existingResults = await base44.asServiceRole.entities.Results.filter({ event_id: dbEvent.id });
-      if (existingResults.length > 0) {
-        log.push(`  Already have ${existingResults.length} results for this event, skipping`);
+      // Check for duplicate results
+      const existing = await base44.asServiceRole.entities.Results.filter({ event_id: dbEvent.id });
+      if (existing.length > 0) {
+        log.push(`  Already have ${existing.length} results, skipping`);
         stats.results_skipped += parsedResults.length;
         continue;
       }
 
-      // Step 3c: Match drivers and build records
-      const resultRecords = [];
+      // --- 3c: Match drivers ---
+      const recordsToCreate = [];
       for (const r of parsedResults) {
         const nameLower = (r.driver_name || '').toLowerCase().trim();
         let dbDriver = driverByFullName[nameLower];
 
-        // Try last name match if full name fails
         if (!dbDriver) {
           const parts = nameLower.split(' ');
-          const lastName = parts[parts.length - 1];
-          dbDriver = driverByLastName[lastName];
+          dbDriver = driverByLastName[parts[parts.length - 1]];
         }
 
         if (!dbDriver) {
-          log.push(`  WARNING: No driver match for "${r.driver_name}" (#${r.car_number})`);
-          if (!stats.drivers_unmatched.includes(r.driver_name)) {
-            stats.drivers_unmatched.push(r.driver_name);
-          }
+          log.push(`  UNMATCHED driver: "${r.driver_name}" (#${r.car_number})`);
+          if (!stats.drivers_unmatched.includes(r.driver_name)) stats.drivers_unmatched.push(r.driver_name);
         }
 
-        resultRecords.push({
-          driver_id: dbDriver?.id || 'unmatched',
+        recordsToCreate.push({
+          driver_id: dbDriver?.id || null,
           event_id: dbEvent.id,
           series: seriesName,
           session_type: 'Final',
           position: r.position,
           status_text: r.status_text || 'Running',
-          laps_completed: r.laps_completed,
+          laps_completed: r.laps_completed || null,
           points: r.points || null,
-          team_name: r.team_name || '',
+          team_name: '',
         });
       }
 
       if (!dry_run) {
-        for (const record of resultRecords) {
-          await base44.asServiceRole.entities.Results.create(record);
+        for (const rec of recordsToCreate) {
+          await base44.asServiceRole.entities.Results.create(rec);
         }
-        log.push(`  Created ${resultRecords.length} result records`);
-        // Mark event as completed
         await base44.asServiceRole.entities.Event.update(dbEvent.id, { status: 'completed' });
+        log.push(`  Created ${recordsToCreate.length} result records, event marked completed`);
       } else {
-        log.push(`  [DRY RUN] Would create ${resultRecords.length} records`);
-        log.push(`  Sample: ${JSON.stringify(resultRecords[0])}`);
+        log.push(`  [DRY RUN] Would create ${recordsToCreate.length} records`);
+        log.push(`  Sample P1: ${JSON.stringify(recordsToCreate[0])}`);
+        log.push(`  Sample P2: ${JSON.stringify(recordsToCreate[1])}`);
       }
 
-      stats.results_created += resultRecords.length;
+      stats.results_created += recordsToCreate.length;
       stats.races_processed++;
     }
 
-    return Response.json({
-      success: true,
-      dry_run,
-      series: seriesName,
-      season: season_year,
-      stats,
-      log,
-    });
+    return Response.json({ success: true, dry_run, series: seriesName, season: season_year, stats, log });
 
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
