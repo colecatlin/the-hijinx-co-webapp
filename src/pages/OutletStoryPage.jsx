@@ -59,7 +59,19 @@ export default function OutletStoryPage() {
 
   return (
     <PageShell>
-      <div className={ads?.length > 0 ? "max-w-6xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
+      <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
+        {ads?.length > 0 && (
+          <aside className="w-full md:w-40 flex-shrink-0">
+            <div className="sticky top-24 space-y-8">
+              {ads[0] && (
+                <div>
+                  <h3 className="text-xs font-mono tracking-[0.2em] text-gray-400 uppercase mb-4">Featured</h3>
+                  <AdvertisementCard ad={ads[0]} />
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
         <article className={ads?.length > 0 ? "flex-1 max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
         <Link
           to={createPageUrl('OutletHome')}
