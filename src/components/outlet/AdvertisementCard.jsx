@@ -12,7 +12,7 @@ export default function AdvertisementCard({ ad }) {
       href={ad.call_to_action_url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`block ${getCardHeight()} overflow-hidden rounded-lg hover:opacity-80 transition-opacity`}
+      className={`block ${getCardHeight()} overflow-hidden rounded-lg hover:opacity-80 transition-opacity border-2 border-black`}
     >
       <img 
         src={ad.cover_image_url} 
