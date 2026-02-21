@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Search, Pencil, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -46,7 +46,7 @@ export default function ManageAdvertising() {
 
   const { data: ads = [], isLoading: adsLoading } = useQuery({
     queryKey: ['advertisements'],
-    queryFn: () => base44.entities.Advertisement.list('-updated_date'),
+    queryFn: () => base44.entities.Advertisement.list('order'),
     initialData: [],
   });
 
@@ -57,6 +57,24 @@ export default function ManageAdvertising() {
       setDeleteTarget(null);
     },
   });
+
+  const updateAdOrderMutation = useMutation({
+    mutationFn: ({ id, order }) => base44.entities.Advertisement.update(id, { order }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['advertisements'] });
+    },
+  });
+
+  const handleMoveAd = (ad, direction) => {
+    const currentIndex = filteredAds.findIndex(a => a.id === ad.id);
+    if (direction === 'up' && currentIndex > 0) {
+      const above = filteredAds[currentIndex - 1];
+      updateAdOrderMutation.mutate({ id: ad.id, order: above.order - 0.5 });
+    } else if (direction === 'down' && currentIndex < filteredAds.length - 1) {
+      const below = filteredAds[currentIndex + 1];
+      updateAdOrderMutation.mutate({ id: ad.id, order: below.order + 0.5 });
+    }
+  };
 
   const deleteMessageMutation = useMutation({
     mutationFn: (id) => base44.entities.ContactMessage.delete(id),
@@ -352,6 +370,24 @@ export default function ManageAdvertising() {
                             </div>
                           </div>
                           <div className="flex gap-2 flex-shrink-0">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMoveAd(ad, 'up')}
+                              disabled={filteredAds[0]?.id === ad.id}
+                              title="Move up"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMoveAd(ad, 'down')}
+                              disabled={filteredAds[filteredAds.length - 1]?.id === ad.id}
+                              title="Move down"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
