@@ -165,16 +165,16 @@ export default function OutletStoryPage() {
           )}
           </div>
 
-          {/* Sidebar - Advertisements */}
-          {ads.length > 0 && (
-            <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit">
+          {/* Sidebar - Advertisements (always reserve space) */}
+          <aside className="w-full lg:w-80 lg:sticky lg:top-24 lg:h-fit">
+            {ads.length > 0 && (
               <div className="space-y-4">
                 {ads.map((ad) => (
                   <AdvertisementCard key={ad.id} ad={ad} />
                 ))}
               </div>
-            </aside>
-          )}
+            )}
+          </aside>
       </article>
       </div>
     </PageShell>
