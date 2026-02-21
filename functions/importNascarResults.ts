@@ -87,13 +87,16 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Event.list(),
     ]);
 
+    // Normalize accents for fuzzy matching
+    const normalize = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
     // Driver lookup maps
     const driverByFullName = {};
     const driverByLastName = {};
     for (const d of dbDrivers) {
-      const full = `${d.first_name} ${d.last_name}`.toLowerCase();
+      const full = normalize(`${d.first_name} ${d.last_name}`);
       driverByFullName[full] = d;
-      const last = d.last_name.toLowerCase();
+      const last = normalize(d.last_name);
       if (!driverByLastName[last]) driverByLastName[last] = d;
     }
 
