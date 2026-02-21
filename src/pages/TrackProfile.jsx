@@ -116,6 +116,7 @@ export default function TrackProfile() {
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'results', label: 'Results', icon: TrendingUp },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
     { id: 'fan', label: 'Fan Experience', icon: Users },
