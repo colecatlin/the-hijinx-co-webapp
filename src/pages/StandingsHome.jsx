@@ -25,32 +25,33 @@ export default function StandingsHome() {
 
   const { data: entries = [], isLoading: loadingEntries } = useQuery({
     queryKey: ['standings'],
-    queryFn: () => base44.entities.StandingsEntry.list('-position', 200),
+    queryFn: () => base44.entities.Standings.list('-total_points', 500),
   });
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear().toString();
 
   // Derive available seasons and classes
   const availableSeasons = useMemo(() => {
-    const s = [...new Set(entries.map(e => e.season).filter(Boolean))].sort((a, b) => b - a);
+    const s = [...new Set(entries.map(e => e.season_year).filter(Boolean))].sort((a, b) => b.localeCompare(a));
     return s.length > 0 ? s : [currentYear];
   }, [entries]);
 
-  const activeSeason = selectedSeason || (availableSeasons[0] || currentYear);
+  const activeSeason = selectedSeason || availableSeasons[0] || currentYear;
 
   const availableClasses = useMemo(() => {
-    let filtered = entries.filter(e => e.season === activeSeason);
+    let filtered = entries.filter(e => e.season_year === activeSeason);
     if (selectedSeries !== 'all') filtered = filtered.filter(e => e.series_id === selectedSeries);
     return ['all', ...new Set(filtered.map(e => e.class_name).filter(Boolean))];
   }, [entries, activeSeason, selectedSeries]);
 
   const filteredEntries = useMemo(() => {
-    let data = entries.filter(e => e.season === activeSeason);
+    let data = entries.filter(e => e.season_year === activeSeason);
     if (selectedSeries !== 'all') data = data.filter(e => e.series_id === selectedSeries);
     if (selectedClass !== 'all') data = data.filter(e => e.class_name === selectedClass);
     data.sort((a, b) => {
       const aVal = a[sortField] ?? 0;
       const bVal = b[sortField] ?? 0;
+      if (typeof aVal === 'string') return aVal.localeCompare(bVal) * sortDir;
       return (aVal - bVal) * sortDir;
     });
     return data;
