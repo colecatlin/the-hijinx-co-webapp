@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Search, Pencil, Trash2, Linkedin } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageShell from '@/components/shared/PageShell';
@@ -69,16 +69,6 @@ export default function ManageStories() {
   const handleDelete = (id) => {
     if (confirm('Delete this story?')) {
       deleteStoryMutation.mutate(id);
-    }
-  };
-
-  const handlePostToLinkedIn = async (story) => {
-    try {
-      toast.loading('Posting to LinkedIn...', { id: 'linkedin-post' });
-      await base44.functions.invoke('postStoryToLinkedIn', { story_id: story.id });
-      toast.success('Posted to LinkedIn!', { id: 'linkedin-post' });
-    } catch (e) {
-      toast.error('Failed to post to LinkedIn', { id: 'linkedin-post' });
     }
   };
 
@@ -203,16 +193,6 @@ export default function ManageStories() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2 justify-end">
-                            {story.status === 'published' && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handlePostToLinkedIn(story)}
-                                title="Post to LinkedIn"
-                              >
-                                <Linkedin className="w-4 h-4 text-[#0077b5]" />
-                              </Button>
-                            )}
                             <Button
                               size="sm"
                               variant="ghost"
