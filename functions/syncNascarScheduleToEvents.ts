@@ -87,7 +87,8 @@ Deno.serve(async (req) => {
             const created = await base44.asServiceRole.entities.Track.create({
               name: tName,
               status: 'Active',
-              nascar_track_id: r.track_id?.toString() || '',
+              location_city: '',
+              location_country: 'United States',
             });
             trackByName[tKey] = created;
           }

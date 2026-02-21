@@ -67,16 +67,19 @@ Only return data you are confident is accurate. Use null for anything uncertain.
           }
         });
 
+        // Map track_type to valid enum values
+        const typeMap = {
+          'Superspeedway': 'Speedway', 'Intermediate': 'Oval', 'Short Track': 'Short Track',
+          'Road Course': 'Road Course', 'Street Course': 'Street Circuit', 'Dirt Track': 'Dirt Track',
+        };
         const updates = {};
-        if (result.city && !track.city) updates.city = result.city;
-        if (result.state && !track.state) updates.state = result.state;
-        if (result.country && !track.country) updates.country = result.country;
-        if (result.track_length && !track.track_length) updates.track_length = result.track_length;
+        if (result.city) updates.location_city = result.city;
+        if (result.state) updates.location_state = result.state;
+        if (result.country) updates.location_country = result.country;
+        if (result.track_length && !track.length) updates.length = result.track_length;
         if (result.surface_type && !track.surface_type) updates.surface_type = result.surface_type;
-        if (result.banking_degrees && !track.banking_degrees) updates.banking_degrees = result.banking_degrees;
-        if (result.seating_capacity && !track.seating_capacity) updates.seating_capacity = result.seating_capacity;
-        if (result.year_opened && !track.year_opened) updates.year_opened = result.year_opened;
-        if (result.track_type && !track.track_type) updates.track_type = result.track_type;
+        if (result.banking_degrees && !track.banking) updates.banking = result.banking_degrees?.toString();
+        if (result.track_type && !track.track_type) updates.track_type = typeMap[result.track_type] || 'Other';
         if (result.website_url && !track.website_url) updates.website_url = result.website_url;
         if (result.description && !track.description) updates.description = result.description;
 
