@@ -131,8 +131,8 @@ export default function AdvertisementCard({ ad }) {
 
   const getCardHeight = () => {
     const ratio = ad.aspect_ratio || '1:1';
-    if (ratio === '4:5') return 'h-96';
-    return 'h-80'; // 1:1 default
+    if (ratio === '4:5') return 'h-48';
+    return 'h-40'; // 1:1 default
   };
 
   const height = getCardHeight();
