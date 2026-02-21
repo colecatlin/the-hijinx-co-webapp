@@ -40,10 +40,11 @@ export default function ManageCalendarSync() {
   const addCalendar = () => {
     if (!newName.trim() || !newUrl.trim()) return;
     const normalizedUrl = newUrl.trim().replace(/^webcal:\/\//i, 'https://');
-    const updated = [...calendars, { id: Date.now().toString(), name: newName.trim(), url: normalizedUrl }];
+    const updated = [...calendars, { id: Date.now().toString(), name: newName.trim(), url: normalizedUrl, seriesName: newSeriesName.trim() || null }];
     saveCalendars(updated);
     setNewName('');
     setNewUrl('');
+    setNewSeriesName('');
   };
 
   const removeCalendar = (id) => {
