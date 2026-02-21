@@ -59,20 +59,15 @@ export default function OutletStoryPage() {
 
   return (
     <PageShell>
-      <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
+      <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 grid grid-cols-1 md:grid-cols-[minmax(160px,1fr)_minmax(500px,2fr)_minmax(160px,1fr)] gap-8" : ""}>
         {ads?.length > 0 && (
-          <aside className="w-full md:w-40 flex-shrink-0">
-            <div className="sticky top-24 space-y-8">
-              {ads[0] && (
-                <div>
-                  <h3 className="text-xs font-mono tracking-[0.2em] text-gray-400 uppercase mb-4">Featured</h3>
-                  <AdvertisementCard ad={ads[0]} />
-                </div>
-              )}
-            </div>
+          <aside className="space-y-8">
+            {ads.filter((_, i) => i % 2 === 0).map((ad) => (
+              <AdvertisementCard key={ad.id} ad={ad} />
+            ))}
           </aside>
         )}
-        <article className={ads?.length > 0 ? "flex-1 max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
+        <article className={ads?.length > 0 ? "max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
         <Link
           to={createPageUrl('OutletHome')}
           className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors"
@@ -147,18 +142,14 @@ export default function OutletStoryPage() {
         )}
       </article>
 
-      {/* Right Sidebar with Advertisement */}
-      {ads?.length > 1 && (
-        <aside className="w-full md:w-40 flex-shrink-0">
-          <div className="sticky top-24 space-y-8">
-            <div>
-              <h3 className="text-xs font-mono tracking-[0.2em] text-gray-400 uppercase mb-4">Advertisement</h3>
-              <AdvertisementCard ad={ads[1]} />
-            </div>
-          </div>
+      {ads?.length > 0 && (
+        <aside className="space-y-8">
+          {ads.filter((_, i) => i % 2 === 1).map((ad) => (
+            <AdvertisementCard key={ad.id} ad={ad} />
+          ))}
         </aside>
       )}
       </div>
-    </PageShell>
-  );
+      </PageShell>
+      );
 }
