@@ -9,15 +9,20 @@ import { Label } from '@/components/ui/label';
 import { Check, Megaphone, LayoutGrid, Mail } from 'lucide-react';
 
 const placements = [
-  { icon: LayoutGrid, title: 'Homepage Feature', desc: 'Prime placement on the Hijinx homepage grid.' },
-  { icon: Megaphone, title: 'Outlet Sponsorship', desc: 'Category or issue-level sponsorship in The Outlet.' },
-  { icon: Mail, title: 'Newsletter Placement', desc: 'Reach our subscriber base directly.' },
+  { icon: LayoutGrid, title: 'Homepage Feature', desc: 'Prime placement on the Hijinx homepage grid.', value: 'homepage' },
+  { icon: Megaphone, title: 'Outlet Sponsorship', desc: 'Category or issue-level sponsorship in The Outlet.', value: 'outlet' },
+  { icon: Mail, title: 'Newsletter Placement', desc: 'Reach our subscriber base directly.', value: 'newsletter' },
 ];
 
 export default function OutletAdvertising() {
-  const [form, setForm] = useState({ name: '', email: '', subject: 'Advertising Inquiry', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', subject: 'Advertising Inquiry', message: '', ad_type: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handleAdTypeSelect = (adType) => {
+    setForm({ ...form, ad_type: adType });
+    document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,16 +44,24 @@ export default function OutletAdvertising() {
         {/* Placements */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
           {placements.map((p) => (
-            <div key={p.title} className="border border-gray-200 p-6 hover:border-[#0A0A0A] transition-colors">
-              <p.icon className="w-5 h-5 text-gray-400 mb-4" />
+            <button
+              key={p.title}
+              onClick={() => handleAdTypeSelect(p.value)}
+              className={`border p-6 transition-all text-left cursor-pointer ${
+                form.ad_type === p.value
+                  ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
+                  : 'border-gray-200 hover:border-[#0A0A0A]'
+              }`}
+            >
+              <p.icon className={`w-5 h-5 mb-4 ${form.ad_type === p.value ? 'text-white' : 'text-gray-400'}`} />
               <h3 className="font-bold text-sm">{p.title}</h3>
-              <p className="text-xs text-gray-500 mt-2">{p.desc}</p>
-            </div>
+              <p className={`text-xs mt-2 ${form.ad_type === p.value ? 'text-gray-300' : 'text-gray-500'}`}>{p.desc}</p>
+            </button>
           ))}
         </div>
 
         {/* Contact form */}
-        <div className="max-w-xl">
+        <div className="max-w-xl" id="form-section">
           <h2 className="font-mono text-xs tracking-[0.2em] text-gray-400 uppercase mb-6">Get in touch</h2>
           {submitted ? (
             <div className="flex flex-col items-center py-16 text-center">
