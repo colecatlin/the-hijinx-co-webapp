@@ -159,12 +159,12 @@ export default function StandingsHome() {
                     </td>
                     <td className="px-4 py-3">
                      {entry.driver_id ? (
-                       <Link to={createPageUrl('DriverProfile') + `?id=${entry.driver_id}`} className="text-sm font-semibold hover:underline">
-                         {entry.first_name} {entry.last_name}
-                       </Link>
-                     ) : (
-                       <span className="text-sm font-semibold">{entry.first_name} {entry.last_name}</span>
-                     )}
+                        <Link to={createPageUrl('DriverProfile', { first: entry.first_name.toLowerCase(), last: entry.last_name.toLowerCase() })} className="text-sm font-semibold hover:underline">
+                          {entry.first_name} {entry.last_name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-semibold">{entry.first_name} {entry.last_name}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-500 font-mono">{entry.bib_number || '—'}</td>
                     {selectedSeries === 'all' && (
