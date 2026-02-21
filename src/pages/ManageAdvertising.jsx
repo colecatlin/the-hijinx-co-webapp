@@ -176,7 +176,7 @@ export default function ManageAdvertising() {
           </div>
         </div>
 
-        <Tabs defaultValue="inquiries" className="space-y-6">
+        <Tabs defaultValue="ads" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="inquiries">Advertising Inquiries</TabsTrigger>
             <TabsTrigger value="ads">Active Advertisements</TabsTrigger>
