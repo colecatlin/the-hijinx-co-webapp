@@ -36,12 +36,26 @@ export default function ManageAdvertising() {
 
   const queryClient = useQueryClient();
 
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: ['contactMessages'],
     queryFn: async () => {
       const allMessages = await base44.entities.ContactMessage.list('-created_date');
       return allMessages.filter(msg => msg.subject === 'Advertising Inquiry');
     }
+  });
+
+  const { data: ads = [], isLoading: adsLoading } = useQuery({
+    queryKey: ['advertisements'],
+    queryFn: () => base44.entities.Advertisement.list('-updated_date'),
+    initialData: [],
+  });
+
+  const deleteAdMutation = useMutation({
+    mutationFn: (id) => base44.entities.Advertisement.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['advertisements'] });
+      setDeleteTarget(null);
+    },
   });
 
   const deleteMessageMutation = useMutation({
