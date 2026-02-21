@@ -116,6 +116,34 @@ export default function ManageAdvertising() {
     updateMessageMutation.mutate({ id, status });
   };
 
+  const handleEditAd = (ad) => {
+    setEditingAd(ad);
+    setShowAdForm(true);
+  };
+
+  const handleAdFormSuccess = () => {
+    setShowAdForm(false);
+    setEditingAd(null);
+  };
+
+  const filteredAds = ads.filter(ad =>
+    ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ad.tagline?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'published':
+        return 'bg-green-100 text-green-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      case 'archived':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <PageShell className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
