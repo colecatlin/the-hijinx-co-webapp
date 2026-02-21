@@ -32,6 +32,7 @@ export default function Management() {
       items: [
         { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
         { name: 'Messages', page: 'ManageMessages', icon: Mail, description: 'View contact messages and inquiries' },
+        { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries' },
         { name: 'Access Management', page: 'ManageAccess', icon: Handshake, description: 'Manage user access to entities' },
       ]
     },
