@@ -152,7 +152,7 @@ export default function OutletStoryPage() {
           </div>
         </aside>
       )}
-    </div>
+      </div>
     </PageShell>
   );
 }
