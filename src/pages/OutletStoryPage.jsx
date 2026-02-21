@@ -137,7 +137,7 @@ export default function OutletStoryPage() {
 
       {/* Sidebar with Advertisements */}
       {ads?.length > 0 && (
-        <aside className="w-full md:w-80 flex-shrink-0">
+        <aside className="w-full md:w-40 flex-shrink-0">
           <div className="sticky top-24 space-y-8">
             <div>
               <h3 className="text-xs font-mono tracking-[0.2em] text-gray-400 uppercase mb-4">Featured</h3>
