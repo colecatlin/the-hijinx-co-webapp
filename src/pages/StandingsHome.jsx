@@ -158,23 +158,25 @@ export default function StandingsHome() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {entry.driver_id ? (
-                        <Link to={createPageUrl('DriverProfile') + `?id=${entry.driver_id}`} className="text-sm font-semibold hover:underline">
-                          {entry.driver_name}
-                        </Link>
-                      ) : (
-                        <span className="text-sm font-semibold">{entry.driver_name}</span>
-                      )}
-                      {entry.hometown && <span className="text-[10px] text-gray-400 ml-2">{entry.hometown}</span>}
+                     {entry.driver_id ? (
+                       <Link to={createPageUrl('DriverProfile') + `?id=${entry.driver_id}`} className="text-sm font-semibold hover:underline">
+                         {entry.first_name} {entry.last_name}
+                       </Link>
+                     ) : (
+                       <span className="text-sm font-semibold">{entry.first_name} {entry.last_name}</span>
+                     )}
                     </td>
+                    <td className="px-4 py-3 text-xs text-gray-500 font-mono">{entry.bib_number || '—'}</td>
                     {selectedSeries === 'all' && (
-                      <td className="px-4 py-3 text-xs text-gray-500">{entry.series_name}</td>
+                     <td className="px-4 py-3 text-xs text-gray-500">{entry.series_name}</td>
                     )}
-                    <td className="px-4 py-3 text-xs text-gray-500">{entry.team_name}</td>
-                    <td className="px-4 py-3 text-sm font-bold tabular-nums">{entry.points}</td>
+                    {selectedClass === 'all' && (
+                     <td className="px-4 py-3 text-xs text-gray-500">{entry.class_name}</td>
+                    )}
+                    <td className="px-4 py-3 text-sm font-bold tabular-nums">{entry.total_points}</td>
                     <td className="px-4 py-3 text-sm tabular-nums">{entry.wins || 0}</td>
                     <td className="px-4 py-3 text-sm tabular-nums">{entry.podiums || 0}</td>
-                    <td className="px-4 py-3 text-sm tabular-nums">{entry.starts || 0}</td>
+                    <td className="px-4 py-3 text-sm tabular-nums">{entry.events_counted || 0}</td>
                   </tr>
                 ))}
               </tbody>
