@@ -76,10 +76,10 @@ export default function ScheduleHome() {
                     {format(parseISO(event.event_date), 'MMM d')} – {format(parseISO(event.end_date), 'MMM d')}
                   </span>
                 )}
-                </a>
-                ))}
-                </div>
-                )}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </PageShell>
   );
