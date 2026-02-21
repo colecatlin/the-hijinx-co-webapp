@@ -301,6 +301,8 @@ export default function DriverDirectory() {
                   <DriverCard
                     driver={driver}
                     program={primaryProgram}
+                    programs={driverPrograms}
+                    allSeries={allSeries}
                     team={team}
                     media={media}
                   />
