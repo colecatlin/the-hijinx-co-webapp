@@ -59,8 +59,8 @@ export default function OutletStoryPage() {
 
   return (
     <PageShell>
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 flex gap-8">
-        <article className="flex-1 max-w-3xl">
+      <div className={ads?.length > 0 ? "max-w-6xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
+        <article className={ads?.length > 0 ? "flex-1 max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
         <Link
           to={createPageUrl('OutletHome')}
           className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors"
