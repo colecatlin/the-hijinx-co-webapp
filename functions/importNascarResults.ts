@@ -82,9 +82,10 @@ Deno.serve(async (req) => {
     log.push(`Will process ${targetRaces.length} race(s)`);
 
     // --- Step 2: Load DB data for matching ---
-    const [dbDrivers, dbEvents] = await Promise.all([
+    const [dbDrivers, dbEvents, dbPrograms] = await Promise.all([
       base44.asServiceRole.entities.Driver.list(),
       base44.asServiceRole.entities.Event.list(),
+      base44.asServiceRole.entities.DriverProgram.list(),
     ]);
 
     // Normalize accents for fuzzy matching
