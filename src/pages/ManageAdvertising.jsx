@@ -69,10 +69,14 @@ export default function ManageAdvertising() {
     const currentIndex = filteredAds.findIndex(a => a.id === ad.id);
     if (direction === 'up' && currentIndex > 0) {
       const above = filteredAds[currentIndex - 1];
-      updateAdOrderMutation.mutate({ id: ad.id, order: above.order - 0.5 });
+      const tempOrder = ad.order;
+      updateAdOrderMutation.mutate({ id: ad.id, order: above.order });
+      updateAdOrderMutation.mutate({ id: above.id, order: tempOrder });
     } else if (direction === 'down' && currentIndex < filteredAds.length - 1) {
       const below = filteredAds[currentIndex + 1];
-      updateAdOrderMutation.mutate({ id: ad.id, order: below.order + 0.5 });
+      const tempOrder = ad.order;
+      updateAdOrderMutation.mutate({ id: ad.id, order: below.order });
+      updateAdOrderMutation.mutate({ id: below.id, order: tempOrder });
     }
   };
 
