@@ -112,6 +112,7 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
+import ManageAdvertisements from './pages/ManageAdvertisements';
 import __Layout from './Layout.jsx';
 
 
@@ -181,6 +182,7 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
+    "ManageAdvertisements": ManageAdvertisements,
 }
 
 export const pagesConfig = {
