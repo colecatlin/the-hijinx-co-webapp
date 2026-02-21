@@ -156,7 +156,8 @@ export default function OutletStoryPage() {
             </div>
           </aside>
         )}
-        </div>
-        </PageShell>
+      </article>
+      </div>
+    </PageShell>
   );
 }
