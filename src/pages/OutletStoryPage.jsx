@@ -23,18 +23,39 @@ export default function OutletStoryPage() {
   });
 
   const { data: ads = [] } = useQuery({
-    queryKey: ['advertisements', 'outlet_story_sidebar'],
+    queryKey: ['advertisements', 'outlet_story_sidebar', story?.id],
     queryFn: () => base44.entities.Advertisement.filter({ 
       placement: ['outlet_story_sidebar'],
       status: 'published'
     }).then(results => {
       const now = new Date();
       return results.filter(ad => {
+        // Check date targeting
         const started = !ad.start_date || new Date(ad.start_date) <= now;
         const notEnded = !ad.end_date || new Date(ad.end_date) > now;
-        return started && notEnded;
+        if (!started || !notEnded) return false;
+
+        // Check category targeting
+        if (ad.target_categories?.length > 0 && !ad.target_categories.includes(story?.category)) {
+          return false;
+        }
+
+        // Check tag targeting
+        if (ad.target_tags?.length > 0) {
+          const storyTags = story?.tags || [];
+          const matchingTags = ad.target_tags.filter(tag => storyTags.includes(tag));
+          if (ad.targeting_mode === 'all' && matchingTags.length !== ad.target_tags.length) {
+            return false;
+          }
+          if (ad.targeting_mode === 'any' && matchingTags.length === 0) {
+            return false;
+          }
+        }
+
+        return true;
       });
     }),
+    enabled: !!story,
   });
 
   if (isLoading) {
