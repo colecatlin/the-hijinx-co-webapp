@@ -387,6 +387,16 @@ export default function TrackProfile() {
             )}
           </section>
 
+          {/* Results */}
+          <section id="section-results" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Results & Standings</h2>
+            {trackEventIds.length > 0 ? (
+              <ResultsPanel eventId={trackEventIds[0]} />
+            ) : (
+              <p className="text-gray-500 text-sm">No events with results found for this track yet.</p>
+            )}
+          </section>
+
           {/* Schedule */}
           <section id="section-schedule" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Race Schedule</h2>
