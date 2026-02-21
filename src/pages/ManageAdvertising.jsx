@@ -262,7 +262,138 @@ export default function ManageAdvertising() {
               </div>
             )}
           </TabsContent>
+
+          <TabsContent value="ads" className="space-y-6">
+            <div className="flex gap-3 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search advertisements..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  setEditingAd(null);
+                  setShowAdForm(true);
+                }}
+                className="bg-[#232323] hover:bg-[#1A3249]"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Ad
+              </Button>
+            </div>
+
+            {showAdForm && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4">
+                  {editingAd ? 'Edit Advertisement' : 'Create New Advertisement'}
+                </h3>
+                <AdvertisementForm
+                  advertisement={editingAd}
+                  onSuccess={handleAdFormSuccess}
+                  onCancel={() => {
+                    setShowAdForm(false);
+                    setEditingAd(null);
+                  }}
+                />
+              </div>
+            )}
+
+            {adsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="p-4">
+                    <Skeleton className="h-6 w-1/3 mb-4" />
+                    <Skeleton className="h-4 w-1/2 mb-2" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </Card>
+                ))}
+              </div>
+            ) : filteredAds.length === 0 ? (
+              <Card className="p-12 text-center">
+                <p className="text-gray-400">
+                  {searchQuery ? 'No advertisements found' : 'No advertisements yet. Create one to get started.'}
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {filteredAds.map((ad) => (
+                  <Card key={ad.id} className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      {ad.cover_image_url && (
+                        <img
+                          src={ad.cover_image_url}
+                          alt={ad.title}
+                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <h3 className="font-semibold text-lg">{ad.title}</h3>
+                            {ad.tagline && <p className="text-sm text-gray-500 mt-1">{ad.tagline}</p>}
+                            <div className="flex items-center gap-2 mt-3">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(ad.status)}`}>
+                                {ad.status}
+                              </span>
+                              {ad.start_date && (
+                                <span className="text-xs text-gray-500">
+                                  Starts {format(new Date(ad.start_date), 'MMM d, yyyy')}
+                                </span>
+                              )}
+                              {ad.end_date && (
+                                <span className="text-xs text-gray-500">
+                                  Ends {format(new Date(ad.end_date), 'MMM d, yyyy')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditAd(ad)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setDeleteTarget(ad)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
+
+        <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogTitle>Delete Advertisement?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{deleteTarget?.title}". This action cannot be undone.
+            </AlertDialogDescription>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteAdMutation.mutate(deleteTarget.id)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PageShell>
   );
