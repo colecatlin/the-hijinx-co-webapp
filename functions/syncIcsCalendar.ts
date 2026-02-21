@@ -176,18 +176,8 @@ Deno.serve(async (req) => {
       const existing = existingSeries.find(s => s.name?.toLowerCase() === seriesName.toLowerCase());
       if (existing) {
         seriesMap[seriesName] = existing.id;
-      } else {
-        const created = await base44.asServiceRole.entities.Series.create({
-          name: seriesName,
-          slug: slugify(seriesName),
-          discipline: 'Stock Car',
-          region: 'United States',
-          status: 'Active',
-          season_year: '2026',
-        });
-        seriesMap[seriesName] = created.id;
-        stats.series++;
       }
+      // No new Series entities are created — events are only linked to existing series
     }
 
     // Build lookup maps for deduplication
