@@ -19,12 +19,14 @@ export default function AdvertisementForm({ advertisement, onSuccess, onCancel }
     title: '',
     tagline: '',
     cover_image_url: '',
+    aspect_ratio: '1:1',
     body: '',
     call_to_action_text: '',
     call_to_action_url: '',
     background_color: '#FAFAFA',
     text_color: '#0A0A0A',
     status: 'draft',
+    order: 0,
     start_date: '',
     end_date: '',
   });
@@ -147,6 +149,22 @@ export default function AdvertisementForm({ advertisement, onSuccess, onCancel }
       </div>
 
       <div>
+        <Label htmlFor="aspect_ratio">Image Aspect Ratio</Label>
+        <Select
+          value={formData.aspect_ratio}
+          onValueChange={(value) => setFormData((prev) => ({ ...prev, aspect_ratio: value }))}
+        >
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select aspect ratio" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1:1">1:1 (Square)</SelectItem>
+            <SelectItem value="4:5">4:5 (Portrait)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
         <Label htmlFor="body">Body</Label>
         <Textarea
           id="body"
@@ -241,6 +259,20 @@ export default function AdvertisementForm({ advertisement, onSuccess, onCancel }
             <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="order">Display Order</Label>
+        <Input
+          id="order"
+          name="order"
+          type="number"
+          value={formData.order}
+          onChange={handleInputChange}
+          placeholder="0"
+          className="mt-1"
+        />
+        <p className="text-xs text-gray-500 mt-1">Lower numbers appear first (left column, then right column)</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
