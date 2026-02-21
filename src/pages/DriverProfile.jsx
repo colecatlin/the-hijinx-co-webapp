@@ -414,6 +414,12 @@ export default function DriverProfile() {
             />
           </section>
 
+          <section id="section-results" className="bg-white p-8">
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results & Standings</h2>
+            <ResultsPanel driverId={driver.id} />
+          </section>
+
           <section id="section-schedule" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Race Schedule</h2>

@@ -200,8 +200,8 @@ export default function EventProfile() {
 
           <section id="section-results" className="bg-white p-8">
             <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results</h2>
-            <p className="text-gray-500">Results will be available after the event.</p>
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results & Standings</h2>
+            <ResultsPanel eventId={eventId} seriesName={event.series} />
           </section>
         </div>
       </div>
