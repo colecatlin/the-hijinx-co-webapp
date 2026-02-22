@@ -15,7 +15,7 @@ export default function BrandStatement() {
 
       {/* Text — pinned to right side */}
       <div className="absolute inset-0 flex items-center justify-end">
-        <div className="max-w-md px-8 md:px-12 text-right">
+        <div className="px-8 md:px-12 text-right">
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-white/60 mb-3">
             Hijinx Co
           </p>
