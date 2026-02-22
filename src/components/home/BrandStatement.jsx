@@ -19,8 +19,9 @@ export default function BrandStatement() {
           <p className="text-xs font-semibold tracking-[0.25em] uppercase text-white/60 mb-3">
             Hijinx Co
           </p>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight mb-4">
-            IN MOTION.<br />ON PURPOSE.
+          <h2 className="font-black tracking-tight text-white leading-tight mb-4">
+            <div className="text-4xl md:text-5xl lg:text-6xl whitespace-nowrap">IN MOTION.</div>
+            <div className="text-4xl md:text-5xl lg:text-6xl whitespace-nowrap">ON PURPOSE.</div>
           </h2>
           <p className="text-base md:text-lg text-white/70 font-light tracking-wide">
             dream it, build it, live it.
