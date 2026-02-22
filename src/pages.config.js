@@ -49,6 +49,7 @@
  */
 import About from './pages/About';
 import AcceptInvitation from './pages/AcceptInvitation';
+import AdvertisementAnalytics from './pages/AdvertisementAnalytics';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ApparelHome from './pages/ApparelHome';
 import Contact from './pages/Contact';
@@ -112,13 +113,13 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import AdvertisementAnalytics from './pages/AdvertisementAnalytics';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "About": About,
     "AcceptInvitation": AcceptInvitation,
+    "AdvertisementAnalytics": AdvertisementAnalytics,
     "AnalyticsDashboard": AnalyticsDashboard,
     "ApparelHome": ApparelHome,
     "Contact": Contact,
@@ -182,7 +183,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "AdvertisementAnalytics": AdvertisementAnalytics,
 }
 
 export const pagesConfig = {

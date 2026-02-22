@@ -6,11 +6,13 @@ import LatestFeed from '@/components/home/LatestFeed';
 import MotorsportsStrip from '@/components/home/MotorsportsStrip';
 import ApparelSection from '@/components/home/ApparelSection';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
+import BrandStatement from '@/components/home/BrandStatement';
 
 export default function Home() {
   return (
     <PageShell>
       <HeroSection />
+      <BrandStatement />
       <MotorsportsStrip />
       <LatestFeed />
       <ApparelSection />
