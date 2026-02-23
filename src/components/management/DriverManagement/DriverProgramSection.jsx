@@ -367,8 +367,8 @@ export default function DriverProgramSection({ driverId }) {
                     team_id: '',
                     class_name: '',
                     bib_number: '',
-                    start_month_year: '',
-                    end_month_year: '',
+                    start_year: '',
+                    end_year: '',
                     program_status: 'Active',
                   });
                 }}
