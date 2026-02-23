@@ -397,20 +397,20 @@ export default function ManageDrivers() {
                       onCheckedChange={handleSelectAll}
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Name
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('name')}>
+                    Name <SortIcon field="name" />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Location
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Discipline
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('primary_discipline')}>
+                    Discipline <SortIcon field="primary_discipline" />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Status
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('status')}>
+                    Status <SortIcon field="status" />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Profile
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('profile_status')}>
+                    Profile <SortIcon field="profile_status" />
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
                     Actions
