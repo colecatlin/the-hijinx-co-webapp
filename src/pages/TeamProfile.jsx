@@ -158,7 +158,7 @@ export default function TeamProfile() {
   const topStrengths = performance?.strengths?.slice(0, 2) || [];
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
           <img 
@@ -170,56 +170,59 @@ export default function TeamProfile() {
         </div>
       )}
 
-      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 overflow-x-auto">
-            {sections.map(section => {
-              const Icon = section.icon;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    if (section.id === 'overview') {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                      const element = document.getElementById(`section-${section.id}`);
-                      if (element) {
-                        const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                        window.scrollTo({ top: offset, behavior: 'smooth' });
-                      }
-                    }
-                  }}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                    activeSection === section.id
-                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                      : 'text-gray-600 hover:text-[#232323]'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {section.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2">
-            <Link to={createPageUrl('TeamsDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-              ← Back to Teams
-            </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link to={createPageUrl('TeamDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+            ← Back to Teams
+          </Link>
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+          <div className="lg:col-span-2">
+            <div className="border-b border-gray-200 mb-3" />
             <div className="flex items-start justify-between mb-2">
-              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${team.name} - Team Profile`}
-                description={team.description_summary}
-              />
+              <div className="flex items-center gap-3">
+                <CountryFlag country={team.country} />
+                <h1 className="text-4xl font-black text-[#232323] leading-none">{team.name}</h1>
+              </div>
             </div>
+
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
+              {sections.map(section => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      if (section.id === 'overview') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        const element = document.getElementById(`section-${section.id}`);
+                        if (element) {
+                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                          window.scrollTo({ top: offset, behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeSection === section.id
+                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                        : 'text-gray-600 hover:text-[#232323]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {section.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-center mb-4">
+              <SocialIconsDisplay media={media} />
+            </div>
+
+            <div className="border-b border-gray-200 mb-3" />
             
             {team.headquarters_city && team.headquarters_state && (
               <div className="flex items-center gap-2 text-gray-600 mb-6">
