@@ -177,18 +177,33 @@ export default function ManageStories() {
                 </SelectContent>
               </Select>
 
-              {/* Category Filter */}
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
+              {/* Primary Category Filter */}
+              <Select value={filterPrimaryCategory} onValueChange={(val) => { setFilterPrimaryCategory(val); setFilterSubCategory('all'); }}>
                 <SelectTrigger className="w-44">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {CATEGORIES.map(cat => (
+                  {PRIMARY_CATEGORIES.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Sub Category Filter */}
+              {filterPrimaryCategory !== 'all' && (
+                <Select value={filterSubCategory} onValueChange={setFilterSubCategory}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="All Sub-Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sub-Categories</SelectItem>
+                    {(SUB_CATEGORY_MAP[filterPrimaryCategory] || []).map(sub => (
+                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
               {/* View Mode */}
               <div className="flex rounded-md border border-gray-200 overflow-hidden">
