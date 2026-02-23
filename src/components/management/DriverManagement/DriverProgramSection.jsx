@@ -118,11 +118,14 @@ export default function DriverProgramSection({ driverId }) {
   });
 
   const handleAddProgram = () => {
-    if (!formData.series_id || !formData.class_name || !formData.bib_number || !formData.start_month_year) {
-      toast.error('Series, class, bib number, and start date are required');
+    if (!formData.series_id) {
+      toast.error('Series is required');
       return;
     }
-    createProgramMutation.mutate(formData);
+    createProgramMutation.mutate({
+      ...formData,
+      status: formData.program_status === 'Active' ? 'active' : 'completed',
+    });
   };
 
   const getSeriesName = (seriesId) => {
