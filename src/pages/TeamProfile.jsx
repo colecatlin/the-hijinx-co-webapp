@@ -33,7 +33,7 @@ export default function TeamProfile() {
     queryFn: () => base44.entities.Team.list(),
   });
 
-  const team = teams.find(t => t.slug === teamSlug);
+  const team = teams.find(t => t.slug === teamSlug || t.id === teamSlug);
 
   const { data: programs = [] } = useQuery({
     queryKey: ['teamPrograms', team?.id],

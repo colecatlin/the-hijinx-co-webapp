@@ -40,7 +40,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
   };
 
   return (
-    <Link to={buildProfileUrl('Team', team.slug)} className="h-full block">
+    <Link to={buildProfileUrl('Team', team.slug || team.id)} className="h-full block">
       <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
