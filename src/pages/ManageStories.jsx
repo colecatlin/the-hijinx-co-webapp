@@ -121,6 +121,25 @@ export default function ManageStories() {
     setShowForm(true);
   };
 
+  const [isCategorizingAll, setIsCategorizingAll] = useState(false);
+  const handleCategorizeAll = async () => {
+    if (!confirm('Use AI to auto-categorize all stories based on their title and body? This will overwrite existing categories.')) return;
+    setIsCategorizingAll(true);
+    try {
+      const response = await base44.functions.invoke('categorizeStories');
+      const { updated, skipped, errors } = response.data;
+      toast.success(`Done! Updated ${updated} stories.${skipped > 0 ? ` Skipped ${skipped}.` : ''}`);
+      queryClient.invalidateQueries({ queryKey: ['stories'] });
+      if (errors?.length > 0) {
+        console.warn('Categorization errors:', errors);
+      }
+    } catch (err) {
+      toast.error('Failed to categorize stories: ' + err.message);
+    } finally {
+      setIsCategorizingAll(false);
+    }
+  };
+
   return (
     <PageShell className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
