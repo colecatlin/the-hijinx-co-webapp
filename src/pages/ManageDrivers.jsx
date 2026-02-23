@@ -126,14 +126,47 @@ export default function ManageDrivers() {
     },
   });
 
-  const filteredDrivers = drivers.filter(driver => {
+  const filteredDrivers = React.useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return (
+    const filtered = drivers.filter(driver =>
       driver.first_name?.toLowerCase().includes(query) ||
       driver.last_name?.toLowerCase().includes(query) ||
       driver.display_name?.toLowerCase().includes(query)
     );
-  });
+    return [...filtered].sort((a, b) => {
+      let aVal, bVal;
+      if (sortField === 'name') {
+        aVal = `${a.last_name} ${a.first_name}`.toLowerCase();
+        bVal = `${b.last_name} ${b.first_name}`.toLowerCase();
+      } else if (sortField === 'profile_status') {
+        aVal = a.profile_status || 'draft';
+        bVal = b.profile_status || 'draft';
+      } else if (sortField === 'status') {
+        aVal = a.status || '';
+        bVal = b.status || '';
+      } else {
+        aVal = a[sortField] || '';
+        bVal = b[sortField] || '';
+      }
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [drivers, searchQuery, sortField, sortDir]);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <span className="ml-1 text-gray-300">↕</span>;
+    return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  };
 
   const handleSelectAll = (checked) => {
     if (checked) {
