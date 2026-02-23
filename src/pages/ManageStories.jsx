@@ -214,9 +214,21 @@ export default function ManageStories() {
                   <Skeleton key={i} className="h-20 w-full" />
                 ))}
               </div>
-            ) : filteredStories.length === 0 ? (
+            ) : filteredAndSortedStories.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
                 <p className="text-gray-500">No stories found</p>
+              </div>
+            ) : viewMode === 'by_category' ? (
+              <div className="space-y-6">
+                {Object.entries(storiesByCategory).map(([cat, catStories]) => (
+                  <div key={cat} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                      <span className="font-semibold text-sm text-gray-800">{cat}</span>
+                      <span className="text-xs text-gray-500 bg-gray-200 rounded-full px-2 py-0.5">{catStories.length}</span>
+                    </div>
+                    <StoryTable stories={catStories} selectedStories={selectedStories} onSelect={handleSelectStory} onEdit={handleEdit} onDelete={handleDelete} deleteIsPending={deleteStoryMutation.isPending} />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -225,7 +237,7 @@ export default function ManageStories() {
                     <tr>
                       <th className="w-12 px-4 py-3">
                         <Checkbox
-                          checked={selectedStories.length === filteredStories.length && filteredStories.length > 0}
+                          checked={selectedStories.length === filteredAndSortedStories.length && filteredAndSortedStories.length > 0}
                           onCheckedChange={handleSelectAll}
                         />
                       </th>
@@ -238,7 +250,7 @@ export default function ManageStories() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredStories.map((story) => (
+                    {filteredAndSortedStories.map((story) => (
                       <tr key={story.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="px-4 py-3">
                           <Checkbox
