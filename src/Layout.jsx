@@ -26,10 +26,14 @@ const navItems = [
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
-  { name: 'Tech', page: 'TechHome' },
-  { name: 'Learning', page: 'Learning' },
-  { name: 'Hospitality', page: 'Hospitality' },
-  { name: 'Food & Bev', page: 'FoodBeverage' },
+  { name: 'More', page: null, sub: [
+    { name: 'Tech', page: 'TechHome' },
+    { name: 'Learning', page: 'Learning' },
+    { name: 'Hospitality', page: 'Hospitality' },
+    { name: 'Food & Bev', page: 'FoodBeverage' },
+    { name: 'About', page: 'About' },
+    { name: 'Contact', page: 'Contact' },
+  ]},
 ];
 
 export default function Layout({ children, currentPageName }) {
