@@ -13,7 +13,15 @@ import PageShell from '@/components/shared/PageShell';
 import StoryForm from '@/components/management/StoryForm';
 import StorySubmissionsReview from '@/components/management/StorySubmissionsReview';
 
-const CATEGORIES = ['Racing', 'Culture', 'Business', 'Gear', 'Travel', 'Opinion', 'Media'];
+const PRIMARY_CATEGORIES = ['Racing', 'Business', 'Culture', 'Tech', 'Media', 'Marketplace'];
+const SUB_CATEGORY_MAP = {
+  Racing: ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],
+  Business: ['Sponsorship', 'Industry', 'Deals', 'Ownership', 'Expansion'],
+  Culture: ['Grassroots', 'Legacy', 'Fan Experience', 'Opinion', 'Letters'],
+  Tech: ['Engineering', 'Data', 'Setup', 'Safety', 'Rules'],
+  Media: ['Photo Essays', 'Film Room', 'Behind The Lens', 'Broadcast', 'Creator Spotlight'],
+  Marketplace: ['Classifieds', 'Rent A Ride', 'Auctions', 'Gear', 'Builds'],
+};
 
 export default function ManageStories() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +29,8 @@ export default function ManageStories() {
   const [showForm, setShowForm] = useState(false);
   const [selectedStories, setSelectedStories] = useState([]);
   const [sortBy, setSortBy] = useState('newest');
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterPrimaryCategory, setFilterPrimaryCategory] = useState('all');
+  const [filterSubCategory, setFilterSubCategory] = useState('all');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'by_category'
 
   const queryClient = useQueryClient();
