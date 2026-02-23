@@ -32,6 +32,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     location_country: '',
     primary_number: '',
     primary_discipline: '',
+    featured: false,
   });
 
   const [isSaved, setIsSaved] = useState(false);
