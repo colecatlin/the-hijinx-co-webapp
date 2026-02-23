@@ -20,6 +20,9 @@ export default function ManageStories() {
   const [editingStory, setEditingStory] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedStories, setSelectedStories] = useState([]);
+  const [sortBy, setSortBy] = useState('newest');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'by_category'
 
   const queryClient = useQueryClient();
 
