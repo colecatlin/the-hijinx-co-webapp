@@ -374,6 +374,9 @@ export default function ManageDrivers() {
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Status
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Profile
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
                     Actions
                   </th>
