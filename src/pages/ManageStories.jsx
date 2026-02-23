@@ -78,7 +78,7 @@ export default function ManageStories() {
   }, [filteredAndSortedStories]);
 
   const handleSelectAll = (checked) => {
-    setSelectedStories(checked ? filteredStories.map(s => s.id) : []);
+    setSelectedStories(checked ? filteredAndSortedStories.map(s => s.id) : []);
   };
 
   const handleSelectStory = (id, checked) => {
