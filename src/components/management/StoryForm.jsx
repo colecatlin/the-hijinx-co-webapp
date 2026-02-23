@@ -9,6 +9,17 @@ import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
+const CATEGORY_MAP = {
+  Racing: ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],
+  Business: ['Sponsorship', 'Industry', 'Deals', 'Ownership', 'Expansion'],
+  Culture: ['Grassroots', 'Legacy', 'Fan Experience', 'Opinion', 'Letters'],
+  Tech: ['Engineering', 'Data', 'Setup', 'Safety', 'Rules'],
+  Media: ['Photo Essays', 'Film Room', 'Behind The Lens', 'Broadcast', 'Creator Spotlight'],
+  Marketplace: ['Classifieds', 'Rent A Ride', 'Auctions', 'Gear', 'Builds'],
+};
+
+const PRIMARY_CATEGORIES = Object.keys(CATEGORY_MAP);
+
 export default function StoryForm({ story, onClose }) {
   const [formData, setFormData] = useState({
     title: story?.title || '',
@@ -18,7 +29,8 @@ export default function StoryForm({ story, onClose }) {
     author: story?.author || '',
     author_title: story?.author_title || '',
     photo_credit: story?.photo_credit || '',
-    category: story?.category || 'Racing',
+    primary_category: story?.primary_category || '',
+    sub_category: story?.sub_category || '',
     cover_image: story?.cover_image || '',
     location_city: story?.location_city || '',
     location_state: story?.location_state || '',
