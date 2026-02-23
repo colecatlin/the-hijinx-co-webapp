@@ -309,25 +309,29 @@ export default function DriverProgramSection({ driverId }) {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="start_month_year">Start Month/Year *</Label>
+                <Label htmlFor="start_year">Start Year</Label>
                 <Input
-                  id="start_month_year"
-                  type="text"
-                  value={formData.start_month_year}
-                  onChange={(e) => setFormData({ ...formData, start_month_year: e.target.value })}
-                  placeholder="MM/YYYY"
+                  id="start_year"
+                  type="number"
+                  min="1950"
+                  max="2099"
+                  value={formData.start_year}
+                  onChange={(e) => setFormData({ ...formData, start_year: e.target.value })}
+                  placeholder="e.g. 2000"
                   className="mt-2"
                 />
               </div>
 
               <div>
-                <Label htmlFor="end_month_year">End Month/Year</Label>
+                <Label htmlFor="end_year">End Year</Label>
                 <Input
-                  id="end_month_year"
-                  type="text"
-                  value={formData.end_month_year}
-                  onChange={(e) => setFormData({ ...formData, end_month_year: e.target.value })}
-                  placeholder="MM/YYYY (blank for Present)"
+                  id="end_year"
+                  type="number"
+                  min="1950"
+                  max="2099"
+                  value={formData.end_year}
+                  onChange={(e) => setFormData({ ...formData, end_year: e.target.value })}
+                  placeholder="blank = Present"
                   className="mt-2"
                 />
               </div>
