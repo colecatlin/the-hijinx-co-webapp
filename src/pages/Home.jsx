@@ -4,6 +4,7 @@ import HeroSection from '@/components/home/HeroSection';
 import VerticalGrid from '@/components/home/VerticalGrid';
 import LatestFeed from '@/components/home/LatestFeed';
 import MotorsportsStrip from '@/components/home/MotorsportsStrip';
+import FeaturedDrivers from '@/components/home/FeaturedDrivers';
 import ApparelSection from '@/components/home/ApparelSection';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
 import BrandStatement from '@/components/home/BrandStatement';
@@ -14,6 +15,7 @@ export default function Home() {
       <HeroSection />
       <BrandStatement />
       <MotorsportsStrip />
+      <FeaturedDrivers />
       <LatestFeed />
       <ApparelSection />
       <VerticalGrid />
