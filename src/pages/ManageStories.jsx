@@ -143,8 +143,8 @@ export default function ManageStories() {
             </TabsList>
 
             <TabsContent value="stories" className="space-y-6">
-            <div className="flex gap-3 mb-6">
-              <div className="relative flex-1">
+            <div className="flex flex-wrap gap-3 mb-6">
+              <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="Search stories..."
@@ -153,6 +153,49 @@ export default function ManageStories() {
                   className="pl-10"
                 />
               </div>
+
+              {/* Sort */}
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="category">By Category</SelectItem>
+                  <SelectItem value="title">By Title (A–Z)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Category Filter */}
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* View Mode */}
+              <div className="flex rounded-md border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-2 text-xs font-medium transition-colors ${viewMode === 'list' ? 'bg-[#232323] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                >
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode('by_category')}
+                  className={`px-3 py-2 text-xs font-medium transition-colors ${viewMode === 'by_category' ? 'bg-[#232323] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                >
+                  By Category
+                </button>
+              </div>
+
               {selectedStories.length > 0 && (
                 <Button
                   variant="destructive"
