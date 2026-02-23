@@ -149,10 +149,16 @@ export default function ManageStories() {
             <p className="text-gray-600 mt-1">Create, edit, and review outlet stories</p>
           </div>
           {!showForm && (
-            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Story
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleCategorizeAll} disabled={isCategorizingAll} variant="outline">
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isCategorizingAll ? 'Categorizing...' : 'AI Categorize All'}
+              </Button>
+              <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Story
+              </Button>
+            </div>
           )}
         </div>
 
