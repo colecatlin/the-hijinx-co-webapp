@@ -193,12 +193,8 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
               return seriesNames.length > 0 ? (
                 <div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
-                  <div className="space-y-0.5">
-                    {seriesNames.map((name, i) => (
-                      <div key={name} className={`text-sm font-bold ${i === 0 ? 'text-[#232323]' : 'text-gray-500'}`}>
-                        {name}
-                      </div>
-                    ))}
+                  <div className="text-sm font-bold text-[#232323]">
+                    {seriesNames.join(', ')}
                   </div>
                 </div>
               ) : null;
