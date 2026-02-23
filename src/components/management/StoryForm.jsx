@@ -132,19 +132,36 @@ export default function StoryForm({ story, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Category *</label>
-            <Select value={formData.category} onValueChange={(val) => handleChange('category', val)}>
+            <label className="block text-sm font-medium mb-2">Primary Category *</label>
+            <Select
+              value={formData.primary_category}
+              onValueChange={(val) => setFormData(prev => ({ ...prev, primary_category: val, sub_category: '' }))}
+            >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select category..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Racing">Racing</SelectItem>
-                <SelectItem value="Culture">Culture</SelectItem>
-                <SelectItem value="Business">Business</SelectItem>
-                <SelectItem value="Gear">Gear</SelectItem>
-                <SelectItem value="Travel">Travel</SelectItem>
-                <SelectItem value="Opinion">Opinion</SelectItem>
-                <SelectItem value="Media">Media</SelectItem>
+                {PRIMARY_CATEGORIES.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Sub Category *</label>
+            <Select
+              value={formData.sub_category}
+              onValueChange={(val) => handleChange('sub_category', val)}
+              disabled={!formData.primary_category}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={formData.primary_category ? 'Select sub-category...' : 'Select primary first'} />
+              </SelectTrigger>
+              <SelectContent>
+                {(CATEGORY_MAP[formData.primary_category] || []).map(sub => (
+                  <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
