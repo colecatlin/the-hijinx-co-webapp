@@ -61,26 +61,27 @@ export default function ManageStories() {
     let result = stories.filter(story =>
       (story.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
        story.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       story.category?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (filterCategory === 'all' || story.category === filterCategory)
+       story.primary_category?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (filterPrimaryCategory === 'all' || story.primary_category === filterPrimaryCategory) &&
+      (filterSubCategory === 'all' || story.sub_category === filterSubCategory)
     );
 
     result = [...result].sort((a, b) => {
       if (sortBy === 'newest') return new Date(b.published_date || b.created_date) - new Date(a.published_date || a.created_date);
       if (sortBy === 'oldest') return new Date(a.published_date || a.created_date) - new Date(b.published_date || b.created_date);
-      if (sortBy === 'category') return (a.category || '').localeCompare(b.category || '');
+      if (sortBy === 'category') return (a.primary_category || '').localeCompare(b.primary_category || '');
       if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
       return 0;
     });
 
     return result;
-  }, [stories, searchQuery, filterCategory, sortBy]);
+  }, [stories, searchQuery, filterPrimaryCategory, filterSubCategory, sortBy]);
 
-  // Group by category for "by category" view
+  // Group by primary_category for "by category" view
   const storiesByCategory = useMemo(() => {
     const grouped = {};
-    CATEGORIES.forEach(cat => {
-      const catStories = filteredAndSortedStories.filter(s => s.category === cat);
+    PRIMARY_CATEGORIES.forEach(cat => {
+      const catStories = filteredAndSortedStories.filter(s => s.primary_category === cat);
       if (catStories.length > 0) grouped[cat] = catStories;
     });
     return grouped;
