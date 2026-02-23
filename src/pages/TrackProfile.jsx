@@ -132,7 +132,7 @@ export default function TrackProfile() {
   };
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       {/* Header Image */}
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
@@ -145,114 +145,120 @@ export default function TrackProfile() {
         </div>
       )}
 
-      {/* Sticky sub nav */}
-      <div className="sticky top-16 lg:top-[calc(4rem+41px)] bg-white border-b border-gray-200 z-40">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 overflow-x-auto">
-            {sections.map(section => {
-              const Icon = section.icon;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                    activeSection === section.id
-                      ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                      : 'text-gray-600 hover:text-[#232323]'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {section.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Hero Section - One Screen Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Left Column - Primary Info */}
-          <div className="lg:col-span-2">
-            <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-              ← Back to Tracks
-            </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+            ← Back to Tracks
+          </Link>
+        </div>
 
-            <h1 className="text-4xl font-black text-[#232323] mb-2">{track.name}</h1>
-            
-            <div className="flex items-center gap-2 text-gray-600 mb-6">
-              <MapPin className="w-4 h-4" />
-              {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+          <div className="lg:col-span-2">
+            <div className="border-b border-gray-200 mb-3" />
+            <h1 className="text-4xl font-black text-[#232323] leading-none mb-2">{track.name}</h1>
+
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
+              {sections.map(section => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      if (section.id === 'overview') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        const element = document.getElementById(`section-${section.id}`);
+                        if (element) {
+                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                          window.scrollTo({ top: offset, behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeSection === section.id
+                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                        : 'text-gray-600 hover:text-[#232323]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {section.label}
+                  </button>
+                );
+              })}
             </div>
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              {track.description}
-            </p>
+            <div className="border-b border-gray-200 mb-3" />
 
-            {/* Quick Specs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Surface</div>
-                <div className="font-bold text-[#232323]">
-                  {track.surface_type || 'N/A'}
+            <div className="bg-white p-8 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <MapPin className="w-4 h-4" />
+                    Location
+                  </div>
+                  <div className="text-lg font-semibold text-[#232323] mb-4">
+                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
+                  </div>
+                  {track.track_type && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Type</div>
+                      <div className="text-lg font-semibold text-[#232323]">{track.track_type}</div>
+                    </div>
+                  )}
+                  {track.surface_type && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Surface</div>
+                      <div className="text-lg font-semibold text-[#232323]">{track.surface_type}</div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  {track.length && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Length</div>
+                      <div className="text-lg font-semibold text-[#232323]">{track.length} miles</div>
+                    </div>
+                  )}
+                  {track.status && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Status</div>
+                      <div className="text-lg font-semibold text-[#232323]">{track.status}</div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Length</div>
-                <div className="font-bold text-[#232323]">{track.length ? `${track.length} mi` : 'N/A'}</div>
-              </div>
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Type</div>
-                <div className="font-bold text-[#232323]">{track.track_type || 'N/A'}</div>
-              </div>
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Status</div>
-                <div className="font-bold text-[#232323]">{track.status || 'N/A'}</div>
-              </div>
-            </div>
-
-            {/* Track Character Tags */}
-            <div className="flex flex-wrap gap-2">
-              {track.elevation_profile && track.elevation_profile !== 'Unknown' && (
-                <Badge className="bg-[#1A3249] text-white">{track.elevation_profile} Elevation</Badge>
+              {track.description && (
+                <p className="text-gray-700 leading-relaxed mt-4">{track.description}</p>
               )}
-              {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
-                <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
-              )}
-              {track.atmosphere?.map((atm, idx) => (
-                atm !== 'Unknown' && <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge>
-              ))}
+              <div className="flex flex-wrap gap-2 mt-6">
+                {track.elevation_profile && track.elevation_profile !== 'Unknown' && (
+                  <Badge className="bg-[#1A3249] text-white">{track.elevation_profile} Elevation</Badge>
+                )}
+                {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
+                  <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
+                )}
+                {track.atmosphere?.map((atm, idx) => (
+                  atm !== 'Unknown' && <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Right Column - Data Panel */}
-          <div className="space-y-6">
+          <div className="space-y-6 relative -mt-1">
             <div className="bg-white border border-gray-200 p-6">
-              <h3 className="text-sm font-bold text-[#232323] mb-4">Disciplines</h3>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {disciplines.map(disc => (
-                  <Badge key={disc.id} className="bg-[#232323] text-white">
-                    {disc.discipline_name}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="mb-4">
-                <div className="text-xs text-gray-600 mb-1">Status</div>
-                <Badge
-                  className={`${
-                    track.status === 'Active'
-                      ? 'bg-[#00FFDA] text-[#232323]'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {track.status}
-                </Badge>
-              </div>
+              {disciplines.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs text-gray-600 mb-2">Disciplines</div>
+                  <div className="flex flex-wrap gap-2">
+                    {disciplines.map(disc => (
+                      <Badge key={disc.id} className="bg-[#232323] text-white">
+                        {disc.discipline_name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {signatureEvents.length > 0 && (
                 <div className="mb-4">
