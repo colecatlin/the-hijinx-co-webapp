@@ -8,6 +8,9 @@ export default function BrandStatement() {
         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/34986112d_Boonville-214.jpg"
         alt="Snowmobile racing"
         className="absolute inset-0 w-full h-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+        style={{ imageRendering: 'high-quality' }}
       />
 
       {/* Gradient overlay — dark on right for text legibility */}
