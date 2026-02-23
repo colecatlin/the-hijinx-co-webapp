@@ -70,17 +70,19 @@ export default function EventProfile() {
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-          ← Back to Events
-        </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+            ← Back to Events
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-black text-[#232323] leading-none">{event.name}</h1>
               {event.round_number && (
-                <div className="text-2xl font-bold text-gray-600">Round {event.round_number}</div>
+                <div className="text-xl font-bold text-gray-500">Rnd {event.round_number}</div>
               )}
             </div>
 
@@ -119,11 +121,18 @@ export default function EventProfile() {
             <div className="bg-white p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Series</div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">{event.series}</div>
-                  
-                  <div className="text-sm text-gray-600 mb-1">Season</div>
-                  <div className="text-lg font-semibold text-[#232323]">{event.season}</div>
+                  {event.series && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Series</div>
+                      <div className="text-lg font-semibold text-[#232323]">{event.series}</div>
+                    </div>
+                  )}
+                  {event.season && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Season</div>
+                      <div className="text-lg font-semibold text-[#232323]">{event.season}</div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
@@ -132,8 +141,10 @@ export default function EventProfile() {
                   </div>
                   <div className="text-lg font-semibold text-[#232323] mb-4">
                     {event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBA'}
+                    {event.end_date && event.end_date !== event.event_date && (
+                      <span className="text-gray-500"> – {format(new Date(event.end_date), 'MMMM d, yyyy')}</span>
+                    )}
                   </div>
-                  
                   {track && (
                     <div>
                       <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
@@ -166,17 +177,31 @@ export default function EventProfile() {
                 description=""
               />
             </div>
+            {track && (
+              <div className="bg-white border border-gray-200 p-6">
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Venue</div>
+                <div className="font-bold text-[#232323] text-lg mb-1">{track.name}</div>
+                {(track.location_city || track.location_state) && (
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <MapPin className="w-3 h-3" />
+                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
+                  </div>
+                )}
+                {track.track_type && (
+                  <div className="text-sm text-gray-500 mt-2">{track.track_type}</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="space-y-4">
-          <section id="section-sessions" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Sessions</h2>
+          <section id="section-sessions" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Sessions</h2>
             {sessions.length > 0 ? (
               <div className="space-y-3">
                 {sessions.map(session => (
-                  <div key={session.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={session.id} className="border border-gray-200 p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-bold">{session.name}</div>
@@ -198,9 +223,8 @@ export default function EventProfile() {
             )}
           </section>
 
-          <section id="section-results" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results & Standings</h2>
+          <section id="section-results" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Results & Standings</h2>
             <ResultsPanel eventId={eventId} seriesName={event.series} />
           </section>
         </div>
