@@ -430,6 +430,49 @@ export default function ManageDrivers() {
                         </span>
                       )}
                     </td>
+                    <td className="px-6 py-4">
+                      {(() => {
+                        const { isReady, missing } = getProfileReadiness(driver);
+                        const isLive = driver.profile_status === 'live';
+                        return (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => {
+                                    if (!isReady && !isLive) {
+                                      toast.error(`Missing: ${missing.join(', ')}`);
+                                      return;
+                                    }
+                                    toggleProfileStatusMutation.mutate({
+                                      id: driver.id,
+                                      profile_status: isLive ? 'draft' : 'live',
+                                    });
+                                  }}
+                                  className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded transition-colors ${
+                                    isLive
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                      : isReady
+                                      ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {isLive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                  {isLive ? 'Live' : 'Draft'}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {isLive
+                                  ? 'Publicly visible — click to hide'
+                                  : isReady
+                                  ? 'Ready to publish — click to make live'
+                                  : `Not ready. Missing: ${missing.join(', ')}`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      })()}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button
