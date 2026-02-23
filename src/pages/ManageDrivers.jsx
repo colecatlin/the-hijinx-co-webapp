@@ -54,6 +54,51 @@ export default function ManageDrivers() {
     queryFn: () => base44.entities.Driver.list('-updated_date', 500),
   });
 
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['driverPrograms'],
+    queryFn: () => base44.entities.DriverProgram.list(),
+  });
+
+  const { data: allMedia = [] } = useQuery({
+    queryKey: ['driverMedia'],
+    queryFn: () => base44.entities.DriverMedia.list(),
+  });
+
+  const programsByDriver = React.useMemo(() => {
+    const map = {};
+    allPrograms.forEach(p => {
+      if (!map[p.driver_id]) map[p.driver_id] = [];
+      map[p.driver_id].push(p);
+    });
+    return map;
+  }, [allPrograms]);
+
+  const mediaByDriver = React.useMemo(() => {
+    const map = {};
+    allMedia.forEach(m => { map[m.driver_id] = m; });
+    return map;
+  }, [allMedia]);
+
+  const getProfileReadiness = (driver) => {
+    const missing = [];
+    if (!driver.first_name || !driver.last_name) missing.push('Name');
+    const media = mediaByDriver[driver.id];
+    if (!media?.headshot_url) missing.push('Headshot');
+    if (!driver.date_of_birth) missing.push('Age (DOB)');
+    if (!driver.hometown_country) missing.push('Nationality');
+    const programs = programsByDriver[driver.id] || [];
+    if (programs.length === 0) missing.push('1 Program (Series)');
+    return { isReady: missing.length === 0, missing };
+  };
+
+  const toggleProfileStatusMutation = useMutation({
+    mutationFn: ({ id, profile_status }) => base44.entities.Driver.update(id, { profile_status }),
+    onSuccess: (_, { profile_status }) => {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      toast.success(`Profile set to ${profile_status}`);
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Driver.delete(id),
     onSuccess: () => {
