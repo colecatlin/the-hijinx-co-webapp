@@ -323,6 +323,17 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           </div>
         </div>
 
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <Checkbox
+            id="featured"
+            checked={formData.featured}
+            onCheckedChange={(checked) => handleInputChange('featured', checked)}
+          />
+          <Label htmlFor="featured" className="text-sm font-medium cursor-pointer">
+            Featured on homepage
+          </Label>
+        </div>
+
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             onClick={handleSave}
