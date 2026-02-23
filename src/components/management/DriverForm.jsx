@@ -173,6 +173,20 @@ export default function DriverForm({ driver, onClose }) {
             </Select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">Profile Visibility</label>
+            <Select value={formData.profile_status || 'draft'} onValueChange={(value) => handleChange('profile_status', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft — hidden from public</SelectItem>
+                <SelectItem value="live">Live — visible on site</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">Only "Live" profiles appear in the Driver Directory and public search.</p>
+          </div>
+
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
