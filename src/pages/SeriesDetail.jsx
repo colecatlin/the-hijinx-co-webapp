@@ -4,9 +4,12 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { format, parseISO } from 'date-fns';
-import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin } from 'lucide-react';
+import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin, TrendingUp, Share2, Flag } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
