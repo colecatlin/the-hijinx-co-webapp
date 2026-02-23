@@ -35,6 +35,8 @@ export default function ManageDrivers() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [importSeries, setImportSeries] = useState('nascar-cup-series');
+  const [sortField, setSortField] = useState('updated_date');
+  const [sortDir, setSortDir] = useState('desc');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
