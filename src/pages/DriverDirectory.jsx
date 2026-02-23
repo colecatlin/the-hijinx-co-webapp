@@ -49,7 +49,7 @@ export default function DriverDirectory() {
 
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
     queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
+    queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
   });
 
   const { data: allPrograms = [] } = useQuery({
