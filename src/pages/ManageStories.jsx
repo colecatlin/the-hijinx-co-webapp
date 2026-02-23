@@ -48,11 +48,34 @@ export default function ManageStories() {
     },
   });
 
-  const filteredStories = stories.filter(story =>
-    story.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    story.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    story.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAndSortedStories = useMemo(() => {
+    let result = stories.filter(story =>
+      (story.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       story.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       story.category?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (filterCategory === 'all' || story.category === filterCategory)
+    );
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.published_date || b.created_date) - new Date(a.published_date || a.created_date);
+      if (sortBy === 'oldest') return new Date(a.published_date || a.created_date) - new Date(b.published_date || b.created_date);
+      if (sortBy === 'category') return (a.category || '').localeCompare(b.category || '');
+      if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
+      return 0;
+    });
+
+    return result;
+  }, [stories, searchQuery, filterCategory, sortBy]);
+
+  // Group by category for "by category" view
+  const storiesByCategory = useMemo(() => {
+    const grouped = {};
+    CATEGORIES.forEach(cat => {
+      const catStories = filteredAndSortedStories.filter(s => s.category === cat);
+      if (catStories.length > 0) grouped[cat] = catStories;
+    });
+    return grouped;
+  }, [filteredAndSortedStories]);
 
   const handleSelectAll = (checked) => {
     setSelectedStories(checked ? filteredStories.map(s => s.id) : []);
