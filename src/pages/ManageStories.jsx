@@ -310,3 +310,49 @@ export default function ManageStories() {
     </PageShell>
   );
 }
+
+function StoryTable({ stories, selectedStories, onSelect, onEdit, onDelete, deleteIsPending }) {
+  return (
+    <table className="w-full">
+      <thead className="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Title</th>
+          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Author</th>
+          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Status</th>
+          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Date</th>
+          <th className="w-32 px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {stories.map((story) => (
+          <tr key={story.id} className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="px-4 py-3 font-medium">{story.title}</td>
+            <td className="px-4 py-3 text-gray-600">{story.author || '-'}</td>
+            <td className="px-4 py-3">
+              <span className={`px-2 py-1 text-xs rounded ${
+                story.status === 'published' ? 'bg-green-100 text-green-800' :
+                story.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {story.status}
+              </span>
+            </td>
+            <td className="px-4 py-3 text-sm text-gray-600">
+              {story.published_date ? new Date(story.published_date).toLocaleDateString() : '-'}
+            </td>
+            <td className="px-4 py-3">
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="ghost" onClick={() => onEdit(story)}>
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => onDelete(story.id)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
