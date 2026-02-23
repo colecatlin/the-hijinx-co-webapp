@@ -71,6 +71,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         location_country: '',
         primary_number: '',
         primary_discipline: '',
+        featured: false,
       });
       setHeadshotUrl('');
     } else if (driver && driver.length > 0) {
@@ -90,6 +91,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           location_country: driverData.location_country || '',
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
+          featured: driverData.featured || false,
           });
       }
     }
