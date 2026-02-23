@@ -56,202 +56,215 @@ export default function SeriesDetail() {
     );
   }
 
-  const tabs = ['overview', 'schedule'];
+  const sections = [
+    { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
+  ];
 
   const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
   const pastEvents = events.filter(e => e.status === 'completed' || e.status === 'cancelled');
 
   return (
-    <PageShell>
-      <div className="bg-white">
-        {/* Header */}
-        <div className="bg-[#0A0A0A] text-white pt-12 pb-16">
-          <div className="max-w-7xl mx-auto px-6">
-            <Link to={createPageUrl('SeriesHome')} className="text-xs font-mono text-gray-500 hover:text-white mb-6 inline-block tracking-wider">
-              ← SERIES
-            </Link>
-            <div className="flex items-start gap-6">
-              {series.logo_url && (
-                <img src={series.logo_url} alt={series.name} className="w-20 h-20 object-contain bg-white rounded-lg p-2 shrink-0" />
+    <PageShell className="bg-white">
+      {series.banner_url && (
+        <div className="w-full h-[400px] relative overflow-hidden">
+          <img src={series.banner_url} alt={series.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex items-center justify-between mb-4">
+          <Link to={createPageUrl('SeriesHome')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+            ← Back to Series
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+          <div className="lg:col-span-2">
+            <Separator className="mb-3" />
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-black text-[#232323] leading-none">{series.name}</h1>
+            </div>
+
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
+              {sections.map(section => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setActiveTab(section.id);
+                      if (section.id === 'overview') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        const element = document.getElementById(`section-${section.id}`);
+                        if (element) {
+                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
+                          window.scrollTo({ top: offset, behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeTab === section.id
+                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                        : 'text-gray-600 hover:text-[#232323]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {section.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Socials row */}
+            <div className="flex items-center gap-3 mb-3">
+              {series.website_url && (
+                <a href={series.website_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
+                  <Globe className="w-4 h-4" />
+                </a>
               )}
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-gray-500 uppercase">{series.discipline}</span>
-                  <span className={`px-2 py-0.5 text-[10px] font-mono tracking-wider ${series.status === 'Active' ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-400'}`}>
-                    {series.status}
-                  </span>
-                </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">{series.name}</h1>
-                {series.full_name && series.full_name !== series.name && (
-                  <p className="text-gray-400 text-sm mb-3">{series.full_name}</p>
-                )}
-                {series.description && (
-                  <p className="text-gray-400 text-sm max-w-2xl leading-relaxed">{series.description}</p>
-                )}
-
-                {/* Socials */}
-                <div className="flex items-center gap-3 mt-4">
-                  {series.website_url && (
-                    <a href={series.website_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                      <Globe className="w-4 h-4" />
-                    </a>
-                  )}
-                  {series.social_instagram && (
-                    <a href={`https://instagram.com/${series.social_instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                      <Instagram className="w-4 h-4" />
-                    </a>
-                  )}
-                  {series.social_x && (
-                    <a href={`https://x.com/${series.social_x.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                      <Twitter className="w-4 h-4" />
-                    </a>
-                  )}
-                  {series.social_youtube && (
-                    <a href={series.social_youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                      <Youtube className="w-4 h-4" />
-                    </a>
-                  )}
-                  {series.social_facebook && (
-                    <a href={series.social_facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                      <Facebook className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </div>
+              {series.social_instagram && (
+                <a href={`https://instagram.com/${series.social_instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {series.social_x && (
+                <a href={`https://x.com/${series.social_x.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
+                  <Twitter className="w-4 h-4" />
+                </a>
+              )}
+              {series.social_youtube && (
+                <a href={series.social_youtube} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
+                  <Youtube className="w-4 h-4" />
+                </a>
+              )}
+              {series.social_facebook && (
+                <a href={series.social_facebook} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
+                  <Facebook className="w-4 h-4" />
+                </a>
+              )}
             </div>
-          </div>
-        </div>
 
-        {/* Stats bar */}
-        <div className="border-b border-gray-200 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap gap-8">
-            {series.region && (
-              <div>
-                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Region</div>
-                <div className="text-sm font-semibold mt-0.5">{series.region}</div>
-              </div>
-            )}
-            {series.series_level && (
-              <div>
-                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Level</div>
-                <div className="text-sm font-semibold mt-0.5">{series.series_level}</div>
-              </div>
-            )}
-            {series.sanctioning_body && (
-              <div>
-                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Sanctioning Body</div>
-                <div className="text-sm font-semibold mt-0.5">{series.sanctioning_body}</div>
-              </div>
-            )}
-            {series.season_year && (
-              <div>
-                <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Season</div>
-                <div className="text-sm font-semibold mt-0.5">{series.season_year}</div>
-              </div>
-            )}
-            <div>
-              <div className="text-[10px] font-mono tracking-wider text-gray-400 uppercase">Events</div>
-              <div className="text-sm font-semibold mt-0.5">{events.length}</div>
-            </div>
-          </div>
-        </div>
+            <Separator className="mb-3" />
 
-        {/* Nav tabs */}
-        <div className="border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex gap-0">
-              {tabs.map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-3 text-xs font-medium uppercase tracking-wider transition-colors ${
-                    activeTab === tab
-                      ? 'text-[#0A0A0A] border-b-2 border-[#0A0A0A]'
-                      : 'text-gray-500 hover:text-[#0A0A0A]'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {series.description && (
+            <div className="bg-white p-8 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h2 className="text-lg font-black tracking-tight mb-3">About</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed">{series.description}</p>
-                </div>
-              )}
-              <div className="space-y-4">
-                {upcomingEvents.length > 0 && (
-                  <div>
-                    <h2 className="text-lg font-black tracking-tight mb-3">Upcoming Events</h2>
-                    <div className="space-y-2">
-                      {upcomingEvents.slice(0, 5).map(event => (
-                        <div key={event.id} className="border border-gray-200 p-3 flex items-center gap-3">
-                          <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{event.name}</div>
-                            <div className="text-xs text-gray-400">{event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'TBA'}</div>
-                          </div>
-                        </div>
-                      ))}
+                  {series.discipline && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Discipline</div>
+                      <div className="text-lg font-semibold text-[#232323]">{series.discipline}</div>
                     </div>
-                    {upcomingEvents.length > 5 && (
-                      <button onClick={() => setActiveTab('schedule')} className="text-xs text-gray-500 underline mt-2">
-                        View all {upcomingEvents.length} events →
-                      </button>
-                    )}
+                  )}
+                  {series.region && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Region</div>
+                      <div className="text-lg font-semibold text-[#232323]">{series.region}</div>
+                    </div>
+                  )}
+                  {series.series_level && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Level</div>
+                      <div className="text-lg font-semibold text-[#232323]">{series.series_level}</div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  {series.sanctioning_body && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Sanctioning Body</div>
+                      <div className="text-lg font-semibold text-[#232323]">{series.sanctioning_body}</div>
+                    </div>
+                  )}
+                  {series.season_year && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Season</div>
+                      <div className="text-lg font-semibold text-[#232323]">{series.season_year}</div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Events</div>
+                    <div className="text-lg font-semibold text-[#232323]">{events.length}</div>
                   </div>
-                )}
+                </div>
+              </div>
+              {series.description && (
+                <p className="text-gray-700 leading-relaxed mt-4">{series.description}</p>
+              )}
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Badge className={series.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                  {series.status}
+                </Badge>
               </div>
             </div>
-          )}
+          </div>
 
-          {activeTab === 'schedule' && (
-            <div>
-              <h2 className="text-lg font-black tracking-tight mb-6">Full Schedule</h2>
-              {events.length === 0 ? (
-                <p className="text-gray-500 text-sm">No events scheduled yet.</p>
+          <div className="space-y-6 relative -mt-1">
+            <div className="absolute -top-12 right-0 z-10">
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${series.name} - Series`}
+                description={series.description}
+              />
+            </div>
+            <div className="bg-white">
+              {series.logo_url ? (
+                <div className="w-full bg-gray-50 border border-gray-200 flex items-center justify-center p-8" style={{minHeight: 240}}>
+                  <img src={series.logo_url} alt={series.name} className="max-w-full max-h-48 object-contain" />
+                </div>
               ) : (
-                <div className="space-y-2">
-                  {events.map(event => (
-                    <div key={event.id} className="border border-gray-200 p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
-                      <div className="w-16 text-center shrink-0">
-                        {event.event_date && (
-                          <>
-                            <div className="font-mono text-[10px] text-gray-400 uppercase">{format(parseISO(event.event_date), 'MMM')}</div>
-                            <div className="text-2xl font-black">{format(parseISO(event.event_date), 'd')}</div>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold">{event.name}</div>
-                        {event.location_note && (
-                          <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                            <MapPin className="w-3 h-3" /> {event.location_note}
-                          </div>
-                        )}
-                      </div>
-                      <span className={`text-[10px] font-mono uppercase px-2 py-1 ${
-                        event.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
-                        event.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                        event.status === 'in_progress' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-600'
-                      }`}>
-                        {event.status}
-                      </span>
-                    </div>
-                  ))}
+                <div className="w-full bg-gray-50 border border-gray-200 flex items-center justify-center" style={{minHeight: 240}}>
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl font-black mb-2">{series.name.substring(0, 3).toUpperCase()}</div>
+                    <div className="text-xs">No logo uploaded</div>
+                  </div>
                 </div>
               )}
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Schedule section */}
+        <div id="section-schedule" className="space-y-4">
+          <section className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Full Schedule</h2>
+            {events.length === 0 ? (
+              <p className="text-gray-500 text-sm">No events scheduled yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {events.map(event => (
+                  <div key={event.id} className="border border-gray-200 p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
+                    <div className="w-16 text-center shrink-0">
+                      {event.event_date && (
+                        <>
+                          <div className="font-mono text-[10px] text-gray-400 uppercase">{format(parseISO(event.event_date), 'MMM')}</div>
+                          <div className="text-2xl font-black">{format(parseISO(event.event_date), 'd')}</div>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold">{event.name}</div>
+                      {event.location_note && (
+                        <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                          <MapPin className="w-3 h-3" /> {event.location_note}
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                      event.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
+                      event.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                      event.status === 'in_progress' ? 'bg-green-100 text-green-700' :
+                      'bg-red-100 text-red-600'
+                    }`}>
+                      {event.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </PageShell>
