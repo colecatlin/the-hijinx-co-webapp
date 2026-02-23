@@ -223,77 +223,88 @@ export default function TeamProfile() {
             </div>
 
             <div className="border-b border-gray-200 mb-3" />
-            
-            {team.headquarters_city && team.headquarters_state && (
-              <div className="flex items-center gap-2 text-gray-600 mb-6">
-                <CountryFlag country={team.country} />
-                <MapPin className="w-4 h-4" />
-                {team.headquarters_city}, {team.headquarters_state}
-              </div>
-            )}
 
-            <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              {team.description_summary}
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              {team.founded_year && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Founded</div>
-                  <div className="font-bold text-[#232323]">{team.founded_year}</div>
+            <div className="bg-white p-8 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  {team.headquarters_city && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                        <MapPin className="w-4 h-4" />
+                        Headquarters
+                      </div>
+                      <div className="text-lg font-semibold text-[#232323]">
+                        {[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ')}
+                      </div>
+                    </div>
+                  )}
+                  {team.primary_discipline && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Discipline</div>
+                      <div className="text-lg font-semibold text-[#232323]">{team.primary_discipline}</div>
+                    </div>
+                  )}
+                  {team.team_level && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Level</div>
+                      <div className="text-lg font-semibold text-[#232323]">{team.team_level}</div>
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Level</div>
-                <div className="font-bold text-[#232323]">{team.team_level}</div>
-              </div>
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="text-xs text-gray-600 mb-1">Discipline</div>
-                <div className="font-bold text-[#232323]">{team.primary_discipline}</div>
-              </div>
-              {team.ownership_type && (
-                <div className="bg-white border border-gray-200 p-4">
-                  <div className="text-xs text-gray-600 mb-1">Ownership</div>
-                  <div className="font-bold text-[#232323]">{team.ownership_type}</div>
+                <div>
+                  {team.founded_year && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Founded</div>
+                      <div className="text-lg font-semibold text-[#232323]">{team.founded_year}</div>
+                    </div>
+                  )}
+                  {team.status && (
+                    <div className="mb-4">
+                      <div className="text-sm text-gray-600 mb-1">Status</div>
+                      <div className="text-lg font-semibold text-[#232323]">{team.status}</div>
+                    </div>
+                  )}
                 </div>
+              </div>
+              {team.description_summary && (
+                <p className="text-gray-700 leading-relaxed mt-4">{team.description_summary}</p>
               )}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {performance?.recent_form && performance.recent_form !== 'Unknown' && (
-                <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
-              )}
-              {performance?.reliability && performance.reliability !== 'Unknown' && (
-                <Badge className="bg-[#1A3249] text-white">{performance.reliability}</Badge>
-              )}
-              {topStrengths.map((strength, idx) => (
-                <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
-              ))}
+              <div className="flex flex-wrap gap-2 mt-6">
+                {performance?.recent_form && performance.recent_form !== 'Unknown' && (
+                  <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
+                )}
+                {performance?.reliability && performance.reliability !== 'Unknown' && (
+                  <Badge className="bg-[#1A3249] text-white">{performance.reliability}</Badge>
+                )}
+                {topStrengths.map((strength, idx) => (
+                  <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{strength}</Badge>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-white border border-gray-200 p-6 mt-8">
-              <h3 className="text-sm font-bold text-[#232323] mb-4">Team Logo</h3>
+          <div className="space-y-6 relative -mt-1">
+            <div className="absolute -top-12 right-0 z-10">
+              <SocialShareButtons 
+                url={window.location.href}
+                title={`${team.name} - Team Profile`}
+                description={team.description_summary}
+              />
+            </div>
+            <div className="bg-white">
               {media?.logo_url ? (
-                <div className="flex items-center justify-center bg-gray-50 p-8 border border-gray-200">
-                  <img src={media.logo_url} alt={`${team.name} logo`} className="w-full h-auto max-w-[200px]" />
+                <div className="w-full relative bg-gray-50 overflow-hidden border border-gray-200 flex items-center justify-center p-8" style={{minHeight: 240}}>
+                  <img src={media.logo_url} alt={`${team.name} logo`} className="max-w-full max-h-60 object-contain" />
                 </div>
               ) : (
-                <div className="flex items-center justify-center bg-gray-50 p-12 border border-gray-200">
+                <div className="w-full bg-gray-50 border border-gray-200 flex items-center justify-center" style={{minHeight: 240}}>
                   <div className="text-center text-gray-400">
-                    <div className="text-4xl font-black mb-2">{team.name.split(' ').map(w => w[0]).join('')}</div>
+                    <div className="text-5xl font-black mb-2">{team.name.split(' ').map(w => w[0]).join('')}</div>
                     <div className="text-xs">No logo uploaded</div>
                   </div>
                 </div>
               )}
-              
-              <div className="flex justify-center mt-6">
-                <SocialIconsDisplay media={media} />
-              </div>
             </div>
-
-
           </div>
         </div>
 
