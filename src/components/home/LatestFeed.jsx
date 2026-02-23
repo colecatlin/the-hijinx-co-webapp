@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function LatestFeed() {
   const { data: stories = [], isLoading } = useQuery({
     queryKey: ['latestStories'],
-    queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 4),
+    queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 10),
   });
 
   return (
@@ -29,12 +29,12 @@ export default function LatestFeed() {
       </div>
 
       {!isLoading && stories.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex gap-6 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
           {stories.map((story) => (
             <Link
               key={story.id}
               to={createPageUrl('OutletStoryPage') + `?id=${story.id}`}
-              className="group"
+              className="group flex-shrink-0 w-64"
             >
               <div className="aspect-[4/3] bg-[#1A3249] mb-3 overflow-hidden">
                 {story.cover_image ? (
