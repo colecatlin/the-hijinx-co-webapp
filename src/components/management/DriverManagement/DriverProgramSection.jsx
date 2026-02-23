@@ -403,7 +403,12 @@ export default function DriverProgramSection({ driverId }) {
                       <div><span className="font-medium">Team:</span> {getTeamName(program.team_id)}</div>
                       <div><span className="font-medium">Class:</span> {program.class_name}</div>
                       <div><span className="font-medium">Number:</span> {program.bib_number}</div>
-                      <div><span className="font-medium">Dates:</span> {program.start_month_year} - {program.end_month_year || 'Present'}</div>
+                      {(program.start_year || program.end_year || program.start_month_year) && (
+                        <div>
+                          <span className="font-medium">Years:</span>{' '}
+                          {program.start_year || program.start_month_year?.split('/')[1] || '?'} – {program.end_year || program.end_month_year?.split('/')[1] || 'Present'}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
