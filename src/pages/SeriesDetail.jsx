@@ -33,6 +33,12 @@ export default function SeriesDetail() {
     enabled: !!series?.name,
   });
 
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses', series?.id],
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
+    enabled: !!series?.id,
+  });
+
   if (isLoading) {
     return (
       <PageShell>
