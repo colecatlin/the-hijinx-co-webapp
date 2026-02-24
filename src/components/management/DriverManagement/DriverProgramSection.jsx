@@ -292,13 +292,26 @@ export default function DriverProgramSection({ driverId }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="class_name">Class *</Label>
-                <Input
-                  id="class_name"
-                  value={formData.class_name}
-                  onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
-                  placeholder="e.g., Pro 4, Stock Full"
-                  className="mt-2"
-                />
+                {!formData.series_id ? (
+                  <div className="mt-2 p-3 bg-blue-50 text-sm text-blue-700 rounded">
+                    Select a series first
+                  </div>
+                ) : classes.length === 0 ? (
+                  <div className="mt-2 p-3 bg-yellow-50 text-sm text-yellow-700 rounded">
+                    No classes found for this series
+                  </div>
+                ) : (
+                  <Select value={formData.class_name} onValueChange={(value) => setFormData({ ...formData, class_name: value })}>
+                    <SelectTrigger id="class_name" className="mt-2">
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map(c => (
+                        <SelectItem key={c.id} value={c.class_name}>{c.class_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div>
