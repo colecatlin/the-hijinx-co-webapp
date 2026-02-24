@@ -52,7 +52,7 @@ export default function SeriesClassesSection({ seriesId }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editing) {
+    if (editing && editing !== 'new') {
       updateMutation.mutate(formData);
     } else {
       createMutation.mutate(formData);
