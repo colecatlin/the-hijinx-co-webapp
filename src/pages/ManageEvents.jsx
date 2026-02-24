@@ -14,6 +14,7 @@ import AddEventForm from '@/components/management/AddEventForm';
 import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
 import EventSessionsSection from '@/components/management/EventManagement/EventSessionsSection';
 import EventResultsSection from '@/components/management/EventManagement/EventResultsSection';
+import EventResultsInputSection from '@/components/management/EventManagement/EventResultsInputSection';
 import AIEventGenerator from '@/components/management/AIEventGenerator';
 
 export default function ManageEvents() {
@@ -136,7 +137,16 @@ export default function ManageEvents() {
               <EventSessionsSection event={selectedEventForEdit} />
             </TabsContent>
             <TabsContent value="results" className="mt-6">
-              <EventResultsSection event={selectedEventForEdit} />
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-xl font-bold mb-4">Input Results</h2>
+                  <EventResultsInputSection eventId={selectedEventForEdit.id} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold mb-4">All Results</h2>
+                  <EventResultsSection event={selectedEventForEdit} />
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
