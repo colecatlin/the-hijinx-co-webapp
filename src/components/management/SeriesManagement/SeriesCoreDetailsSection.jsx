@@ -281,7 +281,18 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
               className="hidden"
             />
             {formData.logo_url && (
-              <img src={formData.logo_url} alt="Series logo" className="h-10 rounded" />
+              <>
+                <img src={formData.logo_url} alt="Series logo" className="h-10 rounded" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => setFormData({ ...formData, logo_url: '' })}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete Logo
+                </Button>
+              </>
             )}
           </div>
         </div>
