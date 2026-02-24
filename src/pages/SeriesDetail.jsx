@@ -10,6 +10,8 @@ import { format, parseISO } from 'date-fns';
 import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin, TrendingUp, Share2, Flag } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
+import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
