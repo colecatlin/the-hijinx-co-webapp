@@ -27,9 +27,23 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   }, [seriesRecord]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Series.update(seriesId, data),
+    mutationFn: async (data) => {
+      const oldName = seriesRecord?.name;
+      const newName = data.name;
+      await base44.entities.Series.update(seriesId, data);
+      // If name changed, cascade update all events linked to old name
+      if (oldName && newName && oldName !== newName) {
+        const allEvents = await base44.entities.Event.list('event_date', 500);
+        const linkedEvents = allEvents.filter(e => e.series && e.series.trim() === oldName.trim());
+        await Promise.all(linkedEvents.map(e => base44.entities.Event.update(e.id, { series: newName })));
+        if (linkedEvents.length > 0) {
+          toast.info(`Updated ${linkedEvents.length} linked event(s) to new series name.`);
+        }
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['series', seriesId] });
+      queryClient.invalidateQueries({ queryKey: ['seriesEventsManagement', seriesId] });
       setIsSaved(true);
       toast.success('Series updated');
       setTimeout(() => setIsSaved(false), 2000);
