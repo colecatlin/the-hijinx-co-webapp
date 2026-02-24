@@ -16,7 +16,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [errors, setErrors] = useState({});
   const queryClient = useQueryClient();
 
-  const { data: team } = useQuery({
+  const { data: team, refetch } = useQuery({
     queryKey: ['team', teamId],
     queryFn: () => base44.entities.Team.list({ id: teamId }),
     enabled: teamId !== 'new',
