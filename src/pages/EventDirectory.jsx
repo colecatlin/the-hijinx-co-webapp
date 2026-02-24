@@ -265,8 +265,8 @@ export default function EventDirectory() {
 
           <TabsContent value="results">
             {isLoading || resultsLoading || driversLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
               </div>
             ) : filteredCompletedEvents.length === 0 ? (
               <div className="text-center py-12 text-gray-500 flex flex-col items-center gap-2">
@@ -274,9 +274,9 @@ export default function EventDirectory() {
                 No completed events yet
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCompletedEvents.map(event => (
-                  <EventResultRow key={event.id} event={event} />
+                  <EventResultCard key={event.id} event={event} />
                 ))}
               </div>
             )}
