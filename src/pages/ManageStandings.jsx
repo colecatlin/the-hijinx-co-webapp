@@ -96,6 +96,27 @@ export default function ManageStandings() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSyncFromSheets = async () => {
+    setSyncStatus('loading');
+    setSyncMessage('Syncing standings from Google Sheets...');
+    
+    try {
+      const response = await base44.functions.invoke('syncStandingsFromSheets', {});
+      if (response.data.success) {
+        setSyncStatus('success');
+        setSyncMessage(`${response.data.message} (${response.data.series.join(', ')})`);
+        queryClient.invalidateQueries({ queryKey: ['standings'] });
+        setTimeout(() => setSyncStatus(null), 5000);
+      } else {
+        setSyncStatus('error');
+        setSyncMessage(response.data.error || 'Sync failed');
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      setSyncMessage(error.message || 'Error syncing standings');
+    }
+  };
+
   const handleImport = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
