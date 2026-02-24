@@ -115,59 +115,18 @@ export default function TeamForm({ team, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Primary Discipline *</label>
-            <Select value={formData.primary_discipline} onValueChange={(value) => handleChange('primary_discipline', value)}>
+            <label className="block text-sm font-medium mb-2">Ownership Type</label>
+            <Select value={formData.ownership_type} onValueChange={(value) => handleChange('ownership_type', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select discipline" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Stock Car">Stock Car</SelectItem>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Dirt Oval">Dirt Oval</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Dirt Bike">Dirt Bike</SelectItem>
-                <SelectItem value="Open Wheel">Open Wheel</SelectItem>
-                <SelectItem value="Sports Car">Sports Car</SelectItem>
-                <SelectItem value="Touring Car">Touring Car</SelectItem>
-                <SelectItem value="Rally">Rally</SelectItem>
-                <SelectItem value="Drag">Drag</SelectItem>
-                <SelectItem value="Motorcycle">Motorcycle</SelectItem>
-                <SelectItem value="Karting">Karting</SelectItem>
-                <SelectItem value="Water">Water</SelectItem>
-                <SelectItem value="Alternative">Alternative</SelectItem>
+                <SelectItem value="Private">Private</SelectItem>
+                <SelectItem value="Family">Family</SelectItem>
+                <SelectItem value="Corporate">Corporate</SelectItem>
+                <SelectItem value="Unknown">Unknown</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Team Level *</label>
-              <Select value={formData.team_level} onValueChange={(value) => handleChange('team_level', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Local">Local</SelectItem>
-                  <SelectItem value="Regional">Regional</SelectItem>
-                  <SelectItem value="National">National</SelectItem>
-                  <SelectItem value="International">International</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Ownership Type</label>
-              <Select value={formData.ownership_type} onValueChange={(value) => handleChange('ownership_type', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Private">Private</SelectItem>
-                  <SelectItem value="Family">Family</SelectItem>
-                  <SelectItem value="Corporate">Corporate</SelectItem>
-                  <SelectItem value="Unknown">Unknown</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -81,7 +81,6 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     if (!formData.headquarters_city?.trim()) newErrors.headquarters_city = 'City is required';
     if (!formData.headquarters_state?.trim()) newErrors.headquarters_state = 'State is required';
     if (!formData.country?.trim()) newErrors.country = 'Country is required';
-    if (!formData.primary_discipline) newErrors.primary_discipline = 'Discipline is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -136,52 +135,18 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           countryLabel="Country *"
         />
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium">Discipline *</label>
-            <Select value={formData.primary_discipline || ''} onValueChange={(value) => setFormData({ ...formData, primary_discipline: value })}>
-              <SelectTrigger className={errors.primary_discipline ? 'border-red-500' : ''}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                <SelectItem value="Road Racing">Road Racing</SelectItem>
-                <SelectItem value="Rallycross">Rallycross</SelectItem>
-                <SelectItem value="Drag Racing">Drag Racing</SelectItem>
-                <SelectItem value="Mixed">Mixed</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.primary_discipline && <p className="text-xs text-red-500 mt-1">{errors.primary_discipline}</p>}
-          </div>
-          <div>
-            <label className="text-sm font-medium">Level</label>
-            <Select value={formData.team_level || ''} onValueChange={(value) => setFormData({ ...formData, team_level: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Local">Local</SelectItem>
-                <SelectItem value="Regional">Regional</SelectItem>
-                <SelectItem value="National">National</SelectItem>
-                <SelectItem value="International">International</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Status</label>
-            <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Part Time">Part Time</SelectItem>
-                <SelectItem value="Historic">Historic</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <label className="text-sm font-medium">Status</label>
+          <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Active">Active</SelectItem>
+              <SelectItem value="Part Time">Part Time</SelectItem>
+              <SelectItem value="Historic">Historic</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
