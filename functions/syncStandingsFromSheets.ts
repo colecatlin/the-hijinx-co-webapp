@@ -106,10 +106,11 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
-      message: `Synced ${standingsData.length} standings from Google Sheets`,
-      recordsImported: standingsData.length,
+      message: `Synced ${allStandingsData.length} standings from Google Sheets`,
+      recordsImported: allStandingsData.length,
       series: Array.from(seriesSet),
-      seasons: Array.from(seasonSet)
+      seasons: Array.from(seasonSet),
+      sheetsProcessed: processedSheets
     });
   } catch (error) {
     console.error('Sync error:', error);
