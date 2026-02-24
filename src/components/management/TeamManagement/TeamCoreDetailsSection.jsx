@@ -77,10 +77,15 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
 
   const validateForm = () => {
     const newErrors = {};
+    const currentYear = new Date().getFullYear();
+    
     if (!formData.name?.trim()) newErrors.name = 'Team name is required';
     if (!formData.headquarters_city?.trim()) newErrors.headquarters_city = 'City is required';
     if (!formData.headquarters_state?.trim()) newErrors.headquarters_state = 'State is required';
     if (!formData.country?.trim()) newErrors.country = 'Country is required';
+    if (formData.founded_year && (formData.founded_year < 1900 || formData.founded_year > currentYear)) {
+      newErrors.founded_year = `Year must be between 1900 and ${currentYear}`;
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -157,7 +162,9 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
             onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
             min="1900"
             max={new Date().getFullYear()}
+            className={errors.founded_year ? 'border-red-500' : ''}
           />
+          {errors.founded_year && <p className="text-xs text-red-500 mt-1">{errors.founded_year}</p>}
         </div>
 
         <div>
