@@ -28,7 +28,7 @@ export default function DriverProgramsList({ driverId }) {
 
   const { data: programs = [], isLoading } = useQuery({
     queryKey: ['driverPrograms', driverId],
-    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }, '-start_date'),
   });
 
   const { data: series = [] } = useQuery({
