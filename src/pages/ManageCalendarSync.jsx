@@ -152,7 +152,7 @@ export default function ManageCalendarSync() {
         {calendars.length === 0 && (
           <div className="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
             <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">No calendars added yet.</p>
+            <p className="text-sm">No schedules added yet.</p>
           </div>
         )}
       </div>
