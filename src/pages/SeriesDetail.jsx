@@ -86,6 +86,26 @@ export default function SeriesDetail() {
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-black text-[#232323] leading-none">{series.name}</h1>
             </div>
+            {series.title_sponsor_name && (
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs text-gray-400 uppercase tracking-widest font-medium">Presented by</span>
+                {series.title_sponsor_url ? (
+                  <a href={series.title_sponsor_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    {series.title_sponsor_logo_url
+                      ? <img src={series.title_sponsor_logo_url} alt={series.title_sponsor_name} className="h-5 object-contain" />
+                      : <span className="text-sm font-bold text-[#232323]">{series.title_sponsor_name}</span>
+                    }
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {series.title_sponsor_logo_url
+                      ? <img src={series.title_sponsor_logo_url} alt={series.title_sponsor_name} className="h-5 object-contain" />
+                      : <span className="text-sm font-bold text-[#232323]">{series.title_sponsor_name}</span>
+                    }
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
               {sections.map(section => {
