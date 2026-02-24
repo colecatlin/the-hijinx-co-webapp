@@ -26,8 +26,8 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   });
 
   useEffect(() => {
-    if (team && team.length > 0) {
-      setFormData(team[0]);
+    if (team) {
+      setFormData(team);
     }
   }, [team]);
 
