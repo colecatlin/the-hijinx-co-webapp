@@ -52,6 +52,7 @@ import AcceptInvitation from './pages/AcceptInvitation';
 import AdvertisementAnalytics from './pages/AdvertisementAnalytics';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ApparelHome from './pages/ApparelHome';
+import CompetitionSystem from './pages/CompetitionSystem';
 import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
 import Diagnostics from './pages/Diagnostics';
@@ -113,7 +114,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import CompetitionSystem from './pages/CompetitionSystem';
 import __Layout from './Layout.jsx';
 
 
@@ -123,6 +123,7 @@ export const PAGES = {
     "AdvertisementAnalytics": AdvertisementAnalytics,
     "AnalyticsDashboard": AnalyticsDashboard,
     "ApparelHome": ApparelHome,
+    "CompetitionSystem": CompetitionSystem,
     "Contact": Contact,
     "CreativeServices": CreativeServices,
     "Diagnostics": Diagnostics,
@@ -184,7 +185,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "CompetitionSystem": CompetitionSystem,
 }
 
 export const pagesConfig = {

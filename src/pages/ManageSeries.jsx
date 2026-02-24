@@ -166,7 +166,7 @@ export default function ManageSeries() {
               <SeriesFormatSection seriesId={selectedSeriesForEdit.id} />
             </TabsContent>
             <TabsContent value="classes" className="mt-6">
-              <SeriesClassesSection seriesId={selectedSeriesForEdit.id} />
+              <SeriesClassesSection seriesId={selectedSeriesForEdit.id} userRole="admin" />
             </TabsContent>
             <TabsContent value="calendar" className="mt-6">
               <SeriesEventsSection seriesId={selectedSeriesForEdit.id} />
