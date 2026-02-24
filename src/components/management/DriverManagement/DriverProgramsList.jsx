@@ -225,6 +225,22 @@ export default function DriverProgramsList({ driverId }) {
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium mb-2">Start Date *</label>
+                <Input
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">End Date</label>
+                <Input
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-2">Series *</label>
                 <Select
                   value={formData.series_id}
