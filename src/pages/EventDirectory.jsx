@@ -102,10 +102,11 @@ export default function EventDirectory() {
                   </span>
                 </div>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Calendar className="w-4 h-4" />
                     {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
                     {event.round_number && <span className="text-gray-400">· Rd {event.round_number}</span>}
+                    <DaysUntilBadge eventDate={event.event_date} status={event.status} />
                   </div>
                   {event.series && (
                     <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
