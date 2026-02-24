@@ -114,45 +114,47 @@ export default function EventDirectory() {
     return null;
   };
 
-  const EventResultRow = ({ event }) => {
+  const EventResultCard = ({ event }) => {
     const podium = podiumByEvent[event.id] || [];
-    const dateStr = event.event_date ? format(new Date(event.event_date + 'T00:00:00'), 'MM/dd/yy') : null;
 
     return (
-      <div className="flex items-stretch border border-gray-100 hover:border-gray-300 transition-colors group">
-        {dateStr && (
-          <div className="flex-shrink-0 flex items-center justify-center bg-[#0A0A0A] text-white font-mono text-sm font-bold px-4 min-w-[72px]">
-            {dateStr}
-          </div>
-        )}
-        <div className="flex-1 px-5 py-4">
-          <h3 className="font-bold text-sm text-[#0A0A0A] mb-2">{event.name}</h3>
-          {event.series && (
-            <p className="text-xs text-gray-400 mb-1">{event.series}</p>
-          )}
-          {podium.length > 0 ? (
-            <div className="flex flex-wrap gap-4">
-              {podium.map((p) => (
-                <div key={p.position} className="flex items-center gap-1.5">
-                  {positionIcon(p.position)}
-                  <span className="text-xs text-gray-700 font-medium">
-                    {p.number ? `#${p.number} ` : ''}{p.name}
-                  </span>
-                </div>
-              ))}
+      <Link
+        to={createPageUrl('EventResults') + `?id=${event.id}`}
+        className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
+          <span className="shrink-0 ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
+            Completed
+          </span>
+        </div>
+        <div className="space-y-3">
+          <div className="space-y-1 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
             </div>
-          ) : (
-            <span className="text-xs text-gray-400">No finisher data available</span>
+            {event.series && (
+              <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
+            )}
+          </div>
+          {podium.length > 0 && (
+            <div className="pt-3 border-t border-gray-100">
+              <div className="text-xs text-gray-500 font-medium mb-2">Top Finishers</div>
+              <div className="space-y-1.5">
+                {podium.map((p) => (
+                  <div key={p.position} className="flex items-center gap-2">
+                    {positionIcon(p.position)}
+                    <span className="text-xs text-gray-700">
+                      {p.number ? `#${p.number} ` : ''}{p.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-        <Link
-          to={createPageUrl('EventResults') + `?id=${event.id}`}
-          className="flex-shrink-0 flex items-center justify-center px-4 border-l border-gray-100 group-hover:border-gray-300 hover:bg-[#0A0A0A] hover:text-white transition-colors"
-          title="View full results"
-        >
-          <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-inherit transition-colors" />
-        </Link>
-      </div>
+      </Link>
     );
   };
 
