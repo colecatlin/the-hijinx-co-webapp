@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Users, Building2, MapPin, Trophy, Calendar, BarChart2, ArrowRight } from 'lucide-react';
+import { Users, Building2, MapPin, Trophy, Calendar } from 'lucide-react';
 
 const links = [
   { label: 'Drivers', page: 'DriverDirectory', icon: Users },
