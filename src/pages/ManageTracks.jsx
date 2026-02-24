@@ -60,21 +60,13 @@ export default function ManageTracks() {
           <Tabs defaultValue="core" className="mt-6">
             <TabsList>
               <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="operations">Operations</TabsTrigger>
+              <TabsTrigger value="series">Series</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <TrackCoreDetailsSection trackId={selectedTrackForEdit.id} />
             </TabsContent>
-            <TabsContent value="media" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Track media editor coming soon</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="operations" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Track operations editor coming soon</p>
-              </div>
+            <TabsContent value="series" className="mt-6">
+              <TrackSeriesSection trackId={selectedTrackForEdit.id} trackName={selectedTrackForEdit.name} />
             </TabsContent>
           </Tabs>
         </div>
