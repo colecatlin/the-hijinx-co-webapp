@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, Calendar, Trophy, Flag, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays, parseISO } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
