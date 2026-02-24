@@ -24,9 +24,15 @@ export default function SeriesCard({ series }) {
         </span>
       </div>
 
-      <h3 className="text-lg font-black mb-2 group-hover:text-gray-600 transition-colors">{series.name}</h3>
+      <h3 className="text-lg font-black mb-1 group-hover:text-gray-600 transition-colors">{series.name}</h3>
 
-      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{series.description_summary}</p>
+      {series.title_sponsor_name && (
+        <p className="text-xs text-gray-400 mb-2">
+          Presented by <span className="font-semibold text-gray-600">{series.title_sponsor_name}</span>
+        </p>
+      )}
+
+      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{series.description_summary || series.description}</p>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div className="text-xs text-gray-500">
