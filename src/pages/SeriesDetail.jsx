@@ -32,7 +32,11 @@ export default function SeriesDetail() {
     queryFn: async () => {
       const allEvents = await base44.entities.Event.list('event_date', 500);
       const names = [series.name, series.full_name].filter(Boolean).map(n => n.toLowerCase().trim());
-      return allEvents.filter(e => e.series && names.includes(e.series.toLowerCase().trim()));
+      return allEvents.filter(e => {
+        if (!e.series) return false;
+        const evSeries = e.series.toLowerCase().trim();
+        return names.some(n => n === evSeries || n.includes(evSeries) || evSeries.includes(n));
+      });
     },
     enabled: !!series?.id,
   });
