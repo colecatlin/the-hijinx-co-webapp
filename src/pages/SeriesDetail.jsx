@@ -96,9 +96,19 @@ export default function SeriesDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-4xl font-black text-[#232323] leading-none">{series.name}</h1>
             </div>
+            {/* Competition classification strip */}
+            {(displayLevel || series.geographic_scope) && (
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                {displayLevel && <CompetitionLevelBadge level={displayLevel} isOverride={isOverride} size="md" />}
+                {series.geographic_scope && <GeographicScopeTag scope={series.geographic_scope} size="md" />}
+                {isOverride && series.override_reason && (
+                  <span className="text-xs text-gray-400 italic">Override: {series.override_reason}</span>
+                )}
+              </div>
+            )}
             {series.title_sponsor_name && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs text-gray-400 uppercase tracking-widest font-medium">Presented by</span>
