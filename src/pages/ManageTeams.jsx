@@ -32,7 +32,7 @@ export default function ManageTeams() {
   const queryClient = useQueryClient();
 
   // Support deep-link: ?teamId=xxx opens that team directly
-  React.useEffect(() => {
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const teamId = params.get('teamId');
     if (teamId) {
