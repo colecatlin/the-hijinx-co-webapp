@@ -141,11 +141,13 @@ export default function DriverProgramsSection({ driverId }) {
               <div className="flex-1">
                 <p className="font-medium">{getSeriesName(program.series_id)}</p>
                 <p className="text-sm text-gray-600">
-                  {program.class_name} • #{program.bib_number} • {program.season_start_year}-
-                  {program.season_end_year || 'Present'}
+                  {program.class_name && `${program.class_name} • `}
+                  {program.car_number && `#${program.car_number} • `}
+                  {program.start_month}/{program.start_year}
+                  {program.status === 'inactive' && program.end_month ? ` - ${program.end_month}/${program.end_year}` : program.status === 'active' ? ' - Present' : ''}
                 </p>
                 {program.team_id && <p className="text-sm text-gray-500">Team: {getTeamName(program.team_id)}</p>}
-                {program.is_primary && <p className="text-xs text-blue-600 font-medium">Primary Program</p>}
+                <p className="text-xs text-gray-500 mt-1 capitalize">{program.status}</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => handleEdit(program)}>
