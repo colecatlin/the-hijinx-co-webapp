@@ -28,9 +28,13 @@ export default function SeriesDetail() {
   });
 
   const { data: events = [] } = useQuery({
-    queryKey: ['seriesEvents', series?.name],
-    queryFn: () => base44.entities.Event.filter({ series: series.name }, 'event_date', 100),
-    enabled: !!series?.name,
+    queryKey: ['seriesEvents', series?.id],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.list('event_date', 500);
+      const names = [series.name, series.full_name].filter(Boolean).map(n => n.toLowerCase().trim());
+      return allEvents.filter(e => e.series && names.includes(e.series.toLowerCase().trim()));
+    },
+    enabled: !!series?.id,
   });
 
   const { data: seriesClasses = [] } = useQuery({
