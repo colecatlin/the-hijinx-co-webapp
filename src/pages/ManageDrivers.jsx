@@ -40,6 +40,15 @@ export default function ManageDrivers() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Support deep-link: ?driverId=xxx opens that driver directly
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const driverId = params.get('driverId');
+    if (driverId) {
+      setSelectedDriverForEdit({ id: driverId });
+    }
+  }, []);
+
   const handleNascarImport = async () => {
     setImporting(true);
     setImportResult(null);
