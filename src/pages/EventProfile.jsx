@@ -139,12 +139,20 @@ export default function EventProfile() {
                     <Calendar className="w-4 h-4" />
                     Event Date
                   </div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">
+                  <div className="text-lg font-semibold text-[#232323] mb-1">
                     {event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBA'}
                     {event.end_date && event.end_date !== event.event_date && (
                       <span className="text-gray-500"> – {format(new Date(event.end_date), 'MMMM d, yyyy')}</span>
                     )}
                   </div>
+                  {(() => {
+                    if (!event.event_date || event.status === 'completed' || event.status === 'cancelled') return null;
+                    if (event.status === 'in_progress') return <div className="text-sm font-bold text-green-600 mb-4">In Progress</div>;
+                    const days = differenceInCalendarDays(parseISO(event.event_date), new Date());
+                    if (days < 0) return null;
+                    if (days === 0) return <div className="text-sm font-bold text-green-600 mb-4">Today</div>;
+                    return <div className="text-sm font-bold text-orange-500 mb-4">In {days} day{days !== 1 ? 's' : ''}</div>;
+                  })()}
                   {track && (
                     <div>
                       <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
