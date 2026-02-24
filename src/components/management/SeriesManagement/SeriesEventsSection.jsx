@@ -1,126 +1,88 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 
-export default function SeriesEventsSection({ seriesId }) {
-  const queryClient = useQueryClient();
-  const [editing, setEditing] = useState(null);
-  const [formData, setFormData] = useState({
-    event_name: '',
-    start_date: '',
-    is_championship_decider: false
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['seriesEvents', seriesId],
-    queryFn: () => base44.entities.SeriesEvent.filter({ series_id: seriesId }),
-    enabled: !!seriesId,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.SeriesEvent.create({ series_id: seriesId, ...data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seriesEvents', seriesId] });
-      setEditing(null);
-      setFormData({ event_name: '', start_date: '', is_championship_decider: false });
+export default function SeriesEventsSection({ seriesId, series }) {
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['seriesEventsManagement', seriesId],
+    queryFn: async () => {
+      const allEvents = await base44.entities.Event.list('event_date', 500);
+      const names = [series?.name, series?.full_name].filter(Boolean).map(n => n.toLowerCase().trim());
+      return allEvents.filter(e => e.series && names.includes(e.series.toLowerCase().trim()));
     },
+    enabled: !!seriesId && !!series,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.SeriesEvent.update(editing, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seriesEvents', seriesId] });
-      setEditing(null);
-      setFormData({ event_name: '', start_date: '', is_championship_decider: false });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.SeriesEvent.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seriesEvents', seriesId] });
-    },
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editing) {
-      updateMutation.mutate(formData);
-    } else {
-      createMutation.mutate(formData);
-    }
+  const statusColors = {
+    upcoming: 'bg-blue-100 text-blue-800',
+    in_progress: 'bg-green-100 text-green-800',
+    completed: 'bg-gray-100 text-gray-700',
+    cancelled: 'bg-red-100 text-red-800',
   };
 
-  if (editing) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{editing ? 'Edit Event' : 'Add Event'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input placeholder="Event Name" value={formData.event_name} onChange={(e) => setFormData({...formData, event_name: e.target.value})} required />
-            <Input type="date" value={formData.start_date} onChange={(e) => setFormData({...formData, start_date: e.target.value})} required />
-            <div className="flex items-center gap-2">
-              <Checkbox checked={formData.is_championship_decider} onCheckedChange={(checked) => setFormData({...formData, is_championship_decider: checked})} />
-              <label className="text-sm">Championship Decider</label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="bg-[#232323]">Save Event</Button>
-              <Button type="button" variant="outline" onClick={() => {
-                setEditing(null);
-                setFormData({ event_name: '', start_date: '', is_championship_decider: false });
-              }}>Cancel</Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    );
-  }
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    return format(parseISO(dateStr), 'MMM d, yyyy');
+  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Calendar</CardTitle>
-        <Button size="sm" onClick={() => {
-          setFormData({ event_name: '', start_date: '', is_championship_decider: false });
-          setEditing('new');
-        }}>
-          <Plus className="w-4 h-4 mr-1" />
-          Add Event
-        </Button>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          Calendar & Schedule
+        </CardTitle>
+        <p className="text-sm text-gray-500">
+          Events are linked via the Event entity's "series" field matching this series name.
+          {events.length > 0 && <span className="ml-1 font-medium text-gray-700">{events.length} events found.</span>}
+        </p>
       </CardHeader>
       <CardContent>
-        {events.length > 0 ? (
+        {isLoading ? (
+          <p className="text-gray-400 text-sm">Loading events...</p>
+        ) : events.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">No events found for this series.</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Events must have a "series" field matching "{series?.name}"{series?.full_name ? ` or "${series.full_name}"` : ''}.
+            </p>
+          </div>
+        ) : (
           <div className="space-y-3">
             {events.map(event => (
               <div key={event.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="font-semibold">{event.event_name}</p>
-                  <p className="text-sm text-gray-600">{event.start_date}</p>
-                  {event.is_championship_decider && <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">Championship Decider</span>}
+                  <div className="flex items-center gap-2 mb-1">
+                    {event.round_number && (
+                      <span className="text-xs font-mono text-gray-400">Rd. {event.round_number}</span>
+                    )}
+                    <p className="font-semibold text-sm">{event.name}</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatDate(event.event_date)}
+                      {event.end_date && event.end_date !== event.event_date && ` – ${formatDate(event.end_date)}`}
+                    </span>
+                    {event.location_note && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {event.location_note}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-2 ml-4">
-                  <Button size="sm" variant="ghost" onClick={() => {
-                    setFormData(event);
-                    setEditing(event.id);
-                  }}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(event.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                <Badge className={`ml-3 text-xs capitalize ${statusColors[event.status] || 'bg-gray-100 text-gray-700'}`}>
+                  {event.status?.replace('_', ' ') || 'upcoming'}
+                </Badge>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-gray-500">No events added yet</p>
         )}
       </CardContent>
     </Card>
