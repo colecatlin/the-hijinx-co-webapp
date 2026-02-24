@@ -102,7 +102,6 @@ import OutletIssues from './pages/OutletIssues';
 import OutletStoryPage from './pages/OutletStoryPage';
 import OutletSubmit from './pages/OutletSubmit';
 import Profile from './pages/Profile';
-import ResultsHome from './pages/ResultsHome';
 import ScheduleEmbed from './pages/ScheduleEmbed';
 import ScheduleHome from './pages/ScheduleHome';
 import SeriesDetail from './pages/SeriesDetail';
@@ -173,7 +172,6 @@ export const PAGES = {
     "OutletStoryPage": OutletStoryPage,
     "OutletSubmit": OutletSubmit,
     "Profile": Profile,
-    "ResultsHome": ResultsHome,
     "ScheduleEmbed": ScheduleEmbed,
     "ScheduleHome": ScheduleHome,
     "SeriesDetail": SeriesDetail,
