@@ -194,7 +194,12 @@ export default function ManageSeries() {
               <SeriesTeamsSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
             </TabsContent>
             <TabsContent value="drivers" className="mt-6">
-              <SeriesDriversSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
+              <SeriesDriversSection
+                seriesId={selectedSeriesForEdit.id}
+                seriesName={selectedSeriesForEdit.name}
+                onNavigateToDriver={handleNavigateToDriver}
+                onNavigateToTeam={handleNavigateToTeam}
+              />
             </TabsContent>
             <TabsContent value="tracks" className="mt-6">
               <SeriesTracksSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
