@@ -79,28 +79,18 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Discipline</label>
-            <Select value={formData.discipline || ''} onValueChange={(value) => setFormData({ ...formData, discipline: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select discipline" />
-              </SelectTrigger>
-              <SelectContent>
-                {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
-                  <SelectItem key={d} value={d}>{d}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Region</label>
-            <Input
-              value={formData.region || ''}
-              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-              placeholder="e.g. United States, North America"
-            />
-          </div>
+        <div>
+          <label className="text-sm font-medium">Discipline</label>
+          <Select value={formData.discipline || ''} onValueChange={(value) => setFormData({ ...formData, discipline: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select discipline" />
+            </SelectTrigger>
+            <SelectContent>
+              {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
