@@ -1,6 +1,3 @@
-
-import XLSX from 'xlsx';
-
 export const downloadTemplate = (entityType) => {
   const templates = {
     driver: [
