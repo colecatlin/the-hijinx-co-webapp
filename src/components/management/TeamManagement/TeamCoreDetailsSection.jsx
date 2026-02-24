@@ -209,9 +209,16 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           </div>
         </div>
 
-        <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
-          {isSaved ? 'Saved' : (updateMutation.isPending || createMutation.isPending) ? 'Saving...' : teamId === 'new' ? 'Create Team' : 'Save Changes'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
+            {isSaved ? 'Saved' : (updateMutation.isPending || createMutation.isPending) ? 'Saving...' : teamId === 'new' ? 'Create Team' : 'Save Changes'}
+          </Button>
+          {teamId !== 'new' && (
+            <Button variant="outline" onClick={handleRefresh} size="sm">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
