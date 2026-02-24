@@ -18,7 +18,10 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
 
   const { data: team, refetch } = useQuery({
     queryKey: ['team', teamId],
-    queryFn: () => base44.entities.Team.list({ id: teamId }),
+    queryFn: async () => {
+      const teams = await base44.entities.Team.filter({ id: teamId });
+      return teams.length > 0 ? teams[0] : null;
+    },
     enabled: teamId !== 'new',
   });
 
