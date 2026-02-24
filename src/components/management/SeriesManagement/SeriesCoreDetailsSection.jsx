@@ -14,16 +14,17 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: series } = useQuery({
+  const { data: seriesRecord } = useQuery({
     queryKey: ['series', seriesId],
-    queryFn: () => base44.entities.Series.filter({ id: seriesId }),
+    queryFn: () => base44.entities.Series.get(seriesId),
+    enabled: !!seriesId,
   });
 
   useEffect(() => {
-    if (series && series.length > 0) {
-      setFormData(series[0]);
+    if (seriesRecord) {
+      setFormData(seriesRecord);
     }
-  }, [series]);
+  }, [seriesRecord]);
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Series.update(seriesId, data),
