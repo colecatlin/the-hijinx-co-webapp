@@ -29,71 +29,64 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No sheets found' }, { status: 400 });
     }
 
-    // Look for standings sheet (case-insensitive, contains "standing")
-    const standingsSheet = spreadsheet.sheets.find(s => 
-      s.properties.title.toLowerCase().includes('standing')
-    );
+    // Collect all standings data from all tabs (each tab = event name)
+    const allStandingsData = [];
+    const processedSheets = [];
 
-    if (!standingsSheet) {
-      return Response.json({ error: 'Standings sheet not found' }, { status: 400 });
-    }
+    for (const sheet of spreadsheet.sheets) {
+      const sheetName = sheet.properties.title;
 
-    const sheetName = standingsSheet.properties.title;
+      // Fetch sheet data
+      const dataRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const data = await dataRes.json();
 
-    // Fetch sheet data
-    const dataRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const data = await dataRes.json();
+      if (!data.values || data.values.length < 2) {
+        continue; // Skip empty sheets
+      }
 
-    if (!data.values || data.values.length < 2) {
-      return Response.json({ error: 'No data found in standings sheet' }, { status: 400 });
-    }
+      const headers = data.values[0];
+      const rows = data.values.slice(1);
 
-    const headers = data.values[0];
-    const rows = data.values.slice(1);
+      for (const row of rows) {
+        if (!row || row.length === 0) continue;
 
-    // Map columns - common header variations
-    const headerMap = {};
-    headers.forEach((h, idx) => {
-      const normalized = h.toLowerCase().trim();
-      headerMap[idx] = normalized;
-    });
+        const standing = {
+          event_name: sheetName, // Tab name = event name
+          series_name: getVal(row, headers, ['series', 'series name']),
+          season_year: getVal(row, headers, ['season', 'year']),
+          class_name: getVal(row, headers, ['class', 'class name']),
+          position: parseFloat(getVal(row, headers, ['position', 'pos', 'rank']) || 0) || 0,
+          first_name: getVal(row, headers, ['first name', 'firstname', 'driver first']),
+          last_name: getVal(row, headers, ['last name', 'lastname', 'driver last']),
+          bib_number: getVal(row, headers, ['bib', 'number', 'car number', 'car #']),
+          total_points: parseFloat(getVal(row, headers, ['points', 'total points']) || 0) || 0,
+          events_counted: parseFloat(getVal(row, headers, ['events counted', 'events']) || 0) || 0,
+          wins: parseFloat(getVal(row, headers, ['wins']) || 0) || 0,
+          podiums: parseFloat(getVal(row, headers, ['podiums', 'top 3']) || 0) || 0,
+          bonus_points: parseFloat(getVal(row, headers, ['bonus points', 'bonus']) || 0) || 0,
+        };
 
-    const standingsData = [];
+        // Validate required fields
+        if (standing.series_name && standing.season_year && standing.class_name) {
+          allStandingsData.push(standing);
+        }
+      }
 
-    for (const row of rows) {
-      if (!row || row.length === 0) continue;
-
-      const standing = {
-        series_name: getVal(row, headers, ['series', 'series name']),
-        season_year: getVal(row, headers, ['season', 'year']),
-        class_name: getVal(row, headers, ['class', 'class name']),
-        position: parseFloat(getVal(row, headers, ['position', 'pos', 'rank']) || 0) || 0,
-        first_name: getVal(row, headers, ['first name', 'firstname', 'driver first']),
-        last_name: getVal(row, headers, ['last name', 'lastname', 'driver last']),
-        bib_number: getVal(row, headers, ['bib', 'number', 'car number', 'car #']),
-        total_points: parseFloat(getVal(row, headers, ['points', 'total points']) || 0) || 0,
-        events_counted: parseFloat(getVal(row, headers, ['events counted', 'events']) || 0) || 0,
-        wins: parseFloat(getVal(row, headers, ['wins']) || 0) || 0,
-        podiums: parseFloat(getVal(row, headers, ['podiums', 'top 3']) || 0) || 0,
-        bonus_points: parseFloat(getVal(row, headers, ['bonus points', 'bonus']) || 0) || 0,
-      };
-
-      // Validate required fields
-      if (standing.series_name && standing.season_year && standing.class_name) {
-        standingsData.push(standing);
+      if (allStandingsData.length > 0) {
+        processedSheets.push(sheetName);
       }
     }
 
-    if (standingsData.length === 0) {
-      return Response.json({ error: 'No valid standings data found' }, { status: 400 });
+    if (allStandingsData.length === 0) {
+      return Response.json({ error: 'No valid standings data found in any sheets' }, { status: 400 });
     }
 
     // Delete existing standings for this series/season/class combo
-    const seriesSet = new Set(standingsData.map(s => s.series_name));
-    const seasonSet = new Set(standingsData.map(s => s.season_year));
+    const seriesSet = new Set(allStandingsData.map(s => s.series_name));
+    const seasonSet = new Set(allStandingsData.map(s => s.season_year));
 
     for (const series of seriesSet) {
       for (const season of seasonSet) {
@@ -109,7 +102,7 @@ Deno.serve(async (req) => {
     }
 
     // Create new standings
-    await base44.asServiceRole.entities.Standings.bulkCreate(standingsData);
+    await base44.asServiceRole.entities.Standings.bulkCreate(allStandingsData);
 
     return Response.json({
       success: true,
