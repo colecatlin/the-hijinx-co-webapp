@@ -216,6 +216,40 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
         </div>
 
         <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold mb-4">Title Sponsor</h3>
+          <p className="text-xs text-gray-500 mb-3">e.g. "AMSOIL Championship Off-Road" or "Champ Off Road presented by Brunt"</p>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="text-sm font-medium">Sponsor Name</label>
+              <Input
+                value={formData.title_sponsor_name || ''}
+                onChange={(e) => setFormData({ ...formData, title_sponsor_name: e.target.value })}
+                placeholder="e.g. AMSOIL, Brunt"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Sponsor Website URL</label>
+              <Input
+                value={formData.title_sponsor_url || ''}
+                onChange={(e) => setFormData({ ...formData, title_sponsor_url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Sponsor Logo URL</label>
+              <Input
+                value={formData.title_sponsor_logo_url || ''}
+                onChange={(e) => setFormData({ ...formData, title_sponsor_logo_url: e.target.value })}
+                placeholder="https://..."
+              />
+              {formData.title_sponsor_logo_url && (
+                <img src={formData.title_sponsor_logo_url} alt="Sponsor logo" className="h-8 mt-2 object-contain" />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
           <label className="text-sm font-medium">Logo</label>
           <div className="flex items-center gap-3">
             <Button
