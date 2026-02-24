@@ -9,7 +9,6 @@ const links = [
   { label: 'Tracks', page: 'TrackDirectory', icon: MapPin },
   { label: 'Series', page: 'SeriesHome', icon: Trophy },
   { label: 'Events', page: 'EventDirectory', icon: Calendar },
-  { label: 'Results', page: 'ResultsDirectory', icon: BarChart2 },
 ];
 
 export default function MotorsportsStrip() {
