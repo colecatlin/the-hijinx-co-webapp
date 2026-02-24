@@ -31,6 +31,15 @@ export default function ManageSeries() {
   const [selectedSeriesForEdit, setSelectedSeriesForEdit] = useState(null);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const handleNavigateToDriver = (driver) => {
+    navigate(createPageUrl(`ManageDrivers?driverId=${driver.id}`));
+  };
+
+  const handleNavigateToTeam = (team) => {
+    navigate(createPageUrl(`ManageTeams?teamId=${team.id}`));
+  };
 
   const { data: series = [], isLoading } = useQuery({
     queryKey: ['series'],
