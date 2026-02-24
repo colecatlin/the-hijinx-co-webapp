@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { createPageUrl } from '@/components/utils';
 import { Link } from 'react-router-dom';
 
-export default function SeriesDriversSection({ seriesId, seriesName }) {
+export default function SeriesDriversSection({ seriesId, seriesName, onNavigateToDriver, onNavigateToTeam }) {
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [driverSearch, setDriverSearch] = useState('');
