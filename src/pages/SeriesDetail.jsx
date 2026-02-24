@@ -66,8 +66,13 @@ export default function SeriesDetail() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'classes', label: 'Classes', icon: Flag },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
   ];
+
+  const displayLevel = series.override_competition_level || series.derived_competition_level;
+  const isOverride = !!series.override_competition_level;
+  const activeClasses = seriesClasses.filter(c => c.active !== false);
 
   const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
   const pastEvents = events.filter(e => e.status === 'completed' || e.status === 'cancelled');
