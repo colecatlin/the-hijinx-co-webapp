@@ -246,6 +246,17 @@ export default function DriverDirectory() {
               ]
             },
             {
+              key: 'career_status',
+              label: 'Career Level',
+              options: [
+                { value: 'all', label: 'All Career Levels' },
+                { value: 'Novice', label: 'Novice' },
+                { value: 'Amateur', label: 'Amateur' },
+                { value: 'Semi-Professional', label: 'Semi-Professional' },
+                { value: 'Professional', label: 'Professional' },
+              ]
+            },
+            {
               key: 'state',
               label: 'State',
               options: [
