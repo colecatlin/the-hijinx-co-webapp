@@ -63,7 +63,6 @@ import DriverProfile from './pages/DriverProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
 import EventDirectory from './pages/EventDirectory';
-import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
@@ -133,7 +132,6 @@ export const PAGES = {
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
     "EventDirectory": EventDirectory,
-    "EventProfile": EventProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
