@@ -21,13 +21,17 @@ export default function SeriesCard({ series }) {
   return (
     <Link
       to={buildProfileUrl('Series', series.slug)}
-      className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col"
+      className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col relative"
     >
+      {displayLevel && (
+        <div className="absolute top-4 right-4">
+          <CompetitionLevelBadge level={displayLevel} isOverride={isOverride} size="sm" />
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${disciplineColors[series.discipline] || 'bg-gray-100 text-gray-800'}`}>
           {series.discipline}
         </span>
-        {displayLevel && <CompetitionLevelBadge level={displayLevel} isOverride={isOverride} size="sm" />}
         {series.geographic_scope && <GeographicScopeTag scope={series.geographic_scope} size="sm" />}
       </div>
 
