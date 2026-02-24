@@ -1,24 +1,7 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-
-const US_STATES = [
-  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
-  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
-  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
-  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire',
-  'New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio',
-  'Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota',
-  'Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia',
-  'Wisconsin','Wyoming'
-];
-
-const COUNTRIES = [
-  'USA','Canada','Mexico','United Kingdom','Australia','Brazil','France','Germany',
-  'Italy','Spain','Japan','China','India','Russia','Sweden','Norway','Finland',
-  'Netherlands','Belgium','Austria','Switzerland','Denmark','Poland','Argentina',
-  'Chile','New Zealand','South Africa'
-];
+import { COUNTRIES, COUNTRIES_WITH_REGIONS } from './countriesData';
 
 export default function LocationFields({ cityValue, stateValue, countryValue, onCityChange, onStateChange, onCountryChange, cityLabel = 'City', stateLabel = 'State', countryLabel = 'Country', errors = {} }) {
   const isUSA = countryValue === 'USA';
