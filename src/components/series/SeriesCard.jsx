@@ -15,7 +15,7 @@ const disciplineColors = {
 };
 
 export default function SeriesCard({ series }) {
-  const displayLevel = series.override_competition_level || series.derived_competition_level;
+  const displayLevel = series.override_competition_level || series.derived_competition_level || series.competition_level;
   const isOverride = !!series.override_competition_level;
 
   return (
