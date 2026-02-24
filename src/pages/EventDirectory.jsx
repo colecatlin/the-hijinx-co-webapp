@@ -7,18 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { format, differenceInDays, startOfDay, parseISO } from 'date-fns';
-
-function DaysUntil({ dateStr, status }) {
-  if (!dateStr || status !== 'upcoming') return null;
-  const today = startOfDay(new Date());
-  const eventDay = startOfDay(parseISO(dateStr));
-  const days = differenceInDays(eventDay, today);
-  if (days < 0) return null;
-  if (days === 0) return <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Today</span>;
-  if (days === 1) return <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Tomorrow</span>;
-  return <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">In {days} days</span>;
-}
+import { format } from 'date-fns';
 
 export default function EventDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
