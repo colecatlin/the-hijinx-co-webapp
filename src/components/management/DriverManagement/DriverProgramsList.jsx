@@ -154,29 +154,35 @@ export default function DriverProgramsList({ driverId }) {
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">Season:</span>
-                        <span className="ml-2 font-medium">{program.season}</span>
-                      </div>
-                      {program.team_name && (
-                        <div>
-                          <span className="text-gray-500">Team:</span>
-                          <span className="ml-2 font-medium">{program.team_name}</span>
-                        </div>
-                      )}
-                      {program.class_name && (
-                        <div>
-                          <span className="text-gray-500">Class:</span>
-                          <span className="ml-2 font-medium">{program.class_name}</span>
-                        </div>
-                      )}
-                      {program.car_number && (
-                        <div>
-                          <span className="text-gray-500">Car #:</span>
-                          <span className="ml-2 font-medium">{program.car_number}</span>
-                        </div>
-                      )}
-                    </div>
+                       <div>
+                         <span className="text-gray-500">Start Date:</span>
+                         <span className="ml-2 font-medium">{program.start_date}</span>
+                       </div>
+                       {program.end_date && (
+                         <div>
+                           <span className="text-gray-500">End Date:</span>
+                           <span className="ml-2 font-medium">{program.end_date}</span>
+                         </div>
+                       )}
+                       {program.team_name && (
+                         <div>
+                           <span className="text-gray-500">Team:</span>
+                           <span className="ml-2 font-medium">{program.team_name}</span>
+                         </div>
+                       )}
+                       {program.class_name && (
+                         <div>
+                           <span className="text-gray-500">Class:</span>
+                           <span className="ml-2 font-medium">{program.class_name}</span>
+                         </div>
+                       )}
+                       {program.car_number && (
+                         <div>
+                           <span className="text-gray-500">Car #:</span>
+                           <span className="ml-2 font-medium">{program.car_number}</span>
+                         </div>
+                       )}
+                     </div>
                     {program.notes && (
                       <p className="mt-2 text-sm text-gray-600">{program.notes}</p>
                     )}
