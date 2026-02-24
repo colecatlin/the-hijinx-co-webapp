@@ -108,6 +108,7 @@ export default function DriverDirectory() {
 
     if (filters.discipline !== 'all' && driver.primary_discipline !== filters.discipline) return false;
     if (filters.status !== 'all' && driver.status !== filters.status) return false;
+    if (filters.career_status !== 'all' && driver.career_status !== filters.career_status) return false;
     if (filters.state !== 'all' && driver.hometown_state !== filters.state) return false;
     if (filters.country !== 'all' && driver.hometown_country !== filters.country) return false;
     if (filters.manufacturer !== 'all' && driver.manufacturer !== filters.manufacturer) return false;
