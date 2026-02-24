@@ -212,22 +212,22 @@ export default function SeriesDriversSection({ seriesId, seriesName }) {
                               {/* Links to entities */}
                               <div className="flex items-center gap-1">
                                 {driver && (
-                                  <Link
-                                    to={createPageUrl(`ManageDrivers`)}
+                                  <button
+                                    onClick={() => onNavigateToDriver && onNavigateToDriver(driver)}
                                     title="Edit Driver"
                                     className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-700 transition-colors"
                                   >
                                     <User className="w-3.5 h-3.5" />
-                                  </Link>
+                                  </button>
                                 )}
                                 {team && (
-                                  <Link
-                                    to={createPageUrl(`ManageTeams`)}
+                                  <button
+                                    onClick={() => onNavigateToTeam && onNavigateToTeam(team)}
                                     title="Edit Team"
                                     className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-700 transition-colors"
                                   >
                                     <Flag className="w-3.5 h-3.5" />
-                                  </Link>
+                                  </button>
                                 )}
                                 <button
                                   onClick={() => {
