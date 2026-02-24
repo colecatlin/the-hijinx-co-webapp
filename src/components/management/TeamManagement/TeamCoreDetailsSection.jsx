@@ -107,6 +107,11 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     }
   };
 
+  const handleRefresh = () => {
+    refetch();
+    toast.success('Data refreshed');
+  };
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
