@@ -277,7 +277,7 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
               id="series-logo-upload"
               type="file"
               accept="image/*"
-              onChange={handleImageUpload}
+              onChange={(e) => handleImageUpload(e, 'logo_url')}
               className="hidden"
             />
             {formData.logo_url && (
