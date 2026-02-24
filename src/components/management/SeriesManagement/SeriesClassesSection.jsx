@@ -50,7 +50,7 @@ function computeScoreTotal(data) {
   return SCORE_FIELDS.reduce((sum, f) => sum + (Number(data[f.key]) || 0), 0);
 }
 
-export default function SeriesClassesSection({ seriesId, userRole = 'editor' }) {
+export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
