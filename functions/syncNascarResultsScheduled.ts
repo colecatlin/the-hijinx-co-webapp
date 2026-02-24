@@ -15,8 +15,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { seriesId } = body;
+    let seriesId;
+    try {
+      const body = await req.json();
+      seriesId = body.seriesId;
+    } catch {
+      seriesId = null;
+    }
 
     // If seriesId specified, sync only that series; otherwise sync all
     const seriesToSync = seriesId 
