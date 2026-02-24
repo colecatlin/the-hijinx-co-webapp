@@ -41,6 +41,12 @@ export default function ManageDrivers() {
   const navigate = useNavigate();
 
   // Support deep-link: ?driverId=xxx opens that driver directly
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [_deepLinked] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('driverId');
+  });
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const driverId = params.get('driverId');
