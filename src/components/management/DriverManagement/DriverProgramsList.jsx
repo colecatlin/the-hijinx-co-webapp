@@ -104,7 +104,8 @@ export default function DriverProgramsList({ driverId }) {
       team_id: program.team_id || '',
       team_name: program.team_name || '',
       class_name: program.class_name || '',
-      season: program.season || '',
+      start_date: program.start_date || '',
+      end_date: program.end_date || '',
       car_number: program.car_number || '',
       status: program.status || 'active',
       notes: program.notes || ''
