@@ -296,9 +296,7 @@ export default function DriverProgramsList({ driverId }) {
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select>
-                  placeholder="e.g., Pro 4"
-                />
+                  </Select>
               </div>
             </div>
 
