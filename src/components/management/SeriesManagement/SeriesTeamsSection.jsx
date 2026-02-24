@@ -140,13 +140,13 @@ export default function SeriesTeamsSection({ seriesId, seriesName }) {
                               </div>
                               <StatusBadge status={p.status} />
                               {driver && (
-                                <Link
-                                  to={createPageUrl('ManageDrivers')}
+                                <button
+                                  onClick={() => navigate(createPageUrl(`ManageDrivers?driverId=${driver.id}`))}
                                   className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-700 transition-colors"
                                   title="Edit driver"
                                 >
                                   <ExternalLink className="w-3.5 h-3.5" />
-                                </Link>
+                                </button>
                               )}
                             </div>
                           );
