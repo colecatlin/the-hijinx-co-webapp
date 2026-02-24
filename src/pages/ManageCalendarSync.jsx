@@ -165,11 +165,11 @@ export default function ManageCalendarSync() {
       {/* Add new calendar */}
       <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
         <h2 className="font-semibold text-[#232323] mb-4 flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Calendar
+          <Plus className="w-4 h-4" /> Add Schedule
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div className="space-y-1">
-          <Label>Calendar Name</Label>
+          <Label>Schedule Name</Label>
           <Input
             placeholder="e.g. NASCAR Cup Series 2026"
             value={newName}
