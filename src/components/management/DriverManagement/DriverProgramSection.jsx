@@ -44,6 +44,12 @@ export default function DriverProgramSection({ driverId }) {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: classes = [] } = useQuery({
+    queryKey: ['seriesClasses', formData.series_id],
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: formData.series_id }),
+    enabled: !!formData.series_id,
+  });
+
   const createProgramMutation = useMutation({
     mutationFn: (data) => base44.entities.DriverProgram.create({
       ...data,
