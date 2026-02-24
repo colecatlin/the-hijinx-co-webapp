@@ -229,55 +229,88 @@ export default function DriverProgramsSection({ driverId }) {
               </div>
 
               <div className="space-y-2">
-                <Label>Bib Number</Label>
+                <Label>Car Number</Label>
                 <Input
-                  value={formData.bib_number}
-                  onChange={(e) => setFormData({ ...formData, bib_number: e.target.value })}
-                  placeholder="Car number"
+                  value={formData.car_number}
+                  onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
+                  placeholder="e.g., 42"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Start Month</Label>
+                <Select value={String(formData.start_month)} onValueChange={(value) => setFormData({ ...formData, start_month: parseInt(value) })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <SelectItem key={i + 1} value={String(i + 1)}>
+                        {new Date(2000, i).toLocaleString('default', { month: 'long' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Start Year</Label>
                 <Input
                   type="number"
-                  value={formData.season_start_year}
-                  onChange={(e) => setFormData({ ...formData, season_start_year: parseInt(e.target.value) })}
+                  value={formData.start_year}
+                  onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>End Year</Label>
+              {formData.status === 'inactive' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>End Month *</Label>
+                    <Select value={String(formData.end_month || '')} onValueChange={(value) => setFormData({ ...formData, end_month: parseInt(value) })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <SelectItem key={i + 1} value={String(i + 1)}>
+                            {new Date(2000, i).toLocaleString('default', { month: 'long' })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>End Year *</Label>
+                    <Input
+                      type="number"
+                      value={formData.end_year || ''}
+                      onChange={(e) => setFormData({ ...formData, end_year: e.target.value ? parseInt(e.target.value) : null })}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2 col-span-full">
+                <Label>Notes</Label>
                 <Input
-                  type="number"
-                  value={formData.season_end_year || ''}
-                  onChange={(e) => setFormData({ ...formData, season_end_year: e.target.value ? parseInt(e.target.value) : null })}
-                  placeholder="Leave blank for ongoing"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Additional notes"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={formData.program_status} onValueChange={(value) => setFormData({ ...formData, program_status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Past">Past</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_primary}
-                    onChange={(e) => setFormData({ ...formData, is_primary: e.target.checked })}
-                  />
-                  Primary Program
-                </Label>
               </div>
             </div>
 
