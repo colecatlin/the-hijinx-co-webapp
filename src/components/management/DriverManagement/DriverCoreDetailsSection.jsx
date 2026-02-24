@@ -92,6 +92,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           location_country: driverData.location_country || '',
           primary_number: driverData.primary_number || '',
           primary_discipline: driverData.primary_discipline || '',
+          career_status: driverData.career_status || '',
           featured: driverData.featured || false,
           });
       }
