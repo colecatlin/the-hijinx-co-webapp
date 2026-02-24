@@ -16,10 +16,7 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
 
   const { data: series } = useQuery({
     queryKey: ['series', seriesId],
-    queryFn: async () => {
-      const result = await base44.entities.Series.list({ id: seriesId });
-      return result;
-    },
+    queryFn: () => base44.entities.Series.filter({ id: seriesId }),
   });
 
   useEffect(() => {
