@@ -11,6 +11,7 @@ import { createPageUrl } from '@/components/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import TrackForm from '@/components/management/TrackForm';
 import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
+import TrackSeriesSection from '@/components/management/TrackManagement/TrackSeriesSection';
 
 export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
