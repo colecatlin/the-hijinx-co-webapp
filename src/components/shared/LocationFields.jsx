@@ -20,7 +20,7 @@ const COUNTRIES = [
   'Chile','New Zealand','South Africa'
 ];
 
-export default function LocationFields({ cityValue, stateValue, countryValue, onCityChange, onStateChange, onCountryChange, cityLabel = 'City', stateLabel = 'State', countryLabel = 'Country' }) {
+export default function LocationFields({ cityValue, stateValue, countryValue, onCityChange, onStateChange, onCountryChange, cityLabel = 'City', stateLabel = 'State', countryLabel = 'Country', errors = {} }) {
   const isUSA = countryValue === 'USA';
 
   const handleCountryChange = (val) => {
@@ -32,13 +32,18 @@ export default function LocationFields({ cityValue, stateValue, countryValue, on
     <div className="grid grid-cols-3 gap-4">
       <div>
         <label className="block text-sm font-medium mb-2">{cityLabel}</label>
-        <Input value={cityValue || ''} onChange={(e) => onCityChange(e.target.value)} />
+        <Input 
+          value={cityValue || ''} 
+          onChange={(e) => onCityChange(e.target.value)} 
+          className={errors.headquarters_city ? 'border-red-500' : ''}
+        />
+        {errors.headquarters_city && <p className="text-xs text-red-500 mt-1">{errors.headquarters_city}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">{stateLabel}</label>
         {isUSA ? (
           <Select value={stateValue || ''} onValueChange={onStateChange}>
-            <SelectTrigger>
+            <SelectTrigger className={errors.headquarters_state ? 'border-red-500' : ''}>
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
@@ -46,19 +51,26 @@ export default function LocationFields({ cityValue, stateValue, countryValue, on
             </SelectContent>
           </Select>
         ) : (
-          <Input value={stateValue || ''} onChange={(e) => onStateChange(e.target.value)} placeholder="State / Region" />
+          <Input 
+            value={stateValue || ''} 
+            onChange={(e) => onStateChange(e.target.value)} 
+            placeholder="State / Region" 
+            className={errors.headquarters_state ? 'border-red-500' : ''}
+          />
         )}
+        {errors.headquarters_state && <p className="text-xs text-red-500 mt-1">{errors.headquarters_state}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">{countryLabel}</label>
         <Select value={countryValue || 'USA'} onValueChange={handleCountryChange}>
-          <SelectTrigger>
+          <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
             <SelectValue placeholder="Select country" />
           </SelectTrigger>
           <SelectContent>
             {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
+        {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
       </div>
     </div>
   );

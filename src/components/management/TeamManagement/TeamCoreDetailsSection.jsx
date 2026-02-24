@@ -140,6 +140,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           cityLabel="City *"
           stateLabel="State *"
           countryLabel="Country *"
+          errors={errors}
         />
 
         <div>
