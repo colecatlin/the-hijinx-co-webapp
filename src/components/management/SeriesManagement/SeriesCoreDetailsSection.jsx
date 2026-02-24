@@ -37,16 +37,16 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: (file) => base44.integrations.Core.UploadFile({ file }),
-    onSuccess: (data) => {
-      setFormData({ ...formData, logo_url: data.file_url });
+    mutationFn: ({ file, field }) => base44.integrations.Core.UploadFile({ file }).then(data => ({ url: data.file_url, field })),
+    onSuccess: ({ url, field }) => {
+      setFormData(prev => ({ ...prev, [field]: url }));
       toast.success('Image uploaded');
     },
   });
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e, field) => {
     const file = e.target.files?.[0];
-    if (file) uploadMutation.mutate(file);
+    if (file) uploadMutation.mutate({ file, field });
   };
 
   const handleSave = () => {
