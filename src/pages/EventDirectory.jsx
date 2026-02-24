@@ -28,12 +28,22 @@ export default function EventDirectory() {
     queryFn: () => base44.entities.Event.list('event_date', 500),
   });
 
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSeries = seriesFilter === 'all' || event.series === seriesFilter;
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
-    return matchesSearch && matchesSeries && matchesStatus;
-  });
+  const filteredEvents = events
+    .filter(event => {
+      const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSeries = seriesFilter === 'all' || event.series === seriesFilter;
+      const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+      return matchesSearch && matchesSeries && matchesStatus;
+    })
+    .sort((a, b) => {
+      // Completed events go to the bottom
+      if (a.status === 'completed' && b.status !== 'completed') return 1;
+      if (a.status !== 'completed' && b.status === 'completed') return -1;
+      if (a.status === 'cancelled' && b.status !== 'cancelled') return 1;
+      if (a.status !== 'cancelled' && b.status === 'cancelled') return -1;
+      // Then sort by event_date ascending (soonest first)
+      return new Date(a.event_date || '9999-12-31') - new Date(b.event_date || '9999-12-31');
+    });
 
   const uniqueSeries = [...new Set(events.map(e => e.series).filter(Boolean))];
 
