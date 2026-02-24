@@ -4,10 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Flag, Users, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
 export default function SeriesTeamsSection({ seriesId, seriesName }) {
+  const navigate = useNavigate();
   const [expandedTeams, setExpandedTeams] = useState({});
 
   // Programs for this series
