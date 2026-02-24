@@ -19,8 +19,6 @@ export default function TeamForm({ team, onClose }) {
     status: 'Active',
     founded_year: new Date().getFullYear(),
     description_summary: '',
-    primary_discipline: '',
-    team_level: 'Regional',
     ownership_type: 'Private',
     owner_name: '',
     team_principal: '',
