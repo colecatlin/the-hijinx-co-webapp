@@ -32,6 +32,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     mutationFn: (data) => base44.entities.Team.create(data),
     onSuccess: (newTeam) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setFormData(newTeam);
       toast.success('Team created');
       if (onTeamCreated) {
         onTeamCreated(newTeam);
@@ -41,9 +42,10 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Team.update(teamId, data),
-    onSuccess: () => {
+    onSuccess: (updatedTeam) => {
       queryClient.invalidateQueries({ queryKey: ['team', teamId] });
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setFormData(updatedTeam);
       setIsSaved(true);
       toast.success('Team updated');
       setTimeout(() => setIsSaved(false), 2000);
