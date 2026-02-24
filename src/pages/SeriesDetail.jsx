@@ -269,6 +269,40 @@ export default function SeriesDetail() {
           </div>
         </div>
 
+        {/* Classes section */}
+        <div id="section-classes" className="space-y-4">
+          <section className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Racing Classes</h2>
+            {seriesClasses.length === 0 ? (
+              <p className="text-gray-500 text-sm">No classes defined for this series yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {seriesClasses.map(cls => {
+                  const scoreTotal = ['media_score','attendance_score','purse_score','manufacturer_score','geographic_diversity_score','team_budget_score']
+                    .reduce((sum, k) => sum + (Number(cls[k]) || 0), 0);
+                  return (
+                    <div key={cls.id} className="border border-gray-100 rounded-lg p-4">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="font-semibold text-[#232323]">{cls.class_name}</span>
+                        {cls.competition_level && <CompetitionLevelBadge level={cls.competition_level} size="sm" />}
+                        {cls.geographic_scope && <GeographicScopeTag scope={cls.geographic_scope} size="sm" />}
+                        {scoreTotal > 0 && (
+                          <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-mono">Score: {scoreTotal}</span>
+                        )}
+                        {!cls.active && (
+                          <span className="text-[11px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full">Inactive</span>
+                        )}
+                      </div>
+                      {cls.description_summary && <p className="text-sm text-gray-600">{cls.description_summary}</p>}
+                      {cls.vehicle_type && <p className="text-xs text-gray-400 mt-1">Vehicle: {cls.vehicle_type}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+
         {/* Schedule section */}
         <div id="section-schedule" className="space-y-4">
           <section className="bg-white border border-gray-200 p-8">
