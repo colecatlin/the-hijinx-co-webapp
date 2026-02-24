@@ -15,11 +15,13 @@ export default function DriverProgramsSection({ driverId }) {
     series_id: '',
     team_id: '',
     class_name: '',
-    bib_number: '',
-    season_start_year: new Date().getFullYear(),
-    season_end_year: null,
-    program_status: 'Active',
-    is_primary: false,
+    car_number: '',
+    start_month: new Date().getMonth() + 1,
+    start_year: new Date().getFullYear(),
+    end_month: null,
+    end_year: null,
+    status: 'active',
+    notes: '',
   });
 
   const queryClient = useQueryClient();
