@@ -182,7 +182,7 @@ export default function ManageSeries() {
               <SeriesClassesSection seriesId={selectedSeriesForEdit.id} userRole="admin" />
             </TabsContent>
             <TabsContent value="calendar" className="mt-6">
-              <SeriesEventsSection seriesId={selectedSeriesForEdit.id} />
+              <SeriesEventsSection seriesId={selectedSeriesForEdit.id} series={selectedSeriesForEdit} />
             </TabsContent>
             <TabsContent value="media" className="mt-6">
               <SeriesMediaSection seriesId={selectedSeriesForEdit.id} />
