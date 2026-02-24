@@ -185,12 +185,27 @@ export default function DriverProgramsSection({ driverId }) {
               </div>
 
               <div className="space-y-2">
-                <Label>Class Name</Label>
-                <Input
-                  value={formData.class_name}
-                  onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
-                  placeholder="e.g., Formula 1, Cup Series"
-                />
+                <Label>Class</Label>
+                {seriesClasses.length > 0 ? (
+                  <Select value={formData.class_name} onValueChange={(value) => setFormData({ ...formData, class_name: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {seriesClasses.map((cls) => (
+                        <SelectItem key={cls.id} value={cls.class_name}>
+                          {cls.class_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={formData.class_name}
+                    onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
+                    placeholder="e.g., Pro 4, Super Stock"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
