@@ -65,71 +65,26 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium">Discipline</label>
             <Select value={formData.discipline || ''} onValueChange={(value) => setFormData({ ...formData, discipline: value })}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select discipline" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                <SelectItem value="Road Racing">Road Racing</SelectItem>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Rallycross">Rallycross</SelectItem>
-                <SelectItem value="Mixed">Mixed</SelectItem>
+                {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <label className="text-sm font-medium">Region</label>
-            <Select value={formData.region || ''} onValueChange={(value) => setFormData({ ...formData, region: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Global">Global</SelectItem>
-                <SelectItem value="North America">North America</SelectItem>
-                <SelectItem value="Europe">Europe</SelectItem>
-                <SelectItem value="Regional">Regional</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Competition Level</label>
-            <Select value={formData.competition_level || ''} onValueChange={(value) => setFormData({ ...formData, competition_level: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Professional">Professional</SelectItem>
-                <SelectItem value="Semi Pro">Semi Pro</SelectItem>
-                <SelectItem value="Amateur">Amateur</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Status</label>
-            <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Historic">Historic</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Founded Year</label>
             <Input
-              type="number"
-              value={formData.founded_year || ''}
-              onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+              value={formData.region || ''}
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              placeholder="e.g. United States, North America"
             />
           </div>
         </div>
@@ -137,9 +92,10 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
         <div>
           <label className="text-sm font-medium">Description</label>
           <Textarea
-            value={formData.description_summary || ''}
-            onChange={(e) => setFormData({ ...formData, description_summary: e.target.value })}
+            value={formData.description || ''}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={4}
+            placeholder="Series description..."
           />
         </div>
 
