@@ -234,15 +234,29 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Sponsor Logo URL</label>
-              <Input
-                value={formData.title_sponsor_logo_url || ''}
-                onChange={(e) => setFormData({ ...formData, title_sponsor_logo_url: e.target.value })}
-                placeholder="https://..."
-              />
-              {formData.title_sponsor_logo_url && (
-                <img src={formData.title_sponsor_logo_url} alt="Sponsor logo" className="h-8 mt-2 object-contain" />
-              )}
+              <label className="text-sm font-medium">Sponsor Logo</label>
+              <div className="flex items-center gap-3 mt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('sponsor-logo-upload').click()}
+                  disabled={uploadMutation.isPending}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadMutation.isPending ? 'Uploading...' : 'Upload Logo'}
+                </Button>
+                <input
+                  id="sponsor-logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'title_sponsor_logo_url')}
+                  className="hidden"
+                />
+                {formData.title_sponsor_logo_url && (
+                  <img src={formData.title_sponsor_logo_url} alt="Sponsor logo" className="h-8 object-contain" />
+                )}
+              </div>
             </div>
           </div>
         </div>
