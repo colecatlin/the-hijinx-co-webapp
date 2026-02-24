@@ -79,7 +79,8 @@ export default function DriverProgramsList({ driverId }) {
       team_id: '',
       team_name: '',
       class_name: '',
-      season: new Date().getFullYear().toString(),
+      start_date: '',
+      end_date: '',
       car_number: '',
       status: 'active',
       notes: ''
