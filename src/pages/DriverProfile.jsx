@@ -119,6 +119,12 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Series.list(),
   });
 
+  const { data: allClasses = [] } = useQuery({
+    queryKey: ['allSeriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    enabled: !!driver?.id,
+  });
+
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
