@@ -20,6 +20,8 @@ import SeriesEventsSection from '@/components/management/SeriesManagement/Series
 import SeriesMediaSection from '@/components/management/SeriesManagement/SeriesMediaSection';
 import SeriesGovernanceSection from '@/components/management/SeriesManagement/SeriesGovernanceSection';
 import SeriesTracksSection from '@/components/management/SeriesManagement/SeriesTracksSection';
+import SeriesDriversSection from '@/components/management/SeriesManagement/SeriesDriversSection';
+import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesTeamsSection';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
