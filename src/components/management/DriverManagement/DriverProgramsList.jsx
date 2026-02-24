@@ -281,9 +281,22 @@ export default function DriverProgramsList({ driverId }) {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Class</label>
-                <Input
+                <Select
                   value={formData.class_name}
-                  onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
+                  onValueChange={(val) => setFormData({ ...formData, class_name: val })}
+                  disabled={!formData.series_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={formData.series_id ? "Select class" : "Select series first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map((c) => (
+                      <SelectItem key={c.id} value={c.class_name}>
+                        {c.class_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                   placeholder="e.g., Pro 4"
                 />
               </div>
