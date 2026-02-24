@@ -181,14 +181,10 @@ export default function ManageSeries() {
               <SeriesGovernanceSection seriesId={selectedSeriesForEdit.id} />
             </TabsContent>
             <TabsContent value="teams" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Teams management coming soon</p>
-              </div>
+              <SeriesTeamsSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
             </TabsContent>
             <TabsContent value="drivers" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Drivers management coming soon</p>
-              </div>
+              <SeriesDriversSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
             </TabsContent>
             <TabsContent value="tracks" className="mt-6">
               <SeriesTracksSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
