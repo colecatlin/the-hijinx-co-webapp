@@ -189,9 +189,7 @@ export default function ManageSeries() {
               </div>
             </TabsContent>
             <TabsContent value="tracks" className="mt-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Tracks management coming soon</p>
-              </div>
+              <SeriesTracksSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
             </TabsContent>
           </Tabs>
         </div>
