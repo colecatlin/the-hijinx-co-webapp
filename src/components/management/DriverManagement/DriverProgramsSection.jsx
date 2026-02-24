@@ -89,14 +89,16 @@ export default function DriverProgramsSection({ driverId }) {
 
   const handleEdit = (program) => {
     setFormData({
-      series_id: program.series_id,
+      series_id: program.series_id || '',
       team_id: program.team_id || '',
-      class_name: program.class_name,
-      bib_number: program.bib_number,
-      season_start_year: program.season_start_year,
-      season_end_year: program.season_end_year,
-      program_status: program.program_status,
-      is_primary: program.is_primary,
+      class_name: program.class_name || '',
+      car_number: program.car_number || '',
+      start_month: program.start_month || 1,
+      start_year: program.start_year || new Date().getFullYear(),
+      end_month: program.end_month || null,
+      end_year: program.end_year || null,
+      status: program.status || 'active',
+      notes: program.notes || '',
     });
     setEditingId(program.id);
     setShowForm(true);
