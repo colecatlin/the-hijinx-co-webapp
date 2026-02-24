@@ -13,6 +13,7 @@ import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import EventResultsSubmissionForm from '@/components/EventResultsSubmissionForm';
+import EventResultsInputSection from '@/components/management/EventManagement/EventResultsInputSection';
 
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
