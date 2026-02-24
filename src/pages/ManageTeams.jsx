@@ -31,6 +31,15 @@ export default function ManageTeams() {
   const [enrichResult, setEnrichResult] = useState(null);
   const queryClient = useQueryClient();
 
+  // Support deep-link: ?teamId=xxx opens that team directly
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const teamId = params.get('teamId');
+    if (teamId) {
+      setSelectedTeamForEdit({ id: teamId });
+    }
+  }, []);
+
   const handleEnrich = async () => {
     setEnriching(true);
     setEnrichResult(null);
