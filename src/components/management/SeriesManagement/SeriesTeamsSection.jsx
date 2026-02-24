@@ -109,14 +109,13 @@ export default function SeriesTeamsSection({ seriesId, seriesName }) {
                         {teamPrograms.length} driver{teamPrograms.length !== 1 ? 's' : ''}
                       </Badge>
                       {team && (
-                        <Link
-                          to={createPageUrl('ManageTeams')}
-                          onClick={e => e.stopPropagation()}
+                        <button
+                          onClick={e => { e.stopPropagation(); navigate(createPageUrl(`ManageTeams?teamId=${team.id}`)); }}
                           className="p-1.5 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-700 transition-colors"
-                          title="Go to team"
+                          title="Go to team editor"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
-                        </Link>
+                        </button>
                       )}
                     </button>
 
