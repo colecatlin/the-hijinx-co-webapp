@@ -11,7 +11,7 @@ import { Upload } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
 
 export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ country: 'USA' });
   const [isSaved, setIsSaved] = useState(false);
   const [errors, setErrors] = useState({});
   const queryClient = useQueryClient();
