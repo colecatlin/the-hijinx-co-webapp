@@ -4,11 +4,12 @@ import { Input } from '@/components/ui/input';
 import { COUNTRIES, COUNTRIES_WITH_REGIONS } from './countriesData';
 
 export default function LocationFields({ cityValue, stateValue, countryValue, onCityChange, onStateChange, onCountryChange, cityLabel = 'City', stateLabel = 'State', countryLabel = 'Country', errors = {} }) {
-  const isUSA = countryValue === 'USA';
+  const currentCountry = countryValue || 'USA';
+  const regions = COUNTRIES_WITH_REGIONS[currentCountry] || [];
 
   const handleCountryChange = (val) => {
     onCountryChange(val);
-    if (val !== 'USA') onStateChange('');
+    onStateChange('');
   };
 
   return (
@@ -24,13 +25,13 @@ export default function LocationFields({ cityValue, stateValue, countryValue, on
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">{stateLabel}</label>
-        {isUSA ? (
+        {regions.length > 0 ? (
           <Select value={stateValue || ''} onValueChange={onStateChange}>
             <SelectTrigger className={errors.headquarters_state ? 'border-red-500' : ''}>
-              <SelectValue placeholder="Select state" />
+              <SelectValue placeholder="Select region" />
             </SelectTrigger>
             <SelectContent>
-              {US_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {regions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
         ) : (
@@ -45,7 +46,7 @@ export default function LocationFields({ cityValue, stateValue, countryValue, on
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">{countryLabel}</label>
-        <Select value={countryValue || 'USA'} onValueChange={handleCountryChange}>
+        <Select value={currentCountry} onValueChange={handleCountryChange}>
           <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
             <SelectValue placeholder="Select country" />
           </SelectTrigger>
