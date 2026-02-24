@@ -80,8 +80,8 @@ export default function ManageCalendarSync() {
     <div className="max-w-3xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[#232323]">Calendar Sync</h1>
-          <p className="text-sm text-gray-500 mt-1">Sync ICS/webcal calendars into Tracks, Series, and Events.</p>
+          <h1 className="text-2xl font-bold text-[#232323]">Schedule Sync</h1>
+          <p className="text-sm text-gray-500 mt-1">Sync ICS/webcal schedules into Events.</p>
         </div>
         <Button onClick={syncAll} disabled={!!syncingId} className="bg-[#232323] text-white gap-2">
           {syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
