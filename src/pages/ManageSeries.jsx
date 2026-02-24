@@ -22,6 +22,7 @@ import SeriesGovernanceSection from '@/components/management/SeriesManagement/Se
 import SeriesTracksSection from '@/components/management/SeriesManagement/SeriesTracksSection';
 import SeriesDriversSection from '@/components/management/SeriesManagement/SeriesDriversSection';
 import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesTeamsSection';
+import { useNavigate } from 'react-router-dom';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
