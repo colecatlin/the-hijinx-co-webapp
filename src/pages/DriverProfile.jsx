@@ -364,6 +364,21 @@ export default function DriverProfile() {
                         </div>
                       </div>
                     )}
+                    {/* Primary class competition level */}
+                    {driver.primary_class_id && (() => {
+                      const primaryClass = allClasses.find(c => c.id === driver.primary_class_id);
+                      if (!primaryClass) return null;
+                      return (
+                        <div className="mt-3">
+                          <div className="text-sm text-gray-600 mb-1">Primary Class</div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-[#232323]">{primaryClass.class_name}</span>
+                            {primaryClass.competition_level && <CompetitionLevelBadge level={primaryClass.competition_level} size="sm" />}
+                            {primaryClass.geographic_scope && <GeographicScopeTag scope={primaryClass.geographic_scope} size="sm" />}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 <div>
                   <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
