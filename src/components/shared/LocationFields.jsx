@@ -8,8 +8,8 @@ export default function LocationFields({ cityValue, stateValue, countryValue, on
   const regions = COUNTRIES_WITH_REGIONS[currentCountry] || [];
 
   const handleCountryChange = (val) => {
-    onCountryChange(val);
     onStateChange('');
+    onCountryChange(val);
   };
 
   return (
