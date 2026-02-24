@@ -7,7 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+
+function DaysUntilBadge({ eventDate, status }) {
+  if (!eventDate || status === 'completed' || status === 'cancelled') return null;
+  const days = differenceInCalendarDays(parseISO(eventDate), new Date());
+  if (days < 0) return null;
+  if (days === 0) return <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Today</span>;
+  if (status === 'in_progress') return <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">In Progress</span>;
+  return <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">In {days}d</span>;
+}
 
 export default function EventDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
