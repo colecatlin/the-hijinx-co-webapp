@@ -14,6 +14,8 @@ export default function ManageStandings() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedEntries, setSelectedEntries] = useState([]);
+  const [syncStatus, setSyncStatus] = useState(null); // 'loading', 'success', 'error'
+  const [syncMessage, setSyncMessage] = useState('');
 
   const queryClient = useQueryClient();
 
