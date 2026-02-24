@@ -110,8 +110,8 @@ export default function SearchBar({ onClose }) {
                     >
                       <Flag className="w-4 h-4 mt-1 text-gray-300 group-hover:text-[#0A0A0A] transition-colors" />
                       <div>
-                        <p className="font-semibold text-[#0A0A0A] group-hover:underline">{driver.name}</p>
-                        <p className="text-xs text-gray-400 font-mono mt-1">{driver.team_name} · {driver.hometown}</p>
+                        <p className="font-semibold text-[#0A0A0A] group-hover:underline">{driver.first_name} {driver.last_name}</p>
+                        <p className="text-xs text-gray-400 font-mono mt-1">{driver.hometown_city || ''}</p>
                       </div>
                     </Link>
                   ))}
