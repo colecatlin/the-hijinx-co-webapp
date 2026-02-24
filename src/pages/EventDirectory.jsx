@@ -28,6 +28,14 @@ export default function EventDirectory() {
     queryFn: () => base44.entities.Event.list('event_date', 500),
   });
 
+  const { data: seriesMap = {} } = useQuery({
+    queryKey: ['seriesData'],
+    queryFn: async () => {
+      const allSeries = await base44.entities.Series.list();
+      return Object.fromEntries(allSeries.map(s => [s.name, s]));
+    },
+  });
+
   const filteredEvents = events
     .filter(event => {
       const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
