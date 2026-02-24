@@ -262,9 +262,10 @@ export default function DriverProfile() {
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <CountryFlag country={driver.hometown_country} />
                 <h1 className="text-4xl font-black text-[#232323] leading-none">{driver.first_name} {driver.last_name}</h1>
+                {driver.career_status && <CareerStatusTag status={driver.career_status} size="md" />}
               </div>
               {driver.primary_number && (
                 <div className="text-4xl font-black text-[#232323] leading-none">#{driver.primary_number}</div>
