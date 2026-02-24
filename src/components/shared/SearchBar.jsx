@@ -27,13 +27,14 @@ export default function SearchBar({ onClose }) {
         base44.entities.Driver.list('-created_date', 50),
       ]);
       const q = query.toLowerCase();
+      const fullName = (first, last) => `${first} ${last}`.toLowerCase();
       setResults({
         stories: stories.filter(s => 
           s.status === 'published' &&
           (s.title?.toLowerCase().includes(q) || s.category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
         ).slice(0, 5),
         drivers: drivers.filter(d => 
-          d.name?.toLowerCase().includes(q) || d.team_name?.toLowerCase().includes(q) || d.hometown?.toLowerCase().includes(q)
+          fullName(d.first_name || '', d.last_name || '').includes(q) || d.hometown_city?.toLowerCase().includes(q)
         ).slice(0, 5),
       });
       setLoading(false);
