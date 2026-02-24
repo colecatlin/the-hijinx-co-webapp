@@ -24,8 +24,9 @@ export default function SeriesHome() {
   let filteredSeries = series.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDiscipline = discipline === 'all' || s.discipline === discipline;
-    const matchesRegion = region === 'all' || s.region === region;
-    const matchesLevel = competitionLevel === 'all' || s.competition_level === competitionLevel;
+    const matchesRegion = region === 'all' || s.region === region || s.geographic_scope === region;
+    const effectiveLevel = s.override_competition_level || s.derived_competition_level;
+    const matchesLevel = competitionLevel === 'all' || String(effectiveLevel) === competitionLevel;
     const matchesStatus = status === 'all' || s.status === status;
     return matchesSearch && matchesDiscipline && matchesRegion && matchesLevel && matchesStatus;
   });
