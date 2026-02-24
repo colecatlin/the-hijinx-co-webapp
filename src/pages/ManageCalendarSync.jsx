@@ -198,7 +198,7 @@ export default function ManageCalendarSync() {
           disabled={!newName.trim() || !newUrl.trim()}
           className="bg-[#232323] text-white"
         >
-          <Plus className="w-4 h-4 mr-1" /> Add Calendar
+          <Plus className="w-4 h-4 mr-1" /> Add Schedule
         </Button>
       </div>
     </div>
