@@ -104,7 +104,19 @@ export default function DriverProgramsSection({ driverId }) {
     setShowForm(true);
   };
 
+  const validateForm = () => {
+    if (!formData.series_id) return 'Series is required';
+    if (!formData.start_month || !formData.start_year) return 'Start date is required';
+    if (formData.status === 'inactive' && (!formData.end_month || !formData.end_year)) return 'End date is required for inactive programs';
+    return null;
+  };
+
   const handleSubmit = () => {
+    const error = validateForm();
+    if (error) {
+      alert(error);
+      return;
+    }
     if (editingId) {
       updateMutation.mutate(formData);
     } else {
