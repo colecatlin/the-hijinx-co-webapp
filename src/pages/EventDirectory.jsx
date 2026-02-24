@@ -28,7 +28,7 @@ export default function EventDirectory() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list('-event_date', 500),
+    queryFn: () => base44.entities.Event.list('event_date', 500),
   });
 
   const { data: seriesMap = {} } = useQuery({

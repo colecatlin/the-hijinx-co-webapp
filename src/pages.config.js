@@ -63,6 +63,7 @@ import DriverProfile from './pages/DriverProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
 import EventDirectory from './pages/EventDirectory';
+import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
@@ -87,6 +88,7 @@ import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageResults from './pages/ManageResults';
 import ManageSeries from './pages/ManageSeries';
 import ManageSessions from './pages/ManageSessions';
+import ManageStandings from './pages/ManageStandings';
 import ManageStories from './pages/ManageStories';
 import ManageTeams from './pages/ManageTeams';
 import ManageTech from './pages/ManageTech';
@@ -111,8 +113,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import EventProfile from './pages/EventProfile';
-import ManageStandings from './pages/ManageStandings';
 import __Layout from './Layout.jsx';
 
 
@@ -133,6 +133,7 @@ export const PAGES = {
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
     "EventDirectory": EventDirectory,
+    "EventProfile": EventProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
@@ -157,6 +158,7 @@ export const PAGES = {
     "ManageResults": ManageResults,
     "ManageSeries": ManageSeries,
     "ManageSessions": ManageSessions,
+    "ManageStandings": ManageStandings,
     "ManageStories": ManageStories,
     "ManageTeams": ManageTeams,
     "ManageTech": ManageTech,
@@ -181,8 +183,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "EventProfile": EventProfile,
-    "ManageStandings": ManageStandings,
 }
 
 export const pagesConfig = {
