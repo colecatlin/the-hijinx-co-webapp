@@ -17,6 +17,7 @@ export default function DriverDirectory() {
     discipline: 'all',
     series: 'all',
     status: 'all',
+    career_status: 'all',
     state: 'all',
     manufacturer: 'all',
     country: 'all',
