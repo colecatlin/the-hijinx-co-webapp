@@ -323,6 +323,21 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
           </div>
         </div>
 
+        <div>
+          <Label>Career Status</Label>
+          <Select value={formData.career_status || ''} onValueChange={(v) => handleInputChange('career_status', v)}>
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder="Select career status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Novice">Novice — just starting out in organized competition</SelectItem>
+              <SelectItem value="Amateur">Amateur — regular competitor, non-professional</SelectItem>
+              <SelectItem value="Semi-Professional">Semi-Professional — partial income/sponsorship from racing</SelectItem>
+              <SelectItem value="Professional">Professional — full-time, major sponsorship or salary</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <Checkbox
             id="featured"
