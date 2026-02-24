@@ -114,9 +114,11 @@ export default function SeriesHome() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="Professional">Professional</SelectItem>
-                  <SelectItem value="Semi Pro">Semi Pro</SelectItem>
-                  <SelectItem value="Amateur">Amateur</SelectItem>
+                  <SelectItem value="1">L1 — Foundation</SelectItem>
+                  <SelectItem value="2">L2 — Development</SelectItem>
+                  <SelectItem value="3">L3 — National</SelectItem>
+                  <SelectItem value="4">L4 — Premier</SelectItem>
+                  <SelectItem value="5">L5 — World</SelectItem>
                 </SelectContent>
               </Select>
 
