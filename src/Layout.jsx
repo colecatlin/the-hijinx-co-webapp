@@ -23,6 +23,7 @@ const navItems = [
     { name: 'Series', page: 'SeriesHome' },
     { name: 'Events', page: 'EventDirectory' },
     { name: 'Results', page: 'ResultsHome' },
+    { name: 'Competition System', page: 'CompetitionSystem' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
