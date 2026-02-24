@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +23,15 @@ export default function DriverProgramsSection({ driverId, programs, series, team
   });
 
   const queryClient = useQueryClient();
+
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+  });
+
+  const filteredClasses = formData.series_id
+    ? seriesClasses.filter((sc) => sc.series_id === formData.series_id)
+    : [];
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.DriverProgram.create({ ...data, driver_id: driverId }),
@@ -75,6 +84,10 @@ export default function DriverProgramsSection({ driverId, programs, series, team
     });
     setEditingId(program.id);
     setShowForm(true);
+  };
+
+  const handleSeriesChange = (value) => {
+    setFormData({ ...formData, series_id: value, class_name: '' });
   };
 
   const handleSubmit = () => {
@@ -133,7 +146,7 @@ export default function DriverProgramsSection({ driverId, programs, series, team
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Series</Label>
-                <Select value={formData.series_id} onValueChange={(value) => setFormData({ ...formData, series_id: value })}>
+                <Select value={formData.series_id} onValueChange={handleSeriesChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select series" />
                   </SelectTrigger>
@@ -164,12 +177,32 @@ export default function DriverProgramsSection({ driverId, programs, series, team
               </div>
 
               <div className="space-y-2">
-                <Label>Class Name</Label>
-                <Input
-                  value={formData.class_name}
-                  onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
-                  placeholder="e.g., Formula 1, Cup Series"
-                />
+                <Label>Class</Label>
+                {filteredClasses.length > 0 ? (
+                  <Select
+                    value={formData.class_name}
+                    onValueChange={(value) => setFormData({ ...formData, class_name: value })}
+                    disabled={!formData.series_id}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredClasses.map((sc) => (
+                        <SelectItem key={sc.id} value={sc.class_name}>
+                          {sc.class_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={formData.class_name}
+                    onChange={(e) => setFormData({ ...formData, class_name: e.target.value })}
+                    placeholder={formData.series_id ? 'No classes found — enter manually' : 'Select a series first'}
+                    disabled={!formData.series_id}
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
