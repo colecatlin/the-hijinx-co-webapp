@@ -51,6 +51,9 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
       setFormData(updatedTeam);
       setIsSaved(true);
       toast.success('Team updated');
+      if (onTeamCreated) {
+        onTeamCreated(updatedTeam);
+      }
       setTimeout(() => setIsSaved(false), 2000);
     },
   });
