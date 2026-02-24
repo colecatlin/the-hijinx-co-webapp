@@ -95,6 +95,8 @@ export default function TeamForm({ team, onClose }) {
                 type="number"
                 value={formData.founded_year}
                 onChange={(e) => handleChange('founded_year', parseInt(e.target.value))}
+                min="1900"
+                max={new Date().getFullYear()}
               />
             </div>
             <div>

@@ -155,6 +155,8 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
             type="number"
             value={formData.founded_year || ''}
             onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+            min="1900"
+            max={new Date().getFullYear()}
           />
         </div>
 
