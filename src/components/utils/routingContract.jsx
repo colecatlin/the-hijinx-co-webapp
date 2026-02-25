@@ -5,7 +5,7 @@ export const PROFILE_ROUTES = {
   Track: { basePath: 'TrackProfile', param: 'id' }, // Uses ?id={slug}
   Series: { basePath: 'SeriesDetail', param: 'slug' }, // Uses ?slug={slug}
   Team: { basePath: 'TeamProfile', param: 'id' }, // Uses ?id={slug}
-  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Uses ?slug={slug}
+  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Uses /{slug} path format
   Event: { basePath: 'EventResults', param: 'id' }, // Uses ?id={id} (no slug yet)
 };
 
@@ -24,6 +24,11 @@ export function buildProfileUrl(entityType, slugOrId) {
   if (!slugOrId) {
     console.warn(`No slug/id provided for ${entityType}`);
     return '#';
+  }
+  
+  // Driver uses path format: /DriverProfile/{slug}
+  if (entityType === 'Driver') {
+    return `/${route.basePath}/${encodeURIComponent(slugOrId)}`;
   }
   
   return `/${route.basePath}?${route.param}=${encodeURIComponent(slugOrId)}`;
