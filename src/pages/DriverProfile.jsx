@@ -51,7 +51,7 @@ export default function DriverProfile() {
     React.useEffect(() => {
       window.scrollTo(0, 0);
       setActiveSection('overview');
-    }, [firstName, lastName]);
+    }, [slug]);
 
     React.useEffect(() => {
       if (driver && media) {
