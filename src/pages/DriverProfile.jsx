@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,83 +27,31 @@ import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
-  // Extract slug from URL path: /DriverProfile/{slug}
-  const { slug } = useParams();
+  const urlParams = new URLSearchParams(window.location.search);
+    const firstName = urlParams.get('first')?.trim().toLowerCase();
+    const lastName = urlParams.get('last')?.trim().toLowerCase();
 
-  const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('overview');
-  const [showCompareDialog, setShowCompareDialog] = useState(false);
-  const [compareDriverId, setCompareDriverId] = useState('');
-
-  const { data: isAuthenticated } = useQuery({
-    queryKey: ['isAuthenticated'],
-    queryFn: () => base44.auth.isAuthenticated(),
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    enabled: !!isAuthenticated,
-  });
-
-  const { data: driver, isLoading: driverLoading } = useQuery({
-    queryKey: ['driver', slug],
-    queryFn: async () => {
-      const results = await base44.entities.Driver.filter({ slug: slug });
-      return results[0] || null;
-    },
-    enabled: !!slug,
-  });
-
-  if (!slug) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Driver not found</p>
-          <Link to={createPageUrl('DriverDirectory')}>
-            <Button>Back to Drivers</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-  if (driverLoading) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <Skeleton className="h-8 w-48 mx-auto mb-4" />
-        </div>
-      </PageShell>
-    );
-  }
-
-  if (!driver) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Driver not found</p>
-          <Link to={createPageUrl('DriverDirectory')}>
-            <Button>Back to Drivers</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-    const { data: media } = useQuery({
-      queryKey: ['driverMedia', driver?.id],
-      queryFn: async () => {
-        const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
-        return results[0] || null;
-      },
-      enabled: !!driver?.id,
-    });
+    if (!firstName || !lastName) {
+      return (
+        <PageShell className="bg-[#FFF8F5]">
+          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+            <p className="text-gray-600 mb-4">Driver not found</p>
+            <Link to={createPageUrl('DriverDirectory')}>
+              <Button>Back to Drivers</Button>
+            </Link>
+          </div>
+        </PageShell>
+      );
+    }
+    const navigate = useNavigate();
+    const [activeSection, setActiveSection] = useState('overview');
+    const [showCompareDialog, setShowCompareDialog] = useState(false);
+    const [compareDriverId, setCompareDriverId] = useState('');
 
     React.useEffect(() => {
       window.scrollTo(0, 0);
       setActiveSection('overview');
-    }, [slug]);
+    }, [firstName, lastName]);
 
     React.useEffect(() => {
       if (driver && media) {
@@ -133,6 +81,38 @@ export default function DriverProfile() {
       }
     }, [driver, media]);
 
+    const { data: isAuthenticated } = useQuery({
+      queryKey: ['isAuthenticated'],
+      queryFn: () => base44.auth.isAuthenticated(),
+    });
+
+    const { data: user } = useQuery({
+      queryKey: ['currentUser'],
+      queryFn: () => base44.auth.me(),
+      enabled: !!isAuthenticated,
+    });
+
+    const { data: drivers = [], isLoading } = useQuery({
+      queryKey: ['drivers'],
+      queryFn: () => base44.entities.Driver.list(),
+    });
+
+    const driver = drivers.find(d => 
+      d.first_name?.toLowerCase() === firstName && 
+      d.last_name?.toLowerCase() === lastName
+    );
+
+
+
+  const { data: media } = useQuery({
+    queryKey: ['driverMedia', driver?.id],
+    queryFn: async () => {
+      const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
+      return results[0] || null;
+    },
+    enabled: !!driver?.id,
+  });
+
   const { data: programs = [] } = useQuery({
     queryKey: ['driverPrograms', driver?.id],
     queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
@@ -155,11 +135,6 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Team.list(),
   });
 
-  const { data: allDrivers = [] } = useQuery({
-    queryKey: ['allDrivers'],
-    queryFn: () => base44.entities.Driver.list(),
-  });
-
   const getSeriesName = (seriesId) => {
     return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
   };
@@ -179,7 +154,7 @@ export default function DriverProfile() {
 
 
 
-  if (driverLoading) {
+  if (isLoading) {
     return (
       <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -549,7 +524,7 @@ export default function DriverProfile() {
                 <SelectValue placeholder="Select a driver to compare" />
               </SelectTrigger>
               <SelectContent>
-                {allDrivers.filter(d => d.id !== driver.id).map(d => (
+                {drivers.filter(d => d.id !== driver.id).map(d => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.first_name} {d.last_name}
                   </SelectItem>
