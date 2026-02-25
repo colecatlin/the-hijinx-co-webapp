@@ -53,6 +53,27 @@ export default function DriverProfile() {
       setActiveSection('overview');
     }, [firstName, lastName]);
 
+    const { data: isAuthenticated } = useQuery({
+      queryKey: ['isAuthenticated'],
+      queryFn: () => base44.auth.isAuthenticated(),
+    });
+
+    const { data: user } = useQuery({
+      queryKey: ['currentUser'],
+      queryFn: () => base44.auth.me(),
+      enabled: !!isAuthenticated,
+    });
+
+    const { data: drivers = [], isLoading } = useQuery({
+      queryKey: ['drivers'],
+      queryFn: () => base44.entities.Driver.list(),
+    });
+
+    const driver = drivers.find(d => 
+      d.first_name?.toLowerCase() === firstName && 
+      d.last_name?.toLowerCase() === lastName
+    );
+
     React.useEffect(() => {
       if (driver && media) {
         // Update document title
@@ -80,28 +101,6 @@ export default function DriverProfile() {
         updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
       }
     }, [driver, media]);
-
-    const { data: isAuthenticated } = useQuery({
-      queryKey: ['isAuthenticated'],
-      queryFn: () => base44.auth.isAuthenticated(),
-    });
-
-    const { data: user } = useQuery({
-      queryKey: ['currentUser'],
-      queryFn: () => base44.auth.me(),
-      enabled: !!isAuthenticated,
-    });
-
-    const { data: drivers = [], isLoading } = useQuery({
-      queryKey: ['drivers'],
-      queryFn: () => base44.entities.Driver.list(),
-    });
-
-    const driver = drivers.find(d => 
-      d.first_name?.toLowerCase() === firstName && 
-      d.last_name?.toLowerCase() === lastName
-    );
-
 
 
   const { data: media } = useQuery({
