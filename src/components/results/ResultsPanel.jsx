@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 import { Trophy, TrendingUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -103,9 +104,14 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
                     </td>
                     {eventId && (
                       <td className="py-2 px-3 font-medium">
-                        <Link to={`${createPageUrl('DriverProfile')}?first=${''}&last=${''}`} className="hover:underline">
-                          {getDriverName(r.driver_id)}
-                        </Link>
+                        {(() => {
+                          const driver = drivers.find(d => d.id === r.driver_id);
+                          return (
+                            <Link to={driver ? buildProfileUrl('Driver', driver.slug) : '#'} className="hover:underline">
+                              {getDriverName(r.driver_id)}
+                            </Link>
+                          );
+                        })()}
                       </td>
                     )}
                     {driverId && (
@@ -172,8 +178,8 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
                             </span>
                           </td>
                           <td className="py-2 px-3 font-medium">
-                            {entry.driver_id ? (
-                              <Link to={`${createPageUrl('DriverProfile')}?first=${entry.first_name?.toLowerCase()}&last=${entry.last_name?.toLowerCase()}`} className="hover:underline">
+                            {entry.driver_id && entry.slug ? (
+                              <Link to={buildProfileUrl('Driver', entry.slug)} className="hover:underline">
                                 {entry.first_name} {entry.last_name}
                               </Link>
                             ) : (

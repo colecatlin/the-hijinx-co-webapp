@@ -96,7 +96,7 @@ export default function EventResults() {
                     <td className="px-4 py-3 text-sm font-bold tabular-nums">{r.position}</td>
                     <td className="px-4 py-3 text-sm font-semibold">
                       {r.driver_id ? (
-                        <Link to={createPageUrl('DriverProfile') + `?id=${r.driver_id}`} className="hover:underline">{r.driver_name}</Link>
+                        <Link to={r.driver_slug ? buildProfileUrl('Driver', r.driver_slug) : '#'} className="hover:underline">{r.driver_name}</Link>
                       ) : r.driver_name}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-500">{r.team_name}</td>
