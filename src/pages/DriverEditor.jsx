@@ -12,9 +12,6 @@ import { DriverCoreDetailsSectionWithManagers } from '@/components/management/Dr
 import DriverCoreDetailsSection from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
 import DriverProgramsSection from '@/components/management/DriverEditor/DriverProgramsSection.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
-import DriverPerformanceSection from '@/components/management/DriverEditor/DriverPerformanceSection.jsx';
-import DriverCommunitySection from '@/components/management/DriverEditor/DriverCommunitySection.jsx';
-import DriverPartnershipSection from '@/components/management/DriverEditor/DriverPartnershipSection.jsx';
 import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList';
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay';
 
@@ -53,26 +50,6 @@ export default function DriverEditor({ driverId: propDriverId }) {
     enabled: !!driverId,
   });
 
-  const { data: performance = [], isLoading: performanceLoading } = useQuery({
-    queryKey: ['driverPerformance', driverId],
-    queryFn: () => base44.entities.DriverPerformance.filter({ driver_id: driverId }),
-    enabled: !!driverId,
-    select: (data) => data[0],
-  });
-
-  const { data: community = [], isLoading: communityLoading } = useQuery({
-    queryKey: ['driverCommunity', driverId],
-    queryFn: () => base44.entities.DriverCommunity.filter({ driver_id: driverId }),
-    enabled: !!driverId,
-    select: (data) => data[0],
-  });
-
-  const { data: partnerships = [], isLoading: partnershipsLoading } = useQuery({
-    queryKey: ['driverPartnerships', driverId],
-    queryFn: () => base44.entities.DriverPartnership.filter({ driver_id: driverId }),
-    enabled: !!driverId,
-  });
-
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
@@ -83,13 +60,7 @@ export default function DriverEditor({ driverId: propDriverId }) {
     queryFn: () => base44.entities.Team.list(),
   });
 
-  const isLoading =
-    driverLoading ||
-    programsLoading ||
-    mediaLoading ||
-    performanceLoading ||
-    communityLoading ||
-    partnershipsLoading;
+  const isLoading = driverLoading || programsLoading || mediaLoading;
 
   if (!driverId) {
     return (
@@ -153,14 +124,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="programs">Programs</TabsTrigger>
             <TabsTrigger value="results">Race Results</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
-            <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -180,18 +148,6 @@ export default function DriverEditor({ driverId: propDriverId }) {
 
           <TabsContent value="media">
             <DriverMediaSection driverId={driverId} media={media} />
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <DriverPerformanceSection driverId={driverId} performance={performance} />
-          </TabsContent>
-
-          <TabsContent value="community">
-            <DriverCommunitySection driverId={driverId} community={community} />
-          </TabsContent>
-
-          <TabsContent value="partnerships">
-            <DriverPartnershipSection driverId={driverId} partnerships={partnerships} />
           </TabsContent>
         </Tabs>
       </div>
