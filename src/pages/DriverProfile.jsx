@@ -71,12 +71,6 @@ export default function DriverProfile() {
       setActiveSection('overview');
     }, [slug]);
 
-    const { data: media = null } = useQuery({
-      queryKey: ['driverMedia', driver?.id],
-      queryFn: () => base44.entities.DriverMedia.filter({ driver_id: driver.id }).then(items => items[0] || null),
-      enabled: !!driver,
-    });
-
     React.useEffect(() => {
       if (driver && media) {
         // Update document title
