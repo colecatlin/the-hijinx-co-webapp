@@ -292,31 +292,27 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
 
         <div className="border-t pt-6">
           <h3 className="font-semibold mb-4">Hometown</h3>
-          <LocationFields
-            cityValue={formData.hometown_city}
-            stateValue={formData.hometown_state}
-            countryValue={formData.hometown_country}
-            onCityChange={(v) => handleInputChange('hometown_city', v)}
-            onStateChange={(v) => handleInputChange('hometown_state', v)}
-            onCountryChange={(v) => handleInputChange('hometown_country', v)}
-            cityLabel="City"
-            stateLabel="State/Region"
-            countryLabel="Country"
+          <LocationFieldsWithPicker
+            values={{
+              city: formData.hometown_city,
+              state: formData.hometown_state,
+              country: formData.hometown_country,
+            }}
+            onFieldChange={(field, value) => handleInputChange(`hometown_${field}`, value)}
+            showCoordinates={false}
           />
         </div>
 
         <div>
           <h3 className="font-semibold mb-4">Location</h3>
-          <LocationFields
-            cityValue={formData.location_city}
-            stateValue={formData.location_state}
-            countryValue={formData.location_country}
-            onCityChange={(v) => handleInputChange('location_city', v)}
-            onStateChange={(v) => handleInputChange('location_state', v)}
-            onCountryChange={(v) => handleInputChange('location_country', v)}
-            cityLabel="City"
-            stateLabel="State/Region"
-            countryLabel="Country"
+          <LocationFieldsWithPicker
+            values={{
+              city: formData.location_city,
+              state: formData.location_state,
+              country: formData.location_country,
+            }}
+            onFieldChange={(field, value) => handleInputChange(`location_${field}`, value)}
+            showCoordinates={false}
           />
         </div>
 
