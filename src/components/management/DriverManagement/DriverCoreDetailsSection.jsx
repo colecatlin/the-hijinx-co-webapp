@@ -196,16 +196,37 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         <CardDescription>Edit basic driver information</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="mb-6">
-          <MediaUploader 
-            label="Driver Photo" 
-            value={headshotUrl} 
-            onChange={handleHeadshotUpload} 
-            accept="image/*"
-          />
-          {driverId === 'new' && (
-            <p className="text-xs text-gray-500 mt-2">Save driver details first to upload photo</p>
-          )}
+        <div className="flex items-center gap-4 pb-2">
+          <div className="shrink-0">
+            {headshotUrl ? (
+              <img src={headshotUrl} alt="Driver headshot" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-xs">No photo</div>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Driver Photo</label>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={driverId === 'new'}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  handleHeadshotUpload(file_url);
+                }}
+              />
+              <span className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors ${driverId === 'new' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                Upload Photo
+              </span>
+            </label>
+            {driverId === 'new' && (
+              <p className="text-xs text-gray-400">Save driver first to upload photo</p>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
