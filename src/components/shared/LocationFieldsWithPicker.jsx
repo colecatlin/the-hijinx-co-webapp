@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import GooglePlacesLocationPicker from './GooglePlacesLocationPicker';
+import CountryFlag from './CountryFlag';
 import { base44 } from '@/api/base44Client';
 
 export default function LocationFieldsWithPicker({
@@ -71,12 +72,21 @@ export default function LocationFieldsWithPicker({
 
       <div>
         <Label htmlFor="country">Country</Label>
-        <Input
-          id="country"
-          value={values.country}
-          onChange={(e) => onFieldChange('country', e.target.value)}
-          placeholder="Country"
-        />
+        <div className="flex items-center gap-3">
+          <Input
+            id="country"
+            value={values.country}
+            onChange={(e) => onFieldChange('country', e.target.value)}
+            placeholder="Country"
+            className="flex-1"
+          />
+          {values.country && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded border border-gray-200">
+              <CountryFlag country={values.country} className="w-6 h-5" />
+              <span className="text-sm text-gray-600">{values.country}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {showCoordinates && (
