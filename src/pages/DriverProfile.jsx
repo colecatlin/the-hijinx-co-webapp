@@ -242,12 +242,14 @@ export default function DriverProfile() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <CountryFlag country={driver.hometown_country} />
-                <h1 className="text-4xl font-black text-[#232323] leading-none">{driver.first_name} {driver.last_name}</h1>
+                <div className="flex items-baseline gap-2">
+                  <h1 className="text-4xl font-black text-[#232323] leading-none">{driver.first_name} {driver.last_name}</h1>
+                  {driver.primary_number && (
+                    <div className="text-4xl font-black text-[#232323] leading-none">#{driver.primary_number}</div>
+                  )}
+                </div>
                 {driver.career_status && <CareerStatusTag status={driver.career_status} size="md" />}
               </div>
-              {driver.primary_number && (
-                <div className="text-4xl font-black text-[#232323] leading-none">#{driver.primary_number}</div>
-              )}
             </div>
 
             <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
@@ -287,15 +289,9 @@ export default function DriverProfile() {
 
             <Separator className="mb-3" />
 
-            {/* Car / Team / Manufacturer strip */}
-            {(driver.primary_number || driverTeam || driver.manufacturer) && (
+            {/* Team / Manufacturer strip */}
+            {(driverTeam || driver.manufacturer) && (
               <div className="flex flex-wrap gap-6 mb-4 px-1">
-                {driver.primary_number && (
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Car #</div>
-                    <div className="text-2xl font-black text-[#232323]">#{driver.primary_number}</div>
-                  </div>
-                )}
                 {driverTeam && (
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Team</div>
