@@ -59,12 +59,35 @@ export default function DriverProfile() {
       enabled: !!isAuthenticated,
     });
 
-    const { data: drivers = [], isLoading } = useQuery({
+    const { data: drivers = [], isLoading: driversLoading } = useQuery({
       queryKey: ['drivers'],
       queryFn: () => base44.entities.Driver.list(),
     });
 
     const driver = drivers.find(d => d.slug === slug);
+
+    if (driversLoading) {
+      return (
+        <PageShell className="bg-[#FFF8F5]">
+          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+            <Skeleton className="h-8 w-48 mx-auto mb-4" />
+          </div>
+        </PageShell>
+      );
+    }
+
+    if (!driver) {
+      return (
+        <PageShell className="bg-[#FFF8F5]">
+          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+            <p className="text-gray-600 mb-4">Driver "{slug}" not found</p>
+            <Link to={createPageUrl('DriverDirectory')}>
+              <Button>Back to Drivers</Button>
+            </Link>
+          </div>
+        </PageShell>
+      );
+    }
 
     const { data: media } = useQuery({
       queryKey: ['driverMedia', driver?.id],
