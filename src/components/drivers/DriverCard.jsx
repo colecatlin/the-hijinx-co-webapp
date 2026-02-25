@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
-import { createPageUrl } from '@/components/utils';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 import { MapPin } from 'lucide-react';
 
 // Series priority order (lower rank = higher tier)
@@ -216,7 +216,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           <div className="mt-auto pt-4 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
               <Link
-                to={`${createPageUrl('DriverProfile')}?slug=${encodeURIComponent(driver.slug)}`}
+                to={buildProfileUrl('Driver', driver.slug)}
                 className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
               >
                 View full profile →
