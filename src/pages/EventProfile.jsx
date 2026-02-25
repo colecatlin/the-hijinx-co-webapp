@@ -244,6 +244,7 @@ export default function EventProfile() {
           </section>
         </div>
       </div>
+      </div>
     </PageShell>
   );
 }
