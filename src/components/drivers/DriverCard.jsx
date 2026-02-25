@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
-import { buildProfileUrl } from '@/components/utils/routingContract';
 import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
 
@@ -25,16 +24,9 @@ function sortedSeriesNames(programs, allSeries = []) {
 
 export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats }) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const navigate = useNavigate();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
-  };
-
-  const handleProfileClick = (e) => {
-    e.stopPropagation();
-    const profileUrl = buildProfileUrl('Driver', driver.slug);
-    navigate(profileUrl);
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
@@ -223,13 +215,12 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
-              <button
-                type="button"
-                onClick={handleProfileClick}
+              <Link
+                to={`${createPageUrl('DriverProfile')}?slug=${encodeURIComponent(driver.slug)}`}
                 className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
               >
                 View full profile →
-              </button>
+              </Link>
             </div>
             <div className="text-right text-xs text-gray-500 font-medium">
               Back →
