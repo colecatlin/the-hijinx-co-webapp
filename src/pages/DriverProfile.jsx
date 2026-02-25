@@ -97,10 +97,7 @@ export default function DriverProfile() {
       queryFn: () => base44.entities.Driver.list(),
     });
 
-    const driver = drivers.find(d => 
-      d.first_name?.toLowerCase() === firstName && 
-      d.last_name?.toLowerCase() === lastName
-    );
+    const driver = drivers.find(d => d.slug === slug);
 
 
 
