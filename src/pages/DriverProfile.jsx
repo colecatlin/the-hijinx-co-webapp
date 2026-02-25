@@ -382,14 +382,7 @@ export default function DriverProfile() {
                   )}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-6">
-                {performance?.recent_form && performance.recent_form !== 'Unknown' && (
-                  <Badge className="bg-[#D33F49] text-white">{performance.recent_form}</Badge>
-                )}
-                {topSpecialties.map((specialty, idx) => (
-                  <Badge key={idx} className="bg-[#00FFDA] text-[#232323]">{specialty}</Badge>
-                ))}
-              </div>
+
             </div>
           </div>
 
