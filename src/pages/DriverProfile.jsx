@@ -59,14 +59,15 @@ export default function DriverProfile() {
       enabled: !!isAuthenticated,
     });
 
-    const { data: drivers = [], isLoading: driversLoading } = useQuery({
-      queryKey: ['drivers'],
-      queryFn: () => base44.entities.Driver.list(),
+    const { data: driver, isLoading: driverLoading } = useQuery({
+      queryKey: ['driver', slug],
+      queryFn: async () => {
+        const results = await base44.entities.Driver.filter({ slug: slug });
+        return results[0] || null;
+      },
     });
 
-    const driver = drivers.find(d => d.slug === slug);
-
-    if (driversLoading) {
+    if (driverLoading) {
       return (
         <PageShell className="bg-[#FFF8F5]">
           <div className="max-w-7xl mx-auto px-6 py-12 text-center">
@@ -80,7 +81,7 @@ export default function DriverProfile() {
       return (
         <PageShell className="bg-[#FFF8F5]">
           <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-            <p className="text-gray-600 mb-4">Driver "{slug}" not found</p>
+            <p className="text-gray-600 mb-4">Driver not found</p>
             <Link to={createPageUrl('DriverDirectory')}>
               <Button>Back to Drivers</Button>
             </Link>
