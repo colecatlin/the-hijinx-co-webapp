@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
 import ResultsPanel from '@/components/results/ResultsPanel';
+import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
