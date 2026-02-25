@@ -133,9 +133,15 @@ export default function TrackProfile() {
 
   return (
     <PageShell className="bg-white">
+      <div className="max-w-7xl mx-auto px-6 pt-4">
+        <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+          ← Back to Tracks
+        </Link>
+      </div>
+
       {/* Header Image */}
       {media?.hero_image_url && (
-        <div className="w-full h-[400px] relative overflow-hidden">
+        <div className="w-full h-[400px] relative overflow-hidden mt-3">
           <img 
             src={media.hero_image_url} 
             alt={track.name}
@@ -146,11 +152,6 @@ export default function TrackProfile() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-4">
-          <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
-            ← Back to Tracks
-          </Link>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
