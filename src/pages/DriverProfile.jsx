@@ -31,6 +31,31 @@ export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const slug = urlParams.get('slug');
 
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('overview');
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [compareDriverId, setCompareDriverId] = useState('');
+
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    enabled: !!isAuthenticated,
+  });
+
+  const { data: driver, isLoading: driverLoading } = useQuery({
+    queryKey: ['driver', slug],
+    queryFn: async () => {
+      const results = await base44.entities.Driver.filter({ slug: slug });
+      return results[0] || null;
+    },
+    enabled: !!slug,
+  });
+
   if (!slug) {
     return (
       <PageShell className="bg-[#FFF8F5]">
@@ -43,52 +68,29 @@ export default function DriverProfile() {
       </PageShell>
     );
   }
-    const navigate = useNavigate();
-    const [activeSection, setActiveSection] = useState('overview');
-    const [showCompareDialog, setShowCompareDialog] = useState(false);
-    const [compareDriverId, setCompareDriverId] = useState('');
 
-    const { data: isAuthenticated } = useQuery({
-      queryKey: ['isAuthenticated'],
-      queryFn: () => base44.auth.isAuthenticated(),
-    });
+  if (driverLoading) {
+    return (
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <Skeleton className="h-8 w-48 mx-auto mb-4" />
+        </div>
+      </PageShell>
+    );
+  }
 
-    const { data: user } = useQuery({
-      queryKey: ['currentUser'],
-      queryFn: () => base44.auth.me(),
-      enabled: !!isAuthenticated,
-    });
-
-    const { data: driver, isLoading: driverLoading } = useQuery({
-      queryKey: ['driver', slug],
-      queryFn: async () => {
-        const results = await base44.entities.Driver.filter({ slug: slug });
-        return results[0] || null;
-      },
-    });
-
-    if (driverLoading) {
-      return (
-        <PageShell className="bg-[#FFF8F5]">
-          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-            <Skeleton className="h-8 w-48 mx-auto mb-4" />
-          </div>
-        </PageShell>
-      );
-    }
-
-    if (!driver) {
-      return (
-        <PageShell className="bg-[#FFF8F5]">
-          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-            <p className="text-gray-600 mb-4">Driver not found</p>
-            <Link to={createPageUrl('DriverDirectory')}>
-              <Button>Back to Drivers</Button>
-            </Link>
-          </div>
-        </PageShell>
-      );
-    }
+  if (!driver) {
+    return (
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-600 mb-4">Driver not found</p>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button>Back to Drivers</Button>
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
 
     const { data: media } = useQuery({
       queryKey: ['driverMedia', driver?.id],
