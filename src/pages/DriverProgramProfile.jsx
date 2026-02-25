@@ -145,16 +145,35 @@ export default function DriverProgramProfile() {
 
   return (
     <PageShell className="bg-[#FAFAFA]">
+      <div className="max-w-5xl mx-auto px-6 pt-4">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Link to={createPageUrl('DriverDirectory')} className="hover:text-[#232323]">Drivers</Link>
+          <span>/</span>
+          {driver && (
+            <>
+              <Link
+                to={`${createPageUrl('DriverProfile')}?first=${encodeURIComponent(driver.first_name?.toLowerCase())}&last=${encodeURIComponent(driver.last_name?.toLowerCase())}`}
+                className="hover:text-[#232323]"
+              >
+                {driver.first_name} {driver.last_name}
+              </Link>
+              <span>/</span>
+            </>
+          )}
+          <span className="text-[#232323] font-medium truncate">{programName}</span>
+        </div>
+      </div>
+
       {/* Hero banner */}
       {media?.hero_image_url && (
-        <div className="w-full h-[260px] relative overflow-hidden">
+        <div className="w-full h-[260px] relative overflow-hidden mt-3">
           <img src={media.hero_image_url} alt={programName} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
       )}
 
       <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Breadcrumb */}
+        {/* Breadcrumb - now shown above hero, remove from here */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link to={createPageUrl('DriverDirectory')} className="hover:text-[#232323]">Drivers</Link>
           <span>/</span>
