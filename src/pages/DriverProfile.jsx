@@ -27,22 +27,22 @@ import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
-  const urlParams = new URLSearchParams(window.location.search);
-    const firstName = urlParams.get('first')?.trim().toLowerCase();
-    const lastName = urlParams.get('last')?.trim().toLowerCase();
+  // Extract slug from URL path: /DriverProfile/{slug}
+  const pathSegments = window.location.pathname.split('/').filter(Boolean);
+  const slug = pathSegments[pathSegments.length - 1];
 
-    if (!firstName || !lastName) {
-      return (
-        <PageShell className="bg-[#FFF8F5]">
-          <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-            <p className="text-gray-600 mb-4">Driver not found</p>
-            <Link to={createPageUrl('DriverDirectory')}>
-              <Button>Back to Drivers</Button>
-            </Link>
-          </div>
-        </PageShell>
-      );
-    }
+  if (!slug) {
+    return (
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-600 mb-4">Driver not found</p>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button>Back to Drivers</Button>
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
     const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('overview');
     const [showCompareDialog, setShowCompareDialog] = useState(false);
