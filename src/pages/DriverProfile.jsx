@@ -48,10 +48,34 @@ export default function DriverProfile() {
     const [showCompareDialog, setShowCompareDialog] = useState(false);
     const [compareDriverId, setCompareDriverId] = useState('');
 
+    const { data: isAuthenticated } = useQuery({
+      queryKey: ['isAuthenticated'],
+      queryFn: () => base44.auth.isAuthenticated(),
+    });
+
+    const { data: user } = useQuery({
+      queryKey: ['currentUser'],
+      queryFn: () => base44.auth.me(),
+      enabled: !!isAuthenticated,
+    });
+
+    const { data: drivers = [], isLoading } = useQuery({
+      queryKey: ['drivers'],
+      queryFn: () => base44.entities.Driver.list(),
+    });
+
+    const driver = drivers.find(d => d.slug === slug);
+
     React.useEffect(() => {
       window.scrollTo(0, 0);
       setActiveSection('overview');
     }, [slug]);
+
+    const { data: media = null } = useQuery({
+      queryKey: ['driverMedia', driver?.id],
+      queryFn: () => base44.entities.DriverMedia.filter({ driver_id: driver.id }).then(items => items[0] || null),
+      enabled: !!driver,
+    });
 
     React.useEffect(() => {
       if (driver && media) {
@@ -80,24 +104,6 @@ export default function DriverProfile() {
         updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
       }
     }, [driver, media]);
-
-    const { data: isAuthenticated } = useQuery({
-      queryKey: ['isAuthenticated'],
-      queryFn: () => base44.auth.isAuthenticated(),
-    });
-
-    const { data: user } = useQuery({
-      queryKey: ['currentUser'],
-      queryFn: () => base44.auth.me(),
-      enabled: !!isAuthenticated,
-    });
-
-    const { data: drivers = [], isLoading } = useQuery({
-      queryKey: ['drivers'],
-      queryFn: () => base44.entities.Driver.list(),
-    });
-
-    const driver = drivers.find(d => d.slug === slug);
 
 
 
