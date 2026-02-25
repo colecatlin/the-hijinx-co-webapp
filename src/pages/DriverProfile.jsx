@@ -425,16 +425,7 @@ export default function DriverProfile() {
 
 
 
-            {activePartnerships.length > 0 && (
-              <div className="bg-white p-6">
-                <h3 className="text-sm font-bold text-[#232323] mb-4">Key Partners</h3>
-                <div className="space-y-2">
-                  {activePartnerships.map(partner => (
-                    <div key={partner.id} className="text-sm text-gray-700">{partner.partner_name}</div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 
