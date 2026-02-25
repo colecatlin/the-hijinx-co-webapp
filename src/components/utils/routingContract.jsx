@@ -5,7 +5,7 @@ export const PROFILE_ROUTES = {
   Track: { basePath: 'TrackProfile', param: 'id' }, // Uses ?id={slug}
   Series: { basePath: 'SeriesDetail', param: 'slug' }, // Uses ?slug={slug}
   Team: { basePath: 'TeamProfile', param: 'id' }, // Uses ?id={slug}
-  Driver: { basePath: 'DriverProfile', param: 'id' }, // Uses ?id={slug}
+  Driver: { basePath: 'DriverProfile', pathParam: true }, // Uses /{slug} path-based routing
   Event: { basePath: 'EventResults', param: 'id' }, // Uses ?id={id} (no slug yet)
 };
 
