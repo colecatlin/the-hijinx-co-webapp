@@ -22,9 +22,15 @@ export function buildProfileUrl(entityType, slugOrId) {
     return '#';
   }
   if (!slugOrId) {
-    console.warn(`No ${route.param} provided for ${entityType}`);
+    console.warn(`No slug/id provided for ${entityType}`);
     return '#';
   }
+  
+  // Path-based routing for Driver
+  if (route.pathParam) {
+    return `/${route.basePath}/${encodeURIComponent(slugOrId)}`;
+  }
+  
   return `/${route.basePath}?${route.param}=${encodeURIComponent(slugOrId)}`;
 }
 
