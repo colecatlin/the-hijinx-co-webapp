@@ -200,8 +200,7 @@ export default function DriverProfile() {
     });
   };
 
-  const topSpecialties = performance?.specialties?.slice(0, 2) || [];
-  const activePartnerships = partnerships.filter(p => p.active).slice(0, 4);
+
 
   const searchDriverPhotos = async () => {
     try {
