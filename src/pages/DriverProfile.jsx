@@ -76,21 +76,6 @@ export default function DriverProfile() {
 
 
 
-  const { data: performance } = useQuery({
-    queryKey: ['driverPerformance', driver?.id],
-    queryFn: async () => {
-      const results = await base44.entities.DriverPerformance.filter({ driver_id: driver.id });
-      return results[0] || null;
-    },
-    enabled: !!driver?.id,
-  });
-
-  const { data: partnerships = [] } = useQuery({
-    queryKey: ['driverPartnerships', driver?.id],
-    queryFn: () => base44.entities.DriverPartnership.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-  });
-
   const { data: media } = useQuery({
     queryKey: ['driverMedia', driver?.id],
     queryFn: async () => {
