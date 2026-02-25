@@ -36,19 +36,6 @@ export default function TrackCoreDetailsSection({ trackId }) {
     },
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: (file) => base44.integrations.Core.UploadFile({ file }),
-    onSuccess: (data) => {
-      setFormData({ ...formData, hero_image_url: data.file_url });
-      toast.success('Image uploaded');
-    },
-  });
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) uploadMutation.mutate(file);
-  };
-
   const handleSave = () => {
     const { id, created_date, updated_date, created_by, ...updateData } = formData;
     updateMutation.mutate(updateData);
