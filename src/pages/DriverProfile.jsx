@@ -27,9 +27,8 @@ import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
-  // Extract slug from URL query params: ?slug={slug}
-  const urlParams = new URLSearchParams(window.location.search);
-  const slug = urlParams.get('slug');
+  // Extract slug from URL path: /DriverProfile/{slug}
+  const { slug } = useParams();
 
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
