@@ -70,12 +70,12 @@ export default function EventProfile() {
 
   return (
     <PageShell className="bg-white">
+      <div className="max-w-7xl mx-auto px-6 pt-4 pb-0">
+        <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
+          ← Back to Events
+        </Link>
+      </div>
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-4">
-          <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
-            ← Back to Events
-          </Link>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
