@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Upload, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
+import MediaUploader from '@/components/shared/MediaUploader';
 
 export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [formData, setFormData] = useState({ country: 'USA' });
