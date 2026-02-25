@@ -59,19 +59,6 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     },
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: (file) => base44.integrations.Core.UploadFile({ file }),
-    onSuccess: (data) => {
-      setFormData({ ...formData, logo_url: data.file_url });
-      toast.success('Image uploaded');
-    },
-  });
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) uploadMutation.mutate(file);
-  };
-
   const generateSlug = (name) => {
     return name
       .toLowerCase()
