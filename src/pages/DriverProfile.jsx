@@ -85,15 +85,6 @@ export default function DriverProfile() {
     enabled: !!driver?.id,
   });
 
-  const { data: community } = useQuery({
-    queryKey: ['driverCommunity', driver?.id],
-    queryFn: async () => {
-      const results = await base44.entities.DriverCommunity.filter({ driver_id: driver.id });
-      return results[0] || null;
-    },
-    enabled: !!driver?.id,
-  });
-
   const { data: programs = [] } = useQuery({
     queryKey: ['driverPrograms', driver?.id],
     queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
