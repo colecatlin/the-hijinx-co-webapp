@@ -135,7 +135,11 @@ export default function ManageTeams() {
 
   if (selectedTeamForEdit) {
     const isNewTeam = selectedTeamForEdit.id === 'new';
-    const hasCoreDetails = selectedTeamForEdit.name && selectedTeamForEdit.slug && selectedTeamForEdit.headquarters_city;
+    // If we only have an id (e.g. deep-link), look up the full team from the loaded list
+    const fullTeam = selectedTeamForEdit.name
+      ? selectedTeamForEdit
+      : (teams.find(t => t.id === selectedTeamForEdit.id) || selectedTeamForEdit);
+    const hasCoreDetails = fullTeam.name && fullTeam.headquarters_city;
     const tabsLocked = isNewTeam || !hasCoreDetails;
 
     return (
