@@ -178,30 +178,13 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium">Logo</label>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => document.getElementById('team-logo-upload').click()}
-              disabled={uploadMutation.isPending}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {uploadMutation.isPending ? 'Uploading...' : 'Upload Image'}
-            </Button>
-            <input
-              id="team-logo-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            {formData.logo_url && (
-              <img src={formData.logo_url} alt="Team logo" className="h-10 rounded" />
-            )}
-          </div>
-        </div>
+        <MediaUploader
+          label="Team Logo"
+          hint="Recommended: 400×400px (square) · Max 5MB"
+          value={formData.logo_url || ''}
+          onChange={(v) => setFormData({ ...formData, logo_url: v })}
+          maxSizeMB={5}
+        />
 
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
