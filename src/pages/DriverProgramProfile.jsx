@@ -173,20 +173,6 @@ export default function DriverProgramProfile() {
       )}
 
       <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Breadcrumb - now shown above hero, remove from here */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to={createPageUrl('DriverDirectory')} className="hover:text-[#232323]">Drivers</Link>
-          <span>/</span>
-          {driver && (
-            <>
-              <Link to={driverProfileUrl} className="hover:text-[#232323]">
-                {driver.first_name} {driver.last_name}
-              </Link>
-              <span>/</span>
-            </>
-          )}
-          <span className="text-[#232323] font-medium truncate">{programName}</span>
-        </div>
 
         {/* Header */}
         <div className="mb-8">
