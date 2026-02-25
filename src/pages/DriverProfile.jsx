@@ -66,6 +66,15 @@ export default function DriverProfile() {
 
     const driver = drivers.find(d => d.slug === slug);
 
+    const { data: media } = useQuery({
+      queryKey: ['driverMedia', driver?.id],
+      queryFn: async () => {
+        const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
+        return results[0] || null;
+      },
+      enabled: !!driver?.id,
+    });
+
     React.useEffect(() => {
       window.scrollTo(0, 0);
       setActiveSection('overview');
@@ -98,17 +107,6 @@ export default function DriverProfile() {
         updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
       }
     }, [driver, media]);
-
-
-
-  const { data: media } = useQuery({
-    queryKey: ['driverMedia', driver?.id],
-    queryFn: async () => {
-      const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
-      return results[0] || null;
-    },
-    enabled: !!driver?.id,
-  });
 
   const { data: programs = [] } = useQuery({
     queryKey: ['driverPrograms', driver?.id],
