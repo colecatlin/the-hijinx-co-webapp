@@ -6,23 +6,46 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Loader2, Flag, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+
+const MONTHS = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: new Date(2000, i).toLocaleString('default', { month: 'long' }),
+}));
+
+const defaultSeriesForm = { name: '', discipline: '', website_url: '' };
+const defaultEventForm = { name: '', event_date: '', track_name: '', location_city: '', location_state: '' };
+
+const emptyForm = () => ({
+  program_type: 'series',
+  series_id: '',
+  series_name: '',
+  event_id: '',
+  event_name: '',
+  event_date: '',
+  track_name: '',
+  team_id: '',
+  class_name: '',
+  car_number: '',
+  start_month: new Date().getMonth() + 1,
+  start_year: new Date().getFullYear(),
+  end_month: null,
+  end_year: null,
+  status: 'active',
+  notes: '',
+});
 
 export default function DriverProgramsSection({ driverId }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    series_id: '',
-    team_id: '',
-    class_name: '',
-    car_number: '',
-    start_month: new Date().getMonth() + 1,
-    start_year: new Date().getFullYear(),
-    end_month: null,
-    end_year: null,
-    status: 'active',
-    notes: '',
-  });
+  const [formData, setFormData] = useState(emptyForm());
+
+  // Inline create states
+  const [showNewSeries, setShowNewSeries] = useState(false);
+  const [newSeriesForm, setNewSeriesForm] = useState(defaultSeriesForm);
+  const [showNewEvent, setShowNewEvent] = useState(false);
+  const [newEventForm, setNewEventForm] = useState(defaultEventForm);
+  const [creatingInline, setCreatingInline] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -33,17 +56,22 @@ export default function DriverProgramsSection({ driverId }) {
 
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
+    queryFn: () => base44.entities.Series.list('-name', 200),
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list('-event_date', 200),
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-name', 200),
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', formData.series_id],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: formData.series_id, active: true }),
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: formData.series_id }),
     enabled: !!formData.series_id,
   });
 
@@ -65,35 +93,32 @@ export default function DriverProgramsSection({ driverId }) {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.DriverProgram.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['driverPrograms', driverId] }),
   });
 
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({
-      series_id: '',
-      team_id: '',
-      class_name: '',
-      car_number: '',
-      start_month: new Date().getMonth() + 1,
-      start_year: new Date().getFullYear(),
-      end_month: null,
-      end_year: null,
-      status: 'active',
-      notes: '',
-    });
+    setFormData(emptyForm());
+    setShowNewSeries(false);
+    setShowNewEvent(false);
+    setNewSeriesForm(defaultSeriesForm);
+    setNewEventForm(defaultEventForm);
   };
 
   const handleEdit = (program) => {
     setFormData({
+      program_type: program.program_type || 'series',
       series_id: program.series_id || '',
+      series_name: program.series_name || '',
+      event_id: program.event_id || '',
+      event_name: program.event_name || '',
+      event_date: program.event_date || '',
+      track_name: program.track_name || '',
       team_id: program.team_id || '',
       class_name: program.class_name || '',
       car_number: program.car_number || '',
-      start_month: program.start_month || 1,
+      start_month: program.start_month || new Date().getMonth() + 1,
       start_year: program.start_year || new Date().getFullYear(),
       end_month: program.end_month || null,
       end_year: program.end_year || null,
@@ -104,61 +129,113 @@ export default function DriverProgramsSection({ driverId }) {
     setShowForm(true);
   };
 
-  const validateForm = () => {
-    if (!formData.series_id) return 'Series is required';
-    if (!formData.start_month || !formData.start_year) return 'Start date is required';
-    if (formData.status === 'inactive' && (!formData.end_month || !formData.end_year)) return 'End date is required for inactive programs';
-    return null;
+  const handleSeriesChange = (seriesId) => {
+    const s = series.find((x) => x.id === seriesId);
+    setFormData({ ...formData, series_id: seriesId, series_name: s?.name || '', class_name: '' });
+  };
+
+  const handleEventChange = (eventId) => {
+    const e = events.find((x) => x.id === eventId);
+    setFormData({
+      ...formData,
+      event_id: eventId,
+      event_name: e?.name || '',
+      event_date: e?.event_date || '',
+      track_name: e?.location_note || '',
+    });
+  };
+
+  const handleCreateNewSeries = async () => {
+    if (!newSeriesForm.name.trim()) return;
+    setCreatingInline(true);
+    const created = await base44.entities.Series.create(newSeriesForm);
+    queryClient.invalidateQueries({ queryKey: ['series'] });
+    setFormData({ ...formData, series_id: created.id, series_name: created.name });
+    setShowNewSeries(false);
+    setNewSeriesForm(defaultSeriesForm);
+    setCreatingInline(false);
+  };
+
+  const handleCreateNewEvent = async () => {
+    if (!newEventForm.name.trim()) return;
+    setCreatingInline(true);
+    const created = await base44.entities.Event.create({
+      ...newEventForm,
+      status: 'upcoming',
+    });
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+    setFormData({
+      ...formData,
+      event_id: created.id,
+      event_name: created.name,
+      event_date: created.event_date || '',
+      track_name: newEventForm.track_name,
+    });
+    setShowNewEvent(false);
+    setNewEventForm(defaultEventForm);
+    setCreatingInline(false);
   };
 
   const handleSubmit = () => {
-    const error = validateForm();
-    if (error) {
-      alert(error);
+    const data = { ...formData };
+    if (data.program_type === 'series' && !data.series_name && !data.series_id) {
+      alert('Please select or create a series.');
+      return;
+    }
+    if (data.program_type === 'single_event' && !data.event_name && !data.event_id) {
+      alert('Please select or create an event.');
       return;
     }
     if (editingId) {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(data);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(data);
     }
   };
 
-  const getSeriesName = (seriesId) => series.find((s) => s.id === seriesId)?.name || 'Unknown';
-  const getTeamName = (teamId) => teams.find((t) => t.id === teamId)?.name || 'Unknown';
+  const getTeamName = (teamId) => teams.find((t) => t.id === teamId)?.name || '';
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Racing Programs</CardTitle>
-        <CardDescription>Manage series participation and team assignments</CardDescription>
+        <CardDescription>Series participation or standalone event appearances</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* List */}
+      <CardContent className="space-y-4">
+        {/* Programs list */}
         <div className="space-y-3">
           {programs.map((program) => (
-            <div key={program.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-              <div className="flex-1">
-                <p className="font-medium">{getSeriesName(program.series_id)}</p>
-                <p className="text-sm text-gray-600">
+            <div key={program.id} className="flex items-start justify-between p-4 border rounded-lg bg-gray-50">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  {program.program_type === 'single_event' ? (
+                    <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                      <Calendar className="w-3 h-3" /> Single Event
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                      <Flag className="w-3 h-3" /> Series
+                    </span>
+                  )}
+                </div>
+                <p className="font-medium mt-1">
+                  {program.program_type === 'single_event' ? (program.event_name || 'Unnamed Event') : (program.series_name || 'Unknown Series')}
+                </p>
+                <p className="text-sm text-gray-500">
                   {program.class_name && `${program.class_name} • `}
                   {program.car_number && `#${program.car_number} • `}
-                  {program.start_month}/{program.start_year}
-                  {program.status === 'inactive' && program.end_month ? ` - ${program.end_month}/${program.end_year}` : program.status === 'active' ? ' - Present' : ''}
+                  {program.program_type === 'single_event'
+                    ? program.event_date
+                    : `${program.start_month}/${program.start_year}${program.status === 'inactive' && program.end_year ? ` – ${program.end_month}/${program.end_year}` : ' – Present'}`}
+                  {program.track_name && ` • ${program.track_name}`}
                 </p>
-                {program.team_id && <p className="text-sm text-gray-500">Team: {getTeamName(program.team_id)}</p>}
-                <p className="text-xs text-gray-500 mt-1 capitalize">{program.status}</p>
+                {program.team_id && <p className="text-xs text-gray-400">Team: {getTeamName(program.team_id)}</p>}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleEdit(program)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteMutation.mutate(program.id)}
-                  disabled={deleteMutation.isPending}
-                >
+              <div className="flex gap-2 ml-2 shrink-0">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(program)}>Edit</Button>
+                <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate(program.id)} disabled={deleteMutation.isPending}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
@@ -167,27 +244,183 @@ export default function DriverProgramsSection({ driverId }) {
           {programs.length === 0 && <p className="text-gray-500 text-sm">No programs added yet.</p>}
         </div>
 
-        {/* Form */}
+        {/* Add form */}
         {showForm && (
-          <div className="border-t pt-6 space-y-4">
-            <h3 className="font-semibold">{editingId ? 'Edit Program' : 'Add Program'}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Series</Label>
-                <Select value={formData.series_id} onValueChange={(value) => setFormData({ ...formData, series_id: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select series" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {series.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="border rounded-lg p-5 space-y-5 bg-gray-50">
+            <h3 className="font-semibold text-sm">{editingId ? 'Edit Program' : 'Add Program'}</h3>
 
+            {/* Program type toggle */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...emptyForm(), program_type: 'series' })}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                  formData.program_type === 'series'
+                    ? 'bg-[#232323] text-white border-[#232323]'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <Flag className="w-4 h-4" /> Series Program
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...emptyForm(), program_type: 'single_event' })}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                  formData.program_type === 'single_event'
+                    ? 'bg-[#232323] text-white border-[#232323]'
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <Calendar className="w-4 h-4" /> Single Event
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* SERIES fields */}
+              {formData.program_type === 'series' && (
+                <div className="space-y-2 col-span-full">
+                  <Label>Series</Label>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Select value={formData.series_id} onValueChange={handleSeriesChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select series" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {series.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => setShowNewSeries(!showNewSeries)}
+                    >
+                      {showNewSeries ? <ChevronUp className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+                      New Series
+                    </Button>
+                  </div>
+                  {showNewSeries && (
+                    <div className="mt-2 p-3 border rounded-lg bg-white space-y-3">
+                      <p className="text-xs font-medium text-gray-600">Create New Series</p>
+                      <Input
+                        placeholder="Series name *"
+                        value={newSeriesForm.name}
+                        onChange={(e) => setNewSeriesForm({ ...newSeriesForm, name: e.target.value })}
+                      />
+                      <Input
+                        placeholder="Website URL (optional)"
+                        value={newSeriesForm.website_url}
+                        onChange={(e) => setNewSeriesForm({ ...newSeriesForm, website_url: e.target.value })}
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleCreateNewSeries} disabled={creatingInline || !newSeriesForm.name.trim()}>
+                          {creatingInline ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                          Create & Select
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowNewSeries(false)}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SINGLE EVENT fields */}
+              {formData.program_type === 'single_event' && (
+                <div className="space-y-2 col-span-full">
+                  <Label>Event</Label>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Select value={formData.event_id} onValueChange={handleEventChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select existing event" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {events.map((e) => (
+                            <SelectItem key={e.id} value={e.id}>
+                              {e.name}{e.event_date ? ` (${e.event_date})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => setShowNewEvent(!showNewEvent)}
+                    >
+                      {showNewEvent ? <ChevronUp className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+                      New Event
+                    </Button>
+                  </div>
+                  {showNewEvent && (
+                    <div className="mt-2 p-3 border rounded-lg bg-white space-y-3">
+                      <p className="text-xs font-medium text-gray-600">Create New Event</p>
+                      <Input
+                        placeholder="Event name *"
+                        value={newEventForm.name}
+                        onChange={(e) => setNewEventForm({ ...newEventForm, name: e.target.value })}
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Event Date</Label>
+                          <Input
+                            type="date"
+                            value={newEventForm.event_date}
+                            onChange={(e) => setNewEventForm({ ...newEventForm, event_date: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Track Name</Label>
+                          <Input
+                            placeholder="e.g., Crandon International"
+                            value={newEventForm.track_name}
+                            onChange={(e) => setNewEventForm({ ...newEventForm, track_name: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">City</Label>
+                          <Input
+                            placeholder="City"
+                            value={newEventForm.location_city}
+                            onChange={(e) => setNewEventForm({ ...newEventForm, location_city: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">State</Label>
+                          <Input
+                            placeholder="State"
+                            value={newEventForm.location_state}
+                            onChange={(e) => setNewEventForm({ ...newEventForm, location_state: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleCreateNewEvent} disabled={creatingInline || !newEventForm.name.trim()}>
+                          {creatingInline ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                          Create & Select
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowNewEvent(false)}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show selected event summary */}
+                  {formData.event_id && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {formData.event_name}{formData.event_date ? ` • ${formData.event_date}` : ''}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Shared fields */}
               <div className="space-y-2">
                 <Label>Team (Optional)</Label>
                 <Select value={formData.team_id} onValueChange={(value) => setFormData({ ...formData, team_id: value })}>
@@ -195,27 +428,33 @@ export default function DriverProgramsSection({ driverId }) {
                     <SelectValue placeholder="Select team" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value={null}>— None —</SelectItem>
                     {teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
+                <Label>Car / Bib Number</Label>
+                <Input
+                  value={formData.car_number}
+                  onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
+                  placeholder="e.g., 42"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label>Class</Label>
-                {seriesClasses.length > 0 ? (
+                {formData.program_type === 'series' && seriesClasses.length > 0 ? (
                   <Select value={formData.class_name} onValueChange={(value) => setFormData({ ...formData, class_name: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
                     <SelectContent>
                       {seriesClasses.map((cls) => (
-                        <SelectItem key={cls.id} value={cls.class_name}>
-                          {cls.class_name}
-                        </SelectItem>
+                        <SelectItem key={cls.id} value={cls.class_name}>{cls.class_name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -228,79 +467,64 @@ export default function DriverProgramsSection({ driverId }) {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Car Number</Label>
-                <Input
-                  value={formData.car_number}
-                  onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
-                  placeholder="e.g., 42"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Start Month</Label>
-                <Select value={String(formData.start_month)} onValueChange={(value) => setFormData({ ...formData, start_month: parseInt(value) })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <SelectItem key={i + 1} value={String(i + 1)}>
-                        {new Date(2000, i).toLocaleString('default', { month: 'long' })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Start Year</Label>
-                <Input
-                  type="number"
-                  value={formData.start_year}
-                  onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
-                />
-              </div>
-
-              {formData.status === 'inactive' && (
+              {/* Series-only: date range */}
+              {formData.program_type === 'series' && (
                 <>
                   <div className="space-y-2">
-                    <Label>End Month *</Label>
-                    <Select value={String(formData.end_month || '')} onValueChange={(value) => setFormData({ ...formData, end_month: parseInt(value) })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <SelectItem key={i + 1} value={String(i + 1)}>
-                            {new Date(2000, i).toLocaleString('default', { month: 'long' })}
-                          </SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Start Month</Label>
+                    <Select value={String(formData.start_month)} onValueChange={(v) => setFormData({ ...formData, start_month: parseInt(v) })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {MONTHS.map((m) => (
+                          <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>End Year *</Label>
+                    <Label>Start Year</Label>
                     <Input
                       type="number"
-                      value={formData.end_year || ''}
-                      onChange={(e) => setFormData({ ...formData, end_year: e.target.value ? parseInt(e.target.value) : null })}
+                      value={formData.start_year}
+                      onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
                     />
                   </div>
+
+                  {formData.status === 'inactive' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>End Month</Label>
+                        <Select value={String(formData.end_month || '')} onValueChange={(v) => setFormData({ ...formData, end_month: parseInt(v) })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {MONTHS.map((m) => (
+                              <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>End Year</Label>
+                        <Input
+                          type="number"
+                          value={formData.end_year || ''}
+                          onChange={(e) => setFormData({ ...formData, end_year: e.target.value ? parseInt(e.target.value) : null })}
+                        />
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
@@ -314,17 +538,12 @@ export default function DriverProgramsSection({ driverId }) {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={handleSubmit}
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                {createMutation.isPending || updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            <div className="flex gap-3 pt-2">
+              <Button onClick={handleSubmit} disabled={isPending}>
+                {isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 {editingId ? 'Update' : 'Add'} Program
               </Button>
-              <Button variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
+              <Button variant="outline" onClick={resetForm}>Cancel</Button>
             </div>
           </div>
         )}
