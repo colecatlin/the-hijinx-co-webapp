@@ -27,9 +27,9 @@ import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
-  // Extract slug from URL path: /DriverProfile/{slug}
-  const pathSegments = window.location.pathname.split('/').filter(Boolean);
-  const slug = pathSegments[pathSegments.length - 1];
+  // Extract slug from URL query params: ?slug={slug}
+  const urlParams = new URLSearchParams(window.location.search);
+  const slug = urlParams.get('slug');
 
   if (!slug) {
     return (
