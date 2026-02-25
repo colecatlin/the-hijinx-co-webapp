@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import SearchBar from '@/components/shared/SearchBar';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
+import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -69,8 +70,9 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="sticky top-0 z-50">
+    <GoogleMapsInitializer>
+      <div className="flex flex-col min-h-screen">
+        <div className="sticky top-0 z-50">
         <AnnouncementBar />
         {/* Top bar */}
         <header
@@ -258,7 +260,8 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </GoogleMapsInitializer>
   );
 }
