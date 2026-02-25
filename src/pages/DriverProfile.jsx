@@ -154,6 +154,11 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: allDrivers = [] } = useQuery({
+    queryKey: ['allDrivers'],
+    queryFn: () => base44.entities.Driver.list(),
+  });
+
   const getSeriesName = (seriesId) => {
     return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
   };
@@ -173,7 +178,7 @@ export default function DriverProfile() {
 
 
 
-  if (isLoading) {
+  if (driverLoading) {
     return (
       <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -543,7 +548,7 @@ export default function DriverProfile() {
                 <SelectValue placeholder="Select a driver to compare" />
               </SelectTrigger>
               <SelectContent>
-                {drivers.filter(d => d.id !== driver.id).map(d => (
+                {allDrivers.filter(d => d.id !== driver.id).map(d => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.first_name} {d.last_name}
                   </SelectItem>
