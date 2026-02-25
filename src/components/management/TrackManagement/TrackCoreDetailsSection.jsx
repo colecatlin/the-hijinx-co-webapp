@@ -176,33 +176,21 @@ export default function TrackCoreDetailsSection({ trackId }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Logo URL</label>
-            <div className="flex items-center gap-3">
-              <Input
-                value={formData.logo_url || ''}
-                onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                placeholder="https://..."
-              />
-              {formData.logo_url && (
-                <img src={formData.logo_url} alt="Track logo" className="h-10 rounded" />
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <div className="flex items-center gap-3">
-              <Input
-                value={formData.image_url || ''}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
-              />
-              {formData.image_url && (
-                <img src={formData.image_url} alt="Track image" className="h-10 rounded" />
-              )}
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-6">
+          <MediaUploader
+            label="Track Logo"
+            hint="Recommended: 400×400px (square) · Max 5MB"
+            value={formData.logo_url || ''}
+            onChange={(v) => setFormData({ ...formData, logo_url: v })}
+            maxSizeMB={5}
+          />
+          <MediaUploader
+            label="Track Image"
+            hint="Recommended: 1200×600px · Max 8MB"
+            value={formData.image_url || ''}
+            onChange={(v) => setFormData({ ...formData, image_url: v })}
+            maxSizeMB={8}
+          />
         </div>
 
         <Button onClick={handleSave} disabled={updateMutation.isPending}>
