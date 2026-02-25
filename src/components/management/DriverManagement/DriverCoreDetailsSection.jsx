@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import MediaUploader from '@/components/shared/MediaUploader';
 import ImageCropModal from '@/components/shared/ImageCropModal';
-import LocationFields from '@/components/shared/LocationFields';
+import LocationFieldsWithPicker from '@/components/shared/LocationFieldsWithPicker';
 import DateInput from '@/components/shared/DateInput';
 
 const DISCIPLINES = [
