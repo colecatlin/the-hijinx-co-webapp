@@ -34,7 +34,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
   const handleProfileClick = (e) => {
     e.stopPropagation();
     const profileUrl = buildProfileUrl('Driver', driver.slug);
-    navigate(profileUrl.startsWith('/') ? profileUrl : `/${profileUrl}`);
+    navigate(profileUrl);
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
