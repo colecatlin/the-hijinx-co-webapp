@@ -53,6 +53,34 @@ export default function DriverProfile() {
       setActiveSection('overview');
     }, [firstName, lastName]);
 
+    React.useEffect(() => {
+      if (driver && media) {
+        // Update document title
+        document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
+
+        // Update meta tags for social sharing
+        const updateMetaTag = (name, content) => {
+          let tag = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+          if (!tag) {
+            tag = document.createElement('meta');
+            tag.setAttribute(name.startsWith('og:') ? 'property' : 'name', name);
+            document.head.appendChild(tag);
+          }
+          tag.setAttribute('content', content);
+        };
+
+        updateMetaTag('og:title', `${driver.first_name} ${driver.last_name}`);
+        updateMetaTag('og:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver. ${driver.hometown_city ? `From ${driver.hometown_city}, ${driver.hometown_country}` : ''}`);
+        updateMetaTag('og:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+        updateMetaTag('og:url', window.location.href);
+        updateMetaTag('og:type', 'profile');
+        updateMetaTag('twitter:card', 'summary_large_image');
+        updateMetaTag('twitter:title', `${driver.first_name} ${driver.last_name}`);
+        updateMetaTag('twitter:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver`);
+        updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+      }
+    }, [driver, media]);
+
     const { data: isAuthenticated } = useQuery({
       queryKey: ['isAuthenticated'],
       queryFn: () => base44.auth.isAuthenticated(),
