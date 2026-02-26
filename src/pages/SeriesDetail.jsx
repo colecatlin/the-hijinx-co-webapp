@@ -16,16 +16,16 @@ import SeriesNameHistory from '@/components/series/SeriesNameHistory';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
-  const slug = searchParams.get('slug');
+  const seriesSlug = searchParams.get('slug') || searchParams.get('id');
   const [activeTab, setActiveTab] = useState('overview');
 
   const { data: series, isLoading } = useQuery({
-    queryKey: ['series', slug],
+    queryKey: ['series', seriesSlug],
     queryFn: async () => {
       const all = await base44.entities.Series.list();
-      return all.find(s => s.slug === slug);
+      return all.find(s => s.slug === seriesSlug || s.id === seriesSlug);
     },
-    enabled: !!slug,
+    enabled: !!seriesSlug,
   });
 
   const { data: events = [] } = useQuery({

@@ -37,6 +37,9 @@ export default function DriverProfile() {
   const [activeSection, setActiveSection] = useState('overview');
   const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [compareDriverId, setCompareDriverId] = useState('');
+  
+  // For backwards compatibility with old first/last name URLs
+  const shouldFallbackLookup = !driverSlug && firstName && lastName;
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
