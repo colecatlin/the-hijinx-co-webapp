@@ -447,6 +447,14 @@ export default function DriverProfile() {
             <ProgramsTimeline programs={programs} teams={teams} />
           </section>
 
+          <section className="p-8">
+            <DriverInsights 
+              driver={driver}
+              results={results}
+              programs={driverPrograms}
+            />
+          </section>
+
           <section id="section-stats" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Stats</h2>
