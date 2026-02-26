@@ -198,7 +198,10 @@ export default function TeamProfile() {
                     className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="min-w-0 flex-1">
+                      <div className="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-[#232323] text-sm flex-shrink-0">
+                        {driver.primary_number || '#'}
+                      </div>
+                      <div className="min-w-0">
                         <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
                           {driver.first_name} {driver.last_name}
                         </div>
