@@ -60,8 +60,8 @@ export default function DriverProfile() {
   });
 
   const driver = drivers.find(d => 
-    d.slug === driverSlugOrId || 
-    d.id === driverSlugOrId ||
+    d.slug === driverSlug || 
+    d.id === driverSlug ||
     (firstName && lastName && 
       d.first_name?.toLowerCase() === firstName.toLowerCase() && 
       d.last_name?.toLowerCase() === lastName.toLowerCase())
