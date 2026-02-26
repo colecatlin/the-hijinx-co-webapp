@@ -11,6 +11,7 @@ import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
+import TeamScheduleResults from '@/components/teams/TeamScheduleResults';
 
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
