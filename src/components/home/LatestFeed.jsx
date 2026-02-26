@@ -11,7 +11,6 @@ export default function LatestFeed() {
   const { data: stories = [], isLoading } = useQuery({
     queryKey: ['latestStories'],
     queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 10),
-    staleTime: 5 * 60 * 1000,
   });
 
   return (
@@ -43,7 +42,6 @@ export default function LatestFeed() {
                     src={story.cover_image}
                     alt={story.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

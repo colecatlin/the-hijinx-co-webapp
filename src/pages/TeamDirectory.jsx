@@ -23,7 +23,26 @@ export default function TeamDirectory() {
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
-    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['teamPrograms'],
+    queryFn: () => base44.entities.TeamProgram.list(),
+  });
+
+  const { data: allRoster = [] } = useQuery({
+    queryKey: ['teamRoster'],
+    queryFn: () => base44.entities.TeamRoster.list(),
+  });
+
+  const { data: allPerformance = [] } = useQuery({
+    queryKey: ['teamPerformance'],
+    queryFn: () => base44.entities.TeamPerformance.list(),
+  });
+
+  const { data: allMedia = [] } = useQuery({
+    queryKey: ['teamMedia'],
+    queryFn: () => base44.entities.TeamMedia.list(),
   });
 
   const filteredTeams = teams
@@ -134,15 +153,24 @@ export default function TeamDirectory() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTeams.map(team => (
-              <TeamCard
-                key={team.id}
-                team={team}
-                programs={[]}
-                programsCount={0}
-                driversCount={0}
-              />
-            ))}
+            {filteredTeams.map(team => {
+              const programs = allPrograms.filter(p => p.team_id === team.id);
+              const drivers = allRoster.filter(r => r.team_id === team.id && r.role === 'Driver' && r.active);
+              const performance = allPerformance.find(p => p.team_id === team.id);
+              const media = allMedia.find(m => m.team_id === team.id);
+              
+              return (
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  programs={programs}
+                  programsCount={programs.length}
+                  driversCount={drivers.length}
+                  performance={performance}
+                  media={media}
+                />
+              );
+            })}
           </div>
         )}
 

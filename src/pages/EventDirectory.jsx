@@ -29,30 +29,26 @@ export default function EventDirectory() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list('event_date', 500),
-    staleTime: 5 * 60 * 1000,
   });
 
   const { data: seriesMap = {} } = useQuery({
-    queryKey: ['series'],
+    queryKey: ['seriesData'],
     queryFn: async () => {
       const allSeries = await base44.entities.Series.list();
       return Object.fromEntries(allSeries.map(s => [s.name, s]));
     },
-    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allResults = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results-all'],
     queryFn: () => base44.entities.Results.list('-position', 500),
-    enabled: activeTab === 'results' && events.length > 0,
-    staleTime: 5 * 60 * 1000,
+    enabled: events.length > 0,
   });
 
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
-    enabled: activeTab === 'results' && allResults.length > 0,
-    staleTime: 5 * 60 * 1000,
+    queryKey: ['drivers-list'],
+    queryFn: () => base44.entities.Driver.list(),
+    enabled: allResults.length > 0,
   });
 
   const today = new Date().toISOString().split('T')[0];

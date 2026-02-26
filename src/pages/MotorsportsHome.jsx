@@ -14,7 +14,7 @@ import { format, parseISO, differenceInDays } from 'date-fns';
 const navCards = [
   { name: 'Standings', icon: Trophy, page: 'StandingsHome', color: 'from-yellow-500 to-amber-600', accent: '#F59E0B' },
   { name: 'Schedule', icon: Calendar, page: 'ScheduleHome', color: 'from-blue-500 to-indigo-600', accent: '#3B82F6' },
-  { name: 'Events', icon: Flag, page: 'EventDirectory', color: 'from-green-500 to-emerald-600', accent: '#10B981' },
+  { name: 'Results', icon: Flag, page: 'ResultsHome', color: 'from-green-500 to-emerald-600', accent: '#10B981' },
   { name: 'Drivers', icon: Users, page: 'DriverDirectory', color: 'from-purple-500 to-violet-600', accent: '#8B5CF6' },
   { name: 'Teams', icon: Building2, page: 'TeamDirectory', color: 'from-rose-500 to-pink-600', accent: '#F43F5E' },
   { name: 'Tracks', icon: MapPin, page: 'TrackDirectory', color: 'from-teal-500 to-cyan-600', accent: '#14B8A6' },
@@ -240,7 +240,7 @@ export default function MotorsportsHome() {
                     transition={{ delay: i * 0.07 }}
                   >
                     <Link
-                      to={series.slug ? `/SeriesDetail?slug=${series.slug}` : createPageUrl('SeriesHome')}
+                      to={createPageUrl('SeriesHome')}
                       className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/15 transition-all group"
                     >
                       <div className="w-7 h-7 rounded-md bg-orange-500/20 flex items-center justify-center flex-shrink-0">
@@ -273,7 +273,7 @@ export default function MotorsportsHome() {
                 <div className="w-1.5 h-5 bg-green-500 rounded-full" />
                 <h2 className="font-bold text-sm uppercase tracking-widest text-gray-300">Recent Results</h2>
               </div>
-              <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-green-400 flex items-center gap-1 transition-colors">
+              <Link to={createPageUrl('ResultsHome')} className="text-xs text-gray-500 hover:text-green-400 flex items-center gap-1 transition-colors">
                 All Results <ChevronRight className="w-3 h-3" />
               </Link>
             </div>

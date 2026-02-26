@@ -46,7 +46,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
           <div className="flex-1">
             <div className="mb-3">
               {media?.logo_url ? (
-                <img src={media?.logo_url || team.logo_url} alt={team.name} className="h-12 w-auto object-contain" loading="lazy" />
+                <img src={media.logo_url} alt={team.name} className="h-12 w-auto object-contain" />
               ) : (
                 <div className="h-12 flex items-center">
                   <div className="text-2xl font-black text-gray-400">

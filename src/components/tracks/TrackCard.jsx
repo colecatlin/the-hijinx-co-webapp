@@ -72,7 +72,6 @@ export default function TrackCard({ track, disciplines = [], media }) {
             src={media.hero_image_url} 
             alt={track.name}
             className="w-full h-full object-cover"
-            loading="lazy"
           />
         </div>
       )}

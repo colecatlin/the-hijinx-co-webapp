@@ -20,8 +20,7 @@ export default function StandingsHome() {
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['series'],
-    queryFn: () => base44.entities.Series.filter({ status: 'Active' }),
-    staleTime: 10 * 60 * 1000,
+    queryFn: () => base44.entities.Series.filter({ status: 'active' }),
   });
 
   const { data: entries = [], isLoading: loadingEntries } = useQuery({
