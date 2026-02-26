@@ -56,42 +56,21 @@ export default function TeamProfile() {
     enabled: !!team?.id,
   });
 
-  const { data: roster = [] } = useQuery({
-    queryKey: ['teamRoster', team?.id],
-    queryFn: () => base44.entities.TeamRoster?.filter({ team_id: team.id }).catch(() => []),
-    enabled: !!team?.id,
-  });
-
   const { data: performance } = useQuery({
     queryKey: ['teamPerformance', team?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TeamPerformance.filter({ team_id: team.id });
-      return results[0] || null;
-    },
-    enabled: !!team?.id,
-  });
-
-  const { data: partners = [] } = useQuery({
-    queryKey: ['teamPartners', team?.id],
-    queryFn: () => base44.entities.TeamPartner.filter({ team_id: team.id }),
+    queryFn: async () => null,
     enabled: !!team?.id,
   });
 
   const { data: media } = useQuery({
     queryKey: ['teamMedia', team?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TeamMedia.filter({ team_id: team.id });
-      return results[0] || null;
-    },
+    queryFn: async () => null,
     enabled: !!team?.id,
   });
 
   const { data: operations } = useQuery({
     queryKey: ['teamOperations', team?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TeamOperations.filter({ team_id: team.id });
-      return results[0] || null;
-    },
+    queryFn: async () => null,
     enabled: !!team?.id,
   });
 
