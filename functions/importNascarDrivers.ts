@@ -74,10 +74,11 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
     const nascarDrivers = llmResult?.drivers || [];
 
     // Load existing DB data
-    const [existingDrivers, existingSeries, existingPrograms] = await Promise.all([
+    const [existingDrivers, existingSeries, existingPrograms, existingTeams] = await Promise.all([
       base44.asServiceRole.entities.Driver.list('-created_date', 500),
       base44.asServiceRole.entities.Series.list(),
       base44.asServiceRole.entities.DriverProgram.list('-created_date', 1000),
+      base44.asServiceRole.entities.Team.list('-created_date', 500),
     ]);
 
     const driverMap = new Map();
@@ -97,7 +98,12 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
       programSet.add(`${p.driver_id}|${p.series_name}|${p.season || '2026'}`);
     }
 
-    const stats = { drivers_created: 0, drivers_found: 0, programs_created: 0, skipped: 0 };
+    const teamMap = new Map();
+    for (const t of existingTeams) {
+      teamMap.set(t.name?.toLowerCase(), t);
+    }
+
+    const stats = { drivers_created: 0, drivers_found: 0, programs_created: 0, teams_created: 0, skipped: 0 };
     const log = [];
 
     // Ensure all series exist — match by name OR slug to avoid duplicates
