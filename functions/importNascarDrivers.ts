@@ -99,24 +99,32 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
     const stats = { drivers_created: 0, drivers_found: 0, programs_created: 0, skipped: 0 };
     const log = [];
 
-    // Ensure all series exist
+    // Ensure all series exist — match by name OR slug to avoid duplicates
     for (const config of seriesConfigs) {
-      if (!seriesMap.has(config.name)) {
+      const existing = seriesMap.get(config.name) || seriesMap.get(config.slug);
+      if (!existing) {
         if (!dry_run) {
           const created = await base44.asServiceRole.entities.Series.create({
             name: config.name,
-            slug: slugify(config.name),
+            slug: config.slug,
             discipline: 'Stock Car',
             status: 'Active',
             season_year: '2026',
             sanctioning_body: 'NASCAR',
           });
           seriesMap.set(config.name, created);
+          seriesMap.set(config.slug, created);
           log.push(`Created series: ${config.name}`);
         } else {
-          seriesMap.set(config.name, { id: `dry-run-${config.id}`, name: config.name });
+          const mock = { id: `dry-run-${config.id}`, name: config.name };
+          seriesMap.set(config.name, mock);
+          seriesMap.set(config.slug, mock);
           log.push(`[DRY RUN] Would create series: ${config.name}`);
         }
+      } else {
+        // Make sure it's also accessible by name in case it was found by slug
+        seriesMap.set(config.name, existing);
+        log.push(`Found existing series: ${config.name}`);
       }
     }
 
