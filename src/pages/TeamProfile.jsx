@@ -56,6 +56,12 @@ export default function TeamProfile() {
     enabled: !!team?.id,
   });
 
+  const { data: roster = [] } = useQuery({
+    queryKey: ['teamRoster', team?.id],
+    queryFn: () => base44.entities.TeamRoster?.filter({ team_id: team.id }).catch(() => []),
+    enabled: !!team?.id,
+  });
+
   const { data: performance } = useQuery({
     queryKey: ['teamPerformance', team?.id],
     queryFn: async () => {
