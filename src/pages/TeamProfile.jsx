@@ -129,7 +129,6 @@ export default function TeamProfile() {
     });
   };
 
-  const activePartners = partners.filter(p => p.active).slice(0, 4);
   const topStrengths = performance?.strengths?.slice(0, 2) || [];
 
   return (
