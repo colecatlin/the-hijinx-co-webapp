@@ -375,84 +375,79 @@ export default function TeamProfile() {
           </section>
 
           <section id="section-roster" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Full Roster</h2>
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Drivers</h2>
             
-            {roster.length > 0 ? (
-              <>
-                <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Name</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Role</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Number</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Program</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Hometown</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roster.map(member => {
-                    const prog = programs.find(p => p.id === member.program_id);
-                    return (
-                      <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium text-[#232323]">{member.person_name}</td>
-                        <td className="py-3 px-4 text-gray-700">{member.role}</td>
-                        <td className="py-3 px-4 text-gray-700">{member.number || '—'}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {prog ? `${prog.series_name}${prog.class_name ? ` • ${prog.class_name}` : ''}` : '—'}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600">{member.hometown || '—'}</td>
-                        <td className="py-3 px-4">
-                          <Badge className={member.active ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-600'}>
-                            {member.active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="md:hidden space-y-4">
-              {roster.map(member => {
-                const prog = programs.find(p => p.id === member.program_id);
-                return (
-                  <div key={member.id} className="border border-gray-200 p-4">
-                    <div className="font-bold text-[#232323] mb-2">{member.person_name}</div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span className="text-gray-600">Role:</span> {member.role}
+            {allDrivers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                {allDrivers.map(driver => {
+                  const driverProgs = driverPrograms.filter(dp => dp.driver_id === driver.id);
+                  return (
+                    <Link
+                      key={driver.id}
+                      to={createPageUrl(`DriverProfile?id=${driver.slug || driver.id}`)}
+                      className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-[#232323] text-sm flex-shrink-0">
+                          {driver.primary_number || '#'}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
+                            {driver.first_name} {driver.last_name}
+                          </div>
+                          {driverProgs.length > 0 && (
+                            <div className="text-xs text-gray-500 truncate">
+                              {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {member.number && (
-                        <div>
-                          <span className="text-gray-600">Number:</span> {member.number}
+                      {driverProgs.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {driverProgs.map(dp => (
+                            <Badge key={dp.id} variant="outline" className="text-xs">
+                              #{dp.car_number} {dp.participation_status && dp.participation_status !== 'Full-Time' ? `· ${dp.participation_status}` : ''}
+                            </Badge>
+                          ))}
                         </div>
                       )}
-                      {prog && (
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Program:</span> {prog.series_name}
-                          {prog.class_name ? ` • ${prog.class_name}` : ''}
-                        </div>
-                      )}
-                      {member.hometown && (
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Hometown:</span> {member.hometown}
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-2">
-                      <Badge className={member.active ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-600'}>
-                        {member.active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {roster.filter(r => r.role !== 'Driver').length > 0 && (
+              <>
+                <h3 className="text-lg font-semibold text-[#232323] mb-4">Team Personnel</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Role</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roster.filter(r => r.role !== 'Driver').map(member => (
+                        <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4 font-medium text-[#232323]">{member.person_name}</td>
+                          <td className="py-3 px-4 text-gray-700">{member.role}</td>
+                          <td className="py-3 px-4">
+                            <Badge className={member.active ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-600'}>
+                              {member.active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
-            ) : (
+            )}
+
+            {allDrivers.length === 0 && roster.length === 0 && (
               <p className="text-gray-500">No roster information available.</p>
             )}
           </section>
