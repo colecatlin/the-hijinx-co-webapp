@@ -47,6 +47,18 @@ export default function TeamProfile() {
     enabled: !!team?.id,
   });
 
+  const { data: driverPrograms = [] } = useQuery({
+    queryKey: ['teamDriverPrograms', team?.id],
+    queryFn: () => base44.entities.DriverProgram.filter({ team_id: team.id }),
+    enabled: !!team?.id,
+  });
+
+  const { data: allDrivers = [] } = useQuery({
+    queryKey: ['driversForTeam', team?.id],
+    queryFn: () => base44.entities.Driver.filter({ team_id: team.id }),
+    enabled: !!team?.id,
+  });
+
   const { data: performance } = useQuery({
     queryKey: ['teamPerformance', team?.id],
     queryFn: async () => {
