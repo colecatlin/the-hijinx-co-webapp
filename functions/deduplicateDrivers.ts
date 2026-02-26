@@ -42,46 +42,37 @@ Deno.serve(async (req) => {
       return false;
     };
 
-    // Group drivers by first_name + date_of_birth first, then check last names
-    const groups = {};
-    for (const driver of drivers) {
-      const baseKey = [
-        normalizeName(driver.first_name),
-        (driver.date_of_birth || 'unknown'),
-      ].join('|');
-      if (!groups[baseKey]) groups[baseKey] = [];
-      groups[baseKey].push(driver);
-    }
+    // Group drivers purely by name similarity, without requiring date_of_birth to match
+    const duplicateSets = [];
+    const processed = new Set();
 
-    // Now refine groups: split groups where last names don't match
-    const refinedGroups = [];
-    for (const group of Object.values(groups)) {
-      const subgroups = {};
-      for (const driver of group) {
-        let foundGroup = false;
-        
-        // Try to match with existing subgroups based on last name variations
-        for (const lastNameKey of Object.keys(subgroups)) {
-          const existing = subgroups[lastNameKey][0];
-          if (areNameVariations(driver.last_name, existing.last_name)) {
-            subgroups[lastNameKey].push(driver);
-            foundGroup = true;
-            break;
-          }
-        }
-        
-        // If no match found, create new subgroup
-        if (!foundGroup) {
-          const key = normalizeName(driver.last_name);
-          if (!subgroups[key]) subgroups[key] = [];
-          subgroups[key].push(driver);
+    for (let i = 0; i < drivers.length; i++) {
+      if (processed.has(drivers[i].id)) continue;
+
+      const driver1 = drivers[i];
+      const potentialDupes = [driver1];
+
+      // Look for matches with other drivers
+      for (let j = i + 1; j < drivers.length; j++) {
+        if (processed.has(drivers[j].id)) continue;
+
+        const driver2 = drivers[j];
+
+        // Check if first names and last names are variations of each other
+        if (
+          areNameVariations(driver1.first_name, driver2.first_name) &&
+          areNameVariations(driver1.last_name, driver2.last_name)
+        ) {
+          potentialDupes.push(driver2);
+          processed.add(driver2.id);
         }
       }
-      
-      refinedGroups.push(...Object.values(subgroups));
-    }
 
-    const duplicateSets = refinedGroups.filter(g => g.length > 1);
+      if (potentialDupes.length > 1) {
+        duplicateSets.push(potentialDupes);
+        potentialDupes.forEach(d => processed.add(d.id));
+      }
+    }
 
     if (duplicateSets.length === 0) {
       return Response.json({ success: true, message: 'No duplicates found.', merged: [] });
