@@ -54,9 +54,24 @@ export default function TeamProfile() {
   });
 
   const { data: allDrivers = [] } = useQuery({
-    queryKey: ['driversForTeam', team?.id],
-    queryFn: () => base44.entities.Driver.filter({ team_id: team.id }),
-    enabled: !!team?.id,
+    queryKey: ['driversForTeam', team?.id, driverPrograms.map(dp => dp.driver_id).join(',')],
+    queryFn: async () => {
+      // Get drivers linked via DriverProgram (team_id on the program)
+      const driverIdsFromPrograms = [...new Set(driverPrograms.map(dp => dp.driver_id).filter(Boolean))];
+      // Also get drivers where team_id is set directly on the Driver record
+      const directDrivers = await base44.entities.Driver.filter({ team_id: team.id });
+      const directIds = new Set(directDrivers.map(d => d.id));
+
+      // Fetch any program-linked drivers not already in directDrivers
+      const missingIds = driverIdsFromPrograms.filter(id => !directIds.has(id));
+      const programDrivers = missingIds.length > 0
+        ? await Promise.all(missingIds.map(id => base44.entities.Driver.filter({ id })))
+        : [];
+      const flatProgramDrivers = programDrivers.flat();
+
+      return [...directDrivers, ...flatProgramDrivers];
+    },
+    enabled: !!team?.id && driverPrograms.length >= 0,
   });
 
   const { data: performance } = useQuery({
