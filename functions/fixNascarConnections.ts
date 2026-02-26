@@ -115,35 +115,39 @@ Deno.serve(async (req) => {
       const locationNote = event.location_note || '';
       const eventName = event.name || '';
 
-      // Try to extract track name from location_note (e.g. "NASCAR Cup Series @ Daytona International Speedway")
+      // Extract candidate track name — from "@ Track Name" in location_note or event name
       const atMatch = locationNote.match(/@\s*(.+)$/);
       const candidateName = atMatch ? atMatch[1].trim() : '';
 
+      // Also try stripping series name from location_note: "NASCAR Cup Series @ Phoenix Raceway" → "Phoenix Raceway"
       let matchedTrack = null;
 
-      if (candidateName) {
-        matchedTrack = trackByName.get(normalize(candidateName));
-        if (!matchedTrack) {
-          // Try partial match — first 10 chars
-          const prefix = normalize(candidateName).substring(0, 10);
-          for (const [key, t] of trackByName) {
-            if (key.includes(prefix) || prefix.includes(key.substring(0, 10))) {
-              matchedTrack = t;
-              break;
-            }
-          }
-        }
-      }
+      const candidates = [candidateName, eventName].filter(Boolean);
 
-      // Fallback: search event name for track keywords
-      if (!matchedTrack) {
-        const eNameNorm = normalize(eventName);
+      for (const candidate of candidates) {
+        const normCand = normalize(candidate);
+        // Exact match
+        if (trackByName.has(normCand)) { matchedTrack = trackByName.get(normCand); break; }
+
+        // Word-level partial: check if any significant word from candidate matches a track name
+        const words = normCand.split(/\s+/).filter(w => w.length > 4);
         for (const [key, t] of trackByName) {
-          if (key.length > 4 && eNameNorm.includes(key.substring(0, 8))) {
-            matchedTrack = t;
-            break;
+          for (const word of words) {
+            if (key.includes(word)) { matchedTrack = t; break; }
           }
+          if (matchedTrack) break;
         }
+        if (matchedTrack) break;
+
+        // Reverse: track name words appear in candidate
+        for (const [key, t] of trackByName) {
+          const trackWords = key.split(/\s+/).filter(w => w.length > 4);
+          for (const tw of trackWords) {
+            if (normCand.includes(tw)) { matchedTrack = t; break; }
+          }
+          if (matchedTrack) break;
+        }
+        if (matchedTrack) break;
       }
 
       if (matchedTrack) {
@@ -151,8 +155,10 @@ Deno.serve(async (req) => {
         if (!dry_run) {
           await base44.asServiceRole.entities.Event.update(event.id, { track_id: matchedTrack.id });
         } else {
-          log.push(`  [DRY] Event "${eventName}" → Track "${matchedTrack.name}"`);
+          log.push(`  [DRY] Event "${eventName}" → Track "${matchedTrack.name}" (candidate: "${candidateName}")`);
         }
+      } else {
+        log.push(`  UNMATCHED: "${eventName}" | note: "${locationNote}"`);
       }
     }
     log.push(`  Linked ${stats.events_track_fixed} events to tracks`);
