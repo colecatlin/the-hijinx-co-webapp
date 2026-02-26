@@ -122,14 +122,15 @@ Deno.serve(async (req) => {
       // Also try stripping series name from location_note: "NASCAR Cup Series @ Phoenix Raceway" → "Phoenix Raceway"
       let matchedTrack = null;
 
-      const candidates = [candidateName, eventName].filter(Boolean);
+      // Only use location_note as candidate — event name is too ambiguous for track matching
+      const candidates = [candidateName].filter(Boolean);
 
       for (const candidate of candidates) {
         const normCand = normalize(candidate);
         // Exact match
         if (trackByName.has(normCand)) { matchedTrack = trackByName.get(normCand); break; }
 
-        // Word-level partial: check if any significant word from candidate matches a track name
+        // Word-level partial: check if any significant word (>4 chars) from candidate exists in a track name
         const words = normCand.split(/\s+/).filter(w => w.length > 4);
         for (const [key, t] of trackByName) {
           for (const word of words) {
@@ -139,9 +140,9 @@ Deno.serve(async (req) => {
         }
         if (matchedTrack) break;
 
-        // Reverse: track name words appear in candidate
+        // Reverse: track name words appear in candidate (longer words only)
         for (const [key, t] of trackByName) {
-          const trackWords = key.split(/\s+/).filter(w => w.length > 4);
+          const trackWords = key.split(/\s+/).filter(w => w.length > 5);
           for (const tw of trackWords) {
             if (normCand.includes(tw)) { matchedTrack = t; break; }
           }
