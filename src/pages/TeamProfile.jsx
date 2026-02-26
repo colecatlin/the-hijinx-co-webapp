@@ -337,24 +337,25 @@ export default function TeamProfile() {
 
           <section id="section-programs" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
-            {sortedPrograms.length > 0 ? (
+            {uniqueSeriesPrograms.length > 0 ? (
               <div className="space-y-4">
-                {sortedPrograms.map(prog => (
-                  <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
-                    <div className="flex items-center gap-2 mb-1">
+                {uniqueSeriesPrograms.map(prog => {
+                  const driversInSeries = driverPrograms.filter(dp => dp.series_name === prog.series_name);
+                  return (
+                    <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
                       <div className="font-bold text-[#232323]">{prog.series_name}</div>
-                      {prog.primary && (
-                        <Badge className="bg-[#D33F49] text-white text-xs">Primary</Badge>
-                      )}
+                      {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
+                      <div className="text-sm text-gray-500 mt-1">
+                        {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''} · 2026
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {driversInSeries.map(dp => (
+                          <Badge key={dp.id} variant="outline" className="text-xs">#{dp.car_number}</Badge>
+                        ))}
+                      </div>
                     </div>
-                    {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
-                    {prog.seasons_active && <div className="text-sm text-gray-600">{prog.seasons_active}</div>}
-                    {prog.program_status && (
-                      <Badge variant="outline" className="mt-2">{prog.program_status}</Badge>
-                    )}
-                    {prog.notes && <p className="text-sm text-gray-700 mt-2">{prog.notes}</p>}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500">No programs available.</p>
