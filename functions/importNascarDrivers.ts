@@ -138,8 +138,35 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
     log.push(`LLM returned ${nascarDrivers.length} total drivers across all series`);
 
     for (const driverData of nascarDrivers) {
-      const { first_name: first, last_name: last, car_number, manufacturer, series: seriesName } = driverData;
+      const { first_name: first, last_name: last, car_number, manufacturer, series: seriesName, team_name } = driverData;
       if (!first || !last || !seriesName) { stats.skipped++; continue; }
+
+      // Upsert team if provided
+      let teamRecord = null;
+      if (team_name) {
+        const teamKey = team_name.toLowerCase();
+        teamRecord = teamMap.get(teamKey);
+        if (!teamRecord) {
+          stats.teams_created++;
+          if (!dry_run) {
+            teamRecord = await base44.asServiceRole.entities.Team.create({
+              name: team_name,
+              slug: slugify(team_name),
+              primary_discipline: 'Stock Car',
+              team_level: 'National',
+              status: 'Active',
+              country: 'United States',
+              headquarters_state: 'NC',
+              headquarters_city: 'Concord',
+            });
+            teamMap.set(teamKey, teamRecord);
+            log.push(`Created team: ${team_name}`);
+          } else {
+            teamRecord = { id: `dry-run-team-${teamKey}` };
+            log.push(`[DRY RUN] Would create team: ${team_name}`);
+          }
+        }
+      }
 
       const fullKey = `${first.toLowerCase()} ${last.toLowerCase()}`;
       let driver = driverMap.get(fullKey);
@@ -156,6 +183,7 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
             status: 'Active',
             hometown_country: 'United States',
             slug: slugify(`${first} ${last}`),
+            team_id: teamRecord?.id || null,
           });
           driverMap.set(fullKey, driver);
           log.push(`Created driver: ${first} ${last} (${seriesName})`);
@@ -165,6 +193,11 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
         }
       } else {
         stats.drivers_found++;
+        // Update team_id on existing driver if not already set
+        if (!dry_run && teamRecord?.id && !driver.team_id) {
+          await base44.asServiceRole.entities.Driver.update(driver.id, { team_id: teamRecord.id });
+          log.push(`  Updated team on driver: ${first} ${last} → ${team_name}`);
+        }
       }
 
       // Create DriverProgram if not already exists
@@ -177,14 +210,17 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
             driver_id: driver.id,
             series_id: seriesRecord?.id || null,
             series_name: seriesName,
+            team_id: teamRecord?.id || null,
+            team_name: team_name || null,
             car_number: car_number,
-            season: '2026',
+            start_year: 2026,
             status: 'active',
+            participation_status: 'Full-Time',
           });
           programSet.add(programKey);
-          log.push(`  Program: ${first} ${last} → ${seriesName} #${car_number}`);
+          log.push(`  Program: ${first} ${last} → ${seriesName} #${car_number}${team_name ? ` (${team_name})` : ''}`);
         } else {
-          log.push(`  [DRY RUN] Program: ${first} ${last} → ${seriesName} #${car_number}`);
+          log.push(`  [DRY RUN] Program: ${first} ${last} → ${seriesName} #${car_number}${team_name ? ` (${team_name})` : ''}`);
         }
       } else {
         stats.skipped++;
