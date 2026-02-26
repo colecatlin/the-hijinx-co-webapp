@@ -153,7 +153,6 @@ export default function TeamProfile() {
     });
   };
 
-  const primaryPrograms = sortedPrograms.filter(p => p.primary || sortedPrograms.indexOf(p) < 3).slice(0, 3);
   const activePartners = partners.filter(p => p.active).slice(0, 4);
   const topStrengths = performance?.strengths?.slice(0, 2) || [];
 
