@@ -35,18 +35,6 @@ export default function TeamProfile() {
 
   const team = teams.find(t => t.slug === teamSlug || t.id === teamSlug);
 
-  const { data: programs = [] } = useQuery({
-    queryKey: ['teamPrograms', team?.id],
-    queryFn: () => base44.entities.TeamProgram.filter({ team_id: team.id }),
-    enabled: !!team?.id,
-  });
-
-  const { data: roster = [] } = useQuery({
-    queryKey: ['teamRoster', team?.id],
-    queryFn: () => base44.entities.TeamRoster.filter({ team_id: team.id }),
-    enabled: !!team?.id,
-  });
-
   const { data: driverPrograms = [] } = useQuery({
     queryKey: ['teamDriverPrograms', team?.id],
     queryFn: () => base44.entities.DriverProgram.filter({ team_id: team.id }),
