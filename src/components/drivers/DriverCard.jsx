@@ -68,9 +68,10 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             <div className="flex-1 relative overflow-hidden bg-gray-100">
               {media?.headshot_url || media?.hero_image_url ? (
                 <img 
-                  src={media.headshot_url || media.hero_image_url} 
-                  alt={`${driver.first_name} ${driver.last_name}`}
-                  className="w-full h-full object-cover"
+                src={media.headshot_url || media.hero_image_url} 
+                alt={`${driver.first_name} ${driver.last_name}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">

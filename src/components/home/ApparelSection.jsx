@@ -22,6 +22,7 @@ export default function ApparelSection() {
           src={bgUrl}
           alt="Apparel background"
           className="w-full h-full object-cover opacity-30"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent" />
       </div>
