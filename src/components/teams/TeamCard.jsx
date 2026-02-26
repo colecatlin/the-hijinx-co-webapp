@@ -41,7 +41,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
 
   return (
     <Link to={buildProfileUrl('Team', team.slug || team.id)} className="block">
-      <div className="aspect-[2/3] bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group flex flex-col">
+      <div className="aspect-square bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="mb-3">
