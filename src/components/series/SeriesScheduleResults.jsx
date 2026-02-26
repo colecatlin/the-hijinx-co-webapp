@@ -12,8 +12,9 @@ export default function SeriesScheduleResults({ seriesId }) {
   const { data: events = [], isLoading: loadingEvents } = useQuery({
     queryKey: ['seriesEvents', seriesId],
     queryFn: async () => {
-      const allEvents = await base44.entities.Event.filter({ series: seriesId });
-      return allEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+      const allEvents = await base44.entities.Event.list('-event_date', 1000);
+      const seriesEvents = allEvents.filter(e => e.series === seriesId);
+      return seriesEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
     },
     enabled: !!seriesId,
   });
