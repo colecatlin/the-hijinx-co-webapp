@@ -160,17 +160,18 @@ export default function TeamDirectory() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTeams.map(team => {
               const programs = allPrograms.filter(p => p.team_id === team.id);
-              const drivers = allRoster.filter(r => r.team_id === team.id && r.role === 'Driver' && r.active);
+              const driverIds = new Set(programs.map(p => p.driver_id).filter(Boolean));
+              const drivers = Array.from(driverIds).length;
               const performance = allPerformance.find(p => p.team_id === team.id);
               const media = allMedia.find(m => m.team_id === team.id);
-              
+
               return (
                 <TeamCard
                   key={team.id}
                   team={team}
                   programs={programs}
                   programsCount={programs.length}
-                  driversCount={drivers.length}
+                  driversCount={drivers}
                   performance={performance}
                   media={media}
                 />
