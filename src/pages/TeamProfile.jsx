@@ -128,14 +128,9 @@ export default function TeamProfile() {
                   <button
                     key={section.id}
                     onClick={() => {
-                      setActiveSection(section.id);
-                      if (section.id === 'overview') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        const element = document.getElementById(`section-${section.id}`);
-                        if (element) {
-                          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
+                      const element = document.getElementById(`section-${section.id}`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }
                     }}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${
