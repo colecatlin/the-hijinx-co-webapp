@@ -409,7 +409,6 @@ export default function TeamProfile() {
                     team={team}
                     performance={performance}
                     programs={uniqueSeriesPrograms}
-                    roster={roster}
                   />
                 </div>
 
