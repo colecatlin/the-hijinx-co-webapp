@@ -1,12 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import { MapPin, Users, Briefcase } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { createPageUrl } from '@/components/utils';
 
 export default function TeamCard({ team, programs = [], programsCount, driversCount, performance, media }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const navigate = useNavigate();
+
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+  };
+
+  const handleProfileClick = (e) => {
+    e.stopPropagation();
+    navigate(createPageUrl('TeamProfile', { id: team.slug || team.id }));
+  };
   const getDisciplineIcon = (discipline) => {
     const icons = {
       'Off Road': '🏜️',
