@@ -194,7 +194,7 @@ export default function TeamProfile() {
                 return (
                   <Link
                     key={driver.id}
-                    to={createPageUrl(`DriverProfile?first=${driver.first_name}&last=${driver.last_name}`)}
+                    to={createPageUrl(`DriverProfile?first=${encodeURIComponent(driver.first_name)}&last=${encodeURIComponent(driver.last_name)}`)}
                     className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
                   >
                     <div className="flex items-center gap-3">
