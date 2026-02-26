@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { areNameVariations } from './helpers/stringUtils.js';
 
 Deno.serve(async (req) => {
   try {
@@ -11,36 +12,6 @@ Deno.serve(async (req) => {
     }
 
     const drivers = await base44.asServiceRole.entities.Driver.list();
-
-    // Helper function to normalize names for comparison
-    const normalizeName = (name) => {
-      return (name || '').toLowerCase().trim();
-    };
-
-    // Helper function to check if names are likely variations of each other
-    const areNameVariations = (name1, name2) => {
-      const n1 = normalizeName(name1);
-      const n2 = normalizeName(name2);
-      
-      // Exact match
-      if (n1 === n2) return true;
-      
-      // One contains the other (e.g., "Perez De Lara" and "Perez")
-      if (n1.includes(n2) || n2.includes(n1)) return true;
-      
-      // Check if all words from shorter name are in longer name
-      const shorter = n1.length <= n2.length ? n1 : n2;
-      const longer = n1.length > n2.length ? n1 : n2;
-      const shorterWords = shorter.split(/\s+/);
-      const longerWords = longer.split(/\s+/);
-      
-      if (shorterWords.length < longerWords.length) {
-        const allWordsMatch = shorterWords.every(w => longerWords.some(lw => lw === w || lw.startsWith(w)));
-        if (allWordsMatch) return true;
-      }
-      
-      return false;
-    };
 
     // Group drivers purely by name similarity, without requiring date_of_birth to match
     const duplicateSets = [];

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { slugify, normalizeManufacturer } from './helpers/stringUtils.js';
 
 Deno.serve(async (req) => {
   try {
@@ -16,7 +17,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'first_name and last_name are required' }, { status: 400 });
     }
 
-    const slug = `${first_name.toLowerCase().replace(/\s+/g, '-')}-${last_name.toLowerCase().replace(/\s+/g, '-')}`;
+    const slug = slugify(`${first_name} ${last_name}`);
     const nascarUrl = `https://www.nascar.com/drivers/${slug}/`;
 
     const schema = {
@@ -97,12 +98,9 @@ Return null for any fields not found on the page.`;
     if (aiResponse.hometown_country) updatePayload.hometown_country = aiResponse.hometown_country;
     if (aiResponse.primary_number) updatePayload.primary_number = aiResponse.primary_number;
 
-    // Map manufacturer string to valid enum value
+    // Normalize manufacturer to valid enum value
     if (aiResponse.manufacturer) {
-      const mfr = aiResponse.manufacturer.trim();
-      const validMfrs = ['Chevrolet', 'Ford', 'Toyota', 'Honda'];
-      const matched = validMfrs.find(v => mfr.toLowerCase().includes(v.toLowerCase()));
-      if (matched) updatePayload.manufacturer = matched;
+      updatePayload.manufacturer = normalizeManufacturer(aiResponse.manufacturer);
     }
 
     // Try to match team_name to an existing Team record

@@ -1,17 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-
-function slugify(text) {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-function normalizeManufacturer(mfr) {
-  const m = (mfr || '').toLowerCase();
-  if (m.includes('toyota')) return 'Toyota';
-  if (m.includes('ford')) return 'Ford';
-  if (m.includes('chevy') || m.includes('chevrolet')) return 'Chevrolet';
-  if (m.includes('honda')) return 'Honda';
-  return 'Other';
-}
+import { slugify, normalizeManufacturer, createDriverKey } from './helpers/stringUtils.js';
 
 Deno.serve(async (req) => {
   try {
@@ -83,7 +71,7 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
 
     const driverMap = new Map();
     for (const d of existingDrivers) {
-      const key = `${d.first_name?.toLowerCase()} ${d.last_name?.toLowerCase()}`;
+      const key = createDriverKey(d.first_name, d.last_name);
       driverMap.set(key, d);
     }
 
@@ -168,7 +156,7 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
         }
       }
 
-      const fullKey = `${first.toLowerCase()} ${last.toLowerCase()}`;
+      const fullKey = createDriverKey(first, last);
       let driver = driverMap.get(fullKey);
 
       if (!driver) {
