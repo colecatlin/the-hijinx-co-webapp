@@ -92,6 +92,24 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const { data: results = [] } = useQuery({
+    queryKey: ['driverResults', driver?.id],
+    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+    enabled: !!driver?.id,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+    enabled: !!driver?.id,
+  });
+
   React.useEffect(() => {
     if (driver && media) {
       document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
@@ -115,37 +133,6 @@ export default function DriverProfile() {
       updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
     }
   }, [driver, media]);
-
-  if (!driver) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Driver not found</p>
-          <Link to={createPageUrl('DriverDirectory')}>
-            <Button>Back to Drivers</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-  const { data: results = [] } = useQuery({
-    queryKey: ['driverResults', driver?.id],
-    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
-    enabled: !!driver?.id,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list(),
-    enabled: !!driver?.id,
-  });
 
   if (isLoading) {
     return (
