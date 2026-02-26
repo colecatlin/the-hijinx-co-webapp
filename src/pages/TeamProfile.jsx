@@ -128,27 +128,12 @@ export default function TeamProfile() {
     );
   }
 
-  const drivers = roster.filter(r => r.role === 'Driver' && r.active);
-  const sortedPrograms = [...programs].sort((a, b) => {
-    if (a.primary) return -1;
-    if (b.primary) return 1;
-    return (a.program_order || 0) - (b.program_order || 0);
-  });
-
-  const programsWithDrivers = sortedPrograms.filter(p => 
-    drivers.some(d => d.program_id === p.id)
-  );
-
-  const getDriversForProgram = (programId) => {
-    return drivers
-      .filter(d => d.program_id === programId)
-      .sort((a, b) => {
-        if (a.card_priority !== b.card_priority) {
-          return (a.card_priority || 50) - (b.card_priority || 50);
-        }
-        return (a.person_name || '').localeCompare(b.person_name || '');
-      });
-  };
+  // Derive unique series programs from DriverPrograms linked to this team
+  const uniqueSeriesPrograms = [...new Map(
+    driverPrograms
+      .filter(dp => dp.series_name)
+      .map(dp => [dp.series_name, dp])
+  ).values()];
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
