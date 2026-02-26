@@ -115,11 +115,9 @@ export default function ProgramsTimeline({ programs = [], teams = [] }) {
 
           {showPast && (
             <div className="space-y-3 mt-3 pl-2 border-l-2 border-gray-200">
-              {past
-                .sort((a, b) => (b.end_year || 0) - (a.end_year || 0))
-                .map(p => (
-                  <ProgramCard key={p.id} program={p} isActive={false} />
-                ))}
+              {past.map(p => (
+                <ProgramCard key={p.id} program={p} isActive={false} />
+              ))}
             </div>
           )}
         </div>
