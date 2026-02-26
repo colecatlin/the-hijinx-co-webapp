@@ -92,64 +92,39 @@ export default function TeamProfile() {
   ];
 
   return (
-    <PageShell className="bg-white">
-      <div className="max-w-7xl mx-auto px-6 pt-4">
-        <Link to={createPageUrl('TeamDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
-          ← Back to Teams
-        </Link>
-      </div>
-
-      {/* Hero Image */}
-      {team.logo_url && (
-        <div className="w-full h-[400px] relative overflow-hidden mt-3 bg-gray-50 border-b border-gray-200 flex items-center justify-center p-8">
-          <img 
-            src={team.logo_url} 
-            alt={`${team.name} logo`}
-            className="max-w-full max-h-64 object-contain"
-          />
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        
-        {/* Header Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
-          <div className="lg:col-span-2">
-            <Separator className="mb-3" />
-            <div className="flex items-center gap-3 flex-wrap mb-4">
-              <CountryFlag country={team.country} />
-              <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
+    <PageShell className="bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <Link to={createPageUrl('TeamDirectory')} className="text-xs font-medium text-gray-600 hover:text-[#232323] transition-colors mb-6 inline-block">
+            ← Back to Teams
+          </Link>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Logo & Title */}
+            <div className="lg:col-span-2">
+              {team.logo_url && (
+                <div className="mb-6 bg-white rounded-lg p-6 border border-gray-200 w-fit">
+                  <img 
+                    src={team.logo_url} 
+                    alt={`${team.name} logo`}
+                    className="h-24 object-contain"
+                  />
+                </div>
+              )}
+              <div className="flex items-center gap-3 mb-3">
+                <CountryFlag country={team.country} />
+                <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
+              </div>
+              {team.status && (
+                <Badge className={team.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                  {team.status}
+                </Badge>
+              )}
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
-              {sections.map(section => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      const element = document.getElementById(`section-${section.id}`);
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${
-                      activeSection === section.id
-                        ? 'border-[#232323] text-[#232323]'
-                        : 'border-transparent text-gray-600 hover:text-[#232323]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="absolute -top-12 right-0 z-10">
+            {/* Share Button */}
+            <div className="flex justify-end">
               <SocialShareButtons 
                 url={window.location.href}
                 title={`${team.name} - Team Profile`}
@@ -158,62 +133,86 @@ export default function TeamProfile() {
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-8 overflow-x-auto">
+            {sections.map(section => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                    const element = document.getElementById(`section-${section.id}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-1 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                    activeSection === section.id
+                      ? 'border-[#232323] text-[#232323]'
+                      : 'border-transparent text-gray-600 hover:text-[#232323]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {section.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Content Sections */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Overview Section */}
-        <div id="section-overview" className="space-y-8 mb-16">
-          <div className="bg-white border border-gray-200 p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div id="section-overview" className="mb-16">
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {team.headquarters_city && (
                 <div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
                     <MapPin className="w-4 h-4" />
                     Headquarters
                   </div>
-                  <div className="text-lg font-semibold text-[#232323]">
+                  <div className="text-base font-semibold text-[#232323]">
                     {[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ')}
                   </div>
                 </div>
               )}
               {team.primary_discipline && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Discipline</div>
-                  <div className="text-lg font-semibold text-[#232323]">{team.primary_discipline}</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Discipline</div>
+                  <div className="text-base font-semibold text-[#232323]">{team.primary_discipline}</div>
                 </div>
               )}
               {team.team_level && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Level</div>
-                  <div className="text-lg font-semibold text-[#232323]">{team.team_level}</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Level</div>
+                  <div className="text-base font-semibold text-[#232323]">{team.team_level}</div>
                 </div>
               )}
               {team.founded_year && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Founded</div>
-                  <div className="text-lg font-semibold text-[#232323]">{team.founded_year}</div>
+                  <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Founded</div>
+                  <div className="text-base font-semibold text-[#232323]">{team.founded_year}</div>
                 </div>
               )}
             </div>
 
             {team.description_summary && (
-              <p className="text-gray-700 leading-relaxed mb-6">{team.description_summary}</p>
-            )}
-
-            {team.status && (
-              <Badge className={team.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
-                {team.status}
-              </Badge>
+              <p className="text-gray-700 leading-relaxed text-base">{team.description_summary}</p>
             )}
           </div>
         </div>
 
         {/* Drivers Section */}
-        <div id="section-drivers" className="space-y-8 mb-16">
-          <div className="bg-white border border-gray-200 p-8">
-            <Separator className="mb-3" />
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-black text-[#232323]">Drivers</h2>
-            </div>
-            <Separator className="mb-6" />
+        <div id="section-drivers" className="mb-16">
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Drivers</h2>
             <TeamDriversSection 
               teamId={team.id} 
               driverPrograms={driverPrograms}
@@ -223,23 +222,23 @@ export default function TeamProfile() {
         </div>
 
         {/* Programs Section */}
-        <div id="section-programs" className="space-y-8 mb-16">
+        <div id="section-programs" className="mb-16">
           {uniqueSeriesPrograms.length > 0 ? (
-            <div className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
-              <div className="space-y-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-black text-[#232323] mb-6">Programs</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {uniqueSeriesPrograms.map(prog => {
                   const driversInSeries = driverPrograms.filter(dp => dp.series_name === prog.series_name);
                   return (
-                    <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
-                      <div className="font-bold text-[#232323]">{prog.series_name}</div>
-                      {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
-                      <div className="text-sm text-gray-500 mt-1">
+                    <div key={prog.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="font-bold text-[#232323] text-lg mb-1">{prog.series_name}</div>
+                      {prog.class_name && <div className="text-sm text-gray-600 mb-3">{prog.class_name}</div>}
+                      <div className="text-xs text-gray-500 mb-3">
                         {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''} · 2026
                       </div>
-                      <div className="flex flex-wrap gap-1 mt-2">
+                      <div className="flex flex-wrap gap-1">
                         {driversInSeries.map(dp => (
-                          <Badge key={dp.id} variant="outline" className="text-xs">#{dp.car_number}</Badge>
+                          <Badge key={dp.id} className="bg-[#00FFDA] text-[#232323] text-xs font-medium">#{dp.car_number}</Badge>
                         ))}
                       </div>
                     </div>
@@ -248,14 +247,14 @@ export default function TeamProfile() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-gray-200 p-8 text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <p className="text-gray-500">No programs found for this team</p>
             </div>
           )}
         </div>
 
         {/* Schedule & Results Section */}
-        <div id="section-schedule" className="space-y-8">
+        <div id="section-schedule">
           <TeamScheduleResults teamId={team.id} />
         </div>
       </div>
