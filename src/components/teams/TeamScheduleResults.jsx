@@ -18,13 +18,16 @@ export default function TeamScheduleResults({ teamId }) {
   // Get unique driver IDs from programs
   const driverIds = [...new Set(driverPrograms.map(dp => dp.driver_id).filter(Boolean))];
 
-  // Fetch events
+  // Get unique series from driver programs
+  const seriesIds = [...new Set(driverPrograms.map(dp => dp.series_id).filter(Boolean))];
+
+  // Fetch events from past results AND upcoming events from series
   const { data: events = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ['teamEvents', teamId, driverIds],
+    queryKey: ['teamEvents', teamId, driverIds, seriesIds],
     queryFn: async () => {
-      if (driverIds.length === 0) return [];
-      
       const allEvents = [];
+      
+      // Get past events from results
       for (const driverId of driverIds) {
         const driverResults = await base44.entities.Results.filter({ driver_id: driverId });
         const eventIds = [...new Set(driverResults.map(r => r.event_id).filter(Boolean))];
@@ -33,6 +36,15 @@ export default function TeamScheduleResults({ teamId }) {
           const eventData = await base44.entities.Event.filter({ id: eventId });
           allEvents.push(...eventData);
         }
+      }
+      
+      // Get upcoming events from series
+      if (seriesIds.length > 0) {
+        const upcomingEvents = await base44.entities.Event.filter({ 
+          status: 'upcoming'
+        });
+        const seriesEvents = upcomingEvents.filter(e => seriesIds.includes(e.series) || driverPrograms.some(dp => dp.series_id === e.series));
+        allEvents.push(...seriesEvents);
       }
       
       return [...new Map(allEvents.map(e => [e.id, e])).values()]
