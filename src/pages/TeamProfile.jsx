@@ -220,20 +220,7 @@ export default function TeamProfile() {
           </section>
         )}
 
-        <section className="bg-white border border-gray-200 p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Calendar className="w-5 h-5" />
-            <h2 className="text-2xl font-bold text-[#232323]">Race Schedule</h2>
-          </div>
-          <ScheduleSection
-            entityType="Team"
-            entityId={team.id}
-            entityName={team.name}
-            calendarId={team.calendar_id}
-            onCalendarCreated={handleTeamCalendarCreated}
-            isOwner={true}
-          />
-        </section>
+        <TeamScheduleResults teamId={team.id} />
       </div>
     </PageShell>
   );
