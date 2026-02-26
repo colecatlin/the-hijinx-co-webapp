@@ -1,62 +1,45 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAuth, isAdmin, checkEntityAccess, createAuthError } from './helpers/authUtils.js';
+import { validateRequired, createValidationError } from './helpers/validationUtils.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await requireAuth(base44);
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const payload = await req.json().catch(() => ({}));
+    validateRequired(payload, ['entity_type', 'entity_id']);
 
-    const { entity_type, entity_id, required_role = 'editor' } = await req.json();
+    const { entity_type, entity_id, required_role = 'editor' } = payload;
 
     // Admins always have access
-    if (user.role === 'admin') {
-      return Response.json({ 
-        hasAccess: true, 
+    if (isAdmin(user)) {
+      return Response.json({
+        hasAccess: true,
         reason: 'admin_user',
-        user_id: user.id 
+        userId: user.id
       });
     }
 
-    // Check if user is a collaborator on this entity
-    const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
-      user_id: user.id,
-      entity_type,
-      entity_id
-    });
-
-    if (collaborators.length === 0) {
-      return Response.json({ 
-        hasAccess: false, 
-        reason: 'no_collaboration_found' 
-      }, { status: 403 });
-    }
-
-    const collaborator = collaborators[0];
+    // Check collaborator access
+    const access = await checkEntityAccess(base44, user.id, entity_type, entity_id, required_role);
     
-    // Check role permissions
-    const roleHierarchy = { 'owner': 2, 'editor': 1 };
-    const requiredLevel = roleHierarchy[required_role] || 1;
-    const userLevel = roleHierarchy[collaborator.role] || 0;
-
-    if (userLevel < requiredLevel) {
-      return Response.json({ 
-        hasAccess: false, 
-        reason: 'insufficient_permissions',
-        user_role: collaborator.role,
-        required_role
-      }, { status: 403 });
+    if (!access.hasAccess) {
+      return createAuthError(403, `Access denied: ${access.reason}`);
     }
 
-    return Response.json({ 
-      hasAccess: true, 
-      reason: 'collaborator',
-      user_role: collaborator.role,
-      user_id: user.id 
+    return Response.json({
+      hasAccess: true,
+      ...access,
+      userId: user.id
     });
   } catch (error) {
+    if (error.message.includes('Unauthorized')) {
+      return createAuthError(401, error.message);
+    }
+    if (error.message.includes('required')) {
+      return createValidationError(400, error.message);
+    }
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

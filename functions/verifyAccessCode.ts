@@ -1,115 +1,61 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAuth, createAuthError } from './helpers/authUtils.js';
+import { validateRequired, createValidationError } from './helpers/validationUtils.js';
+
+const ENTITY_TYPES = ['Driver', 'Series', 'Team', 'Track'];
+const ENTITY_NAME_FIELDS = {
+  Driver: (e) => `${e.first_name} ${e.last_name}`,
+  Series: (e) => e.name,
+  Team: (e) => e.name,
+  Track: (e) => e.name
+};
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await requireAuth(base44);
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const payload = await req.json().catch(() => ({}));
+    validateRequired(payload, ['code']);
 
-    const { code } = await req.json();
+    const { code } = payload;
 
-    if (!code) {
-      return Response.json({ error: 'Access code is required' }, { status: 400 });
-    }
-
-    // Find the entity by numeric_id (access code)
-    const drivers = await base44.asServiceRole.entities.Driver.filter({ numeric_id: code });
-    if (drivers.length > 0) {
-      const driver = drivers[0];
+    // Try each entity type
+    for (const entityType of ENTITY_TYPES) {
+      const results = await base44.asServiceRole.entities[entityType].filter({ numeric_id: code });
       
-      // Create EntityCollaborator record for this user
-      const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
-        user_id: user.id,
-        user_email: user.email,
-        entity_type: 'Driver',
-        entity_id: driver.id,
-        entity_name: `${driver.first_name} ${driver.last_name}`,
-        access_code: code,
-        role: 'editor'
-      });
+      if (results.length > 0) {
+        const entity = results[0];
+        const getEntityName = ENTITY_NAME_FIELDS[entityType];
+        
+        const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
+          user_id: user.id,
+          user_email: user.email,
+          entity_type: entityType,
+          entity_id: entity.id,
+          entity_name: getEntityName(entity),
+          access_code: code,
+          role: 'editor'
+        });
 
-      return Response.json({
-        success: true,
-        entity: driver,
-        entityType: 'Driver',
-        entityId: driver.id,
-        collaborator: collaborator.id
-      });
+        return Response.json({
+          success: true,
+          entity,
+          entityType,
+          entityId: entity.id,
+          collaboratorId: collaborator.id
+        });
+      }
     }
 
-    // Check other entity types similarly
-    const series = await base44.asServiceRole.entities.Series.filter({ numeric_id: code });
-    if (series.length > 0) {
-      const s = series[0];
-      const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
-        user_id: user.id,
-        user_email: user.email,
-        entity_type: 'Series',
-        entity_id: s.id,
-        entity_name: s.name,
-        access_code: code,
-        role: 'editor'
-      });
-
-      return Response.json({
-        success: true,
-        entity: s,
-        entityType: 'Series',
-        entityId: s.id,
-        collaborator: collaborator.id
-      });
-    }
-
-    const teams = await base44.asServiceRole.entities.Team.filter({ numeric_id: code });
-    if (teams.length > 0) {
-      const t = teams[0];
-      const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
-        user_id: user.id,
-        user_email: user.email,
-        entity_type: 'Team',
-        entity_id: t.id,
-        entity_name: t.name,
-        access_code: code,
-        role: 'editor'
-      });
-
-      return Response.json({
-        success: true,
-        entity: t,
-        entityType: 'Team',
-        entityId: t.id,
-        collaborator: collaborator.id
-      });
-    }
-
-    const tracks = await base44.asServiceRole.entities.Track.filter({ numeric_id: code });
-    if (tracks.length > 0) {
-      const tr = tracks[0];
-      const collaborator = await base44.asServiceRole.entities.EntityCollaborator.create({
-        user_id: user.id,
-        user_email: user.email,
-        entity_type: 'Track',
-        entity_id: tr.id,
-        entity_name: tr.name,
-        access_code: code,
-        role: 'editor'
-      });
-
-      return Response.json({
-        success: true,
-        entity: tr,
-        entityType: 'Track',
-        entityId: tr.id,
-        collaborator: collaborator.id
-      });
-    }
-
-    return Response.json({ error: 'Invalid access code' }, { status: 404 });
+    return createAuthError(404, 'Invalid access code');
   } catch (error) {
-    console.error('Error:', error);
+    if (error.message.includes('Unauthorized')) {
+      return createAuthError(401, error.message);
+    }
+    if (error.message.includes('required')) {
+      return createValidationError(400, error.message);
+    }
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
