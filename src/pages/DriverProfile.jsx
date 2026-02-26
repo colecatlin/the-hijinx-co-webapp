@@ -41,7 +41,7 @@ export default function DriverProfile() {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSection('overview');
-  }, [driverSlugOrId]);
+  }, [driverSlug]);
 
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
