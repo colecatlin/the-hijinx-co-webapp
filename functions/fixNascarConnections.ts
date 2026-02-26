@@ -13,6 +13,10 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const dry_run = body.dry_run !== false;
+    // mode: "connections" (fixes 1-3 only), "teams" (fix 4 only, one series at a time), or "all"
+    const mode = body.mode || 'all';
+    // For mode=teams, optionally target a single series
+    const target_series = body.target_series || null;
     const log = [];
     const stats = {
       results_program_fixed: 0,
