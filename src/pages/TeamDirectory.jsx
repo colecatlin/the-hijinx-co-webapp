@@ -23,26 +23,31 @@ export default function TeamDirectory() {
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['teamPrograms'],
     queryFn: () => base44.entities.TeamProgram.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allRoster = [] } = useQuery({
     queryKey: ['teamRoster'],
     queryFn: () => base44.entities.TeamRoster.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allPerformance = [] } = useQuery({
     queryKey: ['teamPerformance'],
     queryFn: () => base44.entities.TeamPerformance.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allMedia = [] } = useQuery({
     queryKey: ['teamMedia'],
     queryFn: () => base44.entities.TeamMedia.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const filteredTeams = teams

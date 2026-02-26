@@ -9,28 +9,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function FeaturedDrivers() {
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
     queryKey: ['featuredDrivers'],
-    queryFn: async () => {
-      const allDrivers = await base44.entities.Driver.filter({
-        featured: true,
-        profile_status: 'live'
-      });
-      return allDrivers.slice(0, 6);
-    },
+    queryFn: () => base44.entities.Driver.filter({ featured: true, profile_status: 'live' }),
+    staleTime: 5 * 60 * 1000,
+    select: (data) => data.slice(0, 6),
   });
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
     queryFn: () => base44.entities.DriverProgram.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allSeries = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allMedia = [] } = useQuery({
     queryKey: ['driverMedia'],
     queryFn: () => base44.entities.DriverMedia.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const isLoading = driversLoading;

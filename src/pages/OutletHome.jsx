@@ -28,6 +28,7 @@ export default function OutletHome() {
   const { data: stories = [], isLoading, error } = useQuery({
     queryKey: ['outletStories'],
     queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 50),
+    staleTime: 3 * 60 * 1000,
   });
 
   const handlePrimaryClick = (cat) => {
@@ -127,6 +128,7 @@ export default function OutletHome() {
                       src={story.cover_image}
                       alt={story.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
