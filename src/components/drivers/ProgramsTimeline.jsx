@@ -70,12 +70,22 @@ export default function ProgramsTimeline({ programs = [], teams = [] }) {
     team_name: p.team_name || teams.find(t => t.id === p.team_id)?.name || '',
   }));
 
-  const active = enriched.filter(p =>
-    p.status === 'active' || p.program_type === 'single_event'
-  );
-  const past = enriched.filter(p =>
-    p.status === 'inactive' && p.program_type !== 'single_event'
-  );
+  // Sort by end_date descending (most recent first)
+  const sortByEndDate = (a, b) => {
+    const getEndDate = (p) => {
+      if (p.end_date) return new Date(p.end_date).getTime();
+      if (p.end_year) return new Date(`${p.end_year}-12-31`).getTime();
+      return 0;
+    };
+    return getEndDate(b) - getEndDate(a);
+  };
+
+  const active = enriched
+    .filter(p => p.status === 'active' || p.program_type === 'single_event')
+    .sort(sortByEndDate);
+  const past = enriched
+    .filter(p => p.status === 'inactive' && p.program_type !== 'single_event')
+    .sort(sortByEndDate);
 
   if (programs.length === 0) {
     return (
