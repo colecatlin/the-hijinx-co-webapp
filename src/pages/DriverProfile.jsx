@@ -95,6 +95,74 @@ export default function DriverProfile() {
 
   React.useEffect(() => {
     if (driver && media) {
+      document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
+      const updateMetaTag = (name, content) => {
+        let tag = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute(name.startsWith('og:') ? 'property' : 'name', name);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      };
+      updateMetaTag('og:title', `${driver.first_name} ${driver.last_name}`);
+      updateMetaTag('og:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver. ${driver.hometown_city ? `From ${driver.hometown_city}, ${driver.hometown_country}` : ''}`);
+      updateMetaTag('og:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+      updateMetaTag('og:url', window.location.href);
+      updateMetaTag('og:type', 'profile');
+      updateMetaTag('twitter:card', 'summary_large_image');
+      updateMetaTag('twitter:title', `${driver.first_name} ${driver.last_name}`);
+      updateMetaTag('twitter:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver`);
+      updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+    }
+  }, [driver, media]);
+
+  if (!firstName || !lastName) {
+    return (
+      <PageShell className="bg-[#FFF8F5]">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-600 mb-4">Driver not found</p>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button>Back to Drivers</Button>
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
+
+  const { data: media } = useQuery({
+    queryKey: ['driverMedia', driver?.id],
+    queryFn: async () => {
+      const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
+      return results[0] || null;
+    },
+    enabled: !!driver?.id,
+  });
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ['driverPrograms', driver?.id],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
+  const { data: allClasses = [] } = useQuery({
+    queryKey: ['allSeriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    enabled: !!driver?.id,
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
+  React.useEffect(() => {
+    if (driver && media) {
       // Update document title
       document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
 
