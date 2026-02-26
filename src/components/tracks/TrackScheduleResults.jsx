@@ -12,8 +12,9 @@ export default function TrackScheduleResults({ trackId }) {
   const { data: events = [], isLoading: loadingEvents } = useQuery({
     queryKey: ['trackEvents', trackId],
     queryFn: async () => {
-      const allEvents = await base44.entities.Event.filter({ track_id: trackId });
-      return allEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+      const allEvents = await base44.entities.Event.list('-event_date', 1000);
+      const trackEvents = allEvents.filter(e => e.track_id === trackId);
+      return trackEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
     },
     enabled: !!trackId,
   });
