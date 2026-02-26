@@ -74,8 +74,8 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
         >
           {/* Logo Section */}
           <div className="mb-4">
-            {media?.logo_url ? (
-              <img src={media.logo_url} alt={team.name} className="h-16 w-auto object-contain" loading="lazy" />
+            {team?.logo_url || media?.logo_url ? (
+              <img src={team.logo_url || media.logo_url} alt={team.name} className="h-16 w-auto object-contain" loading="lazy" />
             ) : (
               <div className="h-16 flex items-center">
                 <div className="text-3xl font-black text-gray-300">
