@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Plus, X } from 'lucide-react';
 
 export default function SeriesCoreDetailsSection({ seriesId }) {
   const [formData, setFormData] = useState({});
@@ -254,6 +254,103 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
                 </Button>
               </>
             )}
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold mb-1">Founded Year</h3>
+          <p className="text-xs text-gray-400 mb-3">The year the series was originally established.</p>
+          <Input
+            type="number"
+            placeholder="e.g. 1995"
+            value={formData.founded_year || ''}
+            onChange={(e) => setFormData({ ...formData, founded_year: e.target.value ? Number(e.target.value) : null })}
+            className="w-40"
+          />
+        </div>
+
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold mb-1">Name History</h3>
+          <p className="text-xs text-gray-400 mb-3">Track name changes over the years (e.g. sponsor title changes).</p>
+          <div className="space-y-3">
+            {(formData.name_history || []).map((entry, idx) => (
+              <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-gray-500">Entry {idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...(formData.name_history || [])];
+                      updated.splice(idx, 1);
+                      setFormData({ ...formData, name_history: updated });
+                    }}
+                    className="text-gray-400 hover:text-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-gray-500">Name</label>
+                    <Input
+                      value={entry.name || ''}
+                      onChange={(e) => {
+                        const updated = [...(formData.name_history || [])];
+                        updated[idx] = { ...updated[idx], name: e.target.value };
+                        setFormData({ ...formData, name_history: updated });
+                      }}
+                      placeholder="Series name at this time"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Year Start</label>
+                    <Input
+                      type="number"
+                      value={entry.year_start || ''}
+                      onChange={(e) => {
+                        const updated = [...(formData.name_history || [])];
+                        updated[idx] = { ...updated[idx], year_start: e.target.value ? Number(e.target.value) : null };
+                        setFormData({ ...formData, name_history: updated });
+                      }}
+                      placeholder="e.g. 2015"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Year End (blank if current)</label>
+                    <Input
+                      type="number"
+                      value={entry.year_end || ''}
+                      onChange={(e) => {
+                        const updated = [...(formData.name_history || [])];
+                        updated[idx] = { ...updated[idx], year_end: e.target.value ? Number(e.target.value) : null };
+                        setFormData({ ...formData, name_history: updated });
+                      }}
+                      placeholder="e.g. 2022"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Notes</label>
+                    <Input
+                      value={entry.notes || ''}
+                      onChange={(e) => {
+                        const updated = [...(formData.name_history || [])];
+                        updated[idx] = { ...updated[idx], notes: e.target.value };
+                        setFormData({ ...formData, name_history: updated });
+                      }}
+                      placeholder="e.g. Title sponsor change"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setFormData({ ...formData, name_history: [...(formData.name_history || []), { name: '', year_start: null, year_end: null, notes: '' }] })}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Add Name Entry
+            </Button>
           </div>
         </div>
 

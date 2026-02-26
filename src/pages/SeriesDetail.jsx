@@ -75,6 +75,7 @@ export default function SeriesDetail() {
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'history', label: 'History', icon: TrendingUp },
     { id: 'classes', label: 'Classes', icon: Flag },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
   ];
@@ -276,6 +277,11 @@ export default function SeriesDetail() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* History section */}
+        <div id="section-history" className="space-y-4 mb-4">
+          <SeriesNameHistory series={series} />
         </div>
 
         {/* Classes section */}
