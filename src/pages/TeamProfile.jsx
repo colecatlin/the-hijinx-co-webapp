@@ -17,7 +17,7 @@ import TeamDriversSection from '@/components/teams/TeamDriversSection';
 
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const teamSlug = urlParams.get('id');
+  const teamSlug = urlParams.get('slug') || urlParams.get('id');
 
   const [activeSection, setActiveSection] = useState('overview');
 

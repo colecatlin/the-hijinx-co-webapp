@@ -17,7 +17,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
 
   const handleProfileClick = (e) => {
     e.stopPropagation();
-    navigate(createPageUrl('TeamProfile', { id: team.slug || team.id }));
+    navigate(buildProfileUrl('Team', team.slug || team.id));
   };
   const getDisciplineIcon = (discipline) => {
     const icons = {

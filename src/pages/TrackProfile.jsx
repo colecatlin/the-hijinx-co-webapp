@@ -13,7 +13,7 @@ import ResultsPanel from '@/components/results/ResultsPanel';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const trackSlug = urlParams.get('id');
+  const trackSlug = urlParams.get('slug') || urlParams.get('id');
   const [activeSection, setActiveSection] = useState('overview');
 
   const { data: tracks = [], isLoading } = useQuery({
@@ -21,7 +21,7 @@ export default function TrackProfile() {
     queryFn: () => base44.entities.Track.list(),
   });
 
-  const track = tracks.find(t => t.slug === trackSlug);
+  const track = tracks.find(t => t.slug === trackSlug || t.id === trackSlug);
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['allEvents'],
