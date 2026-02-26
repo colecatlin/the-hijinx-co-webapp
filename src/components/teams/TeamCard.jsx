@@ -55,7 +55,7 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
                 </div>
               )}
             </div>
-            <h3 className="text-xl font-bold text-[#232323] mb-1 group-hover:text-[#00FFDA] transition-colors">
+            <h3 className="text-xl font-bold text-[#232323] mb-1 group-hover:text-[#00FFDA] transition-colors line-clamp-1">
               {team.name}
             </h3>
             {team.headquarters_city && team.headquarters_state && (
