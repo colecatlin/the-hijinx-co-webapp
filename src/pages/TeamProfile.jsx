@@ -382,18 +382,6 @@ export default function TeamProfile() {
             ) : null}
 
             {/* Team Personnel section disabled - roster data not available */}
-                          <td className="py-3 px-4">
-                            <Badge className={member.active ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-600'}>
-                              {member.active ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
 
             {allDrivers.length === 0 && roster.length === 0 && (
               <p className="text-gray-500">No roster information available.</p>
