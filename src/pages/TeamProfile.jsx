@@ -13,6 +13,7 @@ import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import TeamScheduleResults from '@/components/teams/TeamScheduleResults';
+import TeamDriversSection from '@/components/teams/TeamDriversSection';
 
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
