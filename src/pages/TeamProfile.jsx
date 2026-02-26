@@ -76,10 +76,7 @@ export default function TeamProfile() {
 
   const { data: community } = useQuery({
     queryKey: ['teamCommunity', team?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TeamCommunity.filter({ team_id: team.id });
-      return results[0] || null;
-    },
+    queryFn: async () => null,
     enabled: !!team?.id,
   });
 
