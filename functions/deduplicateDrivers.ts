@@ -12,19 +12,76 @@ Deno.serve(async (req) => {
 
     const drivers = await base44.asServiceRole.entities.Driver.list();
 
-    // Group drivers by first_name + last_name + date_of_birth
+    // Helper function to normalize names for comparison
+    const normalizeName = (name) => {
+      return (name || '').toLowerCase().trim();
+    };
+
+    // Helper function to check if names are likely variations of each other
+    const areNameVariations = (name1, name2) => {
+      const n1 = normalizeName(name1);
+      const n2 = normalizeName(name2);
+      
+      // Exact match
+      if (n1 === n2) return true;
+      
+      // One contains the other (e.g., "Perez De Lara" and "Perez")
+      if (n1.includes(n2) || n2.includes(n1)) return true;
+      
+      // Check if all words from shorter name are in longer name
+      const shorter = n1.length <= n2.length ? n1 : n2;
+      const longer = n1.length > n2.length ? n1 : n2;
+      const shorterWords = shorter.split(/\s+/);
+      const longerWords = longer.split(/\s+/);
+      
+      if (shorterWords.length < longerWords.length) {
+        const allWordsMatch = shorterWords.every(w => longerWords.some(lw => lw === w || lw.startsWith(w)));
+        if (allWordsMatch) return true;
+      }
+      
+      return false;
+    };
+
+    // Group drivers by first_name + date_of_birth first, then check last names
     const groups = {};
     for (const driver of drivers) {
-      const key = [
-        (driver.first_name || '').toLowerCase().trim(),
-        (driver.last_name || '').toLowerCase().trim(),
+      const baseKey = [
+        normalizeName(driver.first_name),
         (driver.date_of_birth || 'unknown'),
       ].join('|');
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(driver);
+      if (!groups[baseKey]) groups[baseKey] = [];
+      groups[baseKey].push(driver);
     }
 
-    const duplicateSets = Object.values(groups).filter(g => g.length > 1);
+    // Now refine groups: split groups where last names don't match
+    const refinedGroups = [];
+    for (const group of Object.values(groups)) {
+      const subgroups = {};
+      for (const driver of group) {
+        let foundGroup = false;
+        
+        // Try to match with existing subgroups based on last name variations
+        for (const lastNameKey of Object.keys(subgroups)) {
+          const existing = subgroups[lastNameKey][0];
+          if (areNameVariations(driver.last_name, existing.last_name)) {
+            subgroups[lastNameKey].push(driver);
+            foundGroup = true;
+            break;
+          }
+        }
+        
+        // If no match found, create new subgroup
+        if (!foundGroup) {
+          const key = normalizeName(driver.last_name);
+          if (!subgroups[key]) subgroups[key] = [];
+          subgroups[key].push(driver);
+        }
+      }
+      
+      refinedGroups.push(...Object.values(subgroups));
+    }
+
+    const duplicateSets = refinedGroups.filter(g => g.length > 1);
 
     if (duplicateSets.length === 0) {
       return Response.json({ success: true, message: 'No duplicates found.', merged: [] });
