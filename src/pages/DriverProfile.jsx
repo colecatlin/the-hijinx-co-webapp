@@ -25,6 +25,7 @@ import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
+import DriverInsights from '@/components/drivers/DriverInsights';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
