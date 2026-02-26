@@ -153,7 +153,8 @@ export default function TeamScheduleResults({ teamId }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pastResults.map(result => {
               const event = events.find(e => e.id === result.event_id);
-              const driver = driverPrograms.find(dp => dp.driver_id === result.driver_id);
+              const driverProgram = driverPrograms.find(dp => dp.driver_id === result.driver_id);
+              const driver = drivers.find(d => d.id === result.driver_id);
               
               return (
                 <div key={result.id} className="border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
@@ -171,11 +172,10 @@ export default function TeamScheduleResults({ teamId }) {
                     )}
                   </div>
                   
-                  {driver && (
-                    <div className="text-xs font-semibold text-[#232323] mb-2 truncate">
-                      {driver.car_number && <span className="text-[#00FFDA]">#{driver.car_number}</span>}
-                    </div>
-                  )}
+                  <div className="text-xs font-semibold text-[#232323] mb-2 truncate">
+                    {driver && <span>{driver.first_name} {driver.last_name}</span>}
+                    {driverProgram?.car_number && <span className="text-[#00FFDA] ml-1">#{driverProgram.car_number}</span>}
+                  </div>
                   
                   <div className="flex items-center gap-1 flex-wrap text-xs text-gray-600">
                     {result.class && <span className="truncate">{result.class}</span>}
