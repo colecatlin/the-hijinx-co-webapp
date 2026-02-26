@@ -29,8 +29,7 @@ import DriverInsights from '@/components/drivers/DriverInsights';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const firstName = urlParams.get('first')?.trim().toLowerCase();
-  const lastName = urlParams.get('last')?.trim().toLowerCase();
+  const driverSlugOrId = urlParams.get('id');
 
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
@@ -40,7 +39,7 @@ export default function DriverProfile() {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSection('overview');
-  }, [firstName, lastName]);
+  }, [driverSlugOrId]);
 
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
