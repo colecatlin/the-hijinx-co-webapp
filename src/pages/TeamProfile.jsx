@@ -381,23 +381,7 @@ export default function TeamProfile() {
               </div>
             ) : null}
 
-            {roster.filter(r => r.role !== 'Driver').length > 0 && (
-              <>
-                <h3 className="text-lg font-semibold text-[#232323] mb-4">Team Personnel</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Name</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Role</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[#232323]">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roster.filter(r => r.role !== 'Driver').map(member => (
-                        <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4 font-medium text-[#232323]">{member.person_name}</td>
-                          <td className="py-3 px-4 text-gray-700">{member.role}</td>
+            {/* Team Personnel section disabled - roster data not available */}
                           <td className="py-3 px-4">
                             <Badge className={member.active ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-600'}>
                               {member.active ? 'Active' : 'Inactive'}
