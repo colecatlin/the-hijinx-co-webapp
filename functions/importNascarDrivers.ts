@@ -88,6 +88,7 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
     const seriesMap = new Map();
     for (const s of existingSeries) {
       seriesMap.set(s.name, s);
+      if (s.slug) seriesMap.set(s.slug, s);
     }
 
     const programSet = new Set();
