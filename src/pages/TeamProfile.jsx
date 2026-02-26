@@ -202,25 +202,16 @@ export default function TeamProfile() {
                         {driver.primary_number || '#'}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
-                          {driver.first_name} {driver.last_name}
-                        </div>
-                        {driverProgs.length > 0 && (
-                          <div className="text-xs text-gray-500 truncate">
-                            {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
-                          </div>
-                        )}
+                         <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
+                           {driver.first_name} {driver.last_name}
+                         </div>
+                         {driverProgs.length > 0 && (
+                           <div className="text-xs text-gray-500 truncate">
+                             {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
+                           </div>
+                         )}
+                       </div>
                       </div>
-                    </div>
-                    {driverProgs.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {driverProgs.map(dp => (
-                          <Badge key={dp.id} variant="outline" className="text-xs">
-                            #{dp.car_number} {dp.participation_status && dp.participation_status !== 'Full-Time' ? `· ${dp.participation_status}` : ''}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </Link>
                 );
               })}
