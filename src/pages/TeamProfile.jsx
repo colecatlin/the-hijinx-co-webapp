@@ -382,9 +382,9 @@ export default function TeamProfile() {
 
             {/* Team Personnel section disabled - roster data not available */}
 
-            {allDrivers.length === 0 && roster.length === 0 && (
-              <p className="text-gray-500">No roster information available.</p>
-            )}
+             {allDrivers.length === 0 && (
+               <p className="text-gray-500">No roster information available.</p>
+             )}
           </section>
 
           <section id="section-schedule" className="bg-white border border-gray-200 p-8">
