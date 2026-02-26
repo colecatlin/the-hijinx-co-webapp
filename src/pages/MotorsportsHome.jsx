@@ -25,33 +25,39 @@ export default function MotorsportsHome() {
   const today = new Date().toISOString().split('T')[0];
 
   const { data: upcomingEvents = [] } = useQuery({
-    queryKey: ['motorsports-upcoming-events'],
+    queryKey: ['events-upcoming'],
     queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'event_date', 8),
+    staleTime: 3 * 60 * 1000,
   });
 
   const { data: allDrivers = [] } = useQuery({
-    queryKey: ['motorsports-driver-count'],
-    queryFn: () => base44.entities.Driver.list('created_date', 200),
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allTeams = [] } = useQuery({
-    queryKey: ['motorsports-team-count'],
-    queryFn: () => base44.entities.Team.list('created_date', 200),
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allTracks = [] } = useQuery({
-    queryKey: ['motorsports-track-count'],
-    queryFn: () => base44.entities.Track.list('created_date', 200),
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allSeries = [] } = useQuery({
-    queryKey: ['motorsports-series'],
-    queryFn: () => base44.entities.Series.filter({ status: 'Active' }, 'popularity_rank', 6),
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: recentResults = [] } = useQuery({
-    queryKey: ['motorsports-recent-results'],
+    queryKey: ['events-completed'],
     queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-event_date', 5),
+    staleTime: 5 * 60 * 1000,
   });
 
   const stats = [
