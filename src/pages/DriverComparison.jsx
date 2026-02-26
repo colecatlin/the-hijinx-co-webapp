@@ -67,7 +67,7 @@ export default function DriverComparison() {
   const [driver2Id, setDriver2Id] = useState(searchParams.get('driver2') || '');
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
+    queryKey: ['drivers', 'all'],
     queryFn: () => base44.entities.Driver.list(),
   });
 

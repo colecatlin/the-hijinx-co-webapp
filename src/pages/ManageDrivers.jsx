@@ -61,7 +61,7 @@ export default function ManageDrivers() {
   };
 
   const { data: drivers = [], isLoading } = useQuery({
-    queryKey: ['drivers'],
+    queryKey: ['drivers', 'all'],
     queryFn: () => base44.entities.Driver.list('-updated_date', 500),
   });
 
