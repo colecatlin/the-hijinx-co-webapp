@@ -461,7 +461,7 @@ export default function TeamProfile() {
                   <TeamPerformanceInsights 
                     team={team}
                     performance={performance}
-                    programs={programs}
+                    programs={uniqueSeriesPrograms}
                     roster={roster}
                   />
                 </div>
