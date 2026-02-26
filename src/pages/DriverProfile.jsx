@@ -116,7 +116,7 @@ export default function DriverProfile() {
     }
   }, [driver, media]);
 
-  if (!firstName || !lastName) {
+  if (!driver) {
     return (
       <PageShell className="bg-[#FFF8F5]">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
