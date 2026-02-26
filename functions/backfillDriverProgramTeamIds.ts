@@ -1,5 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -21,51 +25,71 @@ Deno.serve(async (req) => {
     }
 
     // Load all teams
-    const allTeams = await base44.asServiceRole.entities.Team.list('-created_date', 500);
+    const existingTeams = await base44.asServiceRole.entities.Team.list('-created_date', 500);
 
     // Build a map: lowercase name → team
     const teamMap = new Map();
-    for (const t of allTeams) {
+    for (const t of existingTeams) {
       teamMap.set(t.name.toLowerCase().trim(), t);
     }
 
     const log = [];
     let updated = 0;
-    let notFound = 0;
+    let created = 0;
 
     for (const prog of programsNeedingTeam) {
-      const key = prog.team_name.toLowerCase().trim();
-      const team = teamMap.get(key);
+      const rawName = prog.team_name.trim();
+      if (!rawName || rawName.toLowerCase() === 'not available') {
+        log.push(`Skipped: invalid team_name "${rawName}"`);
+        continue;
+      }
 
-      if (team) {
-        if (!dry_run) {
-          await base44.asServiceRole.entities.DriverProgram.update(prog.id, { team_id: team.id });
-        }
-        log.push(`${dry_run ? '[DRY RUN] ' : ''}Linked program ${prog.id} → team "${team.name}" (${team.id})`);
-        updated++;
-      } else {
-        // Try fuzzy: check if any team name is contained in the program's team_name
-        let found = null;
+      const key = rawName.toLowerCase();
+      let team = teamMap.get(key);
+
+      // Fuzzy match if exact not found
+      if (!team) {
         for (const [tKey, tVal] of teamMap) {
           if (key.includes(tKey) || tKey.includes(key)) {
-            found = tVal;
+            team = tVal;
             break;
           }
         }
-        if (found) {
-          if (!dry_run) {
-            await base44.asServiceRole.entities.DriverProgram.update(prog.id, { team_id: found.id });
-          }
-          log.push(`${dry_run ? '[DRY RUN] ' : ''}Fuzzy linked program ${prog.id} (team_name="${prog.team_name}") → "${found.name}"`);
-          updated++;
-        } else {
-          log.push(`NOT FOUND: team_name="${prog.team_name}"`);
-          notFound++;
-        }
       }
+
+      // Create team if still not found
+      if (!team) {
+        if (!dry_run) {
+          team = await base44.asServiceRole.entities.Team.create({
+            name: rawName,
+            slug: slugify(rawName),
+            primary_discipline: 'Asphalt Oval',
+            team_level: 'National',
+            status: 'Active',
+            country: 'United States',
+            headquarters_state: 'NC',
+            headquarters_city: 'Mooresville',
+          });
+          teamMap.set(key, team);
+          log.push(`Created team: "${rawName}"`);
+        } else {
+          team = { id: `dry-run-${key}`, name: rawName };
+          log.push(`[DRY RUN] Would create team: "${rawName}"`);
+        }
+        created++;
+      }
+
+      // Now update the program
+      if (!dry_run) {
+        await base44.asServiceRole.entities.DriverProgram.update(prog.id, { team_id: team.id });
+        log.push(`Linked program → "${team.name}"`);
+      } else {
+        log.push(`[DRY RUN] Would link program → "${team.name}"`);
+      }
+      updated++;
     }
 
-    return Response.json({ success: true, dry_run, updated, notFound, total: programsNeedingTeam.length, log });
+    return Response.json({ success: true, dry_run, programs_updated: updated, teams_created: created, total: programsNeedingTeam.length, log });
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
