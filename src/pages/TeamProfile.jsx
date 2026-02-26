@@ -503,8 +503,8 @@ export default function TeamProfile() {
 
           <section id="section-partners" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Partners</h2>
-            
-            {partners.length > 0 ? (
+
+            {false ? (
               <>
                 {['Title', 'Primary', 'Associate', 'Technical', 'Media', 'Local'].map(type => {
                   const typePartners = partners.filter(p => p.partner_type === type && p.active);
