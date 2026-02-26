@@ -106,7 +106,7 @@ export default function EventDirectory() {
     return podium.some(p => p.name?.toLowerCase().includes(term));
   });
 
-  const uniqueSeries = [...new Set(events.map(e => e.series).filter(Boolean))];
+  const uniqueSeries = [...new Set([...upcomingEvents, ...completedEvents].map(e => e.series).filter(Boolean))];
 
   const positionIcon = (pos) => {
     if (pos === 1) return <Trophy className="w-3.5 h-3.5 text-yellow-500" />;
