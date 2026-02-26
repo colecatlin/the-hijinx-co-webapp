@@ -151,8 +151,7 @@ export default function TeamScheduleResults({ teamId }) {
                     </div>
                     {result.position && (
                       <div className="text-center flex-shrink-0">
-                        <div className="text-2xl font-black text-[#232323]">{result.position}</div>
-                        <div className="text-xs text-gray-600 leading-none">P</div>
+                        <div className="text-2xl font-black text-[#232323]">P.{result.position}</div>
                       </div>
                     )}
                   </div>
