@@ -15,12 +15,12 @@ export default function DriverScheduleResults({ driverId }) {
     enabled: !!driverId,
   });
 
-  // Get unique series from driver programs
-  const seriesIds = [...new Set(driverPrograms.map(dp => dp.series_id).filter(Boolean))];
+  // Get unique series names from driver programs
+  const seriesNames = [...new Set(driverPrograms.map(dp => dp.series_name).filter(Boolean))];
 
   // Fetch events from past results AND upcoming events from series
   const { data: events = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ['driverEvents', driverId, seriesIds],
+    queryKey: ['driverEvents', driverId, seriesNames],
     queryFn: async () => {
       const allEvents = [];
       
@@ -33,19 +33,20 @@ export default function DriverScheduleResults({ driverId }) {
         allEvents.push(...eventData);
       }
       
-      // Get upcoming events from series
-      if (seriesIds.length > 0) {
-        const upcomingEvents = await base44.entities.Event.filter({ 
-          status: 'upcoming'
-        });
-        const seriesEvents = upcomingEvents.filter(e => seriesIds.includes(e.series) || driverPrograms.some(dp => dp.series_id === e.series));
+      // Get all upcoming events and filter by series
+      if (seriesNames.length > 0) {
+        const allUpcomingEvents = await base44.entities.Event.list('-event_date', 1000);
+        const futureDate = new Date();
+        const seriesEvents = allUpcomingEvents.filter(e => 
+          seriesNames.includes(e.series) && new Date(e.event_date) >= futureDate
+        );
         allEvents.push(...seriesEvents);
       }
       
       return [...new Map(allEvents.map(e => [e.id, e])).values()]
         .sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
     },
-    enabled: driverId && (driverPrograms.length > 0 || seriesIds.length > 0),
+    enabled: driverId && driverPrograms.length > 0,
   });
 
   // Fetch results for this driver
