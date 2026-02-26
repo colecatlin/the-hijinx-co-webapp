@@ -27,9 +27,9 @@ Deno.serve(async (req) => {
     const series_ids = body.series_ids || [1, 2, 3];
 
     const seriesConfigs = [
-      { id: 1, name: 'NASCAR Cup Series' },
-      { id: 2, name: "NASCAR O'Reilly Auto Parts Series" },
-      { id: 3, name: 'NASCAR Craftsman Truck Series' },
+      { id: 1, name: 'NASCAR Cup Series', slug: 'nascar-cup-series' },
+      { id: 2, name: "NASCAR O'Reilly Auto Parts Series", slug: 'nascar-oreilly-auto-parts-series' },
+      { id: 3, name: 'NASCAR Craftsman Truck Series', slug: 'nascar-craftsman-truck-series' },
     ].filter(c => series_ids.includes(c.id));
 
     // Use LLM to fetch full driver rosters from the web
