@@ -58,8 +58,7 @@ export default function DriverProfile() {
   });
 
   const driver = drivers.find(d => 
-    d.first_name?.toLowerCase() === firstName && 
-    d.last_name?.toLowerCase() === lastName
+    d.slug === driverSlugOrId || d.id === driverSlugOrId
   );
 
   const { data: media } = useQuery({
