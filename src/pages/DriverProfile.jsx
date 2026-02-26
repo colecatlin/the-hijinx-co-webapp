@@ -130,24 +130,23 @@ export default function DriverProfile() {
     );
   }
 
-  const getSeriesName = (seriesId) => {
-    return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
-  };
+  const { data: results = [] } = useQuery({
+    queryKey: ['driverResults', driver?.id],
+    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
 
-  // Get all unique series for this driver, sorted by popularity_rank
-  const driverSeriesList = programs
-    .map(p => allSeries.find(s => s.id === p.series_id))
-    .filter(Boolean)
-    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i) // dedupe
-    .sort((a, b) => {
-      const rankA = a.popularity_rank ?? 9999;
-      const rankB = b.popularity_rank ?? 9999;
-      return rankA - rankB;
-    });
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+    enabled: !!driver?.id,
+  });
 
-  const driverTeam = teams.find(t => t.id === driver?.team_id);
-
-
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+    enabled: !!driver?.id,
+  });
 
   if (isLoading) {
     return (
@@ -173,26 +172,8 @@ export default function DriverProfile() {
     );
   }
 
-  const { data: results = [] } = useQuery({
-    queryKey: ['driverResults', driver?.id],
-    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
-    enabled: !!driver?.id,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list(),
-    enabled: !!driver?.id,
-  });
-
   // Block public access to draft profiles
-  if (driver && driver.profile_status !== 'live' && user?.role !== 'admin') {
+  if (driver.profile_status !== 'live' && user?.role !== 'admin') {
     return (
       <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
