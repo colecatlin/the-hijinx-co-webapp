@@ -157,6 +157,10 @@ Deno.serve(async (req) => {
     }
     log.push(`  Linked ${stats.events_track_fixed} events to tracks`);
 
+    if (mode === 'connections') {
+      return Response.json({ success: true, dry_run, stats, log });
+    }
+
     // ─── 4. Link DriverPrograms to Teams ───────────────────────────────────
     log.push('\n=== FIX 4: DriverPrograms missing team_id ===');
 
