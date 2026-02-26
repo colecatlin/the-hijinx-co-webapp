@@ -2,10 +2,10 @@
 // This is the single source of truth for all profile URLs
 
 export const PROFILE_ROUTES = {
-  Track: { basePath: 'TrackProfile', param: 'id' }, // Uses ?id={slug}
+  Track: { basePath: 'TrackProfile', param: 'slug' }, // Uses ?slug={slug}
   Series: { basePath: 'SeriesDetail', param: 'slug' }, // Uses ?slug={slug}
-  Team: { basePath: 'TeamProfile', param: 'id' }, // Uses ?id={slug}
-  Driver: { basePath: 'DriverProfile', param: 'id' }, // Uses ?id={slug}
+  Team: { basePath: 'TeamProfile', param: 'slug' }, // Uses ?slug={slug}
+  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Uses ?slug={slug}
   Event: { basePath: 'EventResults', param: 'id' }, // Uses ?id={id} (no slug yet)
 };
 
