@@ -36,12 +36,12 @@ Deno.serve(async (req) => {
     const llmPrompt = `Please provide the complete 2026 NASCAR driver roster for the following series: ${seriesConfigs.map(c => c.name).join(', ')}.
 
 For each series, list ALL full-time drivers competing in the 2026 season.
-Include their car number and vehicle manufacturer (Chevrolet, Ford, Toyota).
+Include their car number, vehicle manufacturer (Chevrolet, Ford, Toyota), and the full team name they race for.
 
 Return a JSON object with this structure:
 {
   "drivers": [
-    { "first_name": "...", "last_name": "...", "car_number": "...", "manufacturer": "...", "series": "..." }
+    { "first_name": "...", "last_name": "...", "car_number": "...", "manufacturer": "...", "series": "...", "team_name": "..." }
   ]
 }
 
@@ -63,6 +63,7 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
                 car_number: { type: 'string' },
                 manufacturer: { type: 'string' },
                 series: { type: 'string' },
+                team_name: { type: 'string' },
               },
             },
           },
