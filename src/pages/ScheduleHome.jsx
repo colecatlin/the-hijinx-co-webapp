@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
+// eslint-disable-next-line no-unused-vars
 import { format, parseISO } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
 
 export default function ScheduleHome() {
@@ -16,11 +18,6 @@ export default function ScheduleHome() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['schedule'],
     queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'event_date', 100),
-  });
-
-  const { data: series = [] } = useQuery({
-    queryKey: ['seriesSchedule'],
-    queryFn: () => base44.entities.Series.filter({ status: 'Active' }),
   });
 
   const uniqueSeries = [...new Set(events.map(e => e.series).filter(Boolean))];
@@ -48,7 +45,7 @@ export default function ScheduleHome() {
         ) : (
           <div className="space-y-3">
             {filtered.map((event) => (
-              <a key={event.id} href={createPageUrl('EventProfile', { id: event.id })} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
+              <Link key={event.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="border border-gray-200 p-5 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
                 <div className="w-16 text-center shrink-0">
                   {event.event_date && (() => {
                     const d = parseISO(event.event_date);
@@ -77,6 +74,7 @@ export default function ScheduleHome() {
                   </span>
                 )}
               </a>
+              </Link>
             ))}
           </div>
         )}
