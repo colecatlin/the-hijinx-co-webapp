@@ -174,7 +174,9 @@ Deno.serve(async (req) => {
     }
 
     // Use LLM to get car-number-to-team mapping for each series
-    const seriesList = ['NASCAR Cup Series', "NASCAR O'Reilly Auto Parts Series", 'NASCAR Craftsman Truck Series'];
+    const seriesList = target_series
+      ? [target_series]
+      : ['NASCAR Cup Series', "NASCAR O'Reilly Auto Parts Series", 'NASCAR Craftsman Truck Series'];
     const teamMappings = {};
 
     for (const series of seriesList) {
