@@ -280,7 +280,22 @@ export default function TeamProfile() {
 
         {/* Schedule & Results Section */}
         <div id="section-schedule" className="space-y-8">
-          <TeamScheduleResults teamId={team.id} />
+          {uniqueSeriesPrograms.length > 0 ? (
+            <div className="space-y-8">
+              {uniqueSeriesPrograms.map(prog => (
+                <ScheduleSection 
+                  key={prog.id}
+                  entityType="Series" 
+                  entityId={prog.id}
+                  title={`${prog.series_name} Schedule`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white border border-gray-200 p-8 text-center">
+              <p className="text-gray-500">No schedule available</p>
+            </div>
+          )}
         </div>
       </div>
     </PageShell>
