@@ -242,8 +242,10 @@ If you cannot find reliable data for this specific race, return empty results ar
           programId = prog?.id || null;
         }
 
+        if (!dbDriver) continue; // skip unmatched drivers
+
         recordsToCreate.push({
-          driver_id: dbDriver?.id || null,
+          driver_id: dbDriver.id,
           program_id: programId || 'placeholder',
           event_id: dbEvent.id,
           series: seriesName,
