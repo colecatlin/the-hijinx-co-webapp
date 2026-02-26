@@ -12,6 +12,7 @@ import { createPageUrl } from '@/components/utils';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
+import SeriesNameHistory from '@/components/series/SeriesNameHistory';
 
 export default function SeriesDetail() {
   const [searchParams] = useSearchParams();
