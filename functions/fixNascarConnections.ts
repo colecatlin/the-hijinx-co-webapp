@@ -100,8 +100,9 @@ Deno.serve(async (req) => {
     // ─── 3. Link Events to Tracks ──────────────────────────────────────────
     log.push('\n=== FIX 3: Events missing track_id ===');
 
-    const eventsWithoutTrack = allEvents.filter(e => !e.track_id);
-    log.push(`Found ${eventsWithoutTrack.length} events without track_id`);
+    // Only process events that have a location_note with "@" (the NASCAR calendar-synced events)
+    const eventsWithoutTrack = allEvents.filter(e => !e.track_id && e.location_note && e.location_note.includes('@'));
+    log.push(`Found ${eventsWithoutTrack.length} events without track_id (with @ location_note)`);
 
     // Build track lookup by normalized name
     const trackByName = new Map();
