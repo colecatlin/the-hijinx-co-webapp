@@ -187,6 +187,18 @@ export default function DriverProfile() {
     );
   }
 
+  const getSeriesName = (seriesId) => {
+    return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
+  };
+
+  const driverSeriesList = programs
+    .map(p => allSeries.find(s => s.id === p.series_id))
+    .filter(Boolean)
+    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
+    .sort((a, b) => (a.popularity_rank ?? 9999) - (b.popularity_rank ?? 9999));
+
+  const driverTeam = teams.find(t => t.id === driver?.team_id);
+
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'programs', label: 'Programs', icon: Flag },
