@@ -39,6 +39,21 @@ export default function TeamScheduleResults({ teamId }) {
     enabled: driverIds.length > 0,
   });
 
+  // Fetch driver data
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['teamDrivers', driverIds],
+    queryFn: async () => {
+      if (driverIds.length === 0) return [];
+      const allDrivers = [];
+      for (const driverId of driverIds) {
+        const driverData = await base44.entities.Driver.filter({ id: driverId });
+        allDrivers.push(...driverData);
+      }
+      return allDrivers;
+    },
+    enabled: driverIds.length > 0,
+  });
+
   // Fetch results for this team's drivers
   const { data: results = [], isLoading: loadingResults } = useQuery({
     queryKey: ['teamResults', driverIds],
