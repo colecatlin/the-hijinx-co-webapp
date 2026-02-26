@@ -29,7 +29,7 @@ import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlugOrId = urlParams.get('id') || urlParams.get('slug');
+  const driverSlug = urlParams.get('slug') || urlParams.get('id');
   const firstName = urlParams.get('first');
   const lastName = urlParams.get('last');
 
