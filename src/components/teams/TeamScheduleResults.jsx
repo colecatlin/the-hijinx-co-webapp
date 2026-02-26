@@ -162,7 +162,10 @@ export default function TeamScheduleResults({ teamId }) {
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-sm text-[#232323] truncate">{event?.name || 'Event'}</div>
                       {event && (
-                        <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event.event_date), 'MMM d')}</div>
+                        <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event.event_date), 'MMM d, yyyy')}</div>
+                      )}
+                      {(result.series || event?.series) && (
+                        <div className="text-xs text-gray-500 mt-1">{result.series || event?.series}</div>
                       )}
                     </div>
                     {result.position && (
@@ -175,18 +178,6 @@ export default function TeamScheduleResults({ teamId }) {
                   <div className="text-xs font-semibold text-[#232323] mb-2 truncate">
                     {driver && <span>{driver.first_name} {driver.last_name}</span>}
                     {driverProgram?.car_number && <span className="text-[#00FFDA] ml-1">#{driverProgram.car_number}</span>}
-                  </div>
-                  
-                  <div className="flex items-center gap-1 flex-wrap text-xs text-gray-600">
-                    {result.class && <span className="truncate">{result.class}</span>}
-                    {result.status_text && result.status_text !== 'Running' && (
-                      <>
-                        {result.class && <span>•</span>}
-                        <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                          {result.status_text}
-                        </Badge>
-                      </>
-                    )}
                   </div>
                 </div>
               );
