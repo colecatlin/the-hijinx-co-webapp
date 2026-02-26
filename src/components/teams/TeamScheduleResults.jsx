@@ -135,36 +135,40 @@ export default function TeamScheduleResults({ teamId }) {
         )}
 
         {!isLoading && pastResults.length > 0 && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {pastResults.map(result => {
               const event = events.find(e => e.id === result.event_id);
               const driver = driverPrograms.find(dp => dp.driver_id === result.driver_id);
               
               return (
-                <div key={result.id} className="border border-gray-200 p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="font-bold text-[#232323]">{event?.name || 'Event'}</div>
+                <div key={result.id} className="border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-sm text-[#232323] truncate">{event?.name || 'Event'}</div>
                       {event && (
-                        <div className="text-xs text-gray-600 mt-1">{format(parseISO(event.event_date), 'MMM d, yyyy')}</div>
+                        <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event.event_date), 'MMM d')}</div>
                       )}
                     </div>
                     {result.position && (
-                      <div className="text-center">
-                        <div className="text-3xl font-black text-[#232323]">{result.position}</div>
-                        <div className="text-xs text-gray-600">Finish</div>
+                      <div className="text-center flex-shrink-0">
+                        <div className="text-2xl font-black text-[#232323]">{result.position}</div>
+                        <div className="text-xs text-gray-600 leading-none">P</div>
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 flex-wrap mt-2 text-xs text-gray-600">
-                    {result.series && <span>{result.series}</span>}
-                    {result.class && <span>•</span>}
-                    {result.class && <span>{result.class}</span>}
-                    {result.status_text && (
+                  {driver && (
+                    <div className="text-xs font-semibold text-[#232323] mb-2 truncate">
+                      {driver.car_number && <span className="text-[#00FFDA]">#{driver.car_number}</span>}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-1 flex-wrap text-xs text-gray-600">
+                    {result.class && <span className="truncate">{result.class}</span>}
+                    {result.status_text && result.status_text !== 'Running' && (
                       <>
-                        <span>•</span>
-                        <Badge variant="outline" className="text-xs">
+                        {result.class && <span>•</span>}
+                        <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
                           {result.status_text}
                         </Badge>
                       </>
