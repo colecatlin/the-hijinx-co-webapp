@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Calendar, Trophy } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function TeamScheduleResults({ teamId }) {
+  const [activeSection, setActiveSection] = useState('schedule');
+
   // Get all driver programs for this team
   const { data: driverPrograms = [] } = useQuery({
     queryKey: ['teamDriverPrograms', teamId],
@@ -16,7 +18,7 @@ export default function TeamScheduleResults({ teamId }) {
   // Get unique driver IDs from programs
   const driverIds = [...new Set(driverPrograms.map(dp => dp.driver_id).filter(Boolean))];
 
-  // Fetch events (schedules)
+  // Fetch events
   const { data: events = [], isLoading: loadingEvents } = useQuery({
     queryKey: ['teamEvents', teamId, driverIds],
     queryFn: async () => {
@@ -71,44 +73,66 @@ export default function TeamScheduleResults({ teamId }) {
     enabled: driverIds.length > 0,
   });
 
-  const upcomingEvents = events
-    .filter(e => new Date(e.event_date) >= new Date())
-    .slice(0, 5);
+  // Split events and results
+  const upcomingEvents = events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5);
+  const pastResults = results.filter(r => {
+    const event = events.find(e => e.id === r.event_id);
+    return event && new Date(event.event_date) < new Date();
+  }).slice(0, 10);
 
-  const pastResults = results
-    .filter(r => {
-      const event = events.find(e => e.id === r.event_id);
-      return event && new Date(event.event_date) < new Date();
-    })
-    .slice(0, 10);
+  // Get the most recent race
+  const mostRecentRace = pastResults.length > 0 ? pastResults[0] : null;
+  const mostRecentEvent = mostRecentRace ? events.find(e => e.id === mostRecentRace.event_id) : null;
 
   const isLoading = loadingEvents || loadingResults;
 
+  if (driverIds.length === 0) return null;
+
   return (
-    <div className="space-y-8">
-      {/* Upcoming Schedule */}
-      <section className="bg-white border border-gray-200 p-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Calendar className="w-5 h-5 text-[#232323]" />
-          <h2 className="text-2xl font-bold text-[#232323]">Upcoming Schedule</h2>
+    <section className="bg-white border border-gray-200 p-8 mb-8">
+      <Separator className="mb-3" />
+      <div className="flex items-center gap-3 mb-2">
+        <h2 className="text-2xl font-black text-[#232323]">Schedule & Results</h2>
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
+        {['schedule', 'results'].map(section => {
+          const Icon = section === 'schedule' ? Calendar : Trophy;
+          const label = section === 'schedule' ? 'Upcoming' : 'Recent Results';
+          return (
+            <button
+              key={section}
+              onClick={() => setActiveSection(section)}
+              className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                activeSection === section
+                  ? 'text-[#232323] border-b-2 border-[#00FFDA]'
+                  : 'text-gray-600 hover:text-[#232323]'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <Separator className="mb-6" />
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
+      )}
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-          </div>
-        )}
-
-        {!isLoading && upcomingEvents.length === 0 && (
-          <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded">
-            <Calendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No upcoming events scheduled.</p>
-          </div>
-        )}
-
-        {!isLoading && upcomingEvents.length > 0 && (
-          <div className="space-y-3">
-            {upcomingEvents.map(event => (
+      {activeSection === 'schedule' && !isLoading && (
+        <div className="space-y-4">
+          {upcomingEvents.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded">
+              <Calendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No upcoming events scheduled.</p>
+            </div>
+          ) : (
+            upcomingEvents.map(event => (
               <div key={event.id} className="flex items-start justify-between border border-gray-200 p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex gap-4">
                   <div className="text-center min-w-[52px] bg-[#232323] text-white p-2">
@@ -124,67 +148,67 @@ export default function TeamScheduleResults({ teamId }) {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Recent Results */}
-      <section className="bg-white border border-gray-200 p-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Trophy className="w-5 h-5 text-[#232323]" />
-          <h2 className="text-2xl font-bold text-[#232323]">Recent Results</h2>
+            ))
+          )}
         </div>
+      )}
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-          </div>
-        )}
-
-        {!isLoading && pastResults.length === 0 && (
-          <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded">
-            <Trophy className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No race results yet.</p>
-          </div>
-        )}
-
-        {!isLoading && pastResults.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {pastResults.map(result => {
-              const event = events.find(e => e.id === result.event_id);
-              const driverProgram = driverPrograms.find(dp => dp.driver_id === result.driver_id);
-              const driver = drivers.find(d => d.id === result.driver_id);
-              
-              return (
-                <div key={result.id} className="border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-sm text-[#232323] truncate">{event?.name || 'Event'}</div>
-                      {event && (
-                        <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event.event_date), 'MMM d, yyyy')}</div>
-                      )}
-                      {(result.series || event?.series) && (
-                        <div className="text-xs text-gray-500 mt-1">{result.series || event?.series}</div>
-                      )}
-                    </div>
-                    {result.position && (
-                      <div className="text-center flex-shrink-0">
-                        <div className="text-2xl font-black text-[#232323]">P.{result.position}</div>
-                      </div>
-                    )}
+      {activeSection === 'results' && !isLoading && (
+        <div className="space-y-4">
+          {pastResults.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded">
+              <Trophy className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No race results yet.</p>
+            </div>
+          ) : (
+            <div>
+              {mostRecentEvent && (
+                <div className="mb-6 p-6 bg-gray-50 border border-gray-200">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Most Recent Race</div>
+                  <div className="font-bold text-xl text-[#232323] mb-1">{mostRecentEvent.name}</div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {format(parseISO(mostRecentEvent.event_date), 'MMMM d, yyyy')}
                   </div>
-                  
-                  <div className="text-xs font-semibold text-[#232323] mb-2 truncate">
-                    {driver && <span>{driver.first_name} {driver.last_name}</span>}
-                    {driverProgram?.car_number && <span className="text-[#00FFDA] ml-1">#{driverProgram.car_number}</span>}
-                  </div>
+                  {mostRecentEvent.series && (
+                    <div className="text-sm text-gray-500">{mostRecentEvent.series}</div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-    </div>
+              )}
+              <div className="space-y-3">
+                {pastResults.map(result => {
+                  const event = events.find(e => e.id === result.event_id);
+                  const driverProgram = driverPrograms.find(dp => dp.driver_id === result.driver_id);
+                  const driver = drivers.find(d => d.id === result.driver_id);
+                  
+                  return (
+                    <div key={result.id} className="border border-gray-200 p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div>
+                          <div className="font-bold text-[#232323]">{event?.name || 'Event'}</div>
+                          <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event?.event_date || new Date()), 'MMM d, yyyy')}</div>
+                          {(result.series || event?.series) && (
+                            <div className="text-xs text-gray-500 mt-1">{result.series || event?.series}</div>
+                          )}
+                        </div>
+                        {result.position && (
+                          <div className="text-center flex-shrink-0">
+                            <div className="text-3xl font-black text-[#232323]">P.{result.position}</div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-sm font-semibold text-[#232323]">
+                        {driver && <span>{driver.first_name} {driver.last_name}</span>}
+                        {driverProgram?.car_number && <span className="text-[#00FFDA] ml-2">#{driverProgram.car_number}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
