@@ -48,9 +48,25 @@ Deno.serve(async (req) => {
         master_id: master.id,
         master_name: `${master.first_name} ${master.last_name}`,
         duplicates_removed: [],
+        duplicates_kept: [],
       };
 
       for (const dup of duplicates) {
+        // Check if duplicate has any registered programs
+        let hasProgram = false;
+        try {
+          const programs = await base44.asServiceRole.entities.DriverProgram.filter({ driver_id: dup.id });
+          hasProgram = programs.length > 0;
+        } catch (_e) {
+          // DriverProgram entity may not exist — treat as no program
+        }
+
+        if (hasProgram) {
+          // Keep this duplicate because it has a registered program
+          logEntry.duplicates_kept.push({ id: dup.id, name: `${dup.first_name} ${dup.last_name}` });
+          continue;
+        }
+
         // Migrate related records to master
         for (const entityName of relatedEntities) {
           try {
@@ -63,7 +79,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Delete the duplicate driver
+        // Delete the duplicate driver (only if no program)
         await base44.asServiceRole.entities.Driver.delete(dup.id);
         logEntry.duplicates_removed.push({ id: dup.id, name: `${dup.first_name} ${dup.last_name}` });
       }
