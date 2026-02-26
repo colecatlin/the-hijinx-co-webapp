@@ -25,7 +25,7 @@ import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
-import DriverInsights from '@/components/drivers/DriverInsights';
+
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -418,14 +418,6 @@ export default function DriverProfile() {
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Racing Programs</h2>
             <ProgramsTimeline programs={programs} teams={teams} />
-          </section>
-
-          <section className="p-8">
-            <DriverInsights 
-              driver={driver}
-              results={results}
-              programs={programs}
-            />
           </section>
 
           <section id="section-stats" className="bg-white p-8">
