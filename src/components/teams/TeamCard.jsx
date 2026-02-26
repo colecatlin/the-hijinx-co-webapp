@@ -40,8 +40,8 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
   };
 
   return (
-    <Link to={buildProfileUrl('Team', team.slug || team.id)} className="h-full block">
-      <div className="bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group h-full flex flex-col">
+    <Link to={buildProfileUrl('Team', team.slug || team.id)} className="block">
+      <div className="aspect-[2/3] bg-white border border-gray-200 p-6 hover:border-[#00FFDA] transition-all group flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="mb-3">
@@ -66,18 +66,21 @@ export default function TeamCard({ team, programs = [], programsCount, driversCo
               </div>
             )}
           </div>
-          {programs.length > 0 && (
-            <div className="flex flex-col gap-1 items-end">
-              {programs.slice(0, 2).map((program, idx) => (
-                <Badge key={idx} variant="outline" className="text-xs border-[#232323] text-[#232323]">
-                  {program.series_name}
-                </Badge>
-              ))}
-              {programs.length > 2 && (
-                <span className="text-xs text-gray-500">+{programs.length - 2} more</span>
-              )}
-            </div>
-          )}
+          {programs.length > 0 && (() => {
+            const uniqueSeries = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
+            return (
+              <div className="flex flex-col gap-1 items-end">
+                {uniqueSeries.slice(0, 2).map((series, idx) => (
+                  <Badge key={idx} variant="outline" className="text-xs border-[#232323] text-[#232323]">
+                    {series}
+                  </Badge>
+                ))}
+                {uniqueSeries.length > 2 && (
+                  <span className="text-xs text-gray-500">+{uniqueSeries.length - 2} more</span>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <p className="text-sm text-gray-700 mb-4 line-clamp-2 flex-1">
