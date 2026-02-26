@@ -231,8 +231,12 @@ Example: {"5": "Hendrick Motorsports", "11": "Joe Gibbs Racing"}`,
       }
     }
 
-    // Apply team mappings to programs
-    for (const prog of programsWithoutTeam) {
+    // Apply team mappings to ALL programs for these series (not just programsWithoutTeam filter)
+    // since we want to back-fill team info on any program in these series
+    const allSeriesPrograms = allPrograms.filter(p => seriesList.includes(p.series_name) && !p.team_id && !p.team_name);
+    log.push(`  Applying to ${allSeriesPrograms.length} programs across target series`);
+
+    for (const prog of allSeriesPrograms) {
       const teamNameFromLLM = teamMappings[`${prog.series_name}|${prog.car_number}`];
       if (!teamNameFromLLM) continue;
 
@@ -244,8 +248,9 @@ Example: {"5": "Hendrick Motorsports", "11": "Joe Gibbs Racing"}`,
       stats.programs_team_fixed++;
       if (!dry_run) {
         await base44.asServiceRole.entities.DriverProgram.update(prog.id, updateData);
+        log.push(`  Fixed: #${prog.car_number} ${prog.series_name} → "${teamNameFromLLM}"`);
       } else {
-        log.push(`  [DRY] Program ${prog.car_number} (${prog.series_name}) → team: "${teamNameFromLLM}" ${teamRecord ? '(matched DB)' : '(name only)'}`);
+        log.push(`  [DRY] #${prog.car_number} (${prog.series_name}) → "${teamNameFromLLM}" ${teamRecord ? '(DB match)' : '(name only)'}`);
       }
     }
     log.push(`  Fixed ${stats.programs_team_fixed} program→team links`);
