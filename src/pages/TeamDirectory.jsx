@@ -27,14 +27,14 @@ export default function TeamDirectory() {
   });
 
   const { data: allPrograms = [] } = useQuery({
-    queryKey: ['teamPrograms'],
-    queryFn: () => base44.entities.TeamProgram.list(),
+    queryKey: ['driverPrograms'],
+    queryFn: () => base44.entities.DriverProgram.list(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: allRoster = [] } = useQuery({
-    queryKey: ['teamRoster'],
-    queryFn: () => base44.entities.TeamRoster.list(),
+  const { data: allDrivers = [] } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list(),
     staleTime: 5 * 60 * 1000,
   });
 
