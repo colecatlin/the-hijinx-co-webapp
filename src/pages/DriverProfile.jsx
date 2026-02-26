@@ -29,7 +29,9 @@ import DriverInsights from '@/components/drivers/DriverInsights';
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlugOrId = urlParams.get('id');
+  const driverSlugOrId = urlParams.get('id') || urlParams.get('slug');
+  const firstName = urlParams.get('first');
+  const lastName = urlParams.get('last');
 
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
@@ -58,7 +60,9 @@ export default function DriverProfile() {
   });
 
   const driver = drivers.find(d => 
-    d.slug === driverSlugOrId || d.id === driverSlugOrId
+    d.slug === driverSlugOrId || 
+    d.id === driverSlugOrId ||
+    (firstName && lastName && d.first_name === firstName && d.last_name === lastName)
   );
 
   const { data: media } = useQuery({
