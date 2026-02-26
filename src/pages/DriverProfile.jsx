@@ -147,7 +147,7 @@ export default function DriverProfile() {
 
   if (!driver) {
     return (
-      <PageShell className="bg-white">
+      <PageShell className="bg-[#FFF8F5]">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
           <p className="text-gray-600 mb-4">Driver not found</p>
           <Link to={createPageUrl('DriverDirectory')}>
