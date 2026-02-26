@@ -208,43 +208,18 @@ export default function TeamProfile() {
 
         {/* Drivers Section */}
         <div id="section-drivers" className="space-y-8 mb-16">
-          {allDrivers.length > 0 ? (
-            <div className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Drivers</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allDrivers.map(driver => {
-                  const driverProgs = driverPrograms.filter(dp => dp.driver_id === driver.id);
-                  return (
-                    <Link
-                      key={driver.id}
-                      to={`/DriverProfile?id=${encodeURIComponent(driver.slug || driver.id)}`}
-                      className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-[#232323] text-sm flex-shrink-0">
-                          {driver.primary_number || '#'}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
-                            {driver.first_name} {driver.last_name}
-                          </div>
-                          {driverProgs.length > 0 && (
-                            <div className="text-xs text-gray-500 truncate">
-                              {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+          <div className="bg-white border border-gray-200 p-8">
+            <Separator className="mb-3" />
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-black text-[#232323]">Drivers</h2>
             </div>
-          ) : (
-            <div className="bg-white border border-gray-200 p-8 text-center">
-              <p className="text-gray-500">No drivers found for this team</p>
-            </div>
-          )}
+            <Separator className="mb-6" />
+            <TeamDriversSection 
+              teamId={team.id} 
+              driverPrograms={driverPrograms}
+              allDrivers={allDrivers}
+            />
+          </div>
         </div>
 
         {/* Programs Section */}
