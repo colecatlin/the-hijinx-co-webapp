@@ -159,137 +159,129 @@ export default function TeamProfile() {
         </div>
 
         {/* Overview Section */}
-        {activeSection === 'overview' && (
-          <div id="section-overview" className="space-y-8">
-            <div className="bg-white border border-gray-200 p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {team.headquarters_city && (
-                  <div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                      <MapPin className="w-4 h-4" />
-                      Headquarters
-                    </div>
-                    <div className="text-lg font-semibold text-[#232323]">
-                      {[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ')}
-                    </div>
+        <div id="section-overview" className="space-y-8 mb-16">
+          <div className="bg-white border border-gray-200 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {team.headquarters_city && (
+                <div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <MapPin className="w-4 h-4" />
+                    Headquarters
                   </div>
-                )}
-                {team.primary_discipline && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Discipline</div>
-                    <div className="text-lg font-semibold text-[#232323]">{team.primary_discipline}</div>
+                  <div className="text-lg font-semibold text-[#232323]">
+                    {[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ')}
                   </div>
-                )}
-                {team.team_level && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Level</div>
-                    <div className="text-lg font-semibold text-[#232323]">{team.team_level}</div>
-                  </div>
-                )}
-                {team.founded_year && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Founded</div>
-                    <div className="text-lg font-semibold text-[#232323]">{team.founded_year}</div>
-                  </div>
-                )}
-              </div>
-
-              {team.description_summary && (
-                <p className="text-gray-700 leading-relaxed mb-6">{team.description_summary}</p>
+                </div>
               )}
-
-              {team.status && (
-                <Badge className={team.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
-                  {team.status}
-                </Badge>
+              {team.primary_discipline && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Discipline</div>
+                  <div className="text-lg font-semibold text-[#232323]">{team.primary_discipline}</div>
+                </div>
+              )}
+              {team.team_level && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Level</div>
+                  <div className="text-lg font-semibold text-[#232323]">{team.team_level}</div>
+                </div>
+              )}
+              {team.founded_year && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Founded</div>
+                  <div className="text-lg font-semibold text-[#232323]">{team.founded_year}</div>
+                </div>
               )}
             </div>
+
+            {team.description_summary && (
+              <p className="text-gray-700 leading-relaxed mb-6">{team.description_summary}</p>
+            )}
+
+            {team.status && (
+              <Badge className={team.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                {team.status}
+              </Badge>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Drivers Section */}
-        {activeSection === 'drivers' && (
-          <div id="section-drivers" className="space-y-8">
-            {allDrivers.length > 0 ? (
-              <div className="bg-white border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-[#232323] mb-6">Drivers</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allDrivers.map(driver => {
-                    const driverProgs = driverPrograms.filter(dp => dp.driver_id === driver.id);
-                    return (
-                      <Link
-                        key={driver.id}
-                        to={`/DriverProfile?id=${encodeURIComponent(driver.slug || driver.id)}`}
-                        className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-[#232323] text-sm flex-shrink-0">
-                            {driver.primary_number || '#'}
+        <div id="section-drivers" className="space-y-8 mb-16">
+          {allDrivers.length > 0 ? (
+            <div className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Drivers</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allDrivers.map(driver => {
+                  const driverProgs = driverPrograms.filter(dp => dp.driver_id === driver.id);
+                  return (
+                    <Link
+                      key={driver.id}
+                      to={`/DriverProfile?id=${encodeURIComponent(driver.slug || driver.id)}`}
+                      className="border border-gray-200 p-4 hover:border-[#00FFDA] transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-[#232323] text-sm flex-shrink-0">
+                          {driver.primary_number || '#'}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
+                            {driver.first_name} {driver.last_name}
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-[#232323] group-hover:text-[#00FFDA] transition-colors truncate">
-                              {driver.first_name} {driver.last_name}
+                          {driverProgs.length > 0 && (
+                            <div className="text-xs text-gray-500 truncate">
+                              {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
                             </div>
-                            {driverProgs.length > 0 && (
-                              <div className="text-xs text-gray-500 truncate">
-                                {driverProgs.map(dp => dp.series_name).filter(Boolean).join(' · ')}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white border border-gray-200 p-8 text-center">
-                <p className="text-gray-500">No drivers found for this team</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Programs Section */}
-        {activeSection === 'programs' && (
-          <div id="section-programs" className="space-y-8">
-            {uniqueSeriesPrograms.length > 0 ? (
-              <div className="bg-white border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
-                <div className="space-y-4">
-                  {uniqueSeriesPrograms.map(prog => {
-                    const driversInSeries = driverPrograms.filter(dp => dp.series_name === prog.series_name);
-                    return (
-                      <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
-                        <div className="font-bold text-[#232323]">{prog.series_name}</div>
-                        {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
-                        <div className="text-sm text-gray-500 mt-1">
-                          {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''} · 2026
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {driversInSeries.map(dp => (
-                            <Badge key={dp.id} variant="outline" className="text-xs">#{dp.car_number}</Badge>
-                          ))}
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </Link>
+                  );
+                })}
               </div>
-            ) : (
-              <div className="bg-white border border-gray-200 p-8 text-center">
-                <p className="text-gray-500">No programs found for this team</p>
+            </div>
+          ) : (
+            <div className="bg-white border border-gray-200 p-8 text-center">
+              <p className="text-gray-500">No drivers found for this team</p>
+            </div>
+          )}
+        </div>
+
+        {/* Programs Section */}
+        <div id="section-programs" className="space-y-8 mb-16">
+          {uniqueSeriesPrograms.length > 0 ? (
+            <div className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Programs</h2>
+              <div className="space-y-4">
+                {uniqueSeriesPrograms.map(prog => {
+                  const driversInSeries = driverPrograms.filter(dp => dp.series_name === prog.series_name);
+                  return (
+                    <div key={prog.id} className="border-l-4 border-[#00FFDA] pl-4">
+                      <div className="font-bold text-[#232323]">{prog.series_name}</div>
+                      {prog.class_name && <div className="text-sm text-gray-600">{prog.class_name}</div>}
+                      <div className="text-sm text-gray-500 mt-1">
+                        {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''} · 2026
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {driversInSeries.map(dp => (
+                          <Badge key={dp.id} variant="outline" className="text-xs">#{dp.car_number}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="bg-white border border-gray-200 p-8 text-center">
+              <p className="text-gray-500">No programs found for this team</p>
+            </div>
+          )}
+        </div>
 
         {/* Schedule & Results Section */}
-        {activeSection === 'schedule' && (
-          <div id="section-schedule" className="space-y-8">
-            <TeamScheduleResults teamId={team.id} />
-          </div>
-        )}
+        <div id="section-schedule" className="space-y-8">
+          <TeamScheduleResults teamId={team.id} />
+        </div>
       </div>
     </PageShell>
   );
