@@ -473,42 +473,7 @@ export default function TeamProfile() {
 
           <section id="section-partners" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Partners</h2>
-
-            {false ? (
-              <>
-                {['Title', 'Primary', 'Associate', 'Technical', 'Media', 'Local'].map(type => {
-                  const typePartners = partners.filter(p => p.partner_type === type && p.active);
-                  if (typePartners.length === 0) return null;
-                  
-                  return (
-                    <div key={type} className="mb-6">
-                      <h3 className="text-lg font-semibold text-[#232323] mb-3">{type} Partners</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {typePartners.map(partner => (
-                          <div key={partner.id}>
-                            {partner.website_url ? (
-                              <a
-                                href={partner.website_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-[#232323] hover:text-[#00FFDA] transition-colors"
-                              >
-                                {partner.partner_name}
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            ) : (
-                              <div className="text-[#232323]">{partner.partner_name}</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            ) : (
-              <p className="text-gray-500">No partner information available.</p>
-            )}
+            <p className="text-gray-500">No partner information available.</p>
           </section>
 
           <section id="section-media" className="bg-white border border-gray-200 p-8">
