@@ -26,6 +26,7 @@ export default function SeriesDetail() {
       return all.find(s => s.slug === slug);
     },
     enabled: !!slug,
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: events = [] } = useQuery({
@@ -40,12 +41,14 @@ export default function SeriesDetail() {
       });
     },
     enabled: !!series?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', series?.id],
     queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
     enabled: !!series?.id,
+    staleTime: 10 * 60 * 1000,
   });
 
   if (isLoading) {

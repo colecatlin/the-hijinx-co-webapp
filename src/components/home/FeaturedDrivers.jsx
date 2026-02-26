@@ -16,21 +16,25 @@ export default function FeaturedDrivers() {
       });
       return allDrivers.slice(0, 6);
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
     queryFn: () => base44.entities.DriverProgram.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allSeries = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allMedia = [] } = useQuery({
     queryKey: ['driverMedia'],
     queryFn: () => base44.entities.DriverMedia.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const isLoading = driversLoading;

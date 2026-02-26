@@ -23,6 +23,7 @@ export default function TrackDirectory() {
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const filteredTracks = tracks

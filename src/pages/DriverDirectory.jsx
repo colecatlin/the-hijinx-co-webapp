@@ -51,26 +51,31 @@ export default function DriverDirectory() {
   const { data: drivers = [], isLoading: driversLoading } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
     queryFn: () => base44.entities.DriverProgram.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allTeams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allSeries = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const { data: allMedia = [] } = useQuery({
     queryKey: ['driverMedia'],
     queryFn: () => base44.entities.DriverMedia.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   const uniqueSeries = [...new Set(allPrograms.map(p => p.series_name).filter(Boolean))].sort();

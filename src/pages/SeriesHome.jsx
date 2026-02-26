@@ -19,6 +19,7 @@ export default function SeriesHome() {
   const { data: series = [], isLoading } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
   });
 
   let filteredSeries = series.filter(s => {
