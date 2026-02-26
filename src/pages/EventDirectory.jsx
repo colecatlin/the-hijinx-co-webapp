@@ -96,7 +96,7 @@ export default function EventDirectory() {
       return matchesSearch && matchesSeries && matchesStatus;
     });
 
-  const filteredCompletedEvents = completedEvents.filter(event => {
+  const filteredCompletedEvents = [...completedEvents].sort((a, b) => (b.event_date || '').localeCompare(a.event_date || '')).filter(event => {
     if (!searchQuery) return true;
     const term = searchQuery.toLowerCase();
     if (event.name?.toLowerCase().includes(term)) return true;
