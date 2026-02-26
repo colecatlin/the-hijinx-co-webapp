@@ -164,23 +164,6 @@ export default function DriverProfile() {
     );
   }
 
-  // Block public access to draft profiles
-  if (driver.profile_status !== 'live' && user?.role !== 'admin') {
-    return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-lg font-semibold text-gray-700 mb-2">This profile is not yet available.</p>
-          <p className="text-gray-500 mb-6">Check back soon.</p>
-          <Link to={createPageUrl('DriverDirectory')}>
-            <Button>Back to Drivers</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-
-
   const { data: results = [] } = useQuery({
     queryKey: ['driverResults', driver?.id],
     queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
@@ -198,6 +181,21 @@ export default function DriverProfile() {
     queryFn: () => base44.entities.Event.list(),
     enabled: !!driver?.id,
   });
+
+  // Block public access to draft profiles
+  if (driver && driver.profile_status !== 'live' && user?.role !== 'admin') {
+    return (
+      <PageShell className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-lg font-semibold text-gray-700 mb-2">This profile is not yet available.</p>
+          <p className="text-gray-500 mb-6">Check back soon.</p>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button>Back to Drivers</Button>
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
