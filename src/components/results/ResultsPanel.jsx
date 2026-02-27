@@ -30,6 +30,22 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
     enabled: !!eventId, // only need for event view
   });
 
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series-panel'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
+  const { data: allClasses = [] } = useQuery({
+    queryKey: ['classes-panel'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+  });
+
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['programs-panel', driverId],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
+    enabled: !!driverId,
+  });
+
   // Standings for championship view
   const { data: standings = [], isLoading: loadingStandings } = useQuery({
     queryKey: ['standings-panel', driverId, seriesName],
