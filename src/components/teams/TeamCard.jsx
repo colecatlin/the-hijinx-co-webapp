@@ -136,7 +136,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
           )}
 
           {/* Footer */}
-          <div className="mt-auto pt-4 border-t border-gray-300">
+          <div className="mt-auto pt-2 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
               <button
                 type="button"
