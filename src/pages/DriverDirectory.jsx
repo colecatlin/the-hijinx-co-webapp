@@ -84,7 +84,10 @@ export default function DriverDirectory() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const uniqueSeries = [...new Set(allPrograms.map(p => p.series_name).filter(Boolean))].sort();
+  const uniqueSeries = [...new Set(allPrograms.map(p => {
+    if (p.series_id) return allSeries.find(s => s.id === p.series_id)?.name;
+    return p.series_name;
+  }).filter(Boolean))].sort();
   const uniqueStates = [...new Set(drivers.map(d => d.hometown_state).filter(Boolean))].sort();
   const uniqueCountries = [...new Set(drivers.map(d => d.hometown_country).filter(Boolean))].sort();
   const uniqueManufacturers = [...new Set(drivers.map(d => d.manufacturer).filter(Boolean))].sort();
