@@ -18,7 +18,7 @@ const DISCIPLINES = [
   'Sports Car', 'Touring Car', 'Rally', 'Drag', 'Motorcycle', 'Karting', 'Water', 'Alternative'
 ];
 
-export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
+export default function DriverCoreDetailsSection({ driverId, driver: passedDriver, onSaveSuccess, isReadOnly }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -34,6 +34,7 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
     primary_discipline: '',
     career_status: '',
     featured: false,
+    represented_by: '',
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -42,11 +43,15 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: driver, isLoading } = useQuery({
+  // Support both driverId lookup and direct driver object
+  const { data: queriedDriver, isLoading: isLoadingDriver } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: () => base44.entities.Driver.filter({ id: driverId }),
-    enabled: driverId && driverId !== 'new',
+    enabled: driverId && driverId !== 'new' && !passedDriver,
   });
+
+  const driver = passedDriver || (queriedDriver && queriedDriver.length > 0 ? queriedDriver[0] : null);
+  const isLoading = isLoadingDriver;
 
 
 
