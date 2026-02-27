@@ -212,7 +212,16 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 <div className="text-sm font-bold text-[#232323] flex items-center gap-1.5">
                   {programClassName || ''}
                   {isRookie && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none cursor-default">R</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Rookie — first year competing in this class</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
               </div>
