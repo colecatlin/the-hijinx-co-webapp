@@ -159,11 +159,11 @@ export default function ManageCSVImportExport() {
               <CardTitle>Export {selectedEntity}</CardTitle>
               <CardDescription>Download all {selectedEntity} records as CSV</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <Button
                 onClick={handleExport}
                 disabled={loading}
-                className="gap-2"
+                className="gap-2 w-full"
               >
                 {loading ? (
                   <>
@@ -173,7 +173,25 @@ export default function ManageCSVImportExport() {
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    Download CSV
+                    Export All Data
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={handleDownloadTemplate}
+                disabled={loading}
+                variant="outline"
+                className="gap-2 w-full"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Download Template
                   </>
                 )}
               </Button>
