@@ -72,6 +72,12 @@ export default function DriverDirectory() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const { data: allClasses = [] } = useQuery({
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    staleTime: 10 * 60 * 1000,
+  });
+
   const { data: allMedia = [] } = useQuery({
     queryKey: ['driverMedia'],
     queryFn: () => base44.entities.DriverMedia.list(),
