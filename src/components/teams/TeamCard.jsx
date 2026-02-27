@@ -55,22 +55,12 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
             {/* Image Section */}
             <div className="flex-1 relative overflow-hidden bg-gray-100 flex items-center justify-center">
               {media?.logo_url || team?.logo_url ? (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-4">
-                  <img 
-                    src={media?.logo_url || team.logo_url} 
-                    alt={team.name}
-                    className="max-w-[70%] max-h-[60%] object-contain"
-                    loading="lazy"
-                  />
-                  {team.manufacturer_logo_url && (
-                    <img 
-                      src={team.manufacturer_logo_url} 
-                      alt={team.manufacturer}
-                      className="max-w-[40%] max-h-[25%] object-contain"
-                      loading="lazy"
-                    />
-                  )}
-                </div>
+                <img 
+                  src={media?.logo_url || team.logo_url} 
+                  alt={team.name}
+                  className="max-w-[70%] max-h-[60%] object-contain"
+                  loading="lazy"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
                   <div className="text-6xl font-black text-gray-400">
