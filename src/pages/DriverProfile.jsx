@@ -369,14 +369,14 @@ export default function DriverProfile() {
                       {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''}, {driver.hometown_country}
                     </div>
                   </div>
-                  {driver.racing_base_city && (
+                  {(driver.racing_base_city || driver.racing_base_state || driver.racing_base_country) && (
                     <div>
                       <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
                         <MapPin className="w-4 h-4" />
                         Racing Base
                       </div>
                       <div className="text-lg font-semibold text-[#232323]">
-                        {driver.racing_base_city}{driver.racing_base_state ? `, ${driver.racing_base_state}` : ''}, {driver.racing_base_country}
+                        {driver.racing_base_city}{driver.racing_base_state ? `, ${driver.racing_base_state}` : ''}{driver.racing_base_country ? `, ${driver.racing_base_country}` : ''}
                       </div>
                     </div>
                   )}
