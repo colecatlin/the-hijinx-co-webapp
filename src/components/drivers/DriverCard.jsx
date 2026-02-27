@@ -208,10 +208,10 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 <div className="text-sm font-bold text-[#232323]">{programClassName}</div>
               </div>
             )}
-            {team?.name && (
+            {(team?.name || program?.team_name) && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Team</div>
-                <div className="text-sm font-bold text-[#232323]">{team.name}</div>
+                <div className="text-sm font-bold text-[#232323]">{team?.name || program?.team_name}</div>
               </div>
             )}
             {driver.represented_by && (
