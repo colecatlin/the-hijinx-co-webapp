@@ -114,6 +114,7 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import DriverProfile from './pages/DriverProfile';
+import MyDashboard from './pages/MyDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -185,6 +186,7 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "DriverProfile": DriverProfile,
+    "MyDashboard": MyDashboard,
 }
 
 export const pagesConfig = {
