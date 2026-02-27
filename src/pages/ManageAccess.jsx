@@ -146,6 +146,33 @@ export default function ManageAccess() {
           })}
         </div>
 
+        {/* Bulk assign */}
+        <div className="flex items-center justify-between mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div>
+            <p className="text-sm font-semibold text-amber-900">Assign Access Codes to All Entities</p>
+            <p className="text-xs text-amber-700 mt-0.5">Generates unique 8-digit codes for all Teams, Tracks, Series, and Events that don't have one yet.</p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => bulkAssignMutation.mutate()}
+            disabled={bulkAssignMutation.isPending}
+            className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 ml-4"
+          >
+            {bulkAssignMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <Zap className="w-4 h-4 mr-2" />
+            )}
+            {bulkAssignMutation.isPending ? 'Assigning...' : 'Assign All Codes'}
+          </Button>
+        </div>
+
+        {bulkAssignMutation.isSuccess && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+            ✓ Codes assigned: {Object.entries(bulkAssignMutation.data?.data?.results || {}).map(([k, v]) => `${v.updated} ${k}s`).join(', ')}
+          </div>
+        )}
+
         {/* Stats bar */}
         <div className="flex items-center gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-2 text-sm text-gray-600">
