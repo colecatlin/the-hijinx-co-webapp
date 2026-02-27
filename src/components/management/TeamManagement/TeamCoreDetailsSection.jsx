@@ -76,16 +76,9 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     },
   });
 
-  const generateSlug = (name) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
   const handleNameChange = (name) => {
-    const slug = generateSlug(name);
-    setFormData({ ...formData, name, slug });
+    const newSlug = generateUniqueSlug(name);
+    setFormData({ ...formData, name, slug: newSlug });
   };
 
   const validateForm = () => {
