@@ -226,8 +226,16 @@ export default function DriverProgramsSection({ driverId }) {
                 <p className="font-medium mt-1">
                   {program.program_type === 'single_event' ? (program.event_name || 'Unnamed Event') : (program.series_name || 'Unknown Series')}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {program.class_name && `${program.class_name} • `}
+                <p className="text-sm text-gray-500 flex items-center gap-1.5 flex-wrap">
+                  {program.class_name && (
+                    <span className="flex items-center gap-1">
+                      {program.class_name}
+                      {program.is_rookie && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                      )}
+                       •{' '}
+                    </span>
+                  )}
                   {program.car_number && `#${program.car_number} • `}
                   {program.program_type === 'single_event'
                     ? program.event_date
