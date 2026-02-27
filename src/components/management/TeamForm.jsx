@@ -90,6 +90,54 @@ export default function TeamForm({ team, onClose }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="block text-sm font-medium mb-2">Manufacturer</label>
+              <Input
+                value={formData.manufacturer || ''}
+                onChange={(e) => handleChange('manufacturer', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Manufacturer Logo</label>
+              <div className="flex flex-col gap-2">
+                {formData.manufacturer_logo_url && (
+                  <div className="relative w-32 h-20 border border-gray-200 rounded overflow-hidden bg-gray-50 flex items-center justify-center">
+                    <img src={formData.manufacturer_logo_url} alt="Manufacturer logo" className="max-w-full max-h-full object-contain p-2" />
+                    <button
+                      type="button"
+                      onClick={() => handleChange('manufacturer_logo_url', '')}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('manufacturer-logo-input').click()}
+                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Logo
+                </button>
+                <input
+                  id="manufacturer-logo-input"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      handleChange('manufacturer_logo_url', file_url);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label className="block text-sm font-medium mb-2">Founded Year</label>
               <Input
                 type="number"
