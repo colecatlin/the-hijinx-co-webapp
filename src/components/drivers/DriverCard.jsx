@@ -41,7 +41,27 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
-  const hometown = [driver.hometown_city, driver.hometown_state].filter(Boolean).join(', ');
+  
+  // Country code mapping
+  const countryCodeMap = {
+    'United States': 'USA',
+    'Canada': 'CAN',
+    'Mexico': 'MEX',
+    'United Kingdom': 'GBR',
+    'Germany': 'DEU',
+    'France': 'FRA',
+    'Italy': 'ITA',
+    'Spain': 'ESP',
+    'Australia': 'AUS',
+    'Japan': 'JPN',
+    'China': 'CHN',
+    'India': 'IND',
+    'Brazil': 'BRA',
+    'Argentina': 'ARG',
+  };
+  
+  const countryAbbr = driver.hometown_country ? countryCodeMap[driver.hometown_country] || driver.hometown_country.substring(0, 3).toUpperCase() : '';
+  const hometown = [driver.hometown_city, driver.hometown_state, countryAbbr].filter(Boolean).join(', ');
 
   return (
     <div 
