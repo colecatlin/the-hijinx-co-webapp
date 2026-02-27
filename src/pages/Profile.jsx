@@ -21,6 +21,8 @@ import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions'
 export default function Profile() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState(null);
+  const urlParams = new URLSearchParams(window.location.search);
+  const defaultTab = urlParams.get('tab') || 'general';
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
