@@ -343,7 +343,7 @@ export default function DriverDirectory() {
                     allSeries={allSeries}
                     team={team}
                     media={media}
-                    className={className}
+                    className={programClassName}
                     isRookie={isRookie}
                   />
                 </div>
