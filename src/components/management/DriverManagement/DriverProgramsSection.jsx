@@ -29,6 +29,7 @@ const emptyForm = () => ({
   series_class_id: '',
   class_name: '',
   car_number: '',
+  participation_status: 'Full-Time',
   start_month: new Date().getMonth() + 1,
   start_year: new Date().getFullYear(),
   end_month: null,
@@ -130,6 +131,7 @@ export default function DriverProgramsSection({ driverId }) {
       series_class_id: program.series_class_id || '',
       class_name: program.class_name || '',
       car_number: program.car_number || '',
+      participation_status: program.participation_status || 'Full-Time',
       start_month: program.start_month || new Date().getMonth() + 1,
       start_year: program.start_year || new Date().getFullYear(),
       end_month: program.end_month || null,
@@ -464,6 +466,20 @@ export default function DriverProgramsSection({ driverId }) {
                   onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
                   placeholder="e.g., 42"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Participation Status</Label>
+                <Select value={formData.participation_status} onValueChange={(value) => setFormData({ ...formData, participation_status: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Full-Time">Full-Time</SelectItem>
+                    <SelectItem value="Part-Time">Part-Time</SelectItem>
+                    <SelectItem value="Guest">Guest</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
