@@ -67,6 +67,13 @@ export default function Management() {
           <p className="text-gray-600">Backend system for managing all content and data</p>
         </div>
 
+        <div className="mb-8">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
+            Templates
+          </h2>
+          <AmsoilResultsTemplate />
+        </div>
+
         <div className="space-y-8">
           {sections.map((section) => (
             <div key={section.title}>
