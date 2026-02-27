@@ -190,8 +190,9 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
               </div>
             )}
             {programs.length > 0 && (() => {
-              const activePrograms = programs.filter(p => p.status === 'Active');
-              const seriesNames = sortedSeriesNames(activePrograms, allSeries);
+              const activePrograms = programs.filter(p => p.status?.toLowerCase() === 'active');
+              const displayPrograms = activePrograms.length > 0 ? activePrograms : programs;
+              const seriesNames = sortedSeriesNames(displayPrograms, allSeries);
               return seriesNames.length > 0 ? (
                 <div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
