@@ -392,22 +392,6 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10 flex items-center gap-2">
-              <FollowDriverButton driverId={driver?.id} />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCompareDialog(true)}
-              >
-                <GitCompare className="w-4 h-4 mr-2" />
-                Compare Driver
-              </Button>
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
-                description=""
-              />
-            </div>
             {media?.headshot_url && (
               <div className="bg-white">
                 <div className="w-full h-[480px] relative bg-gray-50 overflow-hidden">
