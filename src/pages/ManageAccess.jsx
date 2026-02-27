@@ -5,7 +5,7 @@ import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw } from 'lucide-react';
+import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap } from 'lucide-react';
 
 const ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series', 'Event'];
 
