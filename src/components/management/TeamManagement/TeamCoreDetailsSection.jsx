@@ -16,6 +16,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [formData, setFormData] = useState({ country: 'USA' });
   const [isSaved, setIsSaved] = useState(false);
   const [errors, setErrors] = useState({});
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: team, refetch } = useQuery({
