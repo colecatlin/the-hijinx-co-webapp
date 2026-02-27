@@ -77,30 +77,24 @@ function ProgramCard({ program, isActive, allSeries = [], allClasses = [] }) {
 }
 
 export default function ProgramsTimeline({ programs = [], teams = [], allSeries = [], allClasses = [] }) {
-  const [showPast, setShowPast] = useState(false);
-
   // Enrich with team name
   const enriched = programs.map(p => ({
     ...p,
     team_name: p.team_name || teams.find(t => t.id === p.team_id)?.name || '',
   }));
 
-  // Sort by end_date descending (most recent first)
-  const sortByEndDate = (a, b) => {
+  // Sort: active first, then by most recent end date
+  const sorted = enriched.sort((a, b) => {
+    const aActive = a.status === 'active' ? 1 : 0;
+    const bActive = b.status === 'active' ? 1 : 0;
+    if (aActive !== bActive) return bActive - aActive;
     const getEndDate = (p) => {
       if (p.end_date) return new Date(p.end_date).getTime();
       if (p.end_year) return new Date(`${p.end_year}-12-31`).getTime();
       return 0;
     };
     return getEndDate(b) - getEndDate(a);
-  };
-
-  const active = enriched
-    .filter(p => p.status === 'active' || p.program_type === 'single_event')
-    .sort(sortByEndDate);
-  const past = enriched
-    .filter(p => p.status === 'inactive' && p.program_type !== 'single_event')
-    .sort(sortByEndDate);
+  });
 
   if (programs.length === 0) {
     return (
@@ -109,34 +103,10 @@ export default function ProgramsTimeline({ programs = [], teams = [], allSeries 
   }
 
   return (
-    <div className="space-y-4">
-      {active.length > 0 && (
-        <div className="space-y-3">
-          {active.map(p => (
-            <ProgramCard key={p.id} program={p} isActive={p.status === 'active'} allSeries={allSeries} allClasses={allClasses} />
-          ))}
-        </div>
-      )}
-
-      {past.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowPast(!showPast)}
-            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#232323] transition-colors mt-2"
-          >
-            {showPast ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            {showPast ? 'Hide' : 'Show'} past programs ({past.length})
-          </button>
-
-          {showPast && (
-            <div className="space-y-3 mt-3 pl-2 border-l-2 border-gray-200">
-              {past.map(p => (
-                <ProgramCard key={p.id} program={p} isActive={false} allSeries={allSeries} allClasses={allClasses} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+    <div className="space-y-3">
+      {sorted.map(p => (
+        <ProgramCard key={p.id} program={p} isActive={p.status === 'active'} allSeries={allSeries} allClasses={allClasses} />
+      ))}
     </div>
   );
 }
