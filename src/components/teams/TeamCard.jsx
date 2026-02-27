@@ -125,29 +125,12 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
           {sortedDrivers.length > 0 && (
             <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
               <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
-              <div className="grid grid-cols-2 gap-3 flex-1">
-                {/* Full-Time */}
-                <div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Full-Time</div>
-                  <div className="space-y-0.5">
-                    {sortedDrivers.filter(d => d.status === 'Active').map((driver, idx) => (
-                      <div key={idx} className="text-sm text-[#232323] font-semibold">
-                        {driver.first_name} {driver.last_name}
-                      </div>
-                    ))}
+              <div className="space-y-0.5">
+                {sortedDrivers.map((driver, idx) => (
+                  <div key={idx} className="text-sm text-[#232323] font-semibold">
+                    {driver.first_name} {driver.last_name}
                   </div>
-                </div>
-                {/* Part-Time */}
-                <div>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Part-Time</div>
-                  <div className="space-y-0.5">
-                    {sortedDrivers.filter(d => d.status === 'Part Time').map((driver, idx) => (
-                      <div key={idx} className="text-sm text-[#232323] font-semibold">
-                        {driver.first_name} {driver.last_name}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}
