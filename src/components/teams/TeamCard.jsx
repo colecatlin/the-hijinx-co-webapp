@@ -82,15 +82,13 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
 
             {/* Name Bar */}
             <div className="bg-white border-t border-gray-300 px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-xl font-black text-[#232323] tracking-tight uppercase truncate">
-                  {team.name}
-                </div>
+              <div className="text-xl font-black text-[#232323] tracking-tight uppercase truncate flex-1">
+                {team.name}
               </div>
-              {team.title_sponsor_logo_url && (
+              {team.manufacturer_logo_url && (
                 <img 
-                  src={team.title_sponsor_logo_url} 
-                  alt="sponsor"
+                  src={team.manufacturer_logo_url} 
+                  alt={team.manufacturer}
                   className="h-6 w-auto object-contain flex-shrink-0 ml-2"
                   loading="lazy"
                 />
