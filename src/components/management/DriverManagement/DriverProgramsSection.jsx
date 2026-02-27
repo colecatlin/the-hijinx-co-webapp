@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Trash2, Plus, Loader2, Flag, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => ({
   value: i + 1,
@@ -32,6 +33,7 @@ const emptyForm = () => ({
   end_month: null,
   end_year: null,
   status: 'active',
+  is_rookie: false,
   notes: '',
 });
 
@@ -123,6 +125,7 @@ export default function DriverProgramsSection({ driverId }) {
       end_month: program.end_month || null,
       end_year: program.end_year || null,
       status: program.status || 'active',
+      is_rookie: program.is_rookie || false,
       notes: program.notes || '',
     });
     setEditingId(program.id);
