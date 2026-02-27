@@ -99,6 +99,20 @@ export default function DriverCoreDetailsSection({ driver }) {
             />
           </div>
 
+          <div className="col-span-1 md:col-span-2">
+            <LocationFields
+              cityValue={data.racing_base_city}
+              stateValue={data.racing_base_state}
+              countryValue={data.racing_base_country}
+              onCityChange={(v) => handleChange('racing_base_city', v)}
+              onStateChange={(v) => handleChange('racing_base_state', v)}
+              onCountryChange={(v) => handleChange('racing_base_country', v)}
+              cityLabel="Racing Base City"
+              stateLabel="State/Region"
+              countryLabel="Country"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Primary Discipline</Label>
             <Select value={data.primary_discipline} onValueChange={(value) => handleChange('primary_discipline', value)}>
