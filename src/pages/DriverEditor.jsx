@@ -94,8 +94,8 @@ export default function DriverEditor({ driverId: propDriverId }) {
           <p className="text-gray-500">
             {isAccessDenied ? 'You do not have access to this driver.' : 'Driver not found.'}
           </p>
-          <Button onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))} className="mt-4">
-            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
+          <Button onClick={() => navigate(createPageUrl(backPage))} className="mt-4">
+            Back to Dashboard
           </Button>
         </div>
       </PageShell>
