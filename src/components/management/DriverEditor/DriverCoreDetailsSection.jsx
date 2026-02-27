@@ -28,14 +28,25 @@ export default function DriverCoreDetailsSection({ driver }) {
   });
 
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: () => base44.entities.Driver.update(driver.id, data),
+    mutationFn: async () => {
+      console.log('Sending data to update:', data);
+      const response = await base44.entities.Driver.update(driver.id, data);
+      console.log('Update response:', response);
+      return response;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['driver', driver.id] });
       setSaved(true);
+      setError('');
       setTimeout(() => setSaved(false), 2000);
+    },
+    onError: (err) => {
+      console.error('Update error:', err);
+      setError('Failed to save changes');
     },
   });
 
