@@ -159,7 +159,7 @@ export default function DriverProgramsList({ driverId }) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{program.series_name}</h3>
+                      <h3 className="font-semibold text-lg">{series.find(s => s.id === program.series_id)?.name || program.series_name || 'Unknown Series'}</h3>
                       <span className={`px-2 py-1 text-xs rounded ${
                         program.status === 'active' ? 'bg-green-100 text-green-800' :
                         program.status === 'completed' ? 'bg-gray-100 text-gray-800' :
