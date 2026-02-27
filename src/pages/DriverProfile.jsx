@@ -220,13 +220,15 @@ export default function DriverProfile() {
       </div>
 
       {media?.hero_image_url && (
-        <div className="w-full h-[400px] relative overflow-hidden mt-3">
-          <img 
-            src={media.hero_image_url} 
-            alt={driver.display_name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="max-w-7xl mx-auto px-6 mt-3">
+          <div className="h-[400px] relative overflow-hidden rounded-lg">
+            <img 
+              src={media.hero_image_url} 
+              alt={driver.display_name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          </div>
         </div>
       )}
 
