@@ -68,8 +68,8 @@ export default function DriverEditor({ driverId: propDriverId }) {
       <PageShell>
         <div className="max-w-6xl mx-auto px-6 py-12">
           <p className="text-gray-500">No driver selected.</p>
-          <Button onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))} className="mt-4">
-            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
+          <Button onClick={() => navigate(createPageUrl(backPage))} className="mt-4">
+            Back to Dashboard
           </Button>
         </div>
       </PageShell>
