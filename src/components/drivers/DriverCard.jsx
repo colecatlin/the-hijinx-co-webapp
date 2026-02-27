@@ -238,9 +238,9 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
               </div>
             )}
             {(team?.name || program?.team_name) && (
-              <div>
+              <div className="col-span-2">
                 <div className="text-gray-500 uppercase tracking-wide mb-0.5">Team</div>
-                <div className="font-bold text-[#232323] truncate">{team?.name || program?.team_name}</div>
+                <div className="font-bold text-[#232323]">{team?.name || program?.team_name}</div>
               </div>
             )}
           </div>
