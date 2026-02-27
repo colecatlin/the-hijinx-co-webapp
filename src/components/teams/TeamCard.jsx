@@ -27,7 +27,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
 
   return (
     <div 
-      className="relative h-[480px] cursor-pointer"
+      className="relative aspect-square cursor-pointer"
       style={{ perspective: '1000px' }}
       onClick={(e) => {
         if (!e.target.closest('button') && !e.target.closest('a')) {
@@ -48,12 +48,12 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
         >
           <div className="relative h-full flex flex-col">
             {/* Image Section */}
-            <div className="flex-1 relative overflow-hidden bg-gray-100">
+            <div className="flex-1 relative overflow-hidden bg-gray-100 flex items-center justify-center">
               {media?.logo_url || team?.logo_url ? (
                 <img 
                   src={media?.logo_url || team.logo_url} 
                   alt={team.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-4"
                   loading="lazy"
                 />
               ) : (
