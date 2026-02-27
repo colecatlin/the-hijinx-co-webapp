@@ -147,8 +147,8 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
             <label className="text-sm font-medium">Slug (auto-generated)</label>
             <Input
               value={formData.slug || ''}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              className="bg-gray-50"
+              readOnly
+              className="bg-gray-50 cursor-not-allowed"
             />
           </div>
         </div>
