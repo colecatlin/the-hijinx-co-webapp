@@ -22,6 +22,7 @@ export default function DriverProgramsList({ driverId }) {
     series_name: '',
     team_id: '',
     team_name: '',
+    series_class_id: '',
     class_name: '',
     start_month: new Date().getMonth() + 1,
     start_year: new Date().getFullYear(),
@@ -87,6 +88,7 @@ export default function DriverProgramsList({ driverId }) {
       series_name: '',
       team_id: '',
       team_name: '',
+      series_class_id: '',
       class_name: '',
       start_month: new Date().getMonth() + 1,
       start_year: new Date().getFullYear(),
@@ -115,6 +117,7 @@ export default function DriverProgramsList({ driverId }) {
       series_name: program.series_name || '',
       team_id: program.team_id || '',
       team_name: program.team_name || '',
+      series_class_id: program.series_class_id || '',
       class_name: program.class_name || '',
       start_month: program.start_month || new Date().getMonth() + 1,
       start_year: program.start_year || new Date().getFullYear(),
@@ -283,8 +286,11 @@ export default function DriverProgramsList({ driverId }) {
               <div>
                 <label className="block text-sm font-medium mb-2">Class</label>
                 <Select
-                  value={formData.class_name}
-                  onValueChange={(val) => setFormData({ ...formData, class_name: val })}
+                  value={formData.series_class_id || formData.class_name}
+                  onValueChange={(val) => {
+                    const cls = classes.find(c => c.id === val);
+                    setFormData({ ...formData, series_class_id: cls?.id || '', class_name: cls?.class_name || val });
+                  }}
                   disabled={!formData.series_id}
                 >
                   <SelectTrigger>
@@ -292,7 +298,7 @@ export default function DriverProgramsList({ driverId }) {
                   </SelectTrigger>
                   <SelectContent>
                     {classes.map((c) => (
-                      <SelectItem key={c.id} value={c.class_name}>{c.class_name}</SelectItem>
+                      <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

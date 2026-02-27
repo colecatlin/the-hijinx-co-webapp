@@ -26,6 +26,7 @@ const emptyForm = () => ({
   event_date: '',
   track_name: '',
   team_id: '',
+  series_class_id: '',
   class_name: '',
   car_number: '',
   start_month: new Date().getMonth() + 1,
@@ -118,6 +119,7 @@ export default function DriverProgramsSection({ driverId }) {
       event_date: program.event_date || '',
       track_name: program.track_name || '',
       team_id: program.team_id || '',
+      series_class_id: program.series_class_id || '',
       class_name: program.class_name || '',
       car_number: program.car_number || '',
       start_month: program.start_month || new Date().getMonth() + 1,
@@ -134,7 +136,7 @@ export default function DriverProgramsSection({ driverId }) {
 
   const handleSeriesChange = (seriesId) => {
     const s = series.find((x) => x.id === seriesId);
-    setFormData({ ...formData, series_id: seriesId, series_name: s?.name || '', class_name: '' });
+    setFormData({ ...formData, series_id: seriesId, series_name: s?.name || '', class_name: '', series_class_id: '' });
   };
 
   const handleEventChange = (eventId) => {
@@ -459,13 +461,19 @@ export default function DriverProgramsSection({ driverId }) {
               <div className="space-y-2">
                 <Label>Class</Label>
                 {formData.program_type === 'series' && seriesClasses.length > 0 ? (
-                  <Select value={formData.class_name} onValueChange={(value) => setFormData({ ...formData, class_name: value })}>
+                  <Select
+                    value={formData.series_class_id || formData.class_name}
+                    onValueChange={(value) => {
+                      const cls = seriesClasses.find(c => c.id === value);
+                      setFormData({ ...formData, series_class_id: cls?.id || '', class_name: cls?.class_name || value });
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
                     <SelectContent>
                       {seriesClasses.map((cls) => (
-                        <SelectItem key={cls.id} value={cls.class_name}>{cls.class_name}</SelectItem>
+                        <SelectItem key={cls.id} value={cls.id}>{cls.class_name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
