@@ -20,6 +20,9 @@ export default function DriverCoreDetailsSection({ driver }) {
     hometown_city: driver.hometown_city || '',
     hometown_state: driver.hometown_state || '',
     hometown_country: driver.hometown_country || 'USA',
+    racing_base_city: driver.racing_base_city || '',
+    racing_base_state: driver.racing_base_state || '',
+    racing_base_country: driver.racing_base_country || '',
     primary_number: driver.primary_number || '',
     primary_discipline: driver.primary_discipline || '',
   });
