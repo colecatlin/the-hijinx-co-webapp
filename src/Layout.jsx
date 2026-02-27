@@ -217,6 +217,16 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm font-semibold">Menu</span>
               </div>
               <nav className="px-6 py-6">
+              {isAuthenticated && (
+                <div className="mb-4">
+                  <Link
+                    to={createPageUrl('MyDashboard')}
+                    className="block py-3 px-4 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    My Dashboard
+                  </Link>
+                </div>
+              )}
               {user?.role === 'admin' && (
                 <div className="mb-4">
                   <Link
