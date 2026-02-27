@@ -66,7 +66,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
   return (
     <div 
-      className="relative h-[480px] cursor-pointer"
+      className="relative w-full aspect-square cursor-pointer"
       style={{ perspective: '1000px' }}
       onClick={(e) => {
         if (!e.target.closest('button')) {
@@ -92,7 +92,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 <img 
                 src={media.headshot_url || media.hero_image_url} 
                 alt={`${driver.first_name} ${driver.last_name}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 loading="lazy"
                 />
               ) : (
