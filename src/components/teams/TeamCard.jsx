@@ -137,18 +137,44 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
           )}
 
           {/* Drivers */}
-          {sortedDrivers.length > 0 && (
-            <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
-              <div className="space-y-0.5">
-                {sortedDrivers.map((driver, idx) => (
-                  <div key={idx} className="text-sm text-[#232323] font-semibold">
-                    {driver.first_name} {driver.last_name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+           {drivers.length > 0 && (
+             <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
+               <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Drivers ({drivers.length})</div>
+               <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 flex-1 min-h-0 overflow-y-auto">
+                 {/* Left Column */}
+                 <div className="space-y-0.5">
+                   {leftColumn.map((group, idx) => (
+                     <div key={idx}>
+                       <div className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-tight">{group.series}</div>
+                       <div className="space-y-0.5 mb-2">
+                         {group.drivers.map((driver, dIdx) => (
+                           <div key={dIdx} className="text-xs text-[#232323] font-semibold">
+                             {driver.first_name} {driver.last_name}
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+
+                 {/* Right Column */}
+                 <div className="space-y-0.5">
+                   {rightColumn.map((group, idx) => (
+                     <div key={idx}>
+                       <div className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-tight">{group.series}</div>
+                       <div className="space-y-0.5 mb-2">
+                         {group.drivers.map((driver, dIdx) => (
+                           <div key={dIdx} className="text-xs text-[#232323] font-semibold">
+                             {driver.first_name} {driver.last_name}
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             </div>
+           )}
 
           {/* Footer */}
           <div className="mt-auto pt-2 border-t border-gray-300">
