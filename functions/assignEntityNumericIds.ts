@@ -36,6 +36,8 @@ Deno.serve(async (req) => {
 
     const results = {};
 
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
     const entitySets = [
       { name: 'Team', records: teams, entity: base44.entities.Team },
       { name: 'Track', records: tracks, entity: base44.entities.Track },
@@ -50,8 +52,12 @@ Deno.serve(async (req) => {
         const numericId = generateUniqueNumericId(existingIds);
         await entity.update(record.id, { numeric_id: numericId });
         updated++;
+        // Small delay every 10 updates to avoid rate limiting
+        if (updated % 10 === 0) await sleep(500);
       }
       results[name] = { updated, total: records.length };
+      // Pause between entity types
+      await sleep(300);
     }
 
     return Response.json({ success: true, results });
