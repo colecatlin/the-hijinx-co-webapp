@@ -312,10 +312,12 @@ export default function DriverDirectory() {
               const team = primaryProgram?.team_id ? allTeams.find(t => t.id === primaryProgram.team_id) : null;
               const media = allMedia.find(m => m.driver_id === driver.id);
               const isSelected = selectedDrivers.includes(driver.id);
-              const className = (primaryProgram?.series_class_id
-                ? allClasses.find(c => c.id === primaryProgram.series_class_id)?.class_name
-                : null) || primaryProgram?.class_name || null;
-              const isRookie = !!primaryProgram?.is_rookie;
+              // Find class name from any active program, then fall back to any program
+              const classProgram = activePrograms[0] || driverPrograms[0];
+              const programClassName = (classProgram?.series_class_id
+                ? allClasses.find(c => c.id === classProgram.series_class_id)?.class_name
+                : null) || classProgram?.class_name || null;
+              const isRookie = activePrograms.some(p => p.is_rookie) || (!activePrograms.length && driverPrograms.some(p => p.is_rookie));
               
               return (
                 <div key={driver.id} className="relative">
