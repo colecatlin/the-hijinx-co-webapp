@@ -111,11 +111,11 @@ export default function DriverEditor({ driverId: propDriverId }) {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate(createPageUrl(isFromEntityEditor ? 'Profile' : 'ManageDrivers'))}
+            onClick={() => navigate(createPageUrl(backPage))}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {isFromEntityEditor ? 'Profile' : 'Drivers'}
+            Back to Dashboard
           </Button>
           <h1 className="text-4xl font-bold">
             {driver.first_name} {driver.last_name}
