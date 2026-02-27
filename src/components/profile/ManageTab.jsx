@@ -82,10 +82,11 @@ export default function ManageTab({ user }) {
                   size="sm"
                   className="ml-4"
                   onClick={() => {
-                    navigate(createPageUrl('EntityEditor', { id: collaborator.access_code }));
+                    navigate(createPageUrl('MyDashboard'));
                   }}
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Edit2 className="w-4 h-4 mr-1" />
+                  Manage
                 </Button>
               </div>
             ))}
