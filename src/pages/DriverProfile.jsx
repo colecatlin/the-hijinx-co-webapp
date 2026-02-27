@@ -422,7 +422,7 @@ export default function DriverProfile() {
           <section id="section-programs" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Racing Programs</h2>
-            <ProgramsTimeline programs={programs} teams={teams} allSeries={allSeries} />
+            <ProgramsTimeline programs={programs} teams={teams} allSeries={allSeries} allClasses={allClasses} />
           </section>
 
           <section id="section-stats" className="bg-white p-8">
