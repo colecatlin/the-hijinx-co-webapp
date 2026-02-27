@@ -114,9 +114,10 @@ export default function DriverDirectory() {
       const matchesTeam = allTeams.find(t => t.id === driver.team_id)?.name?.toLowerCase().includes(query);
       const matchesHometown = driver.hometown_city?.toLowerCase().includes(query) ||
                               driver.hometown_state?.toLowerCase().includes(query);
-      const matchesSeries = (programsByDriver[driver.id] || []).some(p =>
-        p.series_name?.toLowerCase().includes(query)
-      );
+      const matchesSeries = (programsByDriver[driver.id] || []).some(p => {
+        const sName = p.series_id ? allSeries.find(s => s.id === p.series_id)?.name : p.series_name;
+        return sName?.toLowerCase().includes(query);
+      });
       if (!matchesName && !matchesNumber && !matchesTeam && !matchesHometown && !matchesSeries) return false;
     }
 
