@@ -57,46 +57,46 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
   });
 
   useEffect(() => {
-    if (driverId === 'new') {
-      setFormData({
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
-        contact_email: '',
-        represented_by: '',
-        hometown_city: '',
-        hometown_state: '',
-        hometown_country: 'USA',
-        location_city: '',
-        location_state: '',
-        location_country: '',
-        primary_number: '',
-        primary_discipline: '',
-        featured: false,
-      });
-      setHeadshotUrl('');
-    } else if (driver && driver.length > 0) {
-      const driverData = driver[0];
-      if (driverData) {
-        setFormData({
-          first_name: driverData.first_name || '',
-          last_name: driverData.last_name || '',
-          date_of_birth: driverData.date_of_birth || '',
-          contact_email: driverData.contact_email || '',
-          represented_by: driverData.represented_by || '',
-          hometown_city: driverData.hometown_city || '',
-          hometown_state: driverData.hometown_state || '',
-          hometown_country: driverData.hometown_country || 'USA',
-          location_city: driverData.location_city || '',
-          location_state: driverData.location_state || '',
-          location_country: driverData.location_country || '',
-          primary_number: driverData.primary_number || '',
-          primary_discipline: driverData.primary_discipline || '',
-          career_status: driverData.career_status || '',
-          featured: driverData.featured || false,
-          });
-      }
-    }
+   if (driverId === 'new') {
+     setFormData({
+       first_name: '',
+       last_name: '',
+       date_of_birth: '',
+       contact_email: '',
+       represented_by: '',
+       hometown_city: '',
+       hometown_state: '',
+       hometown_country: 'USA',
+       racing_base_city: '',
+       racing_base_state: '',
+       racing_base_country: '',
+       primary_number: '',
+       primary_discipline: '',
+       featured: false,
+     });
+     setHeadshotUrl('');
+   } else if (driver && driver.length > 0) {
+     const driverData = driver[0];
+     if (driverData) {
+       setFormData({
+         first_name: driverData.first_name || '',
+         last_name: driverData.last_name || '',
+         date_of_birth: driverData.date_of_birth || '',
+         contact_email: driverData.contact_email || '',
+         represented_by: driverData.represented_by || '',
+         hometown_city: driverData.hometown_city || '',
+         hometown_state: driverData.hometown_state || '',
+         hometown_country: driverData.hometown_country || 'USA',
+         racing_base_city: driverData.racing_base_city || '',
+         racing_base_state: driverData.racing_base_state || '',
+         racing_base_country: driverData.racing_base_country || '',
+         primary_number: driverData.primary_number || '',
+         primary_discipline: driverData.primary_discipline || '',
+         career_status: driverData.career_status || '',
+         featured: driverData.featured || false,
+         });
+     }
+   }
   }, [driver, driverId]);
 
   useEffect(() => {
