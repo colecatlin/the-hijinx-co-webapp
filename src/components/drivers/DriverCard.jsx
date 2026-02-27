@@ -161,33 +161,33 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
         {/* BACK OF CARD */}
         <div
-          className="absolute inset-0 bg-[#FAFAFA] border border-gray-300 p-6 flex flex-col"
+          className="absolute inset-0 bg-[#FAFAFA] border border-gray-300 p-4 flex flex-col"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           {/* Bib Number - Same position as front */}
           {bibNumber && (
-            <div className="absolute top-4 right-4 bg-white px-4 py-2 border border-gray-300">
-              <div className="text-4xl font-black text-[#232323] leading-none">
+            <div className="absolute top-4 right-4 bg-white px-3 py-1 border border-gray-300">
+              <div className="text-2xl font-black text-[#232323] leading-none">
                 {bibNumber}
               </div>
             </div>
           )}
           
           {/* Header */}
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="flex items-center gap-2 mb-1">
               <CountryFlag country={driver.hometown_country} />
-              <h3 className="text-lg font-black text-[#232323] uppercase tracking-tight">
+              <h3 className="text-base font-black text-[#232323] uppercase tracking-tight truncate">
                 {driver.first_name} {driver.last_name}
               </h3>
             </div>
           </div>
 
-          {/* Core Details - Condensed */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4 text-xs">
+          {/* Core Details - Super Condensed */}
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mb-3 text-xs">
             {driver.date_of_birth && (
               <div>
-                <div className="text-gray-500 uppercase tracking-wide mb-0.5">Age</div>
+                <div className="text-gray-500 uppercase tracking-wide text-2xs">Age</div>
                 <div className="font-bold text-[#232323]">
                   {(() => {
                     const today = new Date();
@@ -202,8 +202,8 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             )}
             {driver.primary_discipline && (
               <div>
-                <div className="text-gray-500 uppercase tracking-wide mb-0.5">Discipline</div>
-                <div className="font-bold text-[#232323]">{driver.primary_discipline}</div>
+                <div className="text-gray-500 uppercase tracking-wide text-2xs">Discipline</div>
+                <div className="font-bold text-[#232323] text-xs">{driver.primary_discipline}</div>
               </div>
             )}
             {programs.length > 0 && (() => {
@@ -212,24 +212,24 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
               const seriesNames = sortedSeriesNames(displayPrograms, allSeries);
               return seriesNames.length > 0 ? (
                 <div className="col-span-2">
-                  <div className="text-gray-500 uppercase tracking-wide mb-0.5">Series</div>
-                  <div className="font-bold text-[#232323]">{seriesNames.slice(0, 2).join(', ')}</div>
+                  <div className="text-gray-500 uppercase tracking-wide text-2xs">Series</div>
+                  <div className="font-bold text-[#232323] text-xs">{seriesNames.slice(0, 1).join(', ')}</div>
                 </div>
               ) : null;
             })()}
             {(programClassName || isRookie) && (
               <div>
-                <div className="text-gray-500 uppercase tracking-wide mb-0.5">Class</div>
-                <div className="font-bold text-[#232323] flex items-center gap-1">
+                <div className="text-gray-500 uppercase tracking-wide text-2xs">Class</div>
+                <div className="font-bold text-[#232323] flex items-center gap-1 text-xs">
                   {programClassName || ''}
                   {isRookie && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-yellow-400 text-black font-black text-xs leading-none cursor-default">R</span>
+                          <span className="inline-flex items-center justify-center w-3 h-3 rounded bg-yellow-400 text-black font-black text-2xs leading-none cursor-default">R</span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Rookie — first year competing in this class</p>
+                          <p>Rookie</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -239,49 +239,46 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             )}
             {(team?.name || program?.team_name) && (
               <div className="col-span-2">
-                <div className="text-gray-500 uppercase tracking-wide mb-0.5">Team</div>
-                <div className="font-bold text-[#232323]">{team?.name || program?.team_name}</div>
+                <div className="text-gray-500 uppercase tracking-wide text-2xs">Team</div>
+                <div className="font-bold text-[#232323] text-xs truncate">{team?.name || program?.team_name}</div>
               </div>
             )}
           </div>
 
-          {/* Stats Section */}
+          {/* Stats Section - Compact */}
           {overallStats?.available && (
-            <div className="bg-white border border-gray-300 rounded p-3 mb-4">
-              <div className="flex justify-around text-center">
+            <div className="bg-white border border-gray-300 rounded p-2 mb-2">
+              <div className="flex justify-around text-center gap-1">
                 <div>
-                  <div className="text-lg font-black text-[#232323]">{overallStats.wins}</div>
-                  <div className="text-xs text-gray-600">Wins</div>
+                  <div className="text-sm font-black text-[#232323]">{overallStats.wins}</div>
+                  <div className="text-2xs text-gray-600">W</div>
                 </div>
                 <div>
-                  <div className="text-lg font-black text-[#232323]">{overallStats.podiums}</div>
-                  <div className="text-xs text-gray-600">Podiums</div>
+                  <div className="text-sm font-black text-[#232323]">{overallStats.podiums}</div>
+                  <div className="text-2xs text-gray-600">P</div>
                 </div>
                 <div>
-                  <div className="text-lg font-black text-[#232323]">{overallStats.top5}</div>
-                  <div className="text-xs text-gray-600">Top 5</div>
+                  <div className="text-sm font-black text-[#232323]">{overallStats.top5}</div>
+                  <div className="text-2xs text-gray-600">T5</div>
                 </div>
                 <div>
-                  <div className="text-lg font-black text-[#232323]">{overallStats.top10}</div>
-                  <div className="text-xs text-gray-600">Top 10</div>
+                  <div className="text-sm font-black text-[#232323]">{overallStats.top10}</div>
+                  <div className="text-2xs text-gray-600">T10</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Footer */}
-          <div className="mt-auto pt-4 border-t border-gray-300">
-            <div className="flex items-center justify-end mb-3">
+          <div className="mt-auto pt-2 border-t border-gray-300">
+            <div className="flex items-center justify-end">
               <button
                 type="button"
                 onClick={handleProfileClick}
-                className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
+                className="text-2xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
               >
-                View full profile →
+                Profile →
               </button>
-            </div>
-            <div className="text-right text-xs text-gray-500 font-medium">
-              Back →
             </div>
           </div>
         </div>
