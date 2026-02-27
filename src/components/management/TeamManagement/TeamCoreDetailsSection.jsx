@@ -27,11 +27,27 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     enabled: teamId !== 'new',
   });
 
+  const { data: allTeams } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   useEffect(() => {
     if (team) {
       setFormData(team);
     }
   }, [team]);
+
+  const generateUniqueSlug = (name) => {
+    if (!name) return '';
+    const baseSlug = generateSlug(name);
+    const existingSlugs = (allTeams || [])
+      .filter(t => t.id !== teamId) // Exclude current team
+      .map(t => t.slug)
+      .filter(Boolean);
+    const { suggestion } = validateSlug(baseSlug, existingSlugs);
+    return suggestion;
+  };
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Team.create(data),
