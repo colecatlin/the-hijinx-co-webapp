@@ -130,7 +130,10 @@ export default function DriverDirectory() {
 
     if (filters.series !== 'all') {
       const driverPrograms = programsByDriver[driver.id] || [];
-      if (!driverPrograms.some(p => p.series_name === filters.series)) return false;
+      if (!driverPrograms.some(p => {
+        const sName = p.series_id ? allSeries.find(s => s.id === p.series_id)?.name : p.series_name;
+        return sName === filters.series;
+      })) return false;
     }
 
     return true;
