@@ -71,8 +71,8 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
             </div>
 
             {/* Name Bar */}
-            <div className="bg-white border-t border-gray-300 px-4 py-3 flex gap-2">
-              <div className="text-xl font-black text-[#232323] tracking-tight uppercase flex-1">
+            <div className="bg-white border-t border-gray-300 px-4 py-3 flex items-center gap-2">
+              <div className="text-xl font-black text-[#232323] tracking-tight uppercase min-w-0 flex-1" style={{ fontSize: Math.max(12, 20 - (team.name.length - 15) * 0.3) + 'px' }}>
                 {team.name}
               </div>
               <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
