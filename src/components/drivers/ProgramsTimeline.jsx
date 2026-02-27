@@ -57,9 +57,9 @@ function ProgramCard({ program, isActive, allSeries = [], allClasses = [] }) {
             {program.car_number && (
               <span className="font-semibold text-[#232323]">#{program.car_number}</span>
             )}
-            {program.class_name && (
+            {resolvedClassName && (
               <span className="flex items-center gap-1">
-                {program.class_name}
+                {resolvedClassName}
                 {program.is_rookie && (
                   <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
                 )}
