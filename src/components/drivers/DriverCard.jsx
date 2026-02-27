@@ -185,11 +185,11 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 <div className="text-sm font-bold text-[#232323]">{hometown}</div>
               </div>
             )}
-            {(driver.location_city || driver.location_state) && (
+            {(driver.racing_base_city || driver.racing_base_state || driver.racing_base_country) && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Racing Base</div>
                 <div className="text-sm font-bold text-[#232323]">
-                  {[driver.location_city, driver.location_state].filter(Boolean).join(', ')}
+                  {[driver.racing_base_city, driver.racing_base_state, driver.racing_base_country].filter(Boolean).join(', ')}
                 </div>
               </div>
             )}
