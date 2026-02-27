@@ -21,6 +21,7 @@ export default function DriverEditor({ driverId: propDriverId }) {
   const driverId = propDriverId || searchParams.get('id') || searchParams.get('driverId');
   const [activeTab, setActiveTab] = useState('details');
   const isFromEntityEditor = !!propDriverId;
+  const backPage = isFromEntityEditor ? 'Profile' : 'MyDashboard';
 
 
 
