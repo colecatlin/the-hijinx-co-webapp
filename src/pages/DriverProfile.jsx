@@ -234,7 +234,7 @@ export default function DriverProfile() {
 
       <div className="max-w-7xl mx-auto px-6 py-12">
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start pt-0">
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
             <div className="flex items-center justify-between mb-2">
