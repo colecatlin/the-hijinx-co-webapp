@@ -6,7 +6,13 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Trash2, Loader2, Pencil } from 'lucide-react';
+
+const MONTHS = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: new Date(2000, i).toLocaleString('default', { month: 'long' }),
+}));
 
 export default function DriverProgramsList({ driverId }) {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -17,10 +23,13 @@ export default function DriverProgramsList({ driverId }) {
     team_id: '',
     team_name: '',
     class_name: '',
-    start_date: '',
-    end_date: '',
+    start_month: new Date().getMonth() + 1,
+    start_year: new Date().getFullYear(),
+    end_month: null,
+    end_year: null,
     car_number: '',
     status: 'active',
+    is_rookie: false,
     notes: ''
   });
 

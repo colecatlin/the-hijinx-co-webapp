@@ -480,45 +480,54 @@ export default function DriverProgramsSection({ driverId }) {
 
               {/* Series-only: date range */}
               {formData.program_type === 'series' && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="col-span-full space-y-4">
+                  {/* Start */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Start Month</Label>
+                      <Select value={String(formData.start_month)} onValueChange={(v) => setFormData({ ...formData, start_month: parseInt(v) })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {MONTHS.map((m) => (
+                            <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Start Year</Label>
+                      <Input
+                        type="number"
+                        value={formData.start_year}
+                        onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Start Month</Label>
-                    <Select value={String(formData.start_month)} onValueChange={(v) => setFormData({ ...formData, start_month: parseInt(v) })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {MONTHS.map((m) => (
-                          <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Start Year</Label>
-                    <Input
-                      type="number"
-                      value={formData.start_year}
-                      onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
+                  {/* Present checkbox */}
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="is_present"
+                      checked={formData.status === 'active'}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        status: checked ? 'active' : 'inactive',
+                        end_month: checked ? null : formData.end_month,
+                        end_year: checked ? null : formData.end_year,
+                      })}
                     />
+                    <label htmlFor="is_present" className="text-sm font-medium cursor-pointer select-none">
+                      Present — driver is currently active in this program
+                    </label>
                   </div>
 
+                  {/* End fields — shown only when not present */}
                   {formData.status === 'inactive' && (
-                    <>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>End Month</Label>
                         <Select value={String(formData.end_month || '')} onValueChange={(v) => setFormData({ ...formData, end_month: parseInt(v) })}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
                           <SelectContent>
                             {MONTHS.map((m) => (
                               <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
@@ -532,25 +541,27 @@ export default function DriverProgramsSection({ driverId }) {
                           type="number"
                           value={formData.end_year || ''}
                           onChange={(e) => setFormData({ ...formData, end_year: e.target.value ? parseInt(e.target.value) : null })}
+                          placeholder="e.g., 2024"
                         />
                       </div>
-                    </>
+                    </div>
                   )}
-                </>
+                </div>
               )}
 
+              {/* Rookie checkbox */}
               <div className="flex items-center gap-3 col-span-full">
                 <Checkbox
                   id="is_rookie"
                   checked={!!formData.is_rookie}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_rookie: !!checked })}
                 />
-                <label htmlFor="is_rookie" className="text-sm font-medium cursor-pointer select-none">
+                <label htmlFor="is_rookie" className="text-sm font-medium cursor-pointer select-none flex items-center gap-2">
                   Rookie Year — mark this as a rookie season for this class
+                  {formData.is_rookie && (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400 text-black font-black text-xs">R</span>
+                  )}
                 </label>
-                {formData.is_rookie && (
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400 text-black font-black text-xs">R</span>
-                )}
               </div>
 
               <div className="space-y-2 col-span-full">
