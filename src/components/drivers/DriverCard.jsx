@@ -23,7 +23,7 @@ function sortedSeriesNames(programs, allSeries = []) {
   });
 }
 
-export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats }) {
+export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats, className: programClassName }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
