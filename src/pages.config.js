@@ -59,6 +59,7 @@ import Diagnostics from './pages/Diagnostics';
 import DriverComparison from './pages/DriverComparison';
 import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
+import DriverProfile from './pages/DriverProfile';
 import DriverProgramProfile from './pages/DriverProgramProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
@@ -95,6 +96,7 @@ import ManageTech from './pages/ManageTech';
 import ManageTracks from './pages/ManageTracks';
 import Management from './pages/Management';
 import MotorsportsHome from './pages/MotorsportsHome';
+import MyDashboard from './pages/MyDashboard';
 import OutletAdvertising from './pages/OutletAdvertising';
 import OutletHome from './pages/OutletHome';
 import OutletIssuePage from './pages/OutletIssuePage';
@@ -113,8 +115,6 @@ import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
-import DriverProfile from './pages/DriverProfile';
-import MyDashboard from './pages/MyDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -131,6 +131,7 @@ export const PAGES = {
     "DriverComparison": DriverComparison,
     "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
+    "DriverProfile": DriverProfile,
     "DriverProgramProfile": DriverProgramProfile,
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
@@ -167,6 +168,7 @@ export const PAGES = {
     "ManageTracks": ManageTracks,
     "Management": Management,
     "MotorsportsHome": MotorsportsHome,
+    "MyDashboard": MyDashboard,
     "OutletAdvertising": OutletAdvertising,
     "OutletHome": OutletHome,
     "OutletIssuePage": OutletIssuePage,
@@ -185,8 +187,6 @@ export const PAGES = {
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
-    "DriverProfile": DriverProfile,
-    "MyDashboard": MyDashboard,
 }
 
 export const pagesConfig = {

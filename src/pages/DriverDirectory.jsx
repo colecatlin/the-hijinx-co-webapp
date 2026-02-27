@@ -308,6 +308,7 @@ export default function DriverDirectory() {
               const className = (primaryProgram?.series_class_id
                 ? allClasses.find(c => c.id === primaryProgram.series_class_id)?.class_name
                 : null) || primaryProgram?.class_name || null;
+              const isRookie = !!primaryProgram?.is_rookie;
               
               return (
                 <div key={driver.id} className="relative">
@@ -334,6 +335,7 @@ export default function DriverDirectory() {
                     team={team}
                     media={media}
                     className={className}
+                    isRookie={isRookie}
                   />
                 </div>
               );
