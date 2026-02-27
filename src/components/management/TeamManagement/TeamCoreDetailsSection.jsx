@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { RefreshCw, Upload, X } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
+import { generateSlug, validateSlug } from '@/components/utils/routingContract';
 
 export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
   const [formData, setFormData] = useState({ country: 'USA' });
