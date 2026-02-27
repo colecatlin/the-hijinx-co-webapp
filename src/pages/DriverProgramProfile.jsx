@@ -153,7 +153,7 @@ export default function DriverProgramProfile() {
           {driver && (
             <>
               <Link
-                to={`${createPageUrl('DriverProfile')}?first=${encodeURIComponent(driver.first_name?.toLowerCase())}&last=${encodeURIComponent(driver.last_name?.toLowerCase())}`}
+                to={`${createPageUrl('DriverProfile')}?slug=${driver.slug || driver.id}`}
                 className="hover:text-[#232323]"
               >
                 {driver.first_name} {driver.last_name}
