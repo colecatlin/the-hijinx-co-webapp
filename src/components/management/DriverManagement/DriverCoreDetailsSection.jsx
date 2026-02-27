@@ -304,14 +304,14 @@ export default function DriverCoreDetailsSection({ driverId, onSaveSuccess }) {
         </div>
 
         <div>
-          <h3 className="font-semibold mb-4">Location</h3>
+          <h3 className="font-semibold mb-4">Racing Base</h3>
           <LocationFieldsWithPicker
             values={{
-              city: formData.location_city,
-              state: formData.location_state,
-              country: formData.location_country,
+              city: formData.racing_base_city,
+              state: formData.racing_base_state,
+              country: formData.racing_base_country,
             }}
-            onFieldChange={(field, value) => handleInputChange(`location_${field}`, value)}
+            onFieldChange={(field, value) => handleInputChange(`racing_base_${field}`, value)}
             showCoordinates={false}
           />
         </div>
