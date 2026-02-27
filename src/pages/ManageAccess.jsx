@@ -45,6 +45,14 @@ export default function ManageAccess() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allCollaborators'] }),
   });
 
+  const bulkAssignMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('assignEntityNumericIds', {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accessEntities', activeType] });
+      queryClient.invalidateQueries({ queryKey: ['allCollaborators'] });
+    },
+  });
+
   const regenerateCodeMutation = useMutation({
     mutationFn: async ({ entityId }) => {
       const newCode = generateNumericId();
