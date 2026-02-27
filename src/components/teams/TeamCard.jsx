@@ -22,13 +22,28 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
   // Get unique series from programs
   const uniqueSeries = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
   
-  // Sort drivers by status (Active first, then Part Time, then Inactive)
-  const statusOrder = { 'Active': 0, 'Part Time': 1, 'Inactive': 2 };
-  const sortedDrivers = [...drivers].sort((a, b) => {
-    const statusA = statusOrder[a.status] ?? 3;
-    const statusB = statusOrder[b.status] ?? 3;
-    return statusA - statusB;
+  // Group drivers by series from programs
+  const driversByProgram = {};
+  programs.forEach(program => {
+    if (!driversByProgram[program.series_name]) {
+      driversByProgram[program.series_name] = new Set();
+    }
+    if (program.driver_id) {
+      driversByProgram[program.series_name].add(program.driver_id);
+    }
   });
+  
+  // Organize drivers by series
+  const driversBySeriesArray = uniqueSeries.map(series => {
+    const seriesDriverIds = driversByProgram[series] || new Set();
+    const seriesDrivers = drivers.filter(d => seriesDriverIds.has(d.id));
+    return { series, drivers: seriesDrivers };
+  }).filter(d => d.drivers.length > 0);
+  
+  // Split into two columns
+  const midpoint = Math.ceil(driversBySeriesArray.length / 2);
+  const leftColumn = driversBySeriesArray.slice(0, midpoint);
+  const rightColumn = driversBySeriesArray.slice(midpoint);
 
   return (
     <div 
