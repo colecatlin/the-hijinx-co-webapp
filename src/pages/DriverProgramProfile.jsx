@@ -141,7 +141,7 @@ export default function DriverProgramProfile() {
     : null;
 
   const driverProfileUrl = driver
-    ? `${createPageUrl('DriverProfile')}?first=${encodeURIComponent(driver.first_name?.toLowerCase())}&last=${encodeURIComponent(driver.last_name?.toLowerCase())}`
+    ? `${createPageUrl('DriverProfile')}?slug=${driver.slug || driver.id}`
     : createPageUrl('DriverDirectory');
 
   return (
