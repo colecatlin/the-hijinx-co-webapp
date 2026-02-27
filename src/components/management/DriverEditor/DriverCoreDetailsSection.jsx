@@ -142,20 +142,21 @@ export default function DriverCoreDetailsSection({ driver }) {
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4">
-          <Button
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-            className="gap-2"
-          >
-            {mutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : saved ? (
-              <Check className="w-4 h-4" />
-            ) : null}
-            {saved ? 'Saved' : 'Save Changes'}
-          </Button>
-        </div>
+        <div className="flex gap-3 pt-4 flex-col">
+           <Button
+             onClick={() => mutation.mutate()}
+             disabled={mutation.isPending}
+             className="gap-2"
+           >
+             {mutation.isPending ? (
+               <Loader2 className="w-4 h-4 animate-spin" />
+             ) : saved ? (
+               <Check className="w-4 h-4" />
+             ) : null}
+             {saved ? 'Saved' : 'Save Changes'}
+           </Button>
+           {error && <p className="text-red-600 text-sm">{error}</p>}
+         </div>
       </CardContent>
     </Card>
   );
