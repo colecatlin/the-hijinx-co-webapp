@@ -72,7 +72,7 @@ function ProgramCard({ program, isActive, allSeries = [] }) {
   );
 }
 
-export default function ProgramsTimeline({ programs = [], teams = [] }) {
+export default function ProgramsTimeline({ programs = [], teams = [], allSeries = [] }) {
   const [showPast, setShowPast] = useState(false);
 
   // Enrich with team name
