@@ -28,6 +28,11 @@ export default function TeamForm({ team, onClose }) {
 
   const queryClient = useQueryClient();
 
+  const { data: allTeams } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
   const saveMutation = useMutation({
     mutationFn: (data) => {
       if (team) {
@@ -41,6 +46,17 @@ export default function TeamForm({ team, onClose }) {
     },
   });
 
+  const generateUniqueSlug = (name) => {
+    if (!name) return '';
+    const baseSlug = generateSlug(name);
+    const existingSlugs = (allTeams || [])
+      .filter(t => !team || t.id !== team.id)
+      .map(t => t.slug)
+      .filter(Boolean);
+    const { suggestion } = validateSlug(baseSlug, existingSlugs);
+    return suggestion;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate(formData);
@@ -49,8 +65,8 @@ export default function TeamForm({ team, onClose }) {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    if (field === 'name' && !team) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (field === 'name') {
+      const slug = generateUniqueSlug(value);
       setFormData(prev => ({ ...prev, slug }));
     }
   };
