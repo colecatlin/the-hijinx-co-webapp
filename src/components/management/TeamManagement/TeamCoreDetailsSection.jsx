@@ -156,17 +156,26 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           </Select>
         </div>
 
-        <div>
-          <label className="text-sm font-medium">Founded Year</label>
-          <Input
-            type="number"
-            value={formData.founded_year || ''}
-            onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
-            min="1900"
-            max={new Date().getFullYear()}
-            className={errors.founded_year ? 'border-red-500' : ''}
-          />
-          {errors.founded_year && <p className="text-xs text-red-500 mt-1">{errors.founded_year}</p>}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Manufacturer</label>
+            <Input
+              value={formData.manufacturer || ''}
+              onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Founded Year</label>
+            <Input
+              type="number"
+              value={formData.founded_year || ''}
+              onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+              min="1900"
+              max={new Date().getFullYear()}
+              className={errors.founded_year ? 'border-red-500' : ''}
+            />
+            {errors.founded_year && <p className="text-xs text-red-500 mt-1">{errors.founded_year}</p>}
+          </div>
         </div>
 
         <div>
