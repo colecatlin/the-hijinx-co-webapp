@@ -180,40 +180,25 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Manufacturer</label>
-            <Input
-              value={formData.manufacturer || ''}
-              onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
-            />
-            {formData.manufacturer_logo_url && (
-              <div className="mt-2">
-                <img src={formData.manufacturer_logo_url} alt="Manufacturer logo" className="h-8 object-contain" />
-              </div>
-            )}
-            <label className="text-xs text-gray-500 mt-2 block">Logo</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleManufacturerLogoUpload(e.target.files?.[0])}
-              disabled={uploadingLogo}
-              className="text-xs"
-            />
-            {uploadingLogo && <p className="text-xs text-gray-500 mt-1">Uploading...</p>}
-          </div>
-          <div>
-            <label className="text-sm font-medium">Founded Year</label>
-            <Input
-              type="number"
-              value={formData.founded_year || ''}
-              onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
-              min="1900"
-              max={new Date().getFullYear()}
-              className={errors.founded_year ? 'border-red-500' : ''}
-            />
-            {errors.founded_year && <p className="text-xs text-red-500 mt-1">{errors.founded_year}</p>}
-          </div>
+        <div>
+          <label className="text-sm font-medium">Manufacturer</label>
+          <Input
+            value={formData.manufacturer || ''}
+            onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Founded Year</label>
+          <Input
+            type="number"
+            value={formData.founded_year || ''}
+            onChange={(e) => setFormData({ ...formData, founded_year: parseInt(e.target.value) })}
+            min="1900"
+            max={new Date().getFullYear()}
+            className={errors.founded_year ? 'border-red-500' : ''}
+          />
+          {errors.founded_year && <p className="text-xs text-red-500 mt-1">{errors.founded_year}</p>}
         </div>
 
         <div>
