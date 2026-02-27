@@ -170,19 +170,24 @@ export default function DriverProgramsList({ driverId }) {
                     </div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                        <div>
-                         <span className="text-gray-500">Start Date:</span>
-                         <span className="ml-2 font-medium">{program.start_date}</span>
+                         <span className="text-gray-500">Start:</span>
+                         <span className="ml-2 font-medium">{program.start_month}/{program.start_year}</span>
                        </div>
-                       {program.end_date && (
+                       {program.status === 'inactive' && program.end_year ? (
                          <div>
-                           <span className="text-gray-500">End Date:</span>
-                           <span className="ml-2 font-medium">{program.end_date}</span>
+                           <span className="text-gray-500">End:</span>
+                           <span className="ml-2 font-medium">{program.end_month}/{program.end_year}</span>
+                         </div>
+                       ) : (
+                         <div>
+                           <span className="text-gray-500">End:</span>
+                           <span className="ml-2 font-medium text-green-600">Present</span>
                          </div>
                        )}
-                       {program.team_name && (
+                       {program.team_id && (
                          <div>
                            <span className="text-gray-500">Team:</span>
-                           <span className="ml-2 font-medium">{program.team_name}</span>
+                           <span className="ml-2 font-medium">{teams.find(t => t.id === program.team_id)?.name || ''}</span>
                          </div>
                        )}
                        {program.class_name && (
