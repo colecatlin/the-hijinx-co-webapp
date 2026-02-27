@@ -173,6 +173,20 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
               value={formData.manufacturer || ''}
               onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
             />
+            {formData.manufacturer_logo_url && (
+              <div className="mt-2">
+                <img src={formData.manufacturer_logo_url} alt="Manufacturer logo" className="h-8 object-contain" />
+              </div>
+            )}
+            <label className="text-xs text-gray-500 mt-2 block">Logo</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleManufacturerLogoUpload(e.target.files?.[0])}
+              disabled={uploadingLogo}
+              className="text-xs"
+            />
+            {uploadingLogo && <p className="text-xs text-gray-500 mt-1">Uploading...</p>}
           </div>
           <div>
             <label className="text-sm font-medium">Founded Year</label>
