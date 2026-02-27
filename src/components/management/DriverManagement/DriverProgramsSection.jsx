@@ -54,7 +54,15 @@ export default function DriverProgramsSection({ driverId }) {
 
   const { data: programs = [] } = useQuery({
     queryKey: ['driverPrograms', driverId],
-    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }, '-updated_date', 100),
+    queryFn: async () => {
+      const programs = await base44.entities.DriverProgram.filter({ driver_id: driverId }, '-start_year', 100);
+      return programs.sort((a, b) => {
+        const aYear = a.start_year || 0;
+        const bYear = b.start_year || 0;
+        if (bYear !== aYear) return bYear - aYear;
+        return (b.start_month || 0) - (a.start_month || 0);
+      });
+    },
   });
 
   const { data: series = [] } = useQuery({
