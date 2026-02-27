@@ -15,8 +15,11 @@ const SERIES_PRIORITY = {
 };
 
 function sortedSeriesNames(programs, allSeries = []) {
-  const seriesNames = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
-  return seriesNames.sort((a, b) => {
+  const names = [...new Set(programs.map(p => {
+    if (p.series_id) return allSeries.find(s => s.id === p.series_id)?.name;
+    return p.series_name;
+  }).filter(Boolean))];
+  return names.sort((a, b) => {
     const rankA = allSeries.find(s => s.name === a)?.popularity_rank ?? SERIES_PRIORITY[a] ?? 99;
     const rankB = allSeries.find(s => s.name === b)?.popularity_rank ?? SERIES_PRIORITY[b] ?? 99;
     return rankA - rankB;
