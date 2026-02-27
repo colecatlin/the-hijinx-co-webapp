@@ -68,10 +68,7 @@ export default function Management() {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
-            Templates
-          </h2>
-          <AmsoilResultsTemplate />
+          <TemplatesSection />
         </div>
 
         <div className="space-y-8">
