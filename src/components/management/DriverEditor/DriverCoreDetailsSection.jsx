@@ -33,8 +33,14 @@ export default function DriverCoreDetailsSection({ driver }) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      console.log('Sending data to update:', data);
-      const response = await base44.entities.Driver.update(driver.id, data);
+      const updateData = {};
+      Object.keys(data).forEach(key => {
+        if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+          updateData[key] = data[key];
+        }
+      });
+      console.log('Sending data to update:', updateData);
+      const response = await base44.entities.Driver.update(driver.id, updateData);
       console.log('Update response:', response);
       return response;
     },
