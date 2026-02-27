@@ -27,59 +27,86 @@ Deno.serve(async (req) => {
   }
 });
 
-async function handleExport(base44, entityType) {
+async function handleExport(base44, entityType, templateOnly = false) {
   try {
     const entity = base44.entities[entityType];
     if (!entity) {
       return Response.json({ error: `Entity ${entityType} not found` }, { status: 404 });
     }
 
-    const records = await entity.list();
-    
-    if (records.length === 0) {
-      const csv = ''; // Empty CSV for empty entities
-      return new Response(csv, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="${entityType}_export.csv"`
+    let records = [];
+    let headers = [];
+
+    if (templateOnly) {
+      // Get schema to extract available fields
+      try {
+        const schema = await entity.schema();
+        headers = Object.keys(schema.properties || {}).sort();
+        // Add built-in fields
+        headers = ['id', ...headers, 'created_date', 'updated_date', 'created_by'].filter(h => h);
+      } catch {
+        // Fallback: fetch one record to get keys
+        const sample = await entity.list(undefined, 1);
+        if (sample.length > 0) {
+          headers = Object.keys(sample[0]).sort();
+        } else {
+          headers = [];
         }
+      }
+    } else {
+      // Export all data
+      records = await entity.list();
+      
+      if (records.length === 0) {
+        const csv = ''; // Empty CSV for empty entities
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': `attachment; filename="${entityType}_export.csv"`
+          }
+        });
+      }
+
+      // Get all keys from all records
+      const allKeys = new Set();
+      records.forEach(record => {
+        Object.keys(record).forEach(key => allKeys.add(key));
       });
+      
+      headers = Array.from(allKeys).sort();
     }
 
-    // Get all keys from all records
-    const allKeys = new Set();
-    records.forEach(record => {
-      Object.keys(record).forEach(key => allKeys.add(key));
-    });
-    
-    const headers = Array.from(allKeys).sort();
-    
     // Build CSV content
     let csv = headers.map(h => `"${h}"`).join(',') + '\n';
     
-    records.forEach(record => {
-      const row = headers.map(header => {
-        const value = record[header];
-        if (value === null || value === undefined) return '';
-        
-        // Handle arrays and objects
-        if (typeof value === 'object') {
-          return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
-        }
-        
-        // Escape quotes in strings
-        const stringValue = String(value).replace(/"/g, '""');
-        return `"${stringValue}"`;
+    // Add data rows (only if not template)
+    if (!templateOnly && records.length > 0) {
+      records.forEach(record => {
+        const row = headers.map(header => {
+          const value = record[header];
+          if (value === null || value === undefined) return '';
+          
+          // Handle arrays and objects
+          if (typeof value === 'object') {
+            return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          }
+          
+          // Escape quotes in strings
+          const stringValue = String(value).replace(/"/g, '""');
+          return `"${stringValue}"`;
+        });
+        csv += row.join(',') + '\n';
       });
-      csv += row.join(',') + '\n';
-    });
+    }
+
+    const filename = templateOnly ? `${entityType}_template.csv` : `${entityType}_export.csv`;
 
     return new Response(csv, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${entityType}_export.csv"`
+        'Content-Disposition': `attachment; filename="${filename}"`
       }
     });
   } catch (error) {
