@@ -109,7 +109,7 @@ export default function ProgramsTimeline({ programs = [], teams = [], allSeries 
       {active.length > 0 && (
         <div className="space-y-3">
           {active.map(p => (
-            <ProgramCard key={p.id} program={p} isActive={p.status === 'active'} />
+            <ProgramCard key={p.id} program={p} isActive={p.status === 'active'} allSeries={allSeries} />
           ))}
         </div>
       )}
