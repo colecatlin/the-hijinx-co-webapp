@@ -58,10 +58,14 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
   });
 
   const getEventName = (eventId) => events.find(e => e.id === eventId)?.name || 'Unknown Event';
-  const getDriverName = (driverId) => {
-    const d = drivers.find(d => d.id === driverId);
+  const getDriverName = (dId) => {
+    const d = drivers.find(d => d.id === dId);
     return d ? `${d.first_name} ${d.last_name}` : 'Unknown Driver';
   };
+  const getDriverSlug = (dId) => drivers.find(d => d.id === dId)?.slug || null;
+  const getSeriesName = (sId) => allSeries.find(s => s.id === sId)?.name || '—';
+  const getClassName = (cId) => allClasses.find(c => c.id === cId)?.class_name || '—';
+  const getProgramLink = (programId) => programId ? `${createPageUrl('DriverProgramProfile')}?programId=${programId}` : null;
 
   const positionBadgeColor = (pos) => {
     if (pos === 1) return 'bg-yellow-100 text-yellow-800';
@@ -71,7 +75,7 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
   };
 
   const filteredResults = classFilter
-    ? results.filter(r => r.class === classFilter)
+    ? results.filter(r => r.series_class_id === classFilter)
     : results;
 
   const finals = filteredResults.filter(r => r.session_type === 'Final' || !r.session_type);
