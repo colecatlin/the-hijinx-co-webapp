@@ -201,13 +201,13 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 </div>
               ) : null;
             })()}
-            {program?.status === 'Active' && program?.class_name && (
+            {programClassName && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Class</div>
-                <div className="text-sm font-bold text-[#232323]">{program.class_name}</div>
+                <div className="text-sm font-bold text-[#232323]">{programClassName}</div>
               </div>
             )}
-            {team?.status === 'Active' && team?.name && (
+            {team?.name && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Team</div>
                 <div className="text-sm font-bold text-[#232323]">{team.name}</div>
