@@ -116,9 +116,10 @@ export default function DriverProgramProfile() {
     );
   }
 
+  const resolvedSeriesName = series?.name || program.series_name || 'Unknown Series';
   const programName = program.program_type === 'single_event'
     ? (program.event_name || 'Unnamed Event')
-    : (program.series_name || 'Unknown Series');
+    : resolvedSeriesName;
 
   const isActive = program.status === 'active';
 
