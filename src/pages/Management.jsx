@@ -50,10 +50,16 @@ export default function Management() {
       ]
     },
     {
+      title: 'Data & Integration',
+      items: [
+        { name: 'CSV Import/Export', page: 'ManageCSVImportExport', icon: FileJson, description: 'Bulk import/export all entities as CSV files' },
+        { name: 'Schedule Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal schedules into Events' },
+      ]
+    },
+    {
       title: 'Site Settings',
       items: [
         { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
-        { name: 'Schedule Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal schedules into Events' },
       ]
     }
   ];
