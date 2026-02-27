@@ -82,6 +82,19 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
     setFormData({ ...formData, name, slug: newSlug });
   };
 
+  const handleManufacturerLogoUpload = async (file) => {
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const response = await base44.integrations.Core.UploadFile({ file });
+      setFormData({ ...formData, manufacturer_logo_url: response.file_url });
+    } catch (error) {
+      toast.error('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     const currentYear = new Date().getFullYear();
