@@ -4,10 +4,14 @@ import { createPageUrl } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Flag, Calendar, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 
-function ProgramCard({ program, isActive }) {
+function ProgramCard({ program, isActive, allSeries = [] }) {
+  const resolvedSeriesName = program.series_id
+    ? allSeries.find(s => s.id === program.series_id)?.name || program.series_name || 'Unknown Series'
+    : program.series_name || 'Unknown Series';
+
   const name = program.program_type === 'single_event'
     ? (program.event_name || 'Unnamed Event')
-    : (program.series_name || 'Unknown Series');
+    : resolvedSeriesName;
 
   const dateRange = program.program_type === 'single_event'
     ? (program.event_date || '')
