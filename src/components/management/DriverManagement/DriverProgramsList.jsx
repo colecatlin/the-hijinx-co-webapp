@@ -88,10 +88,13 @@ export default function DriverProgramsList({ driverId }) {
       team_id: '',
       team_name: '',
       class_name: '',
-      start_date: '',
-      end_date: '',
+      start_month: new Date().getMonth() + 1,
+      start_year: new Date().getFullYear(),
+      end_month: null,
+      end_year: null,
       car_number: '',
       status: 'active',
+      is_rookie: false,
       notes: ''
     });
   };
@@ -113,10 +116,13 @@ export default function DriverProgramsList({ driverId }) {
       team_id: program.team_id || '',
       team_name: program.team_name || '',
       class_name: program.class_name || '',
-      start_date: program.start_date || '',
-      end_date: program.end_date || '',
+      start_month: program.start_month || new Date().getMonth() + 1,
+      start_year: program.start_year || new Date().getFullYear(),
+      end_month: program.end_month || null,
+      end_year: program.end_year || null,
       car_number: program.car_number || '',
       status: program.status || 'active',
+      is_rookie: program.is_rookie || false,
       notes: program.notes || ''
     });
   };
