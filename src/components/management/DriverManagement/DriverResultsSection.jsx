@@ -43,10 +43,12 @@ export default function DriverResultsSection({ driverId }) {
     queryFn: () => base44.entities.Results.filter({ driver_id: driverId }),
   });
 
-  const { data: programs = [] } = useQuery({
+  const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms', driverId],
     queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
   });
+
+  const programs = allPrograms.filter(p => p.status === 'active');
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
