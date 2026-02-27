@@ -52,8 +52,12 @@ function ProgramEntry({ program, seriesMap, teamMap }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-semibold text-sm">{series?.name || 'Unknown Series'}</p>
-          <p className="text-xs text-gray-600 mt-1">
-            #{program.bib_number} • {program.class_name}
+          <p className="text-xs text-gray-600 mt-1 flex items-center gap-1.5 flex-wrap">
+            {program.bib_number && `#${program.bib_number}`}{program.bib_number && program.class_name && ' • '}
+            {program.class_name}
+            {program.is_rookie && (
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+            )}
           </p>
           {team && (
             <p className="text-xs text-gray-600 mt-1">
