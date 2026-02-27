@@ -9,14 +9,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { action, entityType } = await req.json();
+    const { action, entityType, templateOnly } = await req.json();
 
     if (!entityType) {
       return Response.json({ error: 'Missing entityType parameter' }, { status: 400 });
     }
 
     if (action === 'export') {
-      return await handleExport(base44, entityType);
+      return await handleExport(base44, entityType, templateOnly);
     } else if (action === 'import') {
       return await handleImport(base44, req, entityType);
     } else {
