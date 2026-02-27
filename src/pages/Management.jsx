@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import TemplatesSection from '@/components/management/TemplatesSection';
 import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone } from 'lucide-react';
 
 export default function Management() {
@@ -65,10 +64,6 @@ export default function Management() {
         <div className="mb-8">
           <h1 className="text-4xl font-black mb-2">Management</h1>
           <p className="text-gray-600">Backend system for managing all content and data</p>
-        </div>
-
-        <div className="mb-8">
-          <TemplatesSection />
         </div>
 
         <div className="space-y-8">
