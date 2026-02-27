@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 
-import { DriverCoreDetailsSectionWithManagers } from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
-import DriverCoreDetailsSection from '@/components/management/DriverEditor/DriverCoreDetailsSection.jsx';
+import { DriverCoreDetailsSectionWithManagers } from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
 import DriverProgramsSection from '@/components/management/DriverEditor/DriverProgramsSection.jsx';
 import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
 import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList';
