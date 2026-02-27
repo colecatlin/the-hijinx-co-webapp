@@ -305,9 +305,9 @@ export default function DriverDirectory() {
               const team = primaryProgram?.team_id ? allTeams.find(t => t.id === primaryProgram.team_id) : null;
               const media = allMedia.find(m => m.driver_id === driver.id);
               const isSelected = selectedDrivers.includes(driver.id);
-              const className = primaryProgram?.series_class_id
+              const className = (primaryProgram?.series_class_id
                 ? allClasses.find(c => c.id === primaryProgram.series_class_id)?.class_name
-                : null;
+                : null) || primaryProgram?.class_name || null;
               
               return (
                 <div key={driver.id} className="relative">
