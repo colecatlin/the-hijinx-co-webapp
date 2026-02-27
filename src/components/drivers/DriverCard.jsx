@@ -183,11 +183,11 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             </div>
           </div>
 
-          {/* Core Details - Condensed */}
-          <div className="space-y-2 mb-4">
+          {/* Overview Details */}
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2">
             {driver.date_of_birth && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Age</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
                 <div className="text-sm font-bold text-[#232323]">
                   {(() => {
                     const today = new Date();
@@ -202,23 +202,42 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             )}
             {hometown && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Hometown</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Hometown</div>
                 <div className="text-sm font-bold text-[#232323]">{hometown}</div>
+              </div>
+            )}
+            {(driver.racing_base_city || driver.racing_base_state || driver.racing_base_country) && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Racing Base</div>
+                <div className="text-sm font-bold text-[#232323]">
+                  {[driver.racing_base_city, driver.racing_base_state, driver.racing_base_country].filter(Boolean).join(', ')}
+                </div>
               </div>
             )}
             {driver.primary_discipline && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Primary Discipline</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Primary Discipline</div>
                 <div className="text-sm font-bold text-[#232323]">{driver.primary_discipline}</div>
               </div>
             )}
+            {programs.length > 0 && (() => {
+              const secondaryDisciplines = getSecondaryDisciplines(programs, allSeries, driver.primary_discipline);
+              return secondaryDisciplines.length > 0 ? (
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Also Races</div>
+                  <div className="text-sm font-bold text-[#232323]">
+                    {secondaryDisciplines.join(', ')}
+                  </div>
+                </div>
+              ) : null;
+            })()}
             {programs.length > 0 && (() => {
               const activePrograms = programs.filter(p => p.status?.toLowerCase() === 'active');
               const displayPrograms = activePrograms.length > 0 ? activePrograms : programs;
               const seriesNames = sortedSeriesNames(displayPrograms, allSeries);
               return seriesNames.length > 0 ? (
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Series</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
                   <div className="text-sm font-bold text-[#232323]">
                     {seriesNames.join(', ')}
                   </div>
@@ -227,7 +246,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             })()}
             {(programClassName || isRookie) && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Class</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Class</div>
                 <div className="text-sm font-bold text-[#232323] flex items-center gap-1.5">
                   {programClassName || ''}
                   {isRookie && (
@@ -247,35 +266,17 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             )}
             {(team?.name || program?.team_name) && (
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Team</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Team</div>
                 <div className="text-sm font-bold text-[#232323]">{team?.name || program?.team_name}</div>
               </div>
             )}
-          </div>
-
-          {/* Stats Section */}
-          {overallStats?.available && (
-            <div className="bg-white border border-gray-300 rounded-sm p-3 mb-4">
-              <div className="flex justify-around text-center">
-                <div>
-                  <div className="text-base font-black text-[#232323]">{overallStats.wins}</div>
-                  <div className="text-xs text-gray-600">W</div>
-                </div>
-                <div>
-                  <div className="text-base font-black text-[#232323]">{overallStats.podiums}</div>
-                  <div className="text-xs text-gray-600">P</div>
-                </div>
-                <div>
-                  <div className="text-base font-black text-[#232323]">{overallStats.top5}</div>
-                  <div className="text-xs text-gray-600">T5</div>
-                </div>
-                <div>
-                  <div className="text-base font-black text-[#232323]">{overallStats.top10}</div>
-                  <div className="text-xs text-gray-600">T10</div>
-                </div>
+            {driver.represented_by && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Represented By</div>
+                <div className="text-sm font-bold text-[#232323]">{driver.represented_by}</div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-gray-300">
