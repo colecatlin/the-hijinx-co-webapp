@@ -22,28 +22,13 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
   // Get unique series from programs
   const uniqueSeries = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
   
-  // Group drivers by series from programs
-  const driversByProgram = {};
-  programs.forEach(program => {
-    if (!driversByProgram[program.series_name]) {
-      driversByProgram[program.series_name] = new Set();
-    }
-    if (program.driver_id) {
-      driversByProgram[program.series_name].add(program.driver_id);
-    }
+  // Sort drivers by status (Active first, then Part Time, then Inactive)
+  const statusOrder = { 'Active': 0, 'Part Time': 1, 'Inactive': 2 };
+  const sortedDrivers = [...drivers].sort((a, b) => {
+    const statusA = statusOrder[a.status] ?? 3;
+    const statusB = statusOrder[b.status] ?? 3;
+    return statusA - statusB;
   });
-  
-  // Organize drivers by series
-  const driversBySeriesArray = uniqueSeries.map(series => {
-    const seriesDriverIds = driversByProgram[series] || new Set();
-    const seriesDrivers = drivers.filter(d => seriesDriverIds.has(d.id));
-    return { series, drivers: seriesDrivers };
-  }).filter(d => d.drivers.length > 0);
-  
-  // Split into two columns
-  const midpoint = Math.ceil(driversBySeriesArray.length / 2);
-  const leftColumn = driversBySeriesArray.slice(0, midpoint);
-  const rightColumn = driversBySeriesArray.slice(midpoint);
 
   return (
     <div 
@@ -137,44 +122,18 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
           )}
 
           {/* Drivers */}
-           {drivers.length > 0 && (
-             <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
-               <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Drivers ({drivers.length})</div>
-               <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 flex-1 min-h-0 overflow-y-auto">
-                 {/* Left Column */}
-                 <div className="space-y-0.5">
-                   {leftColumn.map((group, idx) => (
-                     <div key={idx}>
-                       <div className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-tight">{group.series}</div>
-                       <div className="space-y-0.5 mb-2">
-                         {group.drivers.map((driver, dIdx) => (
-                           <div key={dIdx} className="text-xs text-[#232323] font-semibold">
-                             {driver.first_name} {driver.last_name}
-                           </div>
-                         ))}
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-
-                 {/* Right Column */}
-                 <div className="space-y-0.5">
-                   {rightColumn.map((group, idx) => (
-                     <div key={idx}>
-                       <div className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-tight">{group.series}</div>
-                       <div className="space-y-0.5 mb-2">
-                         {group.drivers.map((driver, dIdx) => (
-                           <div key={dIdx} className="text-xs text-[#232323] font-semibold">
-                             {driver.first_name} {driver.last_name}
-                           </div>
-                         ))}
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-             </div>
-           )}
+          {sortedDrivers.length > 0 && (
+            <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
+              <div className="space-y-0.5">
+                {sortedDrivers.map((driver, idx) => (
+                  <div key={idx} className="text-sm text-[#232323] font-semibold">
+                    {driver.first_name} {driver.last_name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="mt-auto pt-2 border-t border-gray-300">
