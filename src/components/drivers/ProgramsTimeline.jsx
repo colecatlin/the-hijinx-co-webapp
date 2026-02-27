@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Badge } from '@/components/ui/badge';
-import { Flag, Calendar, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Flag, Calendar, ExternalLink } from 'lucide-react';
 
 function ProgramCard({ program, isActive, allSeries = [], allClasses = [] }) {
   const resolvedSeriesName = program.series_id
