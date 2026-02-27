@@ -23,7 +23,7 @@ function sortedSeriesNames(programs, allSeries = []) {
   });
 }
 
-export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats, className: programClassName }) {
+export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats, className: programClassName, isRookie }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
@@ -205,7 +205,12 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
             {programClassName && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Class</div>
-                <div className="text-sm font-bold text-[#232323]">{programClassName}</div>
+                <div className="text-sm font-bold text-[#232323] flex items-center gap-1.5">
+                  {programClassName}
+                  {isRookie && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                  )}
+                </div>
               </div>
             )}
             {(team?.name || program?.team_name) && (
