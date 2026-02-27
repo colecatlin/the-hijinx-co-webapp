@@ -22,8 +22,13 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
   // Get unique series from programs
   const uniqueSeries = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
   
-  // Get driver names (max 4)
-  const displayDrivers = drivers.slice(0, 4);
+  // Sort drivers by status (Active first, then Part Time, then Inactive)
+  const statusOrder = { 'Active': 0, 'Part Time': 1, 'Inactive': 2 };
+  const sortedDrivers = [...drivers].sort((a, b) => {
+    const statusA = statusOrder[a.status] ?? 3;
+    const statusB = statusOrder[b.status] ?? 3;
+    return statusA - statusB;
+  });
 
   return (
     <div 
