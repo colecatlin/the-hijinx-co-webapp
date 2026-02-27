@@ -14,8 +14,13 @@ import LocationFieldsWithPicker from '@/components/shared/LocationFieldsWithPick
 import DateInput from '@/components/shared/DateInput';
 
 const DISCIPLINES = [
-  'Stock Car', 'Off Road', 'Dirt Oval', 'Snowmobile', 'Dirt Bike', 'Open Wheel',
-  'Sports Car', 'Touring Car', 'Rally', 'Drag', 'Motorcycle', 'Karting', 'Water', 'Alternative'
+  'Off Road',
+  'Snowmobile',
+  'Asphalt Oval',
+  'Road Racing',
+  'Rallycross',
+  'Drag Racing',
+  'Mixed'
 ];
 
 export default function DriverCoreDetailsSection({ driverId, driver: passedDriver, onSaveSuccess, isReadOnly }) {
