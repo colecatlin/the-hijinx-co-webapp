@@ -531,6 +531,20 @@ export default function DriverProgramsSection({ driverId }) {
                 </>
               )}
 
+              <div className="flex items-center gap-3 col-span-full">
+                <Checkbox
+                  id="is_rookie"
+                  checked={!!formData.is_rookie}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_rookie: !!checked })}
+                />
+                <label htmlFor="is_rookie" className="text-sm font-medium cursor-pointer select-none">
+                  Rookie Year — mark this as a rookie season for this class
+                </label>
+                {formData.is_rookie && (
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400 text-black font-black text-xs">R</span>
+                )}
+              </div>
+
               <div className="space-y-2 col-span-full">
                 <Label>Notes</Label>
                 <Input
