@@ -224,7 +224,7 @@ export default function DriverProgramsSection({ driverId }) {
                   )}
                 </div>
                 <p className="font-medium mt-1">
-                  {program.program_type === 'single_event' ? (program.event_name || 'Unnamed Event') : (program.series_name || 'Unknown Series')}
+                 {program.program_type === 'single_event' ? (program.event_name || 'Unnamed Event') : (series.find((s) => s.id === program.series_id)?.name || program.series_name || 'Unknown Series')}
                 </p>
                 <p className="text-sm text-gray-500 flex items-center gap-1.5 flex-wrap">
                   {program.class_name && (
