@@ -157,7 +157,7 @@ export default function Profile() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="general" className="space-y-6">
+          <Tabs defaultValue={defaultTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
