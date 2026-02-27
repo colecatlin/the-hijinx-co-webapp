@@ -238,58 +238,23 @@ export default function DriverProgramsList({ driverId }) {
             <DialogTitle>{editingProgram ? 'Edit Driver Program' : 'Add Driver Program'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Start Date *</label>
-                <Input
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">End Date</label>
-                <Input
-                  type="date"
-                  value={formData.end_date}
-                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Series *</label>
-                <Select
-                  value={formData.series_id}
-                  onValueChange={(val) => {
-                    const selectedSeries = series.find(s => s.id === val);
-                    setFormData({
-                      ...formData,
-                      series_id: val,
-                      series_name: selectedSeries?.name || ''
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select series" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {series.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Season *</label>
-                <Input
-                  value={formData.season}
-                  onChange={(e) => setFormData({ ...formData, season: e.target.value })}
-                  placeholder="2026"
-                  required
-                />
-              </div>
+            {/* Series */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Series *</label>
+              <Select
+                value={formData.series_id}
+                onValueChange={(val) => {
+                  const selectedSeries = series.find(s => s.id === val);
+                  setFormData({ ...formData, series_id: val, series_name: selectedSeries?.name || '' });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select series" /></SelectTrigger>
+                <SelectContent>
+                  {series.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -299,26 +264,17 @@ export default function DriverProgramsList({ driverId }) {
                   value={formData.team_id}
                   onValueChange={(val) => {
                     const selectedTeam = teams.find(t => t.id === val);
-                    setFormData({
-                      ...formData,
-                      team_id: val,
-                      team_name: selectedTeam?.name || ''
-                    });
+                    setFormData({ ...formData, team_id: val, team_name: selectedTeam?.name || '' });
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select team" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
                   <SelectContent>
                     {teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Class</label>
                 <Select
@@ -331,41 +287,101 @@ export default function DriverProgramsList({ driverId }) {
                   </SelectTrigger>
                   <SelectContent>
                     {classes.map((c) => (
-                      <SelectItem key={c.id} value={c.class_name}>
-                        {c.class_name}
-                      </SelectItem>
+                      <SelectItem key={c.id} value={c.class_name}>{c.class_name}</SelectItem>
                     ))}
-                  </SelectContent>
-                  </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Car Number</label>
-                <Input
-                  value={formData.car_number}
-                  onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
-                  placeholder="e.g., 99"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(val) => setFormData({ ...formData, status: val })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="planning">Planning</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Car Number</label>
+              <Input
+                value={formData.car_number}
+                onChange={(e) => setFormData({ ...formData, car_number: e.target.value })}
+                placeholder="e.g., 99"
+              />
+            </div>
+
+            {/* Start month/year */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Start Month</label>
+                <Select value={String(formData.start_month)} onValueChange={(v) => setFormData({ ...formData, start_month: parseInt(v) })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Start Year</label>
+                <Input
+                  type="number"
+                  value={formData.start_year}
+                  onChange={(e) => setFormData({ ...formData, start_year: parseInt(e.target.value) })}
+                />
+              </div>
+            </div>
+
+            {/* Present checkbox */}
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="is_present_modal"
+                checked={formData.status === 'active'}
+                onCheckedChange={(checked) => setFormData({
+                  ...formData,
+                  status: checked ? 'active' : 'inactive',
+                  end_month: checked ? null : formData.end_month,
+                  end_year: checked ? null : formData.end_year,
+                })}
+              />
+              <label htmlFor="is_present_modal" className="text-sm font-medium cursor-pointer select-none">
+                Present — driver is currently active in this program
+              </label>
+            </div>
+
+            {/* End month/year — only when not present */}
+            {formData.status === 'inactive' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">End Month</label>
+                  <Select value={String(formData.end_month || '')} onValueChange={(v) => setFormData({ ...formData, end_month: parseInt(v) })}>
+                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((m) => (
+                        <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">End Year</label>
+                  <Input
+                    type="number"
+                    value={formData.end_year || ''}
+                    onChange={(e) => setFormData({ ...formData, end_year: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="e.g., 2024"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Rookie */}
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="is_rookie_modal"
+                checked={!!formData.is_rookie}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_rookie: !!checked })}
+              />
+              <label htmlFor="is_rookie_modal" className="text-sm font-medium cursor-pointer select-none flex items-center gap-2">
+                Rookie Year — mark this as a rookie season for this class
+                {formData.is_rookie && (
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400 text-black font-black text-xs">R</span>
+                )}
+              </label>
             </div>
 
             <div>
