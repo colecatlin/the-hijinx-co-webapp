@@ -96,7 +96,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
         >
           {/* Location */}
           {team.headquarters_city && team.headquarters_state && (
-            <div className="mb-4 pb-4 border-b border-gray-200">
+            <div className="mb-2 pb-2 border-b border-gray-200">
               <div className="flex items-center gap-2">
                 <CountryFlag country={team.country} />
                 <MapPin className="w-4 h-4 text-gray-500" />
@@ -109,8 +109,8 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
 
           {/* Series Badges */}
           {uniqueSeries.length > 0 && (
-            <div className="mb-4 pb-4 border-b border-gray-200">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Series</div>
+            <div className="mb-2 pb-2 border-b border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
               <div className="flex flex-wrap gap-2">
                 {uniqueSeries.slice(0, 3).map((series, idx) => (
                   <Badge key={idx} variant="outline" className="text-xs border-[#232323] text-[#232323]">
@@ -123,9 +123,9 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
 
           {/* Drivers */}
           {sortedDrivers.length > 0 && (
-            <div className="mb-4 pb-4 border-b border-gray-200 flex-1 flex flex-col min-h-0">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Drivers ({sortedDrivers.length})</div>
-              <div className="space-y-1 overflow-y-auto min-h-0 flex-1">
+            <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
+              <div className="space-y-0.5 overflow-y-auto min-h-0 flex-1">
                 {sortedDrivers.map((driver, idx) => (
                   <div key={idx} className="text-sm text-[#232323] font-semibold">
                     {driver.first_name} {driver.last_name}
