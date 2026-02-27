@@ -375,8 +375,8 @@ export default function DriverProfile() {
             </div>
           </div>
 
-          <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10 flex items-center gap-2">
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 flex-wrap mb-2">
               <FollowDriverButton driverId={driver?.id} />
               <Button
                 variant="outline"
