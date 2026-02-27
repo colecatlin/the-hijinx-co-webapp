@@ -61,22 +61,33 @@ export default function TeamMediaSection({ teamId }) {
         <CardDescription>Upload team logo, hero image, and gallery photos</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <MediaUploader
-            label="Team Logo"
-            hint="Recommended: 400×400px (square) · Max 5MB"
-            value={formData.logo_url}
-            onChange={(v) => handleChange('logo_url', v)}
-            maxSizeMB={5}
-          />
-          <MediaUploader
-            label="Hero / Banner Image"
-            hint="Recommended: 1920×600px (wide) · Max 8MB"
-            value={formData.hero_image_url}
-            onChange={(v) => handleChange('hero_image_url', v)}
-            maxSizeMB={8}
-          />
-        </div>
+         <div className="space-y-4">
+           <div>
+             <h3 className="text-sm font-semibold mb-3">Team Logo</h3>
+             {formData.logo_url && (
+               <div className="mb-3 flex justify-center bg-gray-50 rounded-lg p-4">
+                 <img src={formData.logo_url} alt="Team logo" className="h-24 object-contain" />
+               </div>
+             )}
+             <MediaUploader
+               label="Upload Team Logo"
+               hint="Recommended: 400×400px (square) · Max 5MB"
+               value={formData.logo_url}
+               onChange={(v) => handleChange('logo_url', v)}
+               maxSizeMB={5}
+             />
+           </div>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <MediaUploader
+             label="Hero / Banner Image"
+             hint="Recommended: 1920×600px (wide) · Max 8MB"
+             value={formData.hero_image_url}
+             onChange={(v) => handleChange('hero_image_url', v)}
+             maxSizeMB={8}
+           />
+         </div>
 
         <MediaUploader
           label="Gallery"
