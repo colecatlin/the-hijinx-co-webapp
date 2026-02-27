@@ -78,29 +78,27 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
        primary_number: '',
        primary_discipline: '',
        featured: false,
+       career_status: '',
      });
      setHeadshotUrl('');
-   } else if (driver && driver.length > 0) {
-     const driverData = driver[0];
-     if (driverData) {
-       setFormData({
-         first_name: driverData.first_name || '',
-         last_name: driverData.last_name || '',
-         date_of_birth: driverData.date_of_birth || '',
-         contact_email: driverData.contact_email || '',
-         represented_by: driverData.represented_by || '',
-         hometown_city: driverData.hometown_city || '',
-         hometown_state: driverData.hometown_state || '',
-         hometown_country: driverData.hometown_country || 'USA',
-         racing_base_city: driverData.racing_base_city || '',
-         racing_base_state: driverData.racing_base_state || '',
-         racing_base_country: driverData.racing_base_country || '',
-         primary_number: driverData.primary_number || '',
-         primary_discipline: driverData.primary_discipline || '',
-         career_status: driverData.career_status || '',
-         featured: driverData.featured || false,
-         });
-     }
+   } else if (driver) {
+     setFormData({
+       first_name: driver.first_name || '',
+       last_name: driver.last_name || '',
+       date_of_birth: driver.date_of_birth || '',
+       contact_email: driver.contact_email || '',
+       represented_by: driver.represented_by || '',
+       hometown_city: driver.hometown_city || '',
+       hometown_state: driver.hometown_state || '',
+       hometown_country: driver.hometown_country || 'USA',
+       racing_base_city: driver.racing_base_city || '',
+       racing_base_state: driver.racing_base_state || '',
+       racing_base_country: driver.racing_base_country || '',
+       primary_number: driver.primary_number || '',
+       primary_discipline: driver.primary_discipline || '',
+       career_status: driver.career_status || '',
+       featured: driver.featured || false,
+     });
    }
   }, [driver, driverId]);
 
