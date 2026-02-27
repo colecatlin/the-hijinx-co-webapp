@@ -184,7 +184,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           </div>
 
           {/* Overview Details */}
-          <div className="space-y-3 flex-1">
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2">
             {driver.date_of_birth && (
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age</div>
