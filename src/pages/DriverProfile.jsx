@@ -332,16 +332,27 @@ export default function DriverProfile() {
                       </div>
                     )}
                     {/* Primary class competition level */}
-                    {driver.primary_class_id && (() => {
-                      const primaryClass = allClasses.find(c => c.id === driver.primary_class_id);
-                      if (!primaryClass) return null;
+                    {(() => {
+                      // Prefer driver.primary_class_id, fall back to active program's class
+                      const activeProgram = programs.find(p => p.status === 'active') || programs[0];
+                      const primaryClass = (driver.primary_class_id
+                        ? allClasses.find(c => c.id === driver.primary_class_id)
+                        : null) || (activeProgram?.series_class_id
+                        ? allClasses.find(c => c.id === activeProgram.series_class_id)
+                        : null);
+                      const className = primaryClass?.class_name || activeProgram?.class_name;
+                      const isRookie = activeProgram?.is_rookie;
+                      if (!className && !isRookie) return null;
                       return (
                         <div className="mt-3">
-                          <div className="text-sm text-gray-600 mb-1">Primary Class</div>
+                          <div className="text-sm text-gray-600 mb-1">Class</div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm font-semibold text-[#232323]">{primaryClass.class_name}</span>
-                            {primaryClass.competition_level && <CompetitionLevelBadge level={primaryClass.competition_level} size="sm" />}
-                            {primaryClass.geographic_scope && <GeographicScopeTag scope={primaryClass.geographic_scope} size="sm" />}
+                            {className && <span className="text-sm font-semibold text-[#232323]">{className}</span>}
+                            {isRookie && (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                            )}
+                            {primaryClass?.competition_level && <CompetitionLevelBadge level={primaryClass.competition_level} size="sm" />}
+                            {primaryClass?.geographic_scope && <GeographicScopeTag scope={primaryClass.geographic_scope} size="sm" />}
                           </div>
                         </div>
                       );
