@@ -22,6 +22,18 @@ export default function ManageCSVImportExport() {
   const [status, setStatus] = useState(null);
   const [file, setFile] = useState(null);
 
+  const downloadFile = (content, filename) => {
+    const blob = new Blob([content], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  };
+
   const handleExport = async () => {
     setLoading(true);
     setStatus(null);
@@ -32,18 +44,28 @@ export default function ManageCSVImportExport() {
         entityType: selectedEntity
       });
 
-      // Create blob and download
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${selectedEntity}_export.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-
+      downloadFile(response.data, `${selectedEntity}_export.csv`);
       setStatus({ type: 'success', message: `Exported ${selectedEntity} data successfully` });
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const response = await base44.functions.invoke('csvEntityManager', {
+        action: 'export',
+        entityType: selectedEntity,
+        templateOnly: true
+      });
+
+      downloadFile(response.data, `${selectedEntity}_template.csv`);
+      setStatus({ type: 'success', message: `Downloaded ${selectedEntity} template successfully` });
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
     } finally {
