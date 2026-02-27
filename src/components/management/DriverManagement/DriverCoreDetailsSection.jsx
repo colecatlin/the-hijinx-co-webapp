@@ -160,7 +160,24 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
       toast.error('First and last name are required');
       return;
     }
-    updateMutation.mutate(formData);
+    const saveData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      date_of_birth: formData.date_of_birth,
+      contact_email: formData.contact_email,
+      hometown_city: formData.hometown_city,
+      hometown_state: formData.hometown_state,
+      hometown_country: formData.hometown_country,
+      racing_base_city: formData.racing_base_city,
+      racing_base_state: formData.racing_base_state,
+      racing_base_country: formData.racing_base_country,
+      primary_number: formData.primary_number,
+      primary_discipline: formData.primary_discipline,
+      career_status: formData.career_status,
+      featured: formData.featured,
+      represented_by: formData.represented_by,
+    };
+    updateMutation.mutate(saveData);
   };
 
 
