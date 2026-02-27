@@ -391,7 +391,16 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
           onSave={handleCropSave}
           aspectRatio={3/4}
         />
-      </CardContent>
-    </Card>
-  );
-}
+        </CardContent>
+        </Card>
+        );
+        }
+
+        export function DriverCoreDetailsSectionWithManagers({ driver, driverId }) {
+        return (
+        <div className="space-y-6">
+        <DriverCoreDetailsSection driver={driver} driverId={driverId} />
+        <DriverManagersSection driverId={driver.id} driver={driver} />
+        </div>
+        );
+        }
