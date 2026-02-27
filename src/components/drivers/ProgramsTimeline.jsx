@@ -49,7 +49,14 @@ function ProgramCard({ program, isActive }) {
             {program.car_number && (
               <span className="font-semibold text-[#232323]">#{program.car_number}</span>
             )}
-            {program.class_name && <span>{program.class_name}</span>}
+            {program.class_name && (
+              <span className="flex items-center gap-1">
+                {program.class_name}
+                {program.is_rookie && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                )}
+              </span>
+            )}
             {program.team_name && <span>{program.team_name}</span>}
             {dateRange && <span className="text-xs">{dateRange}</span>}
             {program.track_name && <span className="text-xs">{program.track_name}</span>}
