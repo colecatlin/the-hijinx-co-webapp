@@ -214,6 +214,23 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                 </div>
               </div>
             )}
+            {driver.primary_discipline && (
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Primary Discipline</div>
+                <div className="text-sm font-bold text-[#232323]">{driver.primary_discipline}</div>
+              </div>
+            )}
+            {programs.length > 0 && (() => {
+              const secondaryDisciplines = getSecondaryDisciplines(programs, allSeries, driver.primary_discipline);
+              return secondaryDisciplines.length > 0 ? (
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Also Races</div>
+                  <div className="text-sm font-bold text-[#232323]">
+                    {secondaryDisciplines.join(', ')}
+                  </div>
+                </div>
+              ) : null;
+            })()}
             {programs.length > 0 && (() => {
               const activePrograms = programs.filter(p => p.status?.toLowerCase() === 'active');
               const displayPrograms = activePrograms.length > 0 ? activePrograms : programs;
