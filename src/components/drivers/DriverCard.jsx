@@ -6,6 +6,7 @@ import { buildProfileUrl } from '@/components/utils/routingContract';
 import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getSecondaryDisciplines } from '@/components/utils/disciplineUtils';
 
 // Series priority order (lower rank = higher tier)
 const SERIES_PRIORITY = {
