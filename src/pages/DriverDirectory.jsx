@@ -300,10 +300,14 @@ export default function DriverDirectory() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedDrivers.map(driver => {
               const driverPrograms = programsByDriver[driver.id] || [];
-              const primaryProgram = driverPrograms.find(p => p.primary) || driverPrograms[0];
+              const activePrograms = driverPrograms.filter(p => p.status === 'active');
+              const primaryProgram = activePrograms.find(p => p.primary) || activePrograms[0] || driverPrograms[0];
               const team = primaryProgram?.team_id ? allTeams.find(t => t.id === primaryProgram.team_id) : null;
               const media = allMedia.find(m => m.driver_id === driver.id);
               const isSelected = selectedDrivers.includes(driver.id);
+              const className = primaryProgram?.series_class_id
+                ? allClasses.find(c => c.id === primaryProgram.series_class_id)?.class_name
+                : null;
               
               return (
                 <div key={driver.id} className="relative">
@@ -329,6 +333,7 @@ export default function DriverDirectory() {
                     allSeries={allSeries}
                     team={team}
                     media={media}
+                    className={className}
                   />
                 </div>
               );
