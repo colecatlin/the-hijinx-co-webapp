@@ -125,7 +125,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
           {sortedDrivers.length > 0 && (
             <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
               <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
-              <div className="space-y-0.5 overflow-y-auto min-h-0 flex-1">
+              <div className="space-y-0.5">
                 {sortedDrivers.map((driver, idx) => (
                   <div key={idx} className="text-sm text-[#232323] font-semibold">
                     {driver.first_name} {driver.last_name}
