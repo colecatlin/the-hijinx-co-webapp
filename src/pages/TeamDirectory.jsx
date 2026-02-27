@@ -160,9 +160,13 @@ export default function TeamDirectory() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTeams.map(team => {
                const programs = allPrograms.filter(p => p.team_id === team.id);
-               const driverIds = new Set(programs.map(p => p.driver_id).filter(Boolean));
-               const drivers = allDrivers.filter(d => driverIds.has(d.id));
-               const performance = allPerformance.find(p => p.team_id === team.id);
+               const driverIdFromPrograms = new Set(programs.map(p => p.driver_id).filter(Boolean));
+               const driversFromPrograms = allDrivers.filter(d => driverIdFromPrograms.has(d.id));
+               const driversWithTeamId = allDrivers.filter(d => d.team_id === team.id);
+               const allTeamDrivers = [...new Map([
+                 ...driversFromPrograms.map(d => [d.id, d]),
+                 ...driversWithTeamId.map(d => [d.id, d])
+               ].map(([id, driver]) => [id, driver])).values()];
                const media = allMedia.find(m => m.team_id === team.id);
 
                return (
@@ -170,7 +174,7 @@ export default function TeamDirectory() {
                    key={team.id}
                    team={team}
                    programs={programs}
-                   drivers={drivers}
+                   drivers={allTeamDrivers}
                    media={media}
                  />
                );
