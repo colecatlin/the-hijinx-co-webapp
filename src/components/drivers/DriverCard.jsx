@@ -5,6 +5,7 @@ import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 import { createPageUrl } from '@/components/utils';
 import { MapPin } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Series priority order (lower rank = higher tier)
 const SERIES_PRIORITY = {
