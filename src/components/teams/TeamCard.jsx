@@ -27,7 +27,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
 
   return (
     <div 
-      className="relative w-full aspect-square cursor-pointer"
+      className="relative h-[480px] cursor-pointer"
       style={{ perspective: '1000px' }}
       onClick={(e) => {
         if (!e.target.closest('button') && !e.target.closest('a')) {
@@ -53,7 +53,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
                 <img 
                   src={media?.logo_url || team.logo_url} 
                   alt={team.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
               ) : (
