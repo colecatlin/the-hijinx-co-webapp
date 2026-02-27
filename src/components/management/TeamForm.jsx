@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
+import { generateSlug, validateSlug } from '@/components/utils/routingContract';
 
 export default function TeamForm({ team, onClose }) {
   const [formData, setFormData] = useState(team || {
