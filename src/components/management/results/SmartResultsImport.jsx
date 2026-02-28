@@ -199,7 +199,7 @@ export default function SmartResultsImport({ onDone }) {
 
         {success && result?.skipped > 0 && (
           <p className="text-sm text-amber-600 text-center">
-            {result.skipped} row(s) skipped (missing driver name or event date)
+            {result.skipped} row(s) not added — duplicates already exist in the database
           </p>
         )}
 
