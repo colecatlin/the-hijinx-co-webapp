@@ -32,6 +32,7 @@ export default function Management() {
       items: [
         { name: 'RaceControl Events', page: 'ManageRaceControlEvents', icon: Layers, description: 'Manage RaceControl events, entries, and sessions' },
         { name: 'Event Builder', page: 'ManageRaceControlEventBuilder', icon: Calendar, description: 'Create and configure individual events' },
+        { name: 'Entries', page: 'ManageRaceControlEntries', icon: Users, description: 'Manage race entries and registrations' },
       ]
     },
     {
