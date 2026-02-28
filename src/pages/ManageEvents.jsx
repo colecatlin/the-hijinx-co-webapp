@@ -24,6 +24,7 @@ export default function ManageEvents() {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [sortBy, setSortBy] = useState('date_desc');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedEvents, setSelectedEvents] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
@@ -37,6 +38,20 @@ export default function ManageEvents() {
       await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: [id], recordNames: [event?.name] });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids, selectedItems) => {
+      for (const id of ids) {
+        await base44.entities.Event.delete(id);
+      }
+      const names = selectedItems?.map(e => e.name) || [];
+      await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: ids, recordNames: names });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      setSelectedEvents([]);
+    },
   });
 
   const { data: tracks = [] } = useQuery({
@@ -214,6 +229,21 @@ export default function ManageEvents() {
               <SelectItem value="name_desc">Name (Z–A)</SelectItem>
             </SelectContent>
           </Select>
+          {selectedEvents.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (window.confirm(`Delete ${selectedEvents.length} selected event(s)?`)) {
+                  const selectedItems = filteredEvents.filter(e => selectedEvents.includes(e.id));
+                  bulkDeleteMutation.mutate(selectedEvents, selectedItems);
+                }
+              }}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedEvents.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -223,6 +253,18 @@ export default function ManageEvents() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedEvents(filteredEvents.map(e => e.id));
+                        } else {
+                          setSelectedEvents([]);
+                        }
+                      }}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
@@ -233,6 +275,18 @@ export default function ManageEvents() {
               <tbody className="divide-y">
                 {filteredEvents.map(event => (
                   <tr key={event.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedEvents.includes(event.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedEvents(prev => [...prev, event.id]);
+                          } else {
+                            setSelectedEvents(prev => prev.filter(id => id !== event.id));
+                          }
+                        }}
+                      />
+                    </td>
                     <td className="px-6 py-4 font-medium">{event.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{event.series}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
