@@ -282,7 +282,15 @@ Deno.serve(async (req) => {
       };
       const mappedSession = sessionTypeMap[normalize(sessionType)] || sessionType || 'Final';
 
-      await base44.asServiceRole.entities.Results.create({
+      // Skip if result already exists for this driver+event+session
+      const duplicate = existingResults.find(r =>
+        r.driver_id === driverId &&
+        r.event_id === eventId &&
+        (r.session_type || 'Final') === mappedSession
+      );
+      if (duplicate) { skipped++; continue; }
+
+      const newResult = await base44.asServiceRole.entities.Results.create({
         driver_id: driverId,
         event_id: eventId,
         program_id: programId || '',
@@ -296,6 +304,7 @@ Deno.serve(async (req) => {
         best_lap_time: bestLap ? (parseFloat(bestLap) || undefined) : undefined,
         notes: notes || undefined,
       });
+      existingResults.push(newResult);
       created.results++;
     }
 
