@@ -186,6 +186,12 @@ export default function ManageResults() {
               <tbody className="divide-y">
                 {filteredResults.map(result => (
                   <tr key={result.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <Checkbox
+                        checked={selectedIds.has(result.id)}
+                        onChange={() => toggleSelect(result.id)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-bold">{result.position || '—'}</td>
                     <td className="px-4 py-3 font-medium text-sm">{getDriverName(result.driver_id)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 max-w-[160px] truncate">{getEventName(result.event_id)}</td>
