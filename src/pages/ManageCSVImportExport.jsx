@@ -40,6 +40,7 @@ export default function ManageCSVImportExport() {
     try {
       await base44.functions.invoke('undoImport', { importLogId: lastImport.id });
       setStatus({ type: 'success', message: 'Import rolled back successfully' });
+      queryClient.invalidateQueries({ queryKey: ['importLogs'] });
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
     } finally {
