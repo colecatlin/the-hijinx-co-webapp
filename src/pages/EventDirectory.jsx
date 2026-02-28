@@ -132,8 +132,32 @@ export default function EventDirectory() {
     return null;
   };
 
+  // Detect duplicate event names across years
+  const nameCounts = useMemo(() => {
+    const counts = {};
+    for (const e of completedEvents) {
+      if (e.name) counts[e.name] = (counts[e.name] || 0) + 1;
+    }
+    return counts;
+  }, [completedEvents]);
+
+  const getDisplayName = (event) => {
+    if (nameCounts[event.name] > 1 && event.season) {
+      return `${event.season} ${event.name}`;
+    }
+    if (nameCounts[event.name] > 1 && event.event_date) {
+      return `${new Date(event.event_date).getFullYear()} ${event.name}`;
+    }
+    return event.name;
+  };
+
   const EventResultCard = ({ event }) => {
     const podium = podiumByEvent[event.id] || [];
+    const sessionCount = sessionCountByEvent[event.id] || 0;
+    const isMultiDay = event.end_date && event.end_date !== event.event_date;
+    const dayCount = isMultiDay
+      ? differenceInCalendarDays(new Date(event.end_date), new Date(event.event_date)) + 1
+      : 1;
 
     return (
       <Link
@@ -141,16 +165,25 @@ export default function EventDirectory() {
         className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
       >
         <div className="flex items-start justify-between mb-4">
-          <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
-          <span className="shrink-0 ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
-            Completed
-          </span>
+          <h3 className="font-bold text-lg leading-tight">{getDisplayName(event)}</h3>
+          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+            <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">Completed</span>
+            {sessionCount > 1 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-700 font-medium">
+                <Layers className="w-3 h-3" />
+                {dayCount > 1 ? `${dayCount}-Day` : `${sessionCount} Sessions`}
+              </span>
+            )}
+          </div>
         </div>
         <div className="space-y-3">
           <div className="space-y-1 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+              {isMultiDay && event.end_date && (
+                <span className="text-gray-400">– {format(new Date(event.end_date), 'MMM d')}</span>
+              )}
             </div>
             {event.series && (
               <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
@@ -158,7 +191,7 @@ export default function EventDirectory() {
           </div>
           {podium.length > 0 && (
             <div className="pt-3 border-t border-gray-100">
-              <div className="text-xs text-gray-500 font-medium mb-2">Top Finishers</div>
+              <div className="text-xs text-gray-500 font-medium mb-2">Top Finishers (Final)</div>
               <div className="space-y-1.5">
                 {podium.map((p) => (
                   <div key={p.position} className="flex items-center gap-2">
