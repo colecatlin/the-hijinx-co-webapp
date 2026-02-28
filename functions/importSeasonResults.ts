@@ -125,13 +125,37 @@ Deno.serve(async (req) => {
       return cls.id;
     }
 
+    // Track earliest/latest dates per event key for end_date updates
+    const eventDateRange = {};
+
     async function getOrCreateEvent(eventName, eventDate, trackId, seriesId, season) {
-      const key = `${normalize(eventName)}::${eventDate}`;
+      // Key by name+season (not date) so multi-day events with same name are one event
+      const key = `${normalize(eventName)}::${normalize(season || '')}`;
+      
+      // Track date range for this event
+      if (!eventDateRange[key]) eventDateRange[key] = { min: eventDate, max: eventDate };
+      else {
+        if (eventDate < eventDateRange[key].min) eventDateRange[key].min = eventDate;
+        if (eventDate > eventDateRange[key].max) eventDateRange[key].max = eventDate;
+      }
+
       if (eventCache[key]) return eventCache[key];
+
+      // Match existing by name+season
       const existing = existingEvents.find(e =>
-        normalize(e.name) === normalize(eventName) && e.event_date === eventDate
+        normalize(e.name) === normalize(eventName) &&
+        (e.season === String(season) || (!e.season && !season))
       );
-      if (existing) { eventCache[key] = existing.id; return existing.id; }
+      if (existing) {
+        eventCache[key] = existing.id;
+        // Update end_date if this event spans multiple days
+        if (eventDate > (existing.end_date || existing.event_date)) {
+          await base44.asServiceRole.entities.Event.update(existing.id, { end_date: eventDate });
+          existing.end_date = eventDate;
+        }
+        return existing.id;
+      }
+
       if (!eventName || !eventDate) return null;
       const event = await base44.asServiceRole.entities.Event.create({
         name: eventName,
