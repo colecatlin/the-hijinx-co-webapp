@@ -228,17 +228,18 @@ export default function ManageTracks() {
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(track)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          {deleteMutation.isPending ? (
-                            <div className="text-red-600"><BurnoutSpinner /></div>
-                          ) : (
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          )}
-                        </Button>
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleDelete(track)}
+                           disabled={deleteMutation.isPending}
+                           className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
+                         >
+                           {deleteMutation.isPending ? (
+                             <div className="text-gray-400"><BurnoutSpinner /></div>
+                           ) : (
+                             <Trash2 className="w-4 h-4 text-red-600" />
+                           )}
+                         </Button>
                       </div>
                     </td>
                   </tr>

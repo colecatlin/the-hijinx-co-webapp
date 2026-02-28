@@ -331,6 +331,7 @@ export default function ManageTeams() {
               variant="destructive" 
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
+              className={bulkDeleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {bulkDeleteMutation.isPending ? (
                 <BurnoutSpinner />
@@ -418,9 +419,10 @@ export default function ManageTeams() {
                            size="sm"
                            onClick={() => handleDelete(team)}
                            disabled={deleteMutation.isPending}
+                           className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
                          >
                            {deleteMutation.isPending ? (
-                             <div className="text-red-600"><BurnoutSpinner /></div>
+                             <div className="text-gray-400"><BurnoutSpinner /></div>
                            ) : (
                              <Trash2 className="w-4 h-4 text-red-600" />
                            )}

@@ -288,6 +288,7 @@ export default function ManageSeries() {
               variant="destructive" 
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
+              className={bulkDeleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {bulkDeleteMutation.isPending ? (
                 <BurnoutSpinner />
@@ -360,6 +361,7 @@ export default function ManageSeries() {
                           variant="ghost"
                           onClick={() => handleDelete(s.id)}
                           disabled={deleteSeriesMutation.isPending}
+                          className={deleteSeriesMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
                         >
                           {deleteSeriesMutation.isPending ? (
                             <BurnoutSpinner />
