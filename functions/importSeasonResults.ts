@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
     const programCache = {};
 
     const log = [];
+    const createdIds = { tracks: [], series: [], classes: [], events: [], drivers: [], programs: [], results: [] };
     let created = { tracks: 0, series: 0, classes: 0, events: 0, drivers: 0, programs: 0, results: 0 };
     let skipped_invalid = 0;
     let skipped_duplicates = 0;
