@@ -60,7 +60,7 @@ export default function EventResults() {
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
-        <Link to={createPageUrl('ResultsHome')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors">
+        <Link to={createPageUrl('EventDirectory')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors">
           <ArrowLeft className="w-3 h-3" /> Results
         </Link>
 
