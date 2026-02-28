@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Upload, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SmartCSVImport from '@/components/management/SmartCSVImport';
 
 const ENTITY_TYPES = [
