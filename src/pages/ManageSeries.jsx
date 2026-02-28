@@ -47,15 +47,20 @@ export default function ManageSeries() {
   });
 
   const deleteSeriesMutation = useMutation({
-    mutationFn: (id) => base44.entities.Series.delete(id),
+    mutationFn: async (id, series) => {
+      await base44.entities.Series.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Series', recordIds: [id], recordNames: [series?.name] });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['series'] });
     },
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids) => {
+    mutationFn: async (ids, selectedItems) => {
       await Promise.all(ids.map(id => base44.entities.Series.delete(id)));
+      const names = selectedItems?.map(s => s.name) || [];
+      await base44.functions.invoke('logDeletion', { entityName: 'Series', recordIds: ids, recordNames: names });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['series'] });
@@ -69,7 +74,8 @@ export default function ManageSeries() {
 
   const handleDelete = (id) => {
     if (confirm('Delete this series?')) {
-      deleteSeriesMutation.mutate(id);
+      const ser = series.find(s => s.id === id);
+      deleteSeriesMutation.mutate(id, ser);
     }
   };
 

@@ -71,7 +71,10 @@ export default function ManageTeams() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Team.delete(id),
+    mutationFn: async (id, team) => {
+      await base44.entities.Team.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Team', recordIds: [id], recordNames: [team?.name] });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
@@ -88,7 +91,7 @@ export default function ManageTeams() {
 
   const handleDelete = async (team) => {
     if (window.confirm(`Delete ${team.name}?`)) {
-      deleteMutation.mutate(team.id);
+      deleteMutation.mutate(team.id, team);
     }
   };
 

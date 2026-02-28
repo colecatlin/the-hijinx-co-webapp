@@ -41,6 +41,7 @@ export default function ManageResults() {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       await base44.entities.Results.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Results', recordIds: [id] });
       await new Promise(r => setTimeout(r, 100));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
@@ -50,8 +51,9 @@ export default function ManageResults() {
     mutationFn: async (ids) => {
       for (const id of ids) {
         await base44.entities.Results.delete(id);
-        await new Promise(r => setTimeout(r, 100));
       }
+      await base44.functions.invoke('logDeletion', { entityName: 'Results', recordIds: ids });
+      await new Promise(r => setTimeout(r, 100));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
   });

@@ -25,7 +25,10 @@ export default function ManageTracks() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Track.delete(id),
+    mutationFn: async (id, track) => {
+      await base44.entities.Track.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: [id], recordNames: [track?.name] });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracks'] }),
   });
 
@@ -35,7 +38,7 @@ export default function ManageTracks() {
 
   const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
-      deleteMutation.mutate(track.id);
+      deleteMutation.mutate(track.id, track);
     }
   };
 
