@@ -203,6 +203,7 @@ Deno.serve(async (req) => {
       });
       existingDrivers.push(driver);
       driverCache[key] = driver.id;
+      createdIds.drivers.push(driver.id);
       created.drivers++;
       log.push(`Created driver: ${firstName} ${lastName}`);
       return driver.id;
