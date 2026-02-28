@@ -184,14 +184,8 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
               <>
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                    if (window.confirm(`Delete ${duplicates.reduce((sum, g) => sum + (g.length - 1), 0)} duplicate(s) across all groups?`)) {
-                      duplicates.forEach(group => {
-                        group.slice(1).forEach(driver => deleteMutation.mutate(driver.id));
-                      });
-                    }
-                  }}
-                  disabled={deleteMutation.isPending}
+                  onClick={handleDeleteAll}
+                  disabled={bulkDeleteMutation.isPending}
                   className="text-xs"
                 >
                   <Trash2 className="w-3 h-3 mr-1" />
