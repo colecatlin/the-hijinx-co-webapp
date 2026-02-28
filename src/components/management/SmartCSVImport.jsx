@@ -127,6 +127,11 @@ export default function SmartCSVImport() {
     setDetection(null);
     setOverrideEntity(null);
     setResult(null);
+    setCsvHeaders([]);
+    setCsvRows([]);
+    setValidationErrors([]);
+    setColumnMapping({});
+    setShowMapping(false);
   };
 
   if (step === 'upload') {
