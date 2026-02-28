@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         {
           entity: entityName,
           ids: recordIds,
-          names: recordNames || []
+          names: (recordNames || []).filter(name => name !== null && name !== undefined)
         }
       ],
       initiated_by: user.email,
