@@ -160,7 +160,28 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
           ))}
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-between items-center gap-2">
+          <div className="flex gap-2">
+            {duplicates.length > 0 && (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (window.confirm(`Delete ${duplicates.reduce((sum, g) => sum + (g.length - 1), 0)} duplicate(s) across all groups?`)) {
+                      duplicates.forEach(group => {
+                        group.slice(1).forEach(driver => deleteMutation.mutate(driver.id));
+                      });
+                    }
+                  }}
+                  disabled={deleteMutation.isPending}
+                  className="text-xs"
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  Delete All Duplicates
+                </Button>
+              </>
+            )}
+          </div>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
