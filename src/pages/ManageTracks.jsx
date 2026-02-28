@@ -28,19 +28,18 @@ export default function ManageTracks() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id, track) => {
+    mutationFn: async ({ id, name }) => {
       await base44.entities.Track.delete(id);
-      await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: [id], recordNames: [track?.name] });
+      await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: [id], recordNames: [name] });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracks'] }),
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids, selectedItems) => {
+    mutationFn: async ({ ids, names }) => {
       for (const id of ids) {
         await base44.entities.Track.delete(id);
       }
-      const names = selectedItems?.map(t => t.name) || [];
       await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: ids, recordNames: names });
     },
     onSuccess: () => {
@@ -55,7 +54,7 @@ export default function ManageTracks() {
 
   const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
-      deleteMutation.mutate(track.id, track);
+      deleteMutation.mutate({ id: track.id, name: track.name });
     }
   };
 
@@ -76,7 +75,7 @@ export default function ManageTracks() {
   const handleBulkDelete = () => {
     if (window.confirm(`Delete ${selectedTracks.length} selected track(s)?`)) {
       const selectedItems = filteredTracks.filter(t => selectedTracks.includes(t.id));
-      bulkDeleteMutation.mutate(selectedTracks, selectedItems);
+      bulkDeleteMutation.mutate({ ids: selectedTracks, names: selectedItems.map(t => t.name) });
     }
   };
 
