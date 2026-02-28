@@ -4,6 +4,7 @@ import PageShell from '@/components/shared/PageShell';
 import StatsBar from '@/components/management/StatsBar';
 import ManagementSidebar from '@/components/management/ManagementSidebar';
 import CommandPalette from '@/components/management/CommandPalette';
+import DataHealthPanel from '@/components/management/DataHealthPanel';
 
 const MANAGEMENT_SECTIONS = [
   {
@@ -82,6 +83,10 @@ export default function Management() {
               </div>
 
               <StatsBar />
+
+              <div className="mt-8">
+                <DataHealthPanel />
+              </div>
             </div>
           </PageShell>
         </div>
