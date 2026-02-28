@@ -238,6 +238,9 @@ export default function ManageEvents() {
                     <td className="px-6 py-4 text-sm text-gray-600">{event.series}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+                      {event.end_date && event.end_date !== event.event_date && (
+                        <span className="text-gray-400"> – {format(new Date(event.end_date), 'MMM d')}</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 text-xs rounded ${
