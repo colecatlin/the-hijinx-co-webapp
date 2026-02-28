@@ -92,7 +92,7 @@ export default function EventResults() {
 
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">{displayName}</h1>
         <div className="flex flex-wrap items-center gap-4 mt-3 mb-8">
-          {event.series && <span className="font-mono text-xs text-gray-400">{event.series}</span>}
+          {event.series_name && <span className="font-mono text-xs text-gray-400">{event.series_name}</span>}
           {event.location_note && (
             <span className="flex items-center gap-1 text-xs text-gray-400"><MapPin className="w-3 h-3" /> {event.location_note}</span>
           )}

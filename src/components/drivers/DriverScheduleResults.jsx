@@ -38,7 +38,7 @@ export default function DriverScheduleResults({ driverId }) {
         const allUpcomingEvents = await base44.entities.Event.list('-event_date', 1000);
         const futureDate = new Date();
         const seriesEvents = allUpcomingEvents.filter(e => 
-          seriesNames.includes(e.series) && new Date(e.event_date) >= futureDate
+          seriesNames.includes(e.series_name) && new Date(e.event_date) >= futureDate
         );
         allEvents.push(...seriesEvents);
       }
@@ -128,8 +128,8 @@ export default function DriverScheduleResults({ driverId }) {
                   <div>
                     <div className="font-bold text-[#232323]">{event.name}</div>
                     <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')}</div>
-                    {event.series && (
-                      <div className="text-xs text-gray-500 mt-1">{event.series}</div>
+                    {event.series_name && (
+                      <div className="text-xs text-gray-500 mt-1">{event.series_name}</div>
                     )}
                   </div>
                 </div>
@@ -156,8 +156,8 @@ export default function DriverScheduleResults({ driverId }) {
                     <Calendar className="w-3.5 h-3.5" />
                     {format(parseISO(mostRecentEvent.event_date), 'MMMM d, yyyy')}
                   </div>
-                  {mostRecentEvent.series && (
-                    <div className="text-sm text-gray-500">{mostRecentEvent.series}</div>
+                  {mostRecentEvent.series_name && (
+                   <div className="text-sm text-gray-500">{mostRecentEvent.series_name}</div>
                   )}
                 </div>
               )}
@@ -171,8 +171,8 @@ export default function DriverScheduleResults({ driverId }) {
                         <div>
                           <div className="font-bold text-[#232323]">{event?.name || 'Event'}</div>
                           <div className="text-xs text-gray-600 mt-0.5">{format(parseISO(event?.event_date || new Date()), 'MMM d, yyyy')}</div>
-                          {(result.series || event?.series) && (
-                            <div className="text-xs text-gray-500 mt-1">{result.series || event?.series}</div>
+                          {(result.series_name || event?.series_name) && (
+                            <div className="text-xs text-gray-500 mt-1">{result.series_name || event?.series_name}</div>
                           )}
                         </div>
                         {result.position && (

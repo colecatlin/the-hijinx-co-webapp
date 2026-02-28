@@ -111,7 +111,7 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
         <tbody>
           {rows.sort((a, b) => (a.position || 999) - (b.position || 999)).map(r => {
             const programLink = getProgramLink(r.program_id);
-            const sName = r.series_id ? getSeriesName(r.series_id) : (r.series || '—');
+            const sName = r.series_id ? getSeriesName(r.series_id) : (r.series_name || '—');
             const cName = r.series_class_id ? getClassName(r.series_class_id) : (r.class || '—');
             return (
               <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">

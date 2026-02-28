@@ -17,7 +17,7 @@ const RESULT_FIELDS = [
   { key: 'status_text', label: 'Status (Running/DNF/DNS)' },
   { key: 'points', label: 'Points' },
   { key: 'laps_completed', label: 'Laps Completed' },
-  { key: 'best_lap_time', label: 'Best Lap Time' },
+  { key: 'best_lap_time_ms', label: 'Best Lap Time (ms)' },
 ];
 
 function parseCSV(text) {
@@ -96,6 +96,7 @@ export default function ResultsBulkUpload({ onDone }) {
         if (rec.position) rec.position = Number(rec.position) || null;
         if (rec.points) rec.points = Number(rec.points) || null;
         if (rec.laps_completed) rec.laps_completed = Number(rec.laps_completed) || null;
+        if (rec.best_lap_time_ms) rec.best_lap_time_ms = Number(rec.best_lap_time_ms) || null;
         // Match driver by name or bib
         const fn = (rec.driver_first_name || '').toLowerCase().trim();
         const ln = (rec.driver_last_name || '').toLowerCase().trim();
