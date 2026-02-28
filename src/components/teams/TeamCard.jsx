@@ -137,7 +137,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
                   <div className="text-xs font-bold text-[#232323] uppercase tracking-wide text-center mb-1.5">
                     {group.seriesName}
                   </div>
-                  <div className="grid grid-cols-4 gap-1">
+                  <div className="flex flex-wrap justify-start gap-1.5">
                     {group.drivers.slice(0, 8).map((d, dIdx) => {
                       const color = d.primaryColor || '#232323';
                       return (
