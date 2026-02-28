@@ -32,7 +32,10 @@ export default function ManageEvents() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Event.delete(id),
+    mutationFn: async (id, event) => {
+      await base44.entities.Event.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: [id], recordNames: [event?.name] });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
   });
 
@@ -256,7 +259,7 @@ export default function ManageEvents() {
                         size="sm"
                         onClick={() => {
                           if (confirm(`Delete ${event.name}?`)) {
-                            deleteMutation.mutate(event.id);
+                            deleteMutation.mutate(event.id, event);
                           }
                         }}
                       >

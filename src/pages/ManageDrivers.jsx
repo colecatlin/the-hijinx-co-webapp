@@ -113,8 +113,9 @@ export default function ManageDrivers() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async (id, driver) => {
       await base44.entities.Driver.delete(id);
+      await base44.functions.invoke('logDeletion', { entityName: 'Driver', recordIds: [id], recordNames: [driver?.display_name || `${driver?.first_name} ${driver?.last_name}`] });
       await new Promise(r => setTimeout(r, 150));
     },
     onSuccess: () => {
@@ -124,11 +125,13 @@ export default function ManageDrivers() {
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids) => {
+    mutationFn: async (ids, selectedItems) => {
       for (const id of ids) {
         await base44.entities.Driver.delete(id);
         await new Promise(r => setTimeout(r, 100));
       }
+      const names = selectedItems?.map(d => d.display_name || `${d.first_name} ${d.last_name}`) || [];
+      await base44.functions.invoke('logDeletion', { entityName: 'Driver', recordIds: ids, recordNames: names });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
@@ -203,7 +206,8 @@ export default function ManageDrivers() {
 
   const handleBulkDelete = () => {
     if (window.confirm(`Delete ${selectedDrivers.length} selected driver(s)?`)) {
-      bulkDeleteMutation.mutate(selectedDrivers);
+      const selectedItems = drivers.filter(d => selectedDrivers.includes(d.id));
+      bulkDeleteMutation.mutate(selectedDrivers, selectedItems);
     }
   };
 
@@ -213,7 +217,7 @@ export default function ManageDrivers() {
 
   const handleDelete = async (driver) => {
     if (window.confirm(`Delete ${driver.display_name}?`)) {
-      deleteMutation.mutate(driver.id);
+      deleteMutation.mutate(driver.id, driver);
     }
   };
 
