@@ -60,7 +60,10 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids) => {
-      await Promise.all(ids.map(id => base44.entities.Driver.delete(id)));
+      for (const id of ids) {
+        await base44.entities.Driver.delete(id);
+        await new Promise(r => setTimeout(r, 150));
+      }
     },
     onSuccess: (_, ids) => {
       base44.functions.invoke('logOperation', {
