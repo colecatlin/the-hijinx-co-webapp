@@ -41,13 +41,11 @@ Deno.serve(async (req) => {
     const { rows } = parseCSV(csvText);
     if (!rows.length) return Response.json({ error: 'No data rows found' }, { status: 400 });
 
-    // Helper: map a raw row using the column mapping
     function getMapped(row, fieldKey) {
       const col = Object.entries(mapping || {}).find(([, v]) => v === fieldKey)?.[0];
       return col ? (row[col] || '') : '';
     }
 
-    // Load all existing entities upfront
     const [existingTracks, existingSeries, existingSeriesClasses, existingEvents, existingDrivers, existingPrograms, existingResults] = await Promise.all([
       base44.asServiceRole.entities.Track.list(),
       base44.asServiceRole.entities.Series.list(),
@@ -58,7 +56,6 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Results.list('-created_date', 5000),
     ]);
 
-    // Caches to avoid duplicate creates within this run
     const trackCache = {};
     const seriesCache = {};
     const classCache = {};
@@ -68,7 +65,8 @@ Deno.serve(async (req) => {
 
     const log = [];
     let created = { tracks: 0, series: 0, classes: 0, events: 0, drivers: 0, programs: 0, results: 0 };
-    let skipped = 0;
+    let skipped_invalid = 0;
+    let skipped_duplicates = 0;
 
     async function getOrCreateTrack(trackName, city, state, country) {
       const key = normalize(trackName);
@@ -126,37 +124,28 @@ Deno.serve(async (req) => {
       return cls.id;
     }
 
-    // Track earliest/latest dates per event key for end_date updates
     const eventDateRange = {};
 
     async function getOrCreateEvent(eventName, eventDate, trackId, seriesId, season) {
-      // Key by name+season (not date) so multi-day events with same name are one event
       const key = `${normalize(eventName)}::${normalize(season || '')}`;
-      
-      // Track date range for this event
       if (!eventDateRange[key]) eventDateRange[key] = { min: eventDate, max: eventDate };
       else {
         if (eventDate < eventDateRange[key].min) eventDateRange[key].min = eventDate;
         if (eventDate > eventDateRange[key].max) eventDateRange[key].max = eventDate;
       }
-
       if (eventCache[key]) return eventCache[key];
-
-      // Match existing by name+season
       const existing = existingEvents.find(e =>
         normalize(e.name) === normalize(eventName) &&
         (e.season === String(season) || (!e.season && !season))
       );
       if (existing) {
         eventCache[key] = existing.id;
-        // Update end_date if this event spans multiple days
         if (eventDate > (existing.end_date || existing.event_date)) {
           await base44.asServiceRole.entities.Event.update(existing.id, { end_date: eventDate });
           existing.end_date = eventDate;
         }
         return existing.id;
       }
-
       if (!eventName || !eventDate) return null;
       const event = await base44.asServiceRole.entities.Event.create({
         name: eventName,
@@ -221,12 +210,9 @@ Deno.serve(async (req) => {
       return program.id;
     }
 
-    // Helper: small delay to avoid rate limits on large imports
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-    // Process each row
     for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
-      // Throttle: pause every 10 rows to avoid rate limits
       if (rowIdx > 0 && rowIdx % 10 === 0) await sleep(300);
       const row = rows[rowIdx];
       const trackName    = getMapped(row, 'track_name');
@@ -251,9 +237,9 @@ Deno.serve(async (req) => {
       const notes        = getMapped(row, 'notes');
 
       // Must have at minimum driver name or bib
-      if (!firstName && !lastName && !bibNumber) { skipped++; continue; }
+      if (!firstName && !lastName && !bibNumber) { skipped_invalid++; continue; }
       // Must have event date
-      if (!eventDate) { skipped++; continue; }
+      if (!eventDate) { skipped_invalid++; continue; }
 
       const [trackId, seriesId] = await Promise.all([
         getOrCreateTrack(trackName, trackCity, trackState, trackCountry),
@@ -266,15 +252,13 @@ Deno.serve(async (req) => {
         getOrCreateDriver(firstName, lastName, bibNumber),
       ]);
 
-      if (!driverId || !eventId) { skipped++; continue; }
+      if (!driverId || !eventId) { skipped_invalid++; continue; }
 
       const programId = await getOrCreateProgram(driverId, seriesId, classId, season);
 
-      // Map status
       const statusMap = { 'Running': 'Running', 'Finished': 'Running', 'finished': 'Running', 'DNF': 'DNF', 'DNS': 'DNS', 'DSQ': 'DSQ', 'DNP': 'DNP' };
       const mappedStatus = statusMap[statusText] || (statusText ? 'Running' : undefined);
 
-      // Map session type
       const sessionTypeMap = {
         'practice': 'Practice', 'qualifying': 'Qualifying',
         'heat 1': 'Heat 1', 'heat 2': 'Heat 2', 'heat 3': 'Heat 3', 'heat 4': 'Heat 4',
@@ -288,7 +272,7 @@ Deno.serve(async (req) => {
         r.event_id === eventId &&
         (r.session_type || 'Final') === mappedSession
       );
-      if (duplicate) { skipped++; continue; }
+      if (duplicate) { skipped_duplicates++; continue; }
 
       const newResult = await base44.asServiceRole.entities.Results.create({
         driver_id: driverId,
@@ -311,8 +295,9 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       summary: created,
-      skipped,
-      log: log.slice(0, 50), // cap log output
+      skipped_invalid,
+      skipped_duplicates,
+      log: log.slice(0, 50),
       total_rows: rows.length,
     });
   } catch (error) {
