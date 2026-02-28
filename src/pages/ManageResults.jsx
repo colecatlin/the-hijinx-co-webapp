@@ -55,9 +55,28 @@ export default function ManageResults() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
   });
 
-  const handleDeleteAll = () => {
-    if (window.confirm(`Are you sure? This will permanently delete all ${results.length} results.`)) {
-      bulkDeleteMutation.mutate(results.map(r => r.id));
+  const handleDeleteSelected = () => {
+    if (window.confirm(`Are you sure? This will permanently delete ${selectedIds.size} results.`)) {
+      bulkDeleteMutation.mutate(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const toggleSelect = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredResults.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredResults.map(r => r.id)));
     }
   };
 
