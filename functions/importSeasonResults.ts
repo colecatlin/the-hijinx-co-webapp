@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
       const programId = await getOrCreateProgram(driverId, seriesId, classId, season);
 
       // Map status
-      const statusMap = { 'Running': 'Running', 'DNF': 'DNF', 'DNS': 'DNS', 'DSQ': 'DSQ', 'DNP': 'DNP' };
+      const statusMap = { 'Running': 'Running', 'Finished': 'Running', 'finished': 'Running', 'DNF': 'DNF', 'DNS': 'DNS', 'DSQ': 'DSQ', 'DNP': 'DNP' };
       const mappedStatus = statusMap[statusText] || (statusText ? 'Running' : undefined);
 
       // Map session type
