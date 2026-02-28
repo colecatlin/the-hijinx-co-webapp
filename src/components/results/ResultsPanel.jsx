@@ -78,8 +78,80 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
     ? results.filter(r => r.series_class_id === classFilter)
     : results;
 
-  const finals = filteredResults.filter(r => r.session_type === 'Final' || !r.session_type);
-  const allSessions = filteredResults;
+  // Group by session type for event view
+  const SESSION_ORDER = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
+  const sessionTypes = eventId
+    ? [...new Set(filteredResults.map(r => r.session_type || 'Final'))].sort(
+        (a, b) => SESSION_ORDER.indexOf(a) - SESSION_ORDER.indexOf(b)
+      )
+    : [];
+  const hasMultipleSessions = sessionTypes.length > 1;
+  const [activeSession, setActiveSession] = React.useState(null);
+  const currentSession = activeSession || sessionTypes[sessionTypes.length - 1] || null;
+
+  const displayedResults = eventId && hasMultipleSessions
+    ? filteredResults.filter(r => (r.session_type || 'Final') === currentSession)
+    : filteredResults;
+
+  const ResultsTable = ({ rows }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-gray-200">
+            <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pos</th>
+            {eventId && <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>}
+            {driverId && <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Event</th>}
+            {!hasMultipleSessions && <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Session</th>}
+            <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>
+            <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class / Program</th>
+            <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Points</th>
+            <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.sort((a, b) => (a.position || 999) - (b.position || 999)).map(r => {
+            const programLink = getProgramLink(r.program_id);
+            const sName = r.series_id ? getSeriesName(r.series_id) : (r.series || '—');
+            const cName = r.series_class_id ? getClassName(r.series_class_id) : (r.class || '—');
+            return (
+              <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <td className="py-2 px-3">
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${positionBadgeColor(r.position)}`}>
+                    {r.position ? `P${r.position}` : '—'}
+                  </span>
+                </td>
+                {eventId && (
+                  <td className="py-2 px-3 font-medium">
+                    {getDriverSlug(r.driver_id) ? (
+                      <Link to={`${createPageUrl('DriverProfile')}?slug=${getDriverSlug(r.driver_id)}`} className="hover:underline">
+                        {getDriverName(r.driver_id)}
+                      </Link>
+                    ) : getDriverName(r.driver_id)}
+                  </td>
+                )}
+                {driverId && (
+                  <td className="py-2 px-3 font-medium">
+                    <Link to={`${createPageUrl('EventProfile')}?id=${r.event_id}`} className="hover:underline text-[#232323]">
+                      {getEventName(r.event_id)}
+                    </Link>
+                  </td>
+                )}
+                {!hasMultipleSessions && <td className="py-2 px-3 text-gray-600 text-xs">{r.session_type || 'Final'}</td>}
+                <td className="py-2 px-3 text-gray-600 text-xs">{sName}</td>
+                <td className="py-2 px-3 text-gray-600 text-xs">
+                  {programLink ? (
+                    <Link to={programLink} className="hover:underline text-[#232323] font-medium">{cName}</Link>
+                  ) : cName}
+                </td>
+                <td className="py-2 px-3 font-bold tabular-nums">{r.points ?? '—'}</td>
+                <td className="py-2 px-3 text-xs text-gray-500">{r.status || 'Running'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <Tabs defaultValue="race-results">
@@ -96,67 +168,32 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
       <TabsContent value="race-results">
         {loadingResults ? (
           <p className="text-sm text-gray-500">Loading results...</p>
-        ) : allSessions.length === 0 ? (
+        ) : filteredResults.length === 0 ? (
           <p className="text-gray-500 text-sm">No race results available.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pos</th>
-                  {eventId && <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>}
-                  {driverId && <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Event</th>}
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Session</th>
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class / Program</th>
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Points</th>
-                  <th className="text-left py-2 px-3 text-[10px] font-mono tracking-wider text-gray-400 uppercase">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allSessions.map(r => {
-                  const programLink = getProgramLink(r.program_id);
-                  const seriesName = r.series_id ? getSeriesName(r.series_id) : (r.series || '—');
-                  const className = r.series_class_id ? getClassName(r.series_class_id) : (r.class || '—');
-                  return (
-                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-2 px-3">
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${positionBadgeColor(r.position)}`}>
-                          {r.position ? `P${r.position}` : '—'}
-                        </span>
-                      </td>
-                      {eventId && (
-                        <td className="py-2 px-3 font-medium">
-                          {getDriverSlug(r.driver_id) ? (
-                            <Link to={`${createPageUrl('DriverProfile')}?slug=${getDriverSlug(r.driver_id)}`} className="hover:underline">
-                              {getDriverName(r.driver_id)}
-                            </Link>
-                          ) : getDriverName(r.driver_id)}
-                        </td>
-                      )}
-                      {driverId && (
-                        <td className="py-2 px-3 font-medium">
-                          <Link to={`${createPageUrl('EventProfile')}?id=${r.event_id}`} className="hover:underline text-[#232323]">
-                            {getEventName(r.event_id)}
-                          </Link>
-                        </td>
-                      )}
-                      <td className="py-2 px-3 text-gray-600 text-xs">{r.session_type || 'Final'}</td>
-                      <td className="py-2 px-3 text-gray-600 text-xs">{seriesName}</td>
-                      <td className="py-2 px-3 text-gray-600 text-xs">
-                        {programLink ? (
-                          <Link to={programLink} className="hover:underline text-[#232323] font-medium">
-                            {className}
-                          </Link>
-                        ) : className}
-                      </td>
-                      <td className="py-2 px-3 font-bold tabular-nums">{r.points ?? '—'}</td>
-                      <td className="py-2 px-3 text-xs text-gray-500">{r.status || 'Running'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div>
+            {/* Session toggle buttons for multi-session events */}
+            {hasMultipleSessions && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {sessionTypes.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setActiveSession(type)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                      currentSession === type
+                        ? 'bg-[#232323] text-white border-[#232323]'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {type}
+                    <span className="ml-1 text-[10px] opacity-60">
+                      ({filteredResults.filter(r => (r.session_type || 'Final') === type).length})
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <ResultsTable rows={displayedResults} />
           </div>
         )}
       </TabsContent>
