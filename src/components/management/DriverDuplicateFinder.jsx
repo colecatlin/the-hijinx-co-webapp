@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onSuccess }) {
   const [duplicates, setDuplicates] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const findDuplicates = () => {
@@ -65,13 +64,10 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
   };
 
   const handleDeleteAll = () => {
-    setShowConfirm(true);
-  };
-
-  const confirmDeleteAll = () => {
     const allDuplicateIds = duplicates.flatMap(group => group.slice(1).map(d => d.id));
-    bulkDeleteMutation.mutate(allDuplicateIds);
-    setShowConfirm(false);
+    if (window.confirm(`Delete ${allDuplicateIds.length} duplicate(s) across all groups?`)) {
+      bulkDeleteMutation.mutate(allDuplicateIds);
+    }
   };
 
   const handleMerge = (keepDriverId, deleteDriverIds) => {
@@ -96,36 +92,14 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
     );
   }
 
-  const totalDuplicates = duplicates.reduce((sum, g) => sum + (g.length - 1), 0);
-
   return (
-    <>
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete All Duplicates?</DialogTitle>
-          </DialogHeader>
-          <p className="text-gray-600 py-4">
-            This will delete {totalDuplicates} duplicate driver{totalDuplicates !== 1 ? 's' : ''} across all groups. This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>
-              No
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteAll} disabled={bulkDeleteMutation.isPending}>
-              Yes, Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Found {duplicates.length} Duplicate Group{duplicates.length !== 1 ? 's' : ''}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            Found {duplicates.length} Duplicate Group{duplicates.length !== 1 ? 's' : ''}
+          </DialogTitle>
+        </DialogHeader>
 
         <div className="space-y-4">
           {duplicates.map((group, groupIdx) => (
@@ -224,8 +198,7 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
             Close
           </Button>
         </div>
-        </DialogContent>
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }
