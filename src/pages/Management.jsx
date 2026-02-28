@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import StatsBar from '@/components/management/StatsBar';
 import ManagementSidebar from '@/components/management/ManagementSidebar';
 import CommandPalette from '@/components/management/CommandPalette';
-import { createPageUrl } from '@/components/utils';
 
 const MANAGEMENT_SECTIONS = [
   {
@@ -84,28 +82,6 @@ export default function Management() {
               </div>
 
               <StatsBar />
-
-              <div className="space-y-8">
-                {MANAGEMENT_SECTIONS.map((section) => (
-                  <div key={section.title}>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
-                      {section.title}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {section.items.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={createPageUrl(item.page)}
-                          className="block p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-900 hover:shadow-md transition-all cursor-pointer"
-                        >
-                          <h3 className="font-bold text-lg mb-1">{item.name}</h3>
-                          <p className="text-sm text-gray-600">{item.description}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </PageShell>
         </div>
