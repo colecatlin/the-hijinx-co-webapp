@@ -119,6 +119,7 @@ import TrackProfile from './pages/TrackProfile';
 import Registration from './pages/Registration';
 import ManageRegistrations from './pages/ManageRegistrations';
 import AdminDashboard from './pages/AdminDashboard';
+import ManageRaceControlEvents from './pages/ManageRaceControlEvents';
 import __Layout from './Layout.jsx';
 
 
@@ -195,6 +196,7 @@ export const PAGES = {
     "Registration": Registration,
     "ManageRegistrations": ManageRegistrations,
     "AdminDashboard": AdminDashboard,
+    "ManageRaceControlEvents": ManageRaceControlEvents,
 }
 
 export const pagesConfig = {
