@@ -223,7 +223,7 @@ export default function ManageResults() {
                         disabled={deleteMutation.isPending}
                       >
                         {deleteMutation.isPending ? (
-                          <Loader className="w-4 h-4 text-red-600 animate-spin" />
+                          <div className="text-red-600"><BurnoutSpinner /></div>
                         ) : (
                           <Trash2 className="w-4 h-4 text-red-600" />
                         )}
