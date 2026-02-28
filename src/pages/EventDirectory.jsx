@@ -5,10 +5,10 @@ import PageShell from '@/components/shared/PageShell';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Calendar, ChevronRight, Trophy, Medal, Flag } from 'lucide-react';
+import { Search, Calendar, Trophy, Medal, Flag, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DaysUntilBadge({ eventDate, status }) {
