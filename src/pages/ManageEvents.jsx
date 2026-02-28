@@ -250,7 +250,6 @@ export default function ManageEvents() {
                   bulkDeleteMutation.mutate({ ids: selectedEvents, selectedItems });
                 }
               }}
-              disabled={bulkDeleteMutation.isPending}
             >
               {bulkDeleteMutation.isPending ? (
                 <BurnoutSpinner />
@@ -332,7 +331,6 @@ export default function ManageEvents() {
                              deleteMutation.mutate({ id: event.id, event });
                            }
                          }}
-                         disabled={deleteMutation.isPending}
                        >
                          {deleteMutation.isPending ? (
                            <div className="text-red-600"><BurnoutSpinner /></div>
