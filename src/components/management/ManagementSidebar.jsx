@@ -4,6 +4,13 @@ import { createPageUrl } from '@/components/utils';
 import { ChevronDown, Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const DASHBOARD_ITEM = {
+  name: 'Dashboard',
+  page: 'Management',
+  icon: LayoutDashboard,
+  shortcut: 'Cmd+Shift+D'
+};
+
 const SECTIONS = [
   {
     title: 'Core Entities',
