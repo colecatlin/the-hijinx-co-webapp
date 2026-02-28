@@ -86,7 +86,6 @@ import ManageEvents from './pages/ManageEvents';
 import ManageFoodBeverage from './pages/ManageFoodBeverage';
 import ManageHomepage from './pages/ManageHomepage';
 import ManageIssues from './pages/ManageIssues';
-import ManageOperationLogs from './pages/ManageOperationLogs';
 import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageResults from './pages/ManageResults';
 import ManageSeries from './pages/ManageSeries';
@@ -160,7 +159,6 @@ export const PAGES = {
     "ManageFoodBeverage": ManageFoodBeverage,
     "ManageHomepage": ManageHomepage,
     "ManageIssues": ManageIssues,
-    "ManageOperationLogs": ManageOperationLogs,
     "ManagePointsConfig": ManagePointsConfig,
     "ManageResults": ManageResults,
     "ManageSeries": ManageSeries,

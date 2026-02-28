@@ -54,7 +54,6 @@ export default function Management() {
       items: [
         { name: 'CSV Import/Export', page: 'ManageCSVImportExport', icon: FileJson, description: 'Bulk import/export all entities as CSV files' },
         { name: 'Schedule Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal schedules into Events' },
-        { name: 'Operation Logs', page: 'ManageOperationLogs', icon: Clock, description: 'View all imports/exports and reverse operations' },
       ]
     },
     {
