@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import SeriesForm from '@/components/management/SeriesForm';
 import CreateSeriesForm from '@/components/management/CreateSeriesForm';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
@@ -146,7 +146,7 @@ export default function ManageSeries() {
   if (showForm) {
     if (!editingSeries) {
       return (
-        <PageShell>
+        <ManagementLayout currentPage="ManageSeries">
           <CreateSeriesForm
             onClose={() => {
               setShowForm(false);
@@ -235,12 +235,12 @@ export default function ManageSeries() {
             </TabsContent>
           </Tabs>
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   return (
-    <PageShell className="bg-gray-50">
+    <ManagementLayout currentPage="ManageSeries">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -376,6 +376,6 @@ export default function ManageSeries() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }
