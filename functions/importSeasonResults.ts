@@ -84,6 +84,7 @@ Deno.serve(async (req) => {
       });
       existingTracks.push(track);
       trackCache[key] = track.id;
+      createdIds.tracks.push(track.id);
       created.tracks++;
       log.push(`Created track: ${trackName}`);
       return track.id;
