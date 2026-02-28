@@ -182,6 +182,7 @@ export default function TeamDirectory() {
                    programs={programs}
                    drivers={allTeamDrivers}
                    media={media}
+                   series={allSeries}
                  />
                );
              })}
