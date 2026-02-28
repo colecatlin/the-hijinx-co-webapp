@@ -113,6 +113,7 @@ export default function SmartCSVImport({ onImportComplete }) {
       });
       setResult(res.data);
       setStep('done');
+      onImportComplete?.();
     } catch (err) {
       setResult({ error: err.message });
       setStep('done');
