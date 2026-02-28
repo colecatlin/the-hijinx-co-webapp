@@ -123,8 +123,12 @@ export default function ManageResults() {
                 onClick={handleDeleteSelected}
                 disabled={bulkDeleteMutation.isPending}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Selected ({selectedIds.size})
+                {bulkDeleteMutation.isPending ? (
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 mr-2" />
+                )}
+                {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedIds.size})`}
               </Button>
             )}
             <Button className="bg-gray-900" onClick={() => setShowAddDialog(true)}>
