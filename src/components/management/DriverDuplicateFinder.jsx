@@ -46,9 +46,27 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Driver.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      toast.success('All duplicates deleted');
+      findDuplicates();
+    },
+  });
+
   const handleDelete = (driverId) => {
     if (window.confirm('Delete this driver?')) {
       deleteMutation.mutate(driverId);
+    }
+  };
+
+  const handleDeleteAll = () => {
+    const allDuplicateIds = duplicates.flatMap(group => group.slice(1).map(d => d.id));
+    if (window.confirm(`Delete ${allDuplicateIds.length} duplicate(s) across all groups?`)) {
+      bulkDeleteMutation.mutate(allDuplicateIds);
     }
   };
 
