@@ -96,6 +96,16 @@ export default function ManageResults() {
               <Upload className="w-4 h-4 mr-2" />
               Bulk Upload
             </Button>
+            {results.length > 0 && (
+              <Button 
+                variant="destructive"
+                onClick={handleDeleteAll}
+                disabled={bulkDeleteMutation.isPending}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete All ({results.length})
+              </Button>
+            )}
             <Button className="bg-gray-900" onClick={() => setShowAddDialog(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Result
