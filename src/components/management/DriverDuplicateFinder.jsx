@@ -11,6 +11,15 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  const getCompletionScore = (driver) => {
+    let score = 0;
+    const fields = ['date_of_birth', 'contact_email', 'represented_by', 'hometown_city', 'hometown_state', 'hometown_country', 'racing_base_city', 'racing_base_state', 'racing_base_country', 'primary_number', 'manufacturer', 'primary_discipline', 'team_id', 'primary_series_id', 'primary_class_id', 'career_status', 'primary_color'];
+    fields.forEach(field => {
+      if (driver[field]) score += 1;
+    });
+    return score;
+  };
+
   const findDuplicates = () => {
     setLoading(true);
     const groups = {};
@@ -23,7 +32,10 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
 
     const duplicateGroups = Object.entries(groups)
       .filter(([_, group]) => group.length > 1)
-      .map(([_, group]) => group);
+      .map(([_, group]) => {
+        const sorted = [...group].sort((a, b) => getCompletionScore(b) - getCompletionScore(a));
+        return sorted;
+      });
 
     setDuplicates(duplicateGroups);
     setLoading(false);
