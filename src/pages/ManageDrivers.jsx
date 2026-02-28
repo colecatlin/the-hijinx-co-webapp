@@ -23,6 +23,7 @@ import DriverMediaSection from '@/components/management/DriverEditor/DriverMedia
 import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
 import DriverResultsSection from '@/components/management/DriverManagement/DriverResultsSection.jsx';
+import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -37,6 +38,7 @@ export default function ManageDrivers() {
   const [importSeries, setImportSeries] = useState('nascar-cup-series');
   const [sortField, setSortField] = useState('updated_date');
   const [sortDir, setSortDir] = useState('desc');
+  const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
