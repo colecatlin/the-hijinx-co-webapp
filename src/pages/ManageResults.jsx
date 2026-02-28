@@ -69,6 +69,10 @@ export default function ManageResults() {
             <p className="text-gray-600">{results.length} total results</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Smart Import
+            </Button>
             <Button variant="outline" onClick={() => setShowUploadDialog(true)}>
               <Upload className="w-4 h-4 mr-2" />
               Bulk Upload
