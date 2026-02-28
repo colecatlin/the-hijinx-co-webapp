@@ -220,8 +220,14 @@ Deno.serve(async (req) => {
       return program.id;
     }
 
+    // Helper: small delay to avoid rate limits on large imports
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
     // Process each row
-    for (const row of rows) {
+    for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+      // Throttle: pause every 10 rows to avoid rate limits
+      if (rowIdx > 0 && rowIdx % 10 === 0) await sleep(300);
+      const row = rows[rowIdx];
       const trackName    = getMapped(row, 'track_name');
       const trackCity    = getMapped(row, 'track_city');
       const trackState   = getMapped(row, 'track_state');
