@@ -106,12 +106,16 @@ async function importGenericEntity(base44, entityName, rows, headers) {
   let created = 0;
   let updated = 0;
   let failed = 0;
+  let skipped = 0;
   const errors = [];
 
   const entity = base44.asServiceRole.entities[entityName];
   if (!entity) {
     return { error: `Entity ${entityName} not found` };
   }
+
+  // Fetch all existing records to check for duplicates
+  const existingRecords = await entity.list('-created_date', 5000);
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -131,8 +135,22 @@ async function importGenericEntity(base44, entityName, rows, headers) {
         await entity.update(id, data);
         updated++;
       } else {
-        await entity.create(data);
-        created++;
+        // Check for duplicates before creating
+        const isDuplicate = existingRecords.some(record => {
+          // Compare all non-empty fields in the row data
+          return Object.entries(data).every(([key, val]) => {
+            const existingVal = record[key];
+            return normalize(String(existingVal)) === normalize(String(val));
+          });
+        });
+
+        if (isDuplicate) {
+          skipped++;
+        } else {
+          await entity.create(data);
+          existingRecords.push(data); // Add to cache for subsequent comparisons
+          created++;
+        }
       }
     } catch (e) {
       failed++;
@@ -140,7 +158,7 @@ async function importGenericEntity(base44, entityName, rows, headers) {
     }
   }
 
-  return { created, updated, failed, errors };
+  return { created, updated, failed, skipped, errors };
 }
 
 Deno.serve(async (req) => {
