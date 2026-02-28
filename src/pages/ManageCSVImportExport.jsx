@@ -309,7 +309,7 @@ export default function ManageCSVImportExport() {
               <CardDescription>Upload any CSV — entity type is auto-detected from column headers</CardDescription>
             </CardHeader>
             <CardContent>
-              <SmartCSVImport />
+              <SmartCSVImport onImportComplete={() => queryClient.invalidateQueries({ queryKey: ['importLogs'] })} />
             </CardContent>
           </Card>
         </TabsContent>
