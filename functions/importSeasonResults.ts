@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
 
       const [classId, eventId, driverId] = await Promise.all([
         seriesId ? getOrCreateClass(seriesId, className) : Promise.resolve(null),
-        getOrCreateEvent(eventName || `${seriesName || 'Race'} - ${eventDate}`, eventDate, trackId, seriesId, season),
+        getOrCreateEvent(eventName || `${seriesName || 'Race'} - ${eventDate}`, eventDate, trackId, seriesId, season, roundNumber),
         getOrCreateDriver(firstName, lastName, bibNumber),
       ]);
 
