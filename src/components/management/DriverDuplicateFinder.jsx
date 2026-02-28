@@ -65,10 +65,13 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
   };
 
   const handleDeleteAll = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmDeleteAll = () => {
     const allDuplicateIds = duplicates.flatMap(group => group.slice(1).map(d => d.id));
-    if (window.confirm(`Delete ${allDuplicateIds.length} duplicate(s) across all groups?`)) {
-      bulkDeleteMutation.mutate(allDuplicateIds);
-    }
+    bulkDeleteMutation.mutate(allDuplicateIds);
+    setShowConfirm(false);
   };
 
   const handleMerge = (keepDriverId, deleteDriverIds) => {
