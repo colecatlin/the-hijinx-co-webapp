@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Zap, Check, Download, AlertTriangle, Clock, Users, Trophy, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Upload, Zap, Check, Download, AlertTriangle, Clock, Users, Trophy, TrendingUp, AlertCircle, CheckCircle2, Calendar } from 'lucide-react';
 
 const StatusBadge = ({ status }) => {
   const colors = {
