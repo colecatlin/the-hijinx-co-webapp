@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ResultForm from '@/components/management/results/ResultForm';
 import ResultsBulkUpload from '@/components/management/results/ResultsBulkUpload';
+import SmartResultsImport from '@/components/management/results/SmartResultsImport';
 
 export default function ManageResults() {
   const [searchQuery, setSearchQuery] = useState('');
