@@ -118,6 +118,7 @@ import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import Registration from './pages/Registration';
 import ManageRegistrations from './pages/ManageRegistrations';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +194,7 @@ export const PAGES = {
     "TrackProfile": TrackProfile,
     "Registration": Registration,
     "ManageRegistrations": ManageRegistrations,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
