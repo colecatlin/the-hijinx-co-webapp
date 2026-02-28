@@ -170,6 +170,37 @@ export default function ManageCSVImportExport() {
         </CardContent>
       </Card>
 
+      {lastImport && lastImport.status !== 'rolled_back' && (
+        <Card className="mt-6 border-amber-200 bg-amber-50">
+          <CardHeader>
+            <CardTitle>Last Import</CardTitle>
+            <CardDescription>
+              {new Date(lastImport.created_date).toLocaleString()} — {lastImport.summary.drivers} drivers, {lastImport.summary.events} events, {lastImport.summary.results} results
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={handleUndo}
+              disabled={undoLoading}
+              variant="destructive"
+              className="gap-2"
+            >
+              {undoLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Rolling back...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4" />
+                  Undo Import
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs defaultValue="export" className="mt-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="export">Export</TabsTrigger>
