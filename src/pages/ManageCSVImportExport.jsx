@@ -23,6 +23,27 @@ export default function ManageCSVImportExport() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [file, setFile] = useState(null);
+  const [undoLoading, setUndoLoading] = useState(false);
+
+  const { data: importLogs = [] } = useQuery({
+    queryKey: ['importLogs'],
+    queryFn: () => base44.entities.ImportLog.list('-created_date', 10),
+  });
+
+  const lastImport = importLogs[0];
+
+  const handleUndo = async () => {
+    if (!lastImport) return;
+    setUndoLoading(true);
+    try {
+      await base44.functions.invoke('undoImport', { importLogId: lastImport.id });
+      setStatus({ type: 'success', message: 'Import rolled back successfully' });
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message });
+    } finally {
+      setUndoLoading(false);
+    }
+  };
 
   const downloadFile = (content, filename) => {
     const blob = new Blob([content], { type: 'text/csv' });
