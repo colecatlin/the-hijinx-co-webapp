@@ -64,6 +64,23 @@ export default function EventDirectory() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ['sessions-directory'],
+    queryFn: () => base44.entities.Session.list(),
+    enabled: activeTab === 'results' && completedEvents.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Count sessions per event
+  const sessionCountByEvent = useMemo(() => {
+    const map = {};
+    for (const session of allSessions) {
+      if (!map[session.event_id]) map[session.event_id] = 0;
+      map[session.event_id]++;
+    }
+    return map;
+  }, [allSessions]);
+
   const podiumByEvent = useMemo(() => {
     const map = {};
     for (const event of completedEvents) {
