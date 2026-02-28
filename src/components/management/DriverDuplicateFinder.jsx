@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onSuccess }) {
   const [duplicates, setDuplicates] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const findDuplicates = () => {
