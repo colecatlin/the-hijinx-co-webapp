@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { importDrivers } from './helpers/driverImportHandler.js';
 
 // Score headers against field signatures to detect entity type
 const ENTITY_SIGNATURES = {
