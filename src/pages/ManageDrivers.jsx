@@ -549,6 +549,6 @@ export default function ManageDrivers() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }
