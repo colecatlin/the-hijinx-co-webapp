@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { buildProfileUrl } from '@/components/utils/routingContract';
 import { format } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
 
+const SESSION_ORDER = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
+
 export default function EventResults() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get('id');
+  const [activeSession, setActiveSession] = useState(null);
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -22,18 +24,40 @@ export default function EventResults() {
     enabled: !!eventId,
   });
 
-  // Fetch related entities for links
-  const { data: tracks = [] } = useQuery({
-    queryKey: ['tracks'],
-    queryFn: () => base44.entities.Track.list(),
-    enabled: !!event?.track_id,
+  const { data: results = [], isLoading: resultsLoading } = useQuery({
+    queryKey: ['results-event', eventId],
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+    enabled: !!eventId,
   });
 
-  const { data: series = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    enabled: !!event?.series_id,
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers-results'],
+    queryFn: () => base44.entities.Driver.list(),
+    enabled: results.length > 0,
   });
+
+  const { data: allClasses = [] } = useQuery({
+    queryKey: ['classes-results'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    enabled: results.length > 0,
+  });
+
+  const sessionTypes = [...new Set(results.map(r => r.session_type || 'Final'))].sort(
+    (a, b) => SESSION_ORDER.indexOf(a) - SESSION_ORDER.indexOf(b)
+  );
+  const hasMultipleSessions = sessionTypes.length > 1;
+  const currentSession = activeSession || sessionTypes[sessionTypes.length - 1] || null;
+
+  const displayedResults = hasMultipleSessions
+    ? results.filter(r => (r.session_type || 'Final') === currentSession)
+    : results;
+
+  const getDriverName = (dId) => {
+    const d = drivers.find(d => d.id === dId);
+    return d ? `${d.first_name} ${d.last_name}` : '—';
+  };
+  const getDriverSlug = (dId) => drivers.find(d => d.id === dId)?.slug || null;
+  const getClassName = (cId) => allClasses.find(c => c.id === cId)?.class_name || '—';
 
   if (isLoading) {
     return (
@@ -57,54 +81,93 @@ export default function EventResults() {
     );
   }
 
+  const displayName = event.season ? `${event.season} ${event.name}` : event.name;
+
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
-        <Link to={createPageUrl('EventDirectory')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors">
+        <Link to={createPageUrl('EventDirectory') + '?tab=results'} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors">
           <ArrowLeft className="w-3 h-3" /> Results
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{event.name}</h1>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{displayName}</h1>
         <div className="flex flex-wrap items-center gap-4 mt-3 mb-8">
-          {event.series_name && <span className="font-mono text-xs text-gray-400">{event.series_name}</span>}
-          {event.track_name && (
-            <span className="flex items-center gap-1 text-xs text-gray-400"><MapPin className="w-3 h-3" /> {event.track_name}</span>
+          {event.series && <span className="font-mono text-xs text-gray-400">{event.series}</span>}
+          {event.location_note && (
+            <span className="flex items-center gap-1 text-xs text-gray-400"><MapPin className="w-3 h-3" /> {event.location_note}</span>
           )}
-          {event.event_date && <span className="flex items-center gap-1 text-xs text-gray-400"><Calendar className="w-3 h-3" /> {format(new Date(event.event_date), 'MMMM d, yyyy')}</span>}
+          {event.event_date && (
+            <span className="flex items-center gap-1 text-xs text-gray-400">
+              <Calendar className="w-3 h-3" />
+              {format(new Date(event.event_date), 'MMMM d, yyyy')}
+              {event.end_date && event.end_date !== event.event_date && (
+                <> – {format(new Date(event.end_date), 'MMMM d, yyyy')}</>
+              )}
+            </span>
+          )}
         </div>
 
-        {event.results?.length > 0 ? (
-          <div className="overflow-x-auto border border-gray-200">
-            <table className="w-full min-w-[500px]">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pos</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Team</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Laps</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Time</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {event.results.sort((a, b) => (a.position || 0) - (b.position || 0)).map((r, i) => (
-                  <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-bold tabular-nums">{r.position}</td>
-                    <td className="px-4 py-3 text-sm font-semibold">
-                      {r.driver_id ? (
-                        <Link to={createPageUrl('DriverProfile') + `?id=${r.driver_id}`} className="hover:underline">{r.driver_name}</Link>
-                      ) : r.driver_name}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{r.team_name}</td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{r.class_name}</td>
-                    <td className="px-4 py-3 text-xs tabular-nums">{r.laps}</td>
-                    <td className="px-4 py-3 text-xs font-mono tabular-nums">{r.time}</td>
-                    <td className="px-4 py-3 text-xs font-bold tabular-nums">{r.points_earned}</td>
-                  </tr>
+        {resultsLoading ? (
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+        ) : results.length > 0 ? (
+          <div>
+            {/* Session toggle for multi-session events */}
+            {hasMultipleSessions && (
+              <div className="flex flex-wrap gap-2 mb-5">
+                {sessionTypes.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setActiveSession(type)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                      currentSession === type
+                        ? 'bg-[#232323] text-white border-[#232323]'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {type}
+                    <span className="ml-1 text-[10px] opacity-60">
+                      ({results.filter(r => (r.session_type || 'Final') === type).length})
+                    </span>
+                  </button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
+            <div className="overflow-x-auto border border-gray-200">
+              <table className="w-full min-w-[500px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pos</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>
+                    {!hasMultipleSessions && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Session</th>}
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Pts</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...displayedResults].sort((a, b) => (a.position || 999) - (b.position || 999)).map((r, i) => (
+                    <tr key={r.id || i} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-bold tabular-nums">
+                        {r.position ? `P${r.position}` : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold">
+                        {getDriverSlug(r.driver_id) ? (
+                          <Link to={`${createPageUrl('DriverProfile')}?slug=${getDriverSlug(r.driver_id)}`} className="hover:underline">
+                            {getDriverName(r.driver_id)}
+                          </Link>
+                        ) : getDriverName(r.driver_id)}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {r.series_class_id ? getClassName(r.series_class_id) : (r.class || '—')}
+                      </td>
+                      {!hasMultipleSessions && <td className="px-4 py-3 text-xs text-gray-500">{r.session_type || 'Final'}</td>}
+                      <td className="px-4 py-3 text-xs font-bold tabular-nums">{r.points ?? '—'}</td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{r.status || 'Running'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <p className="text-sm text-gray-400">No detailed results available for this event.</p>
