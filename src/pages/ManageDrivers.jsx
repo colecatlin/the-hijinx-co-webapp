@@ -261,7 +261,7 @@ export default function ManageDrivers() {
 
   if (selectedDriverForEdit) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageDrivers">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedDriverForEdit(null)}>
