@@ -143,7 +143,7 @@ export default function ManageTeams() {
     const tabsLocked = isNewTeam || !hasCoreDetails;
 
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageTeams">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedTeamForEdit(null)}>
@@ -205,19 +205,15 @@ export default function ManageTeams() {
             </TabsContent>
           </Tabs>
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageTeams">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl('Management')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
+          <div />
           <div className="flex-1">
             <h1 className="text-4xl font-black mb-2">Manage Teams</h1>
             <p className="text-gray-600">{teams.length} total teams</p>
@@ -373,6 +369,6 @@ export default function ManageTeams() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }
