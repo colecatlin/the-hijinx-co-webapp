@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, ClipboardList, Zap, Layers } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, ClipboardList, Zap, Layers, TrendingDown } from 'lucide-react';
 
 export default function Management() {
   const sections = [
@@ -33,6 +33,7 @@ export default function Management() {
         { name: 'RaceControl Events', page: 'ManageRaceControlEvents', icon: Layers, description: 'Manage RaceControl events, entries, and sessions' },
         { name: 'Event Builder', page: 'ManageRaceControlEventBuilder', icon: Calendar, description: 'Create and configure individual events' },
         { name: 'Entries', page: 'ManageRaceControlEntries', icon: Users, description: 'Manage race entries and registrations' },
+        { name: 'Results', page: 'ManageRaceControlResults', icon: TrendingDown, description: 'Manage session results and points' },
       ]
     },
     {
