@@ -158,12 +158,12 @@ export default function ManageSeries() {
               setSelectedSeriesForEdit(newSeries);
             }}
           />
-        </PageShell>
-      );
-    }
+        </ManagementLayout>
+        );
+        }
 
-    return (
-      <PageShell>
+        return (
+        <ManagementLayout currentPage="ManageSeries">
         <SeriesForm
           series={editingSeries}
           onClose={() => {
@@ -171,13 +171,13 @@ export default function ManageSeries() {
             setEditingSeries(null);
           }}
         />
-      </PageShell>
+        </ManagementLayout>
     );
   }
 
   if (selectedSeriesForEdit) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageSeries">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedSeriesForEdit(null)}>
