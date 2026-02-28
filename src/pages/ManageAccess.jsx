@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap } from 'lucide-react';
+import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap, ArrowLeft } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 
 const ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series', 'Event'];
 
@@ -116,6 +118,9 @@ export default function ManageAccess() {
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-6 py-12">
+        <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
+          <ArrowLeft className="w-3 h-3" /> Back to Management
+        </Link>
         <div className="mb-8">
           <h1 className="text-4xl font-black mb-2">Access Management</h1>
           <p className="text-gray-600">View and revoke user access to entities across the platform.</p>

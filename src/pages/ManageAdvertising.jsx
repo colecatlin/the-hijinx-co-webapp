@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Search, Pencil, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Edit2, ChevronUp, ChevronDown, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -20,6 +21,7 @@ import {
 import { format } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import AdvertisementForm from '@/components/management/AdvertisementForm';
+import { createPageUrl } from '@/components/utils';
 
 const AD_TYPES = {
   homepage: 'Homepage Feature',
@@ -169,6 +171,9 @@ export default function ManageAdvertising() {
   return (
     <PageShell className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
+        <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-4 transition-colors">
+          <ArrowLeft className="w-3 h-3" /> Back to Management
+        </Link>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Manage Advertising</h1>
