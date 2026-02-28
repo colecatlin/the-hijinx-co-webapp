@@ -230,6 +230,7 @@ Deno.serve(async (req) => {
       });
       existingPrograms.push(program);
       programCache[key] = program.id;
+      createdIds.programs.push(program.id);
       created.programs++;
       return program.id;
     }
