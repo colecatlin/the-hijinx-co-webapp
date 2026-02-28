@@ -24,6 +24,7 @@ import DriverStatsManagement from '@/components/management/DriverManagement/Driv
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
 import DriverResultsSection from '@/components/management/DriverManagement/DriverResultsSection.jsx';
 import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { toast } from 'sonner';
 
 export default function ManageDrivers() {
@@ -396,8 +397,12 @@ export default function ManageDrivers() {
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedDrivers.length}
+              {bulkDeleteMutation.isPending ? (
+                <BurnoutSpinner />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedDrivers.length}`}
             </Button>
           )}
         </div>
@@ -541,12 +546,17 @@ export default function ManageDrivers() {
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(driver)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleDelete(driver)}
+                           disabled={deleteMutation.isPending}
+                         >
+                           {deleteMutation.isPending ? (
+                             <div className="text-red-600"><BurnoutSpinner /></div>
+                           ) : (
+                             <Trash2 className="w-4 h-4 text-red-600" />
+                           )}
+                         </Button>
                       </div>
                     </td>
                   </tr>

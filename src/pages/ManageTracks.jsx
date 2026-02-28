@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -149,8 +150,12 @@ export default function ManageTracks() {
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedTracks.length}
+              {bulkDeleteMutation.isPending ? (
+                <BurnoutSpinner />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedTracks.length}`}
             </Button>
           )}
         </div>
@@ -229,8 +234,13 @@ export default function ManageTracks() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(track)}
+                          disabled={deleteMutation.isPending}
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          {deleteMutation.isPending ? (
+                            <div className="text-red-600"><BurnoutSpinner /></div>
+                          ) : (
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          )}
                         </Button>
                       </div>
                     </td>

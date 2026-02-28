@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import TeamForm from '@/components/management/TeamForm';
@@ -331,8 +332,12 @@ export default function ManageTeams() {
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedTeams.length}
+              {bulkDeleteMutation.isPending ? (
+                <BurnoutSpinner />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedTeams.length}`}
             </Button>
           )}
         </div>
@@ -409,12 +414,17 @@ export default function ManageTeams() {
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(team)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleDelete(team)}
+                           disabled={deleteMutation.isPending}
+                         >
+                           {deleteMutation.isPending ? (
+                             <div className="text-red-600"><BurnoutSpinner /></div>
+                           ) : (
+                             <Trash2 className="w-4 h-4 text-red-600" />
+                           )}
+                         </Button>
                       </div>
                     </td>
                   </tr>

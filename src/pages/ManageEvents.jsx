@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Sparkles, ArrowUpDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -241,8 +242,12 @@ export default function ManageEvents() {
               }}
               disabled={bulkDeleteMutation.isPending}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedEvents.length}
+              {bulkDeleteMutation.isPending ? (
+                <BurnoutSpinner />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedEvents.length}`}
             </Button>
           )}
         </div>
@@ -310,16 +315,21 @@ export default function ManageEvents() {
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm(`Delete ${event.name}?`)) {
-                            deleteMutation.mutate(event.id, event);
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => {
+                           if (confirm(`Delete ${event.name}?`)) {
+                             deleteMutation.mutate(event.id, event);
+                           }
+                         }}
+                         disabled={deleteMutation.isPending}
+                       >
+                         {deleteMutation.isPending ? (
+                           <div className="text-red-600"><BurnoutSpinner /></div>
+                         ) : (
+                           <Trash2 className="w-4 h-4 text-red-600" />
+                         )}
+                       </Button>
                     </td>
                   </tr>
                 ))}

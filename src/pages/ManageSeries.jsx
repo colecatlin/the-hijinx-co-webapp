@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeriesForm from '@/components/management/SeriesForm';
@@ -288,8 +289,12 @@ export default function ManageSeries() {
               onClick={handleBulkDelete}
               disabled={bulkDeleteMutation.isPending}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete {selectedSeries.length}
+              {bulkDeleteMutation.isPending ? (
+                <BurnoutSpinner />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedSeries.length}`}
             </Button>
           )}
         </div>
@@ -354,8 +359,13 @@ export default function ManageSeries() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete(s.id)}
+                          disabled={deleteSeriesMutation.isPending}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {deleteSeriesMutation.isPending ? (
+                            <BurnoutSpinner />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
                         </Button>
                       </div>
                     </td>
