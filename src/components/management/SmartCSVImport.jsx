@@ -105,17 +105,53 @@ export default function SmartCSVImport({ onImportComplete }) {
 
   const handleImport = async () => {
     setImporting(true);
+    const startTime = Date.now();
     try {
       const res = await base44.functions.invoke('smartCSVImport', {
         csvText,
         action: 'import',
         overrideEntity: overrideEntity || undefined,
       });
+      const executionTime = Date.now() - startTime;
       setResult(res.data);
+      
+      // Log the operation
+      await base44.functions.invoke('logOperation', {
+        operation_type: 'import',
+        source_type: 'csv_upload',
+        entity_name: overrideEntity || detection?.entity,
+        function_name: 'smartCSVImport',
+        status: res.data?.error ? 'failed' : 'completed',
+        total_records: csvRows.length,
+        created_records: res.data?.created_records || [],
+        updated_records: res.data?.updated_records || [],
+        skipped_count: res.data?.skipped_duplicates || 0,
+        failed_count: res.data?.skipped_invalid || 0,
+        error_details: res.data?.errors || [],
+        file_name: fileName,
+        metadata: { column_mapping: columnMapping },
+        execution_time_ms: executionTime,
+      });
+      
       setStep('done');
       onImportComplete?.();
     } catch (err) {
+      const executionTime = Date.now() - startTime;
       setResult({ error: err.message });
+      
+      // Log the failed operation
+      await base44.functions.invoke('logOperation', {
+        operation_type: 'import',
+        source_type: 'csv_upload',
+        entity_name: overrideEntity || detection?.entity,
+        function_name: 'smartCSVImport',
+        status: 'failed',
+        total_records: csvRows.length,
+        error_details: [err.message],
+        file_name: fileName,
+        execution_time_ms: Date.now() - startTime,
+      });
+      
       setStep('done');
     }
     setImporting(false);
