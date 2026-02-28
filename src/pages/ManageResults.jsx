@@ -125,11 +125,11 @@ export default function ManageResults() {
                 disabled={bulkDeleteMutation.isPending}
               >
                 {bulkDeleteMutation.isPending ? (
-                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  <BurnoutSpinner />
                 ) : (
                   <Trash2 className="w-4 h-4 mr-2" />
                 )}
-                {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedIds.size})`}
+                {bulkDeleteMutation.isPending ? 'Doing a burnout...' : `Delete Selected (${selectedIds.size})`}
               </Button>
             )}
             <Button className="bg-gray-900" onClick={() => setShowAddDialog(true)}>
