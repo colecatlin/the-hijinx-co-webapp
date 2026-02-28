@@ -27,6 +27,7 @@ export default function ManageEvents() {
   const [sortBy, setSortBy] = useState('date_desc');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedEvents, setSelectedEvents] = useState([]);
+  const [deletingEventId, setDeletingEventId] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: events = [], isLoading } = useQuery({
@@ -40,10 +41,12 @@ export default function ManageEvents() {
       await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: [id], recordNames: [event?.name] });
     },
     onSuccess: () => {
+      setDeletingEventId(null);
       queryClient.invalidateQueries({ queryKey: ['events'] });
       alert('Event deleted successfully');
     },
     onError: (error) => {
+      setDeletingEventId(null);
       alert(`Error deleting event: ${error.message}`);
     },
   });
@@ -326,22 +329,23 @@ export default function ManageEvents() {
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
-                         variant="ghost"
-                         size="sm"
-                         onClick={() => {
-                           if (confirm(`Delete ${event.name}?`)) {
-                             deleteMutation.mutate({ id: event.id, event });
-                           }
-                         }}
-                         disabled={deleteMutation.isPending}
-                         className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-                       >
-                         {deleteMutation.isPending ? (
-                           <div className="text-gray-400"><BurnoutSpinner /></div>
-                         ) : (
-                           <Trash2 className="w-4 h-4 text-red-600" />
-                         )}
-                       </Button>
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete ${event.name}?`)) {
+                              setDeletingEventId(event.id);
+                              deleteMutation.mutate({ id: event.id, event });
+                            }
+                          }}
+                          disabled={deletingEventId === event.id}
+                          className={deletingEventId === event.id ? 'opacity-50 cursor-not-allowed' : ''}
+                        >
+                          {deletingEventId === event.id ? (
+                            <div className="text-gray-400"><BurnoutSpinner /></div>
+                          ) : (
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          )}
+                        </Button>
                     </td>
                   </tr>
                 ))}
