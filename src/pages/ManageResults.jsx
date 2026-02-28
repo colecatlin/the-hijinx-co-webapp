@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,7 +101,7 @@ export default function ManageResults() {
   });
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageResults">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl('Management')}>
@@ -284,6 +284,6 @@ export default function ManageResults() {
           <ResultsBulkUpload onDone={() => setShowUploadDialog(false)} />
         </DialogContent>
       </Dialog>
-    </PageShell>
+    </ManagementLayout>
   );
 }
