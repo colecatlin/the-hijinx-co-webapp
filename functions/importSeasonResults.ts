@@ -48,13 +48,14 @@ Deno.serve(async (req) => {
     }
 
     // Load all existing entities upfront
-    const [existingTracks, existingSeries, existingSeriesClasses, existingEvents, existingDrivers, existingPrograms] = await Promise.all([
+    const [existingTracks, existingSeries, existingSeriesClasses, existingEvents, existingDrivers, existingPrograms, existingResults] = await Promise.all([
       base44.asServiceRole.entities.Track.list(),
       base44.asServiceRole.entities.Series.list(),
       base44.asServiceRole.entities.SeriesClass.list(),
       base44.asServiceRole.entities.Event.list('-event_date', 2000),
       base44.asServiceRole.entities.Driver.list(),
       base44.asServiceRole.entities.DriverProgram.list(),
+      base44.asServiceRole.entities.Results.list('-created_date', 5000),
     ]);
 
     // Caches to avoid duplicate creates within this run
