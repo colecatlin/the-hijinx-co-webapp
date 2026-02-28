@@ -35,7 +35,7 @@ export default function ManageEvents() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id, event) => {
+    mutationFn: async ({ id, event }) => {
       await base44.entities.Event.delete(id);
       await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: [id], recordNames: [event?.name] });
     },
@@ -43,7 +43,7 @@ export default function ManageEvents() {
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids, selectedItems) => {
+    mutationFn: async ({ ids, selectedItems }) => {
       for (const id of ids) {
         await base44.entities.Event.delete(id);
       }
@@ -237,7 +237,7 @@ export default function ManageEvents() {
               onClick={() => {
                 if (window.confirm(`Delete ${selectedEvents.length} selected event(s)?`)) {
                   const selectedItems = filteredEvents.filter(e => selectedEvents.includes(e.id));
-                  bulkDeleteMutation.mutate({ ids: selectedEvents, names: selectedItems.map(e => e.name) });
+                  bulkDeleteMutation.mutate({ ids: selectedEvents, selectedItems });
                 }
               }}
               disabled={bulkDeleteMutation.isPending}
@@ -319,7 +319,7 @@ export default function ManageEvents() {
                          size="sm"
                          onClick={() => {
                            if (confirm(`Delete ${event.name}?`)) {
-                             deleteMutation.mutate(event.id, event);
+                             deleteMutation.mutate({ id: event.id, event });
                            }
                          }}
                          disabled={deleteMutation.isPending}
