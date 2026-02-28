@@ -149,9 +149,10 @@ export default function ManageCSVImportExport() {
       </Card>
 
       <Tabs defaultValue="export" className="mt-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="export">Export</TabsTrigger>
           <TabsTrigger value="import">Import</TabsTrigger>
+          <TabsTrigger value="smart">Smart Import</TabsTrigger>
         </TabsList>
 
         <TabsContent value="export">
