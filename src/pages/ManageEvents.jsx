@@ -250,6 +250,8 @@ export default function ManageEvents() {
                   bulkDeleteMutation.mutate({ ids: selectedEvents, selectedItems });
                 }
               }}
+              disabled={bulkDeleteMutation.isPending}
+              className={bulkDeleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {bulkDeleteMutation.isPending ? (
                 <BurnoutSpinner />
@@ -331,9 +333,11 @@ export default function ManageEvents() {
                              deleteMutation.mutate({ id: event.id, event });
                            }
                          }}
+                         disabled={deleteMutation.isPending}
+                         className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
                        >
                          {deleteMutation.isPending ? (
-                           <div className="text-red-600"><BurnoutSpinner /></div>
+                           <div className="text-gray-400"><BurnoutSpinner /></div>
                          ) : (
                            <Trash2 className="w-4 h-4 text-red-600" />
                          )}
