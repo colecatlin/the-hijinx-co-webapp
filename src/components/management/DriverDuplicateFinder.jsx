@@ -224,8 +224,8 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
             Close
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
