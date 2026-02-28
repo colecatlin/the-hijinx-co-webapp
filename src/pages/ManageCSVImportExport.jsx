@@ -309,6 +309,65 @@ export default function ManageCSVImportExport() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="logs">
+          <Card>
+            <CardHeader>
+              <CardTitle>Import Logs</CardTitle>
+              <CardDescription>History of all imports performed</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {importLogs.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No imports yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {importLogs.map((log) => (
+                    <div key={log.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {new Date(log.import_date).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {log.total_rows} rows • {log.summary?.drivers || 0} drivers • {log.summary?.events || 0} events • {log.summary?.results || 0} results
+                          </p>
+                        </div>
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${
+                          log.status === 'rolled_back' 
+                            ? 'bg-red-100 text-red-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {log.status === 'rolled_back' ? 'Rolled Back' : 'Completed'}
+                        </span>
+                      </div>
+                      {log.status !== 'rolled_back' && (
+                        <Button
+                          onClick={handleUndo}
+                          disabled={undoLoading || lastImport?.id !== log.id}
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 text-xs w-full"
+                        >
+                          {undoLoading ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Rolling back...
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw className="w-3 h-3" />
+                              Undo
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {status && (
