@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
       const trackCountry = getMapped(row, 'track_country') || 'USA';
       const seriesName   = getMapped(row, 'series_name');
       const discipline   = getMapped(row, 'discipline');
-      const className    = getMapped(row, 'class_name');
+      const classNames   = getMapped(row, 'class_name').split(',').map(c => c.trim()).filter(c => c);
       const eventName    = getMapped(row, 'event_name');
       const eventDate    = getMapped(row, 'event_date');
       const season       = getMapped(row, 'season') || (eventDate ? new Date(eventDate).getFullYear().toString() : '2025');
@@ -246,15 +246,10 @@ Deno.serve(async (req) => {
         getOrCreateSeries(seriesName, discipline),
       ]);
 
-      const [classId, eventId, driverId] = await Promise.all([
-        seriesId ? getOrCreateClass(seriesId, className) : Promise.resolve(null),
-        getOrCreateEvent(eventName || `${seriesName || 'Race'} - ${eventDate}`, eventDate, trackId, seriesId, season),
-        getOrCreateDriver(firstName, lastName, bibNumber),
-      ]);
+      const eventId = await getOrCreateEvent(eventName || `${seriesName || 'Race'} - ${eventDate}`, eventDate, trackId, seriesId, season);
+      const driverId = await getOrCreateDriver(firstName, lastName, bibNumber);
 
       if (!driverId || !eventId) { skipped_invalid++; continue; }
-
-      const programId = await getOrCreateProgram(driverId, seriesId, classId, season);
 
       const statusMap = { 'Running': 'Running', 'Finished': 'Running', 'finished': 'Running', 'DNF': 'DNF', 'DNS': 'DNS', 'DSQ': 'DSQ', 'DNP': 'DNP' };
       const mappedStatus = statusMap[statusText] || (statusText ? 'Running' : undefined);
@@ -266,30 +261,37 @@ Deno.serve(async (req) => {
       };
       const mappedSession = sessionTypeMap[normalize(sessionType)] || sessionType || 'Final';
 
-      // Skip if result already exists for this driver+event+session
-      const duplicate = existingResults.find(r =>
-        r.driver_id === driverId &&
-        r.event_id === eventId &&
-        (r.session_type || 'Final') === mappedSession
-      );
-      if (duplicate) { skipped_duplicates++; continue; }
+      // Process each class (handle comma-separated classes)
+      for (const className of classNames) {
+        const classId = seriesId ? await getOrCreateClass(seriesId, className) : null;
+        const programId = await getOrCreateProgram(driverId, seriesId, classId, season);
 
-      const newResult = await base44.asServiceRole.entities.Results.create({
-        driver_id: driverId,
-        event_id: eventId,
-        program_id: programId || '',
-        series_id: seriesId || undefined,
-        series_class_id: classId || undefined,
-        session_type: mappedSession,
-        position: position ? (parseInt(position) || undefined) : undefined,
-        status: mappedStatus,
-        points: points ? (parseFloat(points) || undefined) : undefined,
-        laps_completed: laps ? (parseInt(laps) || undefined) : undefined,
-        best_lap_time: bestLap ? (parseFloat(bestLap) || undefined) : undefined,
-        notes: notes || undefined,
-      });
-      existingResults.push(newResult);
-      created.results++;
+        // Skip if result already exists for this driver+event+session+class
+        const duplicate = existingResults.find(r =>
+          r.driver_id === driverId &&
+          r.event_id === eventId &&
+          (r.session_type || 'Final') === mappedSession &&
+          r.series_class_id === classId
+        );
+        if (duplicate) { skipped_duplicates++; continue; }
+
+        const newResult = await base44.asServiceRole.entities.Results.create({
+          driver_id: driverId,
+          event_id: eventId,
+          program_id: programId || '',
+          series_id: seriesId || undefined,
+          series_class_id: classId || undefined,
+          session_type: mappedSession,
+          position: position ? (parseInt(position) || undefined) : undefined,
+          status: mappedStatus,
+          points: points ? (parseFloat(points) || undefined) : undefined,
+          laps_completed: laps ? (parseInt(laps) || undefined) : undefined,
+          best_lap_time: bestLap ? (parseFloat(bestLap) || undefined) : undefined,
+          notes: notes || undefined,
+        });
+        existingResults.push(newResult);
+        created.results++;
+      }
     }
 
     return Response.json({
