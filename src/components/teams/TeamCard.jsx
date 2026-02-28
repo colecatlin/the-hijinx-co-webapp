@@ -122,33 +122,59 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
             </div>
           )}
 
-          {/* Series Badges */}
-          {uniqueSeries.length > 0 && (
-            <div className="mb-2 pb-2 border-b border-gray-200">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Series</div>
-              <div className="flex flex-wrap gap-2">
-                {uniqueSeries.slice(0, 3).map((series, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs border-[#232323] text-[#232323]">
-                    {series}
-                  </Badge>
-                ))}
-              </div>
+          {/* Series + Driver badges */}
+          {seriesGroups.length > 0 ? (
+            <div className="flex-1 flex flex-col gap-3 overflow-hidden mb-2">
+              {seriesGroups.map((group, gIdx) => (
+                <div key={gIdx}>
+                  <div className="text-xs font-bold text-[#232323] uppercase tracking-wide text-center mb-1.5">
+                    {group.seriesName}
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {group.drivers.map((d, dIdx) => {
+                      const color = d.primaryColor || '#232323';
+                      return (
+                        <div
+                          key={dIdx}
+                          className="rounded-md px-2 py-1 text-center"
+                          style={{
+                            border: `2px solid ${color}`,
+                            color: color,
+                          }}
+                        >
+                          <span className="text-xs font-black tracking-tight leading-none">
+                            {d.lastName.toUpperCase()}
+                          </span>
+                          {d.carNumber && (
+                            <span className="text-xs font-bold ml-1">#{d.carNumber}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Drivers */}
-          {sortedDrivers.length > 0 && (
-            <div className="mb-2 pb-2 border-b border-gray-200 flex-1 flex flex-col min-h-0">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Drivers ({sortedDrivers.length})</div>
-              <div className="space-y-0.5">
-                {sortedDrivers.map((driver, idx) => (
-                  <div key={idx} className="text-sm text-[#232323] font-semibold">
-                    {driver.first_name} {driver.last_name}
+          ) : drivers.length > 0 ? (
+            <div className="flex-1 flex flex-col gap-1 overflow-hidden mb-2">
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {drivers.slice(0, 8).map((driver, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-md px-2 py-1 text-center"
+                    style={{ border: `2px solid ${driver.primary_color || '#232323'}`, color: driver.primary_color || '#232323' }}
+                  >
+                    <span className="text-xs font-black tracking-tight leading-none">
+                      {driver.last_name.toUpperCase()}
+                    </span>
+                    {driver.primary_number && (
+                      <span className="text-xs font-bold ml-1">#{driver.primary_number}</span>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Footer */}
           <div className="mt-auto pt-2 border-t border-gray-300">
