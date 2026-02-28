@@ -202,10 +202,11 @@ export default function ManageCSVImportExport() {
       )}
 
       <Tabs defaultValue="export" className="mt-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="export">Export</TabsTrigger>
           <TabsTrigger value="import">Import</TabsTrigger>
           <TabsTrigger value="smart">Smart Import</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="export">
