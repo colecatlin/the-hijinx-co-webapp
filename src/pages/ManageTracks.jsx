@@ -37,9 +37,7 @@ export default function ManageTracks() {
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async ({ ids, names }) => {
-      for (const id of ids) {
-        await base44.entities.Track.delete(id);
-      }
+      await Promise.all(ids.map(id => base44.entities.Track.delete(id)));
       await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: ids, recordNames: names });
     },
     onSuccess: () => {
