@@ -11,15 +11,6 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Event.delete(id);
     }
 
-    await base44.asServiceRole.functions.invoke('logOperation', {
-      operation_type: 'deletion',
-      source_type: 'manual',
-      entity_name: 'Event',
-      status: 'completed',
-      total_records: eventIds.length,
-      deleted_records: [{ entity: 'Event', ids: eventIds, names: events.map(e => e.name) }]
-    });
-
     return Response.json({ success: true, deletedCount: eventIds.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
