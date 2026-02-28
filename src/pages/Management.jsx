@@ -2,10 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, ClipboardList } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, ClipboardList, Zap } from 'lucide-react';
 
 export default function Management() {
   const sections = [
+    {
+      title: 'Dashboard',
+      items: [
+        { name: 'RaceDay Engine Overview', page: 'AdminDashboard', icon: Zap, description: 'Central command center for race operations' },
+      ]
+    },
     {
       title: 'Core Entities',
       items: [
