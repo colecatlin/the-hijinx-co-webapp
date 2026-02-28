@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ChevronDown, Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock } from 'lucide-react';
+import { ChevronDown, Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const DASHBOARD_ITEM = {
@@ -84,6 +84,20 @@ export default function ManagementSidebar({ currentPage, onNavigate }) {
       <div className="p-4">
         <h3 className="text-xs font-mono tracking-wider text-gray-400 uppercase mb-4">Management</h3>
         <nav className="space-y-1">
+          <Link
+            to={createPageUrl(DASHBOARD_ITEM.page)}
+            onClick={() => onNavigate?.(DASHBOARD_ITEM.page)}
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-3 font-semibold',
+              currentPage === DASHBOARD_ITEM.page
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+            )}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span className="flex-1">{DASHBOARD_ITEM.name}</span>
+          </Link>
+          <div className="border-t border-gray-200 my-2" />
           {SECTIONS.map((section) => (
             <div key={section.title}>
               <button
