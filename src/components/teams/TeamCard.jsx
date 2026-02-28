@@ -6,7 +6,7 @@ import { MapPin } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 
-export default function TeamCard({ team, programs = [], drivers = [], media }) {
+export default function TeamCard({ team, programs = [], drivers = [], media, series = [] }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
@@ -19,16 +19,31 @@ export default function TeamCard({ team, programs = [], drivers = [], media }) {
     navigate(buildProfileUrl('Team', team.slug || team.id));
   };
 
-  // Get unique series from programs
-  const uniqueSeries = [...new Set(programs.map(p => p.series_name).filter(Boolean))];
-  
-  // Sort drivers by status (Active first, then Part Time, then Inactive)
-  const statusOrder = { 'Active': 0, 'Part Time': 1, 'Inactive': 2 };
-  const sortedDrivers = [...drivers].sort((a, b) => {
-    const statusA = statusOrder[a.status] ?? 3;
-    const statusB = statusOrder[b.status] ?? 3;
-    return statusA - statusB;
-  });
+  // Build series groups: each series with its drivers + car numbers
+  const seriesGroups = (() => {
+    const activePrograms = programs.filter(p => p.status === 'active' && p.series_id);
+    const grouped = {};
+    activePrograms.forEach(prog => {
+      if (!grouped[prog.series_id]) {
+        const seriesObj = series.find(s => s.id === prog.series_id);
+        grouped[prog.series_id] = {
+          seriesName: seriesObj?.name || prog.series_name || 'Unknown Series',
+          competitionScore: seriesObj?.derived_competition_score || seriesObj?.override_competition_level || 0,
+          drivers: []
+        };
+      }
+      const driver = drivers.find(d => d.id === prog.driver_id);
+      if (driver) {
+        grouped[prog.series_id].drivers.push({
+          id: driver.id,
+          lastName: driver.last_name,
+          carNumber: prog.car_number || driver.primary_number,
+          primaryColor: driver.primary_color || null,
+        });
+      }
+    });
+    return Object.values(grouped).sort((a, b) => b.competitionScore - a.competitionScore);
+  })();
 
   return (
     <div 
