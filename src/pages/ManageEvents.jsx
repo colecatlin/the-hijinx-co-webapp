@@ -64,7 +64,7 @@ export default function ManageEvents() {
 
   if (showAIGenerator) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageEvents">
         <div className="max-w-2xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setShowAIGenerator(false)}>
@@ -83,13 +83,13 @@ export default function ManageEvents() {
             />
           </div>
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   if (showAddForm) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageEvents">
         <div className="max-w-4xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setShowAddForm(false)}>
@@ -106,13 +106,13 @@ export default function ManageEvents() {
             }}
           />
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   if (selectedEventForEdit) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageEvents">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedEventForEdit(null)}>
@@ -150,19 +150,15 @@ export default function ManageEvents() {
             </TabsContent>
           </Tabs>
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageEvents">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl('Management')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
+          <div />
           <div className="flex-1">
             <h1 className="text-4xl font-black mb-2">Manage Events</h1>
             <p className="text-gray-600">{events.length} total events</p>
@@ -274,6 +270,6 @@ export default function ManageEvents() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }
