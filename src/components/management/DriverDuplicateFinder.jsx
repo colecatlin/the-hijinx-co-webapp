@@ -50,7 +50,13 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
     mutationFn: async (ids) => {
       await Promise.all(ids.map(id => base44.entities.Driver.delete(id)));
     },
-    onSuccess: () => {
+    onSuccess: (_, ids) => {
+      base44.functions.invoke('logOperation', {
+        entity_type: 'Driver',
+        action: 'bulk_delete_duplicates',
+        count: ids.length,
+        description: `Deleted ${ids.length} duplicate driver(s)`
+      });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       toast.success('All duplicates deleted');
       findDuplicates();
