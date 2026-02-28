@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
       });
       existingEvents.push(event);
       eventCache[key] = event.id;
+      createdIds.events.push(event.id);
       created.events++;
       log.push(`Created event: ${eventName} (${eventDate})`);
       return event.id;
