@@ -117,12 +117,6 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import Registration from './pages/Registration';
-import ManageRegistrations from './pages/ManageRegistrations';
-import AdminDashboard from './pages/AdminDashboard';
-import ManageRaceControlEvents from './pages/ManageRaceControlEvents';
-import ManageRaceControlEventBuilder from './pages/ManageRaceControlEventBuilder';
-import ManageRaceControlEntries from './pages/ManageRaceControlEntries';
-import ManageRaceControlResults from './pages/ManageRaceControlResults';
 import __Layout from './Layout.jsx';
 
 
@@ -197,12 +191,6 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "Registration": Registration,
-    "ManageRegistrations": ManageRegistrations,
-    "AdminDashboard": AdminDashboard,
-    "ManageRaceControlEvents": ManageRaceControlEvents,
-    "ManageRaceControlEventBuilder": ManageRaceControlEventBuilder,
-    "ManageRaceControlEntries": ManageRaceControlEntries,
-    "ManageRaceControlResults": ManageRaceControlResults,
 }
 
 export const pagesConfig = {
