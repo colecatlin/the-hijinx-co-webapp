@@ -237,7 +237,7 @@ export default function ManageEvents() {
               onClick={() => {
                 if (window.confirm(`Delete ${selectedEvents.length} selected event(s)?`)) {
                   const selectedItems = filteredEvents.filter(e => selectedEvents.includes(e.id));
-                  bulkDeleteMutation.mutate(selectedEvents, selectedItems);
+                  bulkDeleteMutation.mutate({ ids: selectedEvents, names: selectedItems.map(e => e.name) });
                 }
               }}
               disabled={bulkDeleteMutation.isPending}
