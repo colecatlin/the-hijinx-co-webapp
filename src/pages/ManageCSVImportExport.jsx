@@ -179,7 +179,7 @@ export default function ManageCSVImportExport() {
           <CardHeader>
             <CardTitle>Last Import</CardTitle>
             <CardDescription>
-              {new Date(lastImport.created_date).toLocaleString()} — {lastImport.summary.drivers} drivers, {lastImport.summary.events} events, {lastImport.summary.results} results
+              {new Date(lastImport.created_date).toLocaleString()} {lastImport.summary && `— ${lastImport.summary.drivers || 0} drivers, ${lastImport.summary.events || 0} events, ${lastImport.summary.results || 0} results`}
             </CardDescription>
           </CardHeader>
           <CardContent>
