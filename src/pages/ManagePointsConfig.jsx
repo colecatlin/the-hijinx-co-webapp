@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, RefreshCw, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw, ExternalLink, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
+import { createPageUrl } from '@/components/utils';
 
 function ConfigForm({ config, series, onSave, onCancel }) {
   const [form, setForm] = useState(config || {
@@ -165,6 +167,9 @@ export default function ManagePointsConfig() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
+      <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
+        <ArrowLeft className="w-3 h-3" /> Back to Management
+      </Link>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black text-[#232323]">Points Configuration</h1>
