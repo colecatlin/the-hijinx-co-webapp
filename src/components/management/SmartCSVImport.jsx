@@ -63,12 +63,32 @@ export default function SmartCSVImport() {
     }
   }, [csvText, csvHeaders.length]);
 
+  const validateData = (headers, rows) => {
+    const errors = [];
+    const emptyRows = rows.filter(r => r.every(cell => !cell || cell.trim() === '')).length;
+    
+    if (emptyRows > 0) {
+      errors.push(`${emptyRows} row(s) are completely empty`);
+    }
+
+    rows.forEach((row, idx) => {
+      if (row.length !== headers.length) {
+        errors.push(`Row ${idx + 2}: Column count mismatch (${row.length} columns, expected ${headers.length})`);
+      }
+    });
+
+    setValidationErrors(errors);
+  };
+
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
     const text = await file.text();
     setCsvText(text);
+    setCsvHeaders([]);
+    setCsvRows([]);
+    setColumnMapping({});
     e.target.value = '';
 
     setDetecting(true);
