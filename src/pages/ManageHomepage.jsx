@@ -80,9 +80,9 @@ export default function ManageHomepage() {
           })}
         </div>
       </div>
-    </PageShell>
-  );
-}
+    </ManagementLayout>
+    );
+    }
 
 function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }) {
   const [urlInput, setUrlInput] = useState(currentUrl);
