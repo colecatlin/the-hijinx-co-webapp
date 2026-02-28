@@ -29,6 +29,7 @@ export default function ManageSeries() {
   const [editingSeries, setEditingSeries] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedSeriesForEdit, setSelectedSeriesForEdit] = useState(null);
+  const [selectedSeries, setSelectedSeries] = useState([]);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -76,6 +77,27 @@ export default function ManageSeries() {
     if (confirm('Delete this series?')) {
       const ser = series.find(s => s.id === id);
       deleteSeriesMutation.mutate(id, ser);
+    }
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedSeries(filteredSeries.map(s => s.id));
+    } else {
+      setSelectedSeries([]);
+    }
+  };
+
+  const handleSelectSeriesItem = (id) => {
+    setSelectedSeries(prev =>
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedSeries.length} selected series?`)) {
+      const selectedItems = filteredSeries.filter(s => selectedSeries.includes(s.id));
+      bulkDeleteMutation.mutate(selectedSeries, selectedItems);
     }
   };
 
@@ -260,6 +282,16 @@ export default function ManageSeries() {
               className="pl-10"
             />
           </div>
+          {selectedSeries.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedSeries.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -277,6 +309,12 @@ export default function ManageSeries() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox 
+                      checked={selectedSeries.length === filteredSeries.length && filteredSeries.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Name</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Discipline</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Level</th>
@@ -287,6 +325,12 @@ export default function ManageSeries() {
               <tbody>
                 {filteredSeries.map((s) => (
                   <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <Checkbox 
+                        checked={selectedSeries.includes(s.id)}
+                        onCheckedChange={() => handleSelectSeriesItem(s.id)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-medium">{s.name}</td>
                     <td className="px-4 py-3 text-gray-600 text-sm">{s.discipline}</td>
                     <td className="px-4 py-3 text-gray-600">{s.competition_level}</td>
