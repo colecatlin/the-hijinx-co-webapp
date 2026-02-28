@@ -113,9 +113,13 @@ export default function ManageDrivers() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Driver.delete(id),
+    mutationFn: async (id) => {
+      await base44.entities.Driver.delete(id);
+      await new Promise(r => setTimeout(r, 150));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      toast.success('Driver deleted');
     },
   });
 
