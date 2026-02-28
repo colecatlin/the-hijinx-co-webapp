@@ -9,16 +9,47 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { action, entityType, templateOnly } = await req.json();
+    const { action, entityType, templateOnly, csvContent } = await req.json();
+    const startTime = Date.now();
 
     if (!entityType) {
       return Response.json({ error: 'Missing entityType parameter' }, { status: 400 });
     }
 
     if (action === 'export') {
-      return await handleExport(base44, entityType, templateOnly);
+      const result = await handleExport(base44, entityType, templateOnly);
+      if (user?.email) {
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'export',
+          source_type: 'csv_upload',
+          entity_name: entityType,
+          function_name: 'csvEntityManager',
+          status: 'completed',
+          total_records: 0,
+          initiated_by: user.email,
+          execution_time_ms: Date.now() - startTime,
+        });
+      }
+      return result;
     } else if (action === 'import') {
-      return await handleImport(base44, req, entityType);
+      const result = await handleImport(base44, csvContent, entityType);
+      if (user?.email) {
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'import',
+          source_type: 'csv_upload',
+          entity_name: entityType,
+          function_name: 'csvEntityManager',
+          status: result.failed > 0 ? 'completed' : 'completed',
+          total_records: result.total || 0,
+          created_records: result.created > 0 ? [{ entity: entityType, ids: [] }] : [],
+          skipped_count: result.skipped || 0,
+          failed_count: result.failed || 0,
+          error_details: result.errors?.map(e => `Row ${e.row}: ${e.error}`) || [],
+          initiated_by: user.email,
+          execution_time_ms: Date.now() - startTime,
+        });
+      }
+      return Response.json(result);
     } else {
       return Response.json({ error: 'Invalid action' }, { status: 400 });
     }
@@ -114,31 +145,27 @@ async function handleExport(base44, entityType, templateOnly = false) {
   }
 }
 
-async function handleImport(base44, req, entityType) {
+async function handleImport(base44, csvText, entityType) {
   try {
     const entity = base44.entities[entityType];
     if (!entity) {
-      return Response.json({ error: `Entity ${entityType} not found` }, { status: 404 });
+      return { error: `Entity ${entityType} not found` };
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file');
-    
-    if (!file) {
-      return Response.json({ error: 'No file provided' }, { status: 400 });
+    if (!csvText) {
+      return { error: 'No CSV content provided' };
     }
 
-    const csvText = await file.text();
     const lines = csvText.split('\n').filter(line => line.trim());
     
     if (lines.length < 1) {
-      return Response.json({ error: 'CSV file is empty' }, { status: 400 });
+      return { error: 'CSV file is empty' };
     }
 
     // Parse CSV header
     const headers = parseCSVLine(lines[0]);
     
-    const results = { created: 0, updated: 0, failed: 0, errors: [] };
+    const results = { created: 0, updated: 0, failed: 0, skipped: 0, total: lines.length - 1, errors: [] };
     
     // Parse and upsert each row
     for (let i = 1; i < lines.length; i++) {
@@ -189,9 +216,9 @@ async function handleImport(base44, req, entityType) {
       }
     }
 
-    return Response.json({ success: true, ...results });
+    return { success: true, ...results };
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return { error: error.message };
   }
 }
 
