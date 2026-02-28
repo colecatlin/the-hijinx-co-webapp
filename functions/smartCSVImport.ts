@@ -208,6 +208,33 @@ Deno.serve(async (req) => {
 
     // Generic import for all other entities
     const result = await importGenericEntity(base44, entityName, rows, headers);
+    
+    // Prepare created_records array for logging
+    const created_records = [];
+    if (result.created > 0) {
+      created_records.push({
+        entity: entityName,
+        ids: [], // Individual IDs would need to be tracked during creation
+      });
+    }
+
+    // Log the operation
+    if (user?.email) {
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'import',
+        source_type: 'csv_upload',
+        entity_name: entityName,
+        function_name: 'smartCSVImport',
+        status: result.error ? 'failed' : 'completed',
+        total_records: rows.length,
+        created_records,
+        skipped_count: result.skipped || 0,
+        failed_count: result.failed || 0,
+        error_details: result.errors?.map(e => `Row ${e.row}: ${e.error}`) || [],
+        initiated_by: user.email,
+      });
+    }
+
     return Response.json({
       success: !result.error,
       entityName,
