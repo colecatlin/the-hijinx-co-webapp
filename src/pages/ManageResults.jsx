@@ -165,6 +165,13 @@ export default function ManageResults() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-4 py-3">
+                    <Checkbox
+                      checked={selectedIds.size === filteredResults.length && filteredResults.length > 0}
+                      indeterminate={selectedIds.size > 0 && selectedIds.size < filteredResults.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase">Pos</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase">Driver</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase">Event</th>
