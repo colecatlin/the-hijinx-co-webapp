@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -346,13 +346,12 @@ export default function ManageDrivers() {
               className="hidden"
             />
             <Button
-              onClick={handleNascarImport}
-              disabled={importing}
+              onClick={() => setShowDuplicateFinder(true)}
               variant="outline"
-              className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              className="border-amber-300 text-amber-700 hover:bg-amber-50"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {importing ? 'Importing...' : 'NASCAR Import'}
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Find Duplicates
             </Button>
             <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
               <Plus className="w-4 h-4 mr-2" />
