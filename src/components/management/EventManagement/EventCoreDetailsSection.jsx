@@ -13,7 +13,8 @@ export default function EventCoreDetailsSection({ event }) {
   const [formData, setFormData] = useState({
     name: event.name || '',
     track_id: event.track_id || '',
-    series: event.series || '',
+    series_name: event.series_name || '',
+    series_id: event.series_id || '',
     season: event.season || '',
     event_date: event.event_date || '',
     end_date: event.end_date || '',
@@ -25,7 +26,8 @@ export default function EventCoreDetailsSection({ event }) {
     setFormData({
       name: event.name || '',
       track_id: event.track_id || '',
-      series: event.series || '',
+      series_name: event.series_name || '',
+      series_id: event.series_id || '',
       season: event.season || '',
       event_date: event.event_date || '',
       end_date: event.end_date || '',
@@ -72,13 +74,13 @@ export default function EventCoreDetailsSection({ event }) {
   });
 
   const createSeriesMutation = useMutation({
-    mutationFn: (data) => base44.entities.Series.create(data),
-    onSuccess: (newSeries) => {
-      queryClient.invalidateQueries({ queryKey: ['series'] });
-      setFormData({ ...formData, series: newSeries.name });
-      setShowSeriesModal(false);
-      setNewSeriesName('');
-    },
+   mutationFn: (data) => base44.entities.Series.create(data),
+   onSuccess: (newSeries) => {
+     queryClient.invalidateQueries({ queryKey: ['series'] });
+     setFormData({ ...formData, series_id: newSeries.id, series_name: newSeries.name });
+     setShowSeriesModal(false);
+     setNewSeriesName('');
+   },
   });
 
   const createTrackMutation = useMutation({
@@ -100,7 +102,8 @@ export default function EventCoreDetailsSection({ event }) {
     setFormData({
       name: event.name || '',
       track_id: event.track_id || '',
-      series: event.series || '',
+      series_name: event.series_name || '',
+      series_id: event.series_id || '',
       season: event.season || '',
       event_date: event.event_date || '',
       end_date: event.end_date || '',
@@ -127,7 +130,7 @@ export default function EventCoreDetailsSection({ event }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Series</label>
-              <p className="mt-1 text-base">{event.series || 'Not specified'}</p>
+              <p className="mt-1 text-base">{event.series_name || 'Not specified'}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Season</label>
@@ -185,11 +188,12 @@ export default function EventCoreDetailsSection({ event }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Series *</label>
-              <Select value={formData.series} onValueChange={(val) => {
+              <Select value={formData.series_id} onValueChange={(val) => {
                 if (val === '__add_new__') {
                   setShowSeriesModal(true);
                 } else {
-                  setFormData({ ...formData, series: val });
+                  const selectedSeries = allSeries.find(s => s.id === val);
+                  setFormData({ ...formData, series_id: val, series_name: selectedSeries?.name || '' });
                 }
               }}>
                 <SelectTrigger>
@@ -203,7 +207,7 @@ export default function EventCoreDetailsSection({ event }) {
                     </div>
                   </SelectItem>
                   {allSeries.map(series => (
-                    <SelectItem key={series.id} value={series.name}>
+                    <SelectItem key={series.id} value={series.id}>
                       {series.name}
                     </SelectItem>
                   ))}

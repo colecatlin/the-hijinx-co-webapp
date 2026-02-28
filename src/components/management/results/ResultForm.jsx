@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
+const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
 const STATUS_OPTIONS = ['Running', 'DNF', 'DNS', 'DSQ'];
 
 export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
@@ -14,15 +14,16 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
   const [form, setForm] = useState({
     driver_id: '',
     event_id: '',
-    session_type: 'Final',
+    session_type: 'Heat',
+    heat_number: '',
     position: '',
     status_text: 'Running',
-    series: '',
-    class: '',
-    team_name: '',
+    series_id: '',
+    series_class_id: '',
+    team_id: '',
     points: '',
     laps_completed: '',
-    best_lap_time: '',
+    best_lap_time_ms: '',
     ...initialData,
   });
 
@@ -97,6 +98,12 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
             </SelectContent>
           </Select>
         </div>
+        {form.session_type === 'Heat' && (
+          <div>
+            <Label>Heat Number</Label>
+            <Input type="number" value={form.heat_number} onChange={e => set('heat_number', e.target.value)} placeholder="e.g. 1" />
+          </div>
+        )}
         <div>
           <Label>Finishing Position</Label>
           <Input type="number" value={form.position} onChange={e => set('position', e.target.value)} placeholder="e.g. 1" />
@@ -115,24 +122,12 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
           <Input type="number" value={form.points} onChange={e => set('points', e.target.value)} placeholder="e.g. 40" />
         </div>
         <div>
-          <Label>Series</Label>
-          <Input value={form.series} onChange={e => set('series', e.target.value)} placeholder="e.g. Lucas Oil Off Road" />
-        </div>
-        <div>
-          <Label>Class</Label>
-          <Input value={form.class} onChange={e => set('class', e.target.value)} placeholder="e.g. Pro 4" />
-        </div>
-        <div>
-          <Label>Team Name</Label>
-          <Input value={form.team_name} onChange={e => set('team_name', e.target.value)} placeholder="e.g. Chaney Off Road" />
-        </div>
-        <div>
           <Label>Laps Completed</Label>
           <Input type="number" value={form.laps_completed} onChange={e => set('laps_completed', e.target.value)} placeholder="e.g. 15" />
         </div>
         <div>
-          <Label>Best Lap Time</Label>
-          <Input value={form.best_lap_time} onChange={e => set('best_lap_time', e.target.value)} placeholder="e.g. 1:32.456" />
+          <Label>Best Lap Time (ms)</Label>
+          <Input type="number" value={form.best_lap_time_ms} onChange={e => set('best_lap_time_ms', e.target.value)} placeholder="e.g. 92456" />
         </div>
       </div>
       <div className="flex gap-2 justify-end pt-2">
