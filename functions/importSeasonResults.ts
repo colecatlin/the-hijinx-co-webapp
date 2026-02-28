@@ -318,12 +318,28 @@ Deno.serve(async (req) => {
           notes: notes || undefined,
         });
         existingResults.push(newResult);
+        createdIds.results.push(newResult.id);
         created.results++;
       }
     }
 
+    const importLog = await base44.asServiceRole.entities.ImportLog.create({
+      import_date: new Date().toISOString(),
+      total_rows: rows.length,
+      created_drivers: createdIds.drivers,
+      created_tracks: createdIds.tracks,
+      created_series: createdIds.series,
+      created_classes: createdIds.classes,
+      created_events: createdIds.events,
+      created_programs: createdIds.programs,
+      created_results: createdIds.results,
+      summary: created,
+      status: 'completed',
+    });
+
     return Response.json({
       success: true,
+      import_log_id: importLog.id,
       summary: created,
       skipped_invalid,
       skipped_duplicates,
