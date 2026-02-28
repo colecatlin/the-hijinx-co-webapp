@@ -29,6 +29,7 @@ export default function ManageTeams() {
   const [selectedTeamForEdit, setSelectedTeamForEdit] = useState(null);
   const [enriching, setEnriching] = useState(false);
   const [enrichResult, setEnrichResult] = useState(null);
+  const [selectedTeams, setSelectedTeams] = useState([]);
   const queryClient = useQueryClient();
 
   // Support deep-link: ?teamId=xxx opens that team directly
@@ -80,6 +81,20 @@ export default function ManageTeams() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids, selectedItems) => {
+      for (const id of ids) {
+        await base44.entities.Team.delete(id);
+      }
+      const names = selectedItems?.map(t => t.name) || [];
+      await base44.functions.invoke('logDeletion', { entityName: 'Team', recordIds: ids, recordNames: names });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setSelectedTeams([]);
+    },
+  });
+
   const filteredTeams = teams.filter(team => {
     const query = searchQuery.toLowerCase();
     return team.name?.toLowerCase().includes(query);
@@ -92,6 +107,27 @@ export default function ManageTeams() {
   const handleDelete = async (team) => {
     if (window.confirm(`Delete ${team.name}?`)) {
       deleteMutation.mutate(team.id, team);
+    }
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedTeams(filteredTeams.map(t => t.id));
+    } else {
+      setSelectedTeams([]);
+    }
+  };
+
+  const handleSelectTeam = (id) => {
+    setSelectedTeams(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedTeams.length} selected team(s)?`)) {
+      const selectedItems = filteredTeams.filter(t => selectedTeams.includes(t.id));
+      bulkDeleteMutation.mutate(selectedTeams, selectedItems);
     }
   };
 
@@ -289,6 +325,16 @@ export default function ManageTeams() {
               className="pl-10"
             />
           </div>
+          {selectedTeams.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedTeams.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -302,6 +348,12 @@ export default function ManageTeams() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -322,6 +374,12 @@ export default function ManageTeams() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTeams.map((team) => (
                   <tr key={team.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedTeams.includes(team.id)}
+                        onCheckedChange={() => handleSelectTeam(team.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{team.name}</div>
                       <div className="text-sm text-gray-500">{team.slug}</div>
