@@ -243,6 +243,18 @@ export default function ManageCSVImportExport() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="smart">
+          <Card>
+            <CardHeader>
+              <CardTitle>Smart Import</CardTitle>
+              <CardDescription>Upload any CSV — entity type is auto-detected from column headers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SmartCSVImport />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {status && (
