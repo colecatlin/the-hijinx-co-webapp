@@ -122,6 +122,7 @@ Deno.serve(async (req) => {
       });
       existingSeriesClasses.push(cls);
       classCache[key] = cls.id;
+      createdIds.classes.push(cls.id);
       created.classes++;
       log.push(`Created class: ${className}`);
       return cls.id;
