@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const drivers = await base44.asServiceRole.entities.Driver.list();
+    const drivers = await base44.asServiceRole.entities.Driver.list('', 5000);
 
     // Group drivers purely by name similarity, without requiring date_of_birth to match
     const duplicateSets = [];
