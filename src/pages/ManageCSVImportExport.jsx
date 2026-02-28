@@ -139,6 +139,7 @@ export default function ManageCSVImportExport() {
         details: result.errors
       });
       setFile(null);
+      queryClient.invalidateQueries({ queryKey: ['importLogs'] });
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
     } finally {
