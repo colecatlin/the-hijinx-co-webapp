@@ -20,28 +20,36 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
 
   // Build series groups: each series with its drivers + car numbers
   const seriesGroups = (() => {
-    const activePrograms = programs.filter(p => p.status === 'active' && p.series_id);
+    // Include all programs (not just active), prefer series_id but fall back to series_name as key
+    const relevantPrograms = programs.filter(p => p.series_id || p.series_name);
     const grouped = {};
-    activePrograms.forEach(prog => {
-      if (!grouped[prog.series_id]) {
-        const seriesObj = series.find(s => s.id === prog.series_id);
-        grouped[prog.series_id] = {
-          seriesName: seriesObj?.name || prog.series_name || 'Unknown Series',
+    relevantPrograms.forEach(prog => {
+      const key = prog.series_id || prog.series_name;
+      if (!grouped[key]) {
+        const seriesObj = prog.series_id ? series.find(s => s.id === prog.series_id) : null;
+        grouped[key] = {
+          seriesName: seriesObj?.name || prog.series_name || 'Series',
           competitionScore: seriesObj?.derived_competition_score || seriesObj?.override_competition_level || 0,
           drivers: []
         };
       }
       const driver = drivers.find(d => d.id === prog.driver_id);
       if (driver) {
-        grouped[prog.series_id].drivers.push({
-          id: driver.id,
-          lastName: driver.last_name,
-          carNumber: prog.car_number || driver.primary_number,
-          primaryColor: driver.primary_color || null,
-        });
+        // avoid duplicates
+        const alreadyAdded = grouped[key].drivers.some(d => d.id === driver.id);
+        if (!alreadyAdded) {
+          grouped[key].drivers.push({
+            id: driver.id,
+            lastName: driver.last_name,
+            carNumber: prog.car_number || driver.primary_number,
+            primaryColor: driver.primary_color || null,
+          });
+        }
       }
     });
-    return Object.values(grouped).sort((a, b) => b.competitionScore - a.competitionScore);
+    return Object.values(grouped)
+      .filter(g => g.drivers.length > 0)
+      .sort((a, b) => b.competitionScore - a.competitionScore);
   })();
 
   return (
