@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
-import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Package, Award, Mail, User, BarChart3, FileText, Book, MessageSquare, Image, TrendingUp, Heart, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, Megaphone, FileJson, Clock, ClipboardList } from 'lucide-react';
 
 export default function Management() {
   const sections = [
@@ -16,6 +16,7 @@ export default function Management() {
         { name: 'Events', page: 'ManageEvents', icon: Calendar, description: 'Manage race events and schedules' },
         { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Manage race sessions and timing' },
         { name: 'Results', page: 'ManageResults', icon: Award, description: 'Manage race results and standings' },
+        { name: 'Registrations', page: 'ManageRegistrations', icon: ClipboardList, description: 'Manage driver, team, and event registrations' },
         { name: 'Points Config', page: 'ManagePointsConfig', icon: Trophy, description: 'Link Google Sheets for automated standings calculation' },
         { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review driver-submitted results' },
       ]
