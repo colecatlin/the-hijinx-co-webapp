@@ -175,10 +175,10 @@ Deno.serve(async (req) => {
       if (existing) {
         // Update all info from import
         const updateData = {};
-        if (bibNumber) updateData.primary_number = bibNumber;
-        if (racingBaseCity) updateData.racing_base_city = racingBaseCity;
-        if (racingBaseState) updateData.racing_base_state = racingBaseState;
-        if (racingBaseCountry) updateData.racing_base_country = racingBaseCountry;
+        if (bibNumber && existing.primary_number !== bibNumber) updateData.primary_number = bibNumber;
+        if (racingBaseCity && existing.racing_base_city !== racingBaseCity) updateData.racing_base_city = racingBaseCity;
+        if (racingBaseState && existing.racing_base_state !== racingBaseState) updateData.racing_base_state = racingBaseState;
+        if (racingBaseCountry && existing.racing_base_country !== racingBaseCountry) updateData.racing_base_country = racingBaseCountry;
         if (Object.keys(updateData).length > 0) {
           await base44.asServiceRole.entities.Driver.update(existing.id, updateData);
           Object.assign(existing, updateData);
