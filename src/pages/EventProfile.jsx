@@ -81,7 +81,9 @@ export default function EventProfile() {
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-black text-[#232323] leading-none">{event.name}</h1>
+              <h1 className="text-4xl font-black text-[#232323] leading-none">
+                {event.season ? `${event.season} ${event.name}` : event.name}
+              </h1>
               {event.round_number && (
                 <div className="text-xl font-bold text-gray-500">Rnd {event.round_number}</div>
               )}
