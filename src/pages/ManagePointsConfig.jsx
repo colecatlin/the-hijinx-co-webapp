@@ -14,6 +14,7 @@ import { Plus, Pencil, Trash2, RefreshCw, ExternalLink, CheckCircle, AlertCircle
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { createPageUrl } from '@/components/utils';
+import ManagementLayout from '@/components/management/ManagementLayout';
 
 function ConfigForm({ config, series, onSave, onCancel }) {
   const [form, setForm] = useState(config || {
@@ -166,7 +167,8 @@ export default function ManagePointsConfig() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <ManagementLayout currentPage="ManagePointsConfig">
+      <div className="max-w-5xl mx-auto px-6 py-10">
       <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
         <ArrowLeft className="w-3 h-3" /> Back to Management
       </Link>
@@ -251,6 +253,7 @@ export default function ManagePointsConfig() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </ManagementLayout>
   );
 }

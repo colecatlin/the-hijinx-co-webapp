@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +30,7 @@ export default function ManageSessions() {
 
   if (selectedSessionForEdit) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageSessions">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedSessionForEdit(null)}>
@@ -65,12 +65,12 @@ export default function ManageSessions() {
             </TabsContent>
           </Tabs>
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageSessions">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl('Management')}>
@@ -152,6 +152,6 @@ export default function ManageSessions() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }

@@ -10,7 +10,7 @@ import { Plus, Search, Pencil, Trash2, ChevronDown, Sparkles, ArrowLeft } from '
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import StoryForm from '@/components/management/StoryForm';
 import StorySubmissionsReview from '@/components/management/StorySubmissionsReview';
 import { createPageUrl } from '@/components/utils';
@@ -143,7 +143,7 @@ export default function ManageStories() {
   };
 
   return (
-    <PageShell className="bg-gray-50">
+    <ManagementLayout currentPage="ManageStories">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-4 transition-colors">
           <ArrowLeft className="w-3 h-3" /> Back to Management
@@ -362,7 +362,7 @@ export default function ManageStories() {
           </Tabs>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }
 

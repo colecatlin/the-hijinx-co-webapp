@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -324,7 +324,7 @@ export default function ManageDriverClaims() {
   const rejectedClaims = claims.filter(c => c.status === 'rejected' || c.status === 'duplicate');
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageDriverClaims">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <Link to={createPageUrl('Management')}>
           <Button variant="ghost" size="sm" className="mb-6">
@@ -442,6 +442,6 @@ export default function ManageDriverClaims() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </PageShell>
+    </ManagementLayout>
   );
 }
