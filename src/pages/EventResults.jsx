@@ -35,9 +35,6 @@ export default function EventResults() {
     enabled: !!event?.series_id,
   });
 
-  const track = tracks.find(t => t.id === event?.track_id);
-  const seriesItem = series.find(s => s.id === event?.series_id);
-
   if (isLoading) {
     return (
       <PageShell>
