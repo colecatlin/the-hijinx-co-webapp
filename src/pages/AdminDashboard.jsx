@@ -49,7 +49,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-black mb-2">RaceDay Engine</h1>
+            <h1 className="text-4xl font-black mb-2">RaceControl</h1>
             <p className="text-slate-400">Central Command Center for Race Operations</p>
           </div>
 

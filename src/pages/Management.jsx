@@ -9,7 +9,7 @@ export default function Management() {
     {
       title: 'Dashboard',
       items: [
-        { name: 'RaceDay Engine Overview', page: 'AdminDashboard', icon: Zap, description: 'Central command center for race operations' },
+        { name: 'RaceControl', page: 'AdminDashboard', icon: Zap, description: 'Central command center for race operations' },
       ]
     },
     {
