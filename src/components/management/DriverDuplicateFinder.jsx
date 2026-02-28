@@ -96,6 +96,8 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
     );
   }
 
+  const totalDuplicates = duplicates.reduce((sum, g) => sum + (g.length - 1), 0);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
