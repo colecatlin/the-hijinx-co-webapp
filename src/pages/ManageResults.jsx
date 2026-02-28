@@ -36,9 +36,28 @@ export default function ManageResults() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Results.delete(id),
+    mutationFn: async (id) => {
+      await base44.entities.Results.delete(id);
+      await new Promise(r => setTimeout(r, 100));
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
   });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      for (const id of ids) {
+        await base44.entities.Results.delete(id);
+        await new Promise(r => setTimeout(r, 100));
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
+  });
+
+  const handleDeleteAll = () => {
+    if (window.confirm(`Are you sure? This will permanently delete all ${results.length} results.`)) {
+      bulkDeleteMutation.mutate(results.map(r => r.id));
+    }
+  };
 
   const getDriverName = (driverId) => {
     const driver = drivers.find(d => d.id === driverId);
