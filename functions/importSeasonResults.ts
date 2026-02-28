@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
       });
       existingSeries.push(series);
       seriesCache[key] = series.id;
+      createdIds.series.push(series.id);
       created.series++;
       log.push(`Created series: ${seriesName}`);
       return series.id;
