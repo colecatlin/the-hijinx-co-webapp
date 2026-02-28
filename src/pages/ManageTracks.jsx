@@ -17,6 +17,7 @@ export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
+  const [selectedTracks, setSelectedTracks] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: tracks = [], isLoading } = useQuery({
@@ -32,6 +33,20 @@ export default function ManageTracks() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracks'] }),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids, selectedItems) => {
+      for (const id of ids) {
+        await base44.entities.Track.delete(id);
+      }
+      const names = selectedItems?.map(t => t.name) || [];
+      await base44.functions.invoke('logDeletion', { entityName: 'Track', recordIds: ids, recordNames: names });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tracks'] });
+      setSelectedTracks([]);
+    },
+  });
+
   const filteredTracks = tracks.filter(track =>
     track.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -39,6 +54,27 @@ export default function ManageTracks() {
   const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
       deleteMutation.mutate(track.id, track);
+    }
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedTracks(filteredTracks.map(t => t.id));
+    } else {
+      setSelectedTracks([]);
+    }
+  };
+
+  const handleSelectTrack = (id) => {
+    setSelectedTracks(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedTracks.length} selected track(s)?`)) {
+      const selectedItems = filteredTracks.filter(t => selectedTracks.includes(t.id));
+      bulkDeleteMutation.mutate(selectedTracks, selectedItems);
     }
   };
 
@@ -106,6 +142,16 @@ export default function ManageTracks() {
               className="pl-10"
             />
           </div>
+          {selectedTracks.length > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete {selectedTracks.length}
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -119,6 +165,12 @@ export default function ManageTracks() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3 text-left w-12">
+                    <Checkbox 
+                      checked={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -139,6 +191,12 @@ export default function ManageTracks() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTracks.map((track) => (
                   <tr key={track.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Checkbox 
+                        checked={selectedTracks.includes(track.id)}
+                        onCheckedChange={() => handleSelectTrack(track.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{track.name}</div>
                     </td>
