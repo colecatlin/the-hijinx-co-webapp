@@ -168,8 +168,7 @@ export default function ManageResults() {
                   <th className="px-4 py-3">
                     <Checkbox
                       checked={selectedIds.size === filteredResults.length && filteredResults.length > 0}
-                      indeterminate={selectedIds.size > 0 && selectedIds.size < filteredResults.length}
-                      onChange={toggleSelectAll}
+                      onCheckedChange={toggleSelectAll}
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase">Pos</th>
