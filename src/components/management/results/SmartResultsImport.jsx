@@ -18,6 +18,7 @@ const RESULT_FIELDS = [
   { key: 'driver_first_name',   label: 'Driver First Name' },
   { key: 'driver_last_name',    label: 'Driver Last Name' },
   { key: 'bib_number',          label: 'Bib / Car Number' },
+  { key: 'round_number',        label: 'Round Number' },
   { key: 'session_type',        label: 'Session Type' },
   { key: 'position',            label: 'Position' },
   { key: 'status_text',         label: 'Status (Running/DNF/DNS)' },
