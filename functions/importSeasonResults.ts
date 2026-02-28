@@ -172,7 +172,15 @@ Deno.serve(async (req) => {
       if (!existing && bibNumber) {
         existing = existingDrivers.find(d => d.primary_number === bibNumber);
       }
-      if (existing) { driverCache[key] = existing.id; return existing.id; }
+      if (existing) {
+        // Update bib number if provided and different
+        if (bibNumber && existing.primary_number !== bibNumber) {
+          await base44.asServiceRole.entities.Driver.update(existing.id, { primary_number: bibNumber });
+          existing.primary_number = bibNumber;
+        }
+        driverCache[key] = existing.id;
+        return existing.id;
+      }
       const driver = await base44.asServiceRole.entities.Driver.create({
         first_name: firstName,
         last_name: lastName,
