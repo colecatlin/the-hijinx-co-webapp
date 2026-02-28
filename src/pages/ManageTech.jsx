@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import TechForm from '@/components/management/TechForm';
+import ManagementLayout from '@/components/management/ManagementLayout';
 
 export default function ManageTech() {
   const [showForm, setShowForm] = useState(false);
@@ -90,7 +91,7 @@ export default function ManageTech() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <ManagementLayout currentPage="ManageTech">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Manage Tech</h1>
@@ -189,6 +190,6 @@ export default function ManageTech() {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </ManagementLayout>
   );
 }

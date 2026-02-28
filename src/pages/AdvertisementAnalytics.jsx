@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import { format, subDays, startOfDay } from 'date-fns';
 import { TrendingUp, Eye, Mouse, CheckCircle } from 'lucide-react';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 
 const COLORS = ['#232323', '#1A3249', '#3B82F6', '#10B981', '#F59E0B'];
 
@@ -90,7 +90,7 @@ export default function AdvertisementAnalytics() {
   }, [filteredAnalytics, ads]);
 
   return (
-    <PageShell className="bg-gray-50">
+    <ManagementLayout currentPage="AdvertisementAnalytics">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Advertisement Analytics</h1>
@@ -233,6 +233,6 @@ export default function AdvertisementAnalytics() {
           )}
         </Card>
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }

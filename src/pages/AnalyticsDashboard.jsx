@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -81,7 +81,7 @@ export default function AnalyticsDashboard() {
   };
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="AnalyticsDashboard">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl('Management')}>
@@ -200,6 +200,6 @@ export default function AnalyticsDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }

@@ -8,6 +8,7 @@ import { Download, Upload, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SmartCSVImport from '@/components/management/SmartCSVImport';
+import ManagementLayout from '@/components/management/ManagementLayout';
 
 const ENTITY_TYPES = [
   'Driver', 'Team', 'Track', 'Series', 'Event', 'Results', 'Session',
@@ -149,7 +150,8 @@ export default function ManageCSVImportExport() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <ManagementLayout currentPage="ManageCSVImportExport">
+      <div className="max-w-2xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">CSV Import/Export</h1>
         <p className="text-gray-600">Bulk import and export entity data as CSV files</p>
@@ -404,6 +406,7 @@ export default function ManageCSVImportExport() {
           </div>
         </Alert>
       )}
-    </div>
+      </div>
+    </ManagementLayout>
   );
 }

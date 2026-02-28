@@ -9,6 +9,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import FoodBeverageForm from '@/components/management/FoodBeverageForm';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { createPageUrl } from '@/components/utils';
+import ManagementLayout from '@/components/management/ManagementLayout';
 
 export default function ManageFoodBeverage() {
   const queryClient = useQueryClient();
@@ -88,7 +89,8 @@ export default function ManageFoodBeverage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <ManagementLayout currentPage="ManageFoodBeverage">
+      <div className="max-w-6xl mx-auto px-6 py-12">
       <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
         <ArrowLeft className="w-3 h-3" /> Back to Management
       </Link>
@@ -182,6 +184,7 @@ export default function ManageFoodBeverage() {
           }}
         />
       )}
-    </div>
-  );
-}
+      </div>
+      </ManagementLayout>
+      );
+      }

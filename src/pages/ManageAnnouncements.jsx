@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import AnnouncementForm from '@/components/management/AnnouncementForm';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -42,7 +42,7 @@ export default function ManageAnnouncements() {
   };
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageAnnouncements">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <Link
@@ -147,6 +147,6 @@ export default function ManageAnnouncements() {
           </div>
         )}
       </div>
-    </PageShell>
+    </ManagementLayout>
   );
 }

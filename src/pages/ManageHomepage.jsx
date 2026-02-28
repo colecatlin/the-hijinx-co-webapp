@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,16 +47,16 @@ export default function ManageHomepage() {
 
   if (isLoading) {
     return (
-      <PageShell>
+      <ManagementLayout currentPage="ManageHomepage">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
-      </PageShell>
+      </ManagementLayout>
     );
   }
 
   return (
-    <PageShell>
+    <ManagementLayout currentPage="ManageHomepage">
       <div className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-black mb-2">Homepage Settings</h1>
