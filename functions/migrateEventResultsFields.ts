@@ -23,25 +23,34 @@ Deno.serve(async (req) => {
         seriesMap[s.name.toLowerCase()] = s.id;
       });
 
-      // Update events
+      // Batch updates
+      const updates = [];
       for (const event of events) {
-        const updates = {};
+        const eventUpdates = {};
         
         // Copy series to series_name if not already set
         if (event.series && !event.series_name) {
-          updates.series_name = event.series;
+          eventUpdates.series_name = event.series;
         }
         
         // Set series_id if we can match it
         if (event.series_name && !event.series_id) {
           const matchedId = seriesMap[event.series_name.toLowerCase()];
           if (matchedId) {
-            updates.series_id = matchedId;
+            eventUpdates.series_id = matchedId;
           }
         }
 
-        if (Object.keys(updates).length > 0) {
-          await base44.asServiceRole.entities.Event.update(event.id, updates);
+        if (Object.keys(eventUpdates).length > 0) {
+          updates.push(base44.asServiceRole.entities.Event.update(event.id, eventUpdates));
+        }
+      }
+      
+      // Execute updates with slight delay between batches
+      for (let i = 0; i < updates.length; i += 10) {
+        await Promise.all(updates.slice(i, i + 10));
+        if (i + 10 < updates.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
     }
@@ -50,26 +59,36 @@ Deno.serve(async (req) => {
     if (phase === 'all' || phase === 'results') {
       const results = await base44.asServiceRole.entities.Results.list();
 
+      // Batch updates
+      const updates = [];
       for (const result of results) {
-        const updates = {};
+        const resultUpdates = {};
 
         // Copy best_lap_time to best_lap_time_ms if not already set
         if (result.best_lap_time && !result.best_lap_time_ms) {
-          updates.best_lap_time_ms = result.best_lap_time;
+          resultUpdates.best_lap_time_ms = result.best_lap_time;
         }
 
         // Extract heat_number from session_type (e.g., "Heat 1" -> 1)
         if (!result.heat_number && result.session_type) {
           const heatMatch = result.session_type.match(/Heat\s*(\d+)/i);
           if (heatMatch) {
-            updates.heat_number = parseInt(heatMatch[1], 10);
+            resultUpdates.heat_number = parseInt(heatMatch[1], 10);
             // Also update session_type to just "Heat"
-            updates.session_type = 'Heat';
+            resultUpdates.session_type = 'Heat';
           }
         }
 
-        if (Object.keys(updates).length > 0) {
-          await base44.asServiceRole.entities.Results.update(result.id, updates);
+        if (Object.keys(resultUpdates).length > 0) {
+          updates.push(base44.asServiceRole.entities.Results.update(result.id, resultUpdates));
+        }
+      }
+
+      // Execute updates with slight delay between batches
+      for (let i = 0; i < updates.length; i += 10) {
+        await Promise.all(updates.slice(i, i + 10));
+        if (i + 10 < updates.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
     }
