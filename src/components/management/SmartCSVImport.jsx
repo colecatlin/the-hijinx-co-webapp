@@ -22,7 +22,7 @@ const CONFIDENCE_COLORS = {
   low: 'bg-red-50 border-red-200 text-red-800',
 };
 
-export default function SmartCSVImport() {
+export default function SmartCSVImport({ onImportComplete }) {
   const fileRef = useRef();
   const [step, setStep] = useState('upload');
   const [csvText, setCsvText] = useState('');
