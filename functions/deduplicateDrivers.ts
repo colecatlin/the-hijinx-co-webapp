@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
             const records = await base44.asServiceRole.entities[entityName].filter({ driver_id: dup.id });
             for (const record of records) {
               await base44.asServiceRole.entities[entityName].update(record.id, { driver_id: master.id });
+              await new Promise(r => setTimeout(r, 50)); // Small delay to avoid rate limits
             }
           } catch (_e) {
             // Entity may not exist or have driver_id field — skip silently
@@ -100,6 +101,7 @@ Deno.serve(async (req) => {
         // Delete the duplicate driver (only if no program)
         await base44.asServiceRole.entities.Driver.delete(dup.id);
         logEntry.duplicates_removed.push({ id: dup.id, name: `${dup.first_name} ${dup.last_name}` });
+        await new Promise(r => setTimeout(r, 100)); // Delay between deletions
       }
 
       mergeLog.push(logEntry);
