@@ -173,10 +173,15 @@ Deno.serve(async (req) => {
         existing = existingDrivers.find(d => d.primary_number === bibNumber);
       }
       if (existing) {
-        // Update bib number if provided and different
-        if (bibNumber && existing.primary_number !== bibNumber) {
-          await base44.asServiceRole.entities.Driver.update(existing.id, { primary_number: bibNumber });
-          existing.primary_number = bibNumber;
+        // Update all info from import
+        const updateData = {};
+        if (bibNumber) updateData.primary_number = bibNumber;
+        if (racingBaseCity) updateData.racing_base_city = racingBaseCity;
+        if (racingBaseState) updateData.racing_base_state = racingBaseState;
+        if (racingBaseCountry) updateData.racing_base_country = racingBaseCountry;
+        if (Object.keys(updateData).length > 0) {
+          await base44.asServiceRole.entities.Driver.update(existing.id, updateData);
+          Object.assign(existing, updateData);
         }
         driverCache[key] = existing.id;
         return existing.id;
