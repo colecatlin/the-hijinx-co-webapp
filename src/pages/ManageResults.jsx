@@ -16,6 +16,7 @@ export default function ManageResults() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showSmartImportDialog, setShowSmartImportDialog] = useState(false);
   const [editingResult, setEditingResult] = useState(null);
   const queryClient = useQueryClient();
 
