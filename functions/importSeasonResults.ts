@@ -205,11 +205,12 @@ Deno.serve(async (req) => {
 
     async function getOrCreateProgram(driverId, seriesId, seriesClassId, season) {
       if (!driverId || !seriesId) return null;
-      const key = `${driverId}::${seriesId}::${season}`;
+      const startYear = parseInt(season) || 2025;
+      const key = `${driverId}::${seriesId}::${startYear}`;
       if (programCache[key]) return programCache[key];
       const existing = existingPrograms.find(p =>
         p.driver_id === driverId && p.series_id === seriesId &&
-        String(p.start_year) === String(season)
+        String(p.start_year) === String(startYear)
       );
       if (existing) { programCache[key] = existing.id; return existing.id; }
       const program = await base44.asServiceRole.entities.DriverProgram.create({
@@ -217,7 +218,8 @@ Deno.serve(async (req) => {
         series_id: seriesId,
         series_class_id: seriesClassId || undefined,
         program_type: 'series',
-        start_year: parseInt(season) || new Date().getFullYear(),
+        start_year: startYear,
+        end_year: new Date().getFullYear(),
         status: 'active',
       });
       existingPrograms.push(program);
