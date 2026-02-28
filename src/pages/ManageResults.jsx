@@ -19,6 +19,7 @@ export default function ManageResults() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showSmartImportDialog, setShowSmartImportDialog] = useState(false);
   const [editingResult, setEditingResult] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const queryClient = useQueryClient();
 
   const { data: results = [], isLoading } = useQuery({
