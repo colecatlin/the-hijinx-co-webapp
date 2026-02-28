@@ -188,7 +188,7 @@ export default function ManageResults() {
                     <td className="px-4 py-3">
                       <Checkbox
                         checked={selectedIds.has(result.id)}
-                        onChange={() => toggleSelect(result.id)}
+                        onCheckedChange={() => toggleSelect(result.id)}
                       />
                     </td>
                     <td className="px-4 py-3 font-bold">{result.position || '—'}</td>
