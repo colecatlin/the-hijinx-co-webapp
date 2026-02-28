@@ -219,8 +219,13 @@ export default function ManageResults() {
                         variant="ghost"
                         size="sm"
                         onClick={() => { if (confirm('Delete this result?')) deleteMutation.mutate(result.id); }}
+                        disabled={deleteMutation.isPending}
                       >
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                        {deleteMutation.isPending ? (
+                          <Loader className="w-4 h-4 text-red-600 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        )}
                       </Button>
                     </td>
                   </tr>
