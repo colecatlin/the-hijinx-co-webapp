@@ -53,8 +53,7 @@ Deno.serve(async (req) => {
 
     // Related entities that reference driver_id
     const relatedEntities = [
-      'DriverMedia', 'DriverProgram', 'Results', 'DriverPartnership',
-      'DriverPerformance', 'DriverCommunity', 'EntityCollaborator', 'UserFollowDriver'
+      'DriverMedia', 'DriverProgram', 'Results', 'EntityCollaborator', 'UserFollowDriver'
     ];
 
     for (const group of duplicateSets) {
