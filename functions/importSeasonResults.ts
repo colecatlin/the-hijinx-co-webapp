@@ -217,6 +217,7 @@ Deno.serve(async (req) => {
       const eventName    = getMapped(row, 'event_name');
       const eventDate    = getMapped(row, 'event_date');
       const season       = getMapped(row, 'season') || (eventDate ? new Date(eventDate).getFullYear().toString() : '2025');
+      const roundNumber  = getMapped(row, 'round_number');
       const firstName    = getMapped(row, 'driver_first_name');
       const lastName     = getMapped(row, 'driver_last_name');
       const bibNumber    = getMapped(row, 'bib_number');
