@@ -143,7 +143,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
                       return (
                         <div
                           key={dIdx}
-                          className="rounded-md px-2 py-1 text-center"
+                          className="rounded-md px-2 py-0.5 text-center"
                           style={{
                             border: `2px solid ${color}`,
                             color: color,
@@ -168,7 +168,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
                 {drivers.slice(0, 8).map((driver, idx) => (
                   <div
                     key={idx}
-                    className="rounded-md px-2 py-1 text-center"
+                    className="rounded-md px-2 py-0.5 text-center"
                     style={{ border: `2px solid ${driver.primary_color || '#232323'}`, color: driver.primary_color || '#232323' }}
                   >
                     <span className="text-xs font-black tracking-tight leading-none">
