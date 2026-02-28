@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
       ]);
 
       const eventId = await getOrCreateEvent(eventName || `${seriesName || 'Race'} - ${eventDate}`, eventDate, trackId, seriesId, season);
-      const driverId = await getOrCreateDriver(firstName, lastName, bibNumber);
+      const driverId = await getOrCreateDriver(firstName, lastName, bibNumber, racingBaseCity, racingBaseState, racingBaseCountry);
 
       if (!driverId || !eventId) { skipped_invalid++; continue; }
 
