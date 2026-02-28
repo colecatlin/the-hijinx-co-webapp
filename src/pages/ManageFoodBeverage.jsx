@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, GripVertical, ArrowLeft } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import FoodBeverageForm from '@/components/management/FoodBeverageForm';
 import SectionHeader from '@/components/shared/SectionHeader';
+import { createPageUrl } from '@/components/utils';
 
 export default function ManageFoodBeverage() {
   const queryClient = useQueryClient();
@@ -87,6 +89,9 @@ export default function ManageFoodBeverage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
+      <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
+        <ArrowLeft className="w-3 h-3" /> Back to Management
+      </Link>
       <div className="flex items-center justify-between mb-8">
         <SectionHeader
           label="Management"
