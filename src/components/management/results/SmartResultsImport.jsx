@@ -54,7 +54,6 @@ export default function SmartResultsImport({ onDone }) {
       const hdrs = parseCSVHeaders(text);
       setHeaders(hdrs);
 
-      // Auto-map
       const autoMap = {};
       hdrs.forEach(h => {
         const hLow = h.toLowerCase().replace(/[\s_\-\/().#]/g, '');
@@ -197,9 +196,15 @@ export default function SmartResultsImport({ onDone }) {
           </div>
         )}
 
-        {success && result?.skipped > 0 && (
+        {success && result?.skipped_duplicates > 0 && (
           <p className="text-sm text-amber-600 text-center">
-            {result.skipped} row(s) not added — duplicates already exist in the database
+            {result.skipped_duplicates} row(s) not added — duplicates already exist in the database
+          </p>
+        )}
+
+        {success && result?.skipped_invalid > 0 && (
+          <p className="text-sm text-amber-600 text-center">
+            {result.skipped_invalid} row(s) skipped — missing required driver name or event date
           </p>
         )}
 
