@@ -26,21 +26,21 @@ export default function ManageCSVImportExport() {
   const [undoLoading, setUndoLoading] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: importLogs = [] } = useQuery({
-    queryKey: ['importLogs'],
-    queryFn: () => base44.entities.ImportLog.list('-created_date', 50),
+  const { data: operationLogs = [] } = useQuery({
+    queryKey: ['operationLogs'],
+    queryFn: () => base44.entities.OperationLog.filter({ operation_type: 'import' }, '-created_date', 50),
     refetchInterval: 2000,
   });
 
-  const lastImport = importLogs[0];
+  const lastImport = operationLogs[0];
 
   const handleUndo = async () => {
     if (!lastImport) return;
     setUndoLoading(true);
     try {
-      await base44.functions.invoke('undoImport', { importLogId: lastImport.id });
+      await base44.functions.invoke('reverseImport', { operationLogId: lastImport.id });
       setStatus({ type: 'success', message: 'Import rolled back successfully' });
-      queryClient.invalidateQueries({ queryKey: ['importLogs'] });
+      queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
     } finally {
@@ -140,7 +140,7 @@ export default function ManageCSVImportExport() {
         details: result.errors
       });
       setFile(null);
-      queryClient.invalidateQueries({ queryKey: ['importLogs'] });
+      queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
     } finally {
@@ -309,7 +309,7 @@ export default function ManageCSVImportExport() {
               <CardDescription>Upload any CSV — entity type is auto-detected from column headers</CardDescription>
             </CardHeader>
             <CardContent>
-              <SmartCSVImport onImportComplete={() => queryClient.invalidateQueries({ queryKey: ['importLogs'] })} />
+              <SmartCSVImport onImportComplete={() => queryClient.invalidateQueries({ queryKey: ['operationLogs'] })} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -321,19 +321,19 @@ export default function ManageCSVImportExport() {
               <CardDescription>History of all imports performed</CardDescription>
             </CardHeader>
             <CardContent>
-              {importLogs.length === 0 ? (
+              {operationLogs.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No imports yet</p>
               ) : (
                 <div className="space-y-3">
-                  {importLogs.map((log) => (
+                  {operationLogs.map((log) => (
                     <div key={log.id} className="border rounded-lg p-4 space-y-3">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-medium text-sm">
-                            {new Date(log.import_date).toLocaleString()}
+                            {new Date(log.created_date).toLocaleString()}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {log.total_rows} rows • {log.summary?.drivers || 0} drivers • {log.summary?.events || 0} events • {log.summary?.results || 0} results
+                            {log.total_records} records • {log.entity_name} • {log.created_records?.reduce((sum, r) => sum + (r.ids?.length || 0), 0) || 0} created
                           </p>
                         </div>
                         <span className={`text-xs font-medium px-2 py-1 rounded ${
