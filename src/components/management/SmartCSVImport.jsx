@@ -171,53 +171,141 @@ export default function SmartCSVImport() {
             <span>Detecting entity type…</span>
           </div>
         ) : (
-          <div className={`border rounded-lg p-4 ${CONFIDENCE_COLORS[detection?.confidence] || ''}`}>
-            <p className="text-sm font-semibold mb-1">
-              Detected: <span className="font-bold">{effectiveEntity}</span>
-              <span className="ml-2 text-xs font-normal opacity-70">({detection?.confidence} confidence)</span>
-            </p>
-            <p className="text-xs opacity-80">
-              {detection?.confidence === 'high'
-                ? 'Column headers strongly match this entity type.'
-                : detection?.confidence === 'medium'
-                ? 'Some headers matched — verify before importing.'
-                : 'Low match — please confirm or change entity type below.'}
-            </p>
-          </div>
-        )}
+          <>
+            {/* Entity Detection */}
+            <div className={`border rounded-lg p-4 ${CONFIDENCE_COLORS[detection?.confidence] || ''}`}>
+              <p className="text-sm font-semibold mb-1">
+                Detected: <span className="font-bold">{effectiveEntity}</span>
+                <span className="ml-2 text-xs font-normal opacity-70">({detection?.confidence} confidence)</span>
+              </p>
+              <p className="text-xs opacity-80">
+                {detection?.confidence === 'high'
+                  ? 'Column headers strongly match this entity type.'
+                  : detection?.confidence === 'medium'
+                  ? 'Some headers matched — verify before importing.'
+                  : 'Low match — please confirm or change entity type below.'}
+              </p>
+            </div>
 
-        <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Override entity type (optional)</p>
-          <Select
-            value={overrideEntity || '__auto__'}
-            onValueChange={v => setOverrideEntity(v === '__auto__' ? null : v)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-80">
-              <SelectItem value="__auto__">Auto-detected: {detection?.entity}</SelectItem>
-              {ENTITY_TYPES.map(t => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Override Entity Type */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Override entity type (optional)</p>
+              <Select
+                value={overrideEntity || '__auto__'}
+                onValueChange={v => setOverrideEntity(v === '__auto__' ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-80">
+                  <SelectItem value="__auto__">Auto-detected: {detection?.entity}</SelectItem>
+                  {ENTITY_TYPES.map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="flex gap-2 justify-between pt-2 border-t">
-          <Button variant="outline" onClick={reset}>Back</Button>
-          <Button
-            className="bg-gray-900 text-white"
-            onClick={handleImport}
-            disabled={importing || detecting}
-          >
-            {importing ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing…</>
-            ) : (
-              <><Upload className="w-4 h-4 mr-2" />Import as {effectiveEntity}</>
+            {/* Validation Results */}
+            {validationErrors.length > 0 && (
+              <Card className="border-red-200 bg-red-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2 text-red-700">
+                    <AlertCircle className="w-4 h-4" />
+                    Data Validation Issues
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-xs space-y-1 text-red-600">
+                    {validationErrors.map((err, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-red-400">•</span>
+                        <span>{err}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             )}
-          </Button>
-        </div>
+
+            {/* Preview Data */}
+            {csvHeaders.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Column Headers ({csvHeaders.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {csvHeaders.map((h, i) => (
+                      <div key={i} className="text-xs bg-gray-100 rounded px-2 py-1.5 text-gray-700 truncate" title={h}>
+                        {h}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    {csvRows.length} row(s) detected for import
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Toggle Mapping */}
+            {csvHeaders.length > 0 && (
+              <button
+                onClick={() => setShowMapping(!showMapping)}
+                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                <ChevronDown className={`w-4 h-4 transition-transform ${showMapping ? 'rotate-180' : ''}`} />
+                {showMapping ? 'Hide' : 'Show'} column mapping
+              </button>
+            )}
+
+            {/* Column Mapping Configuration */}
+            {showMapping && csvHeaders.length > 0 && (
+              <Card className="bg-blue-50 border-blue-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-blue-900">Column Mapping</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-blue-700 mb-3">
+                    Auto-mapped columns based on detected entity type. Modify if needed:
+                  </p>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {csvHeaders.map((header, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded min-w-[120px] truncate">{header}</span>
+                        <span className="text-gray-400">→</span>
+                        <input
+                          type="text"
+                          placeholder="Entity field"
+                          value={columnMapping[header] || header}
+                          onChange={(e) => setColumnMapping({...columnMapping, [header]: e.target.value})}
+                          className="flex-1 px-2 py-1 border rounded bg-white text-gray-700"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2 justify-between pt-2 border-t">
+              <Button variant="outline" onClick={reset}>Back</Button>
+              <Button
+                className="bg-gray-900 text-white"
+                onClick={handleImport}
+                disabled={importing || detecting || validationErrors.length > 0}
+              >
+                {importing ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing…</>
+                ) : (
+                  <><Upload className="w-4 h-4 mr-2" />Import as {effectiveEntity}</>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     );
   }
