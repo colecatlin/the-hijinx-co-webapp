@@ -24,10 +24,12 @@ export default function ManageCSVImportExport() {
   const [status, setStatus] = useState(null);
   const [file, setFile] = useState(null);
   const [undoLoading, setUndoLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: importLogs = [] } = useQuery({
     queryKey: ['importLogs'],
-    queryFn: () => base44.entities.ImportLog.list('-created_date', 10),
+    queryFn: () => base44.entities.ImportLog.list('-created_date', 50),
+    refetchInterval: 2000,
   });
 
   const lastImport = importLogs[0];
