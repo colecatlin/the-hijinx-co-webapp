@@ -124,26 +124,17 @@ Deno.serve(async (req) => {
       return cls.id;
     }
 
-    const eventDateRange = {};
-
-    async function getOrCreateEvent(eventName, eventDate, trackId, seriesId, season) {
-      const key = `${normalize(eventName)}::${normalize(season || '')}`;
-      if (!eventDateRange[key]) eventDateRange[key] = { min: eventDate, max: eventDate };
-      else {
-        if (eventDate < eventDateRange[key].min) eventDateRange[key].min = eventDate;
-        if (eventDate > eventDateRange[key].max) eventDateRange[key].max = eventDate;
-      }
+    async function getOrCreateEvent(eventName, eventDate, trackId, seriesId, season, roundNumber) {
+      // Key on name + date + round to distinguish multi-day/multi-round events
+      const key = `${normalize(eventName)}::${normalize(eventDate || '')}::${normalize(String(roundNumber || ''))}`;
       if (eventCache[key]) return eventCache[key];
       const existing = existingEvents.find(e =>
         normalize(e.name) === normalize(eventName) &&
-        (e.season === String(season) || (!e.season && !season))
+        e.event_date === eventDate &&
+        (String(e.round_number || '') === String(roundNumber || ''))
       );
       if (existing) {
         eventCache[key] = existing.id;
-        if (eventDate > (existing.end_date || existing.event_date)) {
-          await base44.asServiceRole.entities.Event.update(existing.id, { end_date: eventDate });
-          existing.end_date = eventDate;
-        }
         return existing.id;
       }
       if (!eventName || !eventDate) return null;
@@ -153,12 +144,13 @@ Deno.serve(async (req) => {
         track_id: trackId || undefined,
         series_id: seriesId || undefined,
         season: season || new Date(eventDate).getFullYear().toString(),
+        round_number: roundNumber ? parseInt(roundNumber) : undefined,
         status: 'completed',
       });
       existingEvents.push(event);
       eventCache[key] = event.id;
       created.events++;
-      log.push(`Created event: ${eventName} (${eventDate})`);
+      log.push(`Created event: ${eventName} (${eventDate}${roundNumber ? ` Rd ${roundNumber}` : ''})`);
       return event.id;
     }
 
