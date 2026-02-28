@@ -186,6 +186,35 @@ Deno.serve(async (req) => {
     // Use override if provided, otherwise auto-detect
     const entityName = overrideEntity || detectEntityType(headers).entity;
 
+    // Route to specialized handlers for specific entity types
+    if (entityName === 'Driver') {
+      const result = await importDrivers(base44, rows, headers);
+      
+      // Log the operation
+      if (user?.email) {
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'import',
+          source_type: 'csv_upload',
+          entity_name: 'Driver',
+          function_name: 'smartCSVImport',
+          status: result.error ? 'failed' : 'completed',
+          total_records: rows.length,
+          created_records: [{ entity: 'Driver', ids: [] }],
+          skipped_count: result.skipped || 0,
+          failed_count: result.failed || 0,
+          error_details: result.errors?.map(e => `Row ${e.row}: ${e.error}`) || [],
+          initiated_by: user.email,
+        });
+      }
+
+      return Response.json({
+        success: !result.error,
+        entityName: 'Driver',
+        ...result,
+        usedSpecializedHandler: true,
+      });
+    }
+
     // For Results, delegate to the specialized Results import logic inline
     if (entityName === 'Results') {
       // Build a passthrough mapping (header name → same header name)
