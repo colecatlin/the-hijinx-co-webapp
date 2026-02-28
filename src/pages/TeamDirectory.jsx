@@ -50,6 +50,12 @@ export default function TeamDirectory() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
+  });
+
   const filteredTeams = teams
     .filter(team => {
       if (searchQuery) {

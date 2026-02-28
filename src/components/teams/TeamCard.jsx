@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
