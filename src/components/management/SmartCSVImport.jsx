@@ -28,12 +28,40 @@ export default function SmartCSVImport() {
   const [csvText, setCsvText] = useState('');
   const [fileName, setFileName] = useState('');
   const [detecting, setDetecting] = useState(false);
-  const [detection, setDetection] = useState(null); // { entity, confidence, score }
+  const [detection, setDetection] = useState(null);
   const [overrideEntity, setOverrideEntity] = useState(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
+  const [csvHeaders, setCsvHeaders] = useState([]);
+  const [csvRows, setCsvRows] = useState([]);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showMapping, setShowMapping] = useState(false);
+  const [columnMapping, setColumnMapping] = useState({});
 
   const effectiveEntity = overrideEntity || detection?.entity;
+
+  // Parse CSV and validate on mount
+  useEffect(() => {
+    if (csvText && csvHeaders.length === 0) {
+      const headers = parseCSVHeaders(csvText);
+      setCsvHeaders(headers);
+      const lines = csvText.split('\n').slice(1).filter(l => l.trim());
+      const rows = lines.map(line => {
+        const cols = [];
+        let current = '';
+        let inQuotes = false;
+        for (const ch of line) {
+          if (ch === '"') inQuotes = !inQuotes;
+          else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+          else current += ch;
+        }
+        cols.push(current.trim());
+        return cols.map(c => c.replace(/^"|"$/g, ''));
+      });
+      setCsvRows(rows);
+      validateData(headers, rows);
+    }
+  }, [csvText, csvHeaders.length]);
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
