@@ -120,6 +120,7 @@ import Registration from './pages/Registration';
 import ManageRegistrations from './pages/ManageRegistrations';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageRaceControlEvents from './pages/ManageRaceControlEvents';
+import ManageRaceControlEventBuilder from './pages/ManageRaceControlEventBuilder';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +198,7 @@ export const PAGES = {
     "ManageRegistrations": ManageRegistrations,
     "AdminDashboard": AdminDashboard,
     "ManageRaceControlEvents": ManageRaceControlEvents,
+    "ManageRaceControlEventBuilder": ManageRaceControlEventBuilder,
 }
 
 export const pagesConfig = {
