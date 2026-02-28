@@ -39,7 +39,13 @@ export default function ManageEvents() {
       await base44.entities.Event.delete(id);
       await base44.functions.invoke('logDeletion', { entityName: 'Event', recordIds: [id], recordNames: [event?.name] });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      alert('Event deleted successfully');
+    },
+    onError: (error) => {
+      alert(`Error deleting event: ${error.message}`);
+    },
   });
 
   const bulkDeleteMutation = useMutation({
@@ -53,6 +59,10 @@ export default function ManageEvents() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       setSelectedEvents([]);
+      alert('Events deleted successfully');
+    },
+    onError: (error) => {
+      alert(`Error deleting events: ${error.message}`);
     },
   });
 
