@@ -20,6 +20,19 @@ export default function EventCoreDetailsSection({ event }) {
     status: event.status || 'upcoming',
     round_number: event.round_number || ''
   });
+
+  useEffect(() => {
+    setFormData({
+      name: event.name || '',
+      track_id: event.track_id || '',
+      series: event.series || '',
+      season: event.season || '',
+      event_date: event.event_date || '',
+      end_date: event.end_date || '',
+      status: event.status || 'upcoming',
+      round_number: event.round_number || ''
+    });
+  }, [event.id]);
   const [showSeriesModal, setShowSeriesModal] = useState(false);
   const [showTrackModal, setShowTrackModal] = useState(false);
   const [newSeriesName, setNewSeriesName] = useState('');
