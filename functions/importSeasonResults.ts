@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
       return event.id;
     }
 
-    async function getOrCreateDriver(firstName, lastName, bibNumber) {
+    async function getOrCreateDriver(firstName, lastName, bibNumber, racingBaseCity, racingBaseState, racingBaseCountry) {
       if (!firstName && !lastName) return null;
       const key = `${normalize(firstName)}::${normalize(lastName)}`;
       if (driverCache[key]) return driverCache[key];
@@ -177,6 +177,9 @@ Deno.serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         primary_number: bibNumber || undefined,
+        racing_base_city: racingBaseCity || undefined,
+        racing_base_state: racingBaseState || undefined,
+        racing_base_country: racingBaseCountry || undefined,
         status: 'Active',
         profile_status: 'draft',
       });
