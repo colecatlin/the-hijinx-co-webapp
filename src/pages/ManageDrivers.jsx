@@ -550,6 +550,12 @@ export default function ManageDrivers() {
           </div>
         )}
       </div>
+
+      <DriverDuplicateFinder
+        drivers={drivers}
+        open={showDuplicateFinder}
+        onOpenChange={setShowDuplicateFinder}
+      />
     </ManagementLayout>
   );
 }
