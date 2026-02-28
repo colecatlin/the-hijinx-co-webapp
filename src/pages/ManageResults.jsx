@@ -191,6 +191,16 @@ export default function ManageResults() {
         </DialogContent>
       </Dialog>
 
+      {/* Smart import dialog */}
+      <Dialog open={showSmartImportDialog} onOpenChange={setShowSmartImportDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Smart Season Import</DialogTitle>
+          </DialogHeader>
+          <SmartResultsImport onDone={() => setShowSmartImportDialog(false)} />
+        </DialogContent>
+      </Dialog>
+
       {/* Bulk upload dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
         <DialogContent className="max-w-2xl">
