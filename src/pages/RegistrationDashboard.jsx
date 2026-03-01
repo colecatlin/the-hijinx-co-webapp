@@ -1009,6 +1009,8 @@ export default function RegistrationDashboard() {
                   isAdmin={isAdmin}
                   standingsLastCalculatedAt={standingsLastCalculatedAt}
                   onSetStandingsDirty={() => setStandingsDirty(true)}
+                  requireAdminOverride={requireAdminOverride}
+                  onShowOverrideDialog={setOverrideDialog}
                 />
               )}
 
