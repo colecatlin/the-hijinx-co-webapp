@@ -589,8 +589,10 @@ export default function RegistrationDashboard() {
             {/* Overview Tab Content */}
             <TabsContent value="overview" className="mt-6">
               <OverviewGrid
+                dashboardContext={dashboardContext}
                 selectedEvent={selectedEvent}
                 selectedTrack={selectedTrack}
+                selectedSeries={selectedSeries}
                 sessions={sessions}
                 standings={standings}
                 results={results}
@@ -602,6 +604,7 @@ export default function RegistrationDashboard() {
             {/* Event Builder Tab Content */}
             <TabsContent value="eventBuilder" className="mt-6">
               <EventBuilderForm
+                dashboardContext={dashboardContext}
                 selectedEventId={editingEventId}
                 onEventCreated={handleEventCreated}
                 isAdmin={isAdmin}
@@ -612,6 +615,8 @@ export default function RegistrationDashboard() {
             <TabsContent value="classesSessions" className="mt-6">
               {selectedEvent ? (
                 <ClassSessionBuilder
+                  dashboardContext={dashboardContext}
+                  selectedEvent={selectedEvent}
                   eventId={selectedEvent.id}
                   seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
                 />
@@ -628,9 +633,10 @@ export default function RegistrationDashboard() {
             <TabsContent value="entries" className="mt-6">
               {selectedEvent ? (
                 <EntriesManager
+                  dashboardContext={dashboardContext}
+                  selectedEvent={selectedEvent}
                   eventId={selectedEvent.id}
                   seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
-                  selectedEvent={selectedEvent}
                 />
               ) : (
                 <Card className="bg-[#171717] border-gray-800">
@@ -644,7 +650,7 @@ export default function RegistrationDashboard() {
             {/* Compliance Tab Content */}
             <TabsContent value="compliance" className="mt-6">
               {selectedEvent ? (
-                <ComplianceManager selectedEvent={selectedEvent} />
+                <ComplianceManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} />
               ) : (
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
@@ -657,7 +663,7 @@ export default function RegistrationDashboard() {
             {/* Check In Tab Content */}
             <TabsContent value="checkIn" className="mt-6">
               {selectedEvent ? (
-                <CheckInManager selectedEvent={selectedEvent} />
+                <CheckInManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} />
               ) : (
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
@@ -670,7 +676,7 @@ export default function RegistrationDashboard() {
             {/* Tech Tab Content */}
             <TabsContent value="tech" className="mt-6">
               {selectedEvent ? (
-                <TechManager selectedEvent={selectedEvent} user={user} />
+                <TechManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} user={user} />
               ) : (
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
@@ -683,6 +689,7 @@ export default function RegistrationDashboard() {
             {/* Results Tab Content */}
             <TabsContent value="results" className="mt-6">
               <ResultsManager
+                dashboardContext={dashboardContext}
                 selectedEvent={selectedEvent}
                 isAdmin={isAdmin}
               />
@@ -691,6 +698,7 @@ export default function RegistrationDashboard() {
             {/* Points & Standings Tab Content */}
             <TabsContent value="pointsStandings" className="mt-6">
               <PointsAndStandingsManager
+                dashboardContext={dashboardContext}
                 isAdmin={isAdmin}
                 selectedEvent={selectedEvent}
               />
@@ -698,17 +706,17 @@ export default function RegistrationDashboard() {
 
             {/* Exports Tab Content */}
             <TabsContent value="exports" className="mt-6">
-              <ExportsManager isAdmin={isAdmin} />
+              <ExportsManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
             </TabsContent>
 
             {/* Integrations Tab Content */}
             <TabsContent value="integrations" className="mt-6">
-              <IntegrationsManager isAdmin={isAdmin} />
+              <IntegrationsManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
             </TabsContent>
 
             {/* Audit Log Tab Content */}
             <TabsContent value="auditLog" className="mt-6">
-              <AuditLogManager isAdmin={isAdmin} />
+              <AuditLogManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
             </TabsContent>
           </Tabs>
         </div>
