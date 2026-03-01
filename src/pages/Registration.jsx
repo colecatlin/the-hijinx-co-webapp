@@ -187,6 +187,140 @@ export default function Registration() {
   }
 
   // If eventId is provided in URL, show event registration form
+  if (!user) {
+    return (
+      <PageShell>
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <Card className="bg-white border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-red-600">Authentication Required</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">Please log in to register for an event.</p>
+              <Button
+                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                className="w-full bg-black hover:bg-gray-900 text-white"
+              >
+                Log In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageShell>
+    );
+  }
+
+  return (
+    <PageShell>
+      <div className="max-w-3xl mx-auto px-6 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-black mb-4">Event Registration</h1>
+          <p className="text-lg text-gray-600">
+            {selectedEvent ? selectedEvent.name : 'Loading...'}
+          </p>
+        </motion.div>
+
+        {selectedEvent && (
+          <Card className="bg-white border-gray-200 mb-8">
+            <CardHeader>
+              <CardTitle>Event Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Date</p>
+                  <p className="font-semibold">{selectedEvent.event_date}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Status</p>
+                  <p className="font-semibold capitalize">{selectedEvent.status || 'upcoming'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {userDriver ? (
+          <Card className="bg-white border-gray-200 mb-8">
+            <CardHeader>
+              <CardTitle>Confirm Registration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600">Driver</p>
+                  <p className="font-semibold">{userDriver.first_name} {userDriver.last_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Entry Status</p>
+                  <p className="font-semibold">Registered</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Payment Status</p>
+                  <p className="font-semibold text-orange-600">Unpaid</p>
+                </div>
+              </div>
+
+              {isAlreadyRegistered ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-yellow-900">You are already registered for this event.</p>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleRegisterEvent}
+                  disabled={createEntryMutation.isPending}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {createEntryMutation.isPending ? 'Registering...' : 'Complete Registration'}
+                </Button>
+              )}
+
+              {isAlreadyRegistered && (
+                <Link to={createPageUrl(`RegistrationDashboard?eventId=${selectedEventId}`)}>
+                  <Button variant="outline" className="w-full">
+                    View Dashboard
+                  </Button>
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-white border-gray-200 mb-8">
+            <CardHeader>
+              <CardTitle className="text-orange-600">Driver Profile Required</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">You need to create a driver profile before registering for events.</p>
+              <Link to={createPageUrl('MyDashboard')}>
+                <Button className="w-full bg-black hover:bg-gray-900 text-white">
+                  Create Driver Profile
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="text-center">
+          <Link to={createPageUrl('RegistrationDashboard')}>
+            <Button variant="outline" className="mt-6">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </PageShell>
+  );
+}
+
+{/* Old content below - to be replaced */}
+export default function RegistrationOld() {
   return (
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Hero Section */}
