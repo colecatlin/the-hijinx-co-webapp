@@ -136,11 +136,6 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     queryFn: () => base44.entities.Driver.list(),
   });
 
-  const { data: allDriverPrograms = [] } = useQuery({
-    queryKey: ['driverPrograms'],
-    queryFn: () => base44.entities.DriverProgram.list(),
-  });
-
   // Data integrity: validate results against DriverProgram and SeriesClass
   const validatedResults = useMemo(() => {
     if (!selectedEvent) return results;
