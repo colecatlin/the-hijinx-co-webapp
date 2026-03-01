@@ -686,21 +686,10 @@ export default function RegistrationDashboard() {
               <IntegrationsManager isAdmin={isAdmin} />
             </TabsContent>
 
-            {/* Other Tab Contents */}
-            {['auditLog'].map((tab) => (
-              <TabsContent key={tab} value={tab} className="mt-6">
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="text-white capitalize">
-                      {tab === 'auditLog' ? 'Audit Log' : tab}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="py-8 text-center">
-                    <p className="text-gray-400 text-sm">Module connected, UI pending</p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
+            {/* Audit Log Tab Content */}
+            <TabsContent value="auditLog" className="mt-6">
+              <AuditLogManager isAdmin={isAdmin} />
+            </TabsContent>
           </Tabs>
         </div>
 
