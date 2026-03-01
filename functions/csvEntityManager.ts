@@ -166,20 +166,18 @@ async function handleExport(base44, entityType, templateOnly = false) {
     let records = [];
     let headers = [];
 
+    const canonicalColumns = ENTITY_EXPORT_COLUMNS[entityType] || null;
+
     if (templateOnly) {
-      // Get schema to extract available fields
-      try {
-        const schema = await entity.schema();
-        headers = Object.keys(schema.properties || {}).sort();
-        // Add built-in fields
-        headers = ['id', ...headers, 'created_date', 'updated_date', 'created_by'].filter(h => h);
-      } catch {
-        // Fallback: fetch one record to get keys
-        const sample = await entity.list(undefined, 1);
-        if (sample.length > 0) {
-          headers = Object.keys(sample[0]).sort();
-        } else {
-          headers = [];
+      if (canonicalColumns) {
+        headers = canonicalColumns;
+      } else {
+        try {
+          const schema = await entity.schema();
+          headers = ['id', ...Object.keys(schema.properties || {}), 'created_date', 'updated_date', 'created_by'];
+        } catch {
+          const sample = await entity.list(undefined, 1);
+          headers = sample.length > 0 ? Object.keys(sample[0]) : [];
         }
       }
     } else {
@@ -187,7 +185,7 @@ async function handleExport(base44, entityType, templateOnly = false) {
       records = await entity.list();
       
       if (records.length === 0) {
-        const csv = ''; // Empty CSV for empty entities
+        const csv = '';
         return new Response(csv, {
           status: 200,
           headers: {
@@ -197,13 +195,17 @@ async function handleExport(base44, entityType, templateOnly = false) {
         });
       }
 
-      // Get all keys from all records
-      const allKeys = new Set();
-      records.forEach(record => {
-        Object.keys(record).forEach(key => allKeys.add(key));
-      });
-      
-      headers = Array.from(allKeys).sort();
+      if (canonicalColumns) {
+        // Use canonical column order; include any extra keys from actual data at the end
+        const allKeys = new Set();
+        records.forEach(record => Object.keys(record).forEach(k => allKeys.add(k)));
+        const extras = Array.from(allKeys).filter(k => !canonicalColumns.includes(k));
+        headers = [...canonicalColumns, ...extras];
+      } else {
+        const allKeys = new Set();
+        records.forEach(record => Object.keys(record).forEach(k => allKeys.add(k)));
+        headers = Array.from(allKeys).sort();
+      }
     }
 
     // Build CSV content
