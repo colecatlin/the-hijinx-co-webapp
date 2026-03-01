@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,7 @@ export default function EventProfile() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list(),
-  });
-
-  const event = events.find(e => e.id === eventId);
+  const { event, track, isLoading, error } = useMotorsportsContext({ eventId });
 
   const isPublicEvent = event && ['Published', 'Live', 'Completed'].includes(event.status);
   const canViewDraft = user?.role === 'admin' && event && event.status === 'Draft';
@@ -38,12 +34,6 @@ export default function EventProfile() {
     queryKey: ['eventSessions', eventId],
     queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
     enabled: !!eventId,
-  });
-
-  const { data: track } = useQuery({
-    queryKey: ['track', event?.track_id],
-    queryFn: () => base44.entities.Track.filter({ id: event.track_id }).then(tracks => tracks[0]),
-    enabled: !!event?.track_id,
   });
 
   if (isLoading) {
