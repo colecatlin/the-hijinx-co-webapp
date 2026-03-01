@@ -290,7 +290,7 @@ export default function RegistrationDashboard() {
     setShowPublishDialog(false);
   };
 
-  if (authLoading || userLoading) {
+  if (authLoading || userLoading || selectedEventLoading || selectedTrackLoading || selectedSeriesLoading) {
     return (
       <PageShell>
         <div className="flex items-center justify-center min-h-screen">
