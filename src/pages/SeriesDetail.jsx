@@ -51,10 +51,37 @@ export default function SeriesDetail() {
     enabled: !!series?.id,
   });
 
+  const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
+  
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', series?.id],
     queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
     enabled: !!series?.id,
+  });
+
+  const { data: allEvents = [] } = useQuery({
+    queryKey: ['allEvents'],
+    queryFn: () => base44.entities.Event.list(),
+  });
+
+  const { data: allTracks = [] } = useQuery({
+    queryKey: ['allTracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  const { data: results = [] } = useQuery({
+    queryKey: ['results'],
+    queryFn: () => base44.entities.Results.list(),
+  });
+
+  const { data: standings = [] } = useQuery({
+    queryKey: ['standings'],
+    queryFn: () => base44.entities.Standings.list(),
   });
 
   if (isLoading) {
