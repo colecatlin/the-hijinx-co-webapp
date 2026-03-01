@@ -325,172 +325,116 @@ export default function EventResults() {
 
         {/* Sessions Grouped View */}
         {sortedSessions.length > 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-1">
-                <label className="text-xs font-medium text-gray-600 block mb-2">Select Session</label>
-                <Select value={activeSessionId || ''} onValueChange={setSelectedSessionId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose session..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortedSessions.map(session => (
-                      <SelectItem key={session.id} value={session.id}>
-                        {getSessionLabel(session)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {seriesClasses.length > 0 && (
-                <div className="md:col-span-1">
-                  <label className="text-xs font-medium text-gray-600 block mb-2">Filter by Class</label>
-                  <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="All classes" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={null}>All classes</SelectItem>
-                      {seriesClasses.map(cls => (
-                        <SelectItem key={cls.id} value={cls.id}>
-                          {cls.class_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <div className="space-y-6">
+            {groupedSessions.map((group, idx) => (
+              <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                {/* Group Header */}
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                  <h2 className="text-sm font-semibold text-[#0A0A0A]">{group.label}</h2>
                 </div>
-              )}
 
-              <div className="md:col-span-1">
-                <label className="text-xs font-medium text-gray-600 block mb-2">Options</label>
-                <div className="flex items-center gap-3 h-9 px-3 border border-gray-300 rounded-md bg-white">
-                  <input
-                    type="checkbox"
-                    id="provisional-toggle"
-                    checked={showProvisional}
-                    onChange={(e) => setShowProvisional(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="provisional-toggle" className="text-xs text-gray-600 cursor-pointer">
-                    Show provisional
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center mb-6">
-            <AlertCircle className="w-5 h-5 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No sessions found for this event.</p>
-          </div>
-        )}
-
-        {/* Session Status Banner */}
-        {selectedSession && (
-          <div className="mb-6">
-            {selectedSession.status === 'Draft' && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gray-50 border border-gray-200">
-                <AlertCircle className="w-4 h-4 text-gray-600" />
-                <p className="text-sm text-gray-600">Draft results, not public official yet</p>
-              </div>
-            )}
-            {selectedSession.status === 'Provisional' && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-orange-50 border border-orange-200">
-                <AlertCircle className="w-4 h-4 text-orange-600" />
-                <p className="text-sm text-orange-700">Provisional results, subject to review</p>
-              </div>
-            )}
-            {selectedSession.status === 'Official' && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
-                <p className="text-sm text-green-700 font-medium">Official results</p>
-              </div>
-            )}
-            {selectedSession.status === 'Locked' && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-700 font-medium">Locked results, final</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Results Table */}
-        {activeSessionId ? (
-          <>
-            {filteredResults.length > 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Pos</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Car #</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Driver</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Laps</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Best Lap</th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Pts</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredResults.map((result, idx) => {
-                        const driver = driverMap.get(result.driver_id);
-                        const isNotRunning = ['DNF', 'DNS', 'DSQ', 'DNP'].includes(result.status);
-                        return (
-                          <tr
-                            key={result.id}
-                            className={`border-b border-gray-100 hover:bg-gray-50 ${
-                              isNotRunning ? 'bg-red-50' : !driver ? 'bg-yellow-50' : ''
-                            }`}
-                          >
-                            <td className="px-4 py-3 text-sm font-bold">{result.position || '—'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{getCarNumber(result) || '—'}</td>
-                            <td className="px-4 py-3 text-sm font-medium">
-                              {driver ? (
-                                <Link
-                                  to={`${createPageUrl('DriverProfile')}?slug=${driver.slug}`}
-                                  className="hover:underline text-[#0A0A0A]"
-                                >
-                                  {driver.first_name} {driver.last_name}
+                {/* Sessions */}
+                <div className="divide-y divide-gray-100">
+                  {group.subGroups ? (
+                    // Class grouping: render subgroups (session types)
+                    group.subGroups.map((subGroup, subIdx) => (
+                      <div key={subIdx}>
+                        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                          <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{subGroup.label}</h3>
+                        </div>
+                        {subGroup.sessions.map(session => {
+                          const resultCount = resultCountBySession[session.id] || 0;
+                          const displayName = session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`;
+                          const statusGroup = normalizeStatus(session.status);
+                          
+                          return (
+                            <div key={session.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-[#0A0A0A] mb-1">{displayName}</div>
+                                <div className="flex items-center gap-3">
+                                  <Badge className={`${
+                                    statusGroup === 'official' ? 'bg-green-100 text-green-700' :
+                                    statusGroup === 'provisional' ? 'bg-orange-100 text-orange-700' :
+                                    statusGroup === 'locked' ? 'bg-blue-100 text-blue-700' :
+                                    statusGroup === 'draft' ? 'bg-gray-100 text-gray-700' :
+                                    'bg-blue-100 text-blue-700'
+                                  }`}>
+                                    {session.status}
+                                  </Badge>
+                                  {session.scheduled_time && (
+                                    <span className="text-xs text-gray-500">{format(parseISO(session.scheduled_time), 'HH:mm')}</span>
+                                  )}
+                                  <span className={`text-xs ${resultCount > 0 ? 'text-gray-600' : 'text-gray-400'}`}>
+                                    Results: {resultCount > 0 ? resultCount : 'No results yet'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                                <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
+                                  <Button variant="ghost" size="sm" className="text-xs h-7">Open</Button>
                                 </Link>
-                              ) : (
-                                <span className="text-gray-400">Unknown Driver</span>
+                                {isAuthenticated && isAdmin && (
+                                  <Link to={`${racedayUrl}&sessionId=${session.id}`}>
+                                    <Button variant="ghost" size="sm" className="text-xs h-7">Edit</Button>
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))
+                  ) : (
+                    // Session type grouping only
+                    group.sessions.map(session => {
+                      const resultCount = resultCountBySession[session.id] || 0;
+                      const displayName = session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`;
+                      const statusGroup = normalizeStatus(session.status);
+                      
+                      return (
+                        <div key={session.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-[#0A0A0A] mb-1">{displayName}</div>
+                            <div className="flex items-center gap-3">
+                              <Badge className={`${
+                                statusGroup === 'official' ? 'bg-green-100 text-green-700' :
+                                statusGroup === 'provisional' ? 'bg-orange-100 text-orange-700' :
+                                statusGroup === 'locked' ? 'bg-blue-100 text-blue-700' :
+                                statusGroup === 'draft' ? 'bg-gray-100 text-gray-700' :
+                                'bg-blue-100 text-blue-700'
+                              }`}>
+                                {session.status}
+                              </Badge>
+                              {session.scheduled_time && (
+                                <span className="text-xs text-gray-500">{format(parseISO(session.scheduled_time), 'HH:mm')}</span>
                               )}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-gray-600">{result.status || 'Running'}</td>
-                            <td className="px-4 py-3 text-xs text-gray-600">{result.laps_completed ?? '—'}</td>
-                            <td className="px-4 py-3 text-xs text-gray-600">
-                              {result.best_lap_time_ms ? `${(result.best_lap_time_ms / 1000).toFixed(2)}s` : '—'}
-                            </td>
-                            <td className="px-4 py-3 text-right text-sm font-semibold">{result.points ?? '—'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                              <span className={`text-xs ${resultCount > 0 ? 'text-gray-600' : 'text-gray-400'}`}>
+                                Results: {resultCount > 0 ? resultCount : 'No results yet'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                            <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
+                              <Button variant="ghost" size="sm" className="text-xs h-7">Open</Button>
+                            </Link>
+                            {isAuthenticated && isAdmin && (
+                              <Link to={`${racedayUrl}&sessionId=${session.id}`}>
+                                <Button variant="ghost" size="sm" className="text-xs h-7">Edit</Button>
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
-            ) : (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center mb-6">
-                <p className="text-sm text-gray-500">No results posted for this session yet.</p>
-              </div>
-            )}
-
-            {/* Quick Links Row */}
-            {isAuthenticated && filteredResults.length > 0 && (
-              <div className="flex flex-col md:flex-row gap-2">
-                <Link to={`${createPageUrl('SessionProfile')}?id=${selectedSession?.id}`}>
-                  <Button variant="outline" size="sm">View Session Details</Button>
-                </Link>
-                <Link to={`${racedayUrl}&tab=results`}>
-                  <Button variant="outline" size="sm">Jump to RaceDay Console</Button>
-                </Link>
-              </div>
-            )}
-          </>
+            ))}
+          </div>
         ) : (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-            <p className="text-sm text-gray-500">Select a session to view results.</p>
+            <AlertCircle className="w-5 h-5 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">No sessions found for this event yet.</p>
           </div>
         )}
       </div>
