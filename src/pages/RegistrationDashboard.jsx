@@ -555,8 +555,25 @@ export default function RegistrationDashboard() {
               )}
             </TabsContent>
 
+            {/* Entries Tab Content */}
+            <TabsContent value="entries" className="mt-6">
+              {selectedEvent ? (
+                <EntriesManager
+                  eventId={selectedEvent.id}
+                  seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                  selectedEvent={selectedEvent}
+                />
+              ) : (
+                <Card className="bg-[#171717] border-gray-800">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-400">Select an event to manage entries</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             {/* Other Tab Contents */}
-            {['classesSessions', 'entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
+            {['checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
