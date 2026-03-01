@@ -359,6 +359,24 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
 
   const hasBulkSelection = selectedEntries.size > 0;
 
+  // Table windowing: only render rows in visible range when dataset is large
+  const ROW_HEIGHT = 44; // approximate height in pixels
+  const WINDOW_HEIGHT = 600;
+  const BUFFER = 10; // render 10 rows above/below visible area
+  const shouldWindow = filteredEntries.length > 75;
+  
+  let visibleStartIdx = 0;
+  let visibleEndIdx = filteredEntries.length;
+  
+  if (shouldWindow) {
+    visibleStartIdx = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER);
+    visibleEndIdx = Math.min(filteredEntries.length, Math.ceil((scrollTop + WINDOW_HEIGHT) / ROW_HEIGHT) + BUFFER);
+  }
+  
+  const windowedEntries = filteredEntries.slice(visibleStartIdx, visibleEndIdx);
+  const topSpacerHeight = visibleStartIdx * ROW_HEIGHT;
+  const bottomSpacerHeight = (filteredEntries.length - visibleEndIdx) * ROW_HEIGHT;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -523,9 +541,12 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
         </Card>
       ) : (
         <Card className="bg-[#171717] border-gray-800 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className={shouldWindow ? `overflow-x-auto overflow-y-auto h-[${WINDOW_HEIGHT}px]` : 'overflow-x-auto'} 
+               ref={tableScrollRef}
+               onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+               style={shouldWindow ? { height: `${WINDOW_HEIGHT}px` } : {}}>
             <table className="w-full text-sm">
-              <thead className="bg-gray-900/50 border-b border-gray-800">
+              <thead className="bg-gray-900/50 border-b border-gray-800 sticky top-0 z-10">
                 <tr>
                   <th className="px-3 py-2 text-left">
                     <input
@@ -553,7 +574,12 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredEntries.map((entry) => (
+                {shouldWindow && topSpacerHeight > 0 && (
+                  <tr style={{ height: `${topSpacerHeight}px` }}>
+                    <td colSpan="10" />
+                  </tr>
+                )}
+                {windowedEntries.map((entry) => (
                   <tr
                     key={entry.id}
                     className={`border-b border-gray-800 ${needsWarning(entry) ? 'bg-yellow-900/10' : 'hover:bg-gray-800/30'}`}
@@ -621,6 +647,11 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
                     </td>
                   </tr>
                 ))}
+                {shouldWindow && bottomSpacerHeight > 0 && (
+                  <tr style={{ height: `${bottomSpacerHeight}px` }}>
+                    <td colSpan="10" />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
