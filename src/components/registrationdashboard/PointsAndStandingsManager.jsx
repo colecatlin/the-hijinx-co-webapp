@@ -69,6 +69,20 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     enabled: !!selectedSeries && !!selectedSeason && !!selectedClass,
   });
 
+  const { data: sessions: allSessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  const { data: seriesClassesAll = [] } = useQuery({
+    queryKey: ['seriesClassesAll', selectedSeries],
+    queryFn: () =>
+      selectedSeries
+        ? base44.entities.SeriesClass.filter({ series_id: selectedSeries })
+        : Promise.resolve([]),
+    enabled: !!selectedSeries,
+  });
+
   const { data: allResults = [] } = useQuery({
     queryKey: ['results', selectedSeries, selectedSeason],
     queryFn: () =>
@@ -92,6 +106,25 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     });
     return filtered;
   }, [allResults, selectedEventId, selectedEvent]);
+
+  // Data integrity: validate sessions
+  const validatedSessions = useMemo(() => {
+    if (!selectedEventId || !selectedEvent) return allSessions;
+    const validated = allSessions.filter((session) => {
+      if (session.event_id !== selectedEvent.id) {
+        return false;
+      }
+      if (session.series_class_id) {
+        const matchingClass = seriesClassesAll.find((sc) => sc.id === session.series_class_id);
+        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
+          console.warn('Session series_class mismatch detected.');
+          return false;
+        }
+      }
+      return true;
+    });
+    return validated;
+  }, [allSessions, selectedEventId, selectedEvent, seriesClassesAll]);
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions'],
@@ -361,7 +394,7 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
         <StandingsStatus
           standings={standings}
           results={results}
-          sessions={sessions}
+          sessions={validatedSessions}
           selectedClass={selectedClass}
         />
       )}
