@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
 import { createPageUrl } from '@/components/utils';
 import { format, parseISO } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
@@ -12,6 +13,8 @@ import { Calendar, MapPin } from 'lucide-react';
 
 export default function ScheduleHome() {
   const [seriesFilter, setSeriesFilter] = useState('all');
+
+  const { series: contextSeries, track: contextTrack, seasonYear, isLoading: contextLoading, error: contextError } = useMotorsportsContext();
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['schedule'],
@@ -41,8 +44,12 @@ export default function ScheduleHome() {
           </Select>
         </div>
 
-        {isLoading ? (
+        {isLoading || contextLoading ? (
           <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}</div>
+        ) : contextError ? (
+          <EmptyState icon={Calendar} title="Error loading schedule" message="Please refresh the page or try again." />
+        ) : !contextSeries && !contextTrack ? (
+          <EmptyState icon={Calendar} title="Schedule not available" message="No series or track selected." />
         ) : filtered.length === 0 ? (
           <EmptyState icon={Calendar} title="No upcoming events" message="Events will appear here once scheduled." />
         ) : (
