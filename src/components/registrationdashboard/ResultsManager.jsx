@@ -42,16 +42,22 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: sessions = [] } = useQuery({
@@ -61,6 +67,8 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
         ? base44.entities.Session.filter({ event_id: eventId })
         : Promise.resolve([]),
     enabled: !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClasses = [] } = useQuery({
@@ -70,6 +78,8 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
         ? base44.entities.SeriesClass.filter({ series_id: seriesId })
         : Promise.resolve([]),
     enabled: !!seriesId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allResults = [] } = useQuery({
@@ -79,6 +89,8 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
         ? base44.entities.Results.filter({ event_id: eventId })
         : Promise.resolve([]),
     enabled: !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClassesAll = [] } = useQuery({
@@ -88,6 +100,8 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
         ? base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id })
         : Promise.resolve([]),
     enabled: !!selectedEvent?.series_id,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Data integrity: filter results and sessions to match selected event
@@ -124,11 +138,15 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allDriverPrograms = [] } = useQuery({
-    queryKey: ['driverPrograms'],
+    queryKey: ['driverPrograms', selectedEvent?.id],
     queryFn: () => base44.entities.DriverProgram.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Data integrity: filter driverPrograms to match selected event's series_id
@@ -179,7 +197,19 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
+
+  // Memoize results by session for quick lookup
+  const resultsBySession = useMemo(() => {
+    const grouped = {};
+    validatedResults.forEach((r) => {
+      if (!grouped[r.session_id]) grouped[r.session_id] = [];
+      grouped[r.session_id].push(r);
+    });
+    return grouped;
+  }, [validatedResults]);
 
   // Auto-set event if selectedEvent is provided
   React.useEffect(() => {
