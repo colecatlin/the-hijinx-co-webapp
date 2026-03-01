@@ -515,83 +515,15 @@ export default function RegistrationDashboard() {
 
             {/* Overview Tab Content */}
             <TabsContent value="overview" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <Clock className="w-4 h-4" /> Event Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-white">
-                      {selectedEvent?.status || 'No Event'}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {selectedEvent ? `Scheduled for ${selectedEvent.event_date}` : 'Select an event above'}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <Users className="w-4 h-4" /> Entries Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-white">0</div>
-                    <p className="text-xs text-gray-500 mt-1">Registered entries</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" /> Compliance Alerts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-500">0</div>
-                    <p className="text-xs text-gray-500 mt-1">Pending issues</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <Flag className="w-4 h-4" /> Results Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-500">Pending</div>
-                    <p className="text-xs text-gray-500 mt-1">Awaiting official results</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <Trophy className="w-4 h-4" /> Standings Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-500">Not Calculated</div>
-                    <p className="text-xs text-gray-500 mt-1">Points pending</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" /> System Alerts Feed
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-500">No Alerts</div>
-                    <p className="text-xs text-gray-500 mt-1">All systems operational</p>
-                  </CardContent>
-                </Card>
-              </div>
+              <OverviewGrid
+                selectedEvent={selectedEvent}
+                selectedTrack={selectedTrack}
+                sessions={sessions}
+                standings={standings}
+                results={results}
+                operationLogs={operationLogs}
+                importLogs={importLogs}
+              />
             </TabsContent>
 
             {/* Event Builder Tab Content */}
