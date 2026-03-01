@@ -65,12 +65,6 @@ export default function RegistrationDashboard() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
 
-  // Role-based access control constants for future expansion
-  const canAdmin = user?.role === 'admin';
-  const canEditResults = user?.role === 'admin';
-  const canTechInspect = user?.role === 'admin';
-  const canCheckIn = user?.role === 'admin';
-
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
   );
