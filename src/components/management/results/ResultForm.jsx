@@ -27,6 +27,8 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
     ...initialData,
   });
 
+  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
+
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
@@ -41,6 +43,16 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
     queryKey: ['driver-programs'],
     queryFn: () => base44.entities.DriverProgram.list(),
   });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list('-created_date', 500),
+  });
+
+  const isResultOperational = () => {
+    const session = sessions.find(s => s.id === initialData.session_id);
+    return session && operationalStatuses.includes(session.status);
+  };
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
@@ -64,35 +76,43 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
+  const isOperational = isResultOperational();
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label>Driver *</Label>
-          <Select value={form.driver_id} onValueChange={v => set('driver_id', v)}>
-            <SelectTrigger><SelectValue placeholder="Select driver" /></SelectTrigger>
-            <SelectContent>
-              {drivers.map(d => (
-                <SelectItem key={d.id} value={d.id}>{d.first_name} {d.last_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <>
+      {isOperational && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <p className="text-sm text-red-800"><strong>Operational Result:</strong> Lifecycle fields are locked. Modify through RegistrationDashboard only.</p>
         </div>
+      )}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label>Driver *</Label>
+            <Select value={form.driver_id} onValueChange={v => set('driver_id', v)} disabled={isOperational}>
+              <SelectTrigger disabled={isOperational}><SelectValue placeholder="Select driver" /></SelectTrigger>
+              <SelectContent>
+                {drivers.map(d => (
+                  <SelectItem key={d.id} value={d.id}>{d.first_name} {d.last_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Event *</Label>
+            <Select value={form.event_id} onValueChange={v => set('event_id', v)} disabled={isOperational}>
+              <SelectTrigger disabled={isOperational}><SelectValue placeholder="Select event" /></SelectTrigger>
+              <SelectContent>
+                {events.map(e => (
+                  <SelectItem key={e.id} value={e.id}>{e.name} ({e.event_date})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         <div>
-          <Label>Event *</Label>
-          <Select value={form.event_id} onValueChange={v => set('event_id', v)}>
-            <SelectTrigger><SelectValue placeholder="Select event" /></SelectTrigger>
-            <SelectContent>
-              {events.map(e => (
-                <SelectItem key={e.id} value={e.id}>{e.name} ({e.event_date})</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Session Type</Label>
-          <Select value={form.session_type} onValueChange={v => set('session_type', v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Label>Session Type {isOperational && '(Locked)'}</Label>
+          <Select value={form.session_type} onValueChange={v => set('session_type', v)} disabled={isOperational}>
+            <SelectTrigger disabled={isOperational}><SelectValue /></SelectTrigger>
             <SelectContent>
               {SESSION_TYPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -101,17 +121,17 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
         {form.session_type === 'Heat' && (
           <div>
             <Label>Heat Number</Label>
-            <Input type="number" value={form.heat_number} onChange={e => set('heat_number', e.target.value)} placeholder="e.g. 1" />
+            <Input type="number" value={form.heat_number} onChange={e => set('heat_number', e.target.value)} placeholder="e.g. 1" disabled={isOperational} />
           </div>
         )}
         <div>
-          <Label>Finishing Position</Label>
-          <Input type="number" value={form.position} onChange={e => set('position', e.target.value)} placeholder="e.g. 1" />
+          <Label>Finishing Position {isOperational && '(Locked)'}</Label>
+          <Input type="number" value={form.position} onChange={e => set('position', e.target.value)} placeholder="e.g. 1" disabled={isOperational} />
         </div>
         <div>
           <Label>Status</Label>
-          <Select value={form.status_text} onValueChange={v => set('status_text', v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Select value={form.status_text} onValueChange={v => set('status_text', v)} disabled={isOperational}>
+            <SelectTrigger disabled={isOperational}><SelectValue /></SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -119,27 +139,28 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
         </div>
         <div>
           <Label>Points</Label>
-          <Input type="number" value={form.points} onChange={e => set('points', e.target.value)} placeholder="e.g. 40" />
+          <Input type="number" value={form.points} onChange={e => set('points', e.target.value)} placeholder="e.g. 40" disabled={isOperational} />
         </div>
         <div>
-          <Label>Laps Completed</Label>
-          <Input type="number" value={form.laps_completed} onChange={e => set('laps_completed', e.target.value)} placeholder="e.g. 15" />
+          <Label>Laps Completed {isOperational && '(Locked)'}</Label>
+          <Input type="number" value={form.laps_completed} onChange={e => set('laps_completed', e.target.value)} placeholder="e.g. 15" disabled={isOperational} />
         </div>
         <div>
-          <Label>Best Lap Time (ms)</Label>
-          <Input type="number" value={form.best_lap_time_ms} onChange={e => set('best_lap_time_ms', e.target.value)} placeholder="e.g. 92456" />
+          <Label>Best Lap Time (ms) {isOperational && '(Locked)'}</Label>
+          <Input type="number" value={form.best_lap_time_ms} onChange={e => set('best_lap_time_ms', e.target.value)} placeholder="e.g. 92456" disabled={isOperational} />
         </div>
       </div>
-      <div className="flex gap-2 justify-end pt-2">
-        {onCancel && <Button variant="outline" onClick={onCancel}>Cancel</Button>}
-        <Button
-          className="bg-gray-900 text-white"
-          onClick={() => saveMutation.mutate(form)}
-          disabled={!form.driver_id || !form.event_id || saveMutation.isPending}
-        >
-          {saveMutation.isPending ? 'Saving...' : initialData.id ? 'Update Result' : 'Add Result'}
-        </Button>
+        <div className="flex gap-2 justify-end pt-2">
+          {onCancel && <Button variant="outline" onClick={onCancel}>Cancel</Button>}
+          <Button
+            className="bg-gray-900 text-white"
+            onClick={() => saveMutation.mutate(form)}
+            disabled={!form.driver_id || !form.event_id || saveMutation.isPending || isOperational}
+          >
+            {saveMutation.isPending ? 'Saving...' : initialData.id ? 'Update Result' : 'Add Result'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
