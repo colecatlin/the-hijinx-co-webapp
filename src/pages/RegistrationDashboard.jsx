@@ -42,6 +42,7 @@ export default function RegistrationDashboard() {
   const [seasonYear, setSeasonYear] = useState('');
   const [eventId, setEventId] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [editingEventId, setEditingEventId] = useState('');
 
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
     queryKey: ['isAuthenticated'],
