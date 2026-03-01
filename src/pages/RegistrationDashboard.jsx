@@ -387,6 +387,7 @@ export default function RegistrationDashboard() {
                   variant="outline"
                   size="sm"
                   disabled={!isAdmin}
+                  onClick={() => setShowImportModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <Upload className="w-4 h-4 mr-1" /> Import CSV
@@ -395,6 +396,7 @@ export default function RegistrationDashboard() {
                   variant="outline"
                   size="sm"
                   disabled={!isAdmin}
+                  onClick={() => setShowSyncModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
@@ -403,6 +405,7 @@ export default function RegistrationDashboard() {
                   variant="outline"
                   size="sm"
                   disabled={!isAdmin}
+                  onClick={handlePublishOfficial}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <Send className="w-4 h-4 mr-1" /> Publish
@@ -411,6 +414,7 @@ export default function RegistrationDashboard() {
                   variant="outline"
                   size="sm"
                   disabled={!isAdmin}
+                  onClick={() => setShowExportModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <Download className="w-4 h-4 mr-1" /> Export
