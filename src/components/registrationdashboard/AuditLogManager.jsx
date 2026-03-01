@@ -64,7 +64,7 @@ const STATUS_OPTIONS = ['All', 'success', 'warning', 'error'];
 
 const ITEMS_PER_PAGE = 50;
 
-export default function AuditLogManager({ isAdmin }) {
+export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }) {
   const [orgType, setOrgType] = useState('series');
   const [selectedOrg, setSelectedOrg] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('');
@@ -72,6 +72,7 @@ export default function AuditLogManager({ isAdmin }) {
   const [entityFilter, setEntityFilter] = useState('All');
   const [operationFilter, setOperationFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [quickFilter, setQuickFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
