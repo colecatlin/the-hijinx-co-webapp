@@ -79,7 +79,8 @@
     "zod": "^3.24.2",
     "xlsx": "^0.18.5",
     "react-easy-crop": "^5.0.8",
-    "dompurify": "^3.0.6"
+    "dompurify": "^3.0.6",
+    "date-fns-tz": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
