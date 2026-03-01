@@ -777,8 +777,9 @@ export default function RegistrationDashboard() {
               )}
             </TabsList>
 
-            {canTab(dashboardPermissions, 'overview') && (
-              <TabsContent value="overview" className="mt-6">
+            {/* Lazy-mounted tabs: only render active tab content */}
+            <div className="mt-6">
+              {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
                 <OverviewGrid
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
@@ -792,11 +793,9 @@ export default function RegistrationDashboard() {
                   importLogs={importLogs}
                   complianceSeverity={complianceSeverity}
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'event_builder') && (
-              <TabsContent value="eventBuilder" className="mt-6">
+              {canTab(dashboardPermissions, 'event_builder') && activeTab === 'eventBuilder' && (
                 <EventBuilderForm
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
@@ -806,12 +805,10 @@ export default function RegistrationDashboard() {
                   isLiveMode={isLiveMode}
                   onArchiveAttempt={() => setShowArchiveWarning(true)}
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'classes_sessions') && (
-              <TabsContent value="classesSessions" className="mt-6">
-                {selectedEvent ? (
+              {canTab(dashboardPermissions, 'classes_sessions') && activeTab === 'classesSessions' && (
+                selectedEvent ? (
                   <ClassSessionBuilder
                     dashboardContext={dashboardContext}
                     dashboardPermissions={dashboardPermissions}
@@ -825,13 +822,11 @@ export default function RegistrationDashboard() {
                       <p className="text-gray-400">Select an event to manage classes and sessions</p>
                     </CardContent>
                   </Card>
-                )}
-              </TabsContent>
-            )}
+                )
+              )}
 
-            {canTab(dashboardPermissions, 'entries') && (
-              <TabsContent value="entries" className="mt-6">
-                {selectedEvent ? (
+              {canTab(dashboardPermissions, 'entries') && activeTab === 'entries' && (
+                selectedEvent ? (
                   <EntriesManager
                     dashboardContext={dashboardContext}
                     dashboardPermissions={dashboardPermissions}
@@ -845,13 +840,11 @@ export default function RegistrationDashboard() {
                       <p className="text-gray-400">Select an event to manage entries</p>
                     </CardContent>
                   </Card>
-                )}
-              </TabsContent>
-            )}
+                )
+              )}
 
-            {canTab(dashboardPermissions, 'compliance') && (
-              <TabsContent value="compliance" className="mt-6">
-                {selectedEvent ? (
+              {canTab(dashboardPermissions, 'compliance') && activeTab === 'compliance' && (
+                selectedEvent ? (
                   <ComplianceManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
@@ -864,13 +857,11 @@ export default function RegistrationDashboard() {
                       <p className="text-gray-400">Select an event to view compliance</p>
                     </CardContent>
                   </Card>
-                )}
-              </TabsContent>
-            )}
+                )
+              )}
 
-            {canTab(dashboardPermissions, 'checkin') && (
-              <TabsContent value="checkIn" className="mt-6">
-                {selectedEvent ? (
+              {canTab(dashboardPermissions, 'checkin') && activeTab === 'checkIn' && (
+                selectedEvent ? (
                   <CheckInManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
@@ -882,13 +873,11 @@ export default function RegistrationDashboard() {
                       <p className="text-gray-400">Select an event to check in entries</p>
                     </CardContent>
                   </Card>
-                )}
-              </TabsContent>
-            )}
+                )
+              )}
 
-            {canTab(dashboardPermissions, 'tech') && (
-              <TabsContent value="tech" className="mt-6">
-                {selectedEvent ? (
+              {canTab(dashboardPermissions, 'tech') && activeTab === 'tech' && (
+                selectedEvent ? (
                   <TechManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
@@ -901,12 +890,10 @@ export default function RegistrationDashboard() {
                       <p className="text-gray-400">Select an event to manage tech inspection</p>
                     </CardContent>
                   </Card>
-                )}
-              </TabsContent>
-            )}
+                )
+              )}
 
-            {canTab(dashboardPermissions, 'results') && (
-              <TabsContent value="results" className="mt-6">
+              {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
                 <ResultsManager
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
@@ -915,11 +902,9 @@ export default function RegistrationDashboard() {
                   standingsLastCalculatedAt={standingsLastCalculatedAt}
                   onSetStandingsDirty={() => setStandingsDirty(true)}
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'points_standings') && (
-              <TabsContent value="pointsStandings" className="mt-6">
+              {canTab(dashboardPermissions, 'points_standings') && activeTab === 'pointsStandings' && (
                 <PointsAndStandingsManager
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
@@ -929,38 +914,32 @@ export default function RegistrationDashboard() {
                   onClearDirty={() => setStandingsDirty(false)}
                   onStandingsCalculated={() => setStandingsLastCalculatedAt(new Date().toISOString())}
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'exports') && (
-              <TabsContent value="exports" className="mt-6">
+              {canTab(dashboardPermissions, 'exports') && activeTab === 'exports' && (
                 <ExportsManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
                   isAdmin={isAdmin} 
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'integrations') && (
-              <TabsContent value="integrations" className="mt-6">
+              {canTab(dashboardPermissions, 'integrations') && activeTab === 'integrations' && (
                 <IntegrationsManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
                   isAdmin={isAdmin} 
                 />
-              </TabsContent>
-            )}
+              )}
 
-            {canTab(dashboardPermissions, 'audit_log') && (
-              <TabsContent value="auditLog" className="mt-6">
+              {canTab(dashboardPermissions, 'audit_log') && activeTab === 'auditLog' && (
                 <AuditLogManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
                   isAdmin={isAdmin} 
                 />
-              </TabsContent>
-            )}
+              )}
+            </div>
           </Tabs>
         </div>
 
