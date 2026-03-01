@@ -466,6 +466,104 @@ export default function DriverProfile() {
         </div>
 
         <div className="space-y-4">
+          <section id="section-overview" className="bg-white p-8">
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Event Participation</h2>
+
+            {entries.length === 0 ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p>This driver has no registered events.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {upcomingEntries.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-4">Upcoming Events</h3>
+                    <div className="space-y-3">
+                      {upcomingEntries.map(({ entry, event, track }) => (
+                        <Link 
+                          key={entry.id} 
+                          to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                          className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                                {event.status === 'Live' && (
+                                  <Badge className="bg-red-500 text-white text-xs">Live</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                              </p>
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {entry.entry_status || 'Registered'}
+                            </Badge>
+                            {entry.payment_status === 'Unpaid' && (
+                              <Badge className="bg-orange-100 text-orange-800 text-xs">
+                                <AlertTriangle className="w-3 h-3 mr-1" />
+                                Payment Pending
+                              </Badge>
+                            )}
+                            {entry.payment_status === 'Paid' && (
+                              <Badge className="bg-green-100 text-green-800 text-xs">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Paid
+                              </Badge>
+                            )}
+                            {entry.tech_status && entry.tech_status !== 'Not Inspected' && (
+                              <Badge variant="outline" className="text-xs">
+                                Tech: {entry.tech_status}
+                              </Badge>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {pastEntries.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-4">Past Events</h3>
+                    <div className="space-y-3">
+                      {pastEntries.map(({ entry, event, track, resultData }) => (
+                        <Link 
+                          key={entry.id} 
+                          to={`${createPageUrl('EventResults')}?eventId=${event.id}`}
+                          className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                              <p className="text-sm text-gray-600">
+                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                              </p>
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          </div>
+                          {resultData?.position && (
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                Finished P{resultData.position}
+                              </Badge>
+                            </div>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
           <section id="section-programs" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Racing Programs</h2>
