@@ -920,6 +920,9 @@ export default function RegistrationDashboard() {
                     selectedEvent={selectedEvent}
                     eventId={selectedEvent.id}
                     seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                    isAdmin={isAdmin}
+                    requireAdminOverride={requireAdminOverride}
+                    onShowOverrideDialog={setOverrideDialog}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
