@@ -67,6 +67,9 @@ export default function RegistrationDashboard() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [standingsDirty, setStandingsDirty] = useState(false);
   const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
+  const [complianceSeverity, setComplianceSeverity] = useState('clear');
+  const [showComplianceWarning, setShowComplianceWarning] = useState(false);
+  const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
@@ -315,6 +318,25 @@ export default function RegistrationDashboard() {
 
   const confirmPublish = () => {
     setShowPublishDialog(false);
+  };
+
+  const handleEventStatusChange = (newStatus) => {
+    if (complianceSeverity === 'warning' && (newStatus === 'Live' || newStatus === 'Completed')) {
+      setPendingLifecycleChange(newStatus);
+      setShowComplianceWarning(true);
+    } else {
+      // Allow immediate change if no compliance issues
+      // This would be handled by EventStatusCard's save logic
+      setPendingLifecycleChange(null);
+    }
+  };
+
+  const handleConfirmLifecycleChange = () => {
+    setShowComplianceWarning(false);
+    if (pendingLifecycleChange) {
+      // Allow the event status to change - parent component handles save
+      setPendingLifecycleChange(null);
+    }
   };
 
   if (authLoading || userLoading || selectedEventLoading || selectedTrackLoading || selectedSeriesLoading) {
@@ -709,6 +731,7 @@ export default function RegistrationDashboard() {
                   results={results}
                   operationLogs={operationLogs}
                   importLogs={importLogs}
+                  complianceSeverity={complianceSeverity}
                 />
               </TabsContent>
             )}
@@ -771,7 +794,8 @@ export default function RegistrationDashboard() {
                   <ComplianceManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent} 
+                    selectedEvent={selectedEvent}
+                    onComplianceSeverityChange={setComplianceSeverity}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
@@ -890,6 +914,21 @@ export default function RegistrationDashboard() {
               <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={confirmPublish} className="bg-green-600 hover:bg-green-700">
                 Confirm Publish
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showComplianceWarning} onOpenChange={setShowComplianceWarning}>
+          <AlertDialogContent className="bg-[#262626] border-gray-700">
+            <AlertDialogTitle className="text-white">Compliance Warning</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This event has unresolved compliance issues. Continue anyway?
+            </AlertDialogDescription>
+            <div className="flex gap-2 justify-end">
+              <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmLifecycleChange} className="bg-amber-600 hover:bg-amber-700">
+                Proceed
               </AlertDialogAction>
             </div>
           </AlertDialogContent>
