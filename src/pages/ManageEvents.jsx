@@ -150,6 +150,11 @@ export default function ManageEvents() {
     return (
       <ManagementLayout currentPage="ManageEvents">
         <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
+            <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
+            <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+          </div>
+
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedEventForEdit(null)}>
               <ArrowLeft className="w-4 h-4" />
@@ -167,7 +172,7 @@ export default function ManageEvents() {
               <TabsTrigger value="results">Results</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <EventCoreDetailsSection event={selectedEventForEdit} />
+              <EventCoreDetailsSection event={selectedEventForEdit} isDraftOnly={selectedEventForEdit.status === 'Draft'} />
             </TabsContent>
             <TabsContent value="sessions" className="mt-6">
               <EventSessionsSection event={selectedEventForEdit} />
@@ -193,6 +198,11 @@ export default function ManageEvents() {
   return (
     <ManagementLayout currentPage="ManageEvents">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
+          <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
+          <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+        </div>
+
         <div className="flex items-center gap-4 mb-8">
           <div />
           <div className="flex-1">
