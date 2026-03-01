@@ -188,10 +188,10 @@ export async function importDrivers(base44, rows, headers) {
 
       let driver;
       if (existingDriver) {
-        // Update only missing/empty fields on the existing driver
+        // Update with CSV data, but never overwrite existing data with empty/null values
         const updates = {};
         for (const [key, val] of Object.entries(driverData)) {
-          if (val !== undefined && val !== '' && (existingDriver[key] === undefined || existingDriver[key] === '' || existingDriver[key] === null)) {
+          if (val !== undefined && val !== '' && val !== null) {
             updates[key] = val;
           }
         }
