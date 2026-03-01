@@ -297,19 +297,64 @@ export default function EventProfile() {
                 description=""
               />
             </div>
-            {track && (
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Venue</div>
-                <div className="font-bold text-[#232323] text-lg mb-1">{track.name}</div>
+          </div>
+        </div>
+
+        {/* Linked Entities Panel */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Track Card */}
+          {track && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Venue</div>
+              <Link to={`${createPageUrl('TrackProfile')}?id=${track.id}`} className="group">
+                <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{track.name}</div>
                 {(track.location_city || track.location_state) && (
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <MapPin className="w-3 h-3" />
-                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
+                    {[track.location_city, track.location_state].filter(Boolean).join(', ')}
                   </div>
                 )}
                 {track.track_type && (
-                  <div className="text-sm text-gray-500 mt-2">{track.track_type}</div>
+                  <div className="text-xs text-gray-400 mt-2">{track.track_type}</div>
                 )}
+              </Link>
+            </div>
+          )}
+
+          {/* Series Card */}
+          {event.series_id && series?.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Series</div>
+              <Link to={`${createPageUrl('SeriesDetail')}?id=${event.series_id}`} className="group">
+                <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series[0]?.name || event.series_id}</div>
+                {event.season && (
+                  <div className="text-sm text-gray-600">Season {event.season}</div>
+                )}
+              </Link>
+            </div>
+          )}
+
+          {/* Status Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Status</div>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={`${
+                event.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
+                event.status === 'Published' ? 'bg-blue-100 text-blue-700' :
+                event.status === 'Live' ? 'bg-green-100 text-green-700' :
+                'bg-gray-100 text-gray-600'
+              }`}>
+                {event.status}
+              </Badge>
+            </div>
+            {event.event_date && event.status !== 'completed' && (
+              <div className="text-sm text-gray-600">
+                {(() => {
+                  const days = differenceInCalendarDays(parseISO(event.event_date), new Date());
+                  if (days < 0) return 'Event passed';
+                  if (days === 0) return 'Today';
+                  return `In ${days} day${days !== 1 ? 's' : ''}`;
+                })()}
               </div>
             )}
           </div>
