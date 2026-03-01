@@ -1,13 +1,116 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import PageShell from '@/components/shared/PageShell';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Calendar, Users, Trophy, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Calendar, Users, Trophy, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export default function Registration() {
-  return (
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  const eventId = searchParams.get('eventId');
+  const [selectedEventId, setSelectedEventId] = useState(eventId || '');
+
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch all events
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list('event_date', 100),
+  });
+
+  // Fetch driver profile for current user
+  const { data: userDriver } = useQuery({
+    queryKey: ['userDriver', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const drivers = await base44.entities.Driver.filter({ contact_email: user.email });
+      return drivers[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  // Fetch existing entries for user to check duplicates
+  const { data: userEntries = [] } = useQuery({
+    queryKey: ['userEntries', userDriver?.id],
+    queryFn: () => base44.entities.Entry.filter({ driver_id: userDriver.id }),
+    enabled: !!userDriver?.id,
+  });
+
+  // Get selected event details
+  const selectedEvent = useMemo(() => {
+    return events.find(e => e.id === selectedEventId);
+  }, [events, selectedEventId]);
+
+  // Check if already registered
+  const isAlreadyRegistered = useMemo(() => {
+    if (!userDriver || !selectedEventId) return false;
+    return userEntries.some(entry => entry.event_id === selectedEventId);
+  }, [userDriver, selectedEventId, userEntries]);
+
+  // Create entry mutation
+  const createEntryMutation = useMutation({
+    mutationFn: (entryData) => base44.entities.Entry.create(entryData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userEntries'] });
+      toast.success('Successfully registered for event!');
+      setTimeout(() => {
+        navigate(createPageUrl(`RegistrationDashboard?eventId=${selectedEventId}`));
+      }, 1500);
+    },
+    onError: (error) => {
+      toast.error('Failed to register: ' + error.message);
+    },
+  });
+
+  const handleEventSelect = (newEventId) => {
+    setSelectedEventId(newEventId);
+    setSearchParams({ eventId: newEventId });
+  };
+
+  const handleRegisterEvent = () => {
+    if (!userDriver) {
+      toast.error('No driver profile found. Please create a driver profile first.');
+      return;
+    }
+
+    if (!selectedEvent) {
+      toast.error('Please select an event.');
+      return;
+    }
+
+    if (isAlreadyRegistered) {
+      toast.error('You are already registered for this event.');
+      return;
+    }
+
+    const entryData = {
+      event_id: selectedEvent.id,
+      driver_id: userDriver.id,
+      series_id: selectedEvent.series_id,
+      entry_status: 'Registered',
+      payment_status: 'Unpaid',
+      tech_status: 'Not Inspected',
+    };
+
+    createEntryMutation.mutate(entryData);
+  };
+
+  // Show event selector if no eventId in URL
+  if (!eventId) {
     <PageShell>
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Hero Section */}
