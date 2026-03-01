@@ -346,6 +346,23 @@ export default function RegistrationDashboard() {
   // Legacy compatibility
   const isAdmin = user?.role === 'admin';
 
+  // Helper bound to queryClient
+  const requireAdminOverride = useMemo(() => createRequireAdminOverride(queryClient), [queryClient]);
+
+  const handleOverrideConfirm = async () => {
+    if (overrideText !== 'OVERRIDE' || !overrideReason.trim()) {
+      toast.error('Type OVERRIDE and provide a reason');
+      return;
+    }
+
+    setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
+    if (overrideDialog.onConfirm) {
+      await overrideDialog.onConfirm(overrideReason);
+    }
+    setOverrideText('');
+    setOverrideReason('');
+  };
+
   // Update URL params when state changes
   useEffect(() => {
     const params = new URLSearchParams();
