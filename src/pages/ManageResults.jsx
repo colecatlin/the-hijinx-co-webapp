@@ -23,6 +23,8 @@ export default function ManageResults() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const queryClient = useQueryClient();
 
+  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
+
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['results'],
     queryFn: () => base44.entities.Results.list('-created_date', 500),
@@ -37,6 +39,16 @@ export default function ManageResults() {
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list('-event_date', 200),
   });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list('-created_date', 500),
+  });
+
+  const isResultOperational = (result) => {
+    const session = sessions.find(s => s.id === result.session_id);
+    return session && operationalStatuses.includes(session.status);
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
@@ -103,6 +115,11 @@ export default function ManageResults() {
   return (
     <ManagementLayout currentPage="ManageResults">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+          <h3 className="font-bold text-blue-900 mb-1">Results Lifecycle Notice</h3>
+          <p className="text-sm text-blue-800">Result lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+        </div>
+
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl('Management')}>
             <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
@@ -124,7 +141,10 @@ export default function ManageResults() {
               <Button 
                 variant="destructive"
                 onClick={handleDeleteSelected}
-                disabled={bulkDeleteMutation.isPending}
+                disabled={bulkDeleteMutation.isPending || Array.from(selectedIds).some(id => {
+                  const result = filteredResults.find(r => r.id === id);
+                  return result && isResultOperational(result);
+                })}
               >
                 {bulkDeleteMutation.isPending ? (
                   <BurnoutSpinner />
@@ -215,14 +235,14 @@ export default function ManageResults() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setEditingResult(result)}>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingResult(result)} disabled={isResultOperational(result)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => { if (confirm('Delete this result?')) deleteMutation.mutate(result.id); }}
-                        disabled={deleteMutation.isPending}
+                        disabled={deleteMutation.isPending || isResultOperational(result)}
                       >
                         {deleteMutation.isPending ? (
                           <div className="text-red-600"><BurnoutSpinner /></div>
