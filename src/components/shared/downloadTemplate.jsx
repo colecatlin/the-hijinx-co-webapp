@@ -2,6 +2,7 @@ export const downloadTemplate = (entityType) => {
   const templates = {
     driver: [
       {
+        numeric_id: "",
         first_name: "John",
         last_name: "Doe",
         hometown_city: "Detroit",
@@ -9,7 +10,10 @@ export const downloadTemplate = (entityType) => {
         country: "USA",
         date_of_birth: "1990-01-15",
         status: "Active",
-        primary_discipline: "Off Road"
+        primary_discipline: "Off Road",
+        series_name: "",
+        class_name: "",
+        team_name: ""
       }
     ],
     team: [

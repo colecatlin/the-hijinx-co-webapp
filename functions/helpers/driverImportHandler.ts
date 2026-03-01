@@ -150,6 +150,7 @@ export async function importDrivers(base44, rows, headers) {
     return {
       first_name: firstName,
       last_name: lastName,
+      numeric_id: getField(row, ['numeric_id', 'license_number', 'member_id', 'driver_id']) || undefined,
       date_of_birth: getField(row, ['date_of_birth', 'dob', 'birth_date']) || undefined,
       contact_email: getField(row, ['contact_email', 'email']) || undefined,
       primary_number: getField(row, ['primary_number', 'bib_number', 'car_number', 'number']) || undefined,
@@ -180,10 +181,11 @@ export async function importDrivers(base44, rows, headers) {
     }
 
     try {
-      // Check for duplicate driver
+      // Check for duplicate driver — match on numeric_id first, fall back to name
       const existingDriver = existingDrivers.find(d =>
-        normalize(d.first_name) === normalize(driverData.first_name) &&
-        normalize(d.last_name) === normalize(driverData.last_name)
+        (driverData.numeric_id && d.numeric_id && d.numeric_id === driverData.numeric_id) ||
+        (normalize(d.first_name) === normalize(driverData.first_name) &&
+         normalize(d.last_name) === normalize(driverData.last_name))
       );
 
       let driver;
@@ -240,17 +242,20 @@ export async function importDrivers(base44, rows, headers) {
             seriesClass = await getOrCreateSeriesClass(series, className, competitionLevel);
           }
           
-          // Create DriverProgram to link driver to series/class/team
+          // Create DriverProgram only if one doesn't already exist for this driver+series
           try {
-            await base44.asServiceRole.entities.DriverProgram.create({
-              driver_id: driver.id,
-              series_id: series.id,
-              series_class_id: seriesClass?.id || undefined,
-              team_id: team?.id || undefined,
-              program_type: 'racing',
-              participation_status: 'active',
-              races_participated: 0,
-            });
+            const existingPrograms = await base44.asServiceRole.entities.DriverProgram.filter({ driver_id: driver.id, series_id: series.id });
+            if (existingPrograms.length === 0) {
+              await base44.asServiceRole.entities.DriverProgram.create({
+                driver_id: driver.id,
+                series_id: series.id,
+                series_class_id: seriesClass?.id || undefined,
+                team_id: team?.id || undefined,
+                program_type: 'racing',
+                participation_status: 'active',
+                races_participated: 0,
+              });
+            }
           } catch (e) {
             errors.push({ row: i + 2, error: `DriverProgram creation failed: ${e.message}` });
           }
