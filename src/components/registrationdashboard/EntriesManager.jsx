@@ -71,28 +71,32 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
     queryKey: ['entries', eventId],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const driverIds = useMemo(() => [...new Set(entries.map((e) => e.driver_id))], [entries]);
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers', driverIds],
-    queryFn: async () => {
-      if (driverIds.length === 0) return [];
-      return base44.entities.Driver.list('first_name', 500);
-    },
-    enabled: driverIds.length > 0,
+    queryKey: ['drivers'],
+    queryFn: async () => base44.entities.Driver.list('first_name', 500),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
     queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
     enabled: !!seriesId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allDrivers = [] } = useQuery({
     queryKey: ['allDrivers'],
     queryFn: () => base44.entities.Driver.list('first_name', 200),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Mutations
@@ -206,6 +210,17 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
       if (className !== '—') classes.add(className);
     });
     return Array.from(classes).sort();
+  }, [entries, seriesClasses]);
+
+  // Memoize entry-by-class grouping
+  const entriesByClass = useMemo(() => {
+    const grouped = {};
+    entries.forEach((e) => {
+      const cls = getClassName(e);
+      if (!grouped[cls]) grouped[cls] = [];
+      grouped[cls].push(e);
+    });
+    return grouped;
   }, [entries, seriesClasses]);
 
   // Handlers
