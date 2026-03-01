@@ -7,6 +7,7 @@ import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
+import EntriesManager from '@/components/registrationdashboard/EntriesManager';
 import { motion } from 'framer-motion';
 import {
   Select,
