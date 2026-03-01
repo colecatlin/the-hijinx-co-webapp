@@ -312,23 +312,52 @@ export default function RegistrationDashboard() {
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
-  if (user.role !== 'admin') {
+  // Handle unauthenticated users
+  if (!isAuthenticated) {
     return (
       <PageShell>
         <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Shield className="w-5 h-5 text-red-500" /> Access Restricted
+                <Clock className="w-5 h-5 text-blue-500" /> Login Required
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-300">
-                You do not have permission to access the RaceDay Engine.
+                You must be logged in to access the Registration Dashboard.
+              </p>
+              <Button
+                onClick={() => base44.auth.redirectToLogin()}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Log In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  // Handle authenticated users with no accessible tabs
+  if (availableTabs.length === 0) {
+    return (
+      <PageShell>
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-500" /> Access Not Configured
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-300">
+                Your role does not have access to any dashboard features. Please contact an administrator.
               </p>
               <Button
                 onClick={() => navigate(createPageUrl('Home'))}
