@@ -197,14 +197,14 @@ export async function importDrivers(base44, rows, headers) {
       created++;
 
       // Get or create series if specified
-      const seriesName = getField(row, ['series_name', 'series']);
-      const className = getField(row, ['class_name', 'class']);
-      const discipline = getField(row, ['discipline']);
-      const geographicScope = getField(row, ['geographic_scope']);
-      const competitionLevel = getField(row, ['competition_level']);
+      const seriesName = getField(row, ['series_name', 'series', 'series_full_name', 'primary_series']);
+      const className = getField(row, ['class_name', 'class', 'racing_class', 'vehicle_class', 'division']);
+      const discipline = getField(row, ['discipline', 'primary_discipline']);
+      const geographicScope = getField(row, ['geographic_scope', 'scope']);
+      const competitionLevel = getField(row, ['competition_level', 'level']);
 
       // Resolve team: use CSV team name, or default to "{First} {Last} Racing"
-      const csvTeamName = getField(row, ['team_name', 'team']);
+      const csvTeamName = getField(row, ['team_name', 'team', 'team_name_text']);
       const teamName = csvTeamName || `${driverData.first_name} ${driverData.last_name} Racing`;
       const team = await getOrCreateTeam(
         teamName,
@@ -221,24 +221,25 @@ export async function importDrivers(base44, rows, headers) {
       if (seriesName) {
         const series = await getOrCreateSeries(seriesName, discipline, geographicScope);
         
-        if (series && className) {
-          const seriesClass = await getOrCreateSeriesClass(series, className, competitionLevel);
+        if (series) {
+          let seriesClass = null;
+          if (className) {
+            seriesClass = await getOrCreateSeriesClass(series, className, competitionLevel);
+          }
           
           // Create DriverProgram to link driver to series/class/team
-          if (seriesClass) {
-            try {
-              await base44.asServiceRole.entities.DriverProgram.create({
-                driver_id: driver.id,
-                series_id: series.id,
-                series_class_id: seriesClass.id,
-                team_id: team?.id || undefined,
-                program_type: 'racing',
-                participation_status: 'active',
-                races_participated: 0,
-              });
-            } catch (e) {
-              // DriverProgram may not exist or fail - continue anyway
-            }
+          try {
+            await base44.asServiceRole.entities.DriverProgram.create({
+              driver_id: driver.id,
+              series_id: series.id,
+              series_class_id: seriesClass?.id || undefined,
+              team_id: team?.id || undefined,
+              program_type: 'racing',
+              participation_status: 'active',
+              races_participated: 0,
+            });
+          } catch (e) {
+            errors.push({ row: i + 2, error: `DriverProgram creation failed: ${e.message}` });
           }
         }
       }
