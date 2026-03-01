@@ -232,11 +232,13 @@ export default function RegistrationDashboard() {
     }
   }, [organizationType, organizationId, tracks, seriesList]);
 
-  // Role-based access control constants for future expansion
-  const canAdmin = user?.role === 'admin';
-  const canEditResults = user?.role === 'admin';
-  const canTechInspect = user?.role === 'admin';
-  const canCheckIn = user?.role === 'admin';
+  // Get permissions from shared access control module
+  const dashboardPermissions = useMemo(() => 
+    getPermissionsForRole(user?.role), 
+    [user?.role]
+  );
+
+  // Legacy compatibility
   const isAdmin = user?.role === 'admin';
 
   // Update URL params when state changes
