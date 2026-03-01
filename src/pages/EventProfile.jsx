@@ -392,6 +392,75 @@ export default function EventProfile() {
           </div>
         </div>
 
+        {/* Sessions Preview Card */}
+        <div className="mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-[#232323]">Sessions</h2>
+              {sortedSessions.length > 12 && (
+                <Link to={`${createPageUrl('EventResults')}?id=${eventId}`} className="text-sm text-[#00FFDA] hover:underline font-medium">
+                  View all sessions
+                </Link>
+              )}
+            </div>
+
+            {sortedSessions.length > 0 ? (
+              <div className="space-y-3 mb-6">
+                {sortedSessions.slice(0, 12).map(session => (
+                  <div key={session.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-gray-300 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-[#232323] mb-1">
+                        {session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`}
+                      </div>
+                      {session.scheduled_time && (
+                        <div className="text-xs text-gray-500">
+                          {format(parseISO(session.scheduled_time), 'MMM d, HH:mm')}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                      <Badge className={`${
+                        session.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
+                        session.status === 'Provisional' ? 'bg-orange-100 text-orange-700' :
+                        session.status === 'Official' || session.status === 'Locked' ? 'bg-green-100 text-green-700' :
+                        'bg-blue-100 text-blue-700'
+                      }`}>
+                        {session.status}
+                      </Badge>
+                      <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
+                        <Button variant="ghost" size="sm" className="text-xs h-7">Open</Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">No sessions created for this event yet.</p>
+            )}
+          </section>
+        </div>
+
+        {/* Quick Stats Strip */}
+        {sortedSessions.length > 0 && (
+          <div className="mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-[#232323]">{sortedSessions.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Total Sessions</div>
+              </div>
+              {['draft', 'provisional', 'official', 'locked'].map(status => {
+                const count = sessionStats[status] || 0;
+                return count > 0 ? (
+                  <div key={status} className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-[#232323]">{count}</div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">{status}</div>
+                  </div>
+                ) : null;
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Classes Section */}
         {event.series_id ? (
           <div className="mb-6">
