@@ -100,24 +100,67 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
     }
   };
 
+  const [merging, setMerging] = useState(false);
+
   const handleMerge = async (keepDriverId, deleteDriverIds) => {
-    if (window.confirm(`Keep the first driver and delete ${deleteDriverIds.length} duplicate(s)?`)) {
+    if (!window.confirm(`Merge: keep the most complete driver and delete ${deleteDriverIds.length} duplicate(s)? Missing fields on the kept driver will be filled from duplicates.`)) return;
+
+    setMerging(true);
+    try {
+      // Fetch current data for all drivers in this group
+      const allIds = [keepDriverId, ...deleteDriverIds];
+      const allDriverData = await Promise.all(allIds.map(id => base44.entities.Driver.filter({ id })));
+      const allDrivers = allDriverData.flatMap(r => r);
+
+      const keeper = allDrivers.find(d => d.id === keepDriverId);
+      const dupes = allDrivers.filter(d => deleteDriverIds.includes(d.id));
+
+      // Merge fields: fill empty fields on keeper from duplicates
+      const mergeableFields = [
+        'date_of_birth', 'contact_email', 'represented_by',
+        'hometown_city', 'hometown_state', 'hometown_country',
+        'racing_base_city', 'racing_base_state', 'racing_base_country',
+        'primary_number', 'manufacturer', 'primary_discipline',
+        'team_id', 'primary_series_id', 'primary_class_id',
+        'career_status', 'primary_color', 'slug', 'numeric_id',
+        'featured', 'owner_user_id', 'calendar_id'
+      ];
+
+      const updates = {};
+      for (const field of mergeableFields) {
+        if (!keeper[field]) {
+          for (const dupe of dupes) {
+            if (dupe[field]) {
+              updates[field] = dupe[field];
+              break;
+            }
+          }
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await base44.entities.Driver.update(keepDriverId, updates);
+      }
+
+      // Delete duplicates
       for (const id of deleteDriverIds) {
         try {
           await base44.entities.Driver.delete(id);
-          await new Promise(r => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 150));
         } catch (e) {
           // Already deleted, skip
         }
       }
+
       await queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      toast.success(`Deleted ${deleteDriverIds.length} duplicate(s)`);
-      // Remove merged drivers from local state directly
+      toast.success(`Merged: ${Object.keys(updates).length} field(s) copied, ${deleteDriverIds.length} duplicate(s) deleted`);
       setDuplicates(prev =>
         prev
           .map(group => group.filter(d => !deleteDriverIds.includes(d.id)))
           .filter(group => group.length > 1)
       );
+    } finally {
+      setMerging(false);
     }
   };
 
