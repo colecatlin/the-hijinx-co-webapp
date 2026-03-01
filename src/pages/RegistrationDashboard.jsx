@@ -65,6 +65,7 @@ export default function RegistrationDashboard() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [standingsDirty, setStandingsDirty] = useState(false);
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
@@ -284,6 +285,19 @@ export default function RegistrationDashboard() {
       setEventId(filteredEvents[0].id);
     }
   }, [filteredEvents, eventId]);
+
+  // Detect when any Session status changes to Official or Locked
+  useEffect(() => {
+    if (!sessions || sessions.length === 0) return;
+    
+    const hasOfficialOrLocked = sessions.some((s) => 
+      s.status === 'Official' || s.status === 'Locked'
+    );
+    
+    if (hasOfficialOrLocked && !standingsDirty) {
+      setStandingsDirty(true);
+    }
+  }, [sessions, standingsDirty]);
 
   const handleCreateEvent = () => {
     setEditingEventId('');
@@ -823,6 +837,8 @@ export default function RegistrationDashboard() {
                   dashboardPermissions={dashboardPermissions}
                   isAdmin={isAdmin}
                   selectedEvent={selectedEvent}
+                  standingsDirty={standingsDirty}
+                  onClearDirty={() => setStandingsDirty(false)}
                 />
               </TabsContent>
             )}
