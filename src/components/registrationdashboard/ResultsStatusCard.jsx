@@ -1,67 +1,73 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Flag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Flag } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
-export default function ResultsStatusCard({ sessions = [] }) {
-  // Handle both old status values and new enum values
-  const normalizeStatus = (status) => {
-    const statusMap = {
-      'Draft': 'draft',
-      'Provisional': 'provisional',
-      'Official': 'official',
-      'Locked': 'locked',
+export default function ResultsStatusCard({ selectedEvent }) {
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions', selectedEvent?.id],
+    queryFn: () => selectedEvent?.id ? base44.entities.Session.filter({ event_id: selectedEvent.id }) : [],
+    enabled: !!selectedEvent?.id,
+  });
+
+  const statusCounts = useMemo(() => {
+    const counts = {
+      Draft: 0,
+      Provisional: 0,
+      Official: 0,
+      Locked: 0,
     };
-    return statusMap[status] || status?.toLowerCase() || 'draft';
+
+    sessions.forEach((session) => {
+      const status = session.status || 'Draft';
+      if (counts.hasOwnProperty(status)) {
+        counts[status]++;
+      }
+    });
+
+    return counts;
+  }, [sessions]);
+
+  const statusColors = {
+    Draft: 'bg-gray-700/50 text-gray-100',
+    Provisional: 'bg-yellow-700/50 text-yellow-100',
+    Official: 'bg-blue-700/50 text-blue-100',
+    Locked: 'bg-green-700/50 text-green-100',
   };
-
-  const sessionsByStatus = {
-    draft: sessions.filter(s => normalizeStatus(s.status) === 'draft').length || 0,
-    provisional: sessions.filter(s => normalizeStatus(s.status) === 'provisional').length || 0,
-    official: sessions.filter(s => normalizeStatus(s.status) === 'official').length || 0,
-    locked: sessions.filter(s => normalizeStatus(s.status) === 'locked').length || 0,
-  };
-
-  const rows = [
-    { label: 'Draft', value: sessionsByStatus.draft },
-    { label: 'Provisional', value: sessionsByStatus.provisional },
-    { label: 'Official', value: sessionsByStatus.official },
-    { label: 'Locked', value: sessionsByStatus.locked },
-  ];
-
-  const totalSessions = sessions?.length || 0;
-  const lockedSessions = sessionsByStatus.locked;
-  const allLocked = totalSessions > 0 && lockedSessions === totalSessions;
-
-  const statusBadge = allLocked ? (
-    <Badge className="bg-green-500/20 text-green-400">All Locked</Badge>
-  ) : lockedSessions > 0 ? (
-    <Badge className="bg-blue-500/20 text-blue-400">Partial</Badge>
-  ) : totalSessions === 0 ? (
-    <Badge className="bg-gray-500/20 text-gray-400">No Sessions</Badge>
-  ) : (
-    <Badge className="bg-yellow-500/20 text-yellow-400">In Progress</Badge>
-  );
 
   return (
     <Card className="bg-[#171717] border-gray-800">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-2">
           <Flag className="w-4 h-4" /> Results Status
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {rows.map((row) => (
-            <div key={row.label} className="flex justify-between text-xs text-gray-400">
-              <span>{row.label}</span>
-              <span className="text-gray-300 font-medium">{row.value}</span>
+      <CardContent className="space-y-4">
+        {sessionsLoading ? (
+          <p className="text-xs text-gray-400">Loading...</p>
+        ) : sessions.length === 0 ? (
+          <p className="text-xs text-gray-400">No sessions found for this event</p>
+        ) : (
+          <>
+            <div>
+              <p className="text-xs text-gray-400 mb-2">Total Sessions</p>
+              <p className="text-2xl font-bold text-white">{sessions.length}</p>
             </div>
-          ))}
-          <div className="mt-4 pt-3 border-t border-gray-700">
-            {statusBadge}
-          </div>
-        </div>
+
+            <div className="space-y-2">
+              {Object.entries(statusCounts).map(([status, count]) => (
+                <div key={status} className="flex justify-between items-center text-xs">
+                  <span className="text-gray-300">{status}</span>
+                  <Badge className={statusColors[status] || 'bg-gray-700 text-gray-100'}>
+                    {count}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
