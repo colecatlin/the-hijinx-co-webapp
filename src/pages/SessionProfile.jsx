@@ -168,33 +168,47 @@ export default function SessionProfile() {
               )}
             </div>
 
-            {/* Session Details */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div>
-                <span className="text-xs text-gray-500 uppercase tracking-wide">Type</span>
-                <div className="text-sm font-medium text-[#0A0A0A]">{session.session_type}</div>
-              </div>
-              {session.scheduled_time && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{format(parseISO(session.scheduled_time), 'HH:mm')}</span>
-                </div>
-              )}
-              {session.laps && (
+            {/* Session Summary Block */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <span className="text-xs text-gray-500 uppercase tracking-wide">Laps</span>
-                  <div className="text-sm font-medium text-[#0A0A0A]">{session.laps}</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Session Type</div>
+                  <div className="text-lg font-semibold text-[#0A0A0A] mb-4">{session.session_type}</div>
+                  
+                  {session.laps && (
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Laps</div>
+                      <div className="text-lg font-semibold text-[#0A0A0A]">{session.laps}</div>
+                    </div>
+                  )}
                 </div>
-              )}
-              <Badge className={`${
-                session.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
-                session.status === 'Provisional' ? 'bg-orange-100 text-orange-800' :
-                session.status === 'Official' ? 'bg-green-100 text-green-800' :
-                session.status === 'Locked' ? 'bg-blue-100 text-blue-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {session.status}
-              </Badge>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Status</div>
+                  <Badge className={`${
+                    session.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
+                    session.status === 'Provisional' ? 'bg-orange-100 text-orange-800' :
+                    session.status === 'Official' ? 'bg-green-100 text-green-800' :
+                    session.status === 'Locked' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`} className="mb-4">
+                    {session.status}
+                  </Badge>
+                  
+                  {session.scheduled_time && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">{format(parseISO(session.scheduled_time), 'HH:mm')}</span>
+                    </div>
+                  )}
+                  
+                  {className && (
+                    <div className="mt-3">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Class</div>
+                      <div className="text-sm font-medium text-[#0A0A0A]">{className}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
