@@ -229,10 +229,6 @@ export default function RegistrationDashboard() {
     }
   }, [organizationType, organizationId, tracks, seriesList]);
 
-  const selectedEventFromList = useMemo(() => {
-    return events.find((e) => e.id === eventId);
-  }, [events, eventId]);
-
   const isAdmin = user?.role === 'admin';
 
   // Update URL params when state changes
