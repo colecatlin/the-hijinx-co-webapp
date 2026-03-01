@@ -537,6 +537,22 @@ export default function RegistrationDashboard() {
               />
             </TabsContent>
 
+            {/* Classes and Sessions Tab Content */}
+            <TabsContent value="classesSessions" className="mt-6">
+              {selectedEvent ? (
+                <ClassSessionBuilder
+                  eventId={selectedEvent.id}
+                  seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                />
+              ) : (
+                <Card className="bg-[#171717] border-gray-800">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-400">Select an event to manage classes and sessions</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             {/* Other Tab Contents */}
             {['classesSessions', 'entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
