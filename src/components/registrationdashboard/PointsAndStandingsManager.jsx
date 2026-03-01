@@ -74,6 +74,11 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     queryFn: () => base44.entities.Session.list(),
   });
 
+  const { data: allDriverPrograms = [] } = useQuery({
+    queryKey: ['driverPrograms'],
+    queryFn: () => base44.entities.DriverProgram.list(),
+  });
+
   const { data: seriesClassesAll = [] } = useQuery({
     queryKey: ['seriesClassesAll', selectedSeries],
     queryFn: () =>
@@ -168,6 +173,69 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     return validated;
   }, [results, selectedEvent, allDriverPrograms, seriesClassesAll]);
 
+  // Standings calculation validation: filter results by session status and other rules
+  const standingsEligibleResults = useMemo(() => {
+    if (!selectedEvent || !selectedSeason) return [];
+
+    // Valid session statuses for standings calculation
+    const validStatuses = ['Official', 'Locked'];
+
+    // Filter by session status and program validity
+    let eligible = validatedResults.filter((result) => {
+      // Must have a valid program_id
+      if (!result.program_id) return false;
+
+      // Get associated session
+      const session = allSessions.find((s) => s.id === result.session_id);
+      if (!session) return false;
+
+      // Session must have valid status
+      if (!validStatuses.includes(session.status)) return false;
+
+      // Validate DriverProgram season alignment
+      const program = allDriverPrograms.find((dp) => dp.id === result.program_id);
+      if (!program) return false;
+      if (program.series_id !== selectedEvent.series_id || program.event_id !== selectedEvent.id) {
+        console.warn('DriverProgram season mismatch detected.');
+        return false;
+      }
+
+      return true;
+    });
+
+    // Handle duplicates: same driver_id + session_id, keep most recent
+    const deduped = {};
+    eligible.forEach((result) => {
+      const key = `${result.driver_id}:${result.session_id}`;
+      const existing = deduped[key];
+      if (existing) {
+        const existingDate = new Date(existing.created_date).getTime();
+        const resultDate = new Date(result.created_date).getTime();
+        if (resultDate > existingDate) {
+          console.warn('Duplicate result detected for driver and session.');
+          deduped[key] = result;
+        } else {
+          console.warn('Duplicate result detected for driver and session.');
+        }
+      } else {
+        deduped[key] = result;
+      }
+    });
+
+    return Object.values(deduped);
+  }, [validatedResults, selectedEvent, selectedSeason, allSessions, allDriverPrograms]);
+
+  // Check if standings can be calculated
+  const hasValidSessions = useMemo(() => {
+    if (!selectedEvent) return false;
+    const validStatuses = ['Official', 'Locked'];
+    return allSessions.some(
+      (s) =>
+        s.event_id === selectedEvent.id &&
+        validStatuses.includes(s.status)
+    );
+  }, [allSessions, selectedEvent]);
+
   // Get unique seasons from series
   const seasons = useMemo(() => {
     if (!selectedSeries) return [];
@@ -197,6 +265,12 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
 
   const recalculateMutation = useMutation({
     mutationFn: async (payload) => {
+      // Validate standings can be calculated
+      if (!hasValidSessions) {
+        toast.error('Standings cannot be calculated until sessions are Official.');
+        return Promise.reject(new Error('No valid sessions'));
+      }
+
       // Show warning if not published
       if (currentPointsConfig?.status !== 'published') {
         return new Promise((resolve) => {
@@ -222,6 +296,7 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
           series_id: selectedSeries,
           season_year: selectedSeason,
           class_name: selectedClass,
+          eligible_results_count: standingsEligibleResults.length,
         },
       });
 
@@ -232,7 +307,9 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
       toast.success('Standings recalculated');
     },
     onError: (error) => {
-      toast.error(`Recalculation failed: ${error.message}`);
+      if (error.message !== 'No valid sessions') {
+        toast.error(`Recalculation failed: ${error.message}`);
+      }
     },
   });
 
@@ -385,47 +462,64 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => recalculateMutation.mutate()}
-                disabled={!selectedSeries || !selectedSeason || !selectedClass}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
-              >
-                Recalculate
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (currentPointsConfig?.status !== 'published') {
-                    toast.error('Publish rules first');
-                    return;
-                  }
-                  toast.success('Standings are now public');
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Publish
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportCSV}
-                disabled={standings.length === 0}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
-              >
-                <Download className="w-3 h-3 mr-1" /> Export
-              </Button>
-            </div>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 onClick={() => recalculateMutation.mutate()}
+                 disabled={!selectedSeries || !selectedSeason || !selectedClass || !hasValidSessions}
+                 className="border-gray-700 text-gray-300 hover:bg-gray-800"
+               >
+                 Recalculate
+               </Button>
+               <Button
+                 size="sm"
+                 onClick={() => {
+                   if (currentPointsConfig?.status !== 'published') {
+                     toast.error('Publish rules first');
+                     return;
+                   }
+                   toast.success('Standings are now public');
+                 }}
+                 className="bg-blue-600 hover:bg-blue-700"
+               >
+                 Publish
+               </Button>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 onClick={handleExportCSV}
+                 disabled={standings.length === 0}
+                 className="border-gray-700 text-gray-300 hover:bg-gray-800"
+               >
+                 <Download className="w-3 h-3 mr-1" /> Export
+               </Button>
+             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Status Card */}
-      {selectedSeries && selectedSeason && selectedClass && (
+      {selectedSeries && selectedSeason && selectedClass && !hasValidSessions && (
+        <Card className="bg-[#262626] border-amber-700">
+          <CardContent className="py-6">
+            <div className="flex gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-amber-400 font-medium">Standings cannot be calculated</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Standings cannot be calculated until sessions are Official.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Status Card */}
+      {selectedSeries && selectedSeason && selectedClass && hasValidSessions && (
         <StandingsStatus
           standings={standings}
-          results={validatedResults}
+          results={standingsEligibleResults}
           sessions={validatedSessions}
           selectedClass={selectedClass}
         />
