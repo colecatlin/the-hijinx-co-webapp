@@ -62,7 +62,7 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
     enabled: !!seriesId,
   });
 
-  const { data: results = [] } = useQuery({
+  const { data: allResults = [] } = useQuery({
     queryKey: ['results', eventId],
     queryFn: () =>
       eventId
@@ -71,15 +71,41 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
     enabled: !!eventId,
   });
 
+  // Data integrity: filter results to match selected event's series_id
+  const results = useMemo(() => {
+    if (!selectedEvent) return allResults;
+    const filtered = allResults.filter((result) => {
+      if (result.event_id === selectedEvent.id && result.series_id !== selectedEvent.series_id) {
+        console.warn('Series mismatch detected for event-linked record.');
+        return false;
+      }
+      return true;
+    });
+    return filtered;
+  }, [allResults, selectedEvent]);
+
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
   });
 
-  const { data: driverPrograms = [] } = useQuery({
+  const { data: allDriverPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
     queryFn: () => base44.entities.DriverProgram.list(),
   });
+
+  // Data integrity: filter driverPrograms to match selected event's series_id
+  const driverPrograms = useMemo(() => {
+    if (!selectedEvent) return allDriverPrograms;
+    const filtered = allDriverPrograms.filter((dp) => {
+      if (dp.event_id === selectedEvent.id && dp.series_id !== selectedEvent.series_id) {
+        console.warn('Series mismatch detected for event-linked record.');
+        return false;
+      }
+      return true;
+    });
+    return filtered;
+  }, [allDriverPrograms, selectedEvent]);
 
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs'],

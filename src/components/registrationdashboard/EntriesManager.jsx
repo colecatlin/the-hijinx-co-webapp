@@ -169,6 +169,12 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   // Filtered entries
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
+      // Data integrity check: if event_id matches but series_id doesn't, filter it out
+      if (selectedEvent && entry.event_id === selectedEvent.id && entry.series_id !== selectedEvent.series_id) {
+        console.warn('Series mismatch detected for event-linked record.');
+        return false;
+      }
+
       if (filters.class !== 'all') {
         const entryClass = getClassName(entry);
         if (entryClass !== filters.class) return false;
@@ -190,7 +196,7 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
 
       return true;
     });
-  }, [entries, filters, drivers, seriesClasses]);
+  }, [entries, filters, drivers, seriesClasses, selectedEvent]);
 
   // Get unique classes for filter
   const uniqueClasses = useMemo(() => {

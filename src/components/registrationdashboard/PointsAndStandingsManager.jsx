@@ -69,7 +69,7 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     enabled: !!selectedSeries && !!selectedSeason && !!selectedClass,
   });
 
-  const { data: results = [] } = useQuery({
+  const { data: allResults = [] } = useQuery({
     queryKey: ['results', selectedSeries, selectedSeason],
     queryFn: () =>
       selectedSeries && selectedSeason
@@ -79,6 +79,19 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
         : Promise.resolve([]),
     enabled: !!selectedSeries && !!selectedSeason,
   });
+
+  // Data integrity: filter results to match selected event if specified
+  const results = useMemo(() => {
+    if (!selectedEventId) return allResults;
+    const filtered = allResults.filter((result) => {
+      if (selectedEvent && result.event_id === selectedEvent.id && result.series_id !== selectedEvent.series_id) {
+        console.warn('Series mismatch detected for event-linked record.');
+        return false;
+      }
+      return true;
+    });
+    return filtered;
+  }, [allResults, selectedEventId, selectedEvent]);
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions'],
