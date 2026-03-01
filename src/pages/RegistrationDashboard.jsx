@@ -493,8 +493,17 @@ export default function RegistrationDashboard() {
               </div>
             </TabsContent>
 
+            {/* Event Builder Tab Content */}
+            <TabsContent value="eventBuilder" className="mt-6">
+              <EventBuilderForm
+                selectedEventId={editingEventId}
+                onEventCreated={handleEventCreated}
+                isAdmin={isAdmin}
+              />
+            </TabsContent>
+
             {/* Other Tab Contents */}
-            {['eventBuilder', 'classesSessions', 'entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
+            {['classesSessions', 'entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
