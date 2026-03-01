@@ -695,7 +695,7 @@ export default function RegistrationDashboard() {
               </TabsContent>
             )}
 
-            {canTab(dashboardPermissions, 'eventBuilder') && (
+            {canTab(dashboardPermissions, 'event_builder') && (
               <TabsContent value="eventBuilder" className="mt-6">
                 <EventBuilderForm
                   dashboardContext={dashboardContext}
@@ -707,7 +707,7 @@ export default function RegistrationDashboard() {
               </TabsContent>
             )}
 
-            {canTab(dashboardPermissions, 'classesSessions') && (
+            {canTab(dashboardPermissions, 'classes_sessions') && (
               <TabsContent value="classesSessions" className="mt-6">
                 {selectedEvent ? (
                   <ClassSessionBuilder
@@ -765,7 +765,7 @@ export default function RegistrationDashboard() {
               </TabsContent>
             )}
 
-            {canTab(dashboardPermissions, 'checkIn') && (
+            {canTab(dashboardPermissions, 'checkin') && (
               <TabsContent value="checkIn" className="mt-6">
                 {selectedEvent ? (
                   <CheckInManager 
@@ -813,7 +813,7 @@ export default function RegistrationDashboard() {
               </TabsContent>
             )}
 
-            {canTab(dashboardPermissions, 'pointsStandings') && (
+            {canTab(dashboardPermissions, 'points_standings') && (
               <TabsContent value="pointsStandings" className="mt-6">
                 <PointsAndStandingsManager
                   dashboardContext={dashboardContext}
@@ -844,7 +844,7 @@ export default function RegistrationDashboard() {
               </TabsContent>
             )}
 
-            {canTab(dashboardPermissions, 'auditLog') && (
+            {canTab(dashboardPermissions, 'audit_log') && (
               <TabsContent value="auditLog" className="mt-6">
                 <AuditLogManager 
                   dashboardContext={dashboardContext} 
