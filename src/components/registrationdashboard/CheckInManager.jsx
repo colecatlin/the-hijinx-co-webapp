@@ -62,7 +62,7 @@ export default function CheckInManager({ selectedEvent, user }) {
     refetchOnReconnect: false,
   });
 
-  const { data: user: currentUser } = useQuery({
+  const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
