@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Loader2, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export default function EventCoreDetailsSection({ event }) {
+export default function EventCoreDetailsSection({ event, isDraftOnly = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: event.name || '',
@@ -21,6 +21,9 @@ export default function EventCoreDetailsSection({ event }) {
     status: event.status || 'upcoming',
     round_number: event.round_number || ''
   });
+
+  const isOperational = event.status !== 'Draft';
+  const canEditDates = !isOperational;
 
   useEffect(() => {
     setFormData({
@@ -116,10 +119,15 @@ export default function EventCoreDetailsSection({ event }) {
   if (!isEditing) {
     return (
       <>
+        {isOperational && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-800"><strong>Operational Event:</strong> Lifecycle fields are locked. Edit through RegistrationDashboard only.</p>
+          </div>
+        )}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold">Core Details</h2>
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" disabled={isOperational}>
               Edit
             </Button>
           </div>
@@ -173,6 +181,11 @@ export default function EventCoreDetailsSection({ event }) {
 
   return (
     <>
+      {isOperational && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-red-800"><strong>Operational Event:</strong> Lifecycle fields (status, dates, season) are locked for editing. Modify through RegistrationDashboard only.</p>
+        </div>
+      )}
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -182,6 +195,7 @@ export default function EventCoreDetailsSection({ event }) {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Round 1: Phoenix"
               required
+              disabled={isOperational}
             />
           </div>
 
@@ -195,8 +209,8 @@ export default function EventCoreDetailsSection({ event }) {
                   const selectedSeries = allSeries.find(s => s.id === val);
                   setFormData({ ...formData, series_id: val, series_name: selectedSeries?.name || '' });
                 }
-              }}>
-                <SelectTrigger>
+              }} disabled={isOperational}>
+                <SelectTrigger disabled={isOperational}>
                   <SelectValue placeholder="Select series" />
                 </SelectTrigger>
                 <SelectContent>
@@ -216,11 +230,12 @@ export default function EventCoreDetailsSection({ event }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Season</label>
+              <label className="block text-sm font-medium mb-2">Season {isOperational && '(Locked)'}</label>
               <Input
                 value={formData.season}
                 onChange={(e) => setFormData({ ...formData, season: e.target.value })}
                 placeholder="2026"
+                disabled={isOperational}
               />
             </div>
           </div>
@@ -233,8 +248,8 @@ export default function EventCoreDetailsSection({ event }) {
               } else {
                 setFormData({ ...formData, track_id: val });
               }
-            }}>
-              <SelectTrigger>
+            }} disabled={isOperational}>
+              <SelectTrigger disabled={isOperational}>
                 <SelectValue placeholder="Select track" />
               </SelectTrigger>
               <SelectContent>
@@ -255,21 +270,23 @@ export default function EventCoreDetailsSection({ event }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Event Date *</label>
+              <label className="block text-sm font-medium mb-2">Event Date {isOperational && '(Locked)'} *</label>
               <Input
                 type="date"
                 value={formData.event_date}
                 onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
                 required
+                disabled={isOperational}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">End Date</label>
+              <label className="block text-sm font-medium mb-2">End Date {isOperational && '(Locked)'}</label>
               <Input
                 type="date"
                 value={formData.end_date}
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                disabled={isOperational}
               />
             </div>
           </div>
@@ -282,20 +299,18 @@ export default function EventCoreDetailsSection({ event }) {
                 value={formData.round_number}
                 onChange={(e) => setFormData({ ...formData, round_number: e.target.value })}
                 placeholder="1"
+                disabled={isOperational}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Status</label>
-              <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val })}>
-                <SelectTrigger>
+              <label className="block text-sm font-medium mb-2">Status {isOperational && '(Locked)'}</label>
+              <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val })} disabled={isOperational}>
+                <SelectTrigger disabled={isOperational}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="Draft">Draft</SelectItem>
                 </SelectContent>
               </Select>
             </div>
