@@ -1,33 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
-
-const SESSION_ORDER = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, MapPin, Calendar, AlertCircle } from 'lucide-react';
 
 export default function EventResults() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get('id');
-  const [activeSession, setActiveSession] = useState(null);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [showProvisional, setShowProvisional] = useState(true);
+
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+  });
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    enabled: isAuthenticated,
   });
 
-  const { event, isLoading, error } = useMotorsportsContext({ eventId });
-
-  const { data: results = [], isLoading: resultsLoading } = useQuery({
-    queryKey: ['results-event', eventId],
-    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+  const { data: event, isLoading: eventLoading } = useQuery({
+    queryKey: ['event', eventId],
+    queryFn: () => base44.entities.Event.list().then(events => events.find(e => e.id === eventId)),
     enabled: !!eventId,
+  });
+
+  const { data: track } = useQuery({
+    queryKey: ['track', event?.track_id],
+    queryFn: () => event?.track_id ? base44.entities.Track.list().then(tracks => tracks.find(t => t.id === event.track_id)) : null,
+    enabled: !!event?.track_id,
+  });
+
+  const { data: series } = useQuery({
+    queryKey: ['series', event?.series_id],
+    queryFn: () => event?.series_id ? base44.entities.Series.list().then(series => series.find(s => s.id === event.series_id)) : null,
+    enabled: !!event?.series_id,
   });
 
   const { data: sessions = [] } = useQuery({
@@ -36,49 +53,91 @@ export default function EventResults() {
     enabled: !!eventId,
   });
 
+  const { data: results = [] } = useQuery({
+    queryKey: ['results-event', eventId],
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+    enabled: !!eventId,
+  });
+
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['series-classes', event?.series_id],
+    queryFn: () => event?.series_id ? base44.entities.SeriesClass.filter({ series_id: event.series_id, active: true }) : [],
+    enabled: !!event?.series_id,
+  });
+
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers-results'],
     queryFn: () => base44.entities.Driver.list(),
     enabled: results.length > 0,
   });
 
-  const { data: allClasses = [] } = useQuery({
-    queryKey: ['classes-results'],
-    queryFn: () => base44.entities.SeriesClass.list(),
+  const { data: programs = [] } = useQuery({
+    queryKey: ['programs-results'],
+    queryFn: () => base44.entities.DriverProgram.list(),
     enabled: results.length > 0,
   });
 
-  const publicSessionStatuses = ['Provisional', 'Official', 'Locked'];
   const isAdmin = user?.role === 'admin';
 
-  const visibleSessions = sessions.filter(s => 
-    isAdmin || publicSessionStatuses.includes(s.status)
-  );
+  // Build lookup maps
+  const driverMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
+  const programMap = useMemo(() => new Map(programs.map(p => [p.id, p])), [programs]);
+  const classMap = useMemo(() => new Map(seriesClasses.map(c => [c.id, c])), [seriesClasses]);
 
-  const sessionTypes = [...new Set(
-    results
-      .filter(r => visibleSessions.some(s => s.id === r.session_id) || !r.session_id)
-      .map(r => r.session_type || 'Final')
-  )].sort((a, b) => SESSION_ORDER.indexOf(a) - SESSION_ORDER.indexOf(b));
+  // Sort sessions by scheduled_time
+  const sortedSessions = useMemo(() => {
+    return [...sessions].sort((a, b) => {
+      if (!a.scheduled_time && !b.scheduled_time) return 0;
+      if (!a.scheduled_time) return 1;
+      if (!b.scheduled_time) return -1;
+      return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+    });
+  }, [sessions]);
 
-  const hasMultipleSessions = sessionTypes.length > 1;
-  const currentSession = activeSession || sessionTypes[sessionTypes.length - 1] || null;
+  // Default selected session: prefer Official/Locked, else most recent
+  const defaultSession = useMemo(() => {
+    const officialOrLocked = sortedSessions.find(s => ['Official', 'Locked'].includes(s.status));
+    return officialOrLocked || sortedSessions[sortedSessions.length - 1] || null;
+  }, [sortedSessions]);
 
-  const displayedResults = hasMultipleSessions
-    ? results.filter(r => (r.session_type || 'Final') === currentSession)
-    : results;
+  const activeSessionId = selectedSessionId || defaultSession?.id || null;
+  const selectedSession = sessions.find(s => s.id === activeSessionId);
 
-  const getSessionStatus = (sessionType) => {
-    const session = sessions.find(s => s.session_type === sessionType && visibleSessions.includes(s));
-    return session?.status;
+  // Filter results by selected session and class
+  const filteredResults = useMemo(() => {
+    let filtered = results.filter(r => r.session_id === activeSessionId);
+    
+    if (selectedClassId) {
+      filtered = filtered.filter(r => r.series_class_id === selectedClassId);
+    }
+
+    // Apply provisional toggle
+    if (!showProvisional && selectedSession) {
+      if (!['Official', 'Locked'].includes(selectedSession.status)) {
+        return [];
+      }
+    }
+
+    return filtered.sort((a, b) => (a.position || 999) - (b.position || 999));
+  }, [results, activeSessionId, selectedClassId, showProvisional, selectedSession]);
+
+  // Get session label
+  const getSessionLabel = (session) => {
+    const parts = [session.session_type];
+    if (session.session_number) parts.push(`#${session.session_number}`);
+    if (session.name) parts.push(session.name);
+    if (session.scheduled_time) parts.push(format(parseISO(session.scheduled_time), 'HH:mm'));
+    return parts.join(', ');
   };
 
-  const getDriverName = (dId) => {
-    const d = drivers.find(d => d.id === dId);
-    return d ? `${d.first_name} ${d.last_name}` : '—';
+  // Get car number for result
+  const getCarNumber = (result) => {
+    if (result.program_id && programMap.has(result.program_id)) {
+      return programMap.get(result.program_id).car_number;
+    }
+    const driver = driverMap.get(result.driver_id);
+    return driver?.primary_number || '';
   };
-  const getDriverSlug = (dId) => drivers.find(d => d.id === dId)?.slug || null;
-  const getClassName = (cId) => allClasses.find(c => c.id === cId)?.class_name || '—';
 
   if (isLoading) {
     return (
