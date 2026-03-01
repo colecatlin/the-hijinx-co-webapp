@@ -14,6 +14,9 @@ export default function ManageSessions() {
   const [selectedSessionForEdit, setSelectedSessionForEdit] = useState(null);
   const queryClient = useQueryClient();
 
+  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
+  const isOperationalSession = (session) => operationalStatuses.includes(session.status);
+
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list('-created_date', 500),
@@ -32,6 +35,17 @@ export default function ManageSessions() {
     return (
       <ManagementLayout currentPage="ManageSessions">
         <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <h3 className="font-bold text-blue-900 mb-1">Session Lifecycle Notice</h3>
+            <p className="text-sm text-blue-800">Session lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+          </div>
+
+          {isOperationalSession(selectedSessionForEdit) && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+              <p className="text-sm text-red-800"><strong>Operational Session:</strong> Lifecycle fields are locked. Modify through RegistrationDashboard only.</p>
+            </div>
+          )}
+
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" onClick={() => setSelectedSessionForEdit(null)}>
               <ArrowLeft className="w-4 h-4" />
@@ -50,7 +64,38 @@ export default function ManageSessions() {
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-gray-600">Session core details editor coming soon</p>
+                {isOperationalSession(selectedSessionForEdit) ? (
+                  <div className="space-y-4">
+                    <p className="text-gray-600 font-medium">Session core details editor</p>
+                    <div className="grid grid-cols-2 gap-6 mt-4 opacity-60">
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Session Name</label>
+                        <p className="mt-1 text-base text-gray-700">{selectedSessionForEdit.name}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Type (Locked)</label>
+                        <p className="mt-1 text-base text-gray-700">{selectedSessionForEdit.session_type}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Laps</label>
+                        <p className="mt-1 text-base text-gray-700">{selectedSessionForEdit.laps || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Status (Locked)</label>
+                        <p className="mt-1 text-base text-gray-700">{selectedSessionForEdit.status}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Advancement Rules (Locked)</label>
+                        <p className="mt-1 text-base text-gray-700">{selectedSessionForEdit.advancement_rules || 'None'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-6 pt-4 border-t">
+                      <p className="text-sm text-red-700">This session is in an operational state. Editing is disabled.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-600">Session core details editor coming soon</p>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="results" className="mt-6">
@@ -72,6 +117,11 @@ export default function ManageSessions() {
   return (
     <ManagementLayout currentPage="ManageSessions">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+          <h3 className="font-bold text-blue-900 mb-1">Session Lifecycle Notice</h3>
+          <p className="text-sm text-blue-800">Session lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+        </div>
+
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl('Management')}>
             <Button variant="ghost" size="icon">
@@ -130,7 +180,7 @@ export default function ManageSessions() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedSessionForEdit(session)}>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedSessionForEdit(session)} disabled={isOperationalSession(session)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
@@ -141,6 +191,7 @@ export default function ManageSessions() {
                             deleteMutation.mutate(session.id);
                           }
                         }}
+                        disabled={isOperationalSession(session)}
                       >
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
