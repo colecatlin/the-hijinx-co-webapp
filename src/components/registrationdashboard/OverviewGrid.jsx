@@ -29,8 +29,8 @@ export default function OverviewGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <EventStatusCard event={selectedEvent} track={selectedTrack} />
-      <EntriesSummaryCard />
-      <ComplianceAlertsCard />
+      <EntriesSummaryCard eventId={selectedEvent.id} />
+      <ComplianceAlertsCard eventId={selectedEvent.id} />
       <ResultsStatusCard sessions={sessions} />
       <StandingsStatusCard standings={standings} results={results} />
       <SystemAlertsFeed operationLogs={operationLogs} importLogs={importLogs} />
