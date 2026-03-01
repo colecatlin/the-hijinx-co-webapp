@@ -83,12 +83,13 @@ export default function SessionProfile() {
     return driver?.primary_number || '';
   };
 
-  if (isLoading) {
+  if (sessionLoading) {
     return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <Skeleton className="h-12 w-64 mb-4" />
-          <Skeleton className="h-96" />
+      <PageShell>
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <Skeleton className="h-8 w-1/3 mb-4" />
+          <Skeleton className="h-5 w-1/2 mb-12" />
+          <div className="space-y-2">{[...Array(10)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
         </div>
       </PageShell>
     );
@@ -96,9 +97,9 @@ export default function SessionProfile() {
 
   if (!session) {
     return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Session not found</p>
+      <PageShell>
+        <div className="max-w-6xl mx-auto px-6 py-20 text-center">
+          <p className="text-gray-500 mb-4">Session not found.</p>
           <Link to={createPageUrl('EventDirectory')}>
             <Button>Back to Events</Button>
           </Link>
@@ -107,139 +108,177 @@ export default function SessionProfile() {
     );
   }
 
-  const sections = [
-    { id: 'overview', label: 'Overview', icon: Clock },
-    { id: 'results', label: 'Results', icon: Trophy },
-    { id: 'stats', label: 'Stats', icon: BarChart3 },
-  ];
+  const sessionName = session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`;
+  const racedayUrl = event ? `${createPageUrl('RegistrationDashboard')}?orgType=${event.series_id ? 'series' : 'track'}&orgId=${event.series_id || event.track_id}&seasonYear=${event.season}&eventId=${event.id}&tab=results&sessionId=${sessionId}` : '';
 
   return (
-    <PageShell className="bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA] mb-4 inline-block">
-          ← Back to Events
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
-          <div className="lg:col-span-2">
-            <Separator className="mb-3" />
-            <h1 className="text-4xl font-black text-[#232323] leading-none mb-2">{session.name}</h1>
-
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
-              {sections.map(section => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSection(section.id);
-                      if (section.id === 'overview') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        const element = document.getElementById(`section-${section.id}`);
-                        if (element) {
-                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                          window.scrollTo({ top: offset, behavior: 'smooth' });
-                        }
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeSection === section.id
-                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                        : 'text-gray-600 hover:text-[#232323]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <Separator className="mb-3" />
-            <div className="bg-white p-8 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Type</div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">{session.session_type}</div>
-                  
-                  {session.laps && (
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Laps</div>
-                      <div className="text-lg font-semibold text-[#232323]">{session.laps}</div>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Status</div>
-                  <Badge className={`${
-                    session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    session.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {session.status}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10">
-              <SocialShareButtons 
-                url={window.location.href}
-                title={`${session.name} - Session`}
-                description=""
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <section id="section-results" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results</h2>
-            {results.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b">
-                    <tr>
-                      <th className="text-left py-2 px-4 font-bold">Pos</th>
-                      <th className="text-left py-2 px-4 font-bold">Driver</th>
-                      <th className="text-left py-2 px-4 font-bold">Team</th>
-                      <th className="text-left py-2 px-4 font-bold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map(result => (
-                      <tr key={result.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-bold">{result.position}</td>
-                        <td className="py-3 px-4">{getDriverName(result.driver_id)}</td>
-                        <td className="py-3 px-4 text-gray-600">{result.team_name || 'N/A'}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 text-xs rounded ${
-                            result.status_text === 'Running' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {result.status_text}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500">No results available yet.</p>
+    <PageShell>
+      <div className="max-w-6xl mx-auto px-6 py-8 md:py-12">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+          <div className="flex-1">
+            {event && (
+              <Link to={`${createPageUrl('EventResults')}?id=${event.id}`} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-3 transition-colors">
+                <ArrowLeft className="w-3 h-3" /> Back to Event Results
+              </Link>
             )}
-          </section>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-3">{sessionName}</h1>
+            
+            {/* Context Row */}
+            <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-4">
+              {event && (
+                <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="text-sm font-medium text-[#0A0A0A] hover:underline">
+                  {event.name}
+                </Link>
+              )}
+              {track && (
+                <Link to={`${createPageUrl('TrackProfile')}?slug=${track.slug}`} className="text-sm text-gray-600 hover:text-[#0A0A0A]">
+                  {track.name}
+                </Link>
+              )}
+              {series && (
+                <Link to={`${createPageUrl('SeriesDetail')}?id=${series.id}`} className="text-sm text-gray-600 hover:text-[#0A0A0A]">
+                  {series.name}
+                </Link>
+              )}
+            </div>
 
-          <section id="section-stats" className="bg-white p-8">
-            <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Stats</h2>
-            <p className="text-gray-500">Session statistics will be available after completion.</p>
-          </section>
+            {/* Session Details */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div>
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Type</span>
+                <div className="text-sm font-medium text-[#0A0A0A]">{session.session_type}</div>
+              </div>
+              {session.scheduled_time && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">{format(parseISO(session.scheduled_time), 'HH:mm')}</span>
+                </div>
+              )}
+              {session.laps && (
+                <div>
+                  <span className="text-xs text-gray-500 uppercase tracking-wide">Laps</span>
+                  <div className="text-sm font-medium text-[#0A0A0A]">{session.laps}</div>
+                </div>
+              )}
+              <Badge className={`${
+                session.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
+                session.status === 'Provisional' ? 'bg-orange-100 text-orange-800' :
+                session.status === 'Official' ? 'bg-green-100 text-green-800' :
+                session.status === 'Locked' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {session.status}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex flex-col gap-2">
+            {event && (
+              <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`}>
+                <Button variant="outline" size="sm">Back to Event</Button>
+              </Link>
+            )}
+            {isAuthenticated && (
+              <Link to={racedayUrl}>
+                <Button variant={user?.role === 'admin' ? 'default' : 'outline'} size="sm">Manage Session</Button>
+              </Link>
+            )}
+          </div>
         </div>
+
+        {/* Status Banner */}
+        {session && (
+          <div className="mb-6">
+            {session.status === 'Draft' && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gray-50 border border-gray-200">
+                <AlertCircle className="w-4 h-4 text-gray-600" />
+                <p className="text-sm text-gray-600">Draft session results, not official</p>
+              </div>
+            )}
+            {session.status === 'Provisional' && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-orange-50 border border-orange-200">
+                <AlertCircle className="w-4 h-4 text-orange-600" />
+                <p className="text-sm text-orange-700">Provisional results, subject to change</p>
+              </div>
+            )}
+            {session.status === 'Official' && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+                <p className="text-sm text-green-700 font-medium">Official results</p>
+              </div>
+            )}
+            {session.status === 'Locked' && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-sm text-blue-700 font-medium">Locked results, final</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Results Table */}
+        {sortedResults.length > 0 ? (
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Pos</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Car #</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Driver</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Laps</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Best Lap</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Pts</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedResults.map((result) => {
+                    const driver = driversById.get(result.driver_id);
+                    const isNotRunning = ['DNF', 'DNS', 'DSQ', 'DNP'].includes(result.status);
+                    return (
+                      <tr
+                        key={result.id}
+                        className={`border-b border-gray-100 ${
+                          isNotRunning ? 'bg-red-50 opacity-60' : !driver ? 'bg-yellow-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <td className="px-4 py-3 text-sm font-bold">{result.position || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{getCarNumber(result) || '—'}</td>
+                        <td className="px-4 py-3 text-sm font-medium">
+                          {driver ? (
+                            <Link
+                              to={`${createPageUrl('DriverProfile')}?slug=${driver.slug}`}
+                              className="hover:underline text-[#0A0A0A]"
+                            >
+                              {driver.first_name} {driver.last_name}
+                            </Link>
+                          ) : (
+                            <span className="text-gray-400 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Unknown driver
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-600">{result.status || 'Running'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-600">{result.laps_completed ?? '—'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-600">
+                          {result.best_lap_time_ms ? `${(result.best_lap_time_ms / 1000).toFixed(2)}s` : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm font-semibold">{result.points ?? '—'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500">{result.notes || '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+            <p className="text-sm text-gray-500">No results posted for this session yet.</p>
+          </div>
+        )}
       </div>
     </PageShell>
   );
