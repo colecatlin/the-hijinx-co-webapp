@@ -84,15 +84,106 @@ export default function EventResults() {
   const programMap = useMemo(() => new Map(programs.map(p => [p.id, p])), [programs]);
   const classMap = useMemo(() => new Map(seriesClasses.map(c => [c.id, c])), [seriesClasses]);
 
-  // Sort sessions by scheduled_time
+  // Status normalization
+  const normalizeStatus = (status) => {
+    if (!status) return 'scheduled';
+    const lower = status.toLowerCase();
+    if (['draft'].includes(lower)) return 'draft';
+    if (['provisional'].includes(lower)) return 'provisional';
+    if (['official', 'completed'].includes(lower)) return 'official';
+    if (['locked'].includes(lower)) return 'locked';
+    if (['scheduled', 'in_progress'].includes(lower)) return 'scheduled';
+    if (['cancelled'].includes(lower)) return 'cancelled';
+    return 'scheduled';
+  };
+
+  // Session type ordering
+  const SESSION_TYPE_ORDER = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
+  
+  // Sort sessions by type order, then scheduled_time, then name
   const sortedSessions = useMemo(() => {
     return [...sessions].sort((a, b) => {
-      if (!a.scheduled_time && !b.scheduled_time) return 0;
-      if (!a.scheduled_time) return 1;
-      if (!b.scheduled_time) return -1;
-      return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+      const aTypeIndex = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
+      const bTypeIndex = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
+      const aTypeOrder = aTypeIndex >= 0 ? aTypeIndex : SESSION_TYPE_ORDER.length;
+      const bTypeOrder = bTypeIndex >= 0 ? bTypeIndex : SESSION_TYPE_ORDER.length;
+      
+      if (aTypeOrder !== bTypeOrder) return aTypeOrder - bTypeOrder;
+      
+      if (a.scheduled_time && b.scheduled_time) {
+        return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+      }
+      if (a.scheduled_time) return -1;
+      if (b.scheduled_time) return 1;
+      
+      if (a.name && b.name) return a.name.localeCompare(b.name);
+      return 0;
     });
   }, [sessions]);
+
+  // Group sessions by class, then by session type
+  const groupedSessions = useMemo(() => {
+    const hasClassIds = sessions.some(s => s.series_class_id);
+    
+    if (!hasClassIds) {
+      // Only group by session type
+      const grouped = {};
+      SESSION_TYPE_ORDER.forEach(type => {
+        grouped[type] = sortedSessions.filter(s => s.session_type === type);
+      });
+      return Object.entries(grouped)
+        .filter(([_, sesh]) => sesh.length > 0)
+        .map(([type, sesh]) => ({ label: type, sessions: sesh }));
+    }
+    
+    // Group by class, then session type
+    const byClass = {};
+    sortedSessions.forEach(s => {
+      const classKey = s.series_class_id || 'unassigned';
+      if (!byClass[classKey]) byClass[classKey] = [];
+      byClass[classKey].push(s);
+    });
+    
+    return Object.entries(byClass).map(([classId, classSessions]) => {
+      const classObj = seriesClasses.find(c => c.id === classId);
+      const className = classObj?.class_name || (classId === 'unassigned' ? 'Unassigned Class' : 'Unknown Class');
+      
+      const byType = {};
+      SESSION_TYPE_ORDER.forEach(type => {
+        byType[type] = classSessions.filter(s => s.session_type === type);
+      });
+      
+      return {
+        label: className,
+        subGroups: Object.entries(byType)
+          .filter(([_, sesh]) => sesh.length > 0)
+          .map(([type, sesh]) => ({ label: type, sessions: sesh }))
+      };
+    });
+  }, [sortedSessions, seriesClasses]);
+
+  // Results count by session
+  const resultCountBySession = useMemo(() => {
+    const counts = {};
+    results.forEach(r => {
+      if (r.session_id) {
+        counts[r.session_id] = (counts[r.session_id] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [results]);
+
+  // Summary stats
+  const summaryStats = useMemo(() => {
+    const official = sessions.filter(s => s.status === 'Official').length;
+    const locked = sessions.filter(s => s.status === 'Locked').length;
+    return {
+      totalSessions: sessions.length,
+      official,
+      locked,
+      totalResults: results.length
+    };
+  }, [sessions, results]);
 
   // Default selected session: prefer Official/Locked, else most recent
   const defaultSession = useMemo(() => {
