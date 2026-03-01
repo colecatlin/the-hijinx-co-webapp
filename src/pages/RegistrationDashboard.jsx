@@ -8,6 +8,9 @@ import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderF
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
 import EntriesManager from '@/components/registrationdashboard/EntriesManager';
+import ComplianceManager from '@/components/registrationdashboard/ComplianceManager';
+import CheckInManager from '@/components/registrationdashboard/CheckInManager';
+import TechManager from '@/components/registrationdashboard/TechManager';
 import { motion } from 'framer-motion';
 import {
   Select,
