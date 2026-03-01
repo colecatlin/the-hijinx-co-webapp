@@ -118,6 +118,38 @@ export default function EventProfile() {
     { id: 'results', label: 'Results', icon: Trophy },
   ];
 
+  // Compute data
+  const orgType = event?.series_id ? 'series' : 'track';
+  const orgId = event?.series_id || event?.track_id;
+  const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${orgType}&orgId=${orgId}&seasonYear=${event?.season}&eventId=${eventId}`;
+
+  const activeClassSessions = useMemo(() => {
+    if (!selectedClassName || selectedClassName === 'all') return sessions;
+    return sessions.filter(s => s.series_class_id === selectedClassName || s.class_name === selectedClassName);
+  }, [sessions, selectedClassName]);
+
+  const filteredSessions = useMemo(() => {
+    return activeClassSessions.filter(s => 
+      selectedSessionType === 'all' || s.session_type === selectedSessionType
+    );
+  }, [activeClassSessions, selectedSessionType]);
+
+  const officialSessions = useMemo(() => {
+    return sessions.filter(s => ['Official', 'Locked'].includes(s.status));
+  }, [sessions]);
+
+  const eventStandings = useMemo(() => {
+    return standings
+      .filter(s => s.series_id === event?.series_id && s.season_year === event?.season)
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 10);
+  }, [standings, event?.series_id, event?.season]);
+
+  const sessionTypes = useMemo(() => {
+    const types = [...new Set(sessions.map(s => s.session_type).filter(Boolean))];
+    return types.sort();
+  }, [sessions]);
+
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 pt-4 pb-0">
