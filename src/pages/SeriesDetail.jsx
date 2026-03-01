@@ -23,9 +23,10 @@ import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 import SeriesNameHistory from '@/components/series/SeriesNameHistory';
 
 export default function SeriesDetail() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const seriesSlug = searchParams.get('slug') || searchParams.get('id');
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedClassName, setSelectedClassName] = useState('');
 
   const { data: series, isLoading } = useQuery({
     queryKey: ['series', seriesSlug],
