@@ -70,6 +70,62 @@ import {
   Clock,
 } from 'lucide-react';
 
+// Helper: Require admin override for sensitive operations
+function createRequireAdminOverride(queryClient) {
+  return async (actionName, context, onConfirm) => {
+    return new Promise((resolve) => {
+      // Create dialog programmatically with state management
+      const overrideRef = { resolved: false };
+      
+      window._showOverrideDialog = {
+        open: true,
+        actionName,
+        context,
+        onConfirm: async (reason) => {
+          if (overrideRef.resolved) return;
+          overrideRef.resolved = true;
+          
+          const user = await base44.auth.me();
+          
+          // Log override attempt
+          try {
+            await base44.asServiceRole.entities.OperationLog.create({
+              operation_type: 'ADMIN_OVERRIDE',
+              source_type: 'RegistrationDashboard',
+              entity_name: context.entityName || 'Session',
+              function_name: actionName,
+              status: 'success',
+              metadata: {
+                eventId: context.eventId,
+                sessionId: context.sessionId,
+                seriesClassId: context.seriesClassId,
+                seriesId: context.seriesId,
+                beforeStatus: context.beforeStatus,
+                afterStatus: context.afterStatus,
+                reason,
+                userId: user?.id,
+              },
+              notes: `Override for ${actionName}: ${reason}`,
+            });
+            
+            queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
+          } catch (e) {
+            console.error('Failed to log override:', e);
+          }
+          
+          await onConfirm(reason);
+          resolve(true);
+        },
+        onCancel: () => {
+          if (overrideRef.resolved) return;
+          overrideRef.resolved = true;
+          resolve(false);
+        },
+      };
+    });
+  };
+}
+
 export default function RegistrationDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
