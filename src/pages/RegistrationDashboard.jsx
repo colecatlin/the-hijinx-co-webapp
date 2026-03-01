@@ -435,7 +435,7 @@ export default function RegistrationDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="mb-6"
           >
             <h1 className="text-3xl font-black text-white mb-2">Index46 Operations</h1>
             <p className="text-gray-400">
@@ -446,6 +446,38 @@ export default function RegistrationDashboard() {
               {!selectedOrgName && !selectedEvent && 'Configure your organization above to begin'}
             </p>
           </motion.div>
+
+          {/* Selected Event Info Strip */}
+          {selectedEvent && (
+            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/50 rounded-lg p-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Event Name</p>
+                  <p className="text-sm font-semibold text-white">{selectedEvent.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Date</p>
+                  <p className="text-sm font-semibold text-white">
+                    {selectedEvent.event_date}
+                    {selectedEvent.end_date && ` – ${selectedEvent.end_date}`}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Status</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                      selectedEvent.status === 'completed' ? 'bg-green-900/40 text-green-300' :
+                      selectedEvent.status === 'in_progress' ? 'bg-blue-900/40 text-blue-300' :
+                      selectedEvent.status === 'cancelled' ? 'bg-red-900/40 text-red-300' :
+                      'bg-gray-900/40 text-gray-300'
+                    }`}>
+                      {selectedEvent.status || 'upcoming'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
