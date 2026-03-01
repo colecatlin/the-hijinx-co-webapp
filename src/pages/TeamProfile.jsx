@@ -50,6 +50,33 @@ export default function TeamProfile() {
     enabled: !!team?.id && driverPrograms.length > 0,
   });
 
+  const { data: entries = [] } = useQuery({
+    queryKey: ['teamEntries', team?.id],
+    queryFn: () => base44.entities.Entry.filter({ team_id: team.id }),
+    enabled: !!team?.id,
+  });
+
+  const { data: results = [] } = useQuery({
+    queryKey: ['teamResults', team?.id],
+    queryFn: () => base44.entities.Results.filter({ team_id: team.id }),
+    enabled: !!team?.id,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+  });
+
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list(),
+  });
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSection('overview');
