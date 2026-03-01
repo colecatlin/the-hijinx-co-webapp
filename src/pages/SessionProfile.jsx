@@ -241,6 +241,45 @@ export default function SessionProfile() {
           </div>
         )}
 
+        {/* Admin Control Strip */}
+        {isAuthenticated && sortedResults.length > 0 && (
+          <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 py-3 bg-white border border-gray-200 rounded-lg">
+            <div className="text-sm font-medium text-gray-600">Session Management</div>
+            <div className="flex items-center gap-2">
+              {event && (
+                <Link to={`${createPageUrl('RegistrationDashboard')}?orgType=${event.series_id ? 'series' : 'track'}&orgId=${event.series_id || event.track_id}&seasonYear=${event.season}&eventId=${event.id}&tab=results&sessionId=${sessionId}`}>
+                  <Button variant={user?.role === 'admin' ? 'default' : 'outline'} size="sm" className="text-xs">
+                    Open in RaceDay Engine
+                  </Button>
+                </Link>
+              )}
+              {event && (
+                <Link to={`${createPageUrl('RegistrationDashboard')}?orgType=${event.series_id ? 'series' : 'track'}&orgId=${event.series_id || event.track_id}&seasonYear=${event.season}&eventId=${event.id}&tab=pointsAndStandings`}>
+                  <Button variant={user?.role === 'admin' ? 'default' : 'outline'} size="sm" className="text-xs">
+                    Standings Console
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Results Integrity Indicator */}
+        {sortedResults.length > 0 && (
+          <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-blue-900 uppercase tracking-wide">Results Data</p>
+              <p className="text-sm text-blue-800 mt-1">Results rows: {resultsIntegrity.totalRows}</p>
+              {resultsIntegrity.missingDriver > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <AlertCircle className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                  <p className="text-xs text-orange-700">{resultsIntegrity.missingDriver} result{resultsIntegrity.missingDriver !== 1 ? 's' : ''} missing driver reference</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Results Table */}
         {sortedResults.length > 0 ? (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -254,19 +293,20 @@ export default function SessionProfile() {
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Laps</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Best Lap</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Time</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Pts</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedResults.map((result) => {
                     const driver = driversById.get(result.driver_id);
                     const isNotRunning = ['DNF', 'DNS', 'DSQ', 'DNP'].includes(result.status);
+                    const hasMissingDriver = !driver;
                     return (
                       <tr
                         key={result.id}
-                        className={`border-b border-gray-100 ${
-                          isNotRunning ? 'bg-red-50 opacity-60' : !driver ? 'bg-yellow-50' : 'hover:bg-gray-50'
+                        className={`border-b border-gray-100 transition-colors ${
+                          isNotRunning ? 'bg-red-50 opacity-75' : hasMissingDriver ? 'bg-yellow-50' : 'hover:bg-gray-50'
                         }`}
                       >
                         <td className="px-4 py-3 text-sm font-bold">{result.position || '—'}</td>
@@ -280,9 +320,10 @@ export default function SessionProfile() {
                               {driver.first_name} {driver.last_name}
                             </Link>
                           ) : (
-                            <span className="text-gray-400 flex items-center gap-1">
-                              <AlertCircle className="w-3 h-3" /> Unknown driver
-                            </span>
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                              <span className="text-xs">Unknown driver</span>
+                            </div>
                           )}
                         </td>
                         <td className="px-4 py-3 text-xs text-gray-600">{result.status || 'Running'}</td>
@@ -290,8 +331,10 @@ export default function SessionProfile() {
                         <td className="px-4 py-3 text-xs text-gray-600">
                           {result.best_lap_time_ms ? `${(result.best_lap_time_ms / 1000).toFixed(2)}s` : '—'}
                         </td>
+                        <td className="px-4 py-3 text-xs text-gray-600">
+                          {result.total_time_ms ? `${(result.total_time_ms / 1000).toFixed(2)}s` : '—'}
+                        </td>
                         <td className="px-4 py-3 text-right text-sm font-semibold">{result.points ?? '—'}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500">{result.notes || '—'}</td>
                       </tr>
                     );
                   })}
