@@ -243,7 +243,7 @@ export async function importDrivers(base44, rows, headers) {
         }
       }
 
-      await new Promise(r => setTimeout(r, 50)); // Rate limit protection
+      await new Promise(r => setTimeout(r, 300)); // Rate limit protection
     } catch (e) {
       failed++;
       errors.push({ row: i + 2, error: e.message });
