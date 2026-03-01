@@ -26,10 +26,19 @@ export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get('id');
   const [activeSection, setActiveSection] = useState('overview');
+  const [selectedClassName, setSelectedClassName] = useState('');
+  const [selectedSessionType, setSelectedSessionType] = useState('all');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    retry: false,
+  });
+
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    retry: false,
   });
 
   const { event, track, isLoading, error } = useMotorsportsContext({ eventId });
@@ -41,6 +50,29 @@ export default function EventProfile() {
     queryKey: ['eventSessions', eventId],
     queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
     enabled: !!eventId,
+  });
+
+  const { data: series } = useQuery({
+    queryKey: ['series', event?.series_id],
+    queryFn: () => base44.entities.Series.filter({ id: event.series_id }),
+    enabled: !!event?.series_id,
+  });
+
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses', event?.series_id],
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: event.series_id, active: true }),
+    enabled: !!event?.series_id,
+  });
+
+  const { data: allResults = [] } = useQuery({
+    queryKey: ['eventResults', eventId],
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+    enabled: !!eventId,
+  });
+
+  const { data: standings = [] } = useQuery({
+    queryKey: ['standings'],
+    queryFn: () => base44.entities.Standings.list(),
   });
 
   if (isLoading) {
