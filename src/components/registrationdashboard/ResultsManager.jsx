@@ -134,6 +134,38 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
     return filtered;
   }, [allDriverPrograms, selectedEvent]);
 
+  // Data integrity: validate results against DriverProgram and SeriesClass
+  const validatedResults = useMemo(() => {
+    if (!selectedEvent) return results;
+    
+    const validated = results.filter((result) => {
+      // Rule 2: If result has program_id, validate DriverProgram
+      if (result.program_id) {
+        const program = allDriverPrograms.find((dp) => dp.id === result.program_id);
+        if (!program) {
+          console.warn('Result to DriverProgram mismatch detected.');
+          return false;
+        }
+        if (program.event_id !== selectedEvent.id || program.series_id !== selectedEvent.series_id) {
+          console.warn('Result to DriverProgram mismatch detected.');
+          return false;
+        }
+      }
+
+      // Rule 3: If result has series_class_id, validate it belongs to event's series
+      if (result.series_class_id) {
+        const matchingClass = seriesClassesAll.find((sc) => sc.id === result.series_class_id);
+        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
+          console.warn('Result class mismatch detected.');
+          return false;
+        }
+      }
+
+      return true;
+    });
+    return validated;
+  }, [results, selectedEvent, allDriverPrograms, seriesClassesAll]);
+
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.list(),
@@ -192,9 +224,9 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
   const sessionResults = useMemo(
     () =>
       selectedSession
-        ? results.filter((r) => r.session_id === selectedSession.id)
+        ? validatedResults.filter((r) => r.session_id === selectedSession.id)
         : [],
-    [results, selectedSession]
+    [validatedResults, selectedSession]
   );
 
   // Show empty state if no event selected
