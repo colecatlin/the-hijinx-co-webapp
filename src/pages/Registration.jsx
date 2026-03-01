@@ -1,7 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import PageShell from '@/components/shared/PageShell';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Calendar, Users, Trophy } from 'lucide-react';
+import { CheckCircle2, Calendar, Users, Trophy, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Registration() {
   return (
