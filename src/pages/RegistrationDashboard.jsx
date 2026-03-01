@@ -97,6 +97,51 @@ export default function RegistrationDashboard() {
     enabled: isAuthenticated,
   });
 
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions', eventId],
+    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: isAuthenticated && !!eventId,
+  });
+
+  const { data: standings = [] } = useQuery({
+    queryKey: ['standings', organizationId, seasonYear],
+    queryFn: () => {
+      if (organizationType !== 'series' || !organizationId) return Promise.resolve([]);
+      return base44.entities.Standings.filter({ series_id: organizationId, season: seasonYear });
+    },
+    enabled: isAuthenticated && organizationType === 'series' && !!organizationId,
+  });
+
+  const { data: results = [] } = useQuery({
+    queryKey: ['results', eventId],
+    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: isAuthenticated && !!eventId,
+  });
+
+  const { data: operationLogs = [] } = useQuery({
+    queryKey: ['operationLogs'],
+    queryFn: () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return base44.entities.OperationLog.filter({
+        created_date: { $gte: thirtyDaysAgo.toISOString() },
+      });
+    },
+    enabled: isAuthenticated,
+  });
+
+  const { data: importLogs = [] } = useQuery({
+    queryKey: ['importLogs'],
+    queryFn: () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return base44.entities.ImportLog.filter({
+        created_date: { $gte: thirtyDaysAgo.toISOString() },
+      });
+    },
+    enabled: isAuthenticated,
+  });
+
   const filteredEvents = useMemo(() => {
     let filtered = [...events];
 
