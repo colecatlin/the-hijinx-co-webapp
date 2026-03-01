@@ -471,10 +471,10 @@ export default function RegistrationDashboard() {
                   <Send className="w-4 h-4 mr-1" /> Publish
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!isAdmin}
-                  onClick={() => setShowExportModal(true)}
+                   variant="outline"
+                   size="sm"
+                   disabled={!canAdmin}
+                   onClick={() => setShowExportModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <Download className="w-4 h-4 mr-1" /> Export
