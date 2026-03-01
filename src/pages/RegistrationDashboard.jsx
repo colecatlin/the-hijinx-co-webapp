@@ -253,6 +253,14 @@ export default function RegistrationDashboard() {
     setEditingEventId(newEventId);
   };
 
+  const handlePublishOfficial = () => {
+    setShowPublishDialog(true);
+  };
+
+  const confirmPublish = () => {
+    setShowPublishDialog(false);
+  };
+
   if (authLoading || userLoading) {
     return (
       <PageShell>
