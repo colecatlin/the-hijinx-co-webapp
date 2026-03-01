@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
+import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
 import { motion } from 'framer-motion';
 import {
   Select,
