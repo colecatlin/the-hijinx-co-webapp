@@ -658,14 +658,10 @@ export default function RegistrationDashboard() {
 
             {/* Results Tab Content */}
             <TabsContent value="results" className="mt-6">
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white">Results Console</CardTitle>
-                </CardHeader>
-                <CardContent className="py-8 text-center">
-                  <p className="text-gray-400 text-sm">Coming next — will connect to Results records for selected event</p>
-                </CardContent>
-              </Card>
+              <ResultsManager
+                selectedEvent={selectedEvent}
+                isAdmin={isAdmin}
+              />
             </TabsContent>
 
             {/* Points & Standings Tab Content */}
