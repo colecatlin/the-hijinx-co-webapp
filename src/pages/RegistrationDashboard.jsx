@@ -47,10 +47,24 @@ import {
 } from 'lucide-react';
 
 export default function RegistrationDashboard() {
-  const [organizationType, setOrganizationType] = useState('track');
-  const [organizationId, setOrganizationId] = useState('');
-  const [seasonYear, setSeasonYear] = useState('');
-  const [eventId, setEventId] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const [organizationType, setOrganizationType] = useState(
+    searchParams.get('orgType') || 'track'
+  );
+  const [organizationId, setOrganizationId] = useState(
+    searchParams.get('orgId') || ''
+  );
+  const [seasonYear, setSeasonYear] = useState(
+    searchParams.get('seasonYear') || ''
+  );
+  const [eventId, setEventId] = useState(
+    searchParams.get('eventId') || ''
+  );
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEventId, setEditingEventId] = useState('');
 
