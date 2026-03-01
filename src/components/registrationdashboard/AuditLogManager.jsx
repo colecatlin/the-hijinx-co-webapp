@@ -274,6 +274,24 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }
 
   return (
     <div className="space-y-4">
+      {/* Quick Filter Chips */}
+      <div className="flex gap-2 flex-wrap">
+        {['all', 'overrides', 'imports', 'standings'].map(chip => (
+          <Button
+            key={chip}
+            variant={quickFilter === chip ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setQuickFilter(chip)}
+            className={quickFilter === chip ? 'bg-blue-600 hover:bg-blue-700' : 'border-gray-700 text-gray-300'}
+          >
+            {chip === 'all' && 'All'}
+            {chip === 'overrides' && 'Overrides'}
+            {chip === 'imports' && 'Imports'}
+            {chip === 'standings' && 'Standings'}
+          </Button>
+        ))}
+      </div>
+
       {/* Filter Bar */}
       <Card className="bg-[#262626] border-gray-700 sticky top-0 z-40">
         <CardContent className="py-4">
