@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { Clock, Trophy, BarChart3, Share2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
+import { format, parseISO } from 'date-fns';
 
 export default function SessionProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('id');
-  const [activeSection, setActiveSection] = useState('overview');
 
-  const { data: sessions = [], isLoading } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
+  const { data: session, isLoading: sessionLoading } = useQuery({
+    queryKey: ['session', sessionId],
+    queryFn: () => base44.entities.Session.list().then(sessions => sessions.find(s => s.id === sessionId)),
+    enabled: !!sessionId,
   });
 
-  const session = sessions.find(s => s.id === sessionId);
+  const { data: event } = useQuery({
+    queryKey: ['event', session?.event_id],
+    queryFn: () => session?.event_id ? base44.entities.Event.list().then(events => events.find(e => e.id === session.event_id)) : null,
+    enabled: !!session?.event_id,
+  });
+
+  const { data: track } = useQuery({
+    queryKey: ['track', event?.track_id],
+    queryFn: () => event?.track_id ? base44.entities.Track.list().then(tracks => tracks.find(t => t.id === event.track_id)) : null,
+    enabled: !!event?.track_id,
+  });
+
+  const { data: series } = useQuery({
+    queryKey: ['series', event?.series_id],
+    queryFn: () => event?.series_id ? base44.entities.Series.list().then(series => series.find(s => s.id === event.series_id)) : null,
+    enabled: !!event?.series_id,
+  });
 
   const { data: results = [] } = useQuery({
     queryKey: ['sessionResults', sessionId],
@@ -30,13 +45,42 @@ export default function SessionProfile() {
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
+    queryKey: ['drivers-session'],
     queryFn: () => base44.entities.Driver.list(),
+    enabled: results.length > 0,
   });
 
-  const getDriverName = (driverId) => {
-    const driver = drivers.find(d => d.id === driverId);
-    return driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown';
+  const { data: programs = [] } = useQuery({
+    queryKey: ['programs-session'],
+    queryFn: () => base44.entities.DriverProgram.list(),
+    enabled: results.length > 0,
+  });
+
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    enabled: isAuthenticated,
+  });
+
+  // Build lookup maps
+  const driversById = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
+  const programsById = useMemo(() => new Map(programs.map(p => [p.id, p])), [programs]);
+
+  const sortedResults = useMemo(() => {
+    return [...results].sort((a, b) => (a.position || 999) - (b.position || 999));
+  }, [results]);
+
+  const getCarNumber = (result) => {
+    if (result.program_id && programsById.has(result.program_id)) {
+      return programsById.get(result.program_id).car_number;
+    }
+    const driver = driversById.get(result.driver_id);
+    return driver?.primary_number || '';
   };
 
   if (isLoading) {
