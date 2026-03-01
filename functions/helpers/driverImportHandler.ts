@@ -205,6 +205,15 @@ export async function importDrivers(base44, rows, headers) {
         }
         driver = { ...existingDriver, ...updates };
       } else {
+        // Auto-generate numeric_id if not provided
+        if (!driverData.numeric_id) {
+          const existingIds = new Set(existingDrivers.map(d => d.numeric_id).filter(Boolean));
+          let numericId;
+          do {
+            numericId = String(Math.floor(Math.random() * 90000000) + 10000000);
+          } while (existingIds.has(numericId));
+          driverData.numeric_id = numericId;
+        }
         // Create new driver
         driver = await base44.asServiceRole.entities.Driver.create(driverData);
         existingDrivers.push(driver);
