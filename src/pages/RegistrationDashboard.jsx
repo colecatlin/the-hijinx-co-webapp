@@ -973,6 +973,21 @@ export default function RegistrationDashboard() {
           </AlertDialogContent>
         </AlertDialog>
 
+        <AlertDialog open={showArchiveWarning} onOpenChange={setShowArchiveWarning}>
+          <AlertDialogContent className="bg-[#262626] border-gray-700">
+            <AlertDialogTitle className="text-white">Event Currently Live</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This event is currently marked as Live. Are you sure you want to archive it?
+            </AlertDialogDescription>
+            <div className="flex gap-2 justify-end">
+              <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => setShowArchiveWarning(false)} className="bg-red-600 hover:bg-red-700">
+                Archive Anyway
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Import CSV Modal */}
         {showImportModal && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
