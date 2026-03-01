@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
@@ -23,6 +24,8 @@ export default function StandingsHome() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  const { seasonYear, isLoading: contextLoading, error: contextError } = useMotorsportsContext();
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['series'],
@@ -156,10 +159,12 @@ export default function StandingsHome() {
           </div>
         )}
 
-        {loadingEntries || loadingSeries ? (
+        {loadingEntries || loadingSeries || contextLoading ? (
           <div className="space-y-2">
             {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
           </div>
+        ) : contextError ? (
+          <EmptyState icon={Trophy} title="Error loading standings" message="Please refresh the page or try again." />
         ) : filteredEntries.length === 0 ? (
           <EmptyState icon={Trophy} title="Standings not yet published" message="Standings will appear here once results are finalized." />
         ) : (
