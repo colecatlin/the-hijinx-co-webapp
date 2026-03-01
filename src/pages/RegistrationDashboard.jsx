@@ -10,6 +10,7 @@ import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderF
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
 import EntriesManager from '@/components/registrationdashboard/EntriesManager';
+import DriverRegistrationPanel from '@/components/registrationdashboard/DriverRegistrationPanel';
 import ComplianceManager from '@/components/registrationdashboard/ComplianceManager';
 import CheckInManager from '@/components/registrationdashboard/CheckInManager';
 import TechManager from '@/components/registrationdashboard/TechManager';
@@ -934,20 +935,27 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'entries') && activeTab === 'entries' && (
-                selectedEvent ? (
-                  <EntriesManager
-                    dashboardContext={dashboardContext}
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent}
-                    eventId={selectedEvent.id}
-                    seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
-                  />
+                isAdmin ? (
+                  selectedEvent ? (
+                    <EntriesManager
+                      dashboardContext={dashboardContext}
+                      dashboardPermissions={dashboardPermissions}
+                      selectedEvent={selectedEvent}
+                      eventId={selectedEvent.id}
+                      seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                    />
+                  ) : (
+                    <Card className="bg-[#171717] border-gray-800">
+                      <CardContent className="py-12 text-center">
+                        <p className="text-gray-400">Select an event to manage entries</p>
+                      </CardContent>
+                    </Card>
+                  )
                 ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-gray-400">Select an event to manage entries</p>
-                    </CardContent>
-                  </Card>
+                  <DriverRegistrationPanel
+                    selectedEvent={selectedEvent}
+                    user={user}
+                  />
                 )
               )}
 
