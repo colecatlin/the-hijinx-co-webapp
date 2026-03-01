@@ -431,15 +431,15 @@ export default function RegistrationDashboard() {
 
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
-                {!canAdmin && (
+                {!canAction(dashboardPermissions, 'createEvent') && (
                     <span className="text-xs text-amber-500 flex items-center gap-1 mr-2">
-                      <Shield className="w-3 h-3" /> Admin access required for actions
+                      <Shield className="w-3 h-3" /> Limited access
                     </span>
                   )}
                 <Button
                    variant="outline"
                    size="sm"
-                   disabled={!canAdmin}
+                   disabled={!canAction(dashboardPermissions, 'createEvent')}
                    onClick={handleCreateEvent}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
@@ -448,7 +448,7 @@ export default function RegistrationDashboard() {
                 <Button
                    variant="outline"
                    size="sm"
-                   disabled={!canAdmin}
+                   disabled={!canAction(dashboardPermissions, 'importCSV')}
                    onClick={() => setShowImportModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
@@ -457,7 +457,7 @@ export default function RegistrationDashboard() {
                 <Button
                    variant="outline"
                    size="sm"
-                   disabled={!canAdmin}
+                   disabled={!canAction(dashboardPermissions, 'syncTiming')}
                    onClick={() => setShowSyncModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
@@ -466,7 +466,7 @@ export default function RegistrationDashboard() {
                 <Button
                    variant="outline"
                    size="sm"
-                   disabled={!canAdmin}
+                   disabled={!canAction(dashboardPermissions, 'publishResults')}
                    onClick={handlePublishOfficial}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
@@ -475,7 +475,7 @@ export default function RegistrationDashboard() {
                 <Button
                    variant="outline"
                    size="sm"
-                   disabled={!canAdmin}
+                   disabled={!canAction(dashboardPermissions, 'exportData')}
                    onClick={() => setShowExportModal(true)}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
