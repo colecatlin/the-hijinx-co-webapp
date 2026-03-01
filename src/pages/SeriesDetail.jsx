@@ -421,44 +421,144 @@ export default function SeriesDetail() {
           </section>
         </div>
 
-        {/* Schedule section */}
-        <div id="section-schedule" className="space-y-4">
+        {/* Event Schedule Section */}
+        <div id="section-schedule" className="space-y-4 mb-6">
           <section className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Full Schedule</h2>
-            {events.length === 0 ? (
-              <p className="text-gray-500 text-sm">No events scheduled yet.</p>
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Event Schedule - {seasonYear}</h2>
+            {seasonEvents.length === 0 ? (
+              <p className="text-gray-500 text-sm">No events scheduled for this season yet.</p>
             ) : (
-              <div className="space-y-2">
-                {events.map(event => (
-                  <div key={event.id} className="border border-gray-200 p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-gray-400 transition-colors">
-                    <div className="w-16 text-center shrink-0">
-                      {event.event_date && (
-                        <>
-                          <div className="font-mono text-[10px] text-gray-400 uppercase">{format(parseISO(event.event_date), 'MMM')}</div>
-                          <div className="text-2xl font-black">{format(parseISO(event.event_date), 'd')}</div>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-bold">{event.name}</div>
-                      {event.location_note && (
-                        <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                          <MapPin className="w-3 h-3" /> {event.location_note}
+              <div className="space-y-3">
+                {seasonEvents.map(event => {
+                  const track = tracksMap[event.track_id];
+                  const statusColors = {
+                    'Draft': 'bg-gray-100 text-gray-700',
+                    'Published': 'bg-blue-100 text-blue-700',
+                    'Live': 'bg-green-100 text-green-700',
+                    'completed': 'bg-gray-100 text-gray-600',
+                  };
+                  return (
+                    <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
+                      <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-[#232323]">{event.name}</h3>
+                            <Badge className={statusColors[event.status] || 'bg-gray-100 text-gray-700'}>
+                              {event.status}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {track?.name || 'N/A'} • {format(parseISO(event.event_date), 'MMM d, yyyy')}
+                            {event.end_date && event.end_date !== event.event_date && ` - ${format(parseISO(event.end_date), 'MMM d, yyyy')}`}
+                          </div>
                         </div>
-                      )}
+                        <div className="flex items-center gap-2">
+                          <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`}>
+                            <Button variant="outline" size="sm" className="text-xs">View Event</Button>
+                          </Link>
+                          <Link to={`${createPageUrl('RegistrationDashboard')}?orgType=series&orgId=${series.id}&seasonYear=${seasonYear}&eventId=${event.id}`}>
+                            <Button variant="outline" size="sm" className="text-xs">Manage</Button>
+                          </Link>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`text-[10px] font-mono uppercase px-2 py-1 ${
-                      event.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
-                      event.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                      event.status === 'in_progress' ? 'bg-green-100 text-green-700' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      {event.status}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
+          </section>
+        </div>
+
+        {/* Standings Preview Section */}
+        <div id="section-standings" className="space-y-4 mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-[#232323]">Standings Preview</h2>
+              <Select value={activeClassName} onValueChange={setSelectedClassName}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeClasses.map(cls => (
+                    <SelectItem key={cls.id} value={cls.class_name}>
+                      {cls.class_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {seasonStandings.length === 0 ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm">No standings calculated yet for this class and season.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto mb-4">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600">#</th>
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600">Driver</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Points</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Wins</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Podiums</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {seasonStandings.map(stand => (
+                        <tr key={stand.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-2 font-semibold text-[#232323]">{stand.position}</td>
+                          <td className="py-3 px-2">
+                            <div className="font-medium text-[#232323]">{stand.driver_name || 'N/A'}</div>
+                          </td>
+                          <td className="py-3 px-2 text-right font-semibold text-[#232323]">{stand.total_points}</td>
+                          <td className="py-3 px-2 text-right">{stand.wins || 0}</td>
+                          <td className="py-3 px-2 text-right">{stand.podiums || 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex gap-2">
+                  <Link to={`${createPageUrl('StandingsHome')}?seriesId=${series.id}&seasonYear=${seasonYear}&className=${activeClassName}`}>
+                    <Button variant="outline" size="sm">View Full Standings</Button>
+                  </Link>
+                  <Link to={`${createPageUrl('RegistrationDashboard')}?orgType=series&orgId=${series.id}&seasonYear=${seasonYear}&tab=PointsAndStandings`}>
+                    <Button variant="outline" size="sm">Manage Points</Button>
+                  </Link>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+
+        {/* Season Data Health Row */}
+        <div className="mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <h3 className="text-lg font-bold text-[#232323] mb-4">Season Data Health</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{seasonEvents.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Events</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{seasonSessions.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Sessions</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{officialSessions.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Official/Locked</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">
+                  {seasonSessions.length > 0 ? Math.round((officialSessions.length / seasonSessions.length) * 100) : 0}%
+                </div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Results Coverage</div>
+              </div>
+            </div>
           </section>
         </div>
       </div>
