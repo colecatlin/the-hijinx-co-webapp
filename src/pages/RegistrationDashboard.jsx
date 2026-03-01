@@ -229,19 +229,9 @@ export default function RegistrationDashboard() {
     }
   }, [organizationType, organizationId, tracks, seriesList]);
 
-  const selectedEvent = useMemo(() => {
+  const selectedEventFromList = useMemo(() => {
     return events.find((e) => e.id === eventId);
   }, [events, eventId]);
-
-  const selectedTrack = useMemo(() => {
-    if (organizationType === 'track' && organizationId) {
-      return tracks.find((t) => t.id === organizationId);
-    }
-    if (selectedEvent?.track_id) {
-      return tracks.find((t) => t.id === selectedEvent.track_id);
-    }
-    return null;
-  }, [organizationType, organizationId, selectedEvent, tracks]);
 
   const isAdmin = user?.role === 'admin';
 
