@@ -667,14 +667,10 @@ export default function RegistrationDashboard() {
 
             {/* Points & Standings Tab Content */}
             <TabsContent value="pointsStandings" className="mt-6">
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white">Points & Standings</CardTitle>
-                </CardHeader>
-                <CardContent className="py-8 text-center">
-                  <p className="text-gray-400 text-sm">Coming next — will display standings and championship points</p>
-                </CardContent>
-              </Card>
+              <PointsAndStandingsManager
+                isAdmin={isAdmin}
+                selectedEvent={selectedEvent}
+              />
             </TabsContent>
 
             {/* Other Tab Contents */}
