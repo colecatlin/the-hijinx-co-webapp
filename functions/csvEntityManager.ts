@@ -107,7 +107,15 @@ const ENTITY_EXPORT_COLUMNS = {
     'active', 'priority',
     'created_date', 'updated_date', 'created_by',
   ],
-};
+  Entry: [
+    'id', 'event_id', 'series_id', 'series_class_id', 'track_id',
+    'driver_id', 'team_id', 'car_number', 'transponder_id',
+    'entry_status', 'payment_status', 'tech_status',
+    'waiver_verified', 'license_expiration_date', 'wristband_count',
+    'notes', 'flags', 'created_by_user_id',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  };
 
 Deno.serve(async (req) => {
   try {
