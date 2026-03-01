@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -11,13 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronRight, Plus, Minus } from 'lucide-react';
+import { ChevronRight, Plus, Minus, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function CheckInManager({ selectedEvent }) {
+export default function CheckInManager({ selectedEvent, user }) {
   const [classFilter, setClassFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [qrInput, setQrInput] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [formData, setFormData] = useState(null);
+  const [notesMode, setNotesMode] = useState(false);
+  const qrInputRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery({
@@ -56,12 +62,40 @@ export default function CheckInManager({ selectedEvent }) {
     refetchOnReconnect: false,
   });
 
+  const { data: user: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.update(selectedEntry.id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries'] });
-      setSelectedEntry(null);
-      setFormData(null);
+    mutationFn: async (updateData) => {
+      const result = await base44.entities.Entry.update(selectedEntry.id, updateData);
+      
+      // Log operation
+      try {
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'checkin_update',
+          status: 'success',
+          entity_name: 'Entry',
+          entity_id: selectedEntry.id,
+          metadata: JSON.stringify(updateData),
+          source_type: 'CheckInManager',
+          event_id: selectedEvent?.id,
+        });
+      } catch (e) {
+        console.warn('Failed to log operation:', e);
+      }
+      
+      return result;
+    },
+    onSuccess: (updatedEntry) => {
+      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
+      setSelectedEntry(updatedEntry);
+      setFormData(updatedEntry);
+      toast.success('Entry updated');
+    },
+    onError: () => {
+      toast.error('Failed to update entry');
     },
   });
 
@@ -121,31 +155,92 @@ export default function CheckInManager({ selectedEvent }) {
   };
 
   const handleCheckIn = () => {
-    updateMutation.mutate({ entry_status: 'CheckedIn' });
+    const update = {};
+    if ('check_in_status' in formData) {
+      update.check_in_status = formData.check_in_status === 'CheckedIn' ? 'Registered' : 'CheckedIn';
+    }
+    if ('checked_in_at' in formData && update.check_in_status === 'CheckedIn') {
+      update.checked_in_at = new Date().toISOString();
+    }
+    if ('checked_in_by_user_id' in formData && update.check_in_status === 'CheckedIn' && currentUser) {
+      update.checked_in_by_user_id = currentUser.id;
+    }
+    if (Object.keys(update).length === 0 && 'entry_status' in formData) {
+      update.entry_status = formData.entry_status === 'Checked In' ? 'Registered' : 'Checked In';
+    }
+    if (Object.keys(update).length > 0) {
+      updateMutation.mutate(update);
+    }
   };
 
   const handleToggleWaiver = () => {
-    updateMutation.mutate({ waiver_verified: !formData.waiver_verified });
+    const update = {};
+    if ('waiver_verified' in formData) {
+      update.waiver_verified = !formData.waiver_verified;
+    }
+    if ('waiver_verified_at' in formData && update.waiver_verified) {
+      update.waiver_verified_at = new Date().toISOString();
+    }
+    if (Object.keys(update).length > 0) {
+      updateMutation.mutate(update);
+    }
   };
 
   const handleTogglePayment = () => {
-    updateMutation.mutate({ payment_status: formData.payment_status === 'Paid' ? 'Unpaid' : 'Paid' });
+    if ('payment_status' in formData) {
+      updateMutation.mutate({ payment_status: formData.payment_status === 'Paid' ? 'Unpaid' : 'Paid' });
+    }
   };
 
   const handleWristbandChange = (delta) => {
-    const newCount = Math.max(0, (formData.wristband_count || 0) + delta);
-    updateMutation.mutate({ wristband_count: newCount });
+    if ('wristband_count' in formData) {
+      const newCount = Math.max(0, (formData.wristband_count || 0) + delta);
+      updateMutation.mutate({ wristband_count: newCount });
+    }
   };
 
   const handleNotesChange = () => {
-    updateMutation.mutate({ notes: formData.notes });
+    if ('notes' in formData) {
+      updateMutation.mutate({ notes: formData.notes });
+      setNotesMode(false);
+    }
   };
+
+  const handleQrSubmit = (e) => {
+    e.preventDefault();
+    if (!qrInput.trim()) return;
+    
+    const entry = entries.find(
+      (e) =>
+        e.car_number === qrInput ||
+        e.transponder_id === qrInput ||
+        e.driver_id === qrInput
+    );
+    
+    if (entry) {
+      handleSelectEntry(entry);
+      setQrInput('');
+    } else {
+      toast.error('Entry not found');
+      setQrInput('');
+    }
+  };
+
+  // Auto-focus QR input on mount
+  useEffect(() => {
+    if (qrInputRef.current) {
+      qrInputRef.current.focus();
+    }
+  }, []);
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to check in entries.</p>
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+          <p className="text-gray-400">
+            Select Track/Series, season, and event above to check in entries
+          </p>
         </CardContent>
       </Card>
     );
@@ -153,194 +248,332 @@ export default function CheckInManager({ selectedEvent }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Left column: Search and list */}
+      {/* Left column: Search, QR, and list */}
       <div className="lg:col-span-2 space-y-4">
-        {/* Controls bar */}
-        <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
-          <div className="space-y-3">
-            <div className="flex gap-3 flex-wrap">
-              <div className="min-w-[150px]">
-                <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
-                <Select value={classFilter} onValueChange={setClassFilter}>
-                  <SelectTrigger className="bg-[#262626] border-gray-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    {classNames.map((cls) => (
-                      <SelectItem key={cls} value={cls}>
-                        {cls}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+        {/* QR and Search Bar */}
+        <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 space-y-3">
+          <div>
+            <label className="text-xs font-medium text-gray-400 block mb-1">QR / Transponder ID</label>
+            <form onSubmit={handleQrSubmit}>
+              <Input
+                ref={qrInputRef}
+                placeholder="Scan QR or paste ID..."
+                value={qrInput}
+                onChange={(e) => setQrInput(e.target.value)}
+                className="bg-[#262626] border-gray-700 text-white"
+              />
+            </form>
+          </div>
 
-            <div>
+          <div className="flex gap-3 flex-wrap">
+            <div className="flex-1 min-w-[120px]">
+              <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {classNames.map((cls) => (
+                    <SelectItem key={cls} value={cls}>
+                      {cls}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 min-w-[120px]">
               <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
               <Input
-                placeholder="Driver, car number, transponder..."
+                placeholder="Driver, car #..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#262626] border-gray-700"
+                className="bg-[#262626] border-gray-700 text-white"
               />
             </div>
           </div>
         </div>
 
-        {/* Entries list */}
-        <div className="space-y-2">
-          {entriesLoading ? (
-            <p className="text-gray-400 text-sm">Loading...</p>
-          ) : filteredEntries.length === 0 ? (
-            <p className="text-gray-400 text-sm">No entries found.</p>
-          ) : (
-            filteredEntries.map((entry) => (
-              <div
-                key={entry.id}
-                onClick={() => handleSelectEntry(entry)}
-                className={`cursor-pointer p-4 rounded-lg border transition-colors ${
-                  selectedEntry?.id === entry.id
-                    ? 'bg-gray-800 border-gray-600'
-                    : 'bg-[#171717] border-gray-800 hover:border-gray-700'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-semibold text-white">#{entry.car_number}</p>
-                    <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
+        {/* Quick List: Top 25 Recent Entries */}
+        {!searchTerm && !classFilter !== 'all' && (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400 px-2">Recent entries (25)</p>
+            {entriesLoading ? (
+              <p className="text-gray-400 text-sm px-2">Loading...</p>
+            ) : filteredEntries.slice(0, 25).length === 0 ? (
+              <p className="text-gray-400 text-sm px-2">No entries found.</p>
+            ) : (
+              filteredEntries.slice(0, 25).map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => handleSelectEntry(entry)}
+                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                    selectedEntry?.id === entry.id
+                      ? 'bg-gray-800 border-gray-600'
+                      : 'bg-[#171717] border-gray-800 hover:border-gray-700 hover:bg-gray-800/30'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-white">#{entry.car_number}</p>
+                      <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-500" />
-                </div>
+                  <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant={entry.check_in_status === 'CheckedIn' || entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
+                      {entry.check_in_status || entry.entry_status || 'Registered'}
+                    </Badge>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        )}
 
-                <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
-
-                <div className="flex flex-wrap gap-2">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    entry.entry_status === 'CheckedIn'
-                      ? 'bg-green-900/40 text-green-300'
-                      : 'bg-blue-900/40 text-blue-300'
-                  }`}>
-                    {entry.entry_status}
-                  </span>
-
-                  {getComplianceBadges(entry).map((badge, idx) => (
-                    <span key={idx} className={`px-2 py-1 rounded text-xs font-medium ${badge.color}`}>
-                      {badge.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Filtered Search Results */}
+        {(searchTerm || classFilter !== 'all') && (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400 px-2">{filteredEntries.length} results</p>
+            {entriesLoading ? (
+              <p className="text-gray-400 text-sm px-2">Loading...</p>
+            ) : filteredEntries.length === 0 ? (
+              <p className="text-gray-400 text-sm px-2">No entries found.</p>
+            ) : (
+              filteredEntries.map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => handleSelectEntry(entry)}
+                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                    selectedEntry?.id === entry.id
+                      ? 'bg-gray-800 border-gray-600'
+                      : 'bg-[#171717] border-gray-800 hover:border-gray-700 hover:bg-gray-800/30'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-white">#{entry.car_number}</p>
+                      <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant={entry.check_in_status === 'CheckedIn' || entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
+                      {entry.check_in_status || entry.entry_status || 'Registered'}
+                    </Badge>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Right column: Action panel */}
+      {/* Right column: Detail panel */}
       {selectedEntry && formData ? (
-        <Card className="bg-[#171717] border-gray-800 h-fit">
-          <CardHeader>
-            <CardTitle className="text-sm">Check In</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Check In Button */}
-            <Button
-              onClick={handleCheckIn}
-              disabled={updateMutation.isPending || formData.entry_status === 'CheckedIn'}
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              {formData.entry_status === 'CheckedIn' ? 'Already Checked In' : 'Check In Now'}
-            </Button>
-
-            {/* Waiver Toggle */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400">Waiver Verified</p>
+        <Card className="bg-[#171717] border-gray-800 lg:sticky lg:top-4 lg:h-fit">
+          <CardHeader className="border-b border-gray-800 pb-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-white text-lg">{getDriverName(selectedEntry.driver_id)}</CardTitle>
+                <p className="text-xs text-gray-400 mt-1">#{formData.car_number || '—'}</p>
+              </div>
               <Button
-                onClick={handleToggleWaiver}
-                disabled={updateMutation.isPending}
-                variant={formData.waiver_verified ? 'default' : 'outline'}
-                className={`w-full ${formData.waiver_verified ? 'bg-green-600 hover:bg-green-700' : 'border-gray-700'}`}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedEntry(null);
+                  setFormData(null);
+                }}
+                className="text-gray-400 hover:text-white"
               >
-                {formData.waiver_verified ? 'Verified' : 'Not Verified'}
+                <X className="w-4 h-4" />
               </Button>
             </div>
+          </CardHeader>
 
-            {/* Wristband Count */}
+          <CardContent className="space-y-4 py-4">
+            {/* Driver Info */}
+            <div className="bg-gray-900/50 rounded p-3 space-y-2">
+              <p className="text-xs text-gray-400">Class</p>
+              <p className="text-sm font-semibold text-white">{getEventClassName(selectedEntry.series_class_id)}</p>
+              {formData.amount_due && (
+                <>
+                  <p className="text-xs text-gray-400 mt-2">Amount Due</p>
+                  <p className="text-sm font-semibold text-white">${formData.amount_due}</p>
+                </>
+              )}
+            </div>
+
+            {/* Status Chips */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400">Wristbands</p>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleWristbandChange(-1)}
-                  disabled={updateMutation.isPending}
-                  className="border-gray-700"
+              <div className="flex flex-wrap gap-2">
+                {/* Check In Status */}
+                <Badge
+                  variant={formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In' ? 'default' : 'secondary'}
+                  className="text-xs"
                 >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="flex-1 text-center text-lg font-semibold text-white">{formData.wristband_count || 0}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleWristbandChange(1)}
-                  disabled={updateMutation.isPending}
-                  className="border-gray-700"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+                  {formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In' ? 'Checked In' : 'Not Checked In'}
+                </Badge>
+
+                {/* Waiver Status */}
+                {('waiver_verified' in formData || !formData.waiver_verified) && (
+                  <Badge
+                    variant={formData.waiver_verified ? 'default' : 'secondary'}
+                    className={`text-xs ${formData.waiver_verified ? 'bg-green-600' : ''}`}
+                  >
+                    {formData.waiver_verified ? 'Waiver ✓' : 'Waiver ✗'}
+                  </Badge>
+                )}
+
+                {/* Payment Status */}
+                {('payment_status' in formData) && (
+                  <Badge
+                    variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
+                    className={`text-xs ${formData.payment_status === 'Paid' ? 'bg-green-600' : ''}`}
+                  >
+                    {formData.payment_status === 'Paid' ? 'Paid' : 'Unpaid'}
+                  </Badge>
+                )}
+
+                {/* Tech Status */}
+                {formData.tech_status && (
+                  <Badge variant="secondary" className="text-xs">
+                    Tech: {formData.tech_status}
+                  </Badge>
+                )}
               </div>
             </div>
 
-            {/* Payment Toggle */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400">Payment</p>
+            {/* Actions */}
+            <div className="space-y-2 border-t border-gray-800 pt-4">
+              {/* Check In Toggle */}
               <Button
-                onClick={handleTogglePayment}
+                onClick={handleCheckIn}
                 disabled={updateMutation.isPending}
-                variant={formData.payment_status === 'Paid' ? 'default' : 'outline'}
-                className={`w-full ${formData.payment_status === 'Paid' ? 'bg-green-600 hover:bg-green-700' : 'border-gray-700'}`}
+                className={`w-full font-semibold ${
+                  formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
-                {formData.payment_status === 'Paid' ? 'Paid' : 'Unpaid'}
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                {formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In'
+                  ? 'Checked In'
+                  : 'Check In Now'}
               </Button>
-            </div>
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400">Notes</p>
-              <textarea
-                value={formData.notes || ''}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Quick notes..."
-                rows={3}
-                className="w-full bg-[#262626] border border-gray-700 rounded px-2 py-2 text-xs text-gray-300 resize-none"
-              />
-              <Button
-                size="sm"
-                onClick={handleNotesChange}
-                disabled={updateMutation.isPending}
-                className="w-full bg-gray-700 hover:bg-gray-600"
-              >
-                Save Notes
-              </Button>
-            </div>
+              {/* Waiver Toggle */}
+              {('waiver_verified' in formData || !formData.waiver_verified) && (
+                <Button
+                  onClick={handleToggleWaiver}
+                  disabled={updateMutation.isPending}
+                  variant="outline"
+                  className={`w-full border-gray-700 ${
+                    formData.waiver_verified
+                      ? 'bg-green-900/20 text-green-300 border-green-700'
+                      : 'text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                </Button>
+              )}
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSelectedEntry(null);
-                setFormData(null);
-              }}
-              className="w-full border-gray-700"
-            >
-              Close
-            </Button>
+              {/* Payment Toggle */}
+              {('payment_status' in formData) && (
+                <Button
+                  onClick={handleTogglePayment}
+                  disabled={updateMutation.isPending}
+                  variant="outline"
+                  className={`w-full border-gray-700 ${
+                    formData.payment_status === 'Paid'
+                      ? 'bg-green-900/20 text-green-300 border-green-700'
+                      : 'text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  {formData.payment_status === 'Paid' ? 'Paid ✓' : 'Mark Paid'}
+                </Button>
+              )}
+
+              {/* Wristbands */}
+              {('wristband_count' in formData) && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-400">Wristbands: {formData.wristband_count || 0}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWristbandChange(-1)}
+                      disabled={updateMutation.isPending}
+                      className="flex-1 border-gray-700"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWristbandChange(1)}
+                      disabled={updateMutation.isPending}
+                      className="flex-1 border-gray-700"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {('notes' in formData) && (
+                <div className="space-y-2">
+                  {!notesMode ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setNotesMode(true)}
+                      className="w-full border-gray-700"
+                    >
+                      {formData.notes ? 'Edit Notes' : 'Add Notes'}
+                    </Button>
+                  ) : (
+                    <>
+                      <Textarea
+                        value={formData.notes || ''}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        placeholder="Quick notes..."
+                        rows={3}
+                        className="bg-[#262626] border-gray-700 text-white text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setNotesMode(false)}
+                          className="flex-1 border-gray-700"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleNotesChange}
+                          disabled={updateMutation.isPending}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-[#171717] border-gray-800 h-fit">
+        <Card className="bg-[#171717] border-gray-800 lg:sticky lg:top-4">
           <CardContent className="py-8 text-center">
+            <AlertCircle className="w-6 h-6 text-gray-500 mx-auto mb-2" />
             <p className="text-gray-400 text-sm">Select an entry to check in</p>
           </CardContent>
         </Card>
