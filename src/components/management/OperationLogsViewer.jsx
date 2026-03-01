@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { RotateCcw, Download, Eye, Trash2, Loader2, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 const OPERATION_TYPES = ['import', 'export'];
 const SOURCE_TYPES = ['csv_upload', 'google_sheets', 'api_function', 'manual'];
