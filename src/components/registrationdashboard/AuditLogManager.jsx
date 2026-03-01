@@ -223,6 +223,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }
     startDate,
     endDate,
     searchTerm,
+    quickFilter,
   ]);
 
   // Pagination
