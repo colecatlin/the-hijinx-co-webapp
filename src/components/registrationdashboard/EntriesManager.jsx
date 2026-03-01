@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -11,193 +12,668 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AlertCircle, Download, Plus } from 'lucide-react';
-import CreateEntryModal from './CreateEntryModal';
-import EntryDetailDrawer from './EntryDetailDrawer';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from '@/components/ui/sheet';
+import {
+  Plus,
+  Download,
+  Eye,
+  Trash2,
+  LogOut,
+  X,
+  Check,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { createPageUrl } from '@/utils';
 
-export default function EntriesManager({ selectedEvent }) {
-  const [classFilter, setClassFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [paymentFilter, setPaymentFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
+  const queryClient = useQueryClient();
+
+  // State
+  const [filters, setFilters] = useState({
+    class: 'all',
+    entryStatus: 'all',
+    paymentStatus: 'all',
+    techStatus: 'all',
+    search: '',
+  });
+  const [selectedEntries, setSelectedEntries] = useState(new Set());
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [addFormData, setAddFormData] = useState({});
+  const [drawerFormData, setDrawerFormData] = useState({});
 
-  const { data: entries = [], isLoading: entriesLoading } = useQuery({
-    queryKey: ['entries', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
+  // Queries
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId,
   });
 
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.EventClass.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
-  });
+  const driverIds = useMemo(() => [...new Set(entries.map((e) => e.driver_id))], [entries]);
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryKey: ['drivers', driverIds],
+    queryFn: async () => {
+      if (driverIds.length === 0) return [];
+      return base44.entities.Driver.list('first_name', 500);
+    },
+    enabled: driverIds.length > 0,
   });
 
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list(),
+    queryKey: ['seriesClasses', seriesId],
+    queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
+    enabled: !!seriesId,
   });
 
-  const filteredEntries = useMemo(() => {
-    return entries.filter((entry) => {
-      if (classFilter !== 'all' && entry.series_class_id !== classFilter)
-        return false;
-      if (statusFilter !== 'all' && entry.entry_status !== statusFilter)
-        return false;
-      if (paymentFilter !== 'all' && entry.payment_status !== paymentFilter)
-        return false;
+  const { data: allDrivers = [] } = useQuery({
+    queryKey: ['allDrivers'],
+    queryFn: () => base44.entities.Driver.list('first_name', 200),
+  });
 
-      if (searchTerm) {
-        const driver = drivers.find((d) => d.id === entry.driver_id);
-        const driverName = driver
-          ? `${driver.first_name} ${driver.last_name}`.toLowerCase()
-          : '';
-        const carNum = entry.car_number.toLowerCase();
-        const transponder = (entry.transponder_id || '').toLowerCase();
-        const search = searchTerm.toLowerCase();
+  // Mutations
+  const createEntryMutation = useMutation({
+    mutationFn: (data) => base44.entities.Entry.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      setShowAddDialog(false);
+      setAddFormData({});
+      toast.success('Entry created');
+    },
+  });
 
-        return (
-          driverName.includes(search) ||
-          carNum.includes(search) ||
-          transponder.includes(search)
-        );
-      }
+  const updateEntryMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      setShowDetailDrawer(false);
+      toast.success('Entry updated');
+    },
+  });
 
-      return true;
-    });
-  }, [entries, classFilter, statusFilter, paymentFilter, searchTerm, drivers]);
+  const deleteEntryMutation = useMutation({
+    mutationFn: (id) => base44.entities.Entry.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      setShowDeleteConfirm(null);
+      toast.success('Entry deleted');
+    },
+  });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: (updates) => Promise.all(updates.map((u) => base44.entities.Entry.update(u.id, u.data))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      setSelectedEntries(new Set());
+      toast.success('Bulk update complete');
+    },
+  });
+
+  // Helpers
   const getDriverName = (driverId) => {
     const driver = drivers.find((d) => d.id === driverId);
     return driver ? `${driver.first_name} ${driver.last_name}` : '—';
   };
 
-  const getClassName = (classId) => {
-    const cls = seriesClasses.find((c) => c.id === classId);
-    return cls ? cls.class_name : '—';
-  };
-
-  const getTeamName = (teamId) => {
-    if (!teamId) return '';
-    const team = teams.find((t) => t.id === teamId);
-    return team ? team.name : '—';
+  const getClassName = (entry) => {
+    if (entry.series_class_id) {
+      const sc = seriesClasses.find((c) => c.id === entry.series_class_id);
+      return sc?.class_name || entry.series_class_id;
+    }
+    return entry.class_name || '—';
   };
 
   const getComplianceFlags = (entry) => {
-    const flags = [];
-    if (!entry.waiver_verified) flags.push('Missing Waiver');
-    if (entry.payment_status === 'Unpaid') flags.push('Unpaid');
-    if (
-      entry.tech_status === 'NotInspected' ||
-      entry.tech_status === 'RecheckRequired'
-    )
-      flags.push('Tech Pending');
-    if (!entry.transponder_id) flags.push('Missing Transponder');
-    return flags;
+    const flags = entry.compliance_flags || [];
+    const hasFlags = [];
+    if (entry.waiver_status === 'Missing') hasFlags.push('Waiver');
+    if (entry.payment_status === 'Unpaid') hasFlags.push('Unpaid');
+    if (entry.license_status === 'Expired') hasFlags.push('Expired');
+    if (!entry.transponder_id) hasFlags.push('No Transponder');
+    return [...hasFlags, ...flags];
   };
 
-  const handleExportCSV = async () => {
-    try {
-      const { data } = await base44.functions.invoke('csvEntityManager', {
-        action: 'export',
-        entityType: 'Entry',
-        filters: { event_id: selectedEvent.id },
-      });
+  const needsWarning = (entry) => {
+    return (
+      entry.waiver_status === 'Missing' ||
+      entry.payment_status === 'Unpaid' ||
+      entry.license_status === 'Expired' ||
+      (entry.compliance_flags && entry.compliance_flags.length > 0)
+    );
+  };
 
-      const blob = new Blob([data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `entries-${selectedEvent.id}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    } catch (error) {
-      console.error('Export failed:', error);
+  // Filtered entries
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) => {
+      if (filters.class !== 'all') {
+        const entryClass = getClassName(entry);
+        if (entryClass !== filters.class) return false;
+      }
+
+      if (filters.entryStatus !== 'all' && entry.entry_status !== filters.entryStatus) return false;
+      if (filters.paymentStatus !== 'all' && entry.payment_status !== filters.paymentStatus) return false;
+      if (filters.techStatus !== 'all' && entry.tech_status !== filters.techStatus) return false;
+
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        const driverName = getDriverName(entry.driver_id).toLowerCase();
+        const carNum = (entry.car_number || '').toLowerCase();
+        const transponder = (entry.transponder_id || '').toLowerCase();
+        if (!driverName.includes(search) && !carNum.includes(search) && !transponder.includes(search)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [entries, filters, drivers, seriesClasses]);
+
+  // Get unique classes for filter
+  const uniqueClasses = useMemo(() => {
+    const classes = new Set();
+    entries.forEach((e) => {
+      const className = getClassName(e);
+      if (className !== '—') classes.add(className);
+    });
+    return Array.from(classes).sort();
+  }, [entries, seriesClasses]);
+
+  // Handlers
+  const handleOpenDetail = (entry) => {
+    setSelectedEntry(entry);
+    setDrawerFormData({ ...entry });
+    setShowDetailDrawer(true);
+  };
+
+  const handleSaveEntry = () => {
+    updateEntryMutation.mutate({
+      id: selectedEntry.id,
+      data: drawerFormData,
+    });
+  };
+
+  const handleWithdrawEntry = () => {
+    updateEntryMutation.mutate({
+      id: selectedEntry.id,
+      data: { entry_status: 'Withdrawn' },
+    });
+  };
+
+  const handleAddEntry = () => {
+    if (!addFormData.driver_id) {
+      toast.error('Driver required');
+      return;
+    }
+
+    const data = {
+      event_id: eventId,
+      series_id: selectedEvent?.series_id,
+      driver_id: addFormData.driver_id,
+      series_class_id: addFormData.series_class_id || undefined,
+      class_name: addFormData.class_name || undefined,
+      car_number: addFormData.car_number || undefined,
+      transponder_id: addFormData.transponder_id || undefined,
+      payment_status: addFormData.payment_status || 'Unpaid',
+      waiver_status: addFormData.waiver_status || 'Missing',
+    };
+
+    createEntryMutation.mutate(data);
+  };
+
+  const handleBulkAction = (action) => {
+    if (selectedEntries.size === 0) return;
+
+    const selectedList = Array.from(selectedEntries)
+      .map((id) => entries.find((e) => e.id === id))
+      .filter(Boolean);
+
+    if (action === 'withdraw') {
+      const updates = selectedList.map((e) => ({
+        id: e.id,
+        data: { entry_status: 'Withdrawn' },
+      }));
+      bulkUpdateMutation.mutate(updates);
+    } else if (action === 'checkin') {
+      const updates = selectedList.map((e) => ({
+        id: e.id,
+        data: { entry_status: 'Checked In' },
+      }));
+      bulkUpdateMutation.mutate(updates);
+    } else if (action === 'teched') {
+      const updates = selectedList.map((e) => ({
+        id: e.id,
+        data: { entry_status: 'Teched', tech_status: 'Passed' },
+      }));
+      bulkUpdateMutation.mutate(updates);
     }
   };
 
-  if (!selectedEvent) {
+  const handleExportCSV = () => {
+    const headers = [
+      'event_id',
+      'series_id',
+      'series_class_id',
+      'class_name',
+      'driver_id',
+      'driver_name',
+      'team_id',
+      'car_number',
+      'transponder_id',
+      'entry_status',
+      'payment_status',
+      'tech_status',
+      'waiver_status',
+      'license_status',
+      'compliance_flags',
+      'notes',
+    ];
+
+    const rows = filteredEntries.map((e) => [
+      e.event_id,
+      e.series_id || '',
+      e.series_class_id || '',
+      e.class_name || '',
+      e.driver_id,
+      getDriverName(e.driver_id),
+      e.team_id || '',
+      e.car_number || '',
+      e.transponder_id || '',
+      e.entry_status,
+      e.payment_status,
+      e.tech_status,
+      e.waiver_status,
+      e.license_status,
+      (e.compliance_flags || []).join(';'),
+      e.notes || '',
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `entries-${eventId}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  };
+
+  if (!eventId) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to load entries.</p>
+          <p className="text-gray-400">Select an event to manage entries</p>
         </CardContent>
       </Card>
     );
   }
 
+  const hasBulkSelection = selectedEntries.size > 0;
+
   return (
-    <div className="space-y-4">
-      {/* Controls bar */}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">Entries</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Showing {filteredEntries.length} of {entries.length}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add Entry
+          </Button>
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="border-gray-700 text-gray-300"
+            size="sm"
+          >
+            <Download className="w-4 h-4 mr-2" /> Export CSV
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 space-y-3">
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-3 flex-wrap items-end">
-            <div className="min-w-[200px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Class
-              </label>
-              <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700">
-                  <SelectValue />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Class</label>
+            <Select value={filters.class} onValueChange={(val) => setFilters({ ...filters, class: val })}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All Classes</SelectItem>
+                {uniqueClasses.map((cls) => (
+                  <SelectItem key={cls} value={cls}>
+                    {cls}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Entry Status</label>
+            <Select value={filters.entryStatus} onValueChange={(val) => setFilters({ ...filters, entryStatus: val })}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Registered">Registered</SelectItem>
+                <SelectItem value="Checked In">Checked In</SelectItem>
+                <SelectItem value="Teched">Teched</SelectItem>
+                <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Payment</label>
+            <Select value={filters.paymentStatus} onValueChange={(val) => setFilters({ ...filters, paymentStatus: val })}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Paid">Paid</SelectItem>
+                <SelectItem value="Unpaid">Unpaid</SelectItem>
+                <SelectItem value="Refunded">Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Tech Status</label>
+            <Select value={filters.techStatus} onValueChange={(val) => setFilters({ ...filters, techStatus: val })}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Not Inspected">Not Inspected</SelectItem>
+                <SelectItem value="Passed">Passed</SelectItem>
+                <SelectItem value="Failed">Failed</SelectItem>
+                <SelectItem value="Recheck Required">Recheck Required</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Search</label>
+            <Input
+              placeholder="Driver, #, transponder"
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bulk Actions Bar */}
+      {hasBulkSelection && (
+        <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between">
+          <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleBulkAction('checkin')}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Mark Checked In
+            </Button>
+            <Button
+              onClick={() => handleBulkAction('teched')}
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              Mark Teched
+            </Button>
+            <Button
+              onClick={() => handleBulkAction('withdraw')}
+              size="sm"
+              variant="outline"
+              className="border-red-700 text-red-400"
+            >
+              Withdraw
+            </Button>
+            <Button
+              onClick={() => setSelectedEntries(new Set())}
+              size="sm"
+              variant="ghost"
+              className="text-gray-400"
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Entries Table */}
+      {filteredEntries.length === 0 ? (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="py-12 text-center">
+            <p className="text-gray-400 text-sm mb-4">No entries yet</p>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              variant="outline"
+              className="border-gray-700 text-gray-300"
+              size="sm"
+            >
+              Add Entry
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-[#171717] border-gray-800 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-900/50 border-b border-gray-800">
+                <tr>
+                  <th className="px-3 py-2 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedEntries.size === filteredEntries.length && filteredEntries.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedEntries(new Set(filteredEntries.map((e) => e.id)));
+                        } else {
+                          setSelectedEntries(new Set());
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                  </th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">#</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Driver</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Class</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Transponder</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Entry</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Payment</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Tech</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Flags</th>
+                  <th className="px-3 py-2 text-right text-gray-400 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.map((entry) => (
+                  <tr
+                    key={entry.id}
+                    className={`border-b border-gray-800 ${needsWarning(entry) ? 'bg-yellow-900/10' : 'hover:bg-gray-800/30'}`}
+                  >
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedEntries.has(entry.id)}
+                        onChange={(e) => {
+                          const newSet = new Set(selectedEntries);
+                          if (e.target.checked) {
+                            newSet.add(entry.id);
+                          } else {
+                            newSet.delete(entry.id);
+                          }
+                          setSelectedEntries(newSet);
+                        }}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-white font-mono text-xs">{entry.car_number || '—'}</td>
+                    <td className="px-3 py-2 text-white">{getDriverName(entry.driver_id)}</td>
+                    <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
+                    <td className="px-3 py-2 text-gray-300 text-xs font-mono">{entry.transponder_id || '—'}</td>
+                    <td className="px-3 py-2">
+                      <Badge className="bg-blue-500/20 text-blue-400 text-xs">{entry.entry_status}</Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge
+                        className={`text-xs ${
+                          entry.payment_status === 'Paid'
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-red-500/20 text-red-400'
+                        }`}
+                      >
+                        {entry.payment_status}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge className="bg-purple-500/20 text-purple-400 text-xs">{entry.tech_status}</Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-1 flex-wrap">
+                        {getComplianceFlags(entry).slice(0, 2).map((flag) => (
+                          <Badge key={flag} variant="outline" className="text-xs text-yellow-400 border-yellow-600">
+                            {flag}
+                          </Badge>
+                        ))}
+                        {getComplianceFlags(entry).length > 2 && (
+                          <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-600">
+                            +{getComplianceFlags(entry).length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <Button
+                        onClick={() => handleOpenDetail(entry)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Add Entry Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="bg-[#262626] border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Add Entry</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-1">Driver</label>
+              <Select value={addFormData.driver_id || ''} onValueChange={(val) => setAddFormData({ ...addFormData, driver_id: val })}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                  <SelectValue placeholder="Select driver..." />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Classes</SelectItem>
-                  {eventClasses.map((cls) => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      {cls.class_name}
+                <SelectContent className="bg-[#262626] border-gray-700 max-h-64">
+                  {allDrivers.map((driver) => (
+                    <SelectItem key={driver.id} value={driver.id}>
+                      {driver.first_name} {driver.last_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="min-w-[200px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Entry Status
-              </label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Registered">Registered</SelectItem>
-                  <SelectItem value="CheckedIn">Checked In</SelectItem>
-                  <SelectItem value="Withdrawn">Withdrawn</SelectItem>
-                </SelectContent>
-              </Select>
+            {seriesClasses.length > 0 && (
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Class</label>
+                <Select value={addFormData.series_class_id || ''} onValueChange={(val) => setAddFormData({ ...addFormData, series_class_id: val, class_name: '' })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                    <SelectValue placeholder="Select class..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    {seriesClasses.map((sc) => (
+                      <SelectItem key={sc.id} value={sc.id}>
+                        {sc.class_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-1">Car #</label>
+              <Input
+                placeholder="Car number"
+                value={addFormData.car_number || ''}
+                onChange={(e) => setAddFormData({ ...addFormData, car_number: e.target.value })}
+                className="bg-[#1A1A1A] border-gray-600 text-white"
+              />
             </div>
 
-            <div className="min-w-[200px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Payment Status
-              </label>
-              <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700">
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-1">Transponder ID</label>
+              <Input
+                placeholder="Optional"
+                value={addFormData.transponder_id || ''}
+                onChange={(e) => setAddFormData({ ...addFormData, transponder_id: e.target.value })}
+                className="bg-[#1A1A1A] border-gray-600 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-1">Payment Status</label>
+              <Select value={addFormData.payment_status || 'Unpaid'} onValueChange={(val) => setAddFormData({ ...addFormData, payment_status: val })}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Payment</SelectItem>
+                <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="Unpaid">Unpaid</SelectItem>
                   <SelectItem value="Paid">Paid</SelectItem>
                   <SelectItem value="Refunded">Refunded</SelectItem>
@@ -205,186 +681,216 @@ export default function EntriesManager({ selectedEvent }) {
               </Select>
             </div>
 
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Search
-              </label>
-              <Input
-                placeholder="Driver name, car number, transponder..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#262626] border-gray-700"
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-1" /> Create Entry
-              </Button>
-              <Button
-                onClick={handleExportCSV}
-                variant="outline"
-                className="border-gray-700"
-              >
-                <Download className="w-4 h-4 mr-1" /> Export CSV
-              </Button>
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-1">Waiver Status</label>
+              <Select value={addFormData.waiver_status || 'Missing'} onValueChange={(val) => setAddFormData({ ...addFormData, waiver_status: val })}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="Missing">Missing</SelectItem>
+                  <SelectItem value="Verified">Verified</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
-      </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddEntry} className="bg-blue-600 hover:bg-blue-700">
+              Create Entry
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Entries table */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-gray-300">
-            Entries ({filteredEntries.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {entriesLoading ? (
-            <p className="text-gray-400 text-sm">Loading entries...</p>
-          ) : filteredEntries.length === 0 ? (
-            <p className="text-gray-400 text-sm">No entries found.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Car #
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Driver
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Class
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Transponder
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Entry Status
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Payment
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Tech
-                    </th>
-                    <th className="text-left py-3 px-3 font-medium text-gray-400">
-                      Flags
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEntries.map((entry) => {
-                    const flags = getComplianceFlags(entry);
-                    const hasFlags = flags.length > 0;
-
-                    return (
-                      <tr
-                        key={entry.id}
-                        onClick={() => setSelectedEntry(entry)}
-                        className={`border-b border-gray-800 cursor-pointer transition-colors ${
-                          hasFlags
-                            ? 'bg-red-900/10 hover:bg-red-900/15'
-                            : 'hover:bg-gray-800/50'
-                        }`}
-                      >
-                        <td className="py-3 px-3 text-gray-300 font-medium">
-                          {entry.car_number}
-                        </td>
-                        <td className="py-3 px-3 text-gray-300">
-                          {getDriverName(entry.driver_id)}
-                        </td>
-                        <td className="py-3 px-3 text-gray-300">
-                          {getClassName(entry.series_class_id)}
-                        </td>
-                        <td className="py-3 px-3 text-gray-400">
-                          {entry.transponder_id || '—'}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              entry.entry_status === 'Registered'
-                                ? 'bg-blue-900/40 text-blue-300'
-                                : entry.entry_status === 'CheckedIn'
-                                ? 'bg-green-900/40 text-green-300'
-                                : 'bg-gray-900/40 text-gray-400'
-                            }`}
-                          >
-                            {entry.entry_status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              entry.payment_status === 'Paid'
-                                ? 'bg-green-900/40 text-green-300'
-                                : entry.payment_status === 'Unpaid'
-                                ? 'bg-yellow-900/40 text-yellow-300'
-                                : 'bg-gray-900/40 text-gray-400'
-                            }`}
-                          >
-                            {entry.payment_status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              entry.tech_status === 'Passed'
-                                ? 'bg-green-900/40 text-green-300'
-                                : entry.tech_status === 'Failed'
-                                ? 'bg-red-900/40 text-red-300'
-                                : 'bg-gray-900/40 text-gray-400'
-                            }`}
-                          >
-                            {entry.tech_status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          {flags.length > 0 ? (
-                            <div className="flex items-center gap-1">
-                              <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
-                              <span className="text-red-300 font-medium">
-                                {flags.length}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-gray-500">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Detail drawer */}
+      {/* Entry Detail Drawer */}
       {selectedEntry && (
-        <EntryDetailDrawer
-          entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
-          onSave={() => {
-            setSelectedEntry(null);
-          }}
-        />
+        <Sheet open={showDetailDrawer} onOpenChange={setShowDetailDrawer}>
+          <SheetContent side="right" className="bg-[#262626] border-gray-700 w-full sm:w-[400px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="text-white">Entry Details</SheetTitle>
+            </SheetHeader>
+
+            <div className="space-y-6 mt-6">
+              {/* Driver Link */}
+              <div className="bg-gray-800/30 rounded p-3">
+                <p className="text-xs text-gray-400 mb-1">Driver</p>
+                <a
+                  href={createPageUrl(`DriverProfile?id=${selectedEntry.driver_id}`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline font-medium"
+                >
+                  {getDriverName(selectedEntry.driver_id)} ↗
+                </a>
+              </div>
+
+              {/* Core Fields */}
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Car #</label>
+                  <Input
+                    value={drawerFormData.car_number || ''}
+                    onChange={(e) => setDrawerFormData({ ...drawerFormData, car_number: e.target.value })}
+                    className="bg-[#1A1A1A] border-gray-600 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Transponder ID</label>
+                  <Input
+                    value={drawerFormData.transponder_id || ''}
+                    onChange={(e) => setDrawerFormData({ ...drawerFormData, transponder_id: e.target.value })}
+                    className="bg-[#1A1A1A] border-gray-600 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Class</label>
+                  <p className="text-sm text-white">{getClassName(selectedEntry)}</p>
+                </div>
+              </div>
+
+              {/* Status Fields */}
+              <div className="space-y-3 border-t border-gray-700 pt-4">
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Entry Status</label>
+                  <Select value={drawerFormData.entry_status} onValueChange={(val) => setDrawerFormData({ ...drawerFormData, entry_status: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Registered">Registered</SelectItem>
+                      <SelectItem value="Checked In">Checked In</SelectItem>
+                      <SelectItem value="Teched">Teched</SelectItem>
+                      <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Payment Status</label>
+                  <Select value={drawerFormData.payment_status} onValueChange={(val) => setDrawerFormData({ ...drawerFormData, payment_status: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Unpaid">Unpaid</SelectItem>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Refunded">Refunded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Tech Status</label>
+                  <Select value={drawerFormData.tech_status} onValueChange={(val) => setDrawerFormData({ ...drawerFormData, tech_status: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Not Inspected">Not Inspected</SelectItem>
+                      <SelectItem value="Passed">Passed</SelectItem>
+                      <SelectItem value="Failed">Failed</SelectItem>
+                      <SelectItem value="Recheck Required">Recheck Required</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Waiver Status</label>
+                  <Select value={drawerFormData.waiver_status} onValueChange={(val) => setDrawerFormData({ ...drawerFormData, waiver_status: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Missing">Missing</SelectItem>
+                      <SelectItem value="Verified">Verified</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">License Status</label>
+                  <Select value={drawerFormData.license_status || 'Unknown'} onValueChange={(val) => setDrawerFormData({ ...drawerFormData, license_status: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Unknown">Unknown</SelectItem>
+                      <SelectItem value="Valid">Valid</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="border-t border-gray-700 pt-4">
+                <label className="text-xs text-gray-400 uppercase block mb-1">Notes</label>
+                <Textarea
+                  value={drawerFormData.notes || ''}
+                  onChange={(e) => setDrawerFormData({ ...drawerFormData, notes: e.target.value })}
+                  className="bg-[#1A1A1A] border-gray-600 text-white"
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <SheetFooter className="mt-6 flex gap-2 justify-between">
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setShowDeleteConfirm(selectedEntry.id);
+                  }}
+                  variant="ghost"
+                  className="text-red-400 hover:bg-red-900/20"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    handleWithdrawEntry();
+                    setShowDetailDrawer(false);
+                  }}
+                  variant="outline"
+                  className="border-yellow-700 text-yellow-400"
+                  size="sm"
+                >
+                  <LogOut className="w-4 h-4 mr-1" /> Withdraw
+                </Button>
+                <Button onClick={handleSaveEntry} className="bg-blue-600 hover:bg-blue-700" size="sm">
+                  <Check className="w-4 h-4 mr-1" /> Save
+                </Button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       )}
 
-      {/* Create modal */}
-      <CreateEntryModal
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
-        eventId={selectedEvent.id}
-        seriesId={selectedEvent.series_id}
-      />
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
+        <AlertDialogContent className="bg-[#262626] border-gray-700">
+          <AlertDialogTitle className="text-white">Delete Entry</AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-400">
+            This will permanently delete this entry. This action cannot be undone.
+          </AlertDialogDescription>
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (showDeleteConfirm) deleteEntryMutation.mutate(showDeleteConfirm);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
