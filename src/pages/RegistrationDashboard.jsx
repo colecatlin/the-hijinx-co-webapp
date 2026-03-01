@@ -139,6 +139,9 @@ export default function RegistrationDashboard() {
   const [showComplianceWarning, setShowComplianceWarning] = useState(false);
   const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
   const [showArchiveWarning, setShowArchiveWarning] = useState(false);
+  const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
+  const [overrideText, setOverrideText] = useState('');
+  const [overrideReason, setOverrideReason] = useState('');
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
