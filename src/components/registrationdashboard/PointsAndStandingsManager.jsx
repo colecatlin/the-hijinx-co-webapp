@@ -16,7 +16,7 @@ import PointsRulesetEditor from './standings/PointsRulesetEditor';
 import StandingsView from './standings/StandingsView';
 import StandingsStatus from './standings/StandingsStatus';
 
-export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
+export default function PointsAndStandingsManager({ isAdmin, selectedEvent, standingsDirty, onClearDirty }) {
   const [selectedSeries, setSelectedSeries] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
@@ -300,6 +300,9 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['standings'] });
       toast.success('Standings recalculated');
+      if (onClearDirty) {
+        onClearDirty();
+      }
     },
     onError: (error) => {
       if (error.message !== 'No valid sessions') {
@@ -373,6 +376,23 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
 
   return (
     <div className="space-y-4">
+      {/* Standings Dirty Banner */}
+      {standingsDirty && (
+        <Card className="bg-amber-900/30 border-amber-700/50">
+          <CardContent className="py-4">
+            <div className="flex gap-3 items-start">
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-amber-400 font-semibold">Standings Recalculation Required</p>
+                <p className="text-xs text-amber-300/80 mt-1">
+                  Official session results detected. Recalculate standings to publish updated championship points.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Control Bar */}
       <Card className="bg-[#262626] border-gray-700">
         <CardContent className="py-4">
