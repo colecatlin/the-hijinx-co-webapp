@@ -78,6 +78,14 @@ export default function RegistrationDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEventId, setEditingEventId] = useState('');
 
+  // Dashboard context object
+  const dashboardContext = useMemo(() => ({
+    orgType: organizationType,
+    orgId: organizationId,
+    season: seasonYear,
+    eventId: eventId,
+  }), [organizationType, organizationId, seasonYear, eventId]);
+
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
