@@ -284,7 +284,7 @@ export default function ManageStories() {
                       <span className="font-semibold text-sm text-gray-800">{cat}</span>
                       <span className="text-xs text-gray-500 bg-gray-200 rounded-full px-2 py-0.5">{catStories.length}</span>
                     </div>
-                    <StoryTable stories={catStories} selectedStories={selectedStories} onSelect={handleSelectStory} onEdit={handleEdit} onDelete={handleDelete} deleteIsPending={deleteStoryMutation.isPending} />
+                    <StoryTable stories={catStories} selectedStories={selectedStories} onSelect={handleSelectStory} onEdit={handleEdit} onDelete={handleDelete} deleteIsPending={deleteStoryMutation.isPending} isAdmin={isAdmin} />
                   </div>
                 ))}
               </div>
@@ -369,7 +369,7 @@ export default function ManageStories() {
   );
 }
 
-function StoryTable({ stories, selectedStories, onSelect, onEdit, onDelete, deleteIsPending }) {
+function StoryTable({ stories, selectedStories, onSelect, onEdit, onDelete, deleteIsPending, isAdmin }) {
   return (
     <table className="w-full">
       <thead className="bg-gray-50 border-b border-gray-200">
@@ -403,9 +403,9 @@ function StoryTable({ stories, selectedStories, onSelect, onEdit, onDelete, dele
                 <Button size="sm" variant="ghost" onClick={() => onEdit(story)}>
                   <Pencil className="w-4 h-4" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => onDelete(story.id)}>
+                {isAdmin && <Button size="sm" variant="ghost" onClick={() => onDelete(story.id)}>
                   <Trash2 className="w-4 h-4" />
-                </Button>
+                </Button>}
               </div>
             </td>
           </tr>
