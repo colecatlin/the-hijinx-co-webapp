@@ -40,6 +40,7 @@ export default function ManageDrivers() {
   const [sortField, setSortField] = useState('updated_date');
   const [sortDir, setSortDir] = useState('desc');
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
+  const [backfillingIds, setBackfillingIds] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
