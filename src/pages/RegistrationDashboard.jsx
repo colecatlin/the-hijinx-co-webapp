@@ -460,7 +460,8 @@ export default function RegistrationDashboard() {
               </TabsTrigger>
               <TabsTrigger
                 value="classesSessions"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                disabled={!selectedEvent}
+                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ClipboardCheck className="w-4 h-4 mr-2" /> Classes & Sessions
               </TabsTrigger>
@@ -536,13 +537,8 @@ export default function RegistrationDashboard() {
               />
             </TabsContent>
 
-            {/* Classes & Sessions Tab Content */}
-            <TabsContent value="classesSessions" className="mt-6">
-              <ClassSessionBuilder eventId={eventId} seriesId={selectedEvent?.series_id} />
-            </TabsContent>
-
             {/* Other Tab Contents */}
-            {['entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
+            {['classesSessions', 'entries', 'checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
