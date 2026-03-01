@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
@@ -21,14 +22,7 @@ export default function EventResults() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: event, isLoading } = useQuery({
-    queryKey: ['event', eventId],
-    queryFn: async () => {
-      const all = await base44.entities.Event.list();
-      return all.find(e => e.id === eventId);
-    },
-    enabled: !!eventId,
-  });
+  const { event, isLoading, error } = useMotorsportsContext({ eventId });
 
   const { data: results = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results-event', eventId],
