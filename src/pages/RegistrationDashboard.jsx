@@ -231,6 +231,11 @@ export default function RegistrationDashboard() {
     }
   }, [organizationType, organizationId, tracks, seriesList]);
 
+  // Role-based access control constants for future expansion
+  const canAdmin = user?.role === 'admin';
+  const canEditResults = user?.role === 'admin';
+  const canTechInspect = user?.role === 'admin';
+  const canCheckIn = user?.role === 'admin';
   const isAdmin = user?.role === 'admin';
 
   // Update URL params when state changes
