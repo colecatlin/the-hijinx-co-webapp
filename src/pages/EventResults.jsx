@@ -246,6 +246,9 @@ export default function EventResults() {
     return (
       <PageShell>
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
+          <Link to={createPageUrl('EventDirectory')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-4 transition-colors">
+            <ArrowLeft className="w-3 h-3" /> Back to Events
+          </Link>
           <p className="text-gray-500">Event not found.</p>
         </div>
       </PageShell>
@@ -253,7 +256,9 @@ export default function EventResults() {
   }
 
   const displayName = event.season ? `${event.season} ${event.name}` : event.name;
-  const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${event.series_id ? 'series' : 'track'}&orgId=${event.series_id || event.track_id}&seasonYear=${event.season}&eventId=${eventId}`;
+  const orgType = event.series_id ? 'series' : 'track';
+  const orgId = event.series_id || event.track_id;
+  const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${orgType}&orgId=${orgId}&seasonYear=${event.season}&eventId=${eventId}&tab=results`;
 
   return (
     <PageShell>
