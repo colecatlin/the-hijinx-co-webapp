@@ -80,9 +80,17 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
 
   const handleDelete = async (driverId) => {
     if (window.confirm('Delete this duplicate driver?')) {
-      await base44.entities.Driver.delete(driverId);
+      try {
+        await base44.entities.Driver.delete(driverId);
+      } catch (e) {
+        // Already deleted, skip
+      }
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      findDuplicates();
+      setDuplicates(prev =>
+        prev
+          .map(group => group.filter(d => d.id !== driverId))
+          .filter(group => group.length > 1)
+      );
       toast.success('Driver deleted');
     }
   };
