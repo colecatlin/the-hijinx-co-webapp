@@ -781,6 +781,8 @@ export default function RegistrationDashboard() {
                   selectedEventId={editingEventId}
                   onEventCreated={handleEventCreated}
                   isAdmin={isAdmin}
+                  isLiveMode={isLiveMode}
+                  onArchiveAttempt={() => setShowArchiveWarning(true)}
                 />
               </TabsContent>
             )}
