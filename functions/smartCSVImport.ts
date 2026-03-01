@@ -102,6 +102,23 @@ function normalize(str) {
   return (str || '').toLowerCase().trim();
 }
 
+// Key fields to use for duplicate detection per entity
+const ENTITY_DEDUP_KEYS = {
+  Team: ['name'],
+  Track: ['name', 'location_city'],
+  Series: ['full_name'],
+  Event: ['name', 'event_date'],
+  SeriesClass: ['class_name', 'series_id'],
+  DriverProgram: ['driver_id', 'series_id'],
+  Standings: ['driver_id', 'series_class_id'],
+  OutletStory: ['title'],
+  OutletIssue: ['title', 'issue_number'],
+  Product: ['name'],
+  NewsletterSubscriber: ['email'],
+  ContactMessage: ['email', 'message'],
+  Announcement: ['message'],
+};
+
 // Generic entity import: maps CSV columns directly to entity fields
 async function importGenericEntity(base44, entityName, rows, headers) {
   let created = 0;
@@ -117,6 +134,7 @@ async function importGenericEntity(base44, entityName, rows, headers) {
 
   // Fetch all existing records to check for duplicates
   const existingRecords = await entity.list('-created_date', 5000);
+  const dedupKeys = ENTITY_DEDUP_KEYS[entityName] || null;
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -136,20 +154,19 @@ async function importGenericEntity(base44, entityName, rows, headers) {
         await entity.update(id, data);
         updated++;
       } else {
-        // Check for duplicates before creating
-        const isDuplicate = existingRecords.some(record => {
-          // Compare all non-empty fields in the row data
-          return Object.entries(data).every(([key, val]) => {
-            const existingVal = record[key];
-            return normalize(String(existingVal)) === normalize(String(val));
-          });
-        });
+        // Check for duplicates using key fields only
+        let isDuplicate = false;
+        if (dedupKeys && dedupKeys.every(k => data[k])) {
+          isDuplicate = existingRecords.some(record =>
+            dedupKeys.every(k => normalize(String(record[k] || '')) === normalize(String(data[k] || '')))
+          );
+        }
 
         if (isDuplicate) {
           skipped++;
         } else {
-          await entity.create(data);
-          existingRecords.push(data); // Add to cache for subsequent comparisons
+          const created_record = await entity.create(data);
+          existingRecords.push(created_record);
           created++;
         }
       }
