@@ -1,5 +1,103 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Canonical export column order per entity — keep in sync with entity schemas
+const ENTITY_EXPORT_COLUMNS = {
+  Driver: [
+    'id', 'first_name', 'last_name', 'numeric_id', 'slug', 'date_of_birth',
+    'contact_email', 'represented_by',
+    'hometown_city', 'hometown_state', 'hometown_country',
+    'racing_base_city', 'racing_base_state', 'racing_base_country',
+    'primary_number', 'manufacturer', 'primary_discipline',
+    'team_id', 'primary_series_id', 'primary_class_id',
+    'career_status', 'profile_status', 'status', 'featured',
+    'owner_user_id', 'calendar_id', 'primary_color',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Team: [
+    'id', 'name', 'slug', 'numeric_id',
+    'headquarters_city', 'headquarters_state', 'country',
+    'primary_discipline', 'team_level', 'status', 'founded_year',
+    'description_summary', 'logo_url', 'manufacturer', 'manufacturer_logo_url',
+    'calendar_id', 'created_date', 'updated_date', 'created_by',
+  ],
+  Track: [
+    'id', 'name', 'slug', 'numeric_id',
+    'location_city', 'location_state', 'location_country',
+    'track_type', 'surface_type', 'length', 'banking',
+    'website_url', 'contact_email', 'phone', 'description',
+    'logo_url', 'image_url', 'status', 'calendar_id',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Series: [
+    'id', 'full_name', 'slug', 'numeric_id',
+    'discipline', 'geographic_scope', 'sanctioning_body', 'season_year',
+    'status', 'calendar_id',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Event: [
+    'id', 'name', 'numeric_id', 'track_id', 'series_id', 'series_name',
+    'season', 'event_date', 'end_date', 'status', 'round_number',
+    'external_uid', 'location_note',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Results: [
+    'id', 'driver_id', 'program_id', 'event_id', 'session_id',
+    'session_type', 'heat_number', 'series_id', 'series_class_id', 'team_id',
+    'position', 'status', 'laps_completed', 'best_lap_time_ms', 'points', 'notes',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  DriverProgram: [
+    'id', 'driver_id', 'series_id', 'series_class_id', 'team_id',
+    'program_type', 'participation_status', 'races_participated',
+    'start_year', 'end_year', 'is_rookie', 'car_number',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  SeriesClass: [
+    'id', 'series_id', 'class_name', 'competition_level', 'active', 'description',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Standings: [
+    'id', 'driver_id', 'series_class_id', 'total_points', 'final_position',
+    'wins', 'podiums', 'dnfs',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Session: [
+    'id', 'event_id', 'session_type', 'heat_number', 'name',
+    'scheduled_time', 'laps', 'status',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  OutletStory: [
+    'id', 'title', 'slug', 'subtitle', 'body', 'author', 'author_title',
+    'photo_credit', 'primary_category', 'sub_category', 'tags',
+    'cover_image', 'location_city', 'location_state', 'location_country',
+    'issue_id', 'featured', 'status', 'published_date', 'scheduled_publish_date',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  OutletIssue: [
+    'id', 'title', 'volume', 'issue_number', 'cover_image', 'description',
+    'published_date', 'status',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Product: [
+    'id', 'name', 'slug', 'description', 'price', 'category',
+    'images', 'featured', 'status', 'external_link',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  NewsletterSubscriber: [
+    'id', 'email', 'name', 'source',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  ContactMessage: [
+    'id', 'name', 'email', 'subject', 'message', 'status',
+    'created_date', 'updated_date', 'created_by',
+  ],
+  Announcement: [
+    'id', 'message', 'link_url', 'link_text', 'background_color',
+    'active', 'priority',
+    'created_date', 'updated_date', 'created_by',
+  ],
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
