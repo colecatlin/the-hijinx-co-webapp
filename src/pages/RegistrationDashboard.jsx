@@ -1106,6 +1106,81 @@ export default function RegistrationDashboard() {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Admin Override Dialog */}
+        <Dialog open={overrideDialog.open} onOpenChange={(open) => {
+          if (!open) {
+            setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
+            setOverrideText('');
+            setOverrideReason('');
+          }
+        }}>
+          <DialogContent className="bg-[#262626] border-gray-700 sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-500" />
+                Admin Override Required
+              </DialogTitle>
+              <DialogDescription className="text-gray-400 mt-2">
+                {overrideDialog.actionName === 'reopen_locked_session' && 'Reopening a locked session will unlock it for further edits.'}
+                {overrideDialog.actionName === 'edit_results_official' && 'Editing results in an official session.'}
+                {overrideDialog.actionName === 'import_results_official' && 'Importing results into an official session.'}
+                {overrideDialog.actionName === 'import_results_allow_duplicates' && 'Allowing duplicate results in the same session.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {overrideDialog.context && (
+                <div className="text-xs text-gray-400 bg-gray-900/50 p-3 rounded border border-gray-700">
+                  <div className="font-mono space-y-1">
+                    {selectedEvent && <div>Event: {selectedEvent.name}</div>}
+                    {overrideDialog.context.sessionId && <div>Session ID: {overrideDialog.context.sessionId}</div>}
+                    {overrideDialog.context.beforeStatus && overrideDialog.context.afterStatus && (
+                      <div>Change: {overrideDialog.context.beforeStatus} → {overrideDialog.context.afterStatus}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Confirmation Code</label>
+                <Input
+                  placeholder="Type OVERRIDE to confirm"
+                  value={overrideText}
+                  onChange={(e) => setOverrideText(e.target.value)}
+                  className="bg-gray-900 border-gray-600 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Reason (required)</label>
+                <Textarea
+                  placeholder="Explain why this override is necessary..."
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  className="bg-gray-900 border-gray-600 text-white h-20"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
+                  setOverrideText('');
+                  setOverrideReason('');
+                }}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleOverrideConfirm}
+                disabled={overrideText !== 'OVERRIDE' || !overrideReason.trim()}
+                className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
+              >
+                Confirm Override
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Import CSV Modal */}
         {showImportModal && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
