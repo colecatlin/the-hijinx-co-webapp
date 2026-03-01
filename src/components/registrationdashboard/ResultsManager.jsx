@@ -11,6 +11,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { AlertCircle } from 'lucide-react';
 import ResultsControlBar from './results/ResultsControlBar';
 import ResultsManualEntry from './results/ResultsManualEntry';
@@ -18,7 +26,7 @@ import ResultsCSVUpload from './results/ResultsCSVUpload';
 import ResultsAPISync from './results/ResultsAPISync';
 import ResultsSessionMeta from './results/ResultsSessionMeta';
 
-export default function ResultsManager({ selectedEvent, isAdmin }) {
+export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCalculatedAt, onSetStandingsDirty }) {
   const [organizationType, setOrganizationType] = useState('track');
   const [trackId, setTrackId] = useState('');
   const [seriesId, setSeriesId] = useState('');
@@ -27,6 +35,8 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
   const [classId, setClassId] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [entryMode, setEntryMode] = useState('manual');
+  const [showStandingsWarning, setShowStandingsWarning] = useState(false);
+  const [pendingEdit, setPendingEdit] = useState(null);
 
   // Fetch all necessary data
   const { data: tracks = [] } = useQuery({

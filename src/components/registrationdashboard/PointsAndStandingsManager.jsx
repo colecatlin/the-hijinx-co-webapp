@@ -16,7 +16,7 @@ import PointsRulesetEditor from './standings/PointsRulesetEditor';
 import StandingsView from './standings/StandingsView';
 import StandingsStatus from './standings/StandingsStatus';
 
-export default function PointsAndStandingsManager({ isAdmin, selectedEvent, standingsDirty, onClearDirty }) {
+export default function PointsAndStandingsManager({ isAdmin, selectedEvent, standingsDirty, onClearDirty, onStandingsCalculated }) {
   const [selectedSeries, setSelectedSeries] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
@@ -302,6 +302,9 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
       toast.success('Standings recalculated');
       if (onClearDirty) {
         onClearDirty();
+      }
+      if (onStandingsCalculated) {
+        onStandingsCalculated();
       }
     },
     onError: (error) => {
