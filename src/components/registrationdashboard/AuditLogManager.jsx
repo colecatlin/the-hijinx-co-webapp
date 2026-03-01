@@ -137,6 +137,15 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }
   const filteredLogs = useMemo(() => {
     let filtered = [...operationLogs];
 
+    // Quick filter
+    if (quickFilter === 'overrides') {
+      filtered = filtered.filter((log) => log.operation_type === 'ADMIN_OVERRIDE');
+    } else if (quickFilter === 'imports') {
+      filtered = filtered.filter((log) => log.operation_type === 'import');
+    } else if (quickFilter === 'standings') {
+      filtered = filtered.filter((log) => log.operation_type === 'STANDINGS_RECALC');
+    }
+
     // Filter by entity
     if (entityFilter !== 'All') {
       filtered = filtered.filter((log) => log.entity_name === entityFilter);
