@@ -15,6 +15,7 @@ import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
+import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import { motion } from 'framer-motion';
 import {
   Select,
