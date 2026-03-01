@@ -655,14 +655,41 @@ export default function RegistrationDashboard() {
               )}
             </TabsContent>
 
+            {/* Results Tab Content */}
+            <TabsContent value="results" className="mt-6">
+              <Card className="bg-[#171717] border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Results Console</CardTitle>
+                </CardHeader>
+                <CardContent className="py-8 text-center">
+                  <p className="text-gray-400 text-sm">Coming next — will connect to Results records for selected event</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Points & Standings Tab Content */}
+            <TabsContent value="pointsStandings" className="mt-6">
+              <Card className="bg-[#171717] border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Points & Standings</CardTitle>
+                </CardHeader>
+                <CardContent className="py-8 text-center">
+                  <p className="text-gray-400 text-sm">Coming next — will display standings and championship points</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Other Tab Contents */}
-            {['results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
+            {['exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400 text-lg">
-                      This module will be built in the next step.
-                    </p>
+                  <CardHeader>
+                    <CardTitle className="text-white capitalize">
+                      {tab === 'auditLog' ? 'Audit Log' : tab}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="py-8 text-center">
+                    <p className="text-gray-400 text-sm">Module connected, UI pending</p>
                   </CardContent>
                 </Card>
               </TabsContent>
