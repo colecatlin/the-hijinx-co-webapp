@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -267,6 +267,8 @@ export default function ResultsManualEntry({
   classId,
 }) {
   const [sessionResults, setSessionResults] = useState(results);
+  const [scrollTop, setScrollTop] = useState(0);
+  const tableScrollRef = useRef(null);
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -318,6 +320,24 @@ export default function ResultsManualEntry({
     Locked: 'bg-red-900/40 text-red-300',
   };
 
+  // Table windowing: only render rows in visible range when dataset is large
+  const ROW_HEIGHT = 40; // approximate height in pixels
+  const WINDOW_HEIGHT = 600;
+  const BUFFER = 10; // render 10 rows above/below visible area
+  const shouldWindow = sessionResults.length > 75;
+  
+  let visibleStartIdx = 0;
+  let visibleEndIdx = sessionResults.length;
+  
+  if (shouldWindow) {
+    visibleStartIdx = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER);
+    visibleEndIdx = Math.min(sessionResults.length, Math.ceil((scrollTop + WINDOW_HEIGHT) / ROW_HEIGHT) + BUFFER);
+  }
+  
+  const windowedResults = sessionResults.slice(visibleStartIdx, visibleEndIdx);
+  const topSpacerHeight = visibleStartIdx * ROW_HEIGHT;
+  const bottomSpacerHeight = (sessionResults.length - visibleEndIdx) * ROW_HEIGHT;
+
   return (
     <div className="space-y-4">
       {/* Status and Session Info */}
@@ -340,9 +360,14 @@ export default function ResultsManualEntry({
       </div>
 
       {/* Results Table */}
-      <div className="border border-gray-700 rounded-lg overflow-hidden">
+      <div 
+        className="border border-gray-700 rounded-lg overflow-hidden"
+        ref={tableScrollRef}
+        onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+        style={shouldWindow ? { height: `${WINDOW_HEIGHT}px`, overflowY: 'auto' } : {}}
+      >
         <Table>
-          <TableHeader className="bg-[#262626]">
+          <TableHeader className={`bg-[#262626] ${shouldWindow ? 'sticky top-0 z-10' : ''}`}>
             <TableRow>
               <TableHead className="text-gray-400">Car #</TableHead>
               <TableHead className="text-gray-400">Driver</TableHead>
@@ -364,17 +389,29 @@ export default function ResultsManualEntry({
                 </TableCell>
               </TableRow>
             ) : (
-              sessionResults.map((result) => (
-                <ResultRow
-                  key={result.id}
-                  result={result}
-                  drivers={drivers}
-                  driverPrograms={driverPrograms}
-                  onUpdate={handleUpdate}
-                  allResults={sessionResults}
-                  sessionId={session.id}
-                />
-              ))
+              <>
+                {shouldWindow && topSpacerHeight > 0 && (
+                  <TableRow style={{ height: `${topSpacerHeight}px` }}>
+                    <TableCell colSpan="10" />
+                  </TableRow>
+                )}
+                {windowedResults.map((result) => (
+                  <ResultRow
+                    key={result.id}
+                    result={result}
+                    drivers={drivers}
+                    driverPrograms={driverPrograms}
+                    onUpdate={handleUpdate}
+                    allResults={sessionResults}
+                    sessionId={session.id}
+                  />
+                ))}
+                {shouldWindow && bottomSpacerHeight > 0 && (
+                  <TableRow style={{ height: `${bottomSpacerHeight}px` }}>
+                    <TableCell colSpan="10" />
+                  </TableRow>
+                )}
+              </>
             )}
           </TableBody>
         </Table>
