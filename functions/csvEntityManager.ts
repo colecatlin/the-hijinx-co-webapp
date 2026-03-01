@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Canonical export column order per entity — keep in sync with entity schemas
+// Canonical export column order per entity — mirrors entity schemas exactly
 const ENTITY_EXPORT_COLUMNS = {
   Driver: [
     'id', 'first_name', 'last_name', 'numeric_id', 'slug', 'date_of_birth',
@@ -29,10 +29,15 @@ const ENTITY_EXPORT_COLUMNS = {
     'created_date', 'updated_date', 'created_by',
   ],
   Series: [
-    'id', 'full_name', 'slug', 'numeric_id',
+    'id', 'name', 'full_name', 'slug', 'numeric_id',
     'discipline', 'geographic_scope', 'sanctioning_body', 'season_year',
-    'status', 'calendar_id',
-    'created_date', 'updated_date', 'created_by',
+    'description', 'status', 'uses_rounds', 'popularity_rank',
+    'derived_competition_level', 'derived_competition_score',
+    'override_competition_level', 'override_reason',
+    'logo_url', 'banner_url', 'website_url', 'contact_email', 'phone',
+    'social_facebook', 'social_instagram', 'social_x', 'social_youtube', 'social_linkedin',
+    'title_sponsor_name', 'title_sponsor_logo_url', 'title_sponsor_url',
+    'is_sample', 'created_date', 'updated_date', 'created_by',
   ],
   Event: [
     'id', 'name', 'numeric_id', 'track_id', 'series_id', 'series_name',
@@ -47,13 +52,18 @@ const ENTITY_EXPORT_COLUMNS = {
     'created_date', 'updated_date', 'created_by',
   ],
   DriverProgram: [
-    'id', 'driver_id', 'series_id', 'series_class_id', 'team_id',
-    'program_type', 'participation_status', 'races_participated',
-    'start_year', 'end_year', 'is_rookie', 'car_number',
+    'id', 'driver_id', 'program_type', 'series_id', 'series_class_id', 'event_id', 'team_id',
+    'start_month', 'start_year', 'end_month', 'end_year',
+    'car_number', 'participation_status', 'races_participated', 'total_series_races',
+    'status', 'is_rookie', 'notes',
     'created_date', 'updated_date', 'created_by',
   ],
   SeriesClass: [
-    'id', 'series_id', 'class_name', 'competition_level', 'active', 'description',
+    'id', 'series_id', 'class_name', 'slug', 'description_summary', 'vehicle_type',
+    'competition_level', 'geographic_scope',
+    'media_score', 'attendance_score', 'purse_score', 'manufacturer_score',
+    'geographic_diversity_score', 'team_budget_score',
+    'notes', 'active', 'is_sample',
     'created_date', 'updated_date', 'created_by',
   ],
   Standings: [
@@ -69,7 +79,8 @@ const ENTITY_EXPORT_COLUMNS = {
   OutletStory: [
     'id', 'title', 'slug', 'subtitle', 'body', 'author', 'author_title',
     'photo_credit', 'primary_category', 'sub_category', 'tags',
-    'cover_image', 'location_city', 'location_state', 'location_country',
+    'cover_image', 'images',
+    'location_city', 'location_state', 'location_country',
     'issue_id', 'featured', 'status', 'published_date', 'scheduled_publish_date',
     'created_date', 'updated_date', 'created_by',
   ],
