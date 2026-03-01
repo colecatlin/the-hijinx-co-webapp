@@ -584,8 +584,47 @@ export default function RegistrationDashboard() {
               )}
             </TabsContent>
 
+            {/* Compliance Tab Content */}
+            <TabsContent value="compliance" className="mt-6">
+              {selectedEvent ? (
+                <ComplianceManager selectedEvent={selectedEvent} />
+              ) : (
+                <Card className="bg-[#171717] border-gray-800">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-400">Select an event to view compliance</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Check In Tab Content */}
+            <TabsContent value="checkIn" className="mt-6">
+              {selectedEvent ? (
+                <CheckInManager selectedEvent={selectedEvent} />
+              ) : (
+                <Card className="bg-[#171717] border-gray-800">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-400">Select an event to check in entries</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Tech Tab Content */}
+            <TabsContent value="tech" className="mt-6">
+              {selectedEvent ? (
+                <TechManager selectedEvent={selectedEvent} user={user} />
+              ) : (
+                <Card className="bg-[#171717] border-gray-800">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-400">Select an event to manage tech inspection</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             {/* Other Tab Contents */}
-            {['checkIn', 'tech', 'results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
+            {['results', 'pointsStandings', 'exports', 'integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
                   <CardContent className="py-12 text-center">
