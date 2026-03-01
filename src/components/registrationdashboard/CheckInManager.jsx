@@ -27,6 +27,8 @@ export default function CheckInManager({ selectedEvent }) {
         ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
         : Promise.resolve([]),
     enabled: !!selectedEvent,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: eventClasses = [] } = useQuery({
@@ -36,16 +38,22 @@ export default function CheckInManager({ selectedEvent }) {
         ? base44.entities.EventClass.filter({ event_id: selectedEvent.id })
         : Promise.resolve([]),
     enabled: !!selectedEvent,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const updateMutation = useMutation({
@@ -71,6 +79,17 @@ export default function CheckInManager({ selectedEvent }) {
     const names = new Set();
     entries.forEach((e) => names.add(getEventClassName(e.series_class_id)));
     return Array.from(names);
+  }, [entries, seriesClasses]);
+
+  // Memoize entries by class
+  const entriesByClass = useMemo(() => {
+    const grouped = {};
+    entries.forEach((e) => {
+      const cls = getEventClassName(e.series_class_id);
+      if (!grouped[cls]) grouped[cls] = [];
+      grouped[cls].push(e);
+    });
+    return grouped;
   }, [entries, seriesClasses]);
 
   const filteredEntries = useMemo(() => {
