@@ -6,6 +6,7 @@ import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import EmptyState from '@/components/shared/EmptyState';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy, ArrowUpDown, Clock } from 'lucide-react';
@@ -18,6 +19,11 @@ export default function StandingsHome() {
   const [sortField, setSortField] = useState('position');
   const [sortDir, setSortDir] = useState(1);
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.filter({ status: 'active' }),
@@ -27,6 +33,31 @@ export default function StandingsHome() {
     queryKey: ['standings'],
     queryFn: () => base44.entities.Standings.list('-total_points', 500),
   });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list(),
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  const isAdmin = user?.role === 'admin';
+
+  const getLatestSessionStatus = (seriesId, seasonYear) => {
+    const relatedEvents = events.filter(e => e.series_id === seriesId && e.season === seasonYear);
+    const relatedSessions = sessions.filter(s => relatedEvents.some(e => e.id === s.event_id));
+    const officialOrLockedSessions = relatedSessions.filter(s => 
+      s.status === 'Official' || s.status === 'Locked'
+    );
+    return officialOrLockedSessions.length > 0;
+  };
+
+  const isStandingsPublic = (standing) => {
+    return isAdmin || getLatestSessionStatus(standing.series_id, standing.season_year);
+  };
 
   const currentYear = new Date().getFullYear().toString();
 
@@ -45,7 +76,7 @@ export default function StandingsHome() {
   }, [entries, activeSeason, selectedSeries]);
 
   const filteredEntries = useMemo(() => {
-    let data = entries.filter(e => e.season_year === activeSeason);
+    let data = entries.filter(e => e.season_year === activeSeason && isStandingsPublic(e));
     if (selectedSeries !== 'all') data = data.filter(e => e.series_id === selectedSeries);
     if (selectedClass !== 'all') data = data.filter(e => e.class_name === selectedClass);
     data.sort((a, b) => {
@@ -55,7 +86,7 @@ export default function StandingsHome() {
       return (aVal - bVal) * sortDir;
     });
     return data;
-  }, [entries, activeSeason, selectedSeries, selectedClass, sortField, sortDir]);
+  }, [entries, activeSeason, selectedSeries, selectedClass, sortField, sortDir, isAdmin, events, sessions]);
 
   const toggleSort = (field) => {
     if (sortField === field) setSortDir(d => d * -1);
@@ -130,23 +161,29 @@ export default function StandingsHome() {
             {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
           </div>
         ) : filteredEntries.length === 0 ? (
-          <EmptyState icon={Trophy} title="No standings data" message="Standings will appear here once entries are added." />
+          <EmptyState icon={Trophy} title="Standings not yet published" message="Standings will appear here once results are finalized." />
         ) : (
-          <div className="overflow-x-auto border border-gray-200">
-            <table className="w-full min-w-[700px]">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <SortHeader field="position">Pos</SortHeader>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Bib #</th>
-                  {selectedSeries === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>}
-                  {selectedClass === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>}
-                  <SortHeader field="total_points">Pts</SortHeader>
-                  <SortHeader field="wins">Wins</SortHeader>
-                  <SortHeader field="podiums">Podiums</SortHeader>
-                  <SortHeader field="events_counted">Starts</SortHeader>
-                </tr>
-              </thead>
+          <>
+            {isAdmin && (
+              <div className="mb-4">
+                <Badge className="bg-gray-700 text-white">Internal Preview</Badge>
+              </div>
+            )}
+            <div className="overflow-x-auto border border-gray-200">
+              <table className="w-full min-w-[700px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <SortHeader field="position">Pos</SortHeader>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Bib #</th>
+                    {selectedSeries === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>}
+                    {selectedClass === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>}
+                    <SortHeader field="total_points">Pts</SortHeader>
+                    <SortHeader field="wins">Wins</SortHeader>
+                    <SortHeader field="podiums">Podiums</SortHeader>
+                    <SortHeader field="events_counted">Starts</SortHeader>
+                  </tr>
+                </thead>
               <tbody>
                 {filteredEntries.map((entry, i) => (
                   <tr key={entry.id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i < 3 ? 'font-medium' : ''}`}>
@@ -180,8 +217,9 @@ export default function StandingsHome() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </PageShell>
