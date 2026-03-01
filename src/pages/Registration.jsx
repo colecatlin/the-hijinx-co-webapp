@@ -111,12 +111,18 @@ export default function Registration() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center py-8"
+          className="text-center py-12 border-t border-gray-200"
         >
-          <p className="text-gray-600 mb-4">Ready to get started?</p>
-          <p className="text-sm text-gray-500">
-            Contact a series organizer or check the Events section for current registration opportunities.
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+            Access your registration dashboard to create and manage your driver profile, teams, and event entries.
           </p>
+          <Link to={createPageUrl('RegistrationDashboard')}>
+            <Button className="bg-black hover:bg-gray-900 text-white px-8 py-3 h-auto text-base">
+              Go to Dashboard
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
         </motion.div>
       </div>
     </PageShell>
