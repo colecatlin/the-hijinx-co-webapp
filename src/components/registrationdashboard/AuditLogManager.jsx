@@ -97,10 +97,13 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }
     queryFn: () => base44.entities.Event.list(),
   });
 
-  const { data: operationLogs = [] } = useQuery({
+  const { data: operationLogs: queryLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.list(),
   });
+
+  // Use provided logs or query logs
+  const operationLogs = providedLogs || queryLogs;
 
   // Compute available seasons
   const seasons = useMemo(() => {
