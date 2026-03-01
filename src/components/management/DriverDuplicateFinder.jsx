@@ -256,10 +256,10 @@ export default function DriverDuplicateFinder({ drivers, open, onOpenChange, onS
                       group.slice(1).map(d => d.id)
                     )
                   }
-                  disabled={deleteMutation.isPending}
+                  disabled={deleteMutation.isPending || merging}
                 >
                   <Copy className="w-3 h-3 mr-2" />
-                  Merge (Delete Other {group.length - 1})
+                  {merging ? 'Merging...' : `Merge (Delete Other ${group.length - 1})`}
                 </Button>
               )}
             </div>
