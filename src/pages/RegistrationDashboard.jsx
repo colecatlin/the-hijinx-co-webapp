@@ -11,6 +11,7 @@ import EntriesManager from '@/components/registrationdashboard/EntriesManager';
 import ComplianceManager from '@/components/registrationdashboard/ComplianceManager';
 import CheckInManager from '@/components/registrationdashboard/CheckInManager';
 import TechManager from '@/components/registrationdashboard/TechManager';
+import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import { motion } from 'framer-motion';
 import {
   Select,
