@@ -349,6 +349,29 @@ export default function SeriesDetail() {
           </div>
         </div>
 
+        {/* Season Selector Bar */}
+        <div className="bg-white border-b border-gray-200 p-6 mb-6 sticky top-0 z-30">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <span className="text-sm font-medium text-gray-600">Season:</span>
+            <Select value={seasonYear} onValueChange={(value) => {
+              const params = new URLSearchParams(searchParams);
+              params.set('seasonYear', value);
+              setSearchParams(params);
+            }}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[2025, 2026, 2027, 2028].map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* History section */}
         <div id="section-history" className="space-y-4 mb-4">
           <SeriesNameHistory series={series} />
