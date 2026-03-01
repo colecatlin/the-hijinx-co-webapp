@@ -429,11 +429,11 @@ export default function RegistrationDashboard() {
 
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
-                {!isAdmin && (
-                  <span className="text-xs text-amber-500 flex items-center gap-1 mr-2">
-                    <Shield className="w-3 h-3" /> Admin access required for actions
-                  </span>
-                )}
+                {!canAdmin && (
+                    <span className="text-xs text-amber-500 flex items-center gap-1 mr-2">
+                      <Shield className="w-3 h-3" /> Admin access required for actions
+                    </span>
+                  )}
                 <Button
                    variant="outline"
                    size="sm"
