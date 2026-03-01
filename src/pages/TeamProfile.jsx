@@ -286,6 +286,128 @@ export default function TeamProfile() {
           </div>
         </div>
 
+        {/* Event Participation Section */}
+        <div id="section-overview-events" className="mb-16">
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Event Participation</h2>
+            
+            {entries.length === 0 ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p>This team has no active event participation.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Active Drivers */}
+                {activeDrivers.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-3">Active Drivers</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {activeDrivers.map(driver => (
+                        <Link
+                          key={driver.id}
+                          to={`${createPageUrl('DriverProfile')}?id=${driver.id}`}
+                          className="px-3 py-1.5 bg-[#00FFDA] text-[#232323] rounded-full text-sm font-medium hover:bg-[#00E6CC] transition-colors"
+                        >
+                          {driver.first_name} {driver.last_name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upcoming Events */}
+                {upcomingEntries.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-3">Upcoming Events</h3>
+                    <div className="space-y-3">
+                      {upcomingEntries.map(({ event, track, count }) => (
+                        <Link
+                          key={event.id}
+                          to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                          className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                                {event.status === 'Live' && (
+                                  <Badge className="bg-red-500 text-white text-xs">Live</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Badge variant="outline" className="text-xs">{count} entries</Badge>
+                              <ExternalLink className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Completed Events */}
+                {completedEntries.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#232323] mb-3">Completed Events</h3>
+                    <div className="space-y-3">
+                      {completedEntries.map(({ event, track, bestPosition }) => (
+                        <Link
+                          key={event.id}
+                          to={`${createPageUrl('EventResults')}?eventId=${event.id}`}
+                          className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                              <p className="text-sm text-gray-600">
+                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {bestPosition && (
+                                <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                  Best: P{bestPosition}
+                                </Badge>
+                              )}
+                              <ExternalLink className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Season Performance */}
+                {results.length > 0 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-[#232323] mb-3">Season Performance</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-gray-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-black text-[#232323]">{seasonStats.wins}</div>
+                        <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Wins</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-black text-[#232323]">{seasonStats.podiums}</div>
+                        <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Podiums</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-black text-[#232323]">{seasonStats.top5}</div>
+                        <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Top 5</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Drivers Section */}
         <div id="section-drivers" className="mb-16">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
