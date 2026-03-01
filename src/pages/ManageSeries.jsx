@@ -286,7 +286,7 @@ export default function ManageSeries() {
               className="pl-10"
             />
           </div>
-          {selectedSeries.length > 0 && (
+          {isAdmin && selectedSeries.length > 0 && (
             <Button 
               variant="destructive" 
               onClick={handleBulkDelete}
@@ -318,12 +318,12 @@ export default function ManageSeries() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="w-12 px-4 py-3">
+                  {isAdmin && <th className="w-12 px-4 py-3">
                     <Checkbox 
                       checked={selectedSeries.length === filteredSeries.length && filteredSeries.length > 0}
                       onCheckedChange={handleSelectAll}
                     />
-                  </th>
+                  </th>}
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Name</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Discipline</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Level</th>
@@ -334,12 +334,12 @@ export default function ManageSeries() {
               <tbody>
                 {filteredSeries.map((s) => (
                   <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3">
+                    {isAdmin && <td className="px-4 py-3">
                       <Checkbox 
                         checked={selectedSeries.includes(s.id)}
                         onCheckedChange={() => handleSelectSeriesItem(s.id)}
                       />
-                    </td>
+                    </td>}
                     <td className="px-4 py-3 font-medium">{s.name}</td>
                     <td className="px-4 py-3 text-gray-600 text-sm">{s.discipline}</td>
                     <td className="px-4 py-3 text-gray-600">{s.competition_level}</td>
@@ -359,7 +359,7 @@ export default function ManageSeries() {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button
+                        {isAdmin && <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete(s.id)}
@@ -371,7 +371,7 @@ export default function ManageSeries() {
                           ) : (
                             <Trash2 className="w-4 h-4" />
                           )}
-                        </Button>
+                        </Button>}
                       </div>
                     </td>
                   </tr>

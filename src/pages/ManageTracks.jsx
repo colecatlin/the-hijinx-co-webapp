@@ -144,7 +144,7 @@ export default function ManageTracks() {
               className="pl-10"
             />
           </div>
-          {selectedTracks.length > 0 && (
+          {isAdmin && selectedTracks.length > 0 && (
             <Button 
               variant="destructive" 
               onClick={handleBulkDelete}
@@ -171,12 +171,12 @@ export default function ManageTracks() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left w-12">
+                  {isAdmin && <th className="px-6 py-3 text-left w-12">
                     <Checkbox 
                       checked={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
                       onCheckedChange={handleSelectAll}
                     />
-                  </th>
+                  </th>}
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -197,12 +197,12 @@ export default function ManageTracks() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTracks.map((track) => (
                   <tr key={track.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    {isAdmin && <td className="px-6 py-4">
                       <Checkbox 
                         checked={selectedTracks.includes(track.id)}
                         onCheckedChange={() => handleSelectTrack(track.id)}
                       />
-                    </td>
+                    </td>}
                     <td className="px-6 py-4">
                       <div className="font-medium">{track.name}</div>
                     </td>
@@ -230,7 +230,7 @@ export default function ManageTracks() {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button
+                        {isAdmin && <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => handleDelete(track)}
@@ -242,7 +242,7 @@ export default function ManageTracks() {
                            ) : (
                              <Trash2 className="w-4 h-4 text-red-600" />
                            )}
-                         </Button>
+                         </Button>}
                       </div>
                     </td>
                   </tr>

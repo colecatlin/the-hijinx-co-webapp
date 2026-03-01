@@ -394,7 +394,7 @@ export default function ManageDrivers() {
               className="pl-10"
             />
           </div>
-          {selectedDrivers.length > 0 && (
+          {isAdmin && selectedDrivers.length > 0 && (
             <Button 
               variant="destructive" 
               onClick={handleBulkDelete}
@@ -422,12 +422,12 @@ export default function ManageDrivers() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left w-12">
+                  {isAdmin && <th className="px-6 py-3 text-left w-12">
                     <Checkbox 
                       checked={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
                       onCheckedChange={handleSelectAll}
                     />
-                  </th>
+                  </th>}
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('name')}>
                     Name <SortIcon field="name" />
                   </th>
@@ -451,12 +451,12 @@ export default function ManageDrivers() {
               <tbody className="divide-y divide-gray-200">
                 {filteredDrivers.map((driver) => (
                   <tr key={driver.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    {isAdmin && <td className="px-6 py-4">
                       <Checkbox 
                         checked={selectedDrivers.includes(driver.id)}
                         onCheckedChange={() => handleSelectDriver(driver.id)}
                       />
-                    </td>
+                    </td>}
                     <td className="px-6 py-4">
                       <div className="font-medium">{driver.first_name} {driver.last_name}</div>
                     </td>
@@ -549,7 +549,7 @@ export default function ManageDrivers() {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button
+                        {isAdmin && <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => handleDelete(driver)}
@@ -561,7 +561,7 @@ export default function ManageDrivers() {
                            ) : (
                              <Trash2 className="w-4 h-4 text-red-600" />
                            )}
-                         </Button>
+                         </Button>}
                       </div>
                     </td>
                   </tr>

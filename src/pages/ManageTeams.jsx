@@ -329,7 +329,7 @@ export default function ManageTeams() {
               className="pl-10"
             />
           </div>
-          {selectedTeams.length > 0 && (
+          {isAdmin && selectedTeams.length > 0 && (
             <Button 
               variant="destructive" 
               onClick={handleBulkDelete}
@@ -357,12 +357,12 @@ export default function ManageTeams() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left w-12">
+                  {isAdmin && <th className="px-6 py-3 text-left w-12">
                     <Checkbox 
                       checked={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
                       onCheckedChange={handleSelectAll}
                     />
-                  </th>
+                  </th>}
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                     Name
                   </th>
@@ -383,12 +383,12 @@ export default function ManageTeams() {
               <tbody className="divide-y divide-gray-200">
                 {filteredTeams.map((team) => (
                   <tr key={team.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    {isAdmin && <td className="px-6 py-4">
                       <Checkbox 
                         checked={selectedTeams.includes(team.id)}
                         onCheckedChange={() => handleSelectTeam(team.id)}
                       />
-                    </td>
+                    </td>}
                     <td className="px-6 py-4">
                       <div className="font-medium">{team.name}</div>
                       <div className="text-sm text-gray-500">{team.slug}</div>
@@ -417,7 +417,7 @@ export default function ManageTeams() {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button
+                        {isAdmin && <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => handleDelete(team)}
@@ -429,7 +429,7 @@ export default function ManageTeams() {
                            ) : (
                              <Trash2 className="w-4 h-4 text-red-600" />
                            )}
-                         </Button>
+                         </Button>}
                       </div>
                     </td>
                   </tr>

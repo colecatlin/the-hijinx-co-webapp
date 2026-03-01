@@ -254,7 +254,7 @@ export default function ManageStories() {
                 </button>
               </div>
 
-              {selectedStories.length > 0 && (
+              {isAdmin && selectedStories.length > 0 && (
                 <Button
                   variant="destructive"
                   onClick={handleBulkDelete}
@@ -293,12 +293,12 @@ export default function ManageStories() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="w-12 px-4 py-3">
+                      {isAdmin && <th className="w-12 px-4 py-3">
                         <Checkbox
                           checked={selectedStories.length === filteredAndSortedStories.length && filteredAndSortedStories.length > 0}
                           onCheckedChange={handleSelectAll}
                         />
-                      </th>
+                      </th>}
                       <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Title</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Author</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Category</th>
@@ -310,12 +310,12 @@ export default function ManageStories() {
                   <tbody>
                     {filteredAndSortedStories.map((story) => (
                       <tr key={story.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3">
+                        {isAdmin && <td className="px-4 py-3">
                           <Checkbox
                             checked={selectedStories.includes(story.id)}
                             onCheckedChange={(checked) => handleSelectStory(story.id, checked)}
                           />
-                        </td>
+                        </td>}
                         <td className="px-4 py-3 font-medium">{story.title}</td>
                         <td className="px-4 py-3 text-gray-600">{story.author || '-'}</td>
                         <td className="px-4 py-3">
@@ -342,13 +342,13 @@ export default function ManageStories() {
                             >
                               <Pencil className="w-4 h-4" />
                             </Button>
-                            <Button
+                            {isAdmin && <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDelete(story.id)}
                             >
                               <Trash2 className="w-4 h-4" />
-                            </Button>
+                            </Button>}
                           </div>
                         </td>
                       </tr>
