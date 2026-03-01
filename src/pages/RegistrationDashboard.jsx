@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import { BurnoutSpinner } from '@/components/shared/BurnoutSpinner';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { motion } from 'framer-motion';
 
 export default function RegistrationDashboard() {
