@@ -14,6 +14,7 @@ import TechManager from '@/components/registrationdashboard/TechManager';
 import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
+import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import { motion } from 'framer-motion';
 import {
   Select,
