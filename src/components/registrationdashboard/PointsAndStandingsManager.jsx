@@ -28,11 +28,15 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClasses = [] } = useQuery({
@@ -42,6 +46,8 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
         ? base44.entities.SeriesClass.filter({ series_id: selectedSeries })
         : Promise.resolve([]),
     enabled: !!selectedSeries,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: pointsConfigs = [] } = useQuery({
@@ -54,6 +60,8 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
           })
         : Promise.resolve([]),
     enabled: !!selectedSeries && !!selectedSeason,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: standings = [] } = useQuery({
@@ -67,16 +75,22 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
           })
         : Promise.resolve([]),
     enabled: !!selectedSeries && !!selectedSeason && !!selectedClass,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allSessions = [] } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allDriverPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
     queryFn: () => base44.entities.DriverProgram.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesClassesAll = [] } = useQuery({
@@ -86,6 +100,8 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
         ? base44.entities.SeriesClass.filter({ series_id: selectedSeries })
         : Promise.resolve([]),
     enabled: !!selectedSeries,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: allResults = [] } = useQuery({
@@ -97,6 +113,8 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
           })
         : Promise.resolve([]),
     enabled: !!selectedSeries && !!selectedSeason,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Data integrity: filter results to match selected event if specified
@@ -134,7 +152,16 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
+
+  // Memoize standing counts for quick access
+  const standingsCounts = useMemo(() => ({
+    total: standings.length,
+    withWins: standings.filter(s => s.wins && s.wins > 0).length,
+    withPodiums: standings.filter(s => s.podiums && s.podiums > 0).length,
+  }), [standings]);
 
   // Data integrity: validate results against DriverProgram and SeriesClass
   const validatedResults = useMemo(() => {
