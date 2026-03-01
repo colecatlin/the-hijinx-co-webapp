@@ -17,6 +17,7 @@ export default function OverviewGrid({
   results,
   operationLogs,
   importLogs,
+  complianceSeverity,
 }) {
   if (!selectedEvent) {
     return (
@@ -30,13 +31,29 @@ export default function OverviewGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
-      <EntriesSummaryCard selectedEvent={selectedEvent} />
-      <ComplianceAlertsCard selectedEvent={selectedEvent} />
-      <ResultsStatusCard selectedEvent={selectedEvent} />
-      <StandingsStatusCard selectedEvent={selectedEvent} dashboardContext={dashboardContext} selectedSeries={selectedSeries} />
-      <SystemAlertsFeed selectedEvent={selectedEvent} dashboardContext={dashboardContext} />
+    <div className="space-y-6">
+      {complianceSeverity === 'warning' && (
+        <Card className="bg-amber-900/30 border-amber-700/50">
+          <CardContent className="py-4">
+            <div className="flex gap-3 items-start">
+              <div className="w-1 h-1 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-amber-400 font-semibold">Compliance Issues Detected</p>
+                <p className="text-xs text-amber-300/80 mt-1">Resolve compliance items before advancing event lifecycle.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
+        <EntriesSummaryCard selectedEvent={selectedEvent} />
+        <ComplianceAlertsCard selectedEvent={selectedEvent} />
+        <ResultsStatusCard selectedEvent={selectedEvent} />
+        <StandingsStatusCard selectedEvent={selectedEvent} dashboardContext={dashboardContext} selectedSeries={selectedSeries} />
+        <SystemAlertsFeed selectedEvent={selectedEvent} dashboardContext={dashboardContext} />
+      </div>
     </div>
   );
 }
