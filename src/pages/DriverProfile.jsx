@@ -223,6 +223,30 @@ export default function DriverProfile() {
     }
   };
 
+  // Split entries into upcoming and past events
+  const upcomingEntries = entries
+    .filter(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      return event && ['Draft', 'Published', 'Live'].includes(event.status);
+    })
+    .map(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      const track = tracks.find(t => t.id === event?.track_id);
+      return { entry, event, track };
+    });
+
+  const pastEntries = entries
+    .filter(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      return event && event.status === 'completed';
+    })
+    .map(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      const track = tracks.find(t => t.id === event?.track_id);
+      const resultData = results.find(r => r.event_id === event?.id);
+      return { entry, event, track, resultData };
+    });
+
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 pt-4">
