@@ -247,7 +247,7 @@ export default function ManageEvents() {
               <SelectItem value="name_desc">Name (Z–A)</SelectItem>
             </SelectContent>
           </Select>
-          {selectedEvents.length > 0 && (
+          {isAdmin && selectedEvents.length > 0 && (
             <Button 
               variant="destructive" 
               onClick={() => {
@@ -276,7 +276,7 @@ export default function ManageEvents() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left w-12">
+                  {isAdmin && <th className="px-6 py-3 text-left w-12">
                     <Checkbox 
                       checked={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
                       onCheckedChange={(checked) => {
@@ -287,7 +287,7 @@ export default function ManageEvents() {
                         }
                       }}
                     />
-                  </th>
+                  </th>}
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
@@ -298,7 +298,7 @@ export default function ManageEvents() {
               <tbody className="divide-y">
                 {filteredEvents.map(event => (
                   <tr key={event.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    {isAdmin && <td className="px-6 py-4">
                       <Checkbox 
                         checked={selectedEvents.includes(event.id)}
                         onCheckedChange={(checked) => {
@@ -309,7 +309,7 @@ export default function ManageEvents() {
                           }
                         }}
                       />
-                    </td>
+                    </td>}
                     <td className="px-6 py-4 font-medium">{event.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{event.series}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
@@ -331,24 +331,24 @@ export default function ManageEvents() {
                       <Button variant="ghost" size="sm" onClick={() => setSelectedEventForEdit(event)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (confirm(`Delete ${event.name}?`)) {
-                              setDeletingEventId(event.id);
-                              deleteMutation.mutate({ id: event.id, event });
-                            }
-                          }}
-                          disabled={deletingEventId === event.id}
-                          className={deletingEventId === event.id ? 'opacity-50 cursor-not-allowed' : ''}
-                        >
-                          {deletingEventId === event.id ? (
-                            <div className="text-gray-400"><BurnoutSpinner /></div>
-                          ) : (
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          )}
-                        </Button>
+                      {isAdmin && <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => {
+                           if (confirm(`Delete ${event.name}?`)) {
+                             setDeletingEventId(event.id);
+                             deleteMutation.mutate({ id: event.id, event });
+                           }
+                         }}
+                         disabled={deletingEventId === event.id}
+                         className={deletingEventId === event.id ? 'opacity-50 cursor-not-allowed' : ''}
+                       >
+                         {deletingEventId === event.id ? (
+                           <div className="text-gray-400"><BurnoutSpinner /></div>
+                         ) : (
+                           <Trash2 className="w-4 h-4 text-red-600" />
+                         )}
+                       </Button>}
                     </td>
                   </tr>
                 ))}
