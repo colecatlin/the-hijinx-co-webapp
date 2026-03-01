@@ -549,6 +549,79 @@ export default function RegistrationDashboard() {
             ))}
           </Tabs>
         </div>
+
+        {/* Modals */}
+        <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+          <AlertDialogContent className="bg-[#262626] border-gray-700">
+            <AlertDialogTitle className="text-white">Publish Official Results</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will mark all results as official and lock them from further editing. This action cannot be undone.
+            </AlertDialogDescription>
+            <div className="flex gap-2 justify-end">
+              <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmPublish} className="bg-green-600 hover:bg-green-700">
+                Confirm Publish
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Import CSV Modal */}
+        {showImportModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <Card className="bg-[#262626] border-gray-700 w-96">
+              <CardHeader>
+                <CardTitle className="text-white">Import CSV</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-400">CSV import functionality coming soon</p>
+                <div className="flex justify-end">
+                  <Button onClick={() => setShowImportModal(false)} className="bg-gray-700 hover:bg-gray-600">
+                    Close
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Sync Timing Modal */}
+        {showSyncModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <Card className="bg-[#262626] border-gray-700 w-96">
+              <CardHeader>
+                <CardTitle className="text-white">Sync Timing Data</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-400">Timing sync functionality coming soon</p>
+                <div className="flex justify-end">
+                  <Button onClick={() => setShowSyncModal(false)} className="bg-gray-700 hover:bg-gray-600">
+                    Close
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Export Modal */}
+        {showExportModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <Card className="bg-[#262626] border-gray-700 w-96">
+              <CardHeader>
+                <CardTitle className="text-white">Export Data</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-400">Export functionality coming soon</p>
+                <div className="flex justify-end">
+                  <Button onClick={() => setShowExportModal(false)} className="bg-gray-700 hover:bg-gray-600">
+                    Close
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </PageShell>
   );
