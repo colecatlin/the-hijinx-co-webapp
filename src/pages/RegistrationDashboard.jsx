@@ -1051,7 +1051,8 @@ export default function RegistrationDashboard() {
                   <AuditLogManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
-                    isAdmin={isAdmin} 
+                    isAdmin={isAdmin}
+                    operationLogs={operationLogs}
                   />
                 </div>
               )}
