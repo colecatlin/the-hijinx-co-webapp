@@ -8,9 +8,10 @@ export async function importDrivers(base44, rows, headers) {
   let skipped = 0;
   const errors = [];
 
-  // Cache for series/classes to avoid duplicates
+  // Cache for series/classes/teams to avoid duplicates
   const seriesCache = new Map();
   const classCache = new Map();
+  const teamCache = new Map();
 
   function normalizeHeader(h) {
     return h.toLowerCase().trim().replace(/[\s\-\/().#]/g, '_').replace(/__+/g, '_');
