@@ -363,6 +363,26 @@ export default function ManageDrivers() {
               className="hidden"
             />
             <Button
+              onClick={async () => {
+                setBackfillingIds(true);
+                try {
+                  const res = await base44.functions.invoke('assignDriverNumericIds');
+                  toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`);
+                  queryClient.invalidateQueries({ queryKey: ['drivers'] });
+                } catch (e) {
+                  toast.error('Failed to assign IDs: ' + e.message);
+                } finally {
+                  setBackfillingIds(false);
+                }
+              }}
+              disabled={backfillingIds}
+              variant="outline"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              <Hash className="w-4 h-4 mr-2" />
+              {backfillingIds ? 'Assigning...' : 'Assign IDs'}
+            </Button>
+            <Button
               onClick={() => setShowDuplicateFinder(true)}
               variant="outline"
               className="border-amber-300 text-amber-700 hover:bg-amber-50"
