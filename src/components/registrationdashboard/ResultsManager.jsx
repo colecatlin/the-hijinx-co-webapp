@@ -239,6 +239,36 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
     [validatedResults, selectedSession]
   );
 
+  // Check if selected session has contributed to standings
+  const sessionContributedToStandings = useMemo(() => {
+    if (!selectedSession || !standingsLastCalculatedAt) return false;
+    
+    const isOfficialOrLocked = selectedSession.status === 'Official' || selectedSession.status === 'Locked';
+    const sessionUpdatedBefore = new Date(selectedSession.updated_date) < new Date(standingsLastCalculatedAt);
+    
+    return isOfficialOrLocked && sessionUpdatedBefore;
+  }, [selectedSession, standingsLastCalculatedAt]);
+
+  const handleEditWithWarning = (callback) => {
+    if (sessionContributedToStandings) {
+      setPendingEdit(callback);
+      setShowStandingsWarning(true);
+    } else {
+      callback();
+    }
+  };
+
+  const handleConfirmEdit = () => {
+    setShowStandingsWarning(false);
+    if (pendingEdit) {
+      pendingEdit();
+      if (onSetStandingsDirty) {
+        onSetStandingsDirty();
+      }
+    }
+    setPendingEdit(null);
+  };
+
   // Show empty state if no event selected
   if (!eventId) {
     return (
@@ -343,6 +373,8 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
                               driverPrograms={driverPrograms}
                               classId={classId}
                               selectedEvent={selectedEvent}
+                              onEditWithWarning={handleEditWithWarning}
+                              sessionContributedToStandings={sessionContributedToStandings}
                             />
                           </TabsContent>
 
@@ -379,6 +411,22 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
           />
         </div>
       </div>
+
+      {/* Standings Impact Warning Modal */}
+      <AlertDialog open={showStandingsWarning} onOpenChange={setShowStandingsWarning}>
+        <AlertDialogContent className="bg-[#262626] border-gray-700">
+          <AlertDialogTitle className="text-white">Standings Impact Warning</AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-400">
+            This session has already contributed to published standings. Editing results will invalidate championship points. Continue?
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmEdit} className="bg-amber-600 hover:bg-amber-700">
+              Proceed
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
