@@ -181,20 +181,33 @@ export async function importDrivers(base44, rows, headers) {
 
     try {
       // Check for duplicate driver
-      const isDuplicate = existingDrivers.some(d =>
+      const existingDriver = existingDrivers.find(d =>
         normalize(d.first_name) === normalize(driverData.first_name) &&
         normalize(d.last_name) === normalize(driverData.last_name)
       );
 
-      if (isDuplicate) {
-        skipped++;
-        continue;
+      let driver;
+      if (existingDriver) {
+        // Update only missing/empty fields on the existing driver
+        const updates = {};
+        for (const [key, val] of Object.entries(driverData)) {
+          if (val !== undefined && val !== '' && (existingDriver[key] === undefined || existingDriver[key] === '' || existingDriver[key] === null)) {
+            updates[key] = val;
+          }
+        }
+        if (Object.keys(updates).length > 0) {
+          await base44.asServiceRole.entities.Driver.update(existingDriver.id, updates);
+          updated++;
+        } else {
+          skipped++;
+        }
+        driver = { ...existingDriver, ...updates };
+      } else {
+        // Create new driver
+        driver = await base44.asServiceRole.entities.Driver.create(driverData);
+        existingDrivers.push(driver);
+        created++;
       }
-
-      // Create driver
-      const driver = await base44.asServiceRole.entities.Driver.create(driverData);
-      existingDrivers.push(driver);
-      created++;
 
       // Get or create series if specified
       const seriesName = getField(row, ['series_name', 'series', 'series_full_name', 'primary_series']);
