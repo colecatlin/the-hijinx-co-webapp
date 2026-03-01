@@ -583,7 +583,7 @@ export default function RegistrationDashboard() {
                   <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'eventBuilder') && (
+              {canTab(dashboardPermissions, 'event_builder') && (
                 <TabsTrigger
                   value="eventBuilder"
                   className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
@@ -591,7 +591,7 @@ export default function RegistrationDashboard() {
                   <Plus className="w-4 h-4 mr-2" /> Event Builder
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'classesSessions') && (
+              {canTab(dashboardPermissions, 'classes_sessions') && (
                 <TabsTrigger
                   value="classesSessions"
                   disabled={!selectedEvent}
@@ -618,7 +618,7 @@ export default function RegistrationDashboard() {
                   <AlertCircle className="w-4 h-4 mr-2" /> Compliance
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'checkIn') && (
+              {canTab(dashboardPermissions, 'checkin') && (
                 <TabsTrigger
                   value="checkIn"
                   disabled={!selectedEvent}
@@ -644,7 +644,7 @@ export default function RegistrationDashboard() {
                   <Flag className="w-4 h-4 mr-2" /> Results
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'pointsStandings') && (
+              {canTab(dashboardPermissions, 'points_standings') && (
                 <TabsTrigger
                   value="pointsStandings"
                   className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
@@ -668,7 +668,7 @@ export default function RegistrationDashboard() {
                   <Plug className="w-4 h-4 mr-2" /> Integrations
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'auditLog') && (
+              {canTab(dashboardPermissions, 'audit_log') && (
                 <TabsTrigger
                   value="auditLog"
                   className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
