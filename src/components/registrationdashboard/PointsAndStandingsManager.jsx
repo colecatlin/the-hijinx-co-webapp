@@ -131,6 +131,43 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     queryFn: () => base44.entities.Driver.list(),
   });
 
+  const { data: allDriverPrograms = [] } = useQuery({
+    queryKey: ['driverPrograms'],
+    queryFn: () => base44.entities.DriverProgram.list(),
+  });
+
+  // Data integrity: validate results against DriverProgram and SeriesClass
+  const validatedResults = useMemo(() => {
+    if (!selectedEvent) return results;
+    
+    const validated = results.filter((result) => {
+      // Rule 2: If result has program_id, validate DriverProgram
+      if (result.program_id) {
+        const program = allDriverPrograms.find((dp) => dp.id === result.program_id);
+        if (!program) {
+          console.warn('Result to DriverProgram mismatch detected.');
+          return false;
+        }
+        if (program.event_id !== selectedEvent.id || program.series_id !== selectedEvent.series_id) {
+          console.warn('Result to DriverProgram mismatch detected.');
+          return false;
+        }
+      }
+
+      // Rule 3: If result has series_class_id, validate it belongs to event's series
+      if (result.series_class_id) {
+        const matchingClass = seriesClassesAll.find((sc) => sc.id === result.series_class_id);
+        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
+          console.warn('Result class mismatch detected.');
+          return false;
+        }
+      }
+
+      return true;
+    });
+    return validated;
+  }, [results, selectedEvent, allDriverPrograms, seriesClassesAll]);
+
   // Get unique seasons from series
   const seasons = useMemo(() => {
     if (!selectedSeries) return [];
@@ -139,12 +176,12 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
       return [{ year: serie.season_year }];
     }
     const uniqueYears = new Set(
-      results
+      validatedResults
         .filter((r) => r.series_id === selectedSeries)
         .map((r) => new Date(r.created_date).getFullYear())
     );
     return Array.from(uniqueYears).sort((a, b) => b - a);
-  }, [selectedSeries, series, results]);
+  }, [selectedSeries, series, validatedResults]);
 
   // Events for selected series
   const seriesEvents = useMemo(() => {
@@ -388,7 +425,7 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
       {selectedSeries && selectedSeason && selectedClass && (
         <StandingsStatus
           standings={standings}
-          results={results}
+          results={validatedResults}
           sessions={validatedSessions}
           selectedClass={selectedClass}
         />
