@@ -308,6 +308,33 @@ export default function RegistrationDashboard() {
     return null;
   }
 
+  if (user.role !== 'admin') {
+    return (
+      <PageShell>
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Shield className="w-5 h-5 text-red-500" /> Access Restricted
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-300">
+                You do not have permission to access the RaceDay Engine.
+              </p>
+              <Button
+                onClick={() => navigate(createPageUrl('Home'))}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                Return to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
