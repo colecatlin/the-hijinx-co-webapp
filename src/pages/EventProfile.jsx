@@ -150,6 +150,38 @@ export default function EventProfile() {
     return types.sort();
   }, [sessions]);
 
+  // Sort sessions according to spec
+  const SESSION_TYPE_ORDER = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
+  const sortedSessions = useMemo(() => {
+    return [...sessions].sort((a, b) => {
+      // 1. By session_type order
+      const aTypeIndex = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
+      const bTypeIndex = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
+      if (aTypeIndex !== bTypeIndex) {
+        return (aTypeIndex >= 0 ? aTypeIndex : SESSION_TYPE_ORDER.length) - (bTypeIndex >= 0 ? bTypeIndex : SESSION_TYPE_ORDER.length);
+      }
+      // 2. By scheduled_time ascending
+      if (a.scheduled_time && b.scheduled_time) {
+        return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+      }
+      if (a.scheduled_time) return -1;
+      if (b.scheduled_time) return 1;
+      // 3. By name ascending as fallback
+      if (a.name && b.name) return a.name.localeCompare(b.name);
+      return 0;
+    });
+  }, [sessions]);
+
+  // Quick stats for sessions
+  const sessionStats = useMemo(() => {
+    const statuses = {};
+    sessions.forEach(s => {
+      const status = (s.status || 'Draft').toLowerCase();
+      statuses[status] = (statuses[status] || 0) + 1;
+    });
+    return statuses;
+  }, [sessions]);
+
   return (
     <PageShell className="bg-white">
       {/* Event Command Header Bar */}
