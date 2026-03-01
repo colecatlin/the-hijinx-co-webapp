@@ -540,83 +540,107 @@ export default function RegistrationDashboard() {
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="bg-[#171717] border border-gray-800 p-1 h-auto flex flex-wrap gap-1">
-              <TabsTrigger
-                value="overview"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="eventBuilder"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Event Builder
-              </TabsTrigger>
-              <TabsTrigger
-                value="classesSessions"
-                disabled={!selectedEvent}
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ClipboardCheck className="w-4 h-4 mr-2" /> Classes & Sessions
-              </TabsTrigger>
-              <TabsTrigger
-                value="entries"
-                disabled={!selectedEvent}
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Users className="w-4 h-4 mr-2" /> Entries
-              </TabsTrigger>
-              <TabsTrigger
-                value="compliance"
-                disabled={!selectedEvent}
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <AlertCircle className="w-4 h-4 mr-2" /> Compliance
-              </TabsTrigger>
-              <TabsTrigger
-                value="checkIn"
-                disabled={!selectedEvent}
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Car className="w-4 h-4 mr-2" /> Check In
-              </TabsTrigger>
-              <TabsTrigger
-                value="tech"
-                disabled={!selectedEvent}
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Wrench className="w-4 h-4 mr-2" /> Tech
-              </TabsTrigger>
-              <TabsTrigger
-                value="results"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <Flag className="w-4 h-4 mr-2" /> Results
-              </TabsTrigger>
-              <TabsTrigger
-                value="pointsStandings"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <Trophy className="w-4 h-4 mr-2" /> Points & Standings
-              </TabsTrigger>
-              <TabsTrigger
-                value="exports"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <FileText className="w-4 h-4 mr-2" /> Exports
-              </TabsTrigger>
-              <TabsTrigger
-                value="integrations"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <Plug className="w-4 h-4 mr-2" /> Integrations
-              </TabsTrigger>
-              <TabsTrigger
-                value="auditLog"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-              >
-                <History className="w-4 h-4 mr-2" /> Audit Log
-              </TabsTrigger>
+              {canTab(dashboardPermissions, 'overview') && (
+                <TabsTrigger
+                  value="overview"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'eventBuilder') && (
+                <TabsTrigger
+                  value="eventBuilder"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Event Builder
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'classesSessions') && (
+                <TabsTrigger
+                  value="classesSessions"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ClipboardCheck className="w-4 h-4 mr-2" /> Classes & Sessions
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'entries') && (
+                <TabsTrigger
+                  value="entries"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Users className="w-4 h-4 mr-2" /> Entries
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'compliance') && (
+                <TabsTrigger
+                  value="compliance"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" /> Compliance
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'checkIn') && (
+                <TabsTrigger
+                  value="checkIn"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Car className="w-4 h-4 mr-2" /> Check In
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'tech') && (
+                <TabsTrigger
+                  value="tech"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Wrench className="w-4 h-4 mr-2" /> Tech
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'results') && (
+                <TabsTrigger
+                  value="results"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Flag className="w-4 h-4 mr-2" /> Results
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'pointsStandings') && (
+                <TabsTrigger
+                  value="pointsStandings"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Trophy className="w-4 h-4 mr-2" /> Points & Standings
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'exports') && (
+                <TabsTrigger
+                  value="exports"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <FileText className="w-4 h-4 mr-2" /> Exports
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'integrations') && (
+                <TabsTrigger
+                  value="integrations"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Plug className="w-4 h-4 mr-2" /> Integrations
+                </TabsTrigger>
+              )}
+              {canTab(dashboardPermissions, 'auditLog') && (
+                <TabsTrigger
+                  value="auditLog"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <History className="w-4 h-4 mr-2" /> Audit Log
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Overview Tab Content */}
