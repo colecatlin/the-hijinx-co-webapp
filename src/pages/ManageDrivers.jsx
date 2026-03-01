@@ -220,6 +220,25 @@ export default function ManageDrivers() {
     }
   };
 
+  const handleBulkApply = async () => {
+    if (!bulkStatus && !bulkProfileStatus && !bulkDiscipline) return;
+    if (!window.confirm(`Apply changes to ${selectedDrivers.length} selected driver(s)?`)) return;
+    setApplyingBulk(true);
+    const updates = {};
+    if (bulkStatus) updates.status = bulkStatus;
+    if (bulkProfileStatus) updates.profile_status = bulkProfileStatus;
+    if (bulkDiscipline) updates.primary_discipline = bulkDiscipline;
+    for (const id of selectedDrivers) {
+      await base44.entities.Driver.update(id, updates);
+    }
+    queryClient.invalidateQueries({ queryKey: ['drivers'] });
+    toast.success(`Updated ${selectedDrivers.length} driver(s)`);
+    setBulkStatus('');
+    setBulkProfileStatus('');
+    setBulkDiscipline('');
+    setApplyingBulk(false);
+  };
+
   const handleEdit = (driver) => {
     setSelectedDriverForEdit(driver);
   };
