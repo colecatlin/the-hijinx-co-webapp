@@ -71,7 +71,16 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
     enabled: !!eventId,
   });
 
-  // Data integrity: filter results to match selected event's series_id
+  const { data: seriesClassesAll = [] } = useQuery({
+    queryKey: ['seriesClassesAll', selectedEvent?.series_id],
+    queryFn: () =>
+      selectedEvent?.series_id
+        ? base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id })
+        : Promise.resolve([]),
+    enabled: !!selectedEvent?.series_id,
+  });
+
+  // Data integrity: filter results and sessions to match selected event
   const results = useMemo(() => {
     if (!selectedEvent) return allResults;
     const filtered = allResults.filter((result) => {
@@ -83,6 +92,24 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
     });
     return filtered;
   }, [allResults, selectedEvent]);
+
+  const validatedSessions = useMemo(() => {
+    if (!selectedEvent) return sessions;
+    const validated = sessions.filter((session) => {
+      if (session.event_id !== selectedEvent.id) {
+        return false;
+      }
+      if (session.series_class_id) {
+        const matchingClass = seriesClassesAll.find((sc) => sc.id === session.series_class_id);
+        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
+          console.warn('Session series_class mismatch detected.');
+          return false;
+        }
+      }
+      return true;
+    });
+    return validated;
+  }, [sessions, selectedEvent, seriesClassesAll]);
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
@@ -158,8 +185,8 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
   }, [events, organizationType, trackId, seriesId, seasonYear]);
 
   const selectedSession = useMemo(
-    () => sessions.find((s) => s.id === sessionId),
-    [sessions, sessionId]
+    () => validatedSessions.find((s) => s.id === sessionId),
+    [validatedSessions, sessionId]
   );
 
   const sessionResults = useMemo(
@@ -231,7 +258,7 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
         seriesList={seriesList}
         filteredEvents={filteredEvents}
         seriesClasses={seriesClasses}
-        sessions={sessions}
+        sessions={validatedSessions}
       />
 
       {/* Main Content */}
@@ -245,36 +272,37 @@ export default function ResultsManager({ selectedEvent, isAdmin }) {
               </CardHeader>
               <CardContent>
                 <Tabs value={entryMode} onValueChange={setEntryMode}>
-                  <TabsList className="bg-[#262626] border border-gray-700 w-full">
-                    <TabsTrigger
-                      value="manual"
-                      className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
-                    >
-                      Manual Entry
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="csv"
-                      className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
-                    >
-                      CSV Upload
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="api"
-                      className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
-                    >
-                      API Sync
-                    </TabsTrigger>
-                  </TabsList>
+                          <TabsList className="bg-[#262626] border border-gray-700 w-full">
+                            <TabsTrigger
+                              value="manual"
+                              className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
+                            >
+                              Manual Entry
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="csv"
+                              className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
+                            >
+                              CSV Upload
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="api"
+                              className="data-[state=active]:bg-gray-700 text-gray-300 flex-1"
+                            >
+                              API Sync
+                            </TabsTrigger>
+                          </TabsList>
 
-                  <TabsContent value="manual" className="mt-4">
-                    <ResultsManualEntry
-                      session={selectedSession}
-                      results={sessionResults}
-                      drivers={drivers}
-                      driverPrograms={driverPrograms}
-                      classId={classId}
-                    />
-                  </TabsContent>
+                          <TabsContent value="manual" className="mt-4">
+                            <ResultsManualEntry
+                              session={selectedSession}
+                              results={sessionResults}
+                              drivers={drivers}
+                              driverPrograms={driverPrograms}
+                              classId={classId}
+                              selectedEvent={selectedEvent}
+                            />
+                          </TabsContent>
 
                   <TabsContent value="csv" className="mt-4">
                     <ResultsCSVUpload
