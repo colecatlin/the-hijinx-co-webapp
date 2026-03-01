@@ -610,6 +610,23 @@ export default function RegistrationDashboard() {
              </div>
            )}
 
+           {/* Authority Center Declaration */}
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="mb-8 bg-gradient-to-r from-amber-950/30 to-amber-900/20 border border-amber-800/40 rounded-lg p-6"
+           >
+             <div className="space-y-3">
+               <div>
+                 <h1 className="text-2xl font-black text-amber-300">Hijinx RaceDay Engine</h1>
+                 <p className="text-lg font-semibold text-amber-200 mt-1">Operational Control Center</p>
+               </div>
+               <p className="text-xs text-amber-200/70 leading-relaxed">
+                 Event lifecycle, session management, results publishing, standings recalculation, and race-day compliance are controlled exclusively through this dashboard.
+               </p>
+             </div>
+           </motion.div>
+
            {/* Header */}
            <motion.div
              initial={{ opacity: 0, y: 20 }}
