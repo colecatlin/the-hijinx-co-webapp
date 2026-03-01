@@ -462,10 +462,10 @@ export default function RegistrationDashboard() {
                   <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!isAdmin}
-                  onClick={handlePublishOfficial}
+                   variant="outline"
+                   size="sm"
+                   disabled={!canAdmin}
+                   onClick={handlePublishOfficial}
                   className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
                 >
                   <Send className="w-4 h-4 mr-1" /> Publish
