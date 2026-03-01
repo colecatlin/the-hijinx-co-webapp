@@ -123,6 +123,40 @@ export default function SeriesDetail() {
   const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
   const pastEvents = events.filter(e => e.status === 'completed' || e.status === 'cancelled');
 
+  // Season-filtered events
+  const seasonEvents = useMemo(() => {
+    return allEvents.filter(e => e.series_id === series?.id && e.season === seasonYear)
+      .sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+  }, [allEvents, series?.id, seasonYear]);
+
+  const tracksMap = useMemo(() => {
+    const map = {};
+    allTracks.forEach(t => { map[t.id] = t; });
+    return map;
+  }, [allTracks]);
+
+  const seasonSessions = useMemo(() => {
+    return sessions.filter(s => seasonEvents.some(e => e.id === s.event_id));
+  }, [sessions, seasonEvents]);
+
+  const officialSessions = useMemo(() => {
+    return seasonSessions.filter(s => ['Official', 'Locked'].includes(s.status));
+  }, [seasonSessions]);
+
+  const seasonResults = useMemo(() => {
+    return results.filter(r => seasonEvents.some(e => e.id === r.event_id));
+  }, [results, seasonEvents]);
+
+  const activeClassName = selectedClassName || (activeClasses[0]?.class_name || '');
+
+  const seasonStandings = useMemo(() => {
+    return standings.filter(s => 
+      s.series_id === series?.id && 
+      s.season_year === seasonYear && 
+      s.class_name === activeClassName
+    ).sort((a, b) => a.position - b.position).slice(0, 10);
+  }, [standings, series?.id, seasonYear, activeClassName]);
+
   return (
     <PageShell className="bg-white">
       {series.banner_url && (
