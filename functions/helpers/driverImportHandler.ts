@@ -104,6 +104,40 @@ export async function importDrivers(base44, rows, headers) {
     }
   }
 
+  // Get or create a Team record
+  async function getOrCreateTeam(teamName, city, state, country) {
+    if (!teamName) return null;
+
+    const key = normalize(teamName);
+    if (teamCache.has(key)) {
+      return teamCache.get(key);
+    }
+
+    try {
+      const existing = await base44.asServiceRole.entities.Team.filter({});
+      const found = existing.find(t => normalize(t.name) === key);
+
+      if (found) {
+        teamCache.set(key, found);
+        return found;
+      }
+
+      const newTeam = await base44.asServiceRole.entities.Team.create({
+        name: teamName,
+        headquarters_city: city || '',
+        headquarters_state: state || '',
+        country: country || '',
+        status: 'Active',
+      });
+
+      teamCache.set(key, newTeam);
+      return newTeam;
+    } catch (e) {
+      console.error(`Failed to get/create team "${teamName}": ${e.message}`);
+      return null;
+    }
+  }
+
   // Map CSV row to driver data
   function mapDriverRow(row) {
     const firstName = getField(row, ['first_name', 'firstname', 'fname']);
