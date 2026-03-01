@@ -3,12 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Flag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-export default function ResultsStatusCard({ sessions }) {
+export default function ResultsStatusCard({ sessions = [] }) {
+  // Handle both old status values and new enum values
+  const normalizeStatus = (status) => {
+    const statusMap = {
+      'Draft': 'draft',
+      'Provisional': 'provisional',
+      'Official': 'official',
+      'Locked': 'locked',
+    };
+    return statusMap[status] || status?.toLowerCase() || 'draft';
+  };
+
   const sessionsByStatus = {
-    draft: sessions?.filter(s => s.status === 'draft').length || 0,
-    provisional: sessions?.filter(s => s.status === 'provisional').length || 0,
-    official: sessions?.filter(s => s.status === 'official').length || 0,
-    locked: sessions?.filter(s => s.status === 'locked').length || 0,
+    draft: sessions.filter(s => normalizeStatus(s.status) === 'draft').length || 0,
+    provisional: sessions.filter(s => normalizeStatus(s.status) === 'provisional').length || 0,
+    official: sessions.filter(s => normalizeStatus(s.status) === 'official').length || 0,
+    locked: sessions.filter(s => normalizeStatus(s.status) === 'locked').length || 0,
   };
 
   const rows = [
