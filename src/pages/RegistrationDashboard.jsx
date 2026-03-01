@@ -674,8 +674,13 @@ export default function RegistrationDashboard() {
               />
             </TabsContent>
 
+            {/* Exports Tab Content */}
+            <TabsContent value="exports" className="mt-6">
+              <ExportsManager isAdmin={isAdmin} />
+            </TabsContent>
+
             {/* Other Tab Contents */}
-            {['exports', 'integrations', 'auditLog'].map((tab) => (
+            {['integrations', 'auditLog'].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-6">
                 <Card className="bg-[#171717] border-gray-800">
                   <CardHeader>
