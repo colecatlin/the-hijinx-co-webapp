@@ -376,9 +376,12 @@ export default function RegistrationDashboard() {
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
         {/* Sticky Top Summary Bar */}
-        <div className="sticky top-0 z-50 bg-[#171717] border-b border-gray-800 px-6 py-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-wrap items-center gap-4">
+         <div className="sticky top-0 z-50 bg-[#171717] border-b border-gray-800 px-6 py-4">
+           <div className="max-w-7xl mx-auto">
+             {(authLoading || userLoading) && (
+               <div className="text-xs text-gray-500 mb-3">Loading permissions…</div>
+             )}
+             <div className="flex flex-wrap items-center gap-4">
               {/* Organization Type Selector */}
               <div className="flex items-center gap-2">
                 <label className="text-xs text-gray-400 uppercase tracking-wide">Type</label>
@@ -466,56 +469,56 @@ export default function RegistrationDashboard() {
 
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
-                <Button
-                     variant="outline"
-                     size="sm"
-                     disabled={!canAction(dashboardPermissions, 'create_event')}
-                     onClick={handleCreateEvent}
-                     title={!canAction(dashboardPermissions, 'create_event') ? 'No access for this role' : ''}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                {canAction(dashboardPermissions, 'create_event') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCreateEvent}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                   >
                     <Plus className="w-4 h-4 mr-1" /> Create Event
                   </Button>
+                )}
+                {canAction(dashboardPermissions, 'import_csv') && (
                   <Button
-                     variant="outline"
-                     size="sm"
-                     disabled={!canAction(dashboardPermissions, 'import_csv')}
-                     onClick={() => setShowImportModal(true)}
-                     title={!canAction(dashboardPermissions, 'import_csv') ? 'No access for this role' : ''}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImportModal(true)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                   >
                     <Upload className="w-4 h-4 mr-1" /> Import CSV
                   </Button>
+                )}
+                {canAction(dashboardPermissions, 'sync_timing') && (
                   <Button
-                     variant="outline"
-                     size="sm"
-                     disabled={!canAction(dashboardPermissions, 'sync_timing')}
-                     onClick={() => setShowSyncModal(true)}
-                     title={!canAction(dashboardPermissions, 'sync_timing') ? 'No access for this role' : ''}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSyncModal(true)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                   >
                     <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
                   </Button>
+                )}
+                {canAction(dashboardPermissions, 'publish_official') && (
                   <Button
-                     variant="outline"
-                     size="sm"
-                     disabled={!canAction(dashboardPermissions, 'publish_official')}
-                     onClick={handlePublishOfficial}
-                     title={!canAction(dashboardPermissions, 'publish_official') ? 'No access for this role' : ''}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePublishOfficial}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                   >
                     <Send className="w-4 h-4 mr-1" /> Publish
                   </Button>
+                )}
+                {canAction(dashboardPermissions, 'export') && (
                   <Button
-                     variant="outline"
-                     size="sm"
-                     disabled={!canAction(dashboardPermissions, 'export')}
-                     onClick={() => setShowExportModal(true)}
-                     title={!canAction(dashboardPermissions, 'export') ? 'No access for this role' : ''}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExportModal(true)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                   >
                     <Download className="w-4 h-4 mr-1" /> Export
                   </Button>
+                )}
               </div>
             </div>
           </div>
