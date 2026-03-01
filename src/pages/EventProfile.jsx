@@ -152,6 +152,33 @@ export default function EventProfile() {
 
   return (
     <PageShell className="bg-white">
+      {/* Event Command Header Bar */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-gray-600 truncate">
+              {event.name} • {track?.name || 'N/A'} • {event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'TBA'}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link to={`${createPageUrl('EventResults')}?eventId=${eventId}`}>
+              <Button variant="outline" size="sm" className="text-xs">View Results</Button>
+            </Link>
+            {isAuthenticated && (
+              <Link to={racedayUrl}>
+                <Button 
+                  variant={user?.role === 'admin' ? 'default' : 'outline'} 
+                  size="sm" 
+                  className="text-xs"
+                >
+                  {user?.role === 'admin' ? 'Manage RaceDay' : 'Staff Dashboard'}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 pt-4 pb-0">
         <Link to={createPageUrl('EventDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
           ← Back to Events
