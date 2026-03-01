@@ -167,8 +167,8 @@ export default function OperationLogsViewer() {
                     </div>
 
                     <div className="text-xs text-gray-500">
-                      <p>{format(new Date(log.created_date), 'MMM d, yyyy')}</p>
-                      <p>{format(new Date(log.created_date), 'h:mm a')}</p>
+                      <p>{formatInTimeZone(new Date(log.created_date), 'America/Chicago', 'MMM d, yyyy')}</p>
+                      <p>{formatInTimeZone(new Date(log.created_date), 'America/Chicago', 'h:mm a')} CST</p>
                     </div>
 
                     <div className="flex gap-1 justify-end">
