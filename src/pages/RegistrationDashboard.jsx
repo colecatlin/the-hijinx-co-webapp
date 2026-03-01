@@ -156,7 +156,12 @@ export default function RegistrationDashboard() {
   }, [filteredEvents, eventId]);
 
   const handleCreateEvent = () => {
+    setEditingEventId('');
     setActiveTab('eventBuilder');
+  };
+
+  const handleEventCreated = (newEventId) => {
+    setEditingEventId(newEventId);
   };
 
   if (authLoading || userLoading) {
