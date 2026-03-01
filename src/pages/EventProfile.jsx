@@ -360,33 +360,235 @@ export default function EventProfile() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <section id="section-sessions" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Sessions</h2>
-            {sessions.length > 0 ? (
-              <div className="space-y-3">
-                {sessions.map(session => (
-                  <div key={session.id} className="border border-gray-200 p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-bold">{session.name}</div>
-                        <div className="text-sm text-gray-600">{session.session_type}</div>
+        {/* Classes Section */}
+        {event.series_id ? (
+          <div className="mb-6">
+            <section className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Racing Classes</h2>
+              {seriesClasses.length === 0 ? (
+                <p className="text-gray-500 text-sm">No classes defined for this series yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {seriesClasses.map(cls => (
+                    <div key={cls.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
+                      <div className="mb-3">
+                        <div className="font-semibold text-[#232323] mb-2">{cls.class_name}</div>
+                        {cls.vehicle_type && <p className="text-xs text-gray-500">Vehicle: {cls.vehicle_type}</p>}
                       </div>
-                      <Badge className={`${
-                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        session.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {session.status}
-                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs"
+                        onClick={() => {
+                          setSelectedClassName(cls.class_name);
+                          const element = document.getElementById('section-sessions');
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }}
+                      >
+                        Jump to Sessions
+                      </Button>
                     </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        ) : (
+          <div className="mb-6">
+            <section className="bg-white border border-gray-200 p-8">
+              <p className="text-gray-500 text-sm">Classes for this event are not linked to a series yet.</p>
+            </section>
+          </div>
+        )}
+
+        {/* Sessions Schedule Section */}
+        <div className="space-y-4 mb-6">
+          <section id="section-sessions" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Sessions Schedule</h2>
+            
+            {sessions.length > 0 && (
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                {seriesClasses.length > 0 && (
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-600 font-medium mb-2 block">Filter by Class</label>
+                    <Select value={selectedClassName} onValueChange={setSelectedClassName}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All sessions" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>All sessions</SelectItem>
+                        {seriesClasses.map(cls => (
+                          <SelectItem key={cls.id} value={cls.class_name}>
+                            {cls.class_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
+                )}
+                <div className="flex-1">
+                  <label className="text-xs text-gray-600 font-medium mb-2 block">Filter by Type</label>
+                  <Select value={selectedSessionType} onValueChange={setSelectedSessionType}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {sessionTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {filteredSessions.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Time</th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Type</th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Name</th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Status</th>
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSessions.map(session => (
+                      <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-2 text-xs">
+                          {session.scheduled_time ? format(parseISO(session.scheduled_time), 'HH:mm') : 'TBA'}
+                        </td>
+                        <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
+                        <td className="py-3 px-2">{session.name}</td>
+                        <td className="py-3 px-2">
+                          <Badge className={`${
+                            session.status === 'Official' || session.status === 'Locked' ? 'bg-green-100 text-green-700' :
+                            session.status === 'completed' ? 'bg-gray-100 text-gray-700' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {session.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
+                              <Button variant="ghost" size="sm" className="text-xs h-7">View</Button>
+                            </Link>
+                            {isAuthenticated && (
+                              <Link to={`${racedayUrl}&tab=results`}>
+                                <Button variant="ghost" size="sm" className="text-xs h-7">Manage</Button>
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <p className="text-gray-500">No sessions scheduled yet.</p>
+              <p className="text-gray-500 text-sm">No sessions match the selected filters.</p>
             )}
           </section>
+        </div>
+
+        {/* Results Coverage Section */}
+        <div className="mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Results Coverage</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{sessions.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Total Sessions</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{officialSessions.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Official/Locked</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">{allResults.length}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Results Rows</div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-black text-[#232323]">
+                  {sessions.length > 0 ? Math.round((officialSessions.length / sessions.length) * 100) : 0}%
+                </div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">Coverage</div>
+              </div>
+            </div>
+            {isAuthenticated && (
+              <Link to={`${racedayUrl}&tab=results`}>
+                <Button variant="outline">Open Results Console</Button>
+              </Link>
+            )}
+          </section>
+        </div>
+
+        {/* Standings Preview Section */}
+        {event.series_id && (
+          <div className="mb-6">
+            <section className="bg-white border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-[#232323] mb-6">Standings Preview</h2>
+              {eventStandings.length === 0 ? (
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-sm">Standings not calculated yet for this season.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto mb-4">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-2 font-semibold text-gray-600">#</th>
+                          <th className="text-left py-3 px-2 font-semibold text-gray-600">Driver</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-600">Points</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventStandings.map(stand => (
+                          <tr key={stand.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-2 font-semibold text-[#232323]">{stand.position}</td>
+                            <td className="py-3 px-2 font-medium text-[#232323]">{stand.driver_name || 'N/A'}</td>
+                            <td className="py-3 px-2 text-right font-semibold">{stand.total_points}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link to={`${createPageUrl('StandingsHome')}?seriesId=${event.series_id}&seasonYear=${event.season}`}>
+                      <Button variant="outline" size="sm">View Standings</Button>
+                    </Link>
+                    {isAuthenticated && (
+                      <Link to={`${racedayUrl}&tab=pointsAndStandings`}>
+                        <Button variant="outline" size="sm">Manage Points</Button>
+                      </Link>
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <section id="section-results" className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Submit Results</h2>
+            <EventResultsSubmissionForm eventName={event.name} eventDate={event.event_date} />
+          </section>
+          <div className="bg-white border border-gray-200 p-8">
+            <h2 className="text-2xl font-bold text-[#232323] mb-6">Official Results & Standings</h2>
+            <ResultsPanel eventId={eventId} seriesName={event.series} />
+          </div>
+        </div>
 
           <section id="section-results" className="space-y-8">
             <div className="bg-white border border-gray-200 p-8">
