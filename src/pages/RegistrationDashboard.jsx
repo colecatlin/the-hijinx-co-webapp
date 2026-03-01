@@ -194,7 +194,27 @@ export default function RegistrationDashboard() {
     return events.find((e) => e.id === eventId);
   }, [events, eventId]);
 
+  const selectedTrack = useMemo(() => {
+    if (organizationType === 'track' && organizationId) {
+      return tracks.find((t) => t.id === organizationId);
+    }
+    if (selectedEvent?.track_id) {
+      return tracks.find((t) => t.id === selectedEvent.track_id);
+    }
+    return null;
+  }, [organizationType, organizationId, selectedEvent, tracks]);
+
   const isAdmin = user?.role === 'admin';
+
+  // Update URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (organizationType) params.set('orgType', organizationType);
+    if (organizationId) params.set('orgId', organizationId);
+    if (seasonYear) params.set('seasonYear', seasonYear);
+    if (eventId) params.set('eventId', eventId);
+    setSearchParams(params, { replace: true });
+  }, [organizationType, organizationId, seasonYear, eventId, setSearchParams]);
 
   useEffect(() => {
     if (authLoading === false && !isAuthenticated) {
