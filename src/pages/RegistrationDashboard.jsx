@@ -951,11 +951,16 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'audit_log') && activeTab === 'auditLog' && (
-                <AuditLogManager 
-                  dashboardContext={dashboardContext} 
-                  dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin} 
-                />
+                <div className="space-y-6">
+                  {isAdmin && selectedEvent && (
+                    <EdgeCaseLab selectedEvent={selectedEvent} isAdmin={isAdmin} />
+                  )}
+                  <AuditLogManager 
+                    dashboardContext={dashboardContext} 
+                    dashboardPermissions={dashboardPermissions}
+                    isAdmin={isAdmin} 
+                  />
+                </div>
               )}
             </div>
           </Tabs>
