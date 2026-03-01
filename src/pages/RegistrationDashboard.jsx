@@ -1023,6 +1023,7 @@ export default function RegistrationDashboard() {
                   standingsDirty={standingsDirty}
                   onClearDirty={() => setStandingsDirty(false)}
                   onStandingsCalculated={() => setStandingsLastCalculatedAt(new Date().toISOString())}
+                  sessions={sessions}
                 />
               )}
 
