@@ -439,19 +439,60 @@ export default function ManageDrivers() {
             />
           </div>
           {isAdmin && selectedDrivers.length > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={handleBulkDelete}
-              disabled={bulkDeleteMutation.isPending}
-              className={bulkDeleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-            >
-              {bulkDeleteMutation.isPending ? (
-                <BurnoutSpinner />
-              ) : (
-                <Trash2 className="w-4 h-4 mr-2" />
-              )}
-              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedDrivers.length}`}
-            </Button>
+            <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg flex-wrap">
+              <span className="text-xs font-semibold text-blue-700 whitespace-nowrap">{selectedDrivers.length} selected</span>
+              <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue placeholder="Status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Part Time">Part Time</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={bulkProfileStatus} onValueChange={setBulkProfileStatus}>
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue placeholder="Profile..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="live">Live</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={bulkDiscipline} onValueChange={setBulkDiscipline}>
+                <SelectTrigger className="w-36 h-8 text-xs">
+                  <SelectValue placeholder="Discipline..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Off Road">Off Road</SelectItem>
+                  <SelectItem value="Snowmobile">Snowmobile</SelectItem>
+                  <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
+                  <SelectItem value="Road Racing">Road Racing</SelectItem>
+                  <SelectItem value="Rallycross">Rallycross</SelectItem>
+                  <SelectItem value="Drag Racing">Drag Racing</SelectItem>
+                  <SelectItem value="Mixed">Mixed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+                onClick={handleBulkApply}
+                disabled={applyingBulk || (!bulkStatus && !bulkProfileStatus && !bulkDiscipline)}
+              >
+                {applyingBulk ? 'Applying...' : 'Apply'}
+              </Button>
+              <Button 
+                variant="destructive"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleteMutation.isPending}
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
           )}
         </div>
 
