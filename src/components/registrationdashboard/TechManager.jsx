@@ -733,7 +733,8 @@ export default function TechManager({ selectedEvent, user, canAction }) {
             </CardContent>
           </Card>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
