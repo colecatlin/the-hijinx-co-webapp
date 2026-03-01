@@ -466,56 +466,56 @@ export default function RegistrationDashboard() {
 
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
-                {!canAction(dashboardPermissions, 'createEvent') && (
-                    <span className="text-xs text-amber-500 flex items-center gap-1 mr-2">
-                      <Shield className="w-3 h-3" /> Limited access
-                    </span>
-                  )}
                 <Button
-                   variant="outline"
-                   size="sm"
-                   disabled={!canAction(dashboardPermissions, 'createEvent')}
-                   onClick={handleCreateEvent}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Create Event
-                </Button>
-                <Button
-                   variant="outline"
-                   size="sm"
-                   disabled={!canAction(dashboardPermissions, 'importCSV')}
-                   onClick={() => setShowImportModal(true)}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
-                >
-                  <Upload className="w-4 h-4 mr-1" /> Import CSV
-                </Button>
-                <Button
-                   variant="outline"
-                   size="sm"
-                   disabled={!canAction(dashboardPermissions, 'syncTiming')}
-                   onClick={() => setShowSyncModal(true)}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
-                </Button>
-                <Button
-                   variant="outline"
-                   size="sm"
-                   disabled={!canAction(dashboardPermissions, 'publishResults')}
-                   onClick={handlePublishOfficial}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
-                >
-                  <Send className="w-4 h-4 mr-1" /> Publish
-                </Button>
-                <Button
-                   variant="outline"
-                   size="sm"
-                   disabled={!canAction(dashboardPermissions, 'exportData')}
-                   onClick={() => setShowExportModal(true)}
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
-                >
-                  <Download className="w-4 h-4 mr-1" /> Export
-                </Button>
+                     variant="outline"
+                     size="sm"
+                     disabled={!canAction(dashboardPermissions, 'create_event')}
+                     onClick={handleCreateEvent}
+                     title={!canAction(dashboardPermissions, 'create_event') ? 'No access for this role' : ''}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Create Event
+                  </Button>
+                  <Button
+                     variant="outline"
+                     size="sm"
+                     disabled={!canAction(dashboardPermissions, 'import_csv')}
+                     onClick={() => setShowImportModal(true)}
+                     title={!canAction(dashboardPermissions, 'import_csv') ? 'No access for this role' : ''}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4 mr-1" /> Import CSV
+                  </Button>
+                  <Button
+                     variant="outline"
+                     size="sm"
+                     disabled={!canAction(dashboardPermissions, 'sync_timing')}
+                     onClick={() => setShowSyncModal(true)}
+                     title={!canAction(dashboardPermissions, 'sync_timing') ? 'No access for this role' : ''}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
+                  </Button>
+                  <Button
+                     variant="outline"
+                     size="sm"
+                     disabled={!canAction(dashboardPermissions, 'publish_official')}
+                     onClick={handlePublishOfficial}
+                     title={!canAction(dashboardPermissions, 'publish_official') ? 'No access for this role' : ''}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4 mr-1" /> Publish
+                  </Button>
+                  <Button
+                     variant="outline"
+                     size="sm"
+                     disabled={!canAction(dashboardPermissions, 'export')}
+                     onClick={() => setShowExportModal(true)}
+                     title={!canAction(dashboardPermissions, 'export') ? 'No access for this role' : ''}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+                  >
+                    <Download className="w-4 h-4 mr-1" /> Export
+                  </Button>
               </div>
             </div>
           </div>
