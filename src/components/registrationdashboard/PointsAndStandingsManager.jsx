@@ -69,7 +69,7 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     enabled: !!selectedSeries && !!selectedSeason && !!selectedClass,
   });
 
-  const { data: sessions: allSessions = [] } = useQuery({
+  const { data: allSessions = [] } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list(),
   });
@@ -125,11 +125,6 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent }) {
     });
     return validated;
   }, [allSessions, selectedEventId, selectedEvent, seriesClassesAll]);
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
-  });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
