@@ -477,14 +477,23 @@ export default function RegistrationDashboard() {
                 <Users className="w-4 h-4 mr-2" /> Entries
               </TabsTrigger>
               <TabsTrigger
+                value="compliance"
+                disabled={!selectedEvent}
+                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <AlertCircle className="w-4 h-4 mr-2" /> Compliance
+              </TabsTrigger>
+              <TabsTrigger
                 value="checkIn"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                disabled={!selectedEvent}
+                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Car className="w-4 h-4 mr-2" /> Check In
               </TabsTrigger>
               <TabsTrigger
                 value="tech"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                disabled={!selectedEvent}
+                className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Wrench className="w-4 h-4 mr-2" /> Tech
               </TabsTrigger>
