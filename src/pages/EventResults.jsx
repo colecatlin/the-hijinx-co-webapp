@@ -6,6 +6,7 @@ import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
 
 const SESSION_ORDER = ['Practice', 'Qualifying', 'Heat 1', 'Heat 2', 'Heat 3', 'Heat 4', 'LCQ', 'Final'];
@@ -14,6 +15,11 @@ export default function EventResults() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get('id');
   const [activeSession, setActiveSession] = useState(null);
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -30,6 +36,12 @@ export default function EventResults() {
     enabled: !!eventId,
   });
 
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions-event', eventId],
+    queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
+    enabled: !!eventId,
+  });
+
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers-results'],
     queryFn: () => base44.entities.Driver.list(),
@@ -42,15 +54,30 @@ export default function EventResults() {
     enabled: results.length > 0,
   });
 
-  const sessionTypes = [...new Set(results.map(r => r.session_type || 'Final'))].sort(
-    (a, b) => SESSION_ORDER.indexOf(a) - SESSION_ORDER.indexOf(b)
+  const publicSessionStatuses = ['Provisional', 'Official', 'Locked'];
+  const isAdmin = user?.role === 'admin';
+
+  const visibleSessions = sessions.filter(s => 
+    isAdmin || publicSessionStatuses.includes(s.status)
   );
+
+  const sessionTypes = [...new Set(
+    results
+      .filter(r => visibleSessions.some(s => s.id === r.session_id) || !r.session_id)
+      .map(r => r.session_type || 'Final')
+  )].sort((a, b) => SESSION_ORDER.indexOf(a) - SESSION_ORDER.indexOf(b));
+
   const hasMultipleSessions = sessionTypes.length > 1;
   const currentSession = activeSession || sessionTypes[sessionTypes.length - 1] || null;
 
   const displayedResults = hasMultipleSessions
     ? results.filter(r => (r.session_type || 'Final') === currentSession)
     : results;
+
+  const getSessionStatus = (sessionType) => {
+    const session = sessions.find(s => s.session_type === sessionType && visibleSessions.includes(s));
+    return session?.status;
+  };
 
   const getDriverName = (dId) => {
     const d = drivers.find(d => d.id === dId);
@@ -114,22 +141,42 @@ export default function EventResults() {
             {/* Session toggle for multi-session events */}
             {hasMultipleSessions && (
               <div className="flex flex-wrap gap-2 mb-5">
-                {sessionTypes.map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setActiveSession(type)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                      currentSession === type
-                        ? 'bg-[#232323] text-white border-[#232323]'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                    }`}
-                  >
-                    {type}
-                    <span className="ml-1 text-[10px] opacity-60">
-                      ({results.filter(r => (r.session_type || 'Final') === type).length})
-                    </span>
-                  </button>
-                ))}
+                {sessionTypes.map(type => {
+                  const sessionStatus = getSessionStatus(type);
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => setActiveSession(type)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors flex items-center gap-2 ${
+                        currentSession === type
+                          ? 'bg-[#232323] text-white border-[#232323]'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      {type}
+                      <span className="ml-1 text-[10px] opacity-60">
+                        ({results.filter(r => (r.session_type || 'Final') === type).length})
+                      </span>
+                      {isAdmin && sessionStatus && (
+                        <Badge variant="outline" className="ml-1 h-4 text-[9px] px-1 py-0">{sessionStatus}</Badge>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {currentSession && (
+              <div className="mb-4">
+                {getSessionStatus(currentSession) === 'Provisional' && (
+                  <div className="mb-3">
+                    <Badge className="bg-orange-100 text-orange-800">Provisional Results</Badge>
+                  </div>
+                )}
+                {getSessionStatus(currentSession) === 'Locked' && (
+                  <div className="mb-3">
+                    <Badge className="bg-gray-200 text-gray-700">Finalized</Badge>
+                  </div>
+                )}
               </div>
             )}
             <div className="overflow-x-auto border border-gray-200">
