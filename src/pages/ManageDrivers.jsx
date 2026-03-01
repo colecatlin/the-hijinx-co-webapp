@@ -41,6 +41,10 @@ export default function ManageDrivers() {
   const [sortDir, setSortDir] = useState('desc');
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
   const [backfillingIds, setBackfillingIds] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkProfileStatus, setBulkProfileStatus] = useState('');
+  const [bulkDiscipline, setBulkDiscipline] = useState('');
+  const [applyingBulk, setApplyingBulk] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
