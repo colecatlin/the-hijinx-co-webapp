@@ -14,7 +14,7 @@ import {
 import { AlertCircle, FileText } from 'lucide-react';
 import EntryDetailDrawer from './EntryDetailDrawer';
 
-export default function ComplianceManager({ selectedEvent }) {
+export default function ComplianceManager({ selectedEvent, onComplianceSeverityChange }) {
   const [classFilter, setClassFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
@@ -57,9 +57,9 @@ export default function ComplianceManager({ selectedEvent }) {
     return seriesClass?.class_name || 'Unknown';
   };
 
-  // Compute compliance issues
+  // Compute compliance issues and severity
   const complianceData = useMemo(() => {
-    if (!entries.length) return { missingWaivers: 0, expiredLicenses: 0, duplicates: 0, missingTransponders: 0, issues: [] };
+    if (!entries.length) return { missingWaivers: 0, expiredLicenses: 0, duplicates: 0, missingTransponders: 0, issues: [], severity: 'clear' };
 
     const today = new Date().toISOString().split('T')[0];
     const issues = [];
@@ -137,14 +137,25 @@ export default function ComplianceManager({ selectedEvent }) {
       }
     });
 
+    const totalIssues = missingWaivers + expiredLicenses + duplicateCarNumbers.size + missingTransponders;
+    const severity = totalIssues > 0 ? 'warning' : 'clear';
+
     return {
       missingWaivers,
       expiredLicenses,
       duplicates: duplicateCarNumbers.size,
       missingTransponders,
       issues: uniqueIssues,
+      severity,
     };
   }, [entries, drivers, seriesClasses]);
+
+  // Notify parent of compliance severity changes
+  React.useEffect(() => {
+    if (onComplianceSeverityChange) {
+      onComplianceSeverityChange(complianceData.severity);
+    }
+  }, [complianceData.severity, onComplianceSeverityChange]);
 
   // Filter issues
   const filteredIssues = useMemo(() => {
