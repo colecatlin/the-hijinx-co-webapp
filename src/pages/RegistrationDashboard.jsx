@@ -18,6 +18,7 @@ import PointsAndStandingsManager from '@/components/registrationdashboard/Points
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
+import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import { motion } from 'framer-motion';
 import {
   Select,
