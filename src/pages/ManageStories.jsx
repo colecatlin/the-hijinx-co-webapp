@@ -37,6 +37,9 @@ export default function ManageStories() {
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+
   const { data: stories = [], isLoading } = useQuery({
     queryKey: ['stories'],
     queryFn: () => base44.entities.OutletStory.list('-created_date'),

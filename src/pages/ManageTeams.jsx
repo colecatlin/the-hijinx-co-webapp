@@ -33,6 +33,9 @@ export default function ManageTeams() {
   const [selectedTeams, setSelectedTeams] = useState([]);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+
   // Support deep-link: ?teamId=xxx opens that team directly
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

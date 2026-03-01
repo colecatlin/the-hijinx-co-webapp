@@ -22,6 +22,9 @@ export default function ManageTracks() {
   const [selectedTracks, setSelectedTracks] = useState([]);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list('-updated_date', 500),

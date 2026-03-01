@@ -43,6 +43,9 @@ export default function ManageDrivers() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+
   // Support deep-link: ?driverId=xxx opens that driver directly
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);

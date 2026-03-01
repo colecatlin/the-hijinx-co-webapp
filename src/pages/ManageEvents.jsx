@@ -30,6 +30,9 @@ export default function ManageEvents() {
   const [deletingEventId, setDeletingEventId] = useState(null);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list('id', 500),

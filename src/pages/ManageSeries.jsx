@@ -33,6 +33,9 @@ export default function ManageSeries() {
   const [selectedSeries, setSelectedSeries] = useState([]);
 
   const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
   const navigate = useNavigate();
 
   const handleNavigateToDriver = (driver) => {
