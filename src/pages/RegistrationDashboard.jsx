@@ -464,10 +464,11 @@ export default function RegistrationDashboard() {
             <h1 className="text-3xl font-black text-white mb-2">Index46 Operations</h1>
             <p className="text-gray-400">
               {selectedOrgName && <span className="text-white">{selectedOrgName}</span>}
-              {selectedEvent && (
-                <span> • {selectedEvent.name} {selectedEvent.round_number ? `(Round ${selectedEvent.round_number})` : ''}</span>
-              )}
-              {!selectedOrgName && !selectedEvent && 'Configure your organization above to begin'}
+                  {selectedEvent && (
+                    <span> • {selectedEvent.name} {selectedEvent.round_number ? `(Round ${selectedEvent.round_number})` : ''}</span>
+                  )}
+                  {!selectedOrgName && !selectedEvent && 'Configure your organization above to begin'}
+                  {eventId && !selectedEvent && <span className="text-yellow-500"> • Loading event details...</span>}
             </p>
           </motion.div>
 
