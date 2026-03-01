@@ -203,19 +203,35 @@ export async function importDrivers(base44, rows, headers) {
       const geographicScope = getField(row, ['geographic_scope']);
       const competitionLevel = getField(row, ['competition_level']);
 
+      // Resolve team: use CSV team name, or default to "{First} {Last} Racing"
+      const csvTeamName = getField(row, ['team_name', 'team']);
+      const teamName = csvTeamName || `${driverData.first_name} ${driverData.last_name} Racing`;
+      const team = await getOrCreateTeam(
+        teamName,
+        driverData.hometown_city,
+        driverData.hometown_state,
+        driverData.hometown_country
+      );
+
+      // Link team_id to driver if not already set
+      if (team && !driverData.team_id) {
+        await base44.asServiceRole.entities.Driver.update(driver.id, { team_id: team.id });
+      }
+
       if (seriesName) {
         const series = await getOrCreateSeries(seriesName, discipline, geographicScope);
         
         if (series && className) {
           const seriesClass = await getOrCreateSeriesClass(series, className, competitionLevel);
           
-          // Create DriverProgram to link driver to series/class
+          // Create DriverProgram to link driver to series/class/team
           if (seriesClass) {
             try {
               await base44.asServiceRole.entities.DriverProgram.create({
                 driver_id: driver.id,
                 series_id: series.id,
                 series_class_id: seriesClass.id,
+                team_id: team?.id || undefined,
                 program_type: 'racing',
                 participation_status: 'active',
                 races_participated: 0,
