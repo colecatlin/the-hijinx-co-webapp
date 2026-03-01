@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ClassSessionBuilder({ eventId, seriesId }) {
+export default function ClassSessionBuilder({ eventId, seriesId, selectedEvent }) {
   const queryClient = useQueryClient();
 
   // State
@@ -57,7 +57,7 @@ export default function ClassSessionBuilder({ eventId, seriesId }) {
   const [pendingClassGroups, setPendingClassGroups] = useState([]);
 
   // Queries
-  const { data: sessions = [] } = useQuery({
+  const { data: allSessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => base44.entities.Session.filter({ event_id: eventId }, 'session_order', 500),
     enabled: !!eventId,
@@ -68,6 +68,27 @@ export default function ClassSessionBuilder({ eventId, seriesId }) {
     queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
     enabled: !!seriesId,
   });
+
+  // Data integrity: filter sessions to match selectedEvent and validate series_class integrity
+  const sessions = useMemo(() => {
+    if (!selectedEvent) return allSessions;
+    const validated = allSessions.filter((session) => {
+      // Must belong to selected event
+      if (session.event_id !== selectedEvent.id) {
+        return false;
+      }
+      // If session has series_class_id, validate it belongs to event's series
+      if (session.series_class_id) {
+        const matchingClass = seriesClasses.find((sc) => sc.id === session.series_class_id);
+        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
+          console.warn('Session series_class mismatch detected.');
+          return false;
+        }
+      }
+      return true;
+    });
+    return validated;
+  }, [allSessions, selectedEvent, seriesClasses]);
 
   // Mutations
   const createSessionMutation = useMutation({
@@ -132,7 +153,7 @@ export default function ClassSessionBuilder({ eventId, seriesId }) {
     });
 
     return Object.values(groups).sort((a, b) => a.className.localeCompare(b.className));
-  }, [sessions, seriesClasses, pendingClassGroups]);
+  }, [sessions, seriesClasses, pendingClassGroups, selectedEvent]);
 
   // Handlers
   const handleAddClassGroup = () => {
