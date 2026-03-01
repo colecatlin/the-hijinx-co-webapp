@@ -66,6 +66,7 @@ export default function RegistrationDashboard() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [standingsDirty, setStandingsDirty] = useState(false);
+  const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
@@ -826,6 +827,8 @@ export default function RegistrationDashboard() {
                   dashboardPermissions={dashboardPermissions}
                   selectedEvent={selectedEvent}
                   isAdmin={isAdmin}
+                  standingsLastCalculatedAt={standingsLastCalculatedAt}
+                  onSetStandingsDirty={() => setStandingsDirty(true)}
                 />
               </TabsContent>
             )}
@@ -839,6 +842,7 @@ export default function RegistrationDashboard() {
                   selectedEvent={selectedEvent}
                   standingsDirty={standingsDirty}
                   onClearDirty={() => setStandingsDirty(false)}
+                  onStandingsCalculated={() => setStandingsLastCalculatedAt(new Date().toISOString())}
                 />
               </TabsContent>
             )}
