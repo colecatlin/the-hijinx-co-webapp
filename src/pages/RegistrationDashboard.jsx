@@ -234,9 +234,15 @@ export default function RegistrationDashboard() {
 
   // Get permissions from shared access control module
   const dashboardPermissions = useMemo(() => 
-    getPermissionsForRole(user?.role), 
+    getPermissionsForRole(user?.role || 'public'), 
     [user?.role]
   );
+
+  // Check if user has any accessible tabs
+  const availableTabs = useMemo(() => {
+    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log'];
+    return tabKeys.filter(key => canTab(dashboardPermissions, key));
+  }, [dashboardPermissions]);
 
   // Legacy compatibility
   const isAdmin = user?.role === 'admin';
