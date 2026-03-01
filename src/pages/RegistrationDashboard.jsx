@@ -643,138 +643,181 @@ export default function RegistrationDashboard() {
               )}
             </TabsList>
 
-            {/* Overview Tab Content */}
-            <TabsContent value="overview" className="mt-6">
-              <OverviewGrid
-                dashboardContext={dashboardContext}
-                selectedEvent={selectedEvent}
-                selectedTrack={selectedTrack}
-                selectedSeries={selectedSeries}
-                sessions={sessions}
-                standings={standings}
-                results={results}
-                operationLogs={operationLogs}
-                importLogs={importLogs}
-              />
-            </TabsContent>
-
-            {/* Event Builder Tab Content */}
-            <TabsContent value="eventBuilder" className="mt-6">
-              <EventBuilderForm
-                dashboardContext={dashboardContext}
-                selectedEventId={editingEventId}
-                onEventCreated={handleEventCreated}
-                isAdmin={isAdmin}
-              />
-            </TabsContent>
-
-            {/* Classes and Sessions Tab Content */}
-            <TabsContent value="classesSessions" className="mt-6">
-              {selectedEvent ? (
-                <ClassSessionBuilder
+            {canTab(dashboardPermissions, 'overview') && (
+              <TabsContent value="overview" className="mt-6">
+                <OverviewGrid
                   dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
                   selectedEvent={selectedEvent}
-                  eventId={selectedEvent.id}
-                  seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  sessions={sessions}
+                  standings={standings}
+                  results={results}
+                  operationLogs={operationLogs}
+                  importLogs={importLogs}
                 />
-              ) : (
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400">Select an event to manage classes and sessions</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+              </TabsContent>
+            )}
 
-            {/* Entries Tab Content */}
-            <TabsContent value="entries" className="mt-6">
-              {selectedEvent ? (
-                <EntriesManager
+            {canTab(dashboardPermissions, 'eventBuilder') && (
+              <TabsContent value="eventBuilder" className="mt-6">
+                <EventBuilderForm
                   dashboardContext={dashboardContext}
-                  selectedEvent={selectedEvent}
-                  eventId={selectedEvent.id}
-                  seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                  dashboardPermissions={dashboardPermissions}
+                  selectedEventId={editingEventId}
+                  onEventCreated={handleEventCreated}
+                  isAdmin={isAdmin}
                 />
-              ) : (
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400">Select an event to manage entries</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+              </TabsContent>
+            )}
 
-            {/* Compliance Tab Content */}
-            <TabsContent value="compliance" className="mt-6">
-              {selectedEvent ? (
-                <ComplianceManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} />
-              ) : (
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400">Select an event to view compliance</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+            {canTab(dashboardPermissions, 'classesSessions') && (
+              <TabsContent value="classesSessions" className="mt-6">
+                {selectedEvent ? (
+                  <ClassSessionBuilder
+                    dashboardContext={dashboardContext}
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent}
+                    eventId={selectedEvent.id}
+                    seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-400">Select an event to manage classes and sessions</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
 
-            {/* Check In Tab Content */}
-            <TabsContent value="checkIn" className="mt-6">
-              {selectedEvent ? (
-                <CheckInManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} />
-              ) : (
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400">Select an event to check in entries</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+            {canTab(dashboardPermissions, 'entries') && (
+              <TabsContent value="entries" className="mt-6">
+                {selectedEvent ? (
+                  <EntriesManager
+                    dashboardContext={dashboardContext}
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent}
+                    eventId={selectedEvent.id}
+                    seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-400">Select an event to manage entries</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
 
-            {/* Tech Tab Content */}
-            <TabsContent value="tech" className="mt-6">
-              {selectedEvent ? (
-                <TechManager dashboardContext={dashboardContext} selectedEvent={selectedEvent} user={user} />
-              ) : (
-                <Card className="bg-[#171717] border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-gray-400">Select an event to manage tech inspection</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+            {canTab(dashboardPermissions, 'compliance') && (
+              <TabsContent value="compliance" className="mt-6">
+                {selectedEvent ? (
+                  <ComplianceManager 
+                    dashboardContext={dashboardContext} 
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent} 
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-400">Select an event to view compliance</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
 
-            {/* Results Tab Content */}
-            <TabsContent value="results" className="mt-6">
-              <ResultsManager
-                dashboardContext={dashboardContext}
-                selectedEvent={selectedEvent}
-                isAdmin={isAdmin}
-              />
-            </TabsContent>
+            {canTab(dashboardPermissions, 'checkIn') && (
+              <TabsContent value="checkIn" className="mt-6">
+                {selectedEvent ? (
+                  <CheckInManager 
+                    dashboardContext={dashboardContext} 
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent} 
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-400">Select an event to check in entries</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
 
-            {/* Points & Standings Tab Content */}
-            <TabsContent value="pointsStandings" className="mt-6">
-              <PointsAndStandingsManager
-                dashboardContext={dashboardContext}
-                isAdmin={isAdmin}
-                selectedEvent={selectedEvent}
-              />
-            </TabsContent>
+            {canTab(dashboardPermissions, 'tech') && (
+              <TabsContent value="tech" className="mt-6">
+                {selectedEvent ? (
+                  <TechManager 
+                    dashboardContext={dashboardContext} 
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent} 
+                    user={user} 
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-400">Select an event to manage tech inspection</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            )}
 
-            {/* Exports Tab Content */}
-            <TabsContent value="exports" className="mt-6">
-              <ExportsManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
-            </TabsContent>
+            {canTab(dashboardPermissions, 'results') && (
+              <TabsContent value="results" className="mt-6">
+                <ResultsManager
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  selectedEvent={selectedEvent}
+                  isAdmin={isAdmin}
+                />
+              </TabsContent>
+            )}
 
-            {/* Integrations Tab Content */}
-            <TabsContent value="integrations" className="mt-6">
-              <IntegrationsManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
-            </TabsContent>
+            {canTab(dashboardPermissions, 'pointsStandings') && (
+              <TabsContent value="pointsStandings" className="mt-6">
+                <PointsAndStandingsManager
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin}
+                  selectedEvent={selectedEvent}
+                />
+              </TabsContent>
+            )}
 
-            {/* Audit Log Tab Content */}
-            <TabsContent value="auditLog" className="mt-6">
-              <AuditLogManager dashboardContext={dashboardContext} isAdmin={isAdmin} />
-            </TabsContent>
+            {canTab(dashboardPermissions, 'exports') && (
+              <TabsContent value="exports" className="mt-6">
+                <ExportsManager 
+                  dashboardContext={dashboardContext} 
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin} 
+                />
+              </TabsContent>
+            )}
+
+            {canTab(dashboardPermissions, 'integrations') && (
+              <TabsContent value="integrations" className="mt-6">
+                <IntegrationsManager 
+                  dashboardContext={dashboardContext} 
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin} 
+                />
+              </TabsContent>
+            )}
+
+            {canTab(dashboardPermissions, 'auditLog') && (
+              <TabsContent value="auditLog" className="mt-6">
+                <AuditLogManager 
+                  dashboardContext={dashboardContext} 
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin} 
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
 
