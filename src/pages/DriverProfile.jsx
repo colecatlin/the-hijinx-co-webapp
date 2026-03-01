@@ -120,6 +120,17 @@ export default function DriverProfile() {
     enabled: !!driver?.id,
   });
 
+  const { data: entries = [] } = useQuery({
+    queryKey: ['driverEntries', driver?.id],
+    queryFn: () => base44.entities.Entry.filter({ driver_id: driver.id }),
+    enabled: !!driver?.id,
+  });
+
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
   React.useEffect(() => {
     if (driver && media) {
       document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
