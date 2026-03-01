@@ -97,7 +97,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs }
     queryFn: () => base44.entities.Event.list(),
   });
 
-  const { data: operationLogs: queryLogs = [] } = useQuery({
+  const { data: queryLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.list(),
   });
