@@ -70,6 +70,7 @@ export default function RegistrationDashboard() {
   const [complianceSeverity, setComplianceSeverity] = useState('clear');
   const [showComplianceWarning, setShowComplianceWarning] = useState(false);
   const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
+  const [showArchiveWarning, setShowArchiveWarning] = useState(false);
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
@@ -302,6 +303,20 @@ export default function RegistrationDashboard() {
       setStandingsDirty(true);
     }
   }, [sessions, standingsDirty]);
+
+  // Live mode detection and auto-tab selection
+  const isLiveMode = selectedEvent?.status === 'Live';
+
+  useEffect(() => {
+    if (isLiveMode && selectedEvent) {
+      // Auto-default to Results if sessions exist, else CheckIn
+      if (sessions.length > 0) {
+        setActiveTab('results');
+      } else {
+        setActiveTab('checkIn');
+      }
+    }
+  }, [isLiveMode, selectedEvent, sessions.length]);
 
   const handleCreateEvent = () => {
     setEditingEventId('');
