@@ -110,24 +110,32 @@ export default function RegistrationDashboard() {
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
     enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
     enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
     enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: isAuthenticated && !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: standings = [] } = useQuery({
@@ -137,12 +145,16 @@ export default function RegistrationDashboard() {
       return base44.entities.Standings.filter({ series_id: organizationId, season: seasonYear });
     },
     enabled: isAuthenticated && organizationType === 'series' && !!organizationId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: results = [] } = useQuery({
     queryKey: ['results', eventId],
     queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: isAuthenticated && !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: operationLogs = [] } = useQuery({
@@ -155,6 +167,8 @@ export default function RegistrationDashboard() {
       });
     },
     enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: importLogs = [] } = useQuery({
@@ -167,6 +181,8 @@ export default function RegistrationDashboard() {
       });
     },
     enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch selected event details
@@ -174,6 +190,8 @@ export default function RegistrationDashboard() {
     queryKey: ['selectedEvent', eventId],
     queryFn: () => (eventId ? base44.entities.Event.get(eventId) : Promise.resolve(null)),
     enabled: isAuthenticated && !!eventId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch selected track details
@@ -181,6 +199,8 @@ export default function RegistrationDashboard() {
     queryKey: ['selectedTrack', selectedEvent?.track_id],
     queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
     enabled: isAuthenticated && !!selectedEvent?.track_id,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch selected series details
@@ -188,6 +208,8 @@ export default function RegistrationDashboard() {
     queryKey: ['selectedSeries', selectedEvent?.series_id],
     queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
     enabled: isAuthenticated && !!selectedEvent?.series_id,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const filteredEvents = useMemo(() => {
