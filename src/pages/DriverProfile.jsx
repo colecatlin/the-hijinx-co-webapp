@@ -194,7 +194,7 @@ export default function DriverProfile() {
   const driverTeam = teams.find(t => t.id === driver?.team_id);
 
   const sections = [
-    { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'overview', label: 'Event Participation', icon: Calendar },
     { id: 'programs', label: 'Programs', icon: Flag },
     { id: 'stats', label: 'Stats', icon: TrendingUp },
     { id: 'results', label: 'Results', icon: Flag },
