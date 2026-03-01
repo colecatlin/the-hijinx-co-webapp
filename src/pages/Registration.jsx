@@ -111,7 +111,83 @@ export default function Registration() {
 
   // Show event selector if no eventId in URL
   if (!eventId) {
-    <PageShell>
+    return (
+      <PageShell>
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <h1 className="text-4xl font-black mb-4">Register for an Event</h1>
+            <p className="text-lg text-gray-600">
+              Select an event to begin registration.
+            </p>
+          </motion.div>
+
+          <Card className="bg-white border-gray-200">
+            <CardHeader>
+              <CardTitle>Select Event</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Event</label>
+                <Select value={selectedEventId} onValueChange={handleEventSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an event..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {events.map((evt) => (
+                      <SelectItem key={evt.id} value={evt.id}>
+                        {evt.name} - {evt.event_date}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedEventId && !isAlreadyRegistered && (
+                <Button 
+                  onClick={handleRegisterEvent}
+                  disabled={createEntryMutation.isPending}
+                  className="w-full bg-black hover:bg-gray-900 text-white"
+                >
+                  {createEntryMutation.isPending ? 'Registering...' : 'Continue to Registration'}
+                </Button>
+              )}
+
+              {isAlreadyRegistered && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Already Registered</p>
+                    <p className="text-sm text-blue-700 mt-1">You are already registered for this event.</p>
+                    <Link to={createPageUrl(`RegistrationDashboard?eventId=${selectedEventId}`)}>
+                      <Button variant="outline" size="sm" className="mt-3">
+                        View Your Registration
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="mt-8 text-center">
+            <Link to={createPageUrl('RegistrationDashboard')}>
+              <Button variant="outline">
+                Back to Dashboard
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  // If eventId is provided in URL, show event registration form
+  return (
       <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Hero Section */}
         <motion.div
