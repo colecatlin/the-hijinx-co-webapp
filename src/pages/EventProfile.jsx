@@ -19,12 +19,20 @@ export default function EventProfile() {
   const eventId = urlParams.get('id');
   const [activeSection, setActiveSection] = useState('overview');
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
   });
 
   const event = events.find(e => e.id === eventId);
+
+  const isPublicEvent = event && ['Published', 'Live', 'Completed'].includes(event.status);
+  const canViewDraft = user?.role === 'admin' && event && event.status === 'Draft';
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['eventSessions', eventId],
@@ -54,6 +62,19 @@ export default function EventProfile() {
       <PageShell className="bg-white">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
           <p className="text-gray-600 mb-4">Event not found</p>
+          <Link to={createPageUrl('EventDirectory')}>
+            <Button>Back to Events</Button>
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!isPublicEvent && !canViewDraft) {
+    return (
+      <PageShell className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-600 mb-4">Event not available</p>
           <Link to={createPageUrl('EventDirectory')}>
             <Button>Back to Events</Button>
           </Link>
