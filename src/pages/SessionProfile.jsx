@@ -71,8 +71,17 @@ export default function SessionProfile() {
   const driversById = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
   const programsById = useMemo(() => new Map(programs.map(p => [p.id, p])), [programs]);
 
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['sessionSeriesClasses', session?.series_class_id],
+    queryFn: () => session?.series_class_id ? base44.entities.SeriesClass.list().then(classes => classes.filter(c => c.id === session.series_class_id)) : [],
+    enabled: !!session?.series_class_id,
+  });
+
   const sortedResults = useMemo(() => {
-    return [...results].sort((a, b) => (a.position || 999) - (b.position || 999));
+    return [...results].sort((a, b) => {
+      if ((a.position || Infinity) === (b.position || Infinity)) return 0;
+      return (a.position || Infinity) - (b.position || Infinity);
+    });
   }, [results]);
 
   const getCarNumber = (result) => {
@@ -82,6 +91,22 @@ export default function SessionProfile() {
     const driver = driversById.get(result.driver_id);
     return driver?.primary_number || '';
   };
+
+  // Results integrity stats
+  const resultsIntegrity = useMemo(() => {
+    const totalRows = results.length;
+    const withPosition = results.filter(r => r.position != null).length;
+    const missingDriver = results.filter(r => !driversById.has(r.driver_id)).length;
+    return { totalRows, withPosition, missingDriver };
+  }, [results, driversById]);
+
+  // Get class name
+  const className = useMemo(() => {
+    if (session?.series_class_id && seriesClasses.length > 0) {
+      return seriesClasses[0]?.class_name || null;
+    }
+    return session?.class_name || null;
+  }, [session, seriesClasses]);
 
   if (sessionLoading) {
     return (
