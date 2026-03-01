@@ -88,7 +88,18 @@ export default function TechManager({ selectedEvent, user, canAction }) {
   const [notesMode, setNotesMode] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkUpdates, setBulkUpdates] = useState({});
+  const [isAuth, setIsAuth] = useState(false);
   const queryClient = useQueryClient();
+
+  // Check auth status
+  useQuery({
+    queryKey: ['authStatus'],
+    queryFn: async () => {
+      const status = await base44.auth.isAuthenticated();
+      setIsAuth(status);
+      return status;
+    },
+  });
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery({
     queryKey: ['entries', selectedEvent?.id],
@@ -369,12 +380,22 @@ export default function TechManager({ selectedEvent, user, canAction }) {
     );
   }
 
-  if (!hasPermission) {
+  if (!isAuth) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-gray-400">You don't have permission to manage tech inspection</p>
+          <AlertCircle className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+          <p className="text-gray-400">Tech tools require login</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">No entries to inspect yet.</p>
         </CardContent>
       </Card>
     );
@@ -382,21 +403,23 @@ export default function TechManager({ selectedEvent, user, canAction }) {
 
   return (
     <div className="space-y-4">
-      {/* Bulk Mode Toggle */}
-      <div className="flex items-center gap-2 bg-[#171717] border border-gray-800 rounded-lg p-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setBulkMode(!bulkMode)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white"
-        >
-          {bulkMode ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-          <span className="text-xs font-medium">{bulkMode ? 'Bulk Mode' : 'Single Entry'}</span>
-        </Button>
-      </div>
+      {/* Bulk Mode Toggle - Admin only */}
+      {user?.role === 'admin' && (
+        <div className="flex items-center gap-2 bg-[#171717] border border-gray-800 rounded-lg p-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setBulkMode(!bulkMode)}
+            className="flex items-center gap-2 text-gray-400 hover:text-white"
+          >
+            {bulkMode ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+            <span className="text-xs font-medium">{bulkMode ? 'Bulk Mode' : 'Single Entry'}</span>
+          </Button>
+        </div>
+      )}
 
-      {/* Bulk Mode Table */}
-      {bulkMode ? (
+      {/* Bulk Mode Table - Admin only */}
+      {bulkMode && user?.role === 'admin' ? (
         <div className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -597,7 +620,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
                     <Button
                       key={status}
                       onClick={() => handleSetTechStatus(status)}
-                      disabled={updateMutation.isPending}
+                      disabled={updateMutation.isPending || !hasPermission}
                       variant={selectedEntry.tech_status === status ? 'default' : 'outline'}
                       className={`w-full text-sm font-semibold ${
                         selectedEntry.tech_status === status
@@ -615,6 +638,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
                     </Button>
                   ))}
                 </div>
+                {!hasPermission && <p className="text-xs text-gray-500">View only</p>}
               </div>
 
               {/* Checklist */}
@@ -655,7 +679,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
                   <Button
                     size="sm"
                     onClick={handleSaveChecklist}
-                    disabled={updateMutation.isPending}
+                    disabled={updateMutation.isPending || !hasPermission}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     Save Checklist ({Object.values(checklist).filter(Boolean).length}/{TECH_TEMPLATES[selectedTemplate].length})
@@ -695,7 +719,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
                       <Button
                         size="sm"
                         onClick={handleSaveNotes}
-                        disabled={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !hasPermission}
                         className="flex-1 bg-blue-600 hover:bg-blue-700"
                       >
                         Save
