@@ -112,6 +112,55 @@ export default function TeamProfile() {
       .map(dp => [dp.series_name, dp])
   ).values()];
 
+  // Derive active drivers from entries in active events
+  const activeDriverIds = new Set(
+    entries
+      .filter(entry => {
+        const event = events.find(e => e.id === entry.event_id);
+        return event && ['Draft', 'Published', 'Live'].includes(event.status);
+      })
+      .map(entry => entry.driver_id)
+  );
+
+  const activeDrivers = drivers.filter(d => activeDriverIds.has(d.id));
+
+  // Split entries into upcoming and completed events
+  const upcomingEntries = entries
+    .filter(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      return event && ['Draft', 'Published', 'Live'].includes(event.status);
+    })
+    .map(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      const track = tracks.find(t => t.id === event?.track_id);
+      const count = entries.filter(e => e.event_id === event?.id).length;
+      return { entry, event, track, count };
+    })
+    .filter((item, idx, arr) => arr.findIndex(x => x.event?.id === item.event?.id) === idx);
+
+  const completedEntries = entries
+    .filter(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      return event && event.status === 'completed';
+    })
+    .map(entry => {
+      const event = events.find(e => e.id === entry.event_id);
+      const track = tracks.find(t => t.id === event?.track_id);
+      const eventResults = results.filter(r => r.event_id === event?.id);
+      const bestPosition = eventResults.length > 0
+        ? Math.min(...eventResults.map(r => r.position || 999))
+        : null;
+      return { entry, event, track, bestPosition };
+    })
+    .filter((item, idx, arr) => arr.findIndex(x => x.event?.id === item.event?.id) === idx);
+
+  // Calculate season performance summary
+  const seasonStats = {
+    podiums: results.filter(r => r.position && r.position <= 3).length,
+    wins: results.filter(r => r.position === 1).length,
+    top5: results.filter(r => r.position && r.position <= 5).length,
+  };
+
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },
     { id: 'drivers', label: 'Drivers', icon: Users },
