@@ -54,7 +54,7 @@ function generateSlug(name) {
     .replace(/-+/g, '-');
 }
 
-export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin }) {
+export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin, isLiveMode, onArchiveAttempt }) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     track_id: '',
@@ -285,7 +285,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 <Select
                   value={formData.track_id}
                   onValueChange={v => handleChange('track_id', v)}
-                  disabled={!isAdmin}
+                  disabled={!isAdmin || isLiveMode}
                 >
                   <SelectTrigger
                     className={`bg-[#262626] border-gray-700 text-white ${
@@ -312,7 +312,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 <Select
                   value={formData.series_id}
                   onValueChange={v => handleChange('series_id', v)}
-                  disabled={!isAdmin}
+                  disabled={!isAdmin || isLiveMode}
                 >
                   <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
                     <SelectValue placeholder="Select series..." />
@@ -338,7 +338,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.season}
                 onChange={e => handleChange('season', e.target.value)}
                 placeholder="e.g., 2024"
-                disabled={!isAdmin}
+                disabled={!isAdmin || isLiveMode}
                 className="bg-[#262626] border-gray-700 text-white"
               />
             </div>
@@ -352,7 +352,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.name}
                 onChange={e => handleChange('name', e.target.value)}
                 placeholder="Enter event name"
-                disabled={!isAdmin}
+                disabled={!isAdmin || isLiveMode}
                 className={`bg-[#262626] border-gray-700 text-white ${
                   errors.name ? 'border-red-500' : ''
                 }`}
@@ -381,7 +381,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   type="date"
                   value={formData.event_date}
                   onChange={e => handleChange('event_date', e.target.value)}
-                  disabled={!isAdmin}
+                  disabled={!isAdmin || isLiveMode}
                   className={`bg-[#262626] border-gray-700 text-white ${
                     errors.event_date ? 'border-red-500' : ''
                   }`}
@@ -399,7 +399,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   type="date"
                   value={formData.end_date}
                   onChange={e => handleChange('end_date', e.target.value)}
-                  disabled={!isAdmin}
+                  disabled={!isAdmin || isLiveMode}
                   className={`bg-[#262626] border-gray-700 text-white ${
                     errors.end_date ? 'border-red-500' : ''
                   }`}
@@ -525,7 +525,13 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                       Duplicate
                     </Button>
                     <Button
-                      onClick={handleArchive}
+                      onClick={() => {
+                        if (isLiveMode && onArchiveAttempt) {
+                          onArchiveAttempt();
+                        } else {
+                          handleArchive();
+                        }
+                      }}
                       disabled={isSaving}
                       variant="outline"
                       className="border-gray-700 text-gray-300 hover:bg-gray-800"
