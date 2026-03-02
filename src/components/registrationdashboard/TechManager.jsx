@@ -77,6 +77,8 @@ const TECH_TEMPLATES = {
   ],
 };
 
+const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+
 export default function TechManager({ selectedEvent, user, canAction }) {
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
