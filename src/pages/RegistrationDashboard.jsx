@@ -321,8 +321,8 @@ export default function RegistrationDashboard() {
       const track = tracks.find((t) => t.id === organizationId);
       return track?.name || '';
     } else {
-      const series = seriesList.find((s) => s.id === organizationId);
-      return series?.name || '';
+      const matchedSeriesForName = seriesList.find((s) => s.id === organizationId);
+      return matchedSeriesForName?.name || '';
     }
   }, [organizationType, organizationId, tracks, seriesList]);
 
