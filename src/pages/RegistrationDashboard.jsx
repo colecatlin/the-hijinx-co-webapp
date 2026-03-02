@@ -226,43 +226,28 @@ export default function RegistrationDashboard() {
   const isLiveEvent = selectedEvent?.status === 'in_progress';
   const liveRefetchInterval = isLiveEvent ? 20_000 : false;
 
-  const { data: sessions = [] } = useQuery({
-    queryKey: QueryKeys.sessions.listByEvent(eventId),
-    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!isAuthenticated && !!eventId,
-    refetchInterval: liveRefetchInterval,
-    ...DQ,
-  });
+  // ── Shared dashboard queries (standardized REG_QK keys) ──────────────────
+  const dashContext = useMemo(() => ({
+    orgType: organizationType,
+    orgId: organizationId,
+    season: seasonYear,
+    eventId: eventId,
+  }), [organizationType, organizationId, seasonYear, eventId]);
 
-  const { data: standings = [] } = useQuery({
-    queryKey: QueryKeys.standings.bySeriesSeason(organizationId, seasonYear),
-    queryFn: () => {
-      if (organizationType !== 'series' || !organizationId) return Promise.resolve([]);
-      return base44.entities.Standings.filter({ series_id: organizationId, season: seasonYear });
-    },
-    enabled: !!isAuthenticated && organizationType === 'series' && !!organizationId,
-    ...DQ,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: QueryKeys.results.listByEvent(eventId),
-    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!isAuthenticated && !!eventId,
-    refetchInterval: liveRefetchInterval,
-    ...DQ,
-  });
-
-  const { data: operationLogs = [] } = useQuery({
-    queryKey: QueryKeys.operationLog.recent(30),
-    queryFn: () => {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return base44.entities.OperationLog.filter({
-        created_date: { $gte: thirtyDaysAgo.toISOString() },
-      });
-    },
-    enabled: !!isAuthenticated,
-    ...DQ,
+  const {
+    sessions,
+    results,
+    driverPrograms,
+    entries: regEntries,
+    standings,
+    operationLogs,
+    sessionsQuery,
+    resultsQuery,
+  } = useDashboardQueries({
+    dashboardContext: dashContext,
+    selectedEvent: selectedEvent ?? null,
+    selectedTrack: selectedTrack ?? null,
+    selectedSeries: selectedSeries ?? null,
   });
 
   const { data: importLogs = [] } = useQuery({
