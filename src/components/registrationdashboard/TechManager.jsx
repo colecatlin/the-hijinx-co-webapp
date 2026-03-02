@@ -205,7 +205,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
       return results;
     },
     onSuccess: () => {
-      invalidateAfterOperation('entry_bulk_updated');
+      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
       setBulkUpdates({});
       toast.success('Entries updated');
     },
@@ -258,7 +258,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
 
   const getComplianceBadges = (entry) => {
     const badges = [];
-    if (!entry.waiver_verified) badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
+    if (entry.waiver_status !== 'Verified') badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
     if (entry.payment_status === 'Unpaid') badges.push({ label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
     return badges;
   };
@@ -271,27 +271,14 @@ export default function TechManager({ selectedEvent, user, canAction }) {
   };
 
   const handleSetTechStatus = (status) => {
-    const update = {};
-    if ('tech_status' in selectedEntry) {
-      update.tech_status = status;
-    }
+    const update = { tech_status: status };
     if (status !== 'Not Inspected') {
-      if ('tech_checked_at' in selectedEntry) {
-        update.tech_checked_at = new Date().toISOString();
-      }
-      if ('tech_checked_by_user_id' in selectedEntry && currentUser) {
-        update.tech_checked_by_user_id = currentUser.id;
+      update.tech_updated_at = new Date().toISOString();
+      if (currentUser?.full_name) {
+        update.tech_inspector = currentUser.full_name;
       }
     }
-    if ('tech_recheck_required' in selectedEntry) {
-      update.tech_recheck_required = status === 'Recheck Required';
-    }
-    if (Object.keys(update).length === 0 && 'status' in selectedEntry) {
-      update.status = status;
-    }
-    if (Object.keys(update).length > 0) {
-      updateMutation.mutate(update);
-    }
+    updateMutation.mutate(update);
   };
 
   const handleSaveNotes = () => {
@@ -325,34 +312,14 @@ export default function TechManager({ selectedEvent, user, canAction }) {
   };
 
   const handleBulkTechUpdate = (entryId, status) => {
-    const update = {};
-    const entry = entries.find(e => e.id === entryId);
-    if (!entry) return;
-    
-    if ('tech_status' in entry) {
-      update.tech_status = status;
-    }
+    const update = { tech_status: status };
     if (status !== 'Not Inspected') {
-      if ('tech_checked_at' in entry) {
-        update.tech_checked_at = new Date().toISOString();
-      }
-      if ('tech_checked_by_user_id' in entry && currentUser) {
-        update.tech_checked_by_user_id = currentUser.id;
+      update.tech_updated_at = new Date().toISOString();
+      if (currentUser?.full_name) {
+        update.tech_inspector = currentUser.full_name;
       }
     }
-    if ('tech_recheck_required' in entry) {
-      update.tech_recheck_required = status === 'Recheck Required';
-    }
-    if (Object.keys(update).length === 0 && 'status' in entry) {
-      update.status = status;
-    }
-    
-    if (Object.keys(update).length > 0) {
-      setBulkUpdates(prev => ({
-        ...prev,
-        [entryId]: update,
-      }));
-    }
+    setBulkUpdates(prev => ({ ...prev, [entryId]: update }));
   };
 
   const getTechStatusColor = (status) => {
@@ -756,10 +723,10 @@ export default function TechManager({ selectedEvent, user, canAction }) {
               {/* Inspector Info */}
               <div className="bg-gray-900/50 rounded p-3 space-y-1 border-t border-gray-800 pt-4">
                 <p className="text-xs text-gray-400">Inspector</p>
-                <p className="text-xs font-medium text-white">{user?.full_name || 'Unknown'}</p>
+                <p className="text-xs font-medium text-white">{selectedEntry.tech_inspector || user?.full_name || 'Unknown'}</p>
                 <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
                   <Clock className="w-3 h-3" />
-                  <span>{selectedEntry.updated_date ? new Date(selectedEntry.updated_date).toLocaleString() : 'Never'}</span>
+                  <span>{selectedEntry.tech_updated_at ? new Date(selectedEntry.tech_updated_at).toLocaleString() : 'Never'}</span>
                 </div>
               </div>
 

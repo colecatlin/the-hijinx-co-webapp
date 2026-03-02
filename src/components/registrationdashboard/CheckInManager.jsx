@@ -132,9 +132,9 @@ export default function CheckInManager({ selectedEvent, user }) {
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
         return (
-          entry.car_number.toLowerCase().includes(search) ||
+          (entry.car_number || '').toLowerCase().includes(search) ||
           getDriverName(entry.driver_id).toLowerCase().includes(search) ||
-          (entry.transponder_id && entry.transponder_id.toLowerCase().includes(search))
+          (entry.transponder_id || '').toLowerCase().includes(search)
         );
       }
       return true;
@@ -143,9 +143,9 @@ export default function CheckInManager({ selectedEvent, user }) {
 
   const getComplianceBadges = (entry) => {
     const badges = [];
-    if (!entry.waiver_verified) badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
+    if (entry.waiver_status !== 'Verified') badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
     if (entry.payment_status === 'Unpaid') badges.push({ label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
-    if (entry.tech_status === 'NotInspected' || entry.tech_status === 'RecheckRequired') badges.push({ label: 'Tech Pending', color: 'bg-orange-900/40 text-orange-300' });
+    if (!entry.tech_status || entry.tech_status === 'Not Inspected' || entry.tech_status === 'Recheck Required') badges.push({ label: 'Tech Pending', color: 'bg-orange-900/40 text-orange-300' });
     return badges;
   };
 
