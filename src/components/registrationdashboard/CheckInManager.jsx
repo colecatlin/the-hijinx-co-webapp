@@ -687,6 +687,28 @@ export default function CheckInManager({
           </CardContent>
         </Card>
       )}
+
+      {/* Admin override dialog */}
+      <AlertDialog open={showOverrideDialog} onOpenChange={setShowOverrideDialog}>
+        <AlertDialogContent className="bg-[#262626] border-gray-700">
+          <AlertDialogTitle className="text-white flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-yellow-500" /> Override Compliance Gate
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-400">
+            This entry has unresolved compliance issues:
+            <ul className="mt-2 space-y-1">
+              {getCheckInBlockers(formData).map(b => <li key={b} className="text-red-400">• {b}</li>)}
+            </ul>
+            <span className="block mt-2">Override and check in anyway? This action will be logged.</span>
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleOverrideCheckIn} className="bg-yellow-600 hover:bg-yellow-700">
+              Override &amp; Check In
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
