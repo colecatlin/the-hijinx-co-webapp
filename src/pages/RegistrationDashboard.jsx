@@ -72,6 +72,20 @@ import {
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
+// ─── Dashboard-wide React Query tunables ────────────────────────────────────
+const DASHBOARD_STALE_TIME_MS   = 30_000;   // 30 s before a cached result is stale
+const DASHBOARD_GC_TIME_MS      = 300_000;  // 5 min garbage-collection window
+const DASHBOARD_REFETCH_ON_FOCUS = false;   // never refetch on window focus
+
+// Shared query options applied to every dashboard-scoped useQuery
+const DQ = {
+  staleTime:          DASHBOARD_STALE_TIME_MS,
+  gcTime:             DASHBOARD_GC_TIME_MS,
+  refetchOnWindowFocus: DASHBOARD_REFETCH_ON_FOCUS,
+  refetchOnReconnect: false,
+  retry: 1,
+};
+
 // Helper: Require admin override for sensitive operations
 function createRequireAdminOverride(queryClient) {
   return async (actionName, context, onConfirm) => {
