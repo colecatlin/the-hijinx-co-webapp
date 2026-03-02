@@ -701,283 +701,69 @@ export default function Registration() {
           </motion.div>
         )}
 
-          {/* RIGHT: Registration Form */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <Card className={`bg-[#171717] border-gray-800 ${formStep === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
-              <CardHeader>
-                <CardTitle className="text-white">Your Registration</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {formStep === 0 ? (
-                  <div className="text-center py-8 space-y-3">
-                    <p className="text-gray-400 text-sm">Select an event to begin registration</p>
-                  </div>
-                ) : (
-                  <Tabs value={`step-${formStep}`} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 bg-[#262626] border border-gray-700">
-                      {['Driver', 'Vehicle', 'Sponsors', 'Confirm'].map((label, idx) => (
-                        <TabsTrigger
-                          key={idx}
-                          value={`step-${idx + 1}`}
-                          disabled={formStep < idx + 1}
-                          className="text-xs data-[state=active]:bg-white data-[state=active]:text-black"
-                        >
-                          {label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-
-                    {/* Step 1: Driver */}
-                    <TabsContent value="step-1" className="space-y-4 mt-4">
-                      {userDrivers.length === 0 ? (
-                        <div className="bg-amber-900/20 border border-amber-700/40 rounded-lg p-4 text-center space-y-3">
-                          <UserPlus className="w-8 h-8 text-amber-400 mx-auto" />
-                          <div>
-                            <p className="text-amber-300 font-semibold text-sm">No Driver Profile</p>
-                            <p className="text-amber-200/70 text-xs mt-1">Create one on your Profile page to register.</p>
-                          </div>
-                          <Link to={createPageUrl('Profile?tab=driver')}>
-                            <Button className="bg-amber-600 hover:bg-amber-700 text-white font-semibold w-full">
-                              <UserPlus className="w-4 h-4 mr-2" /> Create Driver Profile
-                            </Button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {userDrivers.length > 1 && (
-                            <div>
-                              <label className="text-xs text-gray-400 block mb-1">Driver</label>
-                              <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
-                                <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                                  <SelectValue placeholder="Select driver..." />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#262626] border-gray-700">
-                                  {userDrivers.map(d => (
-                                    <SelectItem key={d.id} value={d.id}>
-                                      {d.first_name} {d.last_name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                          {userDrivers.length === 1 && !selectedDriverId && selectedDriverId !== userDrivers[0].id && setSelectedDriverId(userDrivers[0].id)}
-
-                          {selectedDriver && (
-                            <div className="bg-[#262626] rounded-lg p-3 border border-green-800/50 space-y-1">
-                              <p className="font-semibold text-white text-sm">{selectedDriver.first_name} {selectedDriver.last_name}</p>
-                              {selectedDriver.contact_email && <p className="text-xs text-gray-400">{selectedDriver.contact_email}</p>}
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="text-xs text-gray-400 block mb-1">Emergency Contact Name</label>
-                            <Input
-                              value={formData.emergency_contact_name}
-                              onChange={e => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                              className="bg-[#262626] border-gray-700 text-white"
-                              placeholder="Full name"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-xs text-gray-400 block mb-1">Emergency Contact Phone</label>
-                            <Input
-                              value={formData.emergency_contact_phone}
-                              onChange={e => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
-                              className="bg-[#262626] border-gray-700 text-white"
-                              placeholder="Phone number"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-xs text-gray-400 block mb-1">License #</label>
-                              <Input
-                                value={formData.license_number}
-                                onChange={e => setFormData({ ...formData, license_number: e.target.value })}
-                                className="bg-[#262626] border-gray-700 text-white"
-                                placeholder="License"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs text-gray-400 block mb-1">License Expiration</label>
-                              <Input
-                                type="date"
-                                value={formData.license_expiration_date}
-                                onChange={e => setFormData({ ...formData, license_expiration_date: e.target.value })}
-                                className="bg-[#262626] border-gray-700 text-white"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    {/* Step 2: Vehicle */}
-                    <TabsContent value="step-2" className="space-y-3 mt-4">
-                      <div>
-                        <label className="text-xs text-gray-400 block mb-1">Car Number <span className="text-red-400">*</span></label>
-                        <Input
-                          value={formData.car_number}
-                          onChange={e => setFormData({ ...formData, car_number: e.target.value })}
-                          className="bg-[#262626] border-gray-700 text-white"
-                          placeholder="e.g. 42"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
-                        <Input
-                          value={formData.transponder_id}
-                          onChange={e => setFormData({ ...formData, transponder_id: e.target.value })}
-                          className="bg-[#262626] border-gray-700 text-white"
-                          placeholder="Optional"
-                        />
-                      </div>
-
-                      {teams.length > 0 && (
-                        <div>
-                          <label className="text-xs text-gray-400 block mb-1">Team (optional)</label>
-                          <Select value={formData.team_id} onValueChange={val => setFormData({ ...formData, team_id: val })}>
-                            <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                              <SelectValue placeholder="Select team..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#262626] border-gray-700">
-                              <SelectItem value={null}>No team</SelectItem>
-                              {teams.map(t => (
-                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="text-xs text-gray-400 block mb-1">Manufacturer</label>
-                        <Input
-                          value={formData.manufacturer}
-                          onChange={e => setFormData({ ...formData, manufacturer: e.target.value })}
-                          className="bg-[#262626] border-gray-700 text-white"
-                          placeholder="e.g. Chevrolet"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-gray-400 block mb-1">Vehicle Notes</label>
-                        <Textarea
-                          value={formData.vehicle_notes}
-                          onChange={e => setFormData({ ...formData, vehicle_notes: e.target.value })}
-                          className="bg-[#262626] border-gray-700 text-white h-16 resize-none"
-                          placeholder="Any notes..."
-                        />
-                      </div>
-                    </TabsContent>
-
-                    {/* Step 3: Sponsors */}
-                    <TabsContent value="step-3" className="space-y-3 mt-4">
-                      <div>
-                        <label className="text-xs text-gray-400 block mb-1">Sponsors</label>
-                        <Textarea
-                          value={formData.sponsors}
-                          onChange={e => setFormData({ ...formData, sponsors: e.target.value })}
-                          className="bg-[#262626] border-gray-700 text-white h-20 resize-none"
-                          placeholder="Comma-separated or one per line"
-                        />
-                      </div>
-                    </TabsContent>
-
-                    {/* Step 4: Confirm */}
-                    <TabsContent value="step-4" className="space-y-3 mt-4">
-                      <div className="bg-[#262626] rounded-lg p-4 space-y-2 text-sm border border-gray-700">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Event</span>
-                          <span className="text-white font-medium">{selectedEvent?.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Driver</span>
-                          <span className="text-white">{selectedDriver?.first_name} {selectedDriver?.last_name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Car #</span>
-                          <span className="text-white">{formData.car_number || '—'}</span>
-                        </div>
-                      </div>
-
-                      <label className="flex items-start gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={confirmChecked}
-                          onChange={e => setConfirmChecked(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 accent-white"
-                        />
-                        <span className="text-xs text-gray-300">
-                          I confirm this registration is accurate and complete
-                        </span>
-                      </label>
-                    </TabsContent>
-                  </Tabs>
-                )}
-
-                {/* Buttons */}
-                {formStep > 0 && (
-                  <div className="flex gap-2 mt-6">
-                    {formStep > 1 && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setFormStep(formStep - 1)}
-                        className="flex-1 border-gray-700 text-gray-300"
-                      >
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                      </Button>
-                    )}
-                    {formStep < 4 && (
-                      <Button
-                        onClick={() => setFormStep(formStep + 1)}
-                        className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
-                        disabled={formStep === 1 && !selectedDriverId}
-                      >
-                        Next <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    )}
-                    {formStep === 4 && (
-                      <Button
-                        onClick={() => submitMutation.mutate()}
-                        disabled={!confirmChecked || !formData.car_number || submitMutation.isPending}
-                        className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
-                      >
-                        {submitMutation.isPending ? 'Submitting...' : 'Submit Registration'}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Auth Dialog */}
-        <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        {/* Create Driver Dialog */}
+        <Dialog open={showCreateDriver} onOpenChange={setShowCreateDriver}>
           <DialogContent className="bg-[#171717] border-gray-800">
             <DialogHeader>
-              <DialogTitle className="text-white">Sign In to Register</DialogTitle>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5" /> Create Driver Profile
+              </DialogTitle>
               <DialogDescription className="text-gray-400">
-                You need to be logged in to complete your registration.
+                Create your driver profile to register for events.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex gap-2 mt-6">
+            <div className="space-y-3 py-4">
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">First Name <span className="text-red-400">*</span></label>
+                <Input
+                  value={driverFormData.first_name}
+                  onChange={e => setDriverFormData({ ...driverFormData, first_name: e.target.value })}
+                  className="bg-[#262626] border-gray-700 text-white"
+                  placeholder="First"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Last Name <span className="text-red-400">*</span></label>
+                <Input
+                  value={driverFormData.last_name}
+                  onChange={e => setDriverFormData({ ...driverFormData, last_name: e.target.value })}
+                  className="bg-[#262626] border-gray-700 text-white"
+                  placeholder="Last"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Hometown City</label>
+                <Input
+                  value={driverFormData.hometown_city}
+                  onChange={e => setDriverFormData({ ...driverFormData, hometown_city: e.target.value })}
+                  className="bg-[#262626] border-gray-700 text-white"
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Hometown State</label>
+                <Input
+                  value={driverFormData.hometown_state}
+                  onChange={e => setDriverFormData({ ...driverFormData, hometown_state: e.target.value })}
+                  className="bg-[#262626] border-gray-700 text-white"
+                  placeholder="State"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => setShowAuthDialog(false)}
+                onClick={() => setShowCreateDriver(false)}
                 className="flex-1 border-gray-700 text-gray-300"
               >
                 Cancel
               </Button>
               <Button
-                onClick={() => base44.auth.redirectToLogin()}
+                onClick={() => createDriverMutation.mutate(driverFormData)}
+                disabled={!driverFormData.first_name || !driverFormData.last_name || createDriverMutation.isPending}
                 className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
               >
-                <LogIn className="w-4 h-4 mr-2" /> Sign In
+                {createDriverMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </div>
           </DialogContent>
