@@ -51,6 +51,7 @@ import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardMutation from './useDashboardMutation';
 import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
+import ImportEntriesModal from './entries/ImportEntriesModal';
 import {
   parseComplianceFromNotes,
   isWaiverVerified,
@@ -97,6 +98,7 @@ export default function EntriesManager({
   const [showBulkTransponderModal, setShowBulkTransponderModal] = useState(false);
   const [bulkTransponderInput, setBulkTransponderInput] = useState('');
   const [bulkTransponderProgress, setBulkTransponderProgress] = useState({ current: 0, total: 0 });
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Queries - Entry as primary with DriverProgram fallback
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
@@ -543,6 +545,13 @@ export default function EntriesManager({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            onClick={() => setShowImportModal(true)}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white"
+            size="sm"
+          >
+            Import CSV
+          </Button>
           <Button
             onClick={() => setShowSelfService(true)}
             className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -1227,6 +1236,16 @@ export default function EntriesManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Import Entries Modal */}
+      <ImportEntriesModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        selectedEvent={selectedEvent}
+        dashboardPermissions={dashboardPermissions}
+        invalidateAfterOperation={invalidateAfterOperation}
+        existingEntries={entries}
+      />
 
       {/* Driver Self Service Drawer */}
       <DriverSelfServiceDrawer
