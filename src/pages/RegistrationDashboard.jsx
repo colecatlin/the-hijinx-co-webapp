@@ -10,6 +10,7 @@ import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderF
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
 import EntriesManager from '@/components/registrationdashboard/EntriesManager';
+import ImportEntriesModal from '@/components/registrationdashboard/entries/ImportEntriesModal';
 import DriverRegistrationPanel from '@/components/registrationdashboard/DriverRegistrationPanel';
 import ComplianceManager from '@/components/registrationdashboard/ComplianceManager';
 import CheckInManager from '@/components/registrationdashboard/CheckInManager';
@@ -149,6 +150,7 @@ export default function RegistrationDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showImportEntriesModal, setShowImportEntriesModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -708,16 +710,16 @@ export default function RegistrationDashboard() {
                     <Plus className="w-4 h-4 mr-1" /> Create Event
                   </Button>
                 )}
-                {canAction(dashboardPermissions, 'import_csv') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowImportModal(true)}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Upload className="w-4 h-4 mr-1" /> Import CSV
-                  </Button>
-                )}
+                {canAction(dashboardPermissions, 'import_csv') && selectedEvent && (
+                   <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={() => setShowImportEntriesModal(true)}
+                     className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                   >
+                     <Upload className="w-4 h-4 mr-1" /> Import Entries CSV
+                   </Button>
+                 )}
                 {canAction(dashboardPermissions, 'sync_timing') && (
                   <Button
                     variant="outline"
@@ -1379,24 +1381,15 @@ export default function RegistrationDashboard() {
           </DialogContent>
         </Dialog>
 
-        {/* Import CSV Modal */}
-        {showImportModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <Card className="bg-[#262626] border-gray-700 w-96">
-              <CardHeader>
-                <CardTitle className="text-white">Import CSV</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-400">CSV import functionality coming soon</p>
-                <div className="flex justify-end">
-                  <Button onClick={() => setShowImportModal(false)} className="bg-gray-700 hover:bg-gray-600">
-                    Close
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {/* Import Entries CSV Modal */}
+        <ImportEntriesModal
+          isOpen={showImportEntriesModal}
+          onClose={() => setShowImportEntriesModal(false)}
+          selectedEvent={selectedEvent}
+          dashboardPermissions={dashboardPermissions}
+          invalidateAfterOperation={invalidateAfterOperation}
+          existingEntries={regEntries || []}
+        />
 
         {/* Sync Timing Modal */}
         {showSyncModal && (
