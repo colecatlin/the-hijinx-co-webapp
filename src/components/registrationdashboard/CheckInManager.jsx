@@ -295,6 +295,16 @@ export default function CheckInManager({
   };
 
   const handleOneTapCheckIn = () => {
+    const blockers = getCheckInBlockers(formData);
+    if (blockers.length > 0) {
+      if (isAdmin) {
+        setPendingCheckIn(true);
+        setShowOverrideDialog(true);
+      } else {
+        toast.error('Cannot check in: ' + blockers.join(', '));
+      }
+      return;
+    }
     updateMutation.mutate({ entry_status: 'Checked In' });
   };
 
