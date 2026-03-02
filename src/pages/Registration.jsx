@@ -45,19 +45,32 @@ async function writeOperationLog(type, entityName, entryId, eventId, driverId, c
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function Registration() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
 
-  // Step 1 state
-  const [trackFilter, setTrackFilter] = useState('all');
-  const [seriesFilter, setSeriesFilter] = useState('all');
-  const [seasonFilter, setSeasonFilter] = useState('all');
+  // URL params
+  const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const [orgType, setOrgType] = useState(urlParams.get('orgType') || '');
+  const [orgId, setOrgId] = useState(urlParams.get('orgId') || '');
+  const [seasonYear, setSeasonYear] = useState(urlParams.get('seasonYear') || '');
+  const [eventId, setEventId] = useState(urlParams.get('eventId') || '');
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Step 3 state
-  const [entryForm, setEntryForm] = useState({ car_number: '', transponder_id: '', team_id: '', series_class_id: '', notes: '' });
-  const [carNumberError, setCarNumberError] = useState('');
-  const [waiverChecked, setWaiverChecked] = useState(false);
-  const [copied, setCopied] = useState(false);
+  // Form state
+  const [formStep, setFormStep] = useState(1); // 1=driver, 2=vehicle, 3=sponsors, 4=confirm
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [formData, setFormData] = useState({
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    license_number: '',
+    license_expiration_date: '',
+    car_number: '',
+    transponder_id: '',
+    team_id: '',
+    manufacturer: '',
+    vehicle_notes: '',
+    sponsors: '',
+  });
+  const [confirmChecked, setConfirmChecked] = useState(false);
 
   // ── Auth ──
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), ...DQ });
