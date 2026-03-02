@@ -68,6 +68,10 @@ export const QueryKeys = {
     byEvent: (eventId) => ['standings', 'event', eventId],
   },
 
+  entries: {
+    listByEvent: (eventId) => ['entries', eventId ?? null],
+  },
+
   operationLog: {
     recent: (limit)   => ['operationLogs', limit ?? 'default'],
   },
