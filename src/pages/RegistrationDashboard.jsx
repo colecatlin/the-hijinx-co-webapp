@@ -174,13 +174,8 @@ export default function RegistrationDashboard() {
   // we must call hooks unconditionally — hook handles enabled guards internally)
   // We'll wire it after selectedEvent resolves below.
 
-  // Dashboard context object
-  const dashboardContext = useMemo(() => ({
-    orgType: organizationType,
-    orgId: organizationId,
-    season: seasonYear,
-    eventId: eventId,
-  }), [organizationType, organizationId, seasonYear, eventId]);
+  // Dashboard context object (aliased from dashContext for prop passing)
+  const dashboardContext = dashContext;
 
   // Centralized invalidation helper – available to all tab components
   const invalidateAfterOperation = useMemo(
