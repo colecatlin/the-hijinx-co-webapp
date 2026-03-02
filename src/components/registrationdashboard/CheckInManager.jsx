@@ -169,23 +169,17 @@ export default function CheckInManager({ selectedEvent, user }) {
   };
 
   const handleTogglePayment = () => {
-    if ('payment_status' in formData) {
-      updateMutation.mutate({ payment_status: formData.payment_status === 'Paid' ? 'Unpaid' : 'Paid' });
-    }
+    updateMutation.mutate({ payment_status: formData?.payment_status === 'Paid' ? 'Unpaid' : 'Paid' });
   };
 
   const handleWristbandChange = (delta) => {
-    if ('wristband_count' in formData) {
-      const newCount = Math.max(0, (formData.wristband_count || 0) + delta);
-      updateMutation.mutate({ wristband_count: newCount });
-    }
+    const newCount = Math.max(0, (formData?.wristband_count || 0) + delta);
+    setFormData({ ...formData, wristband_count: newCount });
   };
 
   const handleNotesChange = () => {
-    if ('notes' in formData) {
-      updateMutation.mutate({ notes: formData.notes });
-      setNotesMode(false);
-    }
+    updateMutation.mutate({ notes: formData.notes });
+    setNotesMode(false);
   };
 
   const handleQrSubmit = (e) => {
