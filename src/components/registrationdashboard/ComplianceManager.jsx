@@ -18,17 +18,25 @@ import { toast } from 'sonner';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import useDashboardMutation from './useDashboardMutation';
 
 const DQ = applyDefaultQueryOptions();
 
-export default function ComplianceManager({ selectedEvent, onComplianceSeverityChange, user, canAction }) {
+export default function ComplianceManager({
+  selectedEvent,
+  onComplianceSeverityChange,
+  user,
+  canAction,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+}) {
   const [classFilter, setClassFilter] = useState('all');
   const [flagTypeFilter, setFlagTypeFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const queryClient = useQueryClient();
-  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
   const hasPermission = canAction?.includes('complianceUpdate');
 
   // Check auth status
