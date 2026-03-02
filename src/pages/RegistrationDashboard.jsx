@@ -1079,20 +1079,68 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
-                <ResultsManager
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  selectedEvent={selectedEvent}
-                  isAdmin={isAdmin}
-                  standingsLastCalculatedAt={standingsLastCalculatedAt}
-                  onSetStandingsDirty={() => setStandingsDirty(true)}
-                  requireAdminOverride={requireAdminOverride}
-                  onShowOverrideDialog={setOverrideDialog}
-                  onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
-                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                />
+                <div className="space-y-4">
+                  {/* Announcer Mode toggle */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1" />
+                    <button
+                      onClick={() => setAnnouncerMode(m => !m)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        announcerMode
+                          ? 'bg-purple-900/40 border-purple-700 text-purple-300'
+                          : 'bg-[#262626] border-gray-700 text-gray-400 hover:text-white hover:border-gray-600'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${announcerMode ? 'bg-purple-400 animate-pulse' : 'bg-gray-600'}`} />
+                      Announcer Mode
+                    </button>
+                  </div>
+
+                  {announcerMode ? (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                      <div>
+                        <ResultsManager
+                          dashboardContext={dashboardContext}
+                          dashboardPermissions={dashboardPermissions}
+                          selectedEvent={selectedEvent}
+                          isAdmin={isAdmin}
+                          standingsLastCalculatedAt={standingsLastCalculatedAt}
+                          onSetStandingsDirty={() => setStandingsDirty(true)}
+                          requireAdminOverride={requireAdminOverride}
+                          onShowOverrideDialog={setOverrideDialog}
+                          onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
+                          onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                          onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                          onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                        />
+                      </div>
+                      <div>
+                        <AnnouncerPanel
+                          selectedEvent={selectedEvent}
+                          selectedTrack={selectedTrack}
+                          selectedSeries={selectedSeries}
+                          sessions={sessions}
+                          results={results}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <ResultsManager
+                      dashboardContext={dashboardContext}
+                      dashboardPermissions={dashboardPermissions}
+                      selectedEvent={selectedEvent}
+                      isAdmin={isAdmin}
+                      standingsLastCalculatedAt={standingsLastCalculatedAt}
+                      onSetStandingsDirty={() => setStandingsDirty(true)}
+                      requireAdminOverride={requireAdminOverride}
+                      onShowOverrideDialog={setOverrideDialog}
+                      onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
+                      onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                      onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                      onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                    />
+                  )}
+                </div>
               )}
 
               {canTab(dashboardPermissions, 'points_standings') && activeTab === 'pointsStandings' && (
