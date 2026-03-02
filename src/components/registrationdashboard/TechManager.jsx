@@ -77,7 +77,11 @@ const TECH_TEMPLATES = {
   ],
 };
 
-const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
+
+const DQ = applyDefaultQueryOptions();
 
 export default function TechManager({ selectedEvent, user, canAction }) {
   const [classFilter, setClassFilter] = useState('all');
