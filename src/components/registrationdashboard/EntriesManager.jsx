@@ -285,7 +285,7 @@ export default function EntriesManager({
       waiver_status: addFormData.waiver_status || 'Missing',
     };
 
-    createEntryMutation.mutate(data);
+    createEntry(data).then(() => { setShowAddDialog(false); setAddFormData({}); });
   };
 
   const handleBulkAction = (action) => {
@@ -295,25 +295,15 @@ export default function EntriesManager({
       .map((id) => entries.find((e) => e.id === id))
       .filter(Boolean);
 
+    let updates;
     if (action === 'withdraw') {
-      const updates = selectedList.map((e) => ({
-        id: e.id,
-        data: { entry_status: 'Withdrawn' },
-      }));
-      bulkUpdateMutation.mutate(updates);
+      updates = selectedList.map((e) => ({ id: e.id, data: { entry_status: 'Withdrawn' } }));
     } else if (action === 'checkin') {
-      const updates = selectedList.map((e) => ({
-        id: e.id,
-        data: { entry_status: 'Checked In' },
-      }));
-      bulkUpdateMutation.mutate(updates);
+      updates = selectedList.map((e) => ({ id: e.id, data: { entry_status: 'Checked In' } }));
     } else if (action === 'teched') {
-      const updates = selectedList.map((e) => ({
-        id: e.id,
-        data: { entry_status: 'Teched', tech_status: 'Passed' },
-      }));
-      bulkUpdateMutation.mutate(updates);
+      updates = selectedList.map((e) => ({ id: e.id, data: { entry_status: 'Teched', tech_status: 'Passed' } }));
     }
+    if (updates) bulkUpdateEntries(updates).then(() => setSelectedEntries(new Set()));
   };
 
   const handleExportCSV = () => {
