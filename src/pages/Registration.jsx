@@ -185,6 +185,8 @@ export default function Registration() {
         transponder_id: existingEntry.transponder_id || '',
         team_id: existingEntry.team_id || '',
         series_class_id: existingEntry.series_class_id || '',
+        license_number: existingEntry.license_number || '',
+        license_expiration_date: existingEntry.license_expiration_date || '',
         notes: existingEntry.notes || '',
       });
     }
@@ -250,10 +252,14 @@ export default function Registration() {
       series_class_id: entryForm.series_class_id || undefined,
       car_number: entryForm.car_number.trim(),
       transponder_id: entryForm.transponder_id || undefined,
+      license_number: entryForm.license_number || undefined,
+      license_expiration_date: entryForm.license_expiration_date || undefined,
       notes: entryForm.notes || undefined,
       entry_status: 'Registered',
       payment_status: 'Unpaid',
       waiver_status: 'Missing',
+      waiver_verified: false,
+      compliance_status: 'needs_attention',
       tech_status: 'Not Inspected',
       wristband_count: 0,
     });
@@ -273,6 +279,8 @@ export default function Registration() {
         transponder_id: entryForm.transponder_id || undefined,
         team_id: entryForm.team_id || undefined,
         series_class_id: entryForm.series_class_id || undefined,
+        license_number: entryForm.license_number || undefined,
+        license_expiration_date: entryForm.license_expiration_date || undefined,
         notes: entryForm.notes || undefined,
       },
     });
@@ -294,6 +302,8 @@ export default function Registration() {
       entry_status: 'Registered',
       payment_status: 'Unpaid',
       waiver_status: 'Missing',
+      waiver_verified: false,
+      compliance_status: 'needs_attention',
       tech_status: 'Not Inspected',
       wristband_count: 0,
     });
