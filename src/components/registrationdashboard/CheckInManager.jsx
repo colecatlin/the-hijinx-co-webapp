@@ -42,7 +42,24 @@ export default function CheckInManager({
   const queryClient = useQueryClient();
 
   const eventId = selectedEvent?.id;
-  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
+
+  const sharedMutationOpts = {
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  };
+
+  const { mutateAsync: updateEntryAsync, isPending: updatePending } = useDashboardMutation({
+    operationType: 'checkin_updated',
+    entityName: 'Entry',
+    mutationFn: async ({ id, data }) => {
+      const result = await base44.entities.Entry.update(id, data);
+      return result;
+    },
+    successMessage: 'Updated',
+    ...sharedMutationOpts,
+  });
 
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
     queryKey: QueryKeys.entries.listByEvent(eventId),
