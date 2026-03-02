@@ -326,8 +326,8 @@ export default function CheckInManager({ selectedEvent, user }) {
                   </div>
                   <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
                   <div className="flex flex-wrap gap-1">
-                    <Badge variant={entry.check_in_status === 'CheckedIn' || entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
-                      {entry.check_in_status || entry.entry_status || 'Registered'}
+                    <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
+                      {entry.entry_status || 'Registered'}
                     </Badge>
                   </div>
                 </button>
@@ -364,8 +364,8 @@ export default function CheckInManager({ selectedEvent, user }) {
                   </div>
                   <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
                   <div className="flex flex-wrap gap-1">
-                    <Badge variant={entry.check_in_status === 'CheckedIn' || entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
-                      {entry.check_in_status || entry.entry_status || 'Registered'}
+                    <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
+                      {entry.entry_status || 'Registered'}
                     </Badge>
                   </div>
                 </button>
