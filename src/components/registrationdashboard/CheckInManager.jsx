@@ -28,45 +28,38 @@ export default function CheckInManager({ selectedEvent, user }) {
   const qrInputRef = useRef(null);
   const queryClient = useQueryClient();
 
-  const { data: entries = [], isLoading: entriesLoading } = useQuery({
-    queryKey: ['entries', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+  const eventId = selectedEvent?.id;
+
+  const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    ...DQ,
   });
 
   const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.EventClass.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    ...DQ,
   });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    ...DQ,
   });
 
   const updateMutation = useMutation({
