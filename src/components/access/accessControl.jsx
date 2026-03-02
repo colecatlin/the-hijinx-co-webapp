@@ -46,6 +46,7 @@ const ROLE_PERMISSIONS = {
       tech: true,
       results: true,
       checkin: true,
+      announcer: true,
     },
     actions: {
       import_csv: true,
