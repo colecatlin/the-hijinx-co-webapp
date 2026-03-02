@@ -424,7 +424,7 @@ export default function EntriesManager({
     );
   }
 
-  if (entriesError) {
+  if (entriesError && !isUsingFallback) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center space-y-3">
