@@ -75,6 +75,7 @@ import {
   Clock,
   Mic,
   DoorOpen,
+  Radio,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
