@@ -383,14 +383,17 @@ export default function RegistrationDashboard() {
     setOverrideReason('');
   };
 
-  // Update URL params when state changes
+  // ── Debounced URL write (250 ms) ──────────────────────────────────────────
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (organizationType) params.set('orgType', organizationType);
-    if (organizationId) params.set('orgId', organizationId);
-    if (seasonYear) params.set('seasonYear', seasonYear);
-    if (eventId) params.set('eventId', eventId);
-    setSearchParams(params, { replace: true });
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (organizationType) params.set('orgType', organizationType);
+      if (organizationId) params.set('orgId', organizationId);
+      if (seasonYear) params.set('seasonYear', seasonYear);
+      if (eventId) params.set('eventId', eventId);
+      setSearchParams(params, { replace: true });
+    }, 250);
+    return () => clearTimeout(timer);
   }, [organizationType, organizationId, seasonYear, eventId, setSearchParams]);
 
   useEffect(() => {
