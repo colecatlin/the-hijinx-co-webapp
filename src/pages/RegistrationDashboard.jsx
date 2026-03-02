@@ -144,6 +144,7 @@ export default function RegistrationDashboard() {
   const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
   const [overrideText, setOverrideText] = useState('');
   const [overrideReason, setOverrideReason] = useState('');
+  const queryClient = useQueryClient();
 
   const [organizationType, setOrganizationType] = useState(
     searchParams.get('orgType') || 'track'
