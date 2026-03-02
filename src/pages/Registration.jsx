@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Calendar,
-  LogIn, ExternalLink, LayoutDashboard, UserPlus, Building2, Lock, Check, Radio,
+  LogIn, ExternalLink, LayoutDashboard, UserPlus, Building2, Lock, Check, Radio, Truck,
 } from 'lucide-react';
 
 const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
