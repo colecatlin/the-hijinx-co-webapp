@@ -16,7 +16,10 @@ import {
 import { ChevronRight, Plus, Minus, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+
+const DQ = applyDefaultQueryOptions();
 
 export default function CheckInManager({ selectedEvent, user }) {
   const [classFilter, setClassFilter] = useState('all');

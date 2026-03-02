@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
+import { QueryKeys } from '@/components/utils/queryKeys';
 
 export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const queryClient = useQueryClient();
