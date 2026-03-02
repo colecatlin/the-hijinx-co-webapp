@@ -242,12 +242,9 @@ export default function ClassSessionBuilder({
 
     const temp = session.session_order || 0;
     Promise.all([
-      base44.entities.Session.update(session.id, { session_order: swapSession.session_order || 0 }),
-      base44.entities.Session.update(swapSession.id, { session_order: temp }),
-    ]).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      toast.success('Order updated');
-    });
+      updateSession({ id: session.id, data: { session_order: swapSession.session_order || 0 } }),
+      updateSession({ id: swapSession.id, data: { session_order: temp } }),
+    ]);
   };
 
   const handleSaveSession = () => {
