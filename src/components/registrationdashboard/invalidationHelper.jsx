@@ -1,56 +1,124 @@
 /**
- * Centralized cache invalidation map for RegistrationDashboard.
+ * Centralized cache invalidation for RegistrationDashboard.
  *
- * Each operationType maps to an array of base query key PREFIXES.
- * React Query will match all queries whose key STARTS WITH each entry.
- *
- * Key prefixes here must match the root segments produced by QueryKeys.*
- * so that dashboard mutations automatically refresh public pages that share
- * the same query keys (EventResults, StandingsHome, SeriesDetail, etc.).
+ * Uses REG_QK for exact targeted invalidation when payload is provided.
+ * Falls back to broad prefix invalidation for backward compatibility.
  */
-export const INVALIDATION_MAP = {
-  event_updated:                [['events'], ['selectedEvent']],
-  event_published:              [['events'], ['selectedEvent'], ['operationLogs']],
-  event_status_changed:         [['events'], ['selectedEvent'], ['sessions'], ['operationLogs']],
-  session_updated:              [['sessions'], ['session'], ['operationLogs']],
-  session_status_changed:       [['sessions'], ['session'], ['results'], ['operationLogs']],
-  results_saved:                [['results'], ['operationLogs']],
-  results_published_provisional:[['results'], ['sessions'], ['operationLogs']],
-  results_published_official:   [['results'], ['sessions'], ['standings'], ['operationLogs']],
-  results_locked:               [['results'], ['sessions'], ['operationLogs']],
-  standings_recalculated:       [['standings'], ['driverPrograms'], ['series'], ['operationLogs']],
-  entries_updated:              [['entries'], ['operationLogs']],
-  entry_created:                [['entries'], ['operationLogs']],
-  entry_updated:                [['entries'], ['operationLogs']],
-  entry_deleted:                [['entries'], ['operationLogs']],
-  entry_bulk_updated:           [['entries'], ['operationLogs']],
-  entry_checked_in:             [['entries'], ['myEntry'], ['operationLogs']],
-  checkin_updated:              [['entries'], ['operationLogs']],
-  tech_updated:                 [['entries'], ['operationLogs']],
-  compliance_updated:           [['entries'], ['operationLogs']],
-  import_completed:             [['results'], ['sessions'], ['entries'], ['operationLogs']],
-  export_completed:             [['operationLogs']],
-  integration_sync_completed:   [['results'], ['sessions'], ['operationLogs']],
-};
+import { REG_QK } from './queryKeys';
+
+/**
+ * Returns the precise REG_QK keys to invalidate for a given operationType + payload.
+ * Also includes legacy broad-prefix keys so any component still using old keys gets refreshed.
+ */
+function getKeysForOperation(operationType, payload = {}) {
+  const { eventId, seriesId, seasonYear } = payload;
+
+  // Exact REG_QK keys (targeted, precise)
+  const exact = [];
+  // Legacy prefix keys (broad, backward-compat with components not yet migrated)
+  const broad = [];
+
+  switch (operationType) {
+    case 'event_updated':
+    case 'event_status_changed':
+    case 'event_published':
+      broad.push(['events'], ['selectedEvent'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
+      break;
+
+    case 'session_created':
+    case 'session_updated':
+    case 'session_deleted':
+    case 'session_locked':
+    case 'session_status_changed':
+      broad.push(['sessions'], ['session'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
+      if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+      break;
+
+    case 'results_saved':
+    case 'results_updated':
+    case 'results_published':
+    case 'results_published_provisional':
+      broad.push(['results'], ['sessions'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
+      break;
+
+    case 'results_published_official':
+    case 'results_locked':
+      broad.push(['results'], ['sessions'], ['standings'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
+      if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+      break;
+
+    case 'entries_updated':
+    case 'entry_created':
+    case 'entry_updated':
+    case 'entry_deleted':
+    case 'entry_bulk_updated':
+    case 'entry_checked_in':
+    case 'checkin_updated':
+    case 'tech_updated':
+    case 'compliance_updated':
+      broad.push(['entries'], ['myEntry'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.driverPrograms(eventId), REG_QK.operationLogs(eventId));
+      break;
+
+    case 'standings_recalculated':
+      broad.push(['standings'], ['driverPrograms'], ['series'], ['operationLogs']);
+      if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+      if (eventId) exact.push(REG_QK.operationLogs(eventId));
+      break;
+
+    case 'import_completed':
+      broad.push(['results'], ['sessions'], ['entries'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
+      break;
+
+    case 'export_completed':
+      broad.push(['operationLogs']);
+      if (eventId) exact.push(REG_QK.operationLogs(eventId));
+      break;
+
+    case 'integration_sync_completed':
+    case 'sync_completed':
+    case 'sync_failed':
+      broad.push(['results'], ['sessions'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
+      break;
+
+    default:
+      console.warn(`[invalidateAfterOperation] Unknown operationType: "${operationType}"`);
+      // Broad fallback
+      broad.push(['events'], ['sessions'], ['results'], ['entries'], ['standings'], ['operationLogs'],
+                 ['reg']); // catches all REG_QK keys
+      break;
+  }
+
+  return { exact, broad };
+}
 
 /**
  * Factory: given a queryClient, returns an invalidateAfterOperation function.
- * Usage:
- *   const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
- *   invalidateAfterOperation('entries_updated', { eventId });
  *
  * @param {object} queryClient
  * @returns {function(operationType: string, payload?: object): void}
  */
 export function buildInvalidateAfterOperation(queryClient) {
   return function invalidateAfterOperation(operationType, payload = {}) {
-    const targets = INVALIDATION_MAP[operationType];
-    if (!targets) {
-      console.warn(`[invalidateAfterOperation] Unknown operationType: "${operationType}"`);
-      return;
-    }
-    targets.forEach((queryKey) => {
+    const { exact, broad } = getKeysForOperation(operationType, payload);
+
+    // Invalidate exact targeted keys first (no prefix matching needed)
+    exact.forEach((queryKey) => {
+      queryClient.invalidateQueries({ queryKey, exact: true });
+    });
+
+    // Invalidate broad prefix keys for backward compat
+    broad.forEach((queryKey) => {
       queryClient.invalidateQueries({ queryKey });
     });
   };
 }
+
+// Legacy export for any file still importing INVALIDATION_MAP
+export const INVALIDATION_MAP = {};
