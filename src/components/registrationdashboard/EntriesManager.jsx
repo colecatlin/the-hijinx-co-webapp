@@ -437,7 +437,7 @@ export default function EntriesManager({
     );
   }
 
-  const hasBulkSelection = selectedEntries.size > 0;
+  const hasBulkSelection = selectedEntries.size > 0 && !isUsingFallback;
 
   // Table windowing: only render rows in visible range when dataset is large
   const ROW_HEIGHT = 44; // approximate height in pixels
