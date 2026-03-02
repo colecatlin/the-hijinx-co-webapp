@@ -434,14 +434,15 @@ export default function RegistrationDashboard() {
     prevEventIdRef.current = eventId;
 
     if (eventId) {
-      // Prefetch sessions and results for the new event
+      // Prefetch sessions and results for the new event using REG_QK keys
+      const { REG_QK: RK } = require('@/components/registrationdashboard/queryKeys');
       queryClient.prefetchQuery({
-        queryKey: QueryKeys.sessions.listByEvent(eventId),
+        queryKey: RK.sessions(eventId),
         queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
         ...DQ,
       });
       queryClient.prefetchQuery({
-        queryKey: QueryKeys.results.listByEvent(eventId),
+        queryKey: RK.results(eventId),
         queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
         ...DQ,
       });
