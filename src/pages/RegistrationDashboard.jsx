@@ -938,6 +938,14 @@ export default function RegistrationDashboard() {
                   <Mic className="w-4 h-4 mr-2" /> Announcer
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'gate') && (
+                <TabsTrigger
+                  value="gate"
+                  className="data-[state=active]:bg-green-800 data-[state=active]:text-green-100 text-gray-400 px-4 py-2"
+                >
+                  <DoorOpen className="w-4 h-4 mr-2" /> Gate
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Lazy-mounted tabs: only render active tab content */}
