@@ -33,12 +33,13 @@ export default function SeriesDetail() {
   const [selectedClassName, setSelectedClassName] = useState('');
 
   const { data: series, isLoading } = useQuery({
-    queryKey: ['series', seriesSlug],
+    queryKey: QueryKeys.series.byId(seriesSlug),
     queryFn: async () => {
       const all = await base44.entities.Series.list();
       return all.find(s => s.slug === seriesSlug || s.id === seriesSlug);
     },
     enabled: !!seriesSlug,
+    ...DQ,
   });
 
   const { data: events = [] } = useQuery({
@@ -53,39 +54,46 @@ export default function SeriesDetail() {
       });
     },
     enabled: !!series?.id,
+    ...DQ,
   });
 
   const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
   
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', series?.id],
+    queryKey: QueryKeys.series.classes(series?.id),
     queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
     enabled: !!series?.id,
+    ...DQ,
   });
 
   const { data: allEvents = [] } = useQuery({
-    queryKey: ['allEvents'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list(),
+    ...DQ,
   });
 
   const { data: allTracks = [] } = useQuery({
-    queryKey: ['allTracks'],
+    queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
+    ...DQ,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: QueryKeys.sessions.listByEvent(undefined),
     queryFn: () => base44.entities.Session.list(),
+    ...DQ,
   });
 
   const { data: results = [] } = useQuery({
-    queryKey: ['results'],
+    queryKey: QueryKeys.results.listByEvent(undefined),
     queryFn: () => base44.entities.Results.list(),
+    ...DQ,
   });
 
   const { data: standings = [] } = useQuery({
-    queryKey: ['standings'],
+    queryKey: QueryKeys.standings.bySeriesSeason(series?.id, seasonYear),
     queryFn: () => base44.entities.Standings.list(),
+    ...DQ,
   });
 
   if (isLoading) {
