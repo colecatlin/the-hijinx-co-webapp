@@ -50,6 +50,7 @@ import { QueryKeys } from '@/components/utils/queryKeys';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardMutation from './useDashboardMutation';
+import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -78,6 +79,7 @@ export default function EntriesManager({
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showSelfService, setShowSelfService] = useState(false);
   const [addFormData, setAddFormData] = useState({});
   const [drawerFormData, setDrawerFormData] = useState({});
 
@@ -471,6 +473,13 @@ export default function EntriesManager({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            onClick={() => setShowSelfService(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            size="sm"
+          >
+            My Registration Profile
+          </Button>
           <Button
             onClick={() => setShowAddDialog(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -1031,6 +1040,15 @@ export default function EntriesManager({
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Driver Self Service Drawer */}
+      <DriverSelfServiceDrawer
+        open={showSelfService}
+        onOpenChange={setShowSelfService}
+        selectedEvent={selectedEvent}
+        dashboardContext={dashboardContext}
+        invalidateAfterOperation={invalidateAfterOperation}
+      />
     </div>
   );
 }
