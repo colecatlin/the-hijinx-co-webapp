@@ -948,6 +948,14 @@ export default function RegistrationDashboard() {
                   <DoorOpen className="w-4 h-4 mr-2" /> Gate
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'race_control') && (
+                <TabsTrigger
+                  value="race_control"
+                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2"
+                >
+                  <Radio className="w-4 h-4 mr-2" /> Race Control
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Lazy-mounted tabs: only render active tab content */}
