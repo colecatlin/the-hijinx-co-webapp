@@ -69,36 +69,25 @@ export default function ComplianceManager({
     ...DQ,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async (updateData) => {
-      const result = await base44.entities.Entry.update(selectedEntry.id, updateData);
-      
-      // Log operation
-      try {
-        await base44.asServiceRole.entities.OperationLog.create({
-          operation_type: 'compliance_update',
-          status: 'success',
-          entity_name: 'Entry',
-          entity_id: selectedEntry.id,
-          metadata: JSON.stringify(updateData),
-          source_type: 'ComplianceManager',
-          event_id: selectedEvent?.id,
-        });
-      } catch (e) {
-        console.warn('Failed to log operation:', e);
-      }
-      
-      return result;
-    },
-    onSuccess: (updatedEntry) => {
-      invalidateAfterOperation('compliance_updated');
-      setSelectedEntry(updatedEntry);
-      toast.success('Entry updated');
-    },
-    onError: () => {
-      toast.error('Failed to update entry');
-    },
+  const { mutateAsync: updateEntryAsync, isPending: updatePending } = useDashboardMutation({
+    operationType: 'compliance_updated',
+    entityName: 'Entry',
+    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    successMessage: 'Entry updated',
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId: selectedEvent?.id },
+    selectedEvent: selectedEvent ?? null,
   });
+
+  const updateMutation = {
+    isPending: updatePending,
+    mutate: (updateData) => {
+      if (!selectedEntry) return;
+      updateEntryAsync({ id: selectedEntry.id, data: updateData }).then((updated) => {
+        if (updated) setSelectedEntry((prev) => ({ ...prev, ...updateData }));
+      });
+    },
+  };
 
   const getDriverName = (driverId) => {
     const driver = drivers.find((d) => d.id === driverId);
