@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { ChevronRight, Clock, AlertCircle, Upload, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
+import useDashboardMutation from './useDashboardMutation';
 
 // Tech checklist templates
 const TECH_TEMPLATES = {
