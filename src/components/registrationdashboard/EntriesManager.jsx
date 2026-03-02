@@ -81,10 +81,42 @@ export default function EntriesManager({
   const [addFormData, setAddFormData] = useState({});
   const [drawerFormData, setDrawerFormData] = useState({});
 
-  // Queries
+  // Queries - Entry as primary with DriverProgram fallback
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
     queryKey: QueryKeys.entries.listByEvent(eventId),
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Entry.filter({ event_id: eventId });
+      } catch (err) {
+        // Fallback to DriverProgram if Entry is not available
+        if (err.message?.includes('entity') || err.message?.includes('not found')) {
+          try {
+            const programs = await base44.entities.DriverProgram.filter({ event_id: eventId });
+            return programs.filter(p => p.event_id).map(p => ({
+              id: p.id,
+              event_id: p.event_id,
+              driver_id: p.driver_id,
+              team_id: p.team_id,
+              series_id: p.series_id,
+              series_class_id: p.series_class_id,
+              car_number: p.car_number || '',
+              transponder_id: p.transponder_id || '',
+              entry_status: 'Unknown',
+              payment_status: 'Unknown',
+              tech_status: 'Unknown',
+              waiver_status: 'Missing',
+              license_status: 'Unknown',
+              compliance_flags: [],
+              notes: p.notes || '',
+              _sourceType: 'DriverProgram',
+            }));
+          } catch {
+            return [];
+          }
+        }
+        throw err;
+      }
+    },
     enabled: !!eventId,
     ...DQ,
   });
