@@ -396,6 +396,27 @@ export default function TechManager({ selectedEvent, user, canAction }) {
     );
   }
 
+  if (entriesLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-14 bg-gray-800/50 rounded animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (entriesError) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center space-y-3">
+          <p className="text-red-400 text-sm">Failed to load tech entries</p>
+          <Button size="sm" variant="outline" onClick={() => refetchEntries()} className="border-gray-700 text-gray-300">Retry</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (entries.length === 0) {
     return (
       <Card className="bg-[#171717] border-gray-800">
