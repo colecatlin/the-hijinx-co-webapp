@@ -83,7 +83,7 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
       return result;
     },
     onSuccess: (updatedEntry) => {
-      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
+      invalidateAfterOperation('compliance_updated');
       setSelectedEntry(updatedEntry);
       toast.success('Entry updated');
     },
