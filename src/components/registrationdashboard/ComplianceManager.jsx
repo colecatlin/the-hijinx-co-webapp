@@ -494,16 +494,16 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
                 <div className="space-y-2 border-t border-gray-800 pt-4">
                   <p className="text-xs font-medium text-gray-400">Quick Actions</p>
                   <div className="space-y-2">
-                    {'waiver_verified' in selectedEntry && !selectedEntry.waiver_verified && (
+                    {selectedEntry.waiver_status !== 'Verified' && (
                       <Button
-                        onClick={() => updateMutation.mutate({ waiver_verified: true })}
+                        onClick={() => updateMutation.mutate({ waiver_status: 'Verified' })}
                         disabled={updateMutation.isPending}
                         className="w-full bg-yellow-600 hover:bg-yellow-700"
                       >
                         Mark Waiver Verified
                       </Button>
                     )}
-                    {'payment_status' in selectedEntry && selectedEntry.payment_status !== 'Paid' && (
+                    {selectedEntry.payment_status !== 'Paid' && (
                       <Button
                         onClick={() => updateMutation.mutate({ payment_status: 'Paid' })}
                         disabled={updateMutation.isPending}
