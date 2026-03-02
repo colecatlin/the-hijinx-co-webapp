@@ -220,7 +220,7 @@ export default function RegistrationDashboard() {
   const liveRefetchInterval = isLiveEvent ? 20_000 : false;
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions', eventId],
+    queryKey: QueryKeys.sessions.listByEvent(eventId),
     queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: !!isAuthenticated && !!eventId,
     refetchInterval: liveRefetchInterval,
@@ -228,7 +228,7 @@ export default function RegistrationDashboard() {
   });
 
   const { data: standings = [] } = useQuery({
-    queryKey: ['standings', organizationId, seasonYear],
+    queryKey: QueryKeys.standings.bySeriesSeason(organizationId, seasonYear),
     queryFn: () => {
       if (organizationType !== 'series' || !organizationId) return Promise.resolve([]);
       return base44.entities.Standings.filter({ series_id: organizationId, season: seasonYear });
@@ -238,7 +238,7 @@ export default function RegistrationDashboard() {
   });
 
   const { data: results = [] } = useQuery({
-    queryKey: ['results', eventId],
+    queryKey: QueryKeys.results.listByEvent(eventId),
     queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: !!isAuthenticated && !!eventId,
     refetchInterval: liveRefetchInterval,
@@ -246,7 +246,7 @@ export default function RegistrationDashboard() {
   });
 
   const { data: operationLogs = [] } = useQuery({
-    queryKey: ['operationLogs'],
+    queryKey: QueryKeys.operationLog.recent(30),
     queryFn: () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -273,7 +273,7 @@ export default function RegistrationDashboard() {
 
   // Fetch selected event details
   const { data: selectedEvent, isLoading: selectedEventLoading } = useQuery({
-    queryKey: ['selectedEvent', eventId],
+    queryKey: QueryKeys.events.byId(eventId),
     queryFn: () => (eventId ? base44.entities.Event.get(eventId) : Promise.resolve(null)),
     enabled: !!isAuthenticated && !!eventId,
     ...DQ,
@@ -281,7 +281,7 @@ export default function RegistrationDashboard() {
 
   // Fetch selected track details
   const { data: selectedTrack, isLoading: selectedTrackLoading } = useQuery({
-    queryKey: ['selectedTrack', selectedEvent?.track_id],
+    queryKey: QueryKeys.tracks.byId(selectedEvent?.track_id),
     queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
     enabled: !!isAuthenticated && !!selectedEvent?.track_id,
     ...DQ,
@@ -289,7 +289,7 @@ export default function RegistrationDashboard() {
 
   // Fetch selected series details
   const { data: selectedSeries, isLoading: selectedSeriesLoading } = useQuery({
-    queryKey: ['selectedSeries', selectedEvent?.series_id],
+    queryKey: QueryKeys.series.byId(selectedEvent?.series_id),
     queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
     enabled: !!isAuthenticated && !!selectedEvent?.series_id,
     ...DQ,
