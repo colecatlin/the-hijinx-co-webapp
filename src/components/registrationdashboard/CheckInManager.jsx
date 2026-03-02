@@ -26,6 +26,9 @@ export default function CheckInManager({ selectedEvent, user }) {
   const [classFilter, setClassFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [qrInput, setQrInput] = useState('');
+  const [qrPayloadInput, setQrPayloadInput] = useState('');
+  const [inputMode, setInputMode] = useState('search'); // 'search' | 'qr_payload'
+  const [qrPayloadError, setQrPayloadError] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [formData, setFormData] = useState(null);
   const [notesMode, setNotesMode] = useState(false);

@@ -235,6 +235,23 @@ export default function Registration() {
     updateEntryMutation.mutate({ id: existingEntry.id, data: { entry_status: 'Withdrawn' } });
   };
 
+  const handleMarkWaiver = () => {
+    updateEntryMutation.mutate({ id: existingEntry.id, data: { waiver_status: 'Verified' } });
+  };
+
+  const qrPayload = existingEntry && existingEntry.entry_status !== 'Withdrawn'
+    ? `INDEX46|eventId=${selectedEvent?.id}|entryId=${existingEntry.id}|driverId=${driver?.id}|car=${existingEntry.car_number || ''}`
+    : null;
+
+  const [waiverChecked, setWaiverChecked] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPayload = () => {
+    navigator.clipboard.writeText(qrPayload);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const canProceedStep1 = !!selectedEvent;
   const canProceedStep2 = !!driver && !!driver.first_name && !!driver.last_name && !!driver.contact_email;
 

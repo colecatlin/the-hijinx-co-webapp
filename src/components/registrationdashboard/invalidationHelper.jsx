@@ -24,6 +24,7 @@ export const INVALIDATION_MAP = {
   entry_updated:                [['entries'], ['operationLogs']],
   entry_deleted:                [['entries'], ['operationLogs']],
   entry_bulk_updated:           [['entries'], ['operationLogs']],
+  entry_checked_in:             [['entries'], ['myEntry'], ['operationLogs']],
   checkin_updated:              [['entries'], ['operationLogs']],
   tech_updated:                 [['entries'], ['operationLogs']],
   compliance_updated:           [['entries'], ['operationLogs']],
