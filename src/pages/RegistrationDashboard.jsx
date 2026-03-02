@@ -482,8 +482,8 @@ export default function RegistrationDashboard() {
     }
   }, [sessions, standingsDirty]);
 
-  // Live mode detection and auto-tab selection
-  const isLiveMode = selectedEvent?.status === 'Live';
+  // Live mode detection — aligns with Event entity status enum
+  const isLiveMode = selectedEvent?.status === 'in_progress';
 
   useEffect(() => {
     if (isLiveMode && selectedEvent) {
