@@ -346,11 +346,43 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
     a.remove();
   };
 
+  // Reset local UI state when eventId changes to prevent stale data bleed
+  React.useEffect(() => {
+    setSelectedEntries(new Set());
+    setShowAddDialog(false);
+    setShowDetailDrawer(false);
+    setSelectedEntry(null);
+    setFilters({ class: 'all', entryStatus: 'all', paymentStatus: 'all', techStatus: 'all', search: '' });
+  }, [eventId]);
+
   if (!eventId) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
           <p className="text-gray-400">Select an event to manage entries</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entriesLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-11 bg-gray-800/50 rounded animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (entriesError) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center space-y-3">
+          <p className="text-red-400 text-sm">Failed to load entries</p>
+          <Button size="sm" variant="outline" onClick={() => refetchEntries()} className="border-gray-700 text-gray-300">
+            Retry
+          </Button>
         </CardContent>
       </Card>
     );
