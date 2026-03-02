@@ -56,6 +56,13 @@ import {
   isWaiverVerified,
   isLicenseVerified,
 } from './shared/complianceUtils';
+import {
+  parseTechFromNotes,
+  writeTechToNotes,
+  getEntryCarNumber,
+  buildEventConflictMap,
+  createTransponderState,
+} from './shared/techUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -87,6 +94,9 @@ export default function EntriesManager({
   const [showSelfService, setShowSelfService] = useState(false);
   const [addFormData, setAddFormData] = useState({});
   const [drawerFormData, setDrawerFormData] = useState({});
+  const [showBulkTransponderModal, setShowBulkTransponderModal] = useState(false);
+  const [bulkTransponderInput, setBulkTransponderInput] = useState('');
+  const [bulkTransponderProgress, setBulkTransponderProgress] = useState({ current: 0, total: 0 });
 
   // Queries - Entry as primary with DriverProgram fallback
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
@@ -222,9 +232,13 @@ export default function EntriesManager({
     if (entry.waiver_status === 'Missing') hasFlags.push('Waiver');
     if (entry.payment_status === 'Unpaid') hasFlags.push('Unpaid');
     if (entry.license_status === 'Expired') hasFlags.push('Expired');
-    if (!entry.transponder_id) hasFlags.push('No Transponder');
+    const tech = parseTechFromNotes(entry.notes);
+    if (!tech?.transponder?.id) hasFlags.push('No Transponder');
     return [...hasFlags, ...flags];
   };
+
+  // Compute conflict map
+  const conflictMap = useMemo(() => buildEventConflictMap(entries), [entries]);
 
   const needsWarning = (entry) => {
     return (
@@ -344,8 +358,52 @@ export default function EntriesManager({
       updates = selectedList.map((e) => ({ id: e.id, data: { entry_status: 'Checked In' } }));
     } else if (action === 'teched') {
       updates = selectedList.map((e) => ({ id: e.id, data: { entry_status: 'Teched', tech_status: 'Passed' } }));
+    } else if (action === 'bulk_transponder') {
+      setShowBulkTransponderModal(true);
+      return;
     }
     if (updates) bulkUpdateEntries(updates).then(() => setSelectedEntries(new Set()));
+  };
+
+  const handleBulkAssignTransponders = async () => {
+    if (!bulkTransponderInput.trim()) {
+      toast.error('Enter starting transponder value');
+      return;
+    }
+
+    const selectedList = Array.from(selectedEntries)
+      .map((id) => entries.find((e) => e.id === id))
+      .filter(Boolean);
+
+    const isNumeric = /^\d+$/.test(bulkTransponderInput.trim());
+    const updates = [];
+
+    selectedList.forEach((e, idx) => {
+      const tech = parseTechFromNotes(e.notes);
+      let transponderId = bulkTransponderInput.trim();
+      
+      if (isNumeric) {
+        transponderId = String(parseInt(bulkTransponderInput) + idx);
+      }
+
+      const nextTech = {
+        transponder: createTransponderState(transponderId, 'assigned', currentUser?.id),
+      };
+      const nextNotes = writeTechToNotes(e.notes, nextTech);
+      updates.push({ id: e.id, data: { notes: nextNotes } });
+    });
+
+    setBulkTransponderProgress({ current: 0, total: updates.length });
+    for (const update of updates) {
+      await updateEntry(update);
+      setBulkTransponderProgress(prev => ({ ...prev, current: prev.current + 1 }));
+    }
+
+    await invalidateAfterOperation('tech_updated', { eventId });
+    toast.success(`Assigned ${updates.length} transponders`);
+    setShowBulkTransponderModal(false);
+    setBulkTransponderInput('');
+    setSelectedEntries(new Set());
   };
 
   const handleExportCSV = () => {
@@ -401,6 +459,13 @@ export default function EntriesManager({
     window.URL.revokeObjectURL(url);
     a.remove();
   };
+
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    ...DQ,
+  });
 
   // Reset local UI state when eventId changes to prevent stale data bleed
   React.useEffect(() => {
@@ -607,6 +672,13 @@ export default function EntriesManager({
               Mark Teched
             </Button>
             <Button
+              onClick={() => handleBulkAction('bulk_transponder')}
+              size="sm"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white"
+            >
+              Bulk Assign Transponders
+            </Button>
+            <Button
               onClick={() => handleBulkAction('withdraw')}
               size="sm"
               variant="outline"
@@ -664,7 +736,7 @@ export default function EntriesManager({
                       className="w-4 h-4"
                     />
                   </th>
-                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">#</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Car #</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Driver</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Class</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Transponder</th>
@@ -703,10 +775,21 @@ export default function EntriesManager({
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="px-3 py-2 text-white font-mono text-xs">{entry.car_number || '—'}</td>
+                    <td className="px-3 py-2 text-white font-mono text-xs">{getEntryCarNumber(entry) || '—'}</td>
                     <td className="px-3 py-2 text-white">{getDriverName(entry.driver_id)}</td>
                     <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
-                    <td className="px-3 py-2 text-gray-300 text-xs font-mono">{entry.transponder_id || '—'}</td>
+                    <td className="px-3 py-2 text-gray-300 text-xs font-mono">
+                      {(() => {
+                        const tech = parseTechFromNotes(entry.notes);
+                        const transpId = tech?.transponder?.id;
+                        const isDuplicate = transpId && conflictMap.entryFlags[entry.id]?.transponderDuplicate;
+                        return transpId ? (
+                          <span className={isDuplicate ? 'text-red-400 font-bold' : 'text-green-400'}>
+                            {transpId}{isDuplicate && ' ⚠'}
+                          </span>
+                        ) : '—';
+                      })()}
+                    </td>
                     <td className="px-3 py-2">
                       <Badge className="bg-blue-500/20 text-blue-400 text-xs">{entry.entry_status}</Badge>
                     </td>
@@ -905,11 +988,43 @@ export default function EntriesManager({
 
                 <div>
                   <label className="text-xs text-gray-400 uppercase block mb-1">Transponder ID</label>
-                  <Input
-                    value={drawerFormData.transponder_id || ''}
-                    onChange={(e) => setDrawerFormData({ ...drawerFormData, transponder_id: e.target.value })}
-                    className="bg-[#1A1A1A] border-gray-600 text-white"
-                  />
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Transponder ID"
+                      value={(() => {
+                        const tech = parseTechFromNotes(drawerFormData.notes);
+                        return tech?.transponder?.id || '';
+                      })()}
+                      onChange={(e) => {
+                        const tech = parseTechFromNotes(drawerFormData.notes);
+                        const nextTech = {
+                          transponder: createTransponderState(e.target.value, e.target.value ? 'assigned' : 'missing', currentUser?.id),
+                        };
+                        const nextNotes = writeTechToNotes(drawerFormData.notes, nextTech);
+                        setDrawerFormData({ ...drawerFormData, notes: nextNotes });
+                      }}
+                      className="bg-[#1A1A1A] border-gray-600 text-white"
+                    />
+                    {(() => {
+                      const tech = parseTechFromNotes(drawerFormData.notes);
+                      return tech?.transponder?.id ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const nextTech = { transponder: createTransponderState(null, 'missing', null) };
+                              const nextNotes = writeTechToNotes(drawerFormData.notes, nextTech);
+                              setDrawerFormData({ ...drawerFormData, notes: nextNotes });
+                            }}
+                            className="flex-1 border-red-700 text-red-400"
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
                 </div>
 
                 <div>
@@ -1058,6 +1173,60 @@ export default function EntriesManager({
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Transponder Assignment Modal */}
+      <Dialog open={showBulkTransponderModal} onOpenChange={setShowBulkTransponderModal}>
+        <DialogContent className="bg-[#262626] border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Bulk Assign Transponders</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 uppercase block mb-2">Starting Value</label>
+              <p className="text-xs text-gray-500 mb-2">If numeric, will auto-increment for each entry. Otherwise use as-is.</p>
+              <Input
+                placeholder="e.g., 1000 or TR-001"
+                value={bulkTransponderInput}
+                onChange={(e) => setBulkTransponderInput(e.target.value)}
+                disabled={bulkTransponderProgress.total > 0}
+                className="bg-[#1A1A1A] border-gray-600 text-white"
+              />
+            </div>
+            {bulkTransponderProgress.total > 0 && (
+              <div className="bg-blue-900/20 rounded p-3">
+                <p className="text-xs text-blue-300 mb-2">
+                  Progress: {bulkTransponderProgress.current} / {bulkTransponderProgress.total}
+                </p>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-blue-500 h-2 rounded-full transition-all"
+                    style={{ width: `${(bulkTransponderProgress.current / bulkTransponderProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowBulkTransponderModal(false);
+                setBulkTransponderInput('');
+              }}
+              disabled={bulkTransponderProgress.total > 0}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBulkAssignTransponders}
+              disabled={bulkTransponderProgress.total > 0 || !bulkTransponderInput.trim()}
+              className="bg-cyan-600 hover:bg-cyan-700"
+            >
+              Assign {selectedEntries.size} Transponders
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Driver Self Service Drawer */}
       <DriverSelfServiceDrawer
