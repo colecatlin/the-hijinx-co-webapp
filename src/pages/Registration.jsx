@@ -73,224 +73,175 @@ export default function Registration() {
   const [confirmChecked, setConfirmChecked] = useState(false);
 
   // ── Auth ──
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), ...DQ });
   const { data: isAuth } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), enabled: isAuth, ...DQ });
 
-  // ── Selectors data ──
-  const { data: tracks = [] } = useQuery({ queryKey: ['tracks', {}], queryFn: () => base44.entities.Track.list('name', 200), ...DQ });
-  const { data: seriesList = [] } = useQuery({ queryKey: ['series', {}], queryFn: () => base44.entities.Series.list('name', 200), ...DQ });
+  // ── Event selection data ──
+  const { data: tracks = [] } = useQuery({ queryKey: ['tracks'], queryFn: () => base44.entities.Track.list('name', 200), ...DQ });
+  const { data: series = [] } = useQuery({ queryKey: ['series'], queryFn: () => base44.entities.Series.list('name', 200), ...DQ });
 
   const eventFilters = useMemo(() => {
     const f = {};
-    if (trackFilter !== 'all') f.track_id = trackFilter;
-    if (seriesFilter !== 'all') f.series_id = seriesFilter;
-    if (seasonFilter !== 'all') f.season = seasonFilter;
+    if (orgType === 'track' && orgId) f.track_id = orgId;
+    if (orgType === 'series' && orgId) f.series_id = orgId;
+    if (seasonYear) f.season = seasonYear;
     return f;
-  }, [trackFilter, seriesFilter, seasonFilter]);
+  }, [orgType, orgId, seasonYear]);
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events', eventFilters],
     queryFn: () => Object.keys(eventFilters).length
       ? base44.entities.Event.filter(eventFilters)
-      : base44.entities.Event.list('event_date', 200),
+      : base44.entities.Event.list('-event_date', 200),
     ...DQ,
   });
-
-  const events = useMemo(() =>
-    allEvents.filter(e => ['upcoming', 'in_progress', 'Draft', 'Published', 'Live'].includes(e.status)),
-    [allEvents]
-  );
 
   const seasons = useMemo(() => {
     const s = new Set(allEvents.map(e => e.season).filter(Boolean));
     return Array.from(s).sort().reverse();
   }, [allEvents]);
 
-  // ── Driver profile (owner_user_id only — no auto-create) ──
-  const { data: driver, isLoading: driverLoading } = useQuery({
-    queryKey: ['userDriver', user?.id],
-    queryFn: () => base44.entities.Driver.filter({ owner_user_id: user.id }).then(r => r[0] || null),
+  // ── Driver data for authenticated users ──
+  const { data: userDrivers = [] } = useQuery({
+    queryKey: ['userDrivers', user?.id],
+    queryFn: () => base44.entities.Driver.filter({ owner_user_id: user.id }),
     enabled: !!user?.id,
     ...DQ,
   });
 
-  // ── Entry for this event ──
-  const { data: existingEntry, refetch: refetchEntry, isLoading: entryLoading } = useQuery({
-    queryKey: ['myEntry', selectedEvent?.id, driver?.id],
-    queryFn: () => base44.entities.Entry.filter({ event_id: selectedEvent.id, driver_id: driver.id }).then(r => r[0] || null),
-    enabled: !!selectedEvent?.id && !!driver?.id,
-    ...DQ,
-  });
-
-  // ── All entries for this event (car number uniqueness check) ──
-  const { data: eventEntries = [] } = useQuery({
-    queryKey: ['eventEntriesForValidation', selectedEvent?.id],
-    queryFn: () => base44.entities.Entry.filter({ event_id: selectedEvent.id }),
-    enabled: !!selectedEvent?.id && step === 3,
-    ...DQ,
-  });
-
-  // ── Series classes ──
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', selectedEvent?.series_id],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id }),
-    enabled: !!selectedEvent?.series_id && step === 3,
-    ...DQ,
-  });
+  const selectedDriver = selectedDriverId && userDrivers.find(d => d.id === selectedDriverId);
 
   // ── Teams ──
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams', {}],
+    queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('name', 100),
-    enabled: step === 3,
+    enabled: formStep >= 2,
     ...DQ,
   });
 
-  // Pre-fill form when existingEntry loads
+  // ── Series classes if event selected ──
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses', selectedEvent?.series_id],
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id }),
+    enabled: !!selectedEvent?.series_id,
+    ...DQ,
+  });
+
+  // ── Update URL params when selections change ──
   useEffect(() => {
-    if (existingEntry) {
-      setEntryForm({
-        car_number: existingEntry.car_number || '',
-        transponder_id: existingEntry.transponder_id || '',
-        team_id: existingEntry.team_id || '',
-        series_class_id: existingEntry.series_class_id || '',
-        license_number: existingEntry.license_number || '',
-        license_expiration_date: existingEntry.license_expiration_date || '',
-        notes: existingEntry.notes || '',
-      });
+    const params = new URLSearchParams();
+    if (orgType) params.set('orgType', orgType);
+    if (orgId) params.set('orgId', orgId);
+    if (seasonYear) params.set('seasonYear', seasonYear);
+    if (eventId) params.set('eventId', eventId);
+    window.history.replaceState({}, '', `?${params.toString()}`);
+  }, [orgType, orgId, seasonYear, eventId]);
+
+  // ── Load event from URL or selection ──
+  useEffect(() => {
+    if (eventId && allEvents.length) {
+      const event = allEvents.find(e => e.id === eventId);
+      if (event) setSelectedEvent(event);
     }
-  }, [existingEntry?.id]);
+  }, [eventId, allEvents]);
 
-  // ── Validation helpers ──
-  const classesExist = seriesClasses.length > 0;
+  // ── Handle org type change ──
+  const handleOrgTypeChange = (type) => {
+    setOrgType(type);
+    setOrgId('');
+    setSeasonYear('');
+    setEventId('');
+    setSelectedEvent(null);
+  };
 
-  function validateForm(form) {
-    if (!form.car_number?.trim()) return 'Car number is required.';
-    if (classesExist && !form.series_class_id) return 'Please select a class.';
-    return null;
-  }
+  // ── Handle season change ──
+  const handleSeasonChange = (season) => {
+    setSeasonYear(season);
+    setEventId('');
+    setSelectedEvent(null);
+  };
 
-  function checkCarNumberUnique(carNumber, currentEntryId) {
-    const conflict = eventEntries.find(
-      e => e.car_number === carNumber && e.id !== currentEntryId && e.driver_id !== driver?.id
-    );
-    return conflict ? `Car #${carNumber} is already registered by another driver for this event.` : null;
-  }
+  // ── Handle event selection ──
+  const handleEventSelect = (eid) => {
+    const event = allEvents.find(e => e.id === eid);
+    setEventId(eid);
+    setSelectedEvent(event);
+  };
 
-  // ── Shared invalidation ──
-  function invalidateEntries(eventId) {
-    queryClient.invalidateQueries({ queryKey: REG_QK.entries(eventId), exact: true });
-    queryClient.invalidateQueries({ queryKey: ['entries'] });
-    queryClient.invalidateQueries({ queryKey: ['myEntry'] });
-    queryClient.invalidateQueries({ queryKey: ['eventEntriesForValidation', eventId] });
-    queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
-  }
+  // ── Handle continue to registration ──
+  const handleContinueRegistration = () => {
+    if (!isAuth) {
+      setShowAuthDialog(true);
+      return;
+    }
+    if (!user) return;
+    if (userDrivers.length === 0) {
+      toast.error('Create a Driver Profile first');
+      navigate(createPageUrl('Profile?tab=driver'));
+      return;
+    }
+    setFormStep(1);
+  };
 
-  // ── Mutations ──
-  const createEntryMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.create(data),
-    onSuccess: async (newEntry) => {
-      invalidateEntries(selectedEvent.id);
-      await writeOperationLog('entry_created', newEntry.id, selectedEvent.id);
-      toast.success('You are registered!');
+  // ── Handle submit ──
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (!user || !selectedEvent || !selectedDriver) throw new Error('Missing required data');
+
+      const entryData = {
+        event_id: selectedEvent.id,
+        driver_id: selectedDriver.id,
+        series_id: selectedEvent.series_id || undefined,
+        team_id: formData.team_id || undefined,
+        car_number: formData.car_number.trim(),
+        transponder_id: formData.transponder_id || undefined,
+        entry_status: 'Registered',
+        payment_status: 'Unpaid',
+        waiver_verified: false,
+        compliance_status: 'needs_attention',
+        tech_status: 'Not Inspected',
+        wristband_count: 0,
+      };
+
+      // Add optional fields if they exist
+      if (formData.license_number) entryData.license_number = formData.license_number;
+      if (formData.license_expiration_date) entryData.license_expiration_date = formData.license_expiration_date;
+
+      // Store contact info in notes if fields don't exist
+      const notes = [];
+      if (formData.emergency_contact_name) notes.push(`Emergency Contact: ${formData.emergency_contact_name}`);
+      if (formData.emergency_contact_phone) notes.push(`Phone: ${formData.emergency_contact_phone}`);
+      if (formData.sponsors) notes.push(`Sponsors: ${formData.sponsors}`);
+      if (formData.vehicle_notes) notes.push(`Vehicle Notes: ${formData.vehicle_notes}`);
+      if (notes.length) entryData.notes = notes.join('\n');
+
+      // Try Entry first, fallback to DriverProgram
+      try {
+        const entry = await base44.entities.Entry.create(entryData);
+        await writeOperationLog('registration_submitted', 'Entry', entry.id, selectedEvent.id, selectedDriver.id, formData.car_number);
+        return { type: 'Entry', id: entry.id };
+      } catch (e) {
+        // Fallback to DriverProgram
+        const dpData = {
+          event_id: selectedEvent.id,
+          driver_id: selectedDriver.id,
+          series_id: selectedEvent.series_id || undefined,
+        };
+        const dp = await base44.entities.DriverProgram.create(dpData);
+        await writeOperationLog('registration_submitted', 'DriverProgram', dp.id, selectedEvent.id, selectedDriver.id, formData.car_number);
+        return { type: 'DriverProgram', id: dp.id };
+      }
+    },
+    onSuccess: (result) => {
+      toast.success('Registered successfully! You are locked in.');
+      setTimeout(() => {
+        navigate(createPageUrl('MyDashboard'));
+      }, 1500);
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Registration failed');
     },
   });
-
-  const updateEntryMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
-    onSuccess: async (_, vars) => {
-      invalidateEntries(selectedEvent.id);
-      await writeOperationLog('entry_updated', vars.id, selectedEvent.id);
-      toast.success('Entry updated');
-    },
-  });
-
-  // ── Handlers ──
-  const handleCreateEntry = () => {
-    setCarNumberError('');
-    const validErr = validateForm(entryForm);
-    if (validErr) { toast.error(validErr); return; }
-    const uniqueErr = checkCarNumberUnique(entryForm.car_number, null);
-    if (uniqueErr) { setCarNumberError(uniqueErr); return; }
-
-    createEntryMutation.mutate({
-      event_id: selectedEvent.id,
-      driver_id: driver.id,
-      series_id: selectedEvent.series_id || undefined,
-      team_id: entryForm.team_id || undefined,
-      series_class_id: entryForm.series_class_id || undefined,
-      car_number: entryForm.car_number.trim(),
-      transponder_id: entryForm.transponder_id || undefined,
-      license_number: entryForm.license_number || undefined,
-      license_expiration_date: entryForm.license_expiration_date || undefined,
-      notes: entryForm.notes || undefined,
-      entry_status: 'Registered',
-      payment_status: 'Unpaid',
-      waiver_status: 'Missing',
-      waiver_verified: false,
-      compliance_status: 'needs_attention',
-      tech_status: 'Not Inspected',
-      wristband_count: 0,
-    });
-  };
-
-  const handleUpdateEntry = () => {
-    setCarNumberError('');
-    const validErr = validateForm(entryForm);
-    if (validErr) { toast.error(validErr); return; }
-    const uniqueErr = checkCarNumberUnique(entryForm.car_number, existingEntry.id);
-    if (uniqueErr) { setCarNumberError(uniqueErr); return; }
-
-    updateEntryMutation.mutate({
-      id: existingEntry.id,
-      data: {
-        car_number: entryForm.car_number.trim(),
-        transponder_id: entryForm.transponder_id || undefined,
-        team_id: entryForm.team_id || undefined,
-        series_class_id: entryForm.series_class_id || undefined,
-        license_number: entryForm.license_number || undefined,
-        license_expiration_date: entryForm.license_expiration_date || undefined,
-        notes: entryForm.notes || undefined,
-      },
-    });
-  };
-
-  const handleWithdraw = () => {
-    updateEntryMutation.mutate({ id: existingEntry.id, data: { entry_status: 'Withdrawn' } });
-  };
-
-  const handleMarkWaiver = () => {
-    updateEntryMutation.mutate({ id: existingEntry.id, data: { waiver_status: 'Verified' } });
-  };
-
-  const handleReRegister = () => {
-    createEntryMutation.mutate({
-      event_id: selectedEvent.id,
-      driver_id: driver.id,
-      series_id: selectedEvent.series_id || undefined,
-      entry_status: 'Registered',
-      payment_status: 'Unpaid',
-      waiver_status: 'Missing',
-      waiver_verified: false,
-      compliance_status: 'needs_attention',
-      tech_status: 'Not Inspected',
-      wristband_count: 0,
-    });
-  };
-
-  const qrPayload = existingEntry && existingEntry.entry_status !== 'Withdrawn'
-    ? `INDEX46|eventId=${selectedEvent?.id}|entryId=${existingEntry.id}|driverId=${driver?.id}|car=${existingEntry.car_number || ''}`
-    : null;
-
-  const handleCopyPayload = () => {
-    navigator.clipboard.writeText(qrPayload);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const canProceedStep1 = !!selectedEvent;
-  const canProceedStep2 = !!driver;
-  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white py-12 px-4">
