@@ -342,9 +342,9 @@ export default function Registration() {
           <p className="text-gray-400 text-sm mt-1">Register for an upcoming event</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* LEFT: Event Selection */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+        {/* Step 1: Event Selection */}
+        {currentStep === 1 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
             <Card className="bg-[#171717] border-gray-800">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
