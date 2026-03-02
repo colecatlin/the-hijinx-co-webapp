@@ -110,7 +110,7 @@ export default function Registration() {
   }, [orgType, orgId, seasonYear]);
 
   const { data: allEvents = [] } = useQuery({
-    queryKey: ['events', eventFilters],
+    queryKey: getEventKey(eventFilters),
     queryFn: () => Object.keys(eventFilters).length
       ? base44.entities.Event.filter(eventFilters)
       : base44.entities.Event.list('-event_date', 200),
@@ -122,29 +122,56 @@ export default function Registration() {
     return Array.from(s).sort().reverse();
   }, [allEvents]);
 
-  // ── Driver data for authenticated users ──
-  const { data: userDrivers = [] } = useQuery({
-    queryKey: ['userDrivers', user?.id],
-    queryFn: () => base44.entities.Driver.filter({ owner_user_id: user.id }),
-    enabled: !!user?.id,
-    ...DQ,
-  });
-
-  const selectedDriver = selectedDriverId && userDrivers.find(d => d.id === selectedDriverId);
-
-  // ── Teams ──
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list('name', 100),
-    enabled: formStep >= 2,
+  // ── Driver lookup for current user ──
+  const { data: myDriver } = useQuery({
+    queryKey: getDriverLookupKey(user?.id, user?.email),
+    queryFn: async () => {
+      if (!user?.id && !user?.email) return null;
+      // Try owner_user_id first
+      if (user?.id) {
+        const byOwner = await base44.entities.Driver.filter({ owner_user_id: user.id });
+        if (byOwner.length) return byOwner[0];
+      }
+      // Try contact_email
+      if (user?.email) {
+        const byEmail = await base44.entities.Driver.filter({ contact_email: user.email });
+        if (byEmail.length) return byEmail[0];
+      }
+      return null;
+    },
+    enabled: !!user?.id || !!user?.email,
     ...DQ,
   });
 
   // ── Series classes if event selected ──
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', selectedEvent?.series_id],
+    queryKey: getSeriesClassKey(selectedEvent?.series_id),
     queryFn: () => base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id }),
     enabled: !!selectedEvent?.series_id,
+    ...DQ,
+  });
+
+  // ── Existing entry check ──
+  const { data: existingEntry } = useQuery({
+    queryKey: getExistingEntryKey(eventId, myDriver?.id),
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, driver_id: myDriver.id }),
+    enabled: !!eventId && !!myDriver?.id,
+    ...DQ,
+  });
+
+  // ── Duplicate car number check ──
+  const { data: eventEntries = [] } = useQuery({
+    queryKey: getEventEntriesKey(eventId, entryFormData.series_class_id),
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, series_class_id: entryFormData.series_class_id || undefined }),
+    enabled: !!eventId && !!entryFormData.series_class_id && currentStep === 4,
+    ...DQ,
+  });
+
+  // ── Teams ──
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list('name', 100),
+    enabled: currentStep >= 3,
     ...DQ,
   });
 
