@@ -205,7 +205,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
       return results;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
+      invalidateAfterOperation('entry_bulk_updated');
       setBulkUpdates({});
       toast.success('Entries updated');
     },
