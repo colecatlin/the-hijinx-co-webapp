@@ -73,6 +73,7 @@ import {
   Shield,
   Clock,
   Mic,
+  DoorOpen,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
