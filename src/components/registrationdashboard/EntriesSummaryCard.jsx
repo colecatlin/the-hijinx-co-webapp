@@ -9,7 +9,14 @@ import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 
 const DQ = applyDefaultQueryOptions();
 
-export default function EntriesSummaryCard({ selectedEvent }) {
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+
+const DQ = applyDefaultQueryOptions();
+
+export default function EntriesSummaryCard({ selectedEvent, entries = [] }) {
   const eventId = selectedEvent?.id;
 
   const { data: entries = [], isLoading, isError: entriesError } = useQuery({
