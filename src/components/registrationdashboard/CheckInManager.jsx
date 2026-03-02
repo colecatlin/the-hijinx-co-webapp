@@ -24,6 +24,11 @@ import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
+import {
+  parseComplianceFromNotes,
+  isWaiverVerified,
+  isLicenseVerified,
+} from './shared/complianceUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -176,10 +181,16 @@ export default function CheckInManager({
   const getCheckInBlockers = (fd) => {
     if (!fd) return [];
     const blockers = [];
-    const waiverOk = fd.waiver_verified === true || fd.waiver_status === 'Verified';
-    if (!waiverOk) blockers.push('Waiver not verified');
-    if (!fd.license_number || fd.license_number.trim() === '') blockers.push('License number missing');
-    else if (fd.license_expiration_date && fd.license_expiration_date < today) blockers.push('License is expired');
+    const compliance = parseComplianceFromNotes(fd.notes);
+    
+    if (!isWaiverVerified(compliance)) blockers.push('Waiver not verified');
+    if (!isLicenseVerified(compliance)) {
+      if (!compliance?.license?.license_number) {
+        blockers.push('License number missing');
+      } else {
+        blockers.push('License not verified or expired');
+      }
+    }
     return blockers;
   };
 
