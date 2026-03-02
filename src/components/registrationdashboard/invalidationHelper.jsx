@@ -1,19 +1,24 @@
 /**
  * Centralized cache invalidation map for RegistrationDashboard.
- * Each operationType maps to an array of base query keys to invalidate.
- * React Query will match all queries whose key STARTS with each entry.
+ *
+ * Each operationType maps to an array of base query key PREFIXES.
+ * React Query will match all queries whose key STARTS WITH each entry.
+ *
+ * Key prefixes here must match the root segments produced by QueryKeys.*
+ * so that dashboard mutations automatically refresh public pages that share
+ * the same query keys (EventResults, StandingsHome, SeriesDetail, etc.).
  */
 export const INVALIDATION_MAP = {
-  event_updated:                [['events'], ['event']],
-  event_published:              [['events'], ['event'], ['operationLogs']],
-  event_status_changed:         [['events'], ['event'], ['sessions'], ['operationLogs']],
+  event_updated:                [['events'], ['selectedEvent']],
+  event_published:              [['events'], ['selectedEvent'], ['operationLogs']],
+  event_status_changed:         [['events'], ['selectedEvent'], ['sessions'], ['operationLogs']],
   session_updated:              [['sessions'], ['session'], ['operationLogs']],
   session_status_changed:       [['sessions'], ['session'], ['results'], ['operationLogs']],
   results_saved:                [['results'], ['operationLogs']],
   results_published_provisional:[['results'], ['sessions'], ['operationLogs']],
   results_published_official:   [['results'], ['sessions'], ['standings'], ['operationLogs']],
   results_locked:               [['results'], ['sessions'], ['operationLogs']],
-  standings_recalculated:       [['standings'], ['driver'], ['team'], ['series'], ['operationLogs']],
+  standings_recalculated:       [['standings'], ['driverPrograms'], ['series'], ['operationLogs']],
   entries_updated:              [['entries'], ['operationLogs']],
   checkin_updated:              [['entries'], ['operationLogs']],
   tech_updated:                 [['entries'], ['operationLogs']],
