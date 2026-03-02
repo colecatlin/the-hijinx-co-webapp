@@ -45,9 +45,18 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import useDashboardMutation from './useDashboardMutation';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
 
-export default function ClassSessionBuilder({ eventId, seriesId, selectedEvent }) {
+export default function ClassSessionBuilder({
+  eventId,
+  seriesId,
+  selectedEvent,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+}) {
   const queryClient = useQueryClient();
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
   // State
   const [showAddSessionDialog, setShowAddSessionDialog] = useState(false);
