@@ -215,7 +215,7 @@ export default function RegistrationDashboard() {
   const isLiveEvent = selectedEvent?.status === 'in_progress';
   const liveRefetchInterval = isLiveEvent ? 20_000 : false;
 
-  // ── Shared dashboard queries (standardized REG_QK keys) ──────────────────
+  // ── Shared dashboard context ──────────────────────────────────────────────
   const dashContext = useMemo(() => ({
     orgType: organizationType,
     orgId: organizationId,
@@ -223,6 +223,10 @@ export default function RegistrationDashboard() {
     eventId: eventId,
   }), [organizationType, organizationId, seasonYear, eventId]);
 
+  // dashboardContext alias for prop passing
+  const dashboardContext = dashContext;
+
+  // ── Shared dashboard queries (standardized REG_QK keys) ──────────────────
   const {
     sessions,
     results,
