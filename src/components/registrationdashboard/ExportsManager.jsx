@@ -22,7 +22,10 @@ import {
   generatePointsLedgerExport,
 } from './exports/exportGenerators';
 
-export default function ExportsManager({ isAdmin }) {
+export default function ExportsManager({
+  selectedEvent,
+  selectedTrack,
+  selectedSeries, isAdmin }) {
   const [orgType, setOrgType] = useState('series');
   const [selectedOrg, setSelectedOrg] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('');
