@@ -579,6 +579,21 @@ export default function CheckInManager({
               </div>
             </div>
 
+            {/* Compliance blockers */}
+            {!isCheckedIn && (() => {
+              const blockers = getCheckInBlockers(formData);
+              if (blockers.length === 0) return null;
+              return (
+                <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-3 space-y-1">
+                  <p className="text-xs font-semibold text-red-300 flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5" /> Check-In Blocked
+                  </p>
+                  {blockers.map(b => <p key={b} className="text-xs text-red-400">• {b}</p>)}
+                  {isAdmin && <p className="text-xs text-gray-400 mt-1">Admin override available below.</p>}
+                </div>
+              );
+            })()}
+
             {/* Actions */}
             <div className="space-y-2 border-t border-gray-800 pt-4">
               {/* One Tap Check In — shown when loaded via QR payload */}
