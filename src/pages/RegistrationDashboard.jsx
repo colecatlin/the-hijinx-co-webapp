@@ -71,6 +71,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 
 // ─── Dashboard-wide React Query tunables ────────────────────────────────────
 const DASHBOARD_STALE_TIME_MS   = 30_000;   // 30 s before a cached result is stale
