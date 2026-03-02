@@ -26,6 +26,8 @@ export default function OverviewGrid({
   operationLogs,
   importLogs,
   complianceSeverity,
+  announcerMode,
+  onSelectSession,
 }) {
   // Load real entries for the selected event
   const { data: entries = [] } = useQuery({
@@ -34,6 +36,20 @@ export default function OverviewGrid({
     enabled: !!selectedEvent?.id,
     ...DQ,
   });
+
+  // Sort sessions by time
+  const sortedSessions = useMemo(() => {
+    if (!sessions.length) return [];
+    const sessionOrder = { 'Practice': 0, 'Qualifying': 1, 'Heat': 2, 'LCQ': 3, 'Final': 4 };
+    return [...sessions].sort((a, b) => {
+      if (a.scheduled_time && b.scheduled_time) {
+        return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+      }
+      const orderA = sessionOrder[a.session_type] ?? 99;
+      const orderB = sessionOrder[b.session_type] ?? 99;
+      return orderA - orderB;
+    });
+  }, [sessions]);
 
   if (!selectedEvent) {
     return (
