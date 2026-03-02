@@ -64,6 +64,12 @@ import {
   buildEventConflictMap,
   createTransponderState,
 } from './shared/techUtils';
+import {
+  safeParseNotes,
+  mergeNotes,
+  updateEntryWorkflow,
+  getBlock,
+} from './entryWorkflowHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -231,11 +237,20 @@ export default function EntriesManager({
   const getComplianceFlags = (entry) => {
     const flags = entry.compliance_flags || [];
     const hasFlags = [];
-    if (entry.waiver_status === 'Missing') hasFlags.push('Waiver');
-    if (entry.payment_status === 'Unpaid') hasFlags.push('Unpaid');
-    if (entry.license_status === 'Expired') hasFlags.push('Expired');
-    const tech = parseTechFromNotes(entry.notes);
-    if (!tech?.transponder?.id) hasFlags.push('No Transponder');
+    // Read from notes blocks (new standardized approach)
+    const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
+    const techBlock = getBlock(entry.notes, 'INDEX46_TECH_JSON');
+    const entryBlock = getBlock(entry.notes, 'INDEX46_ENTRY_JSON');
+    
+    // Check waiver: use block, fall back to native
+    if (complianceBlock.waiver_missing || entry.waiver_status === 'Missing') hasFlags.push('Waiver');
+    // Check payment: use native or block
+    const paymentStatus = entry.payment_status || entryBlock.payment_status;
+    if (paymentStatus === 'Unpaid') hasFlags.push('Unpaid');
+    // Check license: use block or native
+    if (complianceBlock.license_expired || entry.license_status === 'Expired') hasFlags.push('Expired');
+    // Check transponder: use tech block
+    if (!techBlock.transponder?.id) hasFlags.push('No Transponder');
     return [...hasFlags, ...flags];
   };
 
@@ -381,17 +396,17 @@ export default function EntriesManager({
     const updates = [];
 
     selectedList.forEach((e, idx) => {
-      const tech = parseTechFromNotes(e.notes);
       let transponderId = bulkTransponderInput.trim();
       
       if (isNumeric) {
         transponderId = String(parseInt(bulkTransponderInput) + idx);
       }
 
-      const nextTech = {
-        transponder: createTransponderState(transponderId, 'assigned', currentUser?.id),
-      };
-      const nextNotes = writeTechToNotes(e.notes, nextTech);
+      const nextNotes = mergeNotes(e.notes, {
+        'INDEX46_TECH_JSON': {
+          transponder: { id: transponderId, status: 'assigned', assigned_at: new Date().toISOString(), assigned_by_user_id: currentUser?.id },
+        },
+      });
       updates.push({ id: e.id, data: { notes: nextNotes } });
     });
 
@@ -789,8 +804,8 @@ export default function EntriesManager({
                     <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
                     <td className="px-3 py-2 text-gray-300 text-xs font-mono">
                       {(() => {
-                        const tech = parseTechFromNotes(entry.notes);
-                        const transpId = tech?.transponder?.id;
+                        const techBlock = getBlock(entry.notes, 'INDEX46_TECH_JSON');
+                        const transpId = techBlock?.transponder?.id;
                         const isDuplicate = transpId && conflictMap.entryFlags[entry.id]?.transponderDuplicate;
                         return transpId ? (
                           <span className={isDuplicate ? 'text-red-400 font-bold' : 'text-green-400'}>
@@ -818,9 +833,9 @@ export default function EntriesManager({
                     </td>
                     <td className="px-3 py-2">
                       {(() => {
-                        const compliance = parseComplianceFromNotes(entry.notes);
-                        const waiverOk = isWaiverVerified(compliance);
-                        const licenseOk = isLicenseVerified(compliance);
+                        const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
+                        const waiverOk = !complianceBlock.waiver_missing;
+                        const licenseOk = !complianceBlock.license_expired;
                         return waiverOk && licenseOk ? (
                           <Badge className="bg-green-500/20 text-green-400 text-xs">OK</Badge>
                         ) : (
@@ -999,40 +1014,41 @@ export default function EntriesManager({
                   <label className="text-xs text-gray-400 uppercase block mb-1">Transponder ID</label>
                   <div className="space-y-2">
                     <Input
-                      placeholder="Transponder ID"
-                      value={(() => {
-                        const tech = parseTechFromNotes(drawerFormData.notes);
-                        return tech?.transponder?.id || '';
-                      })()}
-                      onChange={(e) => {
-                        const tech = parseTechFromNotes(drawerFormData.notes);
-                        const nextTech = {
-                          transponder: createTransponderState(e.target.value, e.target.value ? 'assigned' : 'missing', currentUser?.id),
-                        };
-                        const nextNotes = writeTechToNotes(drawerFormData.notes, nextTech);
-                        setDrawerFormData({ ...drawerFormData, notes: nextNotes });
-                      }}
-                      className="bg-[#1A1A1A] border-gray-600 text-white"
-                    />
+                        placeholder="Transponder ID"
+                        value={(() => {
+                          const techBlock = getBlock(drawerFormData.notes, 'INDEX46_TECH_JSON');
+                          return techBlock?.transponder?.id || '';
+                        })()}
+                        onChange={(e) => {
+                          const nextNotes = mergeNotes(drawerFormData.notes, {
+                            'INDEX46_TECH_JSON': {
+                              transponder: e.target.value ? { id: e.target.value, status: 'assigned', assigned_at: new Date().toISOString(), assigned_by_user_id: currentUser?.id } : null,
+                            },
+                          });
+                          setDrawerFormData({ ...drawerFormData, notes: nextNotes });
+                        }}
+                        className="bg-[#1A1A1A] border-gray-600 text-white"
+                      />
                     {(() => {
-                      const tech = parseTechFromNotes(drawerFormData.notes);
-                      return tech?.transponder?.id ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const nextTech = { transponder: createTransponderState(null, 'missing', null) };
-                              const nextNotes = writeTechToNotes(drawerFormData.notes, nextTech);
-                              setDrawerFormData({ ...drawerFormData, notes: nextNotes });
-                            }}
-                            className="flex-1 border-red-700 text-red-400"
-                          >
-                            Clear
-                          </Button>
-                        </div>
-                      ) : null;
-                    })()}
+                       const techBlock = getBlock(drawerFormData.notes, 'INDEX46_TECH_JSON');
+                       return techBlock?.transponder?.id ? (
+                         <div className="flex gap-2">
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => {
+                               const nextNotes = mergeNotes(drawerFormData.notes, {
+                                 'INDEX46_TECH_JSON': { transponder: null },
+                               });
+                               setDrawerFormData({ ...drawerFormData, notes: nextNotes });
+                             }}
+                             className="flex-1 border-red-700 text-red-400"
+                           >
+                             Clear
+                           </Button>
+                         </div>
+                       ) : null;
+                     })()}
                   </div>
                 </div>
 
