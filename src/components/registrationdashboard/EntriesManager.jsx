@@ -49,12 +49,19 @@ import { createPageUrl } from '@/utils';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import useDashboardMutation from './useDashboardMutation';
 
 const DQ = applyDefaultQueryOptions();
 
-export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
+export default function EntriesManager({
+  eventId,
+  seriesId,
+  selectedEvent,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+}) {
   const queryClient = useQueryClient();
-  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
   const tableScrollRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
 
