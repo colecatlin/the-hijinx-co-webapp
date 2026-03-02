@@ -33,6 +33,10 @@ import {
   parseTechFromNotes,
   buildEventConflictMap,
 } from './shared/techUtils';
+import {
+  mergeNotes,
+  getBlock,
+} from './entryWorkflowHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -211,8 +215,11 @@ export default function CheckInManager({
 
   const handleCheckIn = () => {
     if (isCheckedIn) {
-      // Un-check-in — always allowed
-      updateMutation.mutate({ entry_status: 'Registered' });
+      // Un-check-in — update both native field and notes
+      const nextNotes = mergeNotes(formData.notes || '', {
+        'INDEX46_CHECKIN_JSON': { checked_in: false },
+      });
+      updateMutation.mutate({ entry_status: 'Registered', notes: nextNotes });
       return;
     }
     const blockers = getCheckInBlockers(formData);
@@ -225,13 +232,27 @@ export default function CheckInManager({
       }
       return;
     }
-    updateMutation.mutate({ entry_status: 'Checked In' });
+    const nextNotes = mergeNotes(formData.notes || '', {
+      'INDEX46_CHECKIN_JSON': {
+        checked_in: true,
+        checked_in_at: new Date().toISOString(),
+        checked_in_by_user_id: currentUser?.id,
+      },
+    });
+    updateMutation.mutate({ entry_status: 'Checked In', notes: nextNotes });
   };
 
   const handleOverrideCheckIn = async () => {
     setShowOverrideDialog(false);
     setPendingCheckIn(false);
-    updateMutation.mutate({ entry_status: 'Checked In' });
+    const nextNotes = mergeNotes(formData.notes || '', {
+      'INDEX46_CHECKIN_JSON': {
+        checked_in: true,
+        checked_in_at: new Date().toISOString(),
+        checked_in_by_user_id: currentUser?.id,
+      },
+    });
+    updateMutation.mutate({ entry_status: 'Checked In', notes: nextNotes });
     // Log override
     try {
       await base44.asServiceRole.entities.OperationLog.create({
@@ -247,19 +268,35 @@ export default function CheckInManager({
   };
 
   const handleToggleWaiver = () => {
-    updateMutation.mutate({
-      waiver_status: formData?.waiver_status === 'Verified' ? 'Missing' : 'Verified',
+    const complianceBlock = getBlock(formData.notes, 'INDEX46_COMPLIANCE_JSON');
+    const nextVerified = !complianceBlock.waiver_missing;
+    const nextNotes = mergeNotes(formData.notes || '', {
+      'INDEX46_COMPLIANCE_JSON': {
+        waiver_missing: !nextVerified,
+        waiver_verified_at: nextVerified ? new Date().toISOString() : null,
+        waiver_verified_by_user_id: nextVerified ? currentUser?.id : null,
+      },
     });
+    updateMutation.mutate({ notes: nextNotes });
   };
 
   const handleTogglePayment = () => {
-    updateMutation.mutate({ payment_status: formData?.payment_status === 'Paid' ? 'Unpaid' : 'Paid' });
+    const entryBlock = getBlock(formData.notes, 'INDEX46_ENTRY_JSON');
+    const currentPayment = formData.payment_status || entryBlock.payment_status || 'Unpaid';
+    const nextPayment = currentPayment === 'Paid' ? 'Unpaid' : 'Paid';
+    const nextNotes = mergeNotes(formData.notes || '', {
+      'INDEX46_ENTRY_JSON': { payment_status: nextPayment },
+    });
+    updateMutation.mutate({ payment_status: nextPayment, notes: nextNotes });
   };
 
   const handleWristbandChange = (delta) => {
     const newCount = Math.max(0, (formData?.wristband_count || 0) + delta);
     setFormData((prev) => ({ ...prev, wristband_count: newCount }));
-    updateMutation.mutate({ wristband_count: newCount });
+    const nextNotes = mergeNotes(formData.notes || '', {
+      'INDEX46_CHECKIN_JSON': { wristband_count: newCount },
+    });
+    updateMutation.mutate({ notes: nextNotes });
   };
 
   const handleNotesChange = () => {
