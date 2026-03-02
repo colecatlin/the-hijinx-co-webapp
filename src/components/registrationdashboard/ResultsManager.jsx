@@ -443,6 +443,27 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
     );
   }
 
+  if (sessionsLoading || resultsLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-12 bg-gray-800/50 rounded animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (sessionsError || resultsError) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center space-y-3">
+          <p className="text-red-400 text-sm">Failed to load results data</p>
+          <Button size="sm" variant="outline" onClick={() => { refetchSessions(); refetchResults(); }} className="border-gray-700 text-gray-300">Retry</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Show CTA if no sessions exist
   if (sessions.length === 0) {
     return (
