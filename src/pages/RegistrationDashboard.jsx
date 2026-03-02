@@ -1136,50 +1136,21 @@ export default function RegistrationDashboard() {
                 <div className="space-y-4">
                   {/* Results Manager */}
 
-                  {announcerMode ? (
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                      <div>
-                        <ResultsManager
-                          dashboardContext={dashboardContext}
-                          dashboardPermissions={dashboardPermissions}
-                          selectedEvent={selectedEvent}
-                          isAdmin={isAdmin}
-                          standingsLastCalculatedAt={standingsLastCalculatedAt}
-                          onSetStandingsDirty={() => setStandingsDirty(true)}
-                          requireAdminOverride={requireAdminOverride}
-                          onShowOverrideDialog={setOverrideDialog}
-                          onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
-                          onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                          onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                          onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                        />
-                      </div>
-                      <div>
-                        <AnnouncerPanel
-                          selectedEvent={selectedEvent}
-                          selectedTrack={selectedTrack}
-                          selectedSeries={selectedSeries}
-                          sessions={sessions}
-                          results={results}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <ResultsManager
-                      dashboardContext={dashboardContext}
-                      dashboardPermissions={dashboardPermissions}
-                      selectedEvent={selectedEvent}
-                      isAdmin={isAdmin}
-                      standingsLastCalculatedAt={standingsLastCalculatedAt}
-                      onSetStandingsDirty={() => setStandingsDirty(true)}
-                      requireAdminOverride={requireAdminOverride}
-                      onShowOverrideDialog={setOverrideDialog}
-                      onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
-                      onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                      onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                      onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                    />
-                  )}
+                  <ResultsManager
+                    dashboardContext={dashboardContext}
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEvent={selectedEvent}
+                    isAdmin={isAdmin}
+                    standingsLastCalculatedAt={standingsLastCalculatedAt}
+                    onSetStandingsDirty={() => setStandingsDirty(true)}
+                    requireAdminOverride={requireAdminOverride}
+                    onShowOverrideDialog={setOverrideDialog}
+                    onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
+                    onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                    onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                    onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                    announcerMode={announcerMode}
+                  />
                 </div>
               )}
 
