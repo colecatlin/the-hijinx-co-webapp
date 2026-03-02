@@ -295,48 +295,82 @@ export default function CheckInManager({ selectedEvent, user }) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Left column: Search, QR, and list */}
       <div className="lg:col-span-2 space-y-4">
-        {/* QR and Search Bar */}
+        {/* Input Mode Toggle + Bar */}
         <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 space-y-3">
-          <div>
-            <label className="text-xs font-medium text-gray-400 block mb-1">QR / Transponder ID</label>
-            <form onSubmit={handleQrSubmit}>
-              <Input
-                ref={qrInputRef}
-                placeholder="Scan QR or paste ID..."
-                value={qrInput}
-                onChange={(e) => setQrInput(e.target.value)}
-                className="bg-[#262626] border-gray-700 text-white"
-              />
-            </form>
+          {/* Mode toggle */}
+          <div className="flex gap-1 bg-[#262626] rounded-md p-1">
+            {[{ id: 'search', label: 'Search' }, { id: 'qr_payload', label: 'QR Payload' }].map(m => (
+              <button
+                key={m.id}
+                onClick={() => { setInputMode(m.id); setQrPayloadError(''); }}
+                className={`flex-1 py-1 px-3 rounded text-xs font-medium transition-colors ${inputMode === m.id ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex gap-3 flex-wrap">
-            <div className="flex-1 min-w-[120px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
-              <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value="all">All Classes</SelectItem>
-                  {classNames.map((cls) => (
-                    <SelectItem key={cls} value={cls}>
-                      {cls}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1 min-w-[120px]">
-              <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
+          {inputMode === 'search' && (
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-400 block mb-1">QR / Transponder ID</label>
+                <form onSubmit={handleQrSubmit}>
+                  <Input
+                    ref={qrInputRef}
+                    placeholder="Scan QR or paste ID..."
+                    value={qrInput}
+                    onChange={(e) => setQrInput(e.target.value)}
+                    className="bg-[#262626] border-gray-700 text-white"
+                  />
+                </form>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <div className="flex-1 min-w-[120px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
+                  <Select value={classFilter} onValueChange={setClassFilter}>
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="all">All Classes</SelectItem>
+                      {classNames.map((cls) => (
+                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-[120px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
+                  <Input
+                    placeholder="Driver, car #..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-[#262626] border-gray-700 text-white"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {inputMode === 'qr_payload' && (
+            <form onSubmit={handleQrPayloadSubmit} className="space-y-2">
+              <label className="text-xs font-medium text-gray-400 block mb-1">Paste QR Payload</label>
               <Input
-                placeholder="Driver, car #..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#262626] border-gray-700 text-white"
+                placeholder="INDEX46|eventId=...|entryId=...|driverId=...|car=..."
+                value={qrPayloadInput}
+                onChange={(e) => { setQrPayloadInput(e.target.value); setQrPayloadError(''); }}
+                className="bg-[#262626] border-gray-700 text-white font-mono text-xs"
               />
-            </div>
-          </div>
+              {qrPayloadError && (
+                <div className="flex items-center gap-1 text-red-400 text-xs">
+                  <AlertCircle className="w-3.5 h-3.5" /> {qrPayloadError}
+                </div>
+              )}
+              <Button type="submit" size="sm" className="w-full bg-white text-black hover:bg-gray-100">
+                Look Up Entry
+              </Button>
+            </form>
+          )}
         </div>
 
         {/* Quick List: Top 25 Recent Entries */}
