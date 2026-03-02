@@ -288,8 +288,6 @@ export default function ClassSessionBuilder({
 
   const handleToggleLock = (session) => {
     const newStatus = session.status === 'Locked' ? 'Draft' : 'Locked';
-    const opType = newStatus === 'Locked' ? 'session_locked' : 'session_updated';
-    useDashboardMutation; // used via direct call below
     updateSession({ id: session.id, data: { status: newStatus, locked: newStatus === 'Locked' } });
     setShowLockConfirm(null);
   };
