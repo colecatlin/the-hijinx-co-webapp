@@ -21,16 +21,18 @@ export default function TrackProfile() {
   const [activeSection, setActiveSection] = useState('overview');
 
   const { data: tracks = [], isLoading } = useQuery({
-    queryKey: ['tracks'],
+    queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
+    ...DQ,
   });
 
   const track = tracks.find(t => t.slug === trackSlug || t.id === trackSlug);
 
   const { data: allEvents = [] } = useQuery({
-    queryKey: ['allEvents'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list(),
     enabled: !!track?.id,
+    ...DQ,
   });
 
   // Events at this track
