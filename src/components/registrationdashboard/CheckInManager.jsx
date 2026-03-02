@@ -187,10 +187,11 @@ export default function CheckInManager({ selectedEvent, user }) {
     if (!qrInput.trim()) return;
     
     const entry = entries.find(
-      (e) =>
-        e.car_number === qrInput ||
-        e.transponder_id === qrInput ||
-        e.driver_id === qrInput
+      (en) =>
+        en.id === qrInput ||
+        en.car_number === qrInput ||
+        en.transponder_id === qrInput ||
+        en.driver_id === qrInput
     );
     
     if (entry) {
