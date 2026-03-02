@@ -6,6 +6,7 @@ import ComplianceAlertsCard from './ComplianceAlertsCard';
 import ResultsStatusCard from './ResultsStatusCard';
 import StandingsStatusCard from './StandingsStatusCard';
 import SystemAlertsFeed from './SystemAlertsFeed';
+import RaceDayReadinessCard from './RaceDayReadinessCard';
 
 export default function OverviewGrid({
   dashboardContext,
