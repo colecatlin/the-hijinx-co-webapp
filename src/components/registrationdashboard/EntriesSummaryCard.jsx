@@ -104,19 +104,35 @@ export default function EntriesSummaryCard({ selectedEvent }) {
             <div className="pt-2 border-t border-gray-800 space-y-2">
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Paid</span>
-                <Badge variant="outline" className="border-green-800 text-green-400">{summary.paid}</Badge>
+                {summary.paymentTracked ? (
+                  <Badge variant="outline" className="border-green-800 text-green-400">{summary.paid}</Badge>
+                ) : (
+                  <span className="text-xs text-gray-500">Not tracked</span>
+                )}
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Unpaid</span>
-                <Badge variant="outline" className={`border-gray-700 ${summary.unpaid > 0 ? 'text-red-400 border-red-800' : 'text-gray-400'}`}>{summary.unpaid}</Badge>
+                {summary.paymentTracked ? (
+                  <Badge variant="outline" className={`border-gray-700 ${summary.unpaid > 0 ? 'text-red-400 border-red-800' : 'text-gray-400'}`}>{summary.unpaid}</Badge>
+                ) : (
+                  <span className="text-xs text-gray-500">Not tracked</span>
+                )}
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Checked In</span>
-                <Badge variant="outline" className="border-gray-700 text-blue-400">{summary.checkedIn}</Badge>
+                {summary.statusTracked ? (
+                  <Badge variant="outline" className="border-gray-700 text-blue-400">{summary.checkedIn}</Badge>
+                ) : (
+                  <span className="text-xs text-gray-500">Not tracked</span>
+                )}
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Tech Passed</span>
-                <Badge variant="outline" className="border-gray-700 text-purple-400">{summary.teched}</Badge>
+                {summary.techTracked ? (
+                  <Badge variant="outline" className="border-gray-700 text-purple-400">{summary.teched}</Badge>
+                ) : (
+                  <span className="text-xs text-gray-500">Not tracked</span>
+                )}
               </div>
             </div>
           </>
