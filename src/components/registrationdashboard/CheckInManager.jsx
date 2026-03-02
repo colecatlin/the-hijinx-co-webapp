@@ -244,9 +244,7 @@ export default function CheckInManager({
   };
 
   const handleOneTapCheckIn = () => {
-    updateMutation.mutate({ entry_status: 'Checked In' }, {
-      onSuccess: () => invalidateAfterOperation('entry_checked_in'),
-    });
+    updateMutation.mutate({ entry_status: 'Checked In' });
   };
 
   // Reset local selection when event changes
