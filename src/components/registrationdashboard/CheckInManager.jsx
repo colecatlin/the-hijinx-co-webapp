@@ -93,37 +93,19 @@ export default function CheckInManager({
     ...DQ,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async (updateData) => {
-      const result = await base44.entities.Entry.update(selectedEntry.id, updateData);
-      
-      // Log operation
-      try {
-        await base44.asServiceRole.entities.OperationLog.create({
-          operation_type: 'checkin_update',
-          status: 'success',
-          entity_name: 'Entry',
-          entity_id: selectedEntry.id,
-          metadata: JSON.stringify(updateData),
-          source_type: 'CheckInManager',
-          event_id: selectedEvent?.id,
-        });
-      } catch (e) {
-        console.warn('Failed to log operation:', e);
-      }
-      
-      return result;
+  // Compat shim so existing handler references still work
+  const updateMutation = {
+    isPending: updatePending,
+    mutate: (updateData) => {
+      if (!selectedEntry) return;
+      updateEntryAsync({ id: selectedEntry.id, data: updateData }).then((updatedEntry) => {
+        if (updatedEntry) {
+          setSelectedEntry(updatedEntry);
+          setFormData(updatedEntry);
+        }
+      });
     },
-    onSuccess: (updatedEntry) => {
-      invalidateAfterOperation('entry_updated');
-      setSelectedEntry(updatedEntry);
-      setFormData(updatedEntry);
-      toast.success('Entry updated');
-    },
-    onError: () => {
-      toast.error('Failed to update entry');
-    },
-  });
+  };
 
   const getDriverName = (driverId) => {
     const driver = drivers.find((d) => d.id === driverId);
