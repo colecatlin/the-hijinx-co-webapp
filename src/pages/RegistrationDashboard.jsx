@@ -958,6 +958,14 @@ export default function RegistrationDashboard() {
                   <Radio className="w-4 h-4 mr-2" /> Race Control
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'announcer_pack') && (
+                <TabsTrigger
+                  value="announcer_pack"
+                  className="data-[state=active]:bg-indigo-800 data-[state=active]:text-indigo-100 text-gray-400 px-4 py-2"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" /> Announcer Pack
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Lazy-mounted tabs: only render active tab content */}
