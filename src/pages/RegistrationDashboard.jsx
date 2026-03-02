@@ -182,34 +182,34 @@ export default function RegistrationDashboard() {
   );
 
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
-    queryKey: ['isAuthenticated'],
+    queryKey: QueryKeys.auth.status(),
     queryFn: () => base44.auth.isAuthenticated(),
     ...DQ,
   });
 
   const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: QueryKeys.auth.me(),
     queryFn: () => base44.auth.me(),
     enabled: !!isAuthenticated,
     ...DQ,
   });
 
   const { data: tracks = [] } = useQuery({
-    queryKey: ['tracks'],
+    queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
     enabled: !!isAuthenticated,
     ...DQ,
   });
 
   const { data: seriesList = [] } = useQuery({
-    queryKey: ['series'],
+    queryKey: QueryKeys.series.list(),
     queryFn: () => base44.entities.Series.list(),
     enabled: !!isAuthenticated,
     ...DQ,
   });
 
   const { data: events = [] } = useQuery({
-    queryKey: ['events'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list(),
     enabled: !!isAuthenticated,
     ...DQ,
