@@ -23,62 +23,72 @@ export default function EventResults() {
   const [showProvisional, setShowProvisional] = useState(true);
 
   const { data: isAuthenticated } = useQuery({
-    queryKey: ['isAuthenticated'],
+    queryKey: QueryKeys.auth.status(),
     queryFn: () => base44.auth.isAuthenticated(),
+    ...DQ,
   });
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: QueryKeys.auth.me(),
     queryFn: () => base44.auth.me(),
-    enabled: isAuthenticated,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   const { data: event, isLoading: eventLoading } = useQuery({
-    queryKey: ['event', eventId],
-    queryFn: () => base44.entities.Event.list().then(events => events.find(e => e.id === eventId)),
+    queryKey: QueryKeys.events.byId(eventId),
+    queryFn: () => base44.entities.Event.get(eventId),
     enabled: !!eventId,
+    ...DQ,
   });
 
   const { data: track } = useQuery({
-    queryKey: ['track', event?.track_id],
-    queryFn: () => event?.track_id ? base44.entities.Track.list().then(tracks => tracks.find(t => t.id === event.track_id)) : null,
+    queryKey: QueryKeys.tracks.byId(event?.track_id),
+    queryFn: () => base44.entities.Track.get(event.track_id),
     enabled: !!event?.track_id,
+    ...DQ,
   });
 
   const { data: series } = useQuery({
-    queryKey: ['series', event?.series_id],
-    queryFn: () => event?.series_id ? base44.entities.Series.list().then(series => series.find(s => s.id === event.series_id)) : null,
+    queryKey: QueryKeys.series.byId(event?.series_id),
+    queryFn: () => base44.entities.Series.get(event.series_id),
     enabled: !!event?.series_id,
+    ...DQ,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions-event', eventId],
+    queryKey: QueryKeys.sessions.listByEvent(eventId),
     queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
     enabled: !!eventId,
+    ...DQ,
   });
 
   const { data: results = [] } = useQuery({
-    queryKey: ['results-event', eventId],
+    queryKey: QueryKeys.results.listByEvent(eventId),
     queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
     enabled: !!eventId,
+    ...DQ,
   });
 
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['series-classes', event?.series_id],
-    queryFn: () => event?.series_id ? base44.entities.SeriesClass.filter({ series_id: event.series_id, active: true }) : [],
+    queryKey: QueryKeys.series.classes(event?.series_id),
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: event.series_id, active: true }),
     enabled: !!event?.series_id,
+    ...DQ,
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers-results'],
+    queryKey: QueryKeys.tracks.list({ _scope: 'drivers-results' }),
     queryFn: () => base44.entities.Driver.list(),
     enabled: results.length > 0,
+    ...DQ,
   });
 
   const { data: programs = [] } = useQuery({
-    queryKey: ['programs-results'],
+    queryKey: QueryKeys.driverPrograms.list({ _scope: 'event-results' }),
     queryFn: () => base44.entities.DriverProgram.list(),
     enabled: results.length > 0,
+    ...DQ,
   });
 
   const isAdmin = user?.role === 'admin';
