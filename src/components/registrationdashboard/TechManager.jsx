@@ -84,7 +84,13 @@ import { buildInvalidateAfterOperation } from './invalidationHelper';
 
 const DQ = applyDefaultQueryOptions();
 
-export default function TechManager({ selectedEvent, user, canAction }) {
+export default function TechManager({
+  selectedEvent,
+  user,
+  canAction,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+}) {
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
