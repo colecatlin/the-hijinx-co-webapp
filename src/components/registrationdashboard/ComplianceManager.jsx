@@ -26,6 +26,10 @@ import {
 import {
   buildEventConflictMap,
 } from './shared/techUtils';
+import {
+  mergeNotes,
+  getBlock,
+} from './entryWorkflowHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -208,32 +212,30 @@ export default function ComplianceManager({
 
   // ── Waiver toggle ──────────────────────────────────────────────────────────
   const handleToggleWaiver = async (entry) => {
-    const compliance = parseComplianceFromNotes(entry.notes);
-    const nowVerified = !isWaiverVerified(compliance);
-    const nextCompliance = {
-      ...compliance,
-      waiver: createWaiverState(nowVerified, nowVerified ? currentUser?.id : null),
-    };
-    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
+    const nowVerified = !complianceBlock.waiver_missing;
+    const nextNotes = mergeNotes(entry.notes || '', {
+      'INDEX46_COMPLIANCE_JSON': {
+        waiver_missing: !nowVerified,
+        waiver_verified_at: !nowVerified ? new Date().toISOString() : null,
+        waiver_verified_by_user_id: !nowVerified ? currentUser?.id : null,
+      },
+    });
     await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id,
-      nowVerified ? 'Waiver verified' : 'Waiver unverified');
-    toast.success(nowVerified ? 'Waiver verified' : 'Waiver cleared');
+      !nowVerified ? 'Waiver verified' : 'Waiver unverified');
+    toast.success(!nowVerified ? 'Waiver verified' : 'Waiver cleared');
   };
 
   // ── License save ───────────────────────────────────────────────────────────
   const handleSaveLicense = async (entry) => {
     if (!editingLicense) return;
-    const compliance = parseComplianceFromNotes(entry.notes);
-    const nextCompliance = {
-      ...compliance,
-      license: createLicenseState(
-        editingLicense.licenseNumber || null,
-        editingLicense.expiresOn || null,
-        false // Do not auto-verify; admin must toggle
-      ),
-    };
-    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    const nextNotes = mergeNotes(entry.notes || '', {
+      'INDEX46_COMPLIANCE_JSON': {
+        license_number: editingLicense.licenseNumber || null,
+        license_expires_on: editingLicense.expiresOn || null,
+      },
+    });
     await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License details updated');
     setEditingLicense(null);
@@ -242,21 +244,17 @@ export default function ComplianceManager({
 
   // ── License verify ──────────────────────────────────────────────────────────
   const handleVerifyLicense = async (entry) => {
-    const compliance = parseComplianceFromNotes(entry.notes);
-    if (!compliance.license?.license_number) {
+    const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
+    if (!complianceBlock.license_number) {
       toast.error('License number required');
       return;
     }
-    const nextCompliance = {
-      ...compliance,
-      license: {
-        ...compliance.license,
-        status: 'verified',
-        verified_at: new Date().toISOString(),
-        verified_by_user_id: currentUser?.id || null,
+    const nextNotes = mergeNotes(entry.notes || '', {
+      'INDEX46_COMPLIANCE_JSON': {
+        license_verified_at: new Date().toISOString(),
+        license_verified_by_user_id: currentUser?.id || null,
       },
-    };
-    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    });
     await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License verified');
     toast.success('License verified');
