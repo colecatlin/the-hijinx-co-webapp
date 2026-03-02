@@ -98,10 +98,11 @@ export default function TechManager({ selectedEvent, user, canAction }) {
   const queryClient = useQueryClient();
 
   const eventId = selectedEvent?.id;
+  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
 
   // Check auth status
   useQuery({
-    queryKey: ['authStatus'],
+    queryKey: QueryKeys.auth.status(),
     queryFn: async () => {
       const status = await base44.auth.isAuthenticated();
       setIsAuth(status);
@@ -120,15 +121,8 @@ export default function TechManager({ selectedEvent, user, canAction }) {
   }, [eventId]);
 
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
-    queryKey: ['entries', eventId],
+    queryKey: QueryKeys.entries.listByEvent(eventId),
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
-    enabled: !!eventId,
-    ...DQ,
-  });
-
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', eventId],
-    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }),
     enabled: !!eventId,
     ...DQ,
   });
