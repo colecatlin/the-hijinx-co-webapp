@@ -91,6 +91,11 @@ function getKeysForOperation(operationType, payload = {}) {
       broad.push(['drivers'], ['myDriver']);
       break;
 
+    case 'compliance_updated':
+      broad.push(['entries'], ['myEntry'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
+      break;
+
     case 'standings_recalculated':
       broad.push(['standings'], ['driverPrograms'], ['series'], ['operationLogs']);
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
