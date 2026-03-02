@@ -276,30 +276,6 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
-  // Fetch selected event details
-  const { data: selectedEvent, isLoading: selectedEventLoading } = useQuery({
-    queryKey: QueryKeys.events.byId(eventId),
-    queryFn: () => (eventId ? base44.entities.Event.get(eventId) : Promise.resolve(null)),
-    enabled: !!isAuthenticated && !!eventId,
-    ...DQ,
-  });
-
-  // Fetch selected track details
-  const { data: selectedTrack, isLoading: selectedTrackLoading } = useQuery({
-    queryKey: QueryKeys.tracks.byId(selectedEvent?.track_id),
-    queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
-    enabled: !!isAuthenticated && !!selectedEvent?.track_id,
-    ...DQ,
-  });
-
-  // Fetch selected series details
-  const { data: selectedSeries, isLoading: selectedSeriesLoading } = useQuery({
-    queryKey: QueryKeys.series.byId(selectedEvent?.series_id),
-    queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
-    enabled: !!isAuthenticated && !!selectedEvent?.series_id,
-    ...DQ,
-  });
-
   const filteredEvents = useMemo(() => {
     let filtered = [...events];
 
