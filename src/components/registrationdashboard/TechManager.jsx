@@ -81,6 +81,10 @@ const TECH_TEMPLATES = {
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import {
+  mergeNotes,
+  getBlock,
+} from './entryWorkflowHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -259,7 +263,14 @@ export default function TechManager({
       toast.error('Must be checked in first before marking Tech Passed.');
       return;
     }
-    const update = { tech_status: status };
+    const nextNotes = mergeNotes(selectedEntry.notes || '', {
+      'INDEX46_TECH_JSON': {
+        tech_status: status,
+        inspected_at: status !== 'Not Inspected' ? new Date().toISOString() : null,
+        inspector_user_id: status !== 'Not Inspected' ? currentUser?.id : null,
+      },
+    });
+    const update = { tech_status: status, notes: nextNotes };
     if (status !== 'Not Inspected') {
       update.tech_updated_at = new Date().toISOString();
       if (currentUser?.full_name) {
@@ -270,8 +281,10 @@ export default function TechManager({
   };
 
   const handleSaveNotes = () => {
-    const field = 'tech_notes' in selectedEntry ? 'tech_notes' : 'notes';
-    updateMutation.mutate({ [field]: notes });
+    const nextNotes = mergeNotes(selectedEntry.notes || '', {
+      'INDEX46_TECH_JSON': { tech_notes: notes },
+    });
+    updateMutation.mutate({ notes: nextNotes });
     setNotesMode(false);
   };
 
@@ -288,19 +301,30 @@ export default function TechManager({
     const total = template.length;
     const summary = `Tech checklist, ${selectedTemplate}, ${passed}/${total}`;
     
-    const field = 'tech_notes' in selectedEntry ? 'tech_notes' : 'notes';
-    let existingNotes = selectedEntry[field] || '';
+    const techBlock = getBlock(selectedEntry.notes, 'INDEX46_TECH_JSON');
+    let checklistNotes = techBlock.checklist_notes || '';
+    // Remove old checklist summary if exists
+    checklistNotes = checklistNotes.split('\n').filter(line => !line.startsWith('Tech checklist')).join('\n').trim();
+    const finalChecklistNotes = checklistNotes ? `${checklistNotes}\n${summary}` : summary;
     
-    // Remove old checklist line if exists
-    existingNotes = existingNotes.split('\n').filter(line => !line.startsWith('Tech checklist')).join('\n').trim();
-    const finalNotes = existingNotes ? `${existingNotes}\n${summary}` : summary;
+    const nextNotes = mergeNotes(selectedEntry.notes || '', {
+      'INDEX46_TECH_JSON': { checklist_notes: finalChecklistNotes },
+    });
     
-    updateMutation.mutate({ [field]: finalNotes });
+    updateMutation.mutate({ notes: nextNotes });
     setChecklist({});
   };
 
   const handleBulkTechUpdate = (entryId, status) => {
-    const update = { tech_status: status };
+    const entry = entries.find(e => e.id === entryId);
+    const nextNotes = mergeNotes(entry?.notes || '', {
+      'INDEX46_TECH_JSON': {
+        tech_status: status,
+        inspected_at: status !== 'Not Inspected' ? new Date().toISOString() : null,
+        inspector_user_id: status !== 'Not Inspected' ? currentUser?.id : null,
+      },
+    });
+    const update = { tech_status: status, notes: nextNotes };
     if (status !== 'Not Inspected') {
       update.tech_updated_at = new Date().toISOString();
       if (currentUser?.full_name) {
