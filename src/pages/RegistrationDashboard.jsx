@@ -284,10 +284,10 @@ export default function RegistrationDashboard() {
     if (organizationType === 'track' && organizationId) {
       filtered = filtered.filter((e) => e.track_id === organizationId);
     } else if (organizationType === 'series' && organizationId) {
-      const selectedSeries = seriesList.find((s) => s.id === organizationId);
-      if (selectedSeries) {
+      const matchedSeries = seriesList.find((s) => s.id === organizationId);
+      if (matchedSeries) {
         filtered = filtered.filter(
-          (e) => e.series_id === organizationId || e.series_name === selectedSeries.name
+          (e) => e.series_id === organizationId || e.series_name === matchedSeries.name
         );
       }
     }
