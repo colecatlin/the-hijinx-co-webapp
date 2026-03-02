@@ -132,35 +132,22 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
     entries.forEach((entry) => {
       const entryFlags = [];
 
-      // 1. Missing waivers
-      if ('waiver_verified' in entry) {
-        if (!entry.waiver_verified) {
-          entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
-          flags.waivers++;
-        }
+      // 1. Missing waivers (use waiver_status field)
+      if (entry.waiver_status === 'Missing' || !entry.waiver_status) {
+        entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
+        flags.waivers++;
       }
 
       // 2. Unpaid balance
-      if ('payment_status' in entry) {
-        if (entry.payment_status !== 'Paid') {
-          entryFlags.push({ type: 'payments', label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
-          flags.payments++;
-        }
+      if (entry.payment_status !== 'Paid') {
+        entryFlags.push({ type: 'payments', label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
+        flags.payments++;
       }
 
       // 3. Missing transponder
-      if ('transponder_id' in entry) {
-        if (!entry.transponder_id || entry.transponder_id.trim() === '') {
-          entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
-          flags.transponders++;
-        }
-      } else {
-        // Infer from notes
-        const hasTransponderNote = entry.notes && entry.notes.toLowerCase().includes('transponder');
-        if (!hasTransponderNote && !entry.transponder_id) {
-          entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
-          flags.transponders++;
-        }
+      if (!entry.transponder_id || entry.transponder_id.trim() === '') {
+        entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
+        flags.transponders++;
       }
 
       // 4. Duplicate car numbers
