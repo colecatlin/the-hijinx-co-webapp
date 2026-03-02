@@ -342,7 +342,7 @@ export default function RegistrationDashboard() {
 
   // Check if user has any accessible tabs
   const availableTabs = useMemo(() => {
-    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control'];
+    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack'];
     return tabKeys.filter(key => canTab(dashboardPermissions, key));
   }, [dashboardPermissions]);
 
