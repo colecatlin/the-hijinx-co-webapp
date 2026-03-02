@@ -13,7 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronRight, Plus, Minus, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { ChevronRight, Plus, Minus, AlertCircle, CheckCircle2, X, ShieldAlert } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 import { QueryKeys } from '@/components/utils/queryKeys';
@@ -38,8 +42,11 @@ export default function CheckInManager({
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [formData, setFormData] = useState(null);
   const [notesMode, setNotesMode] = useState(false);
+  const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+  const [pendingCheckIn, setPendingCheckIn] = useState(false);
   const qrInputRef = useRef(null);
   const queryClient = useQueryClient();
+  const today = new Date().toISOString().split('T')[0];
 
   const eventId = selectedEvent?.id;
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
