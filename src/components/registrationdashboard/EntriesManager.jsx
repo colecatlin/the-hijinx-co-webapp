@@ -257,6 +257,12 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
       return;
     }
 
+    // Application-level duplicate guard
+    if (checkDuplicateEntry(addFormData.driver_id)) {
+      toast.error('This driver is already entered in this event');
+      return;
+    }
+
     const data = {
       event_id: eventId,
       series_id: selectedEvent?.series_id,
