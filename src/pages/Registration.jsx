@@ -63,33 +63,35 @@ function getEventEntriesKey(eventId, seriesClassId) {
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function Registration() {
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // URL params
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
-  const [orgType, setOrgType] = useState(urlParams.get('orgType') || '');
+  const [orgType, setOrgType] = useState(urlParams.get('orgType') || 'series');
   const [orgId, setOrgId] = useState(urlParams.get('orgId') || '');
   const [seasonYear, setSeasonYear] = useState(urlParams.get('seasonYear') || '');
   const [eventId, setEventId] = useState(urlParams.get('eventId') || '');
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Form state
-  const [formStep, setFormStep] = useState(1); // 1=driver, 2=vehicle, 3=sponsors, 4=confirm
+  // Step state
+  const [currentStep, setCurrentStep] = useState(1); // 1=select, 2=driver, 3=details, 4=register
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [selectedDriverId, setSelectedDriverId] = useState('');
-  const [formData, setFormData] = useState({
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
-    license_number: '',
-    license_expiration_date: '',
+
+  // Driver & Entry form
+  const [showCreateDriver, setShowCreateDriver] = useState(false);
+  const [driverFormData, setDriverFormData] = useState({
+    first_name: '',
+    last_name: '',
+    hometown_city: '',
+    hometown_state: '',
+  });
+  const [entryFormData, setEntryFormData] = useState({
+    series_class_id: '',
     car_number: '',
     transponder_id: '',
     team_id: '',
-    manufacturer: '',
-    vehicle_notes: '',
-    sponsors: '',
   });
-  const [confirmChecked, setConfirmChecked] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState(null);
 
   // ── Auth ──
   const { data: isAuth } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
