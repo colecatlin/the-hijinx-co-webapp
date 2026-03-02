@@ -167,24 +167,24 @@ export default function EntriesManager({
 
   const { mutateAsync: updateEntry, isPending: updatingEntry } = useDashboardMutation({
     operationType: 'entry_updated',
-    entityName: 'Entry',
-    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    entityName: isUsingFallback ? 'DriverProgram' : 'Entry',
+    mutationFn: ({ id, data }) => (isUsingFallback ? base44.entities.DriverProgram.update(id, data) : base44.entities.Entry.update(id, data)),
     successMessage: 'Entry updated',
     ...sharedMutationOpts,
   });
 
   const { mutateAsync: deleteEntry } = useDashboardMutation({
     operationType: 'entry_deleted',
-    entityName: 'Entry',
-    mutationFn: (id) => base44.entities.Entry.delete(id),
+    entityName: isUsingFallback ? 'DriverProgram' : 'Entry',
+    mutationFn: (id) => (isUsingFallback ? base44.entities.DriverProgram.delete(id) : base44.entities.Entry.delete(id)),
     successMessage: 'Entry deleted',
     ...sharedMutationOpts,
   });
 
   const { mutateAsync: bulkUpdateEntries, isPending: bulkUpdating } = useDashboardMutation({
     operationType: 'entry_bulk_updated',
-    entityName: 'Entry',
-    mutationFn: (updates) => Promise.all(updates.map((u) => base44.entities.Entry.update(u.id, u.data))),
+    entityName: isUsingFallback ? 'DriverProgram' : 'Entry',
+    mutationFn: (updates) => Promise.all(updates.map((u) => (isUsingFallback ? base44.entities.DriverProgram.update(u.id, u.data) : base44.entities.Entry.update(u.id, u.data)))),
     successMessage: 'Bulk update complete',
     ...sharedMutationOpts,
   });
