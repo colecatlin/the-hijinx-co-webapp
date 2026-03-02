@@ -419,7 +419,7 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
                         </Badge>
                       </td>
                       <td className="py-3 px-3">
-                        <CheckCircle2 className={`w-4 h-4 ${entry.waiver_verified ? 'text-green-500' : 'text-gray-500'}`} />
+                        <CheckCircle2 className={`w-4 h-4 ${entry.waiver_status === 'Verified' ? 'text-green-500' : 'text-gray-500'}`} />
                       </td>
                       <td className="py-3 px-3 text-gray-400 text-xs">
                         {entry.transponder_id ? '✓' : '✗'}
