@@ -78,14 +78,14 @@ export default function EventResults() {
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: QueryKeys.tracks.list({ _scope: 'drivers-results' }),
+    queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
     enabled: results.length > 0,
     ...DQ,
   });
 
   const { data: programs = [] } = useQuery({
-    queryKey: QueryKeys.driverPrograms.list({ _scope: 'event-results' }),
+    queryKey: QueryKeys.driverPrograms.list(),
     queryFn: () => base44.entities.DriverProgram.list(),
     enabled: results.length > 0,
     ...DQ,
