@@ -143,24 +143,29 @@ export default function MyDashboard() {
   return (
     <PageShell className="bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-[#232323] rounded-xl flex items-center justify-center">
-              <LayoutDashboard className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
-              {user && (
-                <p className="text-sm text-gray-500">
-                  Welcome back, {user.full_name || user.email}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+         {/* Header */}
+         <div className="mb-10">
+           <div className="flex items-center gap-3 mb-2">
+             <div className="w-10 h-10 bg-[#232323] rounded-xl flex items-center justify-center">
+               <LayoutDashboard className="w-5 h-5 text-white" />
+             </div>
+             <div>
+               <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
+               {user && (
+                 <p className="text-sm text-gray-500">
+                   Welcome back, {user.full_name || user.email}
+                 </p>
+               )}
+             </div>
+           </div>
+         </div>
 
-        {isLoading ? (
+         {/* My Entries Section */}
+         <div className="mb-12">
+           <MyEntriesSection user={user} isLoading={userLoading} />
+         </div>
+
+         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
               <Skeleton key={i} className="h-24 w-full rounded-xl" />
