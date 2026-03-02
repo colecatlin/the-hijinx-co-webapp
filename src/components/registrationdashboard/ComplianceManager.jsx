@@ -471,7 +471,7 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
                 </div>
                 <div className="bg-gray-900/50 rounded p-3">
                   <p className="text-xs text-gray-400 mb-1">Waiver</p>
-                  <p className="text-sm font-semibold text-white">{selectedEntry.waiver_verified ? 'Verified' : 'Missing'}</p>
+                  <p className="text-sm font-semibold text-white">{selectedEntry.waiver_status || 'Missing'}</p>
                 </div>
               </div>
 
