@@ -167,7 +167,7 @@ export default function TechManager({ selectedEvent, user, canAction }) {
       return result;
     },
     onSuccess: (updatedEntry) => {
-      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
+      invalidateAfterOperation('entry_updated');
       setSelectedEntry(updatedEntry);
       toast.success('Entry updated');
     },
