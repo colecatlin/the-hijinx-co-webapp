@@ -23,16 +23,20 @@ import {
 const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-async function writeOperationLog(type, entryId, eventId) {
+async function writeOperationLog(type, entityName, entryId, eventId, driverId, carNumber) {
   try {
-    await base44.asServiceRole.entities.OperationLog.create({
-      operation_type: type,
-      source_type: 'Registration',
-      entity_name: 'Entry',
-      entity_id: entryId,
-      status: 'success',
-      metadata: { eventId },
-    });
+    const OperationLogEntity = await base44.asServiceRole.entities.OperationLog;
+    if (OperationLogEntity) {
+      await OperationLogEntity.create({
+        operation_type: type,
+        source_type: 'Registration',
+        entity_name: entityName,
+        entity_id: entryId,
+        event_id: eventId,
+        status: 'success',
+        metadata: { driverId, carNumber, timestamp: new Date().toISOString() },
+      });
+    }
   } catch (_) {
     // non-fatal
   }
@@ -40,7 +44,7 @@ async function writeOperationLog(type, entryId, eventId) {
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function Registration() {
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   // Step 1 state
