@@ -30,6 +30,10 @@ import {
   mergeNotes,
   getBlock,
 } from './entryWorkflowHelper';
+import {
+  verifyEntryEventIntegrity,
+  GUARD_ERROR_MESSAGE,
+} from './contextGuardHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -212,6 +216,10 @@ export default function ComplianceManager({
 
   // ── Waiver toggle ──────────────────────────────────────────────────────────
   const handleToggleWaiver = async (entry) => {
+    if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
     const nowVerified = !complianceBlock.waiver_missing;
     const nextNotes = mergeNotes(entry.notes || '', {
@@ -230,6 +238,10 @@ export default function ComplianceManager({
   // ── License save ───────────────────────────────────────────────────────────
   const handleSaveLicense = async (entry) => {
     if (!editingLicense) return;
+    if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const nextNotes = mergeNotes(entry.notes || '', {
       'INDEX46_COMPLIANCE_JSON': {
         license_number: editingLicense.licenseNumber || null,
@@ -244,6 +256,10 @@ export default function ComplianceManager({
 
   // ── License verify ──────────────────────────────────────────────────────────
   const handleVerifyLicense = async (entry) => {
+    if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
     if (!complianceBlock.license_number) {
       toast.error('License number required');

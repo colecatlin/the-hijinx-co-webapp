@@ -70,6 +70,10 @@ import {
   updateEntryWorkflow,
   getBlock,
 } from './entryWorkflowHelper';
+import {
+  verifyEntryEventIntegrity,
+  GUARD_ERROR_MESSAGE,
+} from './contextGuardHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -326,7 +330,11 @@ export default function EntriesManager({
     setShowDetailDrawer(true);
   };
 
-  const handleSaveEntry = () => {
+  const handleSaveEntry = async () => {
+    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     updateEntry({ id: selectedEntry.id, data: drawerFormData }).then(() => setShowDetailDrawer(false));
   };
 

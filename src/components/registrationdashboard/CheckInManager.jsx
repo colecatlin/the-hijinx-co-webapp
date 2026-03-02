@@ -37,6 +37,10 @@ import {
   mergeNotes,
   getBlock,
 } from './entryWorkflowHelper';
+import {
+  verifyEntryEventIntegrity,
+  GUARD_ERROR_MESSAGE,
+} from './contextGuardHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -213,7 +217,11 @@ export default function CheckInManager({
     return blockers;
   };
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
+    if (!(await verifyEntryEventIntegrity(formData, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     if (isCheckedIn) {
       // Un-check-in — update both native field and notes
       const nextNotes = mergeNotes(formData.notes || '', {
@@ -267,7 +275,11 @@ export default function CheckInManager({
     } catch (_) {}
   };
 
-  const handleToggleWaiver = () => {
+  const handleToggleWaiver = async () => {
+    if (!(await verifyEntryEventIntegrity(formData, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const complianceBlock = getBlock(formData.notes, 'INDEX46_COMPLIANCE_JSON');
     const nextVerified = !complianceBlock.waiver_missing;
     const nextNotes = mergeNotes(formData.notes || '', {
@@ -280,7 +292,11 @@ export default function CheckInManager({
     updateMutation.mutate({ notes: nextNotes });
   };
 
-  const handleTogglePayment = () => {
+  const handleTogglePayment = async () => {
+    if (!(await verifyEntryEventIntegrity(formData, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const entryBlock = getBlock(formData.notes, 'INDEX46_ENTRY_JSON');
     const currentPayment = formData.payment_status || entryBlock.payment_status || 'Unpaid';
     const nextPayment = currentPayment === 'Paid' ? 'Unpaid' : 'Paid';
@@ -290,7 +306,11 @@ export default function CheckInManager({
     updateMutation.mutate({ payment_status: nextPayment, notes: nextNotes });
   };
 
-  const handleWristbandChange = (delta) => {
+  const handleWristbandChange = async (delta) => {
+    if (!(await verifyEntryEventIntegrity(formData, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const newCount = Math.max(0, (formData?.wristband_count || 0) + delta);
     setFormData((prev) => ({ ...prev, wristband_count: newCount }));
     const nextNotes = mergeNotes(formData.notes || '', {

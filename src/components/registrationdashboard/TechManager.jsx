@@ -85,6 +85,10 @@ import {
   mergeNotes,
   getBlock,
 } from './entryWorkflowHelper';
+import {
+  verifyEntryEventIntegrity,
+  GUARD_ERROR_MESSAGE,
+} from './contextGuardHelper';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -258,7 +262,11 @@ export default function TechManager({
     setNotesMode(false);
   };
 
-  const handleSetTechStatus = (status) => {
+  const handleSetTechStatus = async (status) => {
+    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     if (status === 'Passed' && selectedEntry?.entry_status !== 'Checked In') {
       toast.error('Must be checked in first before marking Tech Passed.');
       return;
@@ -280,7 +288,11 @@ export default function TechManager({
     updateMutation.mutate(update);
   };
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = async () => {
+    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
     const nextNotes = mergeNotes(selectedEntry.notes || '', {
       'INDEX46_TECH_JSON': { tech_notes: notes },
     });

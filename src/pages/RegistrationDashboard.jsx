@@ -720,36 +720,36 @@ export default function RegistrationDashboard() {
                      <Upload className="w-4 h-4 mr-1" /> Import Entries CSV
                    </Button>
                  )}
-                {canAction(dashboardPermissions, 'sync_timing') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSyncModal(true)}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
-                  </Button>
-                )}
-                {canAction(dashboardPermissions, 'publish_official') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePublishOfficial}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Send className="w-4 h-4 mr-1" /> Publish
-                  </Button>
-                )}
-                {canAction(dashboardPermissions, 'export') && (
+                {canAction(dashboardPermissions, 'sync_timing') && selectedEvent && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowExportModal(true)}
+                      onClick={() => setShowSyncModal(true)}
                       className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                     >
-                      <Download className="w-4 h-4 mr-1" /> Export
+                      <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
                     </Button>
                   )}
+                  {canAction(dashboardPermissions, 'publish_official') && selectedEvent && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePublishOfficial}
+                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                    >
+                      <Send className="w-4 h-4 mr-1" /> Publish
+                    </Button>
+                  )}
+                  {canAction(dashboardPermissions, 'export') && selectedEvent && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowExportModal(true)}
+                        className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                      >
+                        <Download className="w-4 h-4 mr-1" /> Export
+                      </Button>
+                    )}
                 </div>
 
                 {/* Announcer Mode Toggle */}
@@ -766,8 +766,23 @@ export default function RegistrationDashboard() {
                 </div>
 
         {/* Main Content */}
-         <div className="max-w-7xl mx-auto px-6 py-8">
-           {/* Live Mode Badge */}
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Hard Event Lock Banner */}
+            {!selectedEvent && (
+              <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-red-300 mb-1">Operations Disabled</p>
+                    <p className="text-xs text-red-200">
+                      Select Track or Series, Season, and Event above to enable operations. All entry, session, results, compliance, and tech actions require an active event context.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Live Mode Badge */}
            {isLiveMode && (
              <div className="mb-6 bg-red-950/40 border border-red-800/50 rounded-lg p-4">
                <div className="flex items-center gap-3">
