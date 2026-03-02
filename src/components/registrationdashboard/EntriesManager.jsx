@@ -115,43 +115,50 @@ export default function EntriesManager({
     return entries.some((e) => e.driver_id === driverId);
   };
 
-  // Mutations
-  const createEntryMutation = useMutation({
+  // Shared mutation options
+  const sharedMutationOpts = {
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  };
+
+  const { mutateAsync: createEntry, isPending: creatingEntry } = useDashboardMutation({
+    operationType: 'entry_created',
+    entityName: 'Entry',
     mutationFn: (data) => base44.entities.Entry.create(data),
-    onSuccess: () => {
-      invalidateAfterOperation('entry_created');
-      setShowAddDialog(false);
-      setAddFormData({});
-      toast.success('Entry created');
-    },
+    successMessage: 'Entry created',
+    ...sharedMutationOpts,
   });
 
-  const updateEntryMutation = useMutation({
+  const { mutateAsync: updateEntry, isPending: updatingEntry } = useDashboardMutation({
+    operationType: 'entry_updated',
+    entityName: 'Entry',
     mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
-    onSuccess: () => {
-      invalidateAfterOperation('entry_updated');
-      setShowDetailDrawer(false);
-      toast.success('Entry updated');
-    },
+    successMessage: 'Entry updated',
+    ...sharedMutationOpts,
   });
 
-  const deleteEntryMutation = useMutation({
+  const { mutateAsync: deleteEntry } = useDashboardMutation({
+    operationType: 'entry_deleted',
+    entityName: 'Entry',
     mutationFn: (id) => base44.entities.Entry.delete(id),
-    onSuccess: () => {
-      invalidateAfterOperation('entry_deleted');
-      setShowDeleteConfirm(null);
-      toast.success('Entry deleted');
-    },
+    successMessage: 'Entry deleted',
+    ...sharedMutationOpts,
   });
 
-  const bulkUpdateMutation = useMutation({
+  const { mutateAsync: bulkUpdateEntries, isPending: bulkUpdating } = useDashboardMutation({
+    operationType: 'entry_bulk_updated',
+    entityName: 'Entry',
     mutationFn: (updates) => Promise.all(updates.map((u) => base44.entities.Entry.update(u.id, u.data))),
-    onSuccess: () => {
-      invalidateAfterOperation('entry_bulk_updated');
-      setSelectedEntries(new Set());
-      toast.success('Bulk update complete');
-    },
+    successMessage: 'Bulk update complete',
+    ...sharedMutationOpts,
   });
+
+  // Compat shims
+  const createEntryMutation = { mutate: (d) => createEntry(d), isPending: creatingEntry };
+  const updateEntryMutation = { mutate: ({ id, data }) => updateEntry({ id, data }).then(() => { setShowDetailDrawer(false); }), isPending: updatingEntry };
+  const deleteEntryMutation = { mutate: (id) => deleteEntry(id).then(() => setShowDeleteConfirm(null)) };
+  const bulkUpdateMutation  = { mutate: (updates) => bulkUpdateEntries(updates).then(() => setSelectedEntries(new Set())), isPending: bulkUpdating };
 
   // Helpers
   const getDriverName = (driverId) => {
