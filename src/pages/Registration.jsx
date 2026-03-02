@@ -185,15 +185,18 @@ export default function Registration() {
     window.history.replaceState({}, '', `?${params.toString()}`);
   }, [orgType, orgId, seasonYear, eventId]);
 
-  // ── Load event from URL or selection ──
+  // ── Load event from URL ──
   useEffect(() => {
     if (eventId && allEvents.length) {
       const event = allEvents.find(e => e.id === eventId);
-      if (event) setSelectedEvent(event);
+      if (event) {
+        setSelectedEvent(event);
+        setCurrentStep(2);
+      }
     }
   }, [eventId, allEvents]);
 
-  // ── Handle org type change ──
+  // ── Handlers ──
   const handleOrgTypeChange = (type) => {
     setOrgType(type);
     setOrgId('');
@@ -202,89 +205,103 @@ export default function Registration() {
     setSelectedEvent(null);
   };
 
-  // ── Handle season change ──
   const handleSeasonChange = (season) => {
     setSeasonYear(season);
     setEventId('');
     setSelectedEvent(null);
   };
 
-  // ── Handle event selection ──
   const handleEventSelect = (eid) => {
     const event = allEvents.find(e => e.id === eid);
     setEventId(eid);
     setSelectedEvent(event);
   };
 
-  // ── Handle continue to registration ──
-  const handleContinueRegistration = () => {
-    if (!isAuth) {
-      setShowAuthDialog(true);
-      return;
-    }
-    if (!user) return;
-    if (userDrivers.length === 0) {
-      toast.error('Create a Driver Profile first');
-      navigate(createPageUrl('Profile?tab=driver'));
-      return;
-    }
-    setFormStep(1);
-  };
+  // ── Create driver mutation ──
+  const createDriverMutation = useMutation({
+    mutationFn: async (data) => {
+      if (!user?.email) throw new Error('User email missing');
+      const newDriver = await base44.entities.Driver.create({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        hometown_city: data.hometown_city || undefined,
+        hometown_state: data.hometown_state || undefined,
+        contact_email: user.email,
+        owner_user_id: user.id,
+      });
+      return newDriver;
+    },
+    onSuccess: (newDriver) => {
+      toast.success('Driver profile created!');
+      queryClient.setQueryData(getDriverLookupKey(user?.id, user?.email), newDriver);
+      setShowCreateDriver(false);
+      setDriverFormData({ first_name: '', last_name: '', hometown_city: '', hometown_state: '' });
+      setCurrentStep(3);
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to create driver');
+    },
+  });
 
-  // ── Handle submit ──
-  const submitMutation = useMutation({
+  // ── Register entry mutation ──
+  const registerMutation = useMutation({
     mutationFn: async () => {
-      if (!user || !selectedEvent || !selectedDriver) throw new Error('Missing required data');
+      if (!eventId || !myDriver?.id) throw new Error('Missing event or driver');
+      if (selectedEvent?.series_id && !entryFormData.series_class_id) throw new Error('Please select a class');
+      if (!entryFormData.car_number.trim()) throw new Error('Car number is required');
 
-      const entryData = {
-        event_id: selectedEvent.id,
-        driver_id: selectedDriver.id,
+      // Check for duplicate car number
+      const dupCheck = eventEntries.filter(
+        e => e.car_number === entryFormData.car_number.trim() && e.driver_id !== myDriver.id
+      );
+      if (dupCheck.length) {
+        throw new Error(`Car number ${entryFormData.car_number} already registered in this class`);
+      }
+
+      const entryPayload = {
+        event_id: eventId,
+        driver_id: myDriver.id,
         series_id: selectedEvent.series_id || undefined,
-        team_id: formData.team_id || undefined,
-        car_number: formData.car_number.trim(),
-        transponder_id: formData.transponder_id || undefined,
+        series_class_id: entryFormData.series_class_id || undefined,
+        car_number: entryFormData.car_number.trim(),
+        transponder_id: entryFormData.transponder_id || undefined,
+        team_id: entryFormData.team_id || undefined,
         entry_status: 'Registered',
         payment_status: 'Unpaid',
-        waiver_verified: false,
-        compliance_status: 'needs_attention',
         tech_status: 'Not Inspected',
-        wristband_count: 0,
+        waiver_verified: false,
       };
 
-      // Add optional fields if they exist
-      if (formData.license_number) entryData.license_number = formData.license_number;
-      if (formData.license_expiration_date) entryData.license_expiration_date = formData.license_expiration_date;
+      // Check for existing entry
+      const existing = await base44.entities.Entry.filter({
+        event_id: eventId,
+        driver_id: myDriver.id,
+      });
 
-      // Store contact info in notes if fields don't exist
-      const notes = [];
-      if (formData.emergency_contact_name) notes.push(`Emergency Contact: ${formData.emergency_contact_name}`);
-      if (formData.emergency_contact_phone) notes.push(`Phone: ${formData.emergency_contact_phone}`);
-      if (formData.sponsors) notes.push(`Sponsors: ${formData.sponsors}`);
-      if (formData.vehicle_notes) notes.push(`Vehicle Notes: ${formData.vehicle_notes}`);
-      if (notes.length) entryData.notes = notes.join('\n');
-
-      // Try Entry first, fallback to DriverProgram
-      try {
-        const entry = await base44.entities.Entry.create(entryData);
-        await writeOperationLog('registration_submitted', 'Entry', entry.id, selectedEvent.id, selectedDriver.id, formData.car_number);
-        return { type: 'Entry', id: entry.id };
-      } catch (e) {
-        // Fallback to DriverProgram
-        const dpData = {
-          event_id: selectedEvent.id,
-          driver_id: selectedDriver.id,
-          series_id: selectedEvent.series_id || undefined,
-        };
-        const dp = await base44.entities.DriverProgram.create(dpData);
-        await writeOperationLog('registration_submitted', 'DriverProgram', dp.id, selectedEvent.id, selectedDriver.id, formData.car_number);
-        return { type: 'DriverProgram', id: dp.id };
+      let result;
+      if (existing.length) {
+        // Update existing
+        result = await base44.entities.Entry.update(existing[0].id, entryPayload);
+        await writeOperationLog('entry_updated', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
+      } else {
+        // Create new
+        result = await base44.entities.Entry.create(entryPayload);
+        await writeOperationLog('entry_created', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
       }
+
+      return result;
     },
-    onSuccess: (result) => {
-      toast.success('Registered successfully! You are locked in.');
-      setTimeout(() => {
-        navigate(createPageUrl('MyDashboard'));
-      }, 1500);
+    onSuccess: (entry) => {
+      toast.success(existingEntry ? 'Registration updated!' : 'Registered successfully!');
+      setRegistrationResult({
+        eventName: selectedEvent.name,
+        driverName: `${myDriver.first_name} ${myDriver.last_name}`,
+        entryStatus: entry.entry_status,
+        paymentStatus: entry.payment_status,
+        techStatus: entry.tech_status,
+      });
+      queryClient.invalidateQueries({ queryKey: getExistingEntryKey(eventId, myDriver.id) });
+      setTimeout(() => setCurrentStep(5), 1000);
     },
     onError: (err) => {
       toast.error(err.message || 'Registration failed');
