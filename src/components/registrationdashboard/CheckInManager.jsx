@@ -182,7 +182,8 @@ export default function CheckInManager({
 
   const handleWristbandChange = (delta) => {
     const newCount = Math.max(0, (formData?.wristband_count || 0) + delta);
-    setFormData({ ...formData, wristband_count: newCount });
+    setFormData((prev) => ({ ...prev, wristband_count: newCount }));
+    updateMutation.mutate({ wristband_count: newCount });
   };
 
   const handleNotesChange = () => {
