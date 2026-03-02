@@ -1,5 +1,8 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Play } from 'lucide-react';
 import EventStatusCard from './EventStatusCard';
 import EntriesSummaryCard from './EntriesSummaryCard';
 import ComplianceAlertsCard from './ComplianceAlertsCard';
