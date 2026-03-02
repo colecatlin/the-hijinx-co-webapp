@@ -191,8 +191,7 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const updateSessionStatusMutation = useMutation({
