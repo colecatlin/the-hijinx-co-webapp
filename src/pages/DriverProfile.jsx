@@ -85,57 +85,67 @@ export default function DriverProfile() {
       return results[0] || null;
     },
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: programs = [] } = useQuery({
-    queryKey: ['driverPrograms', driver?.id],
+    queryKey: QueryKeys.driverPrograms.list({ driverId: driver?.id }),
     queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: allSeries = [] } = useQuery({
-    queryKey: ['series'],
+    queryKey: QueryKeys.series.list(),
     queryFn: () => base44.entities.Series.list(),
+    ...DQ,
   });
 
   const { data: allClasses = [] } = useQuery({
     queryKey: ['allSeriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    ...DQ,
   });
 
   const { data: results = [] } = useQuery({
-    queryKey: ['driverResults', driver?.id],
+    queryKey: QueryKeys.results.listByDriver(driver?.id),
     queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: QueryKeys.sessions.listByEvent(undefined),
     queryFn: () => base44.entities.Session.list(),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: events = [] } = useQuery({
-    queryKey: ['events'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list(),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: entries = [] } = useQuery({
     queryKey: ['driverEntries', driver?.id],
     queryFn: () => base44.entities.Entry.filter({ driver_id: driver.id }),
     enabled: !!driver?.id,
+    ...DQ,
   });
 
   const { data: tracks = [] } = useQuery({
-    queryKey: ['tracks'],
+    queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
+    ...DQ,
   });
 
   React.useEffect(() => {
