@@ -263,6 +263,8 @@ export default function RegistrationDashboard() {
     selectedSeries: selectedSeries ?? null,
   });
 
+  // NOTE: selectedEvent, selectedTrack, selectedSeries are declared above (lines ~226-247)
+
   const { data: importLogs = [] } = useQuery({
     queryKey: ['importLogs'],
     queryFn: () => {
