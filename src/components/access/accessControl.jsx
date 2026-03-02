@@ -48,6 +48,7 @@ const ROLE_PERMISSIONS = {
       results: true,
       checkin: true,
       announcer: true,
+      gate: true,
     },
     actions: {
       import_csv: true,
