@@ -60,6 +60,7 @@ const ROLE_PERMISSIONS = {
       compliance: true,
       results: true,
       checkin: true,
+      announcer: true,
     },
     actions: {
       import_csv: true,
