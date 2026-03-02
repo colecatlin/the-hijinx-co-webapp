@@ -254,17 +254,11 @@ export default function EntriesManager({
   };
 
   const handleSaveEntry = () => {
-    updateEntryMutation.mutate({
-      id: selectedEntry.id,
-      data: drawerFormData,
-    });
+    updateEntry({ id: selectedEntry.id, data: drawerFormData }).then(() => setShowDetailDrawer(false));
   };
 
   const handleWithdrawEntry = () => {
-    updateEntryMutation.mutate({
-      id: selectedEntry.id,
-      data: { entry_status: 'Withdrawn' },
-    });
+    updateEntry({ id: selectedEntry.id, data: { entry_status: 'Withdrawn' } }).then(() => setShowDetailDrawer(false));
   };
 
   const handleAddEntry = () => {
