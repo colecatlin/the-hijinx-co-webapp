@@ -272,18 +272,25 @@ export default function ClassSessionBuilder({
     };
 
     if (editingSession) {
-      updateSessionMutation.mutate({ id: editingSession.id, data });
+      updateSession({ id: editingSession.id, data }).then(() => {
+        setFormData({});
+        setEditingSession(null);
+        setShowAddSessionDialog(false);
+      });
     } else {
-      createSessionMutation.mutate(data);
+      createSession(data).then(() => {
+        setFormData({});
+        setEditingSession(null);
+        setShowAddSessionDialog(false);
+      });
     }
   };
 
   const handleToggleLock = (session) => {
     const newStatus = session.status === 'Locked' ? 'Draft' : 'Locked';
-    updateSessionMutation.mutate({
-      id: session.id,
-      data: { status: newStatus, locked: newStatus === 'Locked' },
-    });
+    const opType = newStatus === 'Locked' ? 'session_locked' : 'session_updated';
+    useDashboardMutation; // used via direct call below
+    updateSession({ id: session.id, data: { status: newStatus, locked: newStatus === 'Locked' } });
     setShowLockConfirm(null);
   };
 
