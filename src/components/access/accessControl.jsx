@@ -17,6 +17,7 @@ const ROLE_PERMISSIONS = {
       integrations: true,
       checkin: true,
       audit_log: true,
+      announcer: true,
     },
     actions: {
       create_event: true,
