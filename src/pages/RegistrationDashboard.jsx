@@ -1134,21 +1134,7 @@ export default function RegistrationDashboard() {
 
               {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
                 <div className="space-y-4">
-                  {/* Announcer Mode toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1" />
-                    <button
-                      onClick={() => setAnnouncerMode(m => !m)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-                        announcerMode
-                          ? 'bg-purple-900/40 border-purple-700 text-purple-300'
-                          : 'bg-[#262626] border-gray-700 text-gray-400 hover:text-white hover:border-gray-600'
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${announcerMode ? 'bg-purple-400 animate-pulse' : 'bg-gray-600'}`} />
-                      Announcer Mode
-                    </button>
-                  </div>
+                  {/* Results Manager */}
 
                   {announcerMode ? (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
