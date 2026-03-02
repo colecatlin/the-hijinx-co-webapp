@@ -154,36 +154,18 @@ export default function CheckInManager({ selectedEvent, user }) {
     setFormData({ ...entry });
   };
 
+  const isCheckedIn = formData?.entry_status === 'Checked In';
+
   const handleCheckIn = () => {
-    const update = {};
-    if ('check_in_status' in formData) {
-      update.check_in_status = formData.check_in_status === 'CheckedIn' ? 'Registered' : 'CheckedIn';
-    }
-    if ('checked_in_at' in formData && update.check_in_status === 'CheckedIn') {
-      update.checked_in_at = new Date().toISOString();
-    }
-    if ('checked_in_by_user_id' in formData && update.check_in_status === 'CheckedIn' && currentUser) {
-      update.checked_in_by_user_id = currentUser.id;
-    }
-    if (Object.keys(update).length === 0 && 'entry_status' in formData) {
-      update.entry_status = formData.entry_status === 'Checked In' ? 'Registered' : 'Checked In';
-    }
-    if (Object.keys(update).length > 0) {
-      updateMutation.mutate(update);
-    }
+    updateMutation.mutate({
+      entry_status: isCheckedIn ? 'Registered' : 'Checked In',
+    });
   };
 
   const handleToggleWaiver = () => {
-    const update = {};
-    if ('waiver_verified' in formData) {
-      update.waiver_verified = !formData.waiver_verified;
-    }
-    if ('waiver_verified_at' in formData && update.waiver_verified) {
-      update.waiver_verified_at = new Date().toISOString();
-    }
-    if (Object.keys(update).length > 0) {
-      updateMutation.mutate(update);
-    }
+    updateMutation.mutate({
+      waiver_status: formData?.waiver_status === 'Verified' ? 'Missing' : 'Verified',
+    });
   };
 
   const handleTogglePayment = () => {
