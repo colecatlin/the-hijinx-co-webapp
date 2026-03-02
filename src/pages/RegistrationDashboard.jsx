@@ -928,6 +928,14 @@ export default function RegistrationDashboard() {
                   <History className="w-4 h-4 mr-2" /> Audit Log
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'announcer') && (
+                <TabsTrigger
+                  value="announcer"
+                  className="data-[state=active]:bg-purple-800 data-[state=active]:text-purple-100 text-gray-400 px-4 py-2"
+                >
+                  <Mic className="w-4 h-4 mr-2" /> Announcer
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Lazy-mounted tabs: only render active tab content */}
