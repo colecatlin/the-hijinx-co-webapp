@@ -54,6 +54,7 @@ const ROLE_PERMISSIONS = {
       announcer: true,
       gate: true,
       race_control: true,
+      announcer_pack: true,
     },
     actions: {
       import_csv: true,
