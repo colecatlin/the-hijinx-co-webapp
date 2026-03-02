@@ -11,6 +11,7 @@ const DQ = applyDefaultQueryOptions();
 
 export default function ComplianceAlertsCard({ selectedEvent }) {
   const eventId = selectedEvent?.id;
+  const today = new Date().toISOString().split('T')[0];
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: QueryKeys.entries.listByEvent(eventId),
@@ -22,15 +23,17 @@ export default function ComplianceAlertsCard({ selectedEvent }) {
   const alerts = useMemo(() => {
     const carNumberCounts = {};
     entries.forEach(e => {
-      if (e.car_number) {
-        carNumberCounts[e.car_number] = (carNumberCounts[e.car_number] || 0) + 1;
-      }
+      if (e.car_number) carNumberCounts[e.car_number] = (carNumberCounts[e.car_number] || 0) + 1;
     });
 
-    return [
+    const all = [
       {
         label: 'Missing Waivers',
-        count: entries.filter(e => e.waiver_status === 'Missing' || !e.waiver_status).length,
+        count: entries.filter(e => !(e.waiver_verified === true || e.waiver_status === 'Verified')).length,
+      },
+      {
+        label: 'Missing / Expired License',
+        count: entries.filter(e => !e.license_number || (e.license_expiration_date && e.license_expiration_date < today)).length,
       },
       {
         label: 'Unpaid Entries',
@@ -45,7 +48,10 @@ export default function ComplianceAlertsCard({ selectedEvent }) {
         count: entries.filter(e => e.car_number && carNumberCounts[e.car_number] > 1).length,
       },
     ];
-  }, [entries]);
+
+    // Return top 3 by count (descending), filtered to non-zero
+    return all.sort((a, b) => b.count - a.count);
+  }, [entries, today]);
 
   const totalAlerts = alerts.reduce((sum, a) => sum + a.count, 0);
 
@@ -64,7 +70,7 @@ export default function ComplianceAlertsCard({ selectedEvent }) {
           <p className="text-xs text-gray-400">Loading...</p>
         ) : (
           <div className="space-y-2">
-            {alerts.map((alert) => (
+            {alerts.slice(0, 3).map(alert => (
               <div key={alert.label} className="flex justify-between items-center text-xs">
                 <span className="text-gray-300">{alert.label}</span>
                 <Badge
