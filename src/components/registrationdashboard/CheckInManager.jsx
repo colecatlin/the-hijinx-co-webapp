@@ -323,6 +323,23 @@ export default function CheckInManager({
     }
   }, []);
 
+  // Load current user's entry for this event
+  const { data: myEntry } = useQuery({
+    queryKey: ['myEntry', currentUser?.id, selectedEvent?.id],
+    queryFn: async () => {
+      if (!currentUser?.id || !selectedEvent?.id) return null;
+      const myDrivers = await base44.entities.Driver.filter({ owner_user_id: currentUser.id });
+      if (myDrivers.length === 0) return null;
+      const driverEntries = await base44.entities.Entry.filter({
+        event_id: selectedEvent.id,
+        driver_id: myDrivers[0].id,
+      });
+      return driverEntries.length > 0 ? driverEntries[0] : null;
+    },
+    enabled: !!currentUser?.id && !!selectedEvent?.id,
+    ...DQ,
+  });
+
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -357,6 +374,35 @@ export default function CheckInManager({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* My Check In card (shown if driver has entry) */}
+      {myEntry && (
+        <div className="lg:col-span-3">
+          <Card className="bg-green-900/20 border border-green-800/50">
+            <CardHeader>
+              <CardTitle className="text-sm text-green-300">Your Check-In Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-green-400 font-medium mb-1">Entry Status</p>
+                  <p className="text-sm font-semibold text-white">{myEntry.entry_status}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-green-400 font-medium mb-1">Payment</p>
+                  <p className="text-sm font-semibold text-white">{myEntry.payment_status}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-green-400 font-medium mb-1">Waiver</p>
+                  <p className="text-sm font-semibold text-white">
+                    {myEntry.waiver_verified === true || myEntry.waiver_status === 'Verified' ? '✓ Verified' : '✗ Missing'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Left column: Search, QR, and list */}
       <div className="lg:col-span-2 space-y-4">
         {/* Input Mode Toggle + Bar */}
