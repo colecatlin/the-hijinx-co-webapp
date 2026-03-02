@@ -16,6 +16,8 @@ import {
 import { ChevronRight, Plus, Minus, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+
 export default function CheckInManager({ selectedEvent, user }) {
   const [classFilter, setClassFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
