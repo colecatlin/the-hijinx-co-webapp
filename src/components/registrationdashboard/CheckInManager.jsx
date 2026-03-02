@@ -206,6 +206,44 @@ export default function CheckInManager({ selectedEvent, user }) {
     }
   };
 
+  const handleQrPayloadSubmit = (e) => {
+    e.preventDefault();
+    setQrPayloadError('');
+    const raw = qrPayloadInput.trim();
+    if (!raw) return;
+
+    // Parse: INDEX46|eventId=...|entryId=...|driverId=...|car=...
+    if (!raw.startsWith('INDEX46|')) {
+      setQrPayloadError('Invalid QR payload format.');
+      return;
+    }
+    const parts = Object.fromEntries(
+      raw.split('|').slice(1).map(seg => seg.split('='))
+    );
+    const { eventId: payloadEventId, entryId } = parts;
+    if (!payloadEventId || !entryId) {
+      setQrPayloadError('Payload missing required fields.');
+      return;
+    }
+    if (payloadEventId !== eventId) {
+      setQrPayloadError('This QR belongs to a different event.');
+      return;
+    }
+    const entry = entries.find(en => en.id === entryId);
+    if (!entry) {
+      setQrPayloadError('Entry not found in this event.');
+      return;
+    }
+    handleSelectEntry(entry);
+    setQrPayloadInput('');
+  };
+
+  const handleOneTapCheckIn = () => {
+    updateMutation.mutate({ entry_status: 'Checked In' }, {
+      onSuccess: () => invalidateAfterOperation('entry_checked_in'),
+    });
+  };
+
   // Reset local selection when event changes
   useEffect(() => {
     setSelectedEntry(null);
