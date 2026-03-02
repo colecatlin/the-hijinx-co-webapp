@@ -31,9 +31,26 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'session_deleted':
     case 'session_locked':
     case 'session_status_changed':
-      broad.push(['sessions'], ['session'], ['operationLogs']);
+    case 'session_set_draft':
+    case 'session_mark_provisional':
+    case 'session_publish_official':
+    case 'session_unlocked':
+    case 'session_start':
+    case 'session_end':
+    case 'session_cancel':
+      broad.push(['sessions'], ['session'], ['operationLogs'], ['rc_sessions']);
       if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+      break;
+
+    case 'operation_logged':
+      broad.push(['operationLogs'], ['rc_results']);
+      if (eventId) exact.push(REG_QK.operationLogs(eventId));
+      break;
+
+    case 'red_flag':
+      broad.push(['operationLogs']);
+      if (eventId) exact.push(REG_QK.operationLogs(eventId));
       break;
 
     case 'results_saved':
