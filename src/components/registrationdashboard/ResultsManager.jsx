@@ -44,70 +44,60 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const [validationErrors, setValidationErrors] = useState([]);
   const queryClient = useQueryClient();
 
+  const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+
+  // Reset session/class selection when eventId changes
+  React.useEffect(() => {
+    setSessionId('');
+    setClassId('');
+    setEntryMode('manual');
+  }, [eventId]);
+
   // Fetch all necessary data
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
-  const { data: sessions = [] } = useQuery({
+  const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
-    queryFn: () =>
-      eventId
-        ? base44.entities.Session.filter({ event_id: eventId })
-        : Promise.resolve([]),
+    queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
     enabled: !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
-    queryFn: () =>
-      seriesId
-        ? base44.entities.SeriesClass.filter({ series_id: seriesId })
-        : Promise.resolve([]),
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: seriesId }),
     enabled: !!seriesId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
-  const { data: allResults = [] } = useQuery({
+  const { data: allResults = [], isLoading: resultsLoading, isError: resultsError, refetch: refetchResults } = useQuery({
     queryKey: ['results', eventId],
-    queryFn: () =>
-      eventId
-        ? base44.entities.Results.filter({ event_id: eventId })
-        : Promise.resolve([]),
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
     enabled: !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: seriesClassesAll = [] } = useQuery({
     queryKey: ['seriesClassesAll', selectedEvent?.series_id],
-    queryFn: () =>
-      selectedEvent?.series_id
-        ? base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id })
-        : Promise.resolve([]),
+    queryFn: () => base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id }),
     enabled: !!selectedEvent?.series_id,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   // Data integrity: filter results and sessions to match selected event
