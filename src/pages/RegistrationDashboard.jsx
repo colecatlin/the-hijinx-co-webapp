@@ -449,12 +449,12 @@ export default function RegistrationDashboard() {
     if (eventId) {
       // Prefetch sessions and results for the new event
       queryClient.prefetchQuery({
-        queryKey: ['sessions', eventId],
+        queryKey: QueryKeys.sessions.listByEvent(eventId),
         queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
         ...DQ,
       });
       queryClient.prefetchQuery({
-        queryKey: ['results', eventId],
+        queryKey: QueryKeys.results.listByEvent(eventId),
         queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
         ...DQ,
       });
