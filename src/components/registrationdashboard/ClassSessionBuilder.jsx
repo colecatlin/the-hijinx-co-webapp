@@ -99,35 +99,41 @@ export default function ClassSessionBuilder({
     return validated;
   }, [allSessions, selectedEvent, seriesClasses]);
 
-  // Mutations
-  const createSessionMutation = useMutation({
+  // Shared mutation wrappers
+  const sharedMutationOpts = {
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  };
+
+  const { mutateAsync: createSession, isPending: creatingSession } = useDashboardMutation({
+    operationType: 'session_created',
+    entityName: 'Session',
     mutationFn: (data) => base44.entities.Session.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      setShowAddSessionDialog(false);
-      setFormData({});
-      setEditingSession(null);
-      toast.success('Session created');
-    },
+    successMessage: 'Session created',
+    ...sharedMutationOpts,
   });
 
-  const updateSessionMutation = useMutation({
+  const { mutateAsync: updateSession, isPending: updatingSession } = useDashboardMutation({
+    operationType: 'session_updated',
+    entityName: 'Session',
     mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      setFormData({});
-      setEditingSession(null);
-      toast.success('Session updated');
-    },
+    successMessage: 'Session updated',
+    ...sharedMutationOpts,
   });
 
-  const deleteSessionMutation = useMutation({
+  const { mutateAsync: deleteSession } = useDashboardMutation({
+    operationType: 'session_deleted',
+    entityName: 'Session',
     mutationFn: (id) => base44.entities.Session.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      toast.success('Session deleted');
-    },
+    successMessage: 'Session deleted',
+    ...sharedMutationOpts,
   });
+
+  // Legacy useMutation adapters (wired to shared wrappers for UI state compat)
+  const createSessionMutation = { mutate: (data) => createSession(data), isPending: creatingSession };
+  const updateSessionMutation = { mutate: ({ id, data }) => updateSession({ id, data }), isPending: updatingSession };
+  const deleteSessionMutation = { mutate: (id) => deleteSession(id) };
 
   // Group sessions by class
   const classGroups = useMemo(() => {
