@@ -23,9 +23,8 @@ const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 async function writeOperationLog(type, entityName, entryId, eventId, driverId, carNumber) {
   try {
-    const OperationLogEntity = await base44.asServiceRole.entities.OperationLog;
-    if (OperationLogEntity) {
-      await OperationLogEntity.create({
+    if (await base44.asServiceRole.entities.OperationLog) {
+      await base44.asServiceRole.entities.OperationLog.create({
         operation_type: type,
         source_type: 'Registration',
         entity_name: entityName,
@@ -38,6 +37,28 @@ async function writeOperationLog(type, entityName, entryId, eventId, driverId, c
   } catch (_) {
     // non-fatal
   }
+}
+
+function getDriverLookupKey(userId, email) {
+  return ['myDriver', userId || email];
+}
+
+function getEventKey(filters) {
+  const norm = { ...filters };
+  delete norm.undefined;
+  return ['events', norm];
+}
+
+function getSeriesClassKey(seriesId) {
+  return ['seriesClasses', seriesId];
+}
+
+function getExistingEntryKey(eventId, driverId) {
+  return ['myEntry', eventId, driverId];
+}
+
+function getEventEntriesKey(eventId, seriesClassId) {
+  return ['entries', eventId, seriesClassId];
 }
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
