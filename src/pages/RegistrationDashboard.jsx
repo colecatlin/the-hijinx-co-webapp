@@ -77,6 +77,7 @@ import {
   Mic,
   DoorOpen,
   Radio,
+  BookOpen,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
