@@ -89,7 +89,7 @@ export default function CheckInManager({ selectedEvent, user }) {
       return result;
     },
     onSuccess: (updatedEntry) => {
-      queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
+      invalidateAfterOperation('entry_updated');
       setSelectedEntry(updatedEntry);
       setFormData(updatedEntry);
       toast.success('Entry updated');
