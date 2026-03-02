@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Calendar,
-  LogIn, ExternalLink, LayoutDashboard, Shield, CreditCard, Wrench, Radio,
+  LogIn, ExternalLink, LayoutDashboard, Shield, CreditCard, Wrench, Radio, Copy, Check,
 } from 'lucide-react';
 
 const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
@@ -633,6 +633,58 @@ export default function Registration() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Waiver acknowledgment */}
+                      {existingEntry.waiver_status !== 'Verified' ? (
+                        <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg p-4 space-y-3">
+                          <p className="text-sm font-semibold text-amber-300 flex items-center gap-2">
+                            <Shield className="w-4 h-4" /> Waiver Required
+                          </p>
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={waiverChecked}
+                              onChange={e => setWaiverChecked(e.target.checked)}
+                              className="mt-0.5 w-4 h-4 accent-white"
+                            />
+                            <span className="text-sm text-gray-300">
+                              I confirm I have read and agree to the event waiver terms.
+                            </span>
+                          </label>
+                          <Button
+                            onClick={handleMarkWaiver}
+                            disabled={!waiverChecked || updateEntryMutation.isPending}
+                            className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+                          >
+                            {updateEntryMutation.isPending ? 'Saving…' : 'Mark Waiver Verified'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-green-400 bg-green-900/20 border border-green-800/50 rounded-lg px-4 py-3">
+                          <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> Waiver verified
+                        </div>
+                      )}
+
+                      {/* QR Payload */}
+                      {qrPayload && (
+                        <div className="bg-[#262626] border border-gray-700 rounded-lg p-4 space-y-3">
+                          <div>
+                            <p className="text-sm font-semibold text-white mb-0.5">Check In QR</p>
+                            <p className="text-xs text-gray-400">Show this at the gate</p>
+                          </div>
+                          <pre className="bg-[#1A1A1A] text-green-400 text-xs font-mono rounded p-3 whitespace-pre-wrap break-all border border-gray-700">
+                            {qrPayload}
+                          </pre>
+                          <Button
+                            onClick={handleCopyPayload}
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-gray-700 text-gray-300"
+                          >
+                            {copied ? <><Check className="w-3.5 h-3.5 mr-2 text-green-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5 mr-2" /> Copy QR Payload</>}
+                          </Button>
+                        </div>
+                      )}
 
                       {/* Edit fields */}
                       <div className="space-y-3 border-t border-gray-700 pt-4">
