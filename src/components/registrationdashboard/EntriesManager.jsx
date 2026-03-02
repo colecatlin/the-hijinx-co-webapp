@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +55,8 @@ const DQ = applyDefaultQueryOptions();
 export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const queryClient = useQueryClient();
   const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
+  const tableScrollRef = useRef(null);
+  const [scrollTop, setScrollTop] = useState(0);
 
   // State
   const [filters, setFilters] = useState({

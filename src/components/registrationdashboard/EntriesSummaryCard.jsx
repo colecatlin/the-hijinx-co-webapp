@@ -4,43 +4,43 @@ import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+
+const DQ = applyDefaultQueryOptions();
 
 export default function EntriesSummaryCard({ selectedEvent }) {
-  const { data: driverPrograms = [], isLoading: dpLoading } = useQuery({
-    queryKey: ['driverPrograms', selectedEvent?.id],
-    queryFn: () => selectedEvent?.id ? base44.entities.DriverProgram.filter({ event_id: selectedEvent.id }) : [],
-    enabled: !!selectedEvent?.id,
+  const eventId = selectedEvent?.id;
+
+  const { data: entries = [], isLoading } = useQuery({
+    queryKey: QueryKeys.entries.listByEvent(eventId),
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    ...DQ,
   });
 
-  const { data: results = [] } = useQuery({
-    queryKey: ['results', selectedEvent?.id],
-    queryFn: () => selectedEvent?.id ? base44.entities.Results.filter({ event_id: selectedEvent.id }) : [],
-    enabled: !!selectedEvent?.id && driverPrograms.length === 0,
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    ...DQ,
   });
 
   const summary = useMemo(() => {
-    let total = 0;
-    let byClass = {};
-    let usingProxy = false;
+    const total = entries.length;
+    const paid = entries.filter(e => e.payment_status === 'Paid').length;
+    const unpaid = entries.filter(e => e.payment_status === 'Unpaid').length;
+    const checkedIn = entries.filter(e => e.entry_status === 'Checked In' || e.entry_status === 'Teched').length;
+    const teched = entries.filter(e => e.tech_status === 'Passed').length;
 
-    if (driverPrograms.length > 0) {
-      total = driverPrograms.length;
-      driverPrograms.forEach((dp) => {
-        const classId = dp.series_class_id || 'Unknown';
-        byClass[classId] = (byClass[classId] || 0) + 1;
-      });
-    } else if (results.length > 0) {
-      usingProxy = true;
-      const uniqueDrivers = new Set(results.map((r) => r.driver_id));
-      total = uniqueDrivers.size;
-      results.forEach((r) => {
-        const classId = r.series_class_id || 'Unknown';
-        byClass[classId] = (byClass[classId] || 0) + 1;
-      });
-    }
+    const byClass = {};
+    entries.forEach((e) => {
+      const sc = seriesClasses.find(c => c.id === e.series_class_id);
+      const className = sc?.class_name || e.class_name || 'Unclassified';
+      byClass[className] = (byClass[className] || 0) + 1;
+    });
 
-    return { total, byClass, usingProxy };
-  }, [driverPrograms, results]);
+    return { total, paid, unpaid, checkedIn, teched, byClass };
+  }, [entries, seriesClasses]);
 
   return (
     <Card className="bg-[#171717] border-gray-800">
@@ -50,20 +50,12 @@ export default function EntriesSummaryCard({ selectedEvent }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {dpLoading ? (
+        {isLoading ? (
           <p className="text-xs text-gray-400">Loading...</p>
         ) : (
           <>
-            {summary.usingProxy && (
-              <div className="bg-amber-900/30 border border-amber-700/50 rounded px-2 py-1">
-                <p className="text-xs text-amber-300">
-                  Proxy used: Results detected, registration records not connected yet
-                </p>
-              </div>
-            )}
-
             <div>
-              <p className="text-xs text-gray-400 mb-2">Total Entries</p>
+              <p className="text-xs text-gray-400 mb-1">Total Entries</p>
               <p className="text-2xl font-bold text-white">{summary.total}</p>
             </div>
 
@@ -71,9 +63,9 @@ export default function EntriesSummaryCard({ selectedEvent }) {
               <div>
                 <p className="text-xs text-gray-400 mb-2">By Class</p>
                 <div className="space-y-1">
-                  {Object.entries(summary.byClass).map(([classId, count]) => (
-                    <div key={classId} className="flex justify-between text-xs">
-                      <span className="text-gray-300">{classId}</span>
+                  {Object.entries(summary.byClass).map(([cls, count]) => (
+                    <div key={cls} className="flex justify-between text-xs">
+                      <span className="text-gray-300">{cls}</span>
                       <Badge variant="outline" className="border-gray-700 text-gray-300">{count}</Badge>
                     </div>
                   ))}
@@ -83,16 +75,20 @@ export default function EntriesSummaryCard({ selectedEvent }) {
 
             <div className="pt-2 border-t border-gray-800 space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Paid vs Unpaid</span>
-                <Badge variant="outline" className="border-gray-700 text-gray-400">Coming soon</Badge>
+                <span className="text-gray-400">Paid</span>
+                <Badge variant="outline" className="border-green-800 text-green-400">{summary.paid}</Badge>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Unpaid</span>
+                <Badge variant="outline" className={`border-gray-700 ${summary.unpaid > 0 ? 'text-red-400 border-red-800' : 'text-gray-400'}`}>{summary.unpaid}</Badge>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Checked In</span>
-                <Badge variant="outline" className="border-gray-700 text-gray-400">Coming soon</Badge>
+                <Badge variant="outline" className="border-gray-700 text-blue-400">{summary.checkedIn}</Badge>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Teched</span>
-                <Badge variant="outline" className="border-gray-700 text-gray-400">Coming soon</Badge>
+                <span className="text-gray-400">Tech Passed</span>
+                <Badge variant="outline" className="border-gray-700 text-purple-400">{summary.teched}</Badge>
               </div>
             </div>
           </>
