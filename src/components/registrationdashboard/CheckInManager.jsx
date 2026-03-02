@@ -19,10 +19,16 @@ import { toast } from 'sonner';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import useDashboardMutation from './useDashboardMutation';
 
 const DQ = applyDefaultQueryOptions();
 
-export default function CheckInManager({ selectedEvent, user }) {
+export default function CheckInManager({
+  selectedEvent,
+  user,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+}) {
   const [classFilter, setClassFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [qrInput, setQrInput] = useState('');
