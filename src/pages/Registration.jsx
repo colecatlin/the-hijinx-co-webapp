@@ -447,15 +447,259 @@ export default function Registration() {
                 )}
 
                 <Button
-                  onClick={handleContinueRegistration}
+                  onClick={() => {
+                    if (!myDriver) {
+                      setShowCreateDriver(true);
+                    } else {
+                      setCurrentStep(3);
+                    }
+                  }}
                   disabled={!selectedEvent}
                   className="w-full bg-white text-black hover:bg-gray-100 font-semibold"
                 >
-                  Continue to Registration <ArrowRight className="w-4 h-4 ml-2" />
+                  Continue <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>
             </Card>
           </motion.div>
+        )}
+
+        {/* Step 2: Confirm/Create Driver */}
+        {currentStep === 2 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
+            <Card className="bg-[#171717] border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <User className="w-5 h-5" /> Confirm Your Driver Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {myDriver ? (
+                  <div className="bg-[#262626] rounded-lg p-4 border border-green-800/50 space-y-2">
+                    <p className="text-sm text-gray-400">Registered as:</p>
+                    <p className="font-semibold text-white">{myDriver.first_name} {myDriver.last_name}</p>
+                    {myDriver.contact_email && <p className="text-xs text-gray-400">{myDriver.contact_email}</p>}
+                  </div>
+                ) : null}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(1)}
+                    className="flex-1 border-gray-700 text-gray-300"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(3)}
+                    className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
+                  >
+                    Continue <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 3: Entry Details */}
+        {currentStep === 3 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
+            <Card className="bg-[#171717] border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Truck className="w-5 h-5" /> Entry Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Series Class selector */}
+                {selectedEvent?.series_id && seriesClasses.length > 0 && (
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-2">
+                      Class <span className="text-red-400">*</span>
+                    </label>
+                    <Select value={entryFormData.series_class_id} onValueChange={val => setEntryFormData({ ...entryFormData, series_class_id: val })}>
+                      <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                        <SelectValue placeholder="Select class..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#262626] border-gray-700">
+                        {seriesClasses.map(sc => (
+                          <SelectItem key={sc.id} value={sc.id}>{sc.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {!selectedEvent?.series_id && (
+                  <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-3">
+                    <p className="text-xs text-blue-400">This event is not linked to a series. Classes are optional.</p>
+                  </div>
+                )}
+
+                {/* Car number */}
+                <div>
+                  <label className="text-xs text-gray-400 block mb-2">
+                    Car Number <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    value={entryFormData.car_number}
+                    onChange={e => setEntryFormData({ ...entryFormData, car_number: e.target.value })}
+                    className="bg-[#262626] border-gray-700 text-white"
+                    placeholder="e.g. 42"
+                  />
+                </div>
+
+                {/* Transponder */}
+                <div>
+                  <label className="text-xs text-gray-400 block mb-2">Transponder ID</label>
+                  <Input
+                    value={entryFormData.transponder_id}
+                    onChange={e => setEntryFormData({ ...entryFormData, transponder_id: e.target.value })}
+                    className="bg-[#262626] border-gray-700 text-white"
+                    placeholder="Optional"
+                  />
+                </div>
+
+                {/* Team selector */}
+                {teams.length > 0 && (
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-2">Team</label>
+                    <Select value={entryFormData.team_id} onValueChange={val => setEntryFormData({ ...entryFormData, team_id: val })}>
+                      <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                        <SelectValue placeholder="Select team..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#262626] border-gray-700">
+                        <SelectItem value={null}>No team</SelectItem>
+                        {teams.map(t => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(2)}
+                    className="flex-1 border-gray-700 text-gray-300"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(4)}
+                    disabled={selectedEvent?.series_id && !entryFormData.series_class_id}
+                    className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
+                  >
+                    Review <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 4: Review & Register */}
+        {currentStep === 4 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
+            <Card className="bg-[#171717] border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Check className="w-5 h-5" /> Review Registration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-[#262626] rounded-lg p-4 space-y-3 border border-gray-700 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Event</span>
+                    <span className="text-white font-medium">{selectedEvent?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Driver</span>
+                    <span className="text-white">{myDriver?.first_name} {myDriver?.last_name}</span>
+                  </div>
+                  {entryFormData.series_class_id && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Class</span>
+                      <span className="text-white">{seriesClasses.find(c => c.id === entryFormData.series_class_id)?.name}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Car #</span>
+                    <span className="text-white">{entryFormData.car_number || '—'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Status</span>
+                    <span className="text-white">Registered</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(3)}
+                    className="flex-1 border-gray-700 text-gray-300"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => registerMutation.mutate()}
+                    disabled={!entryFormData.car_number || registerMutation.isPending}
+                    className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold"
+                  >
+                    {registerMutation.isPending ? 'Submitting...' : (existingEntry ? 'Update Registration' : 'Register')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 5: Success */}
+        {currentStep === 5 && registrationResult && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
+            <Card className="bg-[#171717] border-gray-800">
+              <CardContent className="py-12 text-center space-y-6">
+                <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Registration Complete!</h2>
+                  <p className="text-gray-400 text-sm mt-2">You're all set.</p>
+                </div>
+                <div className="bg-[#262626] rounded-lg p-4 space-y-2 text-left text-sm border border-gray-700">
+                  <div><span className="text-gray-400">Event:</span> <span className="text-white font-medium">{registrationResult.eventName}</span></div>
+                  <div><span className="text-gray-400">Driver:</span> <span className="text-white">{registrationResult.driverName}</span></div>
+                  <div><span className="text-gray-400">Status:</span> <span className="text-white">{registrationResult.entryStatus}</span></div>
+                  <div><span className="text-gray-400">Payment:</span> <span className="text-white">{registrationResult.paymentStatus}</span></div>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setCurrentStep(1);
+                      setEventId('');
+                      setSelectedEvent(null);
+                      setEntryFormData({ series_class_id: '', car_number: '', transponder_id: '', team_id: '' });
+                      setRegistrationResult(null);
+                    }}
+                    className="flex-1 border-gray-700 text-gray-300"
+                  >
+                    Register Another
+                  </Button>
+                  {user?.role === 'admin' && selectedEvent && (
+                    <Link
+                      to={`${createPageUrl('RegistrationDashboard')}?orgType=${selectedEvent.series_id ? 'series' : 'track'}&orgId=${selectedEvent.series_id || selectedEvent.track_id}&seasonYear=${selectedEvent.season}&eventId=${selectedEvent.id}`}
+                      className="flex-1"
+                    >
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 font-semibold">
+                        <LayoutDashboard className="w-4 h-4 mr-2" /> View Dashboard
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
           {/* RIGHT: Registration Form */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
