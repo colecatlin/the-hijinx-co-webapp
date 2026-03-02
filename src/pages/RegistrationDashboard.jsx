@@ -410,6 +410,31 @@ export default function RegistrationDashboard() {
     }
   }, [filteredEvents, eventId]);
 
+  // When selectedEvent changes, cancel queries tied to prior eventId and reset to Overview
+  useEffect(() => {
+    if (eventId) {
+      // Refetch data for new event
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['entries'] });
+      queryClient.invalidateQueries({ queryKey: ['results'] });
+    }
+  }, [eventId]);
+
+  // When orgType or seasonYear changes, clear selectedEvent and reset to Overview
+  const prevOrgTypeRef = React.useRef(organizationType);
+  const prevSeasonYearRef = React.useRef(seasonYear);
+  useEffect(() => {
+    if (
+      prevOrgTypeRef.current !== organizationType ||
+      prevSeasonYearRef.current !== seasonYear
+    ) {
+      setEventId('');
+      setActiveTab('overview');
+      prevOrgTypeRef.current = organizationType;
+      prevSeasonYearRef.current = seasonYear;
+    }
+  }, [organizationType, seasonYear]);
+
   // Detect when any Session status changes to Official or Locked
   useEffect(() => {
     if (!sessions || sessions.length === 0) return;
@@ -914,10 +939,12 @@ export default function RegistrationDashboard() {
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   selectedEventId={editingEventId}
-                  onEventCreated={handleEventCreated}
+                  onEventCreated={(id) => { handleEventCreated(id); invalidateAfterOperation('event_updated', { eventId: id }); }}
                   isAdmin={isAdmin}
                   isLiveMode={isLiveMode}
                   onArchiveAttempt={() => setShowArchiveWarning(true)}
+                  onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
+                  onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
                 />
               )}
 
@@ -932,6 +959,8 @@ export default function RegistrationDashboard() {
                     isAdmin={isAdmin}
                     requireAdminOverride={requireAdminOverride}
                     onShowOverrideDialog={setOverrideDialog}
+                    onSessionSaved={() => invalidateAfterOperation('session_updated', { eventId: selectedEvent.id })}
+                    onSessionStatusChanged={() => invalidateAfterOperation('session_status_changed', { eventId: selectedEvent.id })}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
@@ -951,6 +980,7 @@ export default function RegistrationDashboard() {
                       selectedEvent={selectedEvent}
                       eventId={selectedEvent.id}
                       seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
+                      onEntrySaved={() => invalidateAfterOperation('entries_updated', { eventId: selectedEvent.id })}
                     />
                   ) : (
                     <Card className="bg-[#171717] border-gray-800">
@@ -974,6 +1004,7 @@ export default function RegistrationDashboard() {
                     dashboardPermissions={dashboardPermissions}
                     selectedEvent={selectedEvent}
                     onComplianceSeverityChange={setComplianceSeverity}
+                    onComplianceUpdated={() => invalidateAfterOperation('compliance_updated', { eventId: selectedEvent.id })}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
@@ -989,7 +1020,8 @@ export default function RegistrationDashboard() {
                   <CheckInManager 
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent} 
+                    selectedEvent={selectedEvent}
+                    onCheckinUpdated={() => invalidateAfterOperation('checkin_updated', { eventId: selectedEvent.id })}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
@@ -1006,7 +1038,8 @@ export default function RegistrationDashboard() {
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
                     selectedEvent={selectedEvent} 
-                    user={user} 
+                    user={user}
+                    onTechUpdated={() => invalidateAfterOperation('tech_updated', { eventId: selectedEvent.id })}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
@@ -1027,6 +1060,10 @@ export default function RegistrationDashboard() {
                   onSetStandingsDirty={() => setStandingsDirty(true)}
                   requireAdminOverride={requireAdminOverride}
                   onShowOverrideDialog={setOverrideDialog}
+                  onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
+                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                 />
               )}
 
@@ -1038,7 +1075,13 @@ export default function RegistrationDashboard() {
                   selectedEvent={selectedEvent}
                   standingsDirty={standingsDirty}
                   onClearDirty={() => setStandingsDirty(false)}
-                  onStandingsCalculated={() => setStandingsLastCalculatedAt(new Date().toISOString())}
+                  onStandingsCalculated={() => {
+                    setStandingsLastCalculatedAt(new Date().toISOString());
+                    invalidateAfterOperation('standings_recalculated', {
+                      seriesId: selectedEvent?.series_id,
+                      eventId,
+                    });
+                  }}
                   sessions={sessions}
                 />
               )}
@@ -1047,7 +1090,8 @@ export default function RegistrationDashboard() {
                 <ExportsManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin} 
+                  isAdmin={isAdmin}
+                  onExportCompleted={() => invalidateAfterOperation('export_completed', { eventId })}
                 />
               )}
 
@@ -1055,7 +1099,9 @@ export default function RegistrationDashboard() {
                 <IntegrationsManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin} 
+                  isAdmin={isAdmin}
+                  onSyncCompleted={() => invalidateAfterOperation('integration_sync_completed', { eventId })}
+                  onImportCompleted={() => invalidateAfterOperation('import_completed', { eventId })}
                 />
               )}
 
