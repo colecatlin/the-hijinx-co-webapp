@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, FileText, CheckCircle2, X, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
+
+const DQ = applyDefaultQueryOptions();
 
 export default function ComplianceManager({ selectedEvent, onComplianceSeverityChange, user, canAction }) {
   const [classFilter, setClassFilter] = useState('all');
