@@ -25,30 +25,35 @@ export default function StandingsHome() {
   const [sortDir, setSortDir] = useState(1);
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: QueryKeys.auth.me(),
     queryFn: () => base44.auth.me(),
+    ...DQ,
   });
 
   const { seasonYear, isLoading: contextLoading, error: contextError } = useMotorsportsContext();
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
-    queryKey: ['series'],
+    queryKey: QueryKeys.series.list({ status: 'active' }),
     queryFn: () => base44.entities.Series.filter({ status: 'active' }),
+    ...DQ,
   });
 
   const { data: entries = [], isLoading: loadingEntries } = useQuery({
     queryKey: ['standings'],
     queryFn: () => base44.entities.Standings.list('-total_points', 500),
+    ...DQ,
   });
 
   const { data: events = [] } = useQuery({
-    queryKey: ['events'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list(),
+    ...DQ,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: QueryKeys.sessions.listByEvent(undefined),
     queryFn: () => base44.entities.Session.list(),
+    ...DQ,
   });
 
   const isAdmin = user?.role === 'admin';
