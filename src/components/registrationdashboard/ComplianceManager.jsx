@@ -23,6 +23,9 @@ import {
   createWaiverState,
   createLicenseState,
 } from './shared/complianceUtils';
+import {
+  buildEventConflictMap,
+} from './shared/techUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -352,23 +355,31 @@ export default function ComplianceManager({
         </Card>
       )}
       {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {[
-          { label: 'Total', value: totalEntries, color: 'text-white' },
-          { label: 'Flagged', value: totalFlagged, color: 'text-orange-400' },
-          { label: 'Waivers', value: flags.waivers, color: 'text-yellow-400' },
-          { label: 'No License', value: flags.missingLicense + flags.expiredLicense, color: 'text-red-400' },
-          { label: 'Unpaid', value: flags.payments, color: 'text-red-400' },
-          { label: 'Dup #', value: flags.duplicates, color: 'text-orange-400' },
-        ].map(({ label, value, color }) => (
-          <Card key={label} className="bg-[#171717] border-gray-800">
-            <CardContent className="py-3 px-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+       {(() => {
+         const conflictMap = buildEventConflictMap(entries);
+         const missingTransponderCount = Object.values(conflictMap.entryFlags).filter(f => f.transponderMissing).length;
+         const duplicateCarCount = Object.values(conflictMap.entryFlags).filter(f => f.carNumberDuplicate).length;
+         const duplicateTransponderCount = Object.values(conflictMap.entryFlags).filter(f => f.transponderDuplicate).length;
+         return (
+         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+           {[
+             { label: 'Total', value: totalEntries, color: 'text-white' },
+             { label: 'Flagged', value: totalFlagged, color: 'text-orange-400' },
+             { label: 'Waivers', value: flags.waivers, color: 'text-yellow-400' },
+             { label: 'No License', value: flags.missingLicense + flags.expiredLicense, color: 'text-red-400' },
+             { label: 'No Xpndr', value: missingTransponderCount, color: 'text-purple-400' },
+             { label: 'Dup Car #', value: duplicateCarCount, color: 'text-orange-400' },
+           ].map(({ label, value, color }) => (
+             <Card key={label} className="bg-[#171717] border-gray-800">
+               <CardContent className="py-3 px-4">
+                 <p className="text-xs text-gray-400 mb-1">{label}</p>
+                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
+               </CardContent>
+             </Card>
+           ))}
+         </div>
+         );
+       })()}
 
       {/* Filters */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">

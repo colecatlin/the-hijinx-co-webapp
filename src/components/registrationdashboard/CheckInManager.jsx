@@ -29,6 +29,10 @@ import {
   isWaiverVerified,
   isLicenseVerified,
 } from './shared/complianceUtils';
+import {
+  parseTechFromNotes,
+  buildEventConflictMap,
+} from './shared/techUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -189,6 +193,17 @@ export default function CheckInManager({
         blockers.push('License number missing');
       } else {
         blockers.push('License not verified or expired');
+      }
+    }
+
+    const tech = parseTechFromNotes(fd.notes);
+    if (!tech?.transponder?.id) {
+      blockers.push('Transponder missing');
+    } else {
+      // Check for transponder conflicts
+      const conflictMap = buildEventConflictMap(entries);
+      if (conflictMap.entryFlags[fd.id]?.transponderDuplicate) {
+        blockers.push('Transponder conflict');
       }
     }
     return blockers;
