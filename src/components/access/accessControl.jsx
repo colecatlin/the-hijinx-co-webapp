@@ -19,6 +19,7 @@ const ROLE_PERMISSIONS = {
       audit_log: true,
       announcer: true,
       gate: true,
+      race_control: true,
     },
     actions: {
       create_event: true,
@@ -26,6 +27,7 @@ const ROLE_PERMISSIONS = {
       sync_timing: true,
       publish_official: true,
       export: true,
+      race_control_override: true,
     },
   },
   user: {
