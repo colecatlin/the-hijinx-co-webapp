@@ -16,6 +16,7 @@ import {
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Calendar,
   LogIn, ExternalLink, LayoutDashboard, Shield, CreditCard, Wrench, Radio, Copy, Check, UserPlus,
+  FileText,
 } from 'lucide-react';
 import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 
