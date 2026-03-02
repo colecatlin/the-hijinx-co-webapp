@@ -51,6 +51,7 @@ const ROLE_PERMISSIONS = {
       checkin: true,
       announcer: true,
       gate: true,
+      race_control: true,
     },
     actions: {
       import_csv: true,
@@ -66,6 +67,7 @@ const ROLE_PERMISSIONS = {
       checkin: true,
       announcer: true,
       gate: true,
+      race_control: true,
     },
     actions: {
       import_csv: true,
