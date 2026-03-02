@@ -424,17 +424,7 @@ export default function RegistrationDashboard() {
     }
   }, [filteredEvents, eventId]);
 
-  // When selectedEvent changes, cancel queries tied to prior eventId and reset to Overview
-  useEffect(() => {
-    if (eventId) {
-      // Refetch data for new event
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['entries'] });
-      queryClient.invalidateQueries({ queryKey: ['results'] });
-    }
-  }, [eventId]);
-
-  // When orgType or seasonYear changes, clear selectedEvent and reset to Overview
+  // When orgType or seasonYear changes, cancel in-flight queries and reset to Overview
   const prevOrgTypeRef = React.useRef(organizationType);
   const prevSeasonYearRef = React.useRef(seasonYear);
   useEffect(() => {
@@ -442,12 +432,42 @@ export default function RegistrationDashboard() {
       prevOrgTypeRef.current !== organizationType ||
       prevSeasonYearRef.current !== seasonYear
     ) {
+      queryClient.cancelQueries({ queryKey: ['sessions'] });
+      queryClient.cancelQueries({ queryKey: ['entries'] });
+      queryClient.cancelQueries({ queryKey: ['results'] });
+      queryClient.cancelQueries({ queryKey: ['selectedEvent'] });
       setEventId('');
       setActiveTab('overview');
       prevOrgTypeRef.current = organizationType;
       prevSeasonYearRef.current = seasonYear;
     }
   }, [organizationType, seasonYear]);
+
+  // When eventId changes: cancel stale queries, prefetch sessions + results
+  const prevEventIdRef = React.useRef(eventId);
+  useEffect(() => {
+    if (prevEventIdRef.current && prevEventIdRef.current !== eventId) {
+      // Cancel queries for the OLD event
+      queryClient.cancelQueries({ queryKey: ['sessions', prevEventIdRef.current] });
+      queryClient.cancelQueries({ queryKey: ['entries', prevEventIdRef.current] });
+      queryClient.cancelQueries({ queryKey: ['results', prevEventIdRef.current] });
+    }
+    prevEventIdRef.current = eventId;
+
+    if (eventId) {
+      // Prefetch sessions and results for the new event
+      queryClient.prefetchQuery({
+        queryKey: ['sessions', eventId],
+        queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
+        ...DQ,
+      });
+      queryClient.prefetchQuery({
+        queryKey: ['results', eventId],
+        queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+        ...DQ,
+      });
+    }
+  }, [eventId]);
 
   // Detect when any Session status changes to Official or Locked
   useEffect(() => {
