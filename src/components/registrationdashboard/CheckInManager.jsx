@@ -442,124 +442,76 @@ export default function CheckInManager({ selectedEvent, user }) {
 
             {/* Actions */}
             <div className="space-y-2 border-t border-gray-800 pt-4">
-              {/* Check In Toggle */}
               <Button
                 onClick={handleCheckIn}
                 disabled={updateMutation.isPending}
-                className={`w-full font-semibold ${
-                  formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In'
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`w-full font-semibold ${isCheckedIn ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
               >
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                {formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In'
-                  ? 'Checked In'
-                  : 'Check In Now'}
+                {isCheckedIn ? 'Checked In ✓' : 'Check In Now'}
               </Button>
 
-              {/* Waiver Toggle */}
-              {('waiver_verified' in formData || !formData.waiver_verified) && (
-                <Button
-                  onClick={handleToggleWaiver}
-                  disabled={updateMutation.isPending}
-                  variant="outline"
-                  className={`w-full border-gray-700 ${
-                    formData.waiver_verified
-                      ? 'bg-green-900/20 text-green-300 border-green-700'
-                      : 'text-gray-300 hover:bg-gray-800'
-                  }`}
-                >
-                  {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
-                </Button>
-              )}
+              <Button
+                onClick={handleToggleWaiver}
+                disabled={updateMutation.isPending}
+                variant="outline"
+                className={`w-full border-gray-700 ${
+                  formData.waiver_status === 'Verified'
+                    ? 'bg-green-900/20 text-green-300 border-green-700'
+                    : 'text-gray-300 hover:bg-gray-800'
+                }`}
+              >
+                {formData.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
+              </Button>
 
-              {/* Payment Toggle */}
-              {('payment_status' in formData) && (
-                <Button
-                  onClick={handleTogglePayment}
-                  disabled={updateMutation.isPending}
-                  variant="outline"
-                  className={`w-full border-gray-700 ${
-                    formData.payment_status === 'Paid'
-                      ? 'bg-green-900/20 text-green-300 border-green-700'
-                      : 'text-gray-300 hover:bg-gray-800'
-                  }`}
-                >
-                  {formData.payment_status === 'Paid' ? 'Paid ✓' : 'Mark Paid'}
-                </Button>
-              )}
+              <Button
+                onClick={handleTogglePayment}
+                disabled={updateMutation.isPending}
+                variant="outline"
+                className={`w-full border-gray-700 ${
+                  formData.payment_status === 'Paid'
+                    ? 'bg-green-900/20 text-green-300 border-green-700'
+                    : 'text-gray-300 hover:bg-gray-800'
+                }`}
+              >
+                {formData.payment_status === 'Paid' ? 'Paid ✓' : 'Mark Paid'}
+              </Button>
 
-              {/* Wristbands */}
-              {('wristband_count' in formData) && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-400">Wristbands: {formData.wristband_count || 0}</p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleWristbandChange(-1)}
-                      disabled={updateMutation.isPending}
-                      className="flex-1 border-gray-700"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleWristbandChange(1)}
-                      disabled={updateMutation.isPending}
-                      className="flex-1 border-gray-700"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
+              {/* Wristbands (UI-only local counter) */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-400">Wristbands: {formData.wristband_count || 0}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleWristbandChange(-1)} className="flex-1 border-gray-700">
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleWristbandChange(1)} className="flex-1 border-gray-700">
+                    <Plus className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
+              </div>
 
               {/* Notes */}
-              {('notes' in formData) && (
-                <div className="space-y-2">
-                  {!notesMode ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setNotesMode(true)}
-                      className="w-full border-gray-700"
-                    >
-                      {formData.notes ? 'Edit Notes' : 'Add Notes'}
-                    </Button>
-                  ) : (
-                    <>
-                      <Textarea
-                        value={formData.notes || ''}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        placeholder="Quick notes..."
-                        rows={3}
-                        className="bg-[#262626] border-gray-700 text-white text-xs"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setNotesMode(false)}
-                          className="flex-1 border-gray-700"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleNotesChange}
-                          disabled={updateMutation.isPending}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700"
-                        >
-                          Save
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+              <div className="space-y-2">
+                {!notesMode ? (
+                  <Button size="sm" variant="outline" onClick={() => setNotesMode(true)} className="w-full border-gray-700">
+                    {formData.notes ? 'Edit Notes' : 'Add Notes'}
+                  </Button>
+                ) : (
+                  <>
+                    <Textarea
+                      value={formData.notes || ''}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      placeholder="Quick notes..."
+                      rows={3}
+                      className="bg-[#262626] border-gray-700 text-white text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setNotesMode(false)} className="flex-1 border-gray-700">Cancel</Button>
+                      <Button size="sm" onClick={handleNotesChange} disabled={updateMutation.isPending} className="flex-1 bg-blue-600 hover:bg-blue-700">Save</Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
