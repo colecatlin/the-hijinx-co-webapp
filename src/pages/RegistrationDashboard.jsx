@@ -1188,6 +1188,14 @@ export default function RegistrationDashboard() {
                   />
                 </div>
               )}
+
+              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
+                <AnnouncerMode
+                  selectedEvent={selectedEvent}
+                  sessions={sessions}
+                  results={results}
+                />
+              )}
             </div>
           </Tabs>
         </div>
