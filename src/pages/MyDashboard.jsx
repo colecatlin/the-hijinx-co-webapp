@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
+import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, LayoutDashboard
