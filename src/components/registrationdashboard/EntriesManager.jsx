@@ -51,6 +51,11 @@ import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardMutation from './useDashboardMutation';
 import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
+import {
+  parseComplianceFromNotes,
+  isWaiverVerified,
+  isLicenseVerified,
+} from './shared/complianceUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -666,6 +671,7 @@ export default function EntriesManager({
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Entry</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Payment</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Tech</th>
+                  <th className="px-3 py-2 text-left text-gray-400 font-semibold">Compliance</th>
                   <th className="px-3 py-2 text-left text-gray-400 font-semibold">Flags</th>
                   <th className="px-3 py-2 text-right text-gray-400 font-semibold">Actions</th>
                 </tr>
@@ -717,6 +723,18 @@ export default function EntriesManager({
                     </td>
                     <td className="px-3 py-2">
                       <Badge className="bg-purple-500/20 text-purple-400 text-xs">{entry.tech_status}</Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      {(() => {
+                        const compliance = parseComplianceFromNotes(entry.notes);
+                        const waiverOk = isWaiverVerified(compliance);
+                        const licenseOk = isLicenseVerified(compliance);
+                        return waiverOk && licenseOk ? (
+                          <Badge className="bg-green-500/20 text-green-400 text-xs">OK</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-600">Alert</Badge>
+                        );
+                      })()}
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-1 flex-wrap">
