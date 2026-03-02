@@ -591,6 +591,16 @@ export default function TechManager({
                 <p className="text-sm font-semibold text-white">{getEventClassName(selectedEntry.series_class_id)}</p>
               </div>
 
+              {/* Check-in gate warning */}
+              {selectedEntry?.entry_status !== 'Checked In' && (
+                <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg p-3">
+                  <p className="text-xs text-amber-300 font-medium">
+                    Driver must be checked in before Tech Passed can be set.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">Current status: {selectedEntry?.entry_status || 'Registered'}</p>
+                </div>
+              )}
+
               {/* Tech Status */}
               <div className="space-y-2">
                 <p className="text-xs font-medium text-gray-400">Tech Status</p>
