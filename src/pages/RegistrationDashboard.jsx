@@ -211,10 +211,6 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
-  // Live polling interval: 20 s when event is Live, 0 (disabled) otherwise
-  const isLiveEvent = selectedEvent?.status === 'in_progress';
-  const liveRefetchInterval = isLiveEvent ? 20_000 : false;
-
   // ── Shared dashboard context ──────────────────────────────────────────────
   const dashContext = useMemo(() => ({
     orgType: organizationType,
