@@ -427,10 +427,13 @@ export default function RegistrationDashboard() {
   const prevEventIdRef = React.useRef(eventId);
   useEffect(() => {
     if (prevEventIdRef.current && prevEventIdRef.current !== eventId) {
-      // Cancel queries for the OLD event
-      queryClient.cancelQueries({ queryKey: ['sessions', prevEventIdRef.current] });
-      queryClient.cancelQueries({ queryKey: ['entries', prevEventIdRef.current] });
-      queryClient.cancelQueries({ queryKey: ['results', prevEventIdRef.current] });
+      const oldId = prevEventIdRef.current;
+      queryClient.cancelQueries({ queryKey: ['sessions', oldId] });
+      queryClient.cancelQueries({ queryKey: ['entries', oldId] });
+      queryClient.cancelQueries({ queryKey: ['results', oldId] });
+      queryClient.cancelQueries({ queryKey: REG_QK.sessions(oldId) });
+      queryClient.cancelQueries({ queryKey: REG_QK.entries(oldId) });
+      queryClient.cancelQueries({ queryKey: REG_QK.results(oldId) });
     }
     prevEventIdRef.current = eventId;
 
