@@ -979,7 +979,7 @@ export default function EntriesManager({
             <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (showDeleteConfirm) deleteEntryMutation.mutate(showDeleteConfirm);
+                if (showDeleteConfirm) deleteEntry(showDeleteConfirm).then(() => setShowDeleteConfirm(null));
               }}
               className="bg-red-600 hover:bg-red-700"
             >
