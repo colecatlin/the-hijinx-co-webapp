@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Calendar,
-  LogIn, ExternalLink, LayoutDashboard, Shield, CreditCard, Wrench, Radio, Copy, Check, UserPlus,
-  FileText,
+  LogIn, ExternalLink, LayoutDashboard, UserPlus, Truck, Building2, FileText, Check,
 } from 'lucide-react';
-import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 
 const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
 
