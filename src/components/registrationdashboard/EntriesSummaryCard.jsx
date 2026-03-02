@@ -12,9 +12,30 @@ const DQ = applyDefaultQueryOptions();
 export default function EntriesSummaryCard({ selectedEvent }) {
   const eventId = selectedEvent?.id;
 
-  const { data: entries = [], isLoading } = useQuery({
+  const { data: entries = [], isLoading, isError: entriesError } = useQuery({
     queryKey: QueryKeys.entries.listByEvent(eventId),
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Entry.filter({ event_id: eventId });
+      } catch (err) {
+        // Fallback to DriverProgram if Entry is not available
+        if (err.message?.includes('entity') || err.message?.includes('not found')) {
+          const programs = await base44.entities.DriverProgram.filter({ event_id: eventId });
+          return programs.filter(p => p.event_id).map(p => ({
+            id: p.id,
+            event_id: p.event_id,
+            driver_id: p.driver_id,
+            series_class_id: p.series_class_id,
+            car_number: '',
+            transponder_id: '',
+            entry_status: 'Unknown',
+            payment_status: 'Unknown',
+            tech_status: 'Unknown',
+          }));
+        }
+        throw err;
+      }
+    },
     enabled: !!eventId,
     ...DQ,
   });
