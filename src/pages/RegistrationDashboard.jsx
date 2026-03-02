@@ -177,7 +177,7 @@ export default function RegistrationDashboard() {
   );
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEventId, setEditingEventId] = useState('');
-  const [announcerMode, setAnnouncerMode] = useState(false);
+  const [announcerMode, setAnnouncerMode] = useState(searchParams.get('announcer') === '1');
 
   // Centralized invalidation helper – available to all tab components
   const invalidateAfterOperation = useMemo(
