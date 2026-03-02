@@ -14,6 +14,15 @@ import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
+import {
+  parseComplianceFromNotes,
+  writeComplianceToNotes,
+  computeLicenseStatus,
+  isWaiverVerified,
+  isLicenseVerified,
+  createWaiverState,
+  createLicenseState,
+} from './shared/complianceUtils';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -45,6 +54,7 @@ export default function ComplianceManager({
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState('');
+  const [editingLicense, setEditingLicense] = useState(null); // {entryId, licenseNumber, expiresOn}
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
@@ -195,14 +205,58 @@ export default function ComplianceManager({
 
   // ── Waiver toggle ──────────────────────────────────────────────────────────
   const handleToggleWaiver = async (entry) => {
-    const nowVerified = !entry.waiverOk;
-    const update = nowVerified
-      ? { waiver_verified: true, waiver_status: 'Verified', waiver_verified_date: new Date().toISOString(), waiver_verified_by_user_id: currentUser?.id || '' }
-      : { waiver_verified: false, waiver_status: 'Missing', waiver_verified_date: null, waiver_verified_by_user_id: null };
-    await updateEntryAsync({ id: entry.id, data: update });
+    const compliance = parseComplianceFromNotes(entry.notes);
+    const nowVerified = !isWaiverVerified(compliance);
+    const nextCompliance = {
+      ...compliance,
+      waiver: createWaiverState(nowVerified, nowVerified ? currentUser?.id : null),
+    };
+    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id,
       nowVerified ? 'Waiver verified' : 'Waiver unverified');
     toast.success(nowVerified ? 'Waiver verified' : 'Waiver cleared');
+  };
+
+  // ── License save ───────────────────────────────────────────────────────────
+  const handleSaveLicense = async (entry) => {
+    if (!editingLicense) return;
+    const compliance = parseComplianceFromNotes(entry.notes);
+    const nextCompliance = {
+      ...compliance,
+      license: createLicenseState(
+        editingLicense.licenseNumber || null,
+        editingLicense.expiresOn || null,
+        false // Do not auto-verify; admin must toggle
+      ),
+    };
+    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
+    await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License details updated');
+    setEditingLicense(null);
+    toast.success('License details saved');
+  };
+
+  // ── License verify ──────────────────────────────────────────────────────────
+  const handleVerifyLicense = async (entry) => {
+    const compliance = parseComplianceFromNotes(entry.notes);
+    if (!compliance.license?.license_number) {
+      toast.error('License number required');
+      return;
+    }
+    const nextCompliance = {
+      ...compliance,
+      license: {
+        ...compliance.license,
+        status: 'verified',
+        verified_at: new Date().toISOString(),
+        verified_by_user_id: currentUser?.id || null,
+      },
+    };
+    const nextNotes = writeComplianceToNotes(entry.notes, nextCompliance);
+    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
+    await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License verified');
+    toast.success('License verified');
   };
 
   // ── Notes save ─────────────────────────────────────────────────────────────
@@ -375,16 +429,14 @@ export default function ComplianceManager({
                   <th className="text-left py-2 px-3 font-medium text-gray-400">Class</th>
                   <th className="text-left py-2 px-3 font-medium text-gray-400">Waiver</th>
                   <th className="text-left py-2 px-3 font-medium text-gray-400">License</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Xpndr</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-400">Expires</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-400">Verified</th>
                   <th className="text-left py-2 px-3 font-medium text-gray-400">Flags</th>
                   <th className="text-center py-2 px-3 font-medium text-gray-400">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEntries.map(entry => {
-                  const licenseExpired = entry.license_expiration_date && entry.license_expiration_date < today;
-                  const licenseOk = entry.license_number && !licenseExpired;
-                  return (
+                {filteredEntries.map(entry => (
                     <tr key={entry.id} className={`border-b border-gray-800 ${entry.flags.length > 0 ? 'bg-gray-900/30' : ''}`}>
                       <td className="py-2 px-3 text-white font-semibold">#{entry.car_number || '—'}</td>
                       <td className="py-2 px-3 text-gray-300">{entry.driverName}</td>
@@ -395,14 +447,19 @@ export default function ComplianceManager({
                           : <span className="text-yellow-400">✗ Missing</span>}
                       </td>
                       <td className="py-2 px-3">
-                        {!entry.license_number
+                        {entry.licenseStatus === 'missing'
                           ? <span className="text-orange-400">✗ None</span>
-                          : licenseExpired
+                          : entry.licenseStatus === 'expired'
                           ? <span className="text-red-400">Expired</span>
-                          : <span className="text-green-400">✓</span>}
+                          : <span className="text-green-400">✓ Verified</span>}
                       </td>
-                      <td className="py-2 px-3 text-gray-400">
-                        {entry.transponder_id ? <span className="text-green-400">✓</span> : <span className="text-gray-500">—</span>}
+                      <td className="py-2 px-3 text-xs text-gray-400">
+                        {entry.compliance?.license?.expires_on || '—'}
+                      </td>
+                      <td className="py-2 px-3 text-xs text-gray-400">
+                        {entry.compliance?.license?.verified_at
+                          ? new Date(entry.compliance.license.verified_at).toLocaleDateString()
+                          : '—'}
                       </td>
                       <td className="py-2 px-3">
                         <div className="flex flex-wrap gap-1">
@@ -417,13 +474,13 @@ export default function ComplianceManager({
                           setSelectedEntry(entry);
                           setNotesValue(entry.compliance_notes || '');
                           setEditingNotes(false);
+                          setEditingLicense(null);
                         }} className="border-gray-700 text-gray-300 hover:bg-gray-800">
-                          View
+                          {isAdmin ? 'Edit' : 'View'}
                         </Button>
                       </td>
                     </tr>
-                  );
-                })}
+                  ))}
               </tbody>
             </table>
           </div>
@@ -474,20 +531,89 @@ export default function ComplianceManager({
               </div>
 
               {/* Waiver toggle (admin only) */}
-              {isAdmin && (
+              {isAdmin && selectedEntry.compliance && (
                 <div className="border-t border-gray-700 pt-4 space-y-2">
                   <p className="text-xs font-medium text-gray-400 uppercase">Waiver</p>
                   <Button
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.waiverOk ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
+                    className={`w-full border-gray-700 ${isWaiverVerified(selectedEntry.compliance) ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    {selectedEntry.waiverOk ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
+                    {isWaiverVerified(selectedEntry.compliance) ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
                   </Button>
-                  {selectedEntry.waiver_verified_date && (
-                    <p className="text-xs text-gray-500">Verified: {new Date(selectedEntry.waiver_verified_date).toLocaleString()}</p>
+                  {selectedEntry.compliance.waiver?.verified_at && (
+                    <p className="text-xs text-gray-500">Verified: {new Date(selectedEntry.compliance.waiver.verified_at).toLocaleString()}</p>
+                  )}
+                </div>
+              )}
+
+              {/* License (admin: edit + verify, driver: input only) */}
+              {selectedEntry.compliance && (
+                <div className="border-t border-gray-700 pt-4 space-y-2">
+                  <p className="text-xs font-medium text-gray-400 uppercase">License</p>
+                  {!editingLicense || editingLicense.entryId !== selectedEntry.id ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-gray-900/30 rounded p-2">
+                        <div>
+                          <p className="text-gray-400">Number</p>
+                          <p className="text-white font-medium">{selectedEntry.compliance.license?.license_number || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Expires</p>
+                          <p className="text-white font-medium">{selectedEntry.compliance.license?.expires_on || '—'}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className={`text-xs font-medium ${
+                          isLicenseVerified(selectedEntry.compliance) ? 'text-green-400' : 'text-yellow-400'
+                        }`}>
+                          Status: {isLicenseVerified(selectedEntry.compliance) ? '✓ Verified' : '✗ Not Verified'}
+                        </p>
+                      </div>
+                      {isAdmin ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingLicense({ entryId: selectedEntry.id, licenseNumber: selectedEntry.compliance.license?.license_number || '', expiresOn: selectedEntry.compliance.license?.expires_on || '' })}
+                          className="w-full border-gray-700 text-gray-300"
+                        >
+                          Edit License
+                        </Button>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">License is verified by event staff.</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="License number"
+                        value={editingLicense.licenseNumber || ''}
+                        onChange={(e) => setEditingLicense({ ...editingLicense, licenseNumber: e.target.value })}
+                        className="bg-[#262626] border-gray-700 text-white text-xs"
+                      />
+                      <Input
+                        type="date"
+                        value={editingLicense.expiresOn || ''}
+                        onChange={(e) => setEditingLicense({ ...editingLicense, expiresOn: e.target.value })}
+                        className="bg-[#262626] border-gray-700 text-white text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setEditingLicense(null)} className="flex-1 border-gray-700">Cancel</Button>
+                        <Button size="sm" onClick={() => handleSaveLicense(selectedEntry)} disabled={updatePending} className="flex-1 bg-blue-600 hover:bg-blue-700">Save</Button>
+                      </div>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleVerifyLicense(selectedEntry)}
+                          disabled={updatePending || !editingLicense.licenseNumber}
+                          className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                          Verify License
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
