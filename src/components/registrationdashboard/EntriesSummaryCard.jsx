@@ -48,10 +48,17 @@ export default function EntriesSummaryCard({ selectedEvent }) {
 
   const summary = useMemo(() => {
     const total = entries.length;
+    
+    // Handle Unknown status gracefully
     const paid = entries.filter(e => e.payment_status === 'Paid').length;
     const unpaid = entries.filter(e => e.payment_status === 'Unpaid').length;
+    const paymentTracked = paid > 0 || unpaid > 0;
+    
     const checkedIn = entries.filter(e => e.entry_status === 'Checked In' || e.entry_status === 'Teched').length;
+    const statusTracked = entries.some(e => e.entry_status && e.entry_status !== 'Unknown');
+    
     const teched = entries.filter(e => e.tech_status === 'Passed').length;
+    const techTracked = entries.some(e => e.tech_status && e.tech_status !== 'Unknown');
 
     const byClass = {};
     entries.forEach((e) => {
@@ -60,7 +67,7 @@ export default function EntriesSummaryCard({ selectedEvent }) {
       byClass[className] = (byClass[className] || 0) + 1;
     });
 
-    return { total, paid, unpaid, checkedIn, teched, byClass };
+    return { total, paid, unpaid, paymentTracked, checkedIn, statusTracked, teched, techTracked, byClass };
   }, [entries, seriesClasses]);
 
   return (
