@@ -739,19 +739,29 @@ export default function RegistrationDashboard() {
                   </Button>
                 )}
                 {canAction(dashboardPermissions, 'export') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowExportModal(true)}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Download className="w-4 h-4 mr-1" /> Export
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowExportModal(true)}
+                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                    >
+                      <Download className="w-4 h-4 mr-1" /> Export
+                    </Button>
+                  )}
+                </div>
+
+                {/* Announcer Mode Toggle */}
+                <Button
+                 onClick={() => handleAnnouncerModeToggle(!announcerMode)}
+                 size="sm"
+                 variant="outline"
+                 className={`border-gray-700 ${announcerMode ? 'bg-purple-900/40 text-purple-300 border-purple-700' : 'text-gray-300 hover:bg-gray-800'}`}
+                >
+                 <Mic className="w-4 h-4 mr-1" /> {announcerMode ? 'Announcer Mode On' : 'Announcer Mode'}
+                </Button>
+                </div>
+                </div>
+                </div>
 
         {/* Main Content */}
          <div className="max-w-7xl mx-auto px-6 py-8">
