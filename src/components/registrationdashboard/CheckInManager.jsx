@@ -33,9 +33,10 @@ export default function CheckInManager({ selectedEvent, user }) {
   const queryClient = useQueryClient();
 
   const eventId = selectedEvent?.id;
+  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
 
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
-    queryKey: ['entries', eventId],
+    queryKey: QueryKeys.entries.listByEvent(eventId),
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
     ...DQ,
