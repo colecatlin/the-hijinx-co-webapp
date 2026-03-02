@@ -47,9 +47,14 @@ import {
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import { QueryKeys } from '@/components/utils/queryKeys';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+
+const DQ = applyDefaultQueryOptions();
 
 export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const queryClient = useQueryClient();
+  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
 
   // State
   const [filters, setFilters] = useState({
@@ -67,12 +72,9 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const [addFormData, setAddFormData] = useState({});
   const [drawerFormData, setDrawerFormData] = useState({});
 
-  // Shared query options
-  const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
-
   // Queries
   const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
-    queryKey: ['entries', eventId],
+    queryKey: QueryKeys.entries.listByEvent(eventId),
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
     ...DQ,
@@ -87,7 +89,7 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   });
 
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', seriesId],
+    queryKey: QueryKeys.series.classes(seriesId),
     queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
     enabled: !!seriesId,
     ...DQ,
@@ -99,11 +101,16 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
     ...DQ,
   });
 
+  // Duplicate car number check (application-level uniqueness guard)
+  const checkDuplicateEntry = (driverId) => {
+    return entries.some((e) => e.driver_id === driverId);
+  };
+
   // Mutations
   const createEntryMutation = useMutation({
     mutationFn: (data) => base44.entities.Entry.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      invalidateAfterOperation('entry_created');
       setShowAddDialog(false);
       setAddFormData({});
       toast.success('Entry created');
@@ -113,7 +120,7 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const updateEntryMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      invalidateAfterOperation('entry_updated');
       setShowDetailDrawer(false);
       toast.success('Entry updated');
     },
@@ -122,7 +129,7 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const deleteEntryMutation = useMutation({
     mutationFn: (id) => base44.entities.Entry.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      invalidateAfterOperation('entry_deleted');
       setShowDeleteConfirm(null);
       toast.success('Entry deleted');
     },
@@ -131,7 +138,7 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const bulkUpdateMutation = useMutation({
     mutationFn: (updates) => Promise.all(updates.map((u) => base44.entities.Entry.update(u.id, u.data))),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
+      invalidateAfterOperation('entry_bulk_updated');
       setSelectedEntries(new Set());
       toast.success('Bulk update complete');
     },
