@@ -71,6 +71,7 @@ import {
   Car,
   Shield,
   Clock,
+  Mic,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
