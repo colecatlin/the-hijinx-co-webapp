@@ -1237,6 +1237,19 @@ export default function RegistrationDashboard() {
                 </div>
               )}
 
+              {canTab(dashboardPermissions, 'announcer_pack') && activeTab === 'announcer_pack' && (
+                <div className="-mx-4 -mb-4">
+                  <AnnouncerPackManager
+                    selectedEvent={selectedEvent}
+                    selectedTrack={selectedTrack}
+                    selectedSeries={selectedSeries}
+                    dashboardPermissions={dashboardPermissions}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                    isAdmin={isAdmin}
+                  />
+                </div>
+              )}
+
               {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
                 <div className="-mx-4 -mb-4">
                   <RaceControlManager
