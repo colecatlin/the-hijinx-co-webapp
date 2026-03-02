@@ -66,13 +66,15 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const [addFormData, setAddFormData] = useState({});
   const [drawerFormData, setDrawerFormData] = useState({});
 
+  // Shared query options
+  const DQ = { staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: false, retry: 1 };
+
   // Queries
-  const { data: entries = [] } = useQuery({
+  const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
     queryKey: ['entries', eventId],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const driverIds = useMemo(() => [...new Set(entries.map((e) => e.driver_id))], [entries]);
@@ -80,23 +82,20 @@ export default function EntriesManager({ eventId, seriesId, selectedEvent }) {
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: async () => base44.entities.Driver.list('first_name', 500),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
     queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
     enabled: !!seriesId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: allDrivers = [] } = useQuery({
     queryKey: ['allDrivers'],
     queryFn: () => base44.entities.Driver.list('first_name', 200),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   // Mutations
