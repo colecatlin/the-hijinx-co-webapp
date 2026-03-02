@@ -171,13 +171,6 @@ export default function RegistrationDashboard() {
   const [editingEventId, setEditingEventId] = useState('');
   const [announcerMode, setAnnouncerMode] = useState(false);
 
-  // Shared dashboard queries hook (used after selectedEvent is available, but
-  // we must call hooks unconditionally — hook handles enabled guards internally)
-  // We'll wire it after selectedEvent resolves below.
-
-  // Dashboard context object (aliased from dashContext for prop passing)
-  const dashboardContext = dashContext;
-
   // Centralized invalidation helper – available to all tab components
   const invalidateAfterOperation = useMemo(
     () => buildInvalidateAfterOperation(queryClient),
