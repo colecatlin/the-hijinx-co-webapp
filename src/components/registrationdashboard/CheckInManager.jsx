@@ -170,11 +170,54 @@ export default function CheckInManager({
   };
 
   const isCheckedIn = formData?.entry_status === 'Checked In';
+  const isAdmin = currentUser?.role === 'admin';
+
+  // ── Compliance gate helpers ──────────────────────────────────────────────
+  const getCheckInBlockers = (fd) => {
+    if (!fd) return [];
+    const blockers = [];
+    const waiverOk = fd.waiver_verified === true || fd.waiver_status === 'Verified';
+    if (!waiverOk) blockers.push('Waiver not verified');
+    if (!fd.license_number || fd.license_number.trim() === '') blockers.push('License number missing');
+    else if (fd.license_expiration_date && fd.license_expiration_date < today) blockers.push('License is expired');
+    return blockers;
+  };
 
   const handleCheckIn = () => {
-    updateMutation.mutate({
-      entry_status: isCheckedIn ? 'Registered' : 'Checked In',
-    });
+    if (isCheckedIn) {
+      // Un-check-in — always allowed
+      updateMutation.mutate({ entry_status: 'Registered' });
+      return;
+    }
+    const blockers = getCheckInBlockers(formData);
+    if (blockers.length > 0) {
+      if (isAdmin) {
+        setPendingCheckIn(true);
+        setShowOverrideDialog(true);
+      } else {
+        toast.error('Cannot check in: ' + blockers.join(', '));
+      }
+      return;
+    }
+    updateMutation.mutate({ entry_status: 'Checked In' });
+  };
+
+  const handleOverrideCheckIn = async () => {
+    setShowOverrideDialog(false);
+    setPendingCheckIn(false);
+    updateMutation.mutate({ entry_status: 'Checked In' });
+    // Log override
+    try {
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'checkin_override',
+        source_type: 'RegistrationDashboard',
+        entity_name: 'Entry',
+        entity_id: formData.id,
+        event_id: eventId,
+        status: 'success',
+        message: `Admin override check-in for entry ${formData.id}`,
+      });
+    } catch (_) {}
   };
 
   const handleToggleWaiver = () => {
