@@ -20,6 +20,7 @@ const ROLE_PERMISSIONS = {
       announcer: true,
       gate: true,
       race_control: true,
+      announcer_pack: true,
     },
     actions: {
       create_event: true,
