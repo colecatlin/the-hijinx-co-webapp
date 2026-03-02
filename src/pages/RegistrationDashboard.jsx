@@ -167,6 +167,7 @@ export default function RegistrationDashboard() {
   );
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEventId, setEditingEventId] = useState('');
+  const [announcerMode, setAnnouncerMode] = useState(false);
 
   // Dashboard context object
   const dashboardContext = useMemo(() => ({
