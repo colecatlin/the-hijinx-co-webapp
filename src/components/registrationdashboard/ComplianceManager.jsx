@@ -28,50 +28,37 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const queryClient = useQueryClient();
+  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
   const hasPermission = canAction?.includes('complianceUpdate');
 
   // Check auth status
   useQuery({
-    queryKey: ['authStatus'],
+    queryKey: QueryKeys.auth.status(),
     queryFn: async () => {
       const status = await base44.auth.isAuthenticated();
       setIsAuth(status);
       return status;
     },
+    ...DQ,
   });
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery({
-    queryKey: ['entries', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
-  });
-
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.EventClass.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
+    queryKey: QueryKeys.entries.listByEvent(selectedEvent?.id),
+    queryFn: () => base44.entities.Entry.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
   });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
+    ...DQ,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
-  });
-
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    enabled: isAuth,
+    ...DQ,
   });
 
   const updateMutation = useMutation({
