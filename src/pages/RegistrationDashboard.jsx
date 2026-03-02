@@ -1053,7 +1053,7 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'entries') && activeTab === 'entries' && (
-                isAdmin ? (
+                isAdmin || announcerMode ? (
                   selectedEvent ? (
                     <EntriesManager
                       dashboardContext={dashboardContext}
@@ -1062,6 +1062,7 @@ export default function RegistrationDashboard() {
                       eventId={selectedEvent.id}
                       seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
                       onEntrySaved={() => invalidateAfterOperation('entries_updated', { eventId: selectedEvent.id })}
+                      announcerMode={announcerMode}
                     />
                   ) : (
                     <Card className="bg-[#171717] border-gray-800">
