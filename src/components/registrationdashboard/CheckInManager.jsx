@@ -414,35 +414,24 @@ export default function CheckInManager({ selectedEvent, user }) {
             {/* Status Chips */}
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
-                {/* Check In Status */}
                 <Badge
-                  variant={formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In' ? 'default' : 'secondary'}
-                  className="text-xs"
+                  variant={formData.entry_status === 'Checked In' ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.entry_status === 'Checked In' ? 'bg-green-600' : ''}`}
                 >
-                  {formData.check_in_status === 'CheckedIn' || formData.entry_status === 'Checked In' ? 'Checked In' : 'Not Checked In'}
+                  {formData.entry_status === 'Checked In' ? 'Checked In ✓' : 'Not Checked In'}
                 </Badge>
-
-                {/* Waiver Status */}
-                {('waiver_verified' in formData || !formData.waiver_verified) && (
-                  <Badge
-                    variant={formData.waiver_verified ? 'default' : 'secondary'}
-                    className={`text-xs ${formData.waiver_verified ? 'bg-green-600' : ''}`}
-                  >
-                    {formData.waiver_verified ? 'Waiver ✓' : 'Waiver ✗'}
-                  </Badge>
-                )}
-
-                {/* Payment Status */}
-                {('payment_status' in formData) && (
-                  <Badge
-                    variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
-                    className={`text-xs ${formData.payment_status === 'Paid' ? 'bg-green-600' : ''}`}
-                  >
-                    {formData.payment_status === 'Paid' ? 'Paid' : 'Unpaid'}
-                  </Badge>
-                )}
-
-                {/* Tech Status */}
+                <Badge
+                  variant={formData.waiver_status === 'Verified' ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.waiver_status === 'Verified' ? 'bg-green-600' : ''}`}
+                >
+                  {formData.waiver_status === 'Verified' ? 'Waiver ✓' : 'Waiver ✗'}
+                </Badge>
+                <Badge
+                  variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.payment_status === 'Paid' ? 'bg-green-600' : ''}`}
+                >
+                  {formData.payment_status === 'Paid' ? 'Paid ✓' : 'Unpaid'}
+                </Badge>
                 {formData.tech_status && (
                   <Badge variant="secondary" className="text-xs">
                     Tech: {formData.tech_status}
