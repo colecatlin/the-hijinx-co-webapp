@@ -1006,6 +1006,12 @@ export default function RegistrationDashboard() {
                   operationLogs={operationLogs}
                   importLogs={importLogs}
                   complianceSeverity={complianceSeverity}
+                  announcerMode={announcerMode}
+                  onSelectSession={(sessionId) => {
+                    setActiveTab('results');
+                    // Store selected session in a way ResultsManager can access it
+                    sessionStorage.setItem('selectedSessionId', sessionId);
+                  }}
                 />
               )}
 
