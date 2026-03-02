@@ -22,54 +22,6 @@ import {
 
 const DQ = { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false };
 
-// ─── Status colours ────────────────────────────────────────────────────────────
-const STATUS_COLORS = {
-  Paid: 'bg-green-900/40 text-green-300',
-  Unpaid: 'bg-red-900/40 text-red-300',
-  Refunded: 'bg-purple-900/40 text-purple-300',
-  Verified: 'bg-green-900/40 text-green-300',
-  Missing: 'bg-yellow-900/40 text-yellow-300',
-  Passed: 'bg-green-900/40 text-green-300',
-  Failed: 'bg-red-900/40 text-red-300',
-  'Not Inspected': 'bg-gray-700/60 text-gray-400',
-  'Recheck Required': 'bg-orange-900/40 text-orange-300',
-  Registered: 'bg-blue-900/40 text-blue-300',
-  'Checked In': 'bg-teal-900/40 text-teal-300',
-  Teched: 'bg-indigo-900/40 text-indigo-300',
-  Withdrawn: 'bg-gray-700/60 text-gray-500',
-};
-
-// ─── Step indicator ────────────────────────────────────────────────────────────
-function StepIndicator({ current }) {
-  const steps = ['Select Event', 'Driver Profile', 'Register'];
-  return (
-    <div className="flex items-center justify-center gap-2 mb-10">
-      {steps.map((label, idx) => {
-        const step = idx + 1;
-        const done = step < current;
-        const active = step === current;
-        return (
-          <React.Fragment key={step}>
-            <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
-                done ? 'bg-white border-white text-black' :
-                active ? 'bg-transparent border-white text-white' :
-                'bg-transparent border-gray-600 text-gray-600'
-              }`}>
-                {done ? <CheckCircle2 className="w-4 h-4" /> : step}
-              </div>
-              <span className={`text-xs font-medium hidden sm:block ${active ? 'text-white' : done ? 'text-gray-300' : 'text-gray-600'}`}>{label}</span>
-            </div>
-            {idx < steps.length - 1 && (
-              <div className={`flex-1 h-px max-w-[60px] ${step < current ? 'bg-white' : 'bg-gray-700'}`} />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
-
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 async function writeOperationLog(type, entryId, eventId) {
   try {
