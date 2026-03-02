@@ -1206,6 +1206,16 @@ export default function RegistrationDashboard() {
                   results={results}
                 />
               )}
+
+              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
+                <div className="-mx-4 -mb-4">
+                  <GateMode
+                    selectedEvent={selectedEvent}
+                    isAdmin={isAdmin}
+                    currentUser={user}
+                  />
+                </div>
+              )}
             </div>
           </Tabs>
         </div>
