@@ -214,6 +214,23 @@ export default function ComplianceManager({
     toast.success('Notes saved');
   };
 
+  // Load current user's entry
+  const { data: myEntry } = useQuery({
+    queryKey: ['myEntry', currentUser?.id, selectedEvent?.id],
+    queryFn: async () => {
+      if (!currentUser?.id || !selectedEvent?.id) return null;
+      const myDrivers = await base44.entities.Driver.filter({ owner_user_id: currentUser.id });
+      if (myDrivers.length === 0) return null;
+      const driverEntries = await base44.entities.Entry.filter({
+        event_id: selectedEvent.id,
+        driver_id: myDrivers[0].id,
+      });
+      return driverEntries.length > 0 ? driverEntries[0] : null;
+    },
+    enabled: !!currentUser?.id && !!selectedEvent?.id,
+    ...DQ,
+  });
+
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -241,8 +258,45 @@ export default function ComplianceManager({
 
   const { flags, totalEntries, totalFlagged } = complianceData;
 
+  // Compute my compliance status
+  const myComplianceStatus = useMemo(() => {
+    if (!myEntry) return null;
+    const entryData = complianceData.entriesMap.get(myEntry.id);
+    return entryData || null;
+  }, [myEntry, complianceData.entriesMap]);
+
   return (
     <div className="space-y-4">
+      {/* My Compliance card */}
+      {myEntry && myComplianceStatus && (
+        <Card className="bg-blue-900/20 border border-blue-800/50">
+          <CardHeader>
+            <CardTitle className="text-sm text-blue-300">Your Compliance Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div className="bg-blue-900/30 rounded p-2">
+                <p className="text-blue-300 font-medium">Waiver</p>
+                <p className={myComplianceStatus.waiverOk ? 'text-green-400' : 'text-yellow-400'}>
+                  {myComplianceStatus.waiverOk ? '✓ Verified' : '✗ Missing'}
+                </p>
+              </div>
+              <div className="bg-blue-900/30 rounded p-2">
+                <p className="text-blue-300 font-medium">License</p>
+                <p className="text-gray-300">{myEntry.license_number ? '✓' : '—'}</p>
+              </div>
+              <div className="bg-blue-900/30 rounded p-2">
+                <p className="text-blue-300 font-medium">Transponder</p>
+                <p className="text-gray-300">{myEntry.transponder_id ? '✓' : '—'}</p>
+              </div>
+              <div className="bg-blue-900/30 rounded p-2">
+                <p className="text-blue-300 font-medium">Flags</p>
+                <p className="text-gray-300">{myComplianceStatus.flags.length > 0 ? myComplianceStatus.flags.length : '0'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Summary row */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {[
