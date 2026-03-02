@@ -105,7 +105,53 @@ export default function TechManager({
   const queryClient = useQueryClient();
 
   const eventId = selectedEvent?.id;
-  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
+
+  const sharedMutationOpts = {
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  };
+
+  const { mutateAsync: updateEntryAsync, isPending: updatePending } = useDashboardMutation({
+    operationType: 'tech_updated',
+    entityName: 'Entry',
+    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    successMessage: 'Entry updated',
+    ...sharedMutationOpts,
+  });
+
+  const { mutateAsync: bulkUpdateEntriesAsync, isPending: bulkPending } = useDashboardMutation({
+    operationType: 'tech_updated',
+    entityName: 'Entry',
+    mutationFn: async (updates) => {
+      const results = [];
+      for (const [entryId, data] of Object.entries(updates)) {
+        results.push(await base44.entities.Entry.update(entryId, data));
+      }
+      return results;
+    },
+    successMessage: 'Entries updated',
+    ...sharedMutationOpts,
+  });
+
+  // Compat shims
+  const updateMutation = {
+    isPending: updatePending,
+    mutate: (updateData) => {
+      if (!selectedEntry) return;
+      updateEntryAsync({ id: selectedEntry.id, data: updateData }).then((updated) => {
+        if (updated) setSelectedEntry(updated);
+      });
+    },
+  };
+
+  const bulkUpdateMutation = {
+    isPending: bulkPending,
+    mutate: (updates) => {
+      bulkUpdateEntriesAsync(updates).then(() => setBulkUpdates({}));
+    },
+  };
 
   // Check auth status
   useQuery({
