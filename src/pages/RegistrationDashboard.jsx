@@ -74,6 +74,7 @@ import {
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import useDashboardQueries from '@/components/registrationdashboard/useDashboardQueries';
 
 // ─── Dashboard-wide React Query tunables ────────────────────────────────────
 // Canonical defaults live in queryDefaults.js; DQ is a convenience alias here.
