@@ -70,6 +70,7 @@ import {
   Shield,
   Clock,
 } from 'lucide-react';
+import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
 // Helper: Require admin override for sensitive operations
 function createRequireAdminOverride(queryClient) {
@@ -166,6 +167,12 @@ export default function RegistrationDashboard() {
     season: seasonYear,
     eventId: eventId,
   }), [organizationType, organizationId, seasonYear, eventId]);
+
+  // Centralized invalidation helper – available to all tab components
+  const invalidateAfterOperation = useMemo(
+    () => buildInvalidateAfterOperation(queryClient),
+    [queryClient]
+  );
 
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
     queryKey: ['isAuthenticated'],
