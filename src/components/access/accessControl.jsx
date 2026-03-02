@@ -32,6 +32,7 @@ const ROLE_PERMISSIONS = {
       overview: true,
       entries: true,
       checkin: true,
+      announcer: true,
     },
     actions: {
       export: true,
