@@ -192,44 +192,47 @@ export default function RegistrationDashboard() {
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
+    ...DQ,
   });
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    enabled: isAuthenticated,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list(),
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
+
+  // Live polling interval: 20 s when event is Live, 0 (disabled) otherwise
+  const isLiveEvent = selectedEvent?.status === 'in_progress';
+  const liveRefetchInterval = isLiveEvent ? 20_000 : false;
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: isAuthenticated && !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && !!eventId,
+    refetchInterval: liveRefetchInterval,
+    ...DQ,
   });
 
   const { data: standings = [] } = useQuery({
@@ -238,17 +241,16 @@ export default function RegistrationDashboard() {
       if (organizationType !== 'series' || !organizationId) return Promise.resolve([]);
       return base44.entities.Standings.filter({ series_id: organizationId, season: seasonYear });
     },
-    enabled: isAuthenticated && organizationType === 'series' && !!organizationId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && organizationType === 'series' && !!organizationId,
+    ...DQ,
   });
 
   const { data: results = [] } = useQuery({
     queryKey: ['results', eventId],
     queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: isAuthenticated && !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && !!eventId,
+    refetchInterval: liveRefetchInterval,
+    ...DQ,
   });
 
   const { data: operationLogs = [] } = useQuery({
@@ -260,9 +262,8 @@ export default function RegistrationDashboard() {
         created_date: { $gte: thirtyDaysAgo.toISOString() },
       });
     },
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   const { data: importLogs = [] } = useQuery({
@@ -274,36 +275,32 @@ export default function RegistrationDashboard() {
         created_date: { $gte: thirtyDaysAgo.toISOString() },
       });
     },
-    enabled: isAuthenticated,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated,
+    ...DQ,
   });
 
   // Fetch selected event details
   const { data: selectedEvent, isLoading: selectedEventLoading } = useQuery({
     queryKey: ['selectedEvent', eventId],
     queryFn: () => (eventId ? base44.entities.Event.get(eventId) : Promise.resolve(null)),
-    enabled: isAuthenticated && !!eventId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && !!eventId,
+    ...DQ,
   });
 
   // Fetch selected track details
   const { data: selectedTrack, isLoading: selectedTrackLoading } = useQuery({
     queryKey: ['selectedTrack', selectedEvent?.track_id],
     queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
-    enabled: isAuthenticated && !!selectedEvent?.track_id,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && !!selectedEvent?.track_id,
+    ...DQ,
   });
 
   // Fetch selected series details
   const { data: selectedSeries, isLoading: selectedSeriesLoading } = useQuery({
     queryKey: ['selectedSeries', selectedEvent?.series_id],
     queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
-    enabled: isAuthenticated && !!selectedEvent?.series_id,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    enabled: !!isAuthenticated && !!selectedEvent?.series_id,
+    ...DQ,
   });
 
   const filteredEvents = useMemo(() => {
