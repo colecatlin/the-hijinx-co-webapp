@@ -566,6 +566,11 @@ export default function EntriesManager({
       </div>
 
       {/* Bulk Actions Bar */}
+      {isUsingFallback && (
+        <div className="bg-yellow-900/20 border border-yellow-800/50 rounded-lg p-3">
+          <p className="text-xs text-yellow-400">Bulk actions require Entry records. Currently using fallback data.</p>
+        </div>
+      )}
       {hasBulkSelection && (
         <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between">
           <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
