@@ -8,6 +8,13 @@ import StandingsStatusCard from './StandingsStatusCard';
 import SystemAlertsFeed from './SystemAlertsFeed';
 import RaceDayReadinessCard from './RaceDayReadinessCard';
 
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+
+const DQ = applyDefaultQueryOptions();
+
 export default function OverviewGrid({
   dashboardContext,
   selectedEvent,
@@ -20,6 +27,14 @@ export default function OverviewGrid({
   importLogs,
   complianceSeverity,
 }) {
+  // Load real entries for the selected event
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -49,7 +64,7 @@ export default function OverviewGrid({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
-        <EntriesSummaryCard selectedEvent={selectedEvent} />
+        <EntriesSummaryCard selectedEvent={selectedEvent} entries={entries} />
         <RaceDayReadinessCard selectedEvent={selectedEvent} sessions={sessions} />
         <ComplianceAlertsCard selectedEvent={selectedEvent} />
         <ResultsStatusCard selectedEvent={selectedEvent} />
