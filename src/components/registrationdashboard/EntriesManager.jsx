@@ -462,7 +462,10 @@ export default function EntriesManager({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">Entries</h2>
+          <h2 className="text-xl font-bold text-white">
+            Entries
+            {isUsingFallback && <span className="ml-2 text-xs text-yellow-400">(fallback)</span>}
+          </h2>
           <p className="text-sm text-gray-400 mt-1">
             Showing {filteredEntries.length} of {entries.length}
           </p>
