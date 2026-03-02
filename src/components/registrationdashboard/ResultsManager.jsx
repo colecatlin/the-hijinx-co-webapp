@@ -28,7 +28,7 @@ import ResultsCSVUpload from './results/ResultsCSVUpload';
 import ResultsAPISync from './results/ResultsAPISync';
 import ResultsSessionMeta from './results/ResultsSessionMeta';
 
-export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCalculatedAt, onSetStandingsDirty }) {
+export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCalculatedAt, onSetStandingsDirty, onResultsSaved, onResultsProvisional, onResultsOfficial, onResultsLocked }) {
   const [organizationType, setOrganizationType] = useState('track');
   const [trackId, setTrackId] = useState('');
   const [seriesId, setSeriesId] = useState('');
@@ -226,12 +226,13 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
         console.warn('Failed to log operation:', e);
       }
 
-      // If transitioning to Official from Provisional, mark standings dirty
-      if (selectedSession.status === 'Provisional' && newStatus === 'Official') {
-        if (onSetStandingsDirty) {
-          onSetStandingsDirty();
-        }
+      // Fire parent callbacks for cache invalidation
+      if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
+      if (newStatus === 'Official') {
+        if (onSetStandingsDirty) onSetStandingsDirty();
+        if (onResultsOfficial) onResultsOfficial();
       }
+      if (newStatus === 'Locked' && onResultsLocked) onResultsLocked();
 
       return result;
     },
