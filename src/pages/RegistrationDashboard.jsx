@@ -366,6 +366,18 @@ export default function RegistrationDashboard() {
     setOverrideReason('');
   };
 
+  // ── Announcer Mode toggle in URL ─────────────────────────────────────────
+  const handleAnnouncerModeToggle = (enabled) => {
+    setAnnouncerMode(enabled);
+    const params = new URLSearchParams(searchParams);
+    if (enabled) {
+      params.set('announcer', '1');
+    } else {
+      params.delete('announcer');
+    }
+    setSearchParams(params, { replace: true });
+  };
+
   // ── Debounced URL write (250 ms) ──────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -374,10 +386,11 @@ export default function RegistrationDashboard() {
       if (organizationId) params.set('orgId', organizationId);
       if (seasonYear) params.set('seasonYear', seasonYear);
       if (eventId) params.set('eventId', eventId);
+      if (announcerMode) params.set('announcer', '1');
       setSearchParams(params, { replace: true });
     }, 250);
     return () => clearTimeout(timer);
-  }, [organizationType, organizationId, seasonYear, eventId, setSearchParams]);
+  }, [organizationType, organizationId, seasonYear, eventId, announcerMode, setSearchParams]);
 
   useEffect(() => {
     if (authLoading === false && !isAuthenticated) {
