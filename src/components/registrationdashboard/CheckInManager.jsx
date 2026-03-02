@@ -221,6 +221,14 @@ export default function CheckInManager({ selectedEvent, user }) {
     }
   };
 
+  // Reset local selection when event changes
+  useEffect(() => {
+    setSelectedEntry(null);
+    setFormData(null);
+    setClassFilter('all');
+    setSearchTerm('');
+  }, [eventId]);
+
   // Auto-focus QR input on mount
   useEffect(() => {
     if (qrInputRef.current) {
