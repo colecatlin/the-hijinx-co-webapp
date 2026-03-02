@@ -134,15 +134,13 @@ export default function ResultsManager({ selectedEvent, isAdmin, standingsLastCa
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   const { data: allDriverPrograms = [] } = useQuery({
     queryKey: ['driverPrograms', selectedEvent?.id],
     queryFn: () => base44.entities.DriverProgram.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...DQ,
   });
 
   // Data integrity: filter driverPrograms to match selected event's series_id
