@@ -67,8 +67,8 @@ export default function MotorsportsHome() {
     { label: 'Active Series', value: allSeries.length, icon: Zap, accent: '#F97316' },
   ];
 
-  const nextEvent = upcomingEvents[0];
-  const daysUntil = nextEvent ? differenceInDays(parseISO(nextEvent.event_date), parseISO(new Date().toISOString().split('T')[0])) : null;
+  const nextEvent = upcomingEvents.find(e => e.event_date);
+  const daysUntil = nextEvent?.event_date ? differenceInDays(parseISO(nextEvent.event_date), parseISO(new Date().toISOString().split('T')[0])) : null;
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
@@ -159,6 +159,7 @@ export default function MotorsportsHome() {
             </div>
             <div className="space-y-2">
               {upcomingEvents.slice(0, 6).map((event, i) => {
+                if (!event.event_date) return null;
                 const days = differenceInDays(parseISO(event.event_date), parseISO(new Date().toISOString().split('T')[0]));
                 const isToday = days === 0;
                 const isSoon = days <= 3;
@@ -298,7 +299,9 @@ export default function MotorsportsHome() {
                   </div>
                   <div className="font-semibold text-sm leading-snug">{event.name}</div>
                   <div className="text-xs text-gray-500 mt-1">{event.series}</div>
-                  <div className="text-xs text-gray-600 mt-2 font-mono">{format(parseISO(event.event_date), 'MMM d, yyyy')}</div>
+                  <div className="text-xs text-gray-600 mt-2 font-mono">
+                    {event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : '—'}
+                  </div>
                 </motion.div>
               ))}
             </div>
