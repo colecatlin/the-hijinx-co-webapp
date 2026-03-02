@@ -81,6 +81,42 @@ export default function OverviewGrid({
         </Card>
       )}
 
+      {announcerMode && (
+        <Card className="bg-purple-900/20 border-purple-800/50">
+          <CardHeader>
+            <CardTitle className="text-purple-300 text-lg">Announcer Quick Panel</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-xs text-gray-400 mb-2">Event</p>
+              <p className="text-white font-semibold">{selectedEvent.name}</p>
+              <p className="text-xs text-gray-400">{selectedTrack?.name} • {selectedEvent.event_date}{selectedEvent.end_date ? ` to ${selectedEvent.end_date}` : ''}</p>
+            </div>
+
+            <div className="border-t border-purple-800/30 pt-3">
+              <p className="text-xs text-gray-400 mb-2">Next Sessions</p>
+              <div className="space-y-2">
+                {sortedSessions.slice(0, 3).map((s) => (
+                  <div key={s.id} className="flex items-center justify-between bg-gray-900/50 rounded p-2">
+                    <div>
+                      <p className="text-sm text-white font-medium">{s.name}</p>
+                      <p className="text-xs text-gray-400">{s.session_type}</p>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => onSelectSession?.(s.id)} className="text-purple-400 hover:bg-purple-900/30">
+                      <Play className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button onClick={() => onSelectSession?.(sortedSessions.find(s => s.status === 'in_progress')?.id || sortedSessions[0]?.id)} className="w-full bg-purple-600 hover:bg-purple-700">
+              Open Current Session Results
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
         <EntriesSummaryCard selectedEvent={selectedEvent} entries={entries} />
