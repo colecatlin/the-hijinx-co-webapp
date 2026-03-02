@@ -159,12 +159,9 @@ export default function ComplianceManager({ selectedEvent, onComplianceSeverityC
       }
 
       // 5. Tech pending
-      if ('tech_status' in entry || 'status' in entry) {
-        const techStatus = entry.tech_status || entry.status;
-        if (!techStatus || techStatus === 'Not Inspected') {
-          entryFlags.push({ type: 'tech', label: 'Tech Pending', color: 'bg-blue-900/40 text-blue-300' });
-          flags.tech++;
-        }
+      if (!entry.tech_status || entry.tech_status === 'Not Inspected') {
+        entryFlags.push({ type: 'tech', label: 'Tech Pending', color: 'bg-blue-900/40 text-blue-300' });
+        flags.tech++;
       }
 
       // 6. License expired
