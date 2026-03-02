@@ -308,6 +308,31 @@ export default function Registration() {
     },
   });
 
+  // Not authenticated state
+  if (!isAuth) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-white py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-[#171717] border-gray-800">
+            <CardContent className="py-12 text-center space-y-6">
+              <Lock className="w-16 h-16 text-gray-500 mx-auto" />
+              <div>
+                <h2 className="text-2xl font-bold text-white">Sign In to Register</h2>
+                <p className="text-gray-400 text-sm mt-2">You need to be logged in to register for events.</p>
+              </div>
+              <Button
+                onClick={() => base44.auth.redirectToLogin()}
+                className="bg-white text-black hover:bg-gray-100 font-semibold"
+              >
+                <LogIn className="w-4 h-4 mr-2" /> Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white py-12 px-4">
       <div className="max-w-7xl mx-auto">
