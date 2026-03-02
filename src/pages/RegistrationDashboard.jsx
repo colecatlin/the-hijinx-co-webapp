@@ -424,10 +424,10 @@ export default function RegistrationDashboard() {
       prevOrgTypeRef.current !== organizationType ||
       prevSeasonYearRef.current !== seasonYear
     ) {
-      queryClient.cancelQueries({ queryKey: ['sessions'] });
+      queryClient.cancelQueries({ queryKey: QueryKeys.sessions.listByEvent(undefined).slice(0,1) });
       queryClient.cancelQueries({ queryKey: ['entries'] });
-      queryClient.cancelQueries({ queryKey: ['results'] });
-      queryClient.cancelQueries({ queryKey: ['selectedEvent'] });
+      queryClient.cancelQueries({ queryKey: QueryKeys.results.listByEvent(undefined).slice(0,1) });
+      queryClient.cancelQueries({ queryKey: QueryKeys.events.byId(undefined).slice(0,1) });
       setEventId('');
       setActiveTab('overview');
       prevOrgTypeRef.current = organizationType;
