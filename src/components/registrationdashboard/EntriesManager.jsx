@@ -154,10 +154,13 @@ export default function EntriesManager({
     selectedEvent: selectedEvent ?? null,
   };
 
+  // Detect if entries came from fallback
+  const isUsingFallback = entries.length > 0 && entries[0]._sourceType === 'DriverProgram';
+
   const { mutateAsync: createEntry, isPending: creatingEntry } = useDashboardMutation({
     operationType: 'entry_created',
-    entityName: 'Entry',
-    mutationFn: (data) => base44.entities.Entry.create(data),
+    entityName: isUsingFallback ? 'DriverProgram' : 'Entry',
+    mutationFn: (data) => (isUsingFallback ? base44.entities.DriverProgram.create(data) : base44.entities.Entry.create(data)),
     successMessage: 'Entry created',
     ...sharedMutationOpts,
   });
