@@ -255,6 +255,10 @@ export default function TechManager({
   };
 
   const handleSetTechStatus = (status) => {
+    if (status === 'Passed' && selectedEntry?.entry_status !== 'Checked In') {
+      toast.error('Must be checked in first before marking Tech Passed.');
+      return;
+    }
     const update = { tech_status: status };
     if (status !== 'Not Inspected') {
       update.tech_updated_at = new Date().toISOString();
