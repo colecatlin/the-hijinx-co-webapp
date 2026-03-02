@@ -3,9 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { useNavigate } from 'react-router-dom';
 
 const DQ = applyDefaultQueryOptions();
-import { useNavigate } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
