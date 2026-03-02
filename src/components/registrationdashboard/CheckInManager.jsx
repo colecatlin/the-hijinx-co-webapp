@@ -241,9 +241,28 @@ export default function CheckInManager({ selectedEvent, user }) {
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-          <p className="text-gray-400">
-            Select Track/Series, season, and event above to check in entries
-          </p>
+          <p className="text-gray-400">Select Track/Series, season, and event above to check in entries</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entriesLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-16 bg-gray-800/50 rounded animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (entriesError) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center space-y-3">
+          <p className="text-red-400 text-sm">Failed to load check-in entries</p>
+          <Button size="sm" variant="outline" onClick={() => refetchEntries()} className="border-gray-700 text-gray-300">Retry</Button>
         </CardContent>
       </Card>
     );
