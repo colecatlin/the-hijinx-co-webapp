@@ -25,14 +25,23 @@ import {
 export default function ExportsManager({
   selectedEvent,
   selectedTrack,
-  selectedSeries, isAdmin }) {
+  selectedSeries,
+  dashboardContext,
+  isAdmin,
+  dashboardPermissions,
+  onExportCompleted,
+  announcerMode,
+}) {
   const [orgType, setOrgType] = useState('series');
   const [selectedOrg, setSelectedOrg] = useState('');
   const [selectedSeason, setSelectedSeason] = useState('');
-  const [selectedEvent, setSelectedEvent] = useState('');
+  const [selectedEventLocal, setSelectedEventLocal] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSession, setSelectedSession] = useState('');
   const [exportHistory, setExportHistory] = useState([]);
+
+  // Use prop selectedEvent if available, otherwise use local state
+  const effectiveEvent = selectedEvent?.id || selectedEventLocal;
 
   // Data fetching
   const { data: series = [] } = useQuery({
@@ -55,12 +64,12 @@ export default function ExportsManager({
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions', selectedEvent],
+    queryKey: ['sessions', effectiveEvent],
     queryFn: () =>
-      selectedEvent
-        ? base44.entities.Session.filter({ event_id: selectedEvent })
+      effectiveEvent
+        ? base44.entities.Session.filter({ event_id: effectiveEvent })
         : Promise.resolve([]),
-    enabled: !!selectedEvent,
+    enabled: !!effectiveEvent,
   });
 
   const { data: results = [] } = useQuery({
@@ -124,9 +133,9 @@ export default function ExportsManager({
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
-    if (!selectedEvent) return [];
+    if (!effectiveEvent) return [];
     return sessions;
-  }, [selectedEvent, sessions]);
+  }, [effectiveEvent, sessions]);
 
   // Get relevant classes
   const relevantClasses = useMemo(() => {
@@ -146,12 +155,12 @@ export default function ExportsManager({
       switch (exportType) {
         case 'entries':
           requiredFields = ['event'];
-          if (requiredFields.some((f) => !{ event: selectedEvent }[f])) {
+          if (requiredFields.some((f) => !{ event: effectiveEvent }[f])) {
             toast.error('Select an event');
             return;
           }
           data = generateEntriesExport(
-            selectedEvent,
+            effectiveEvent,
             selectedClass,
             entries,
             driverPrograms,
@@ -159,18 +168,18 @@ export default function ExportsManager({
             events,
             seriesClasses
           );
-          fileName = `entries-${selectedEvent}`;
-          filterSummary = `Event: ${selectedEvent}${selectedClass ? `, Class: ${selectedClass}` : ''}`;
+          fileName = `entries-${effectiveEvent}`;
+          filterSummary = `Event: ${effectiveEvent}${selectedClass ? `, Class: ${selectedClass}` : ''}`;
           break;
 
         case 'sessionResults':
           requiredFields = ['event', 'session'];
-          if (requiredFields.some((f) => !{ event: selectedEvent, session: selectedSession }[f])) {
+          if (requiredFields.some((f) => !{ event: effectiveEvent, session: selectedSession }[f])) {
             toast.error('Select an event and session');
             return;
           }
           data = generateSessionResultsExport(
-            selectedEvent,
+            effectiveEvent,
             selectedSession,
             results,
             drivers,
@@ -178,17 +187,17 @@ export default function ExportsManager({
             sessions,
             seriesClasses
           );
-          fileName = `results-${selectedEvent}-${selectedSession}`;
-          filterSummary = `Event: ${selectedEvent}, Session: ${selectedSession}`;
+          fileName = `results-${effectiveEvent}-${selectedSession}`;
+          filterSummary = `Event: ${effectiveEvent}, Session: ${selectedSession}`;
           break;
 
         case 'weekend':
-          if (!selectedEvent) {
+          if (!effectiveEvent) {
             toast.error('Select an event');
             return;
           }
           data = generateWeekendSummaryExport(
-            selectedEvent,
+            effectiveEvent,
             entries,
             driverPrograms,
             sessions,
@@ -197,8 +206,8 @@ export default function ExportsManager({
             events,
             seriesClasses
           );
-          fileName = `weekend-${selectedEvent}`;
-          filterSummary = `Event: ${selectedEvent}`;
+          fileName = `weekend-${effectiveEvent}`;
+          filterSummary = `Event: ${effectiveEvent}`;
           break;
 
         case 'standings':
@@ -367,7 +376,7 @@ export default function ExportsManager({
               <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">
                 Event
               </label>
-              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+              <Select value={selectedEventLocal} onValueChange={setSelectedEventLocal}>
                 <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
                   <SelectValue placeholder="All events" />
                 </SelectTrigger>
@@ -435,17 +444,17 @@ export default function ExportsManager({
           title="Entries by Class"
           description="Export registered entries for selected event and class"
           onExport={() => handleExport('entries')}
-          requirementsMet={!!selectedEvent}
-          warning={!selectedEvent ? 'Select an event' : ''}
+          requirementsMet={!!effectiveEvent}
+          warning={!effectiveEvent ? 'Select an event' : ''}
         />
 
         <ExportCard
           title="Session Results"
           description="Export race results for specific session"
           onExport={() => handleExport('sessionResults')}
-          requirementsMet={!!selectedEvent && !!selectedSession}
+          requirementsMet={!!effectiveEvent && !!selectedSession}
           warning={
-            !selectedEvent ? 'Select an event' : !selectedSession ? 'Select a session' : ''
+            !effectiveEvent ? 'Select an event' : !selectedSession ? 'Select a session' : ''
           }
         />
 
@@ -453,8 +462,8 @@ export default function ExportsManager({
           title="Full Weekend Summary"
           description="Comprehensive summary of event with all sessions"
           onExport={() => handleExport('weekend')}
-          requirementsMet={!!selectedEvent}
-          warning={!selectedEvent ? 'Select an event' : ''}
+          requirementsMet={!!effectiveEvent}
+          warning={!effectiveEvent ? 'Select an event' : ''}
         />
 
         <ExportCard
