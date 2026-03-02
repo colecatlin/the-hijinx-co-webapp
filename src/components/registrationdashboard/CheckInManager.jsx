@@ -517,6 +517,16 @@ export default function CheckInManager({ selectedEvent, user }) {
 
             {/* Actions */}
             <div className="space-y-2 border-t border-gray-800 pt-4">
+              {/* One Tap Check In — shown when loaded via QR payload */}
+              {inputMode === 'qr_payload' && !isCheckedIn && (
+                <Button
+                  onClick={handleOneTapCheckIn}
+                  disabled={updateMutation.isPending}
+                  className="w-full font-bold bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" /> One Tap Check In
+                </Button>
+              )}
               <Button
                 onClick={handleCheckIn}
                 disabled={updateMutation.isPending}
