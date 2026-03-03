@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Edit, Trash2, GripVertical, ArrowLeft } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FoodBeverageForm from '@/components/management/FoodBeverageForm';
 import SectionHeader from '@/components/shared/SectionHeader';
+import ActivityTab from '@/components/management/ActivityTab';
 import { createPageUrl } from '@/components/utils';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
@@ -16,6 +18,7 @@ export default function ManageFoodBeverage() {
   const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['foodBeverages'],
@@ -94,10 +97,38 @@ export default function ManageFoodBeverage() {
       <ManagementShell
         title="Food & Beverage"
         subtitle="Manage food and beverage offerings"
-        actions={<Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button>}
+        actions={activeTab === 'data' ? <Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Items</p>
+                <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{items.filter(i => i.status === 'active').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Coming Soon</p>
+                <p className="text-2xl font-bold text-blue-600">{items.filter(i => i.status === 'coming_soon').length}</p>
+              </div>
+            </div>
+            <Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Food & Beverage Item
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="food-beverage-list">
           {(provided, snapshot) => (
             <div
@@ -156,19 +187,25 @@ export default function ManageFoodBeverage() {
               {provided.placeholder}
             </div>
           )}
-        </Droppable>
-      </DragDropContext>
+            </Droppable>
+            </DragDropContext>
 
-      {showForm && (
-        <FoodBeverageForm
-          item={editingItem}
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingItem(null);
-          }}
-        />
-      )}
+            {showForm && (
+              <FoodBeverageForm
+                item={editingItem}
+                onSubmit={handleSubmit}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingItem(null);
+                }}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="FoodBeverage" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
