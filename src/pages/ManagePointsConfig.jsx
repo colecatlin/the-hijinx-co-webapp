@@ -169,12 +169,11 @@ export default function ManagePointsConfig() {
 
   return (
     <ManagementLayout currentPage="ManagePointsConfig">
-      <ManagementShell title="Points Configuration" subtitle="Link Google Sheets to series for automated standings calculation.">
-        <div className="flex justify-end mb-6">
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="w-4 h-4 mr-2" /> Add Config
-          </Button>
-        </div>
+      <ManagementShell
+        title="Points Configuration"
+        subtitle="Link Google Sheets to series for automated standings calculation"
+        actions={<Button onClick={() => { setEditing(null); setDialogOpen(true); }}><Plus className="w-4 h-4 mr-2" />Add Config</Button>}
+      >
 
       <div className="space-y-4">
         {configs.map(config => (
