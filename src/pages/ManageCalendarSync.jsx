@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, RefreshCw, CheckCircle, AlertCircle, Loader2, Calendar } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import EventDuplicateScanner from '@/components/management/EventDuplicateScanner';
+import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 const DEFAULT_CALENDARS = [
   {
@@ -77,12 +79,9 @@ export default function ManageCalendarSync() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-[#232323]">Schedule Sync</h1>
-          <p className="text-sm text-gray-500 mt-1">Sync ICS/webcal schedules into Events.</p>
-        </div>
+    <ManagementLayout currentPage="ManageCalendarSync">
+      <ManagementShell title="Schedule Sync" subtitle="Sync ICS/webcal schedules into Events.">
+        <div className="flex justify-end mb-6">
         <Button onClick={syncAll} disabled={!!syncingId} className="bg-[#232323] text-white gap-2">
           {syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           Sync All
@@ -201,6 +200,7 @@ export default function ManageCalendarSync() {
           <Plus className="w-4 h-4 mr-1" /> Add Schedule
         </Button>
       </div>
-    </div>
+      </ManagementShell>
+    </ManagementLayout>
   );
 }

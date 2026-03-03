@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Search, Pencil, Trash2, Upload, Download, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import PageShell from '@/components/shared/PageShell';
+import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import StandingsForm from '@/components/management/StandingsForm';
 
 export default function ManageStandings() {
@@ -140,13 +141,9 @@ export default function ManageStandings() {
   };
 
   return (
-    <PageShell className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Standings</h1>
-            <p className="text-gray-600 mt-1">Update championship standings</p>
-          </div>
+    <ManagementLayout currentPage="ManageStandings">
+      <ManagementShell title="Manage Standings" subtitle="Update championship standings">
+        <div className="flex justify-end mb-6">
           <div className="flex gap-2">
             <Button 
               variant="outline" 
@@ -309,7 +306,7 @@ export default function ManageStandings() {
             )}
           </div>
         )}
-      </div>
-    </PageShell>
+      </ManagementShell>
+    </ManagementLayout>
   );
 }
