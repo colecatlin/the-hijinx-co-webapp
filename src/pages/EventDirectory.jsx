@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isEventPublic } from '@/components/system/publishHelpers';
 
 function DaysUntilBadge({ eventDate, status }) {
   if (!eventDate || status === 'completed' || status === 'cancelled') return null;
@@ -28,30 +29,22 @@ export default function EventDirectory() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const { data: upcomingEvents = [], isLoading } = useQuery({
-    queryKey: ['events-upcoming'],
-    queryFn: async () => {
-      const all = await base44.entities.Event.list('event_date', 500);
-      return all.filter(e => 
-        ['Published', 'Live', 'upcoming'].includes(e.status) && 
-        e.publish_ready !== false
-      );
-    },
+  const { data: allEventsList = [] } = useQuery({
+    queryKey: ['events-all'],
+    queryFn: async () => base44.entities.Event.list('event_date', 500),
     staleTime: 3 * 60 * 1000,
   });
 
-  const { data: completedEvents = [], isLoading: completedLoading } = useQuery({
-    queryKey: ['events-completed'],
-    queryFn: async () => {
-      const all = await base44.entities.Event.list('-event_date', 500);
-      return all.filter(e => 
-        ['Completed', 'completed'].includes(e.status) && 
-        e.publish_ready !== false
-      );
-    },
-    enabled: activeTab === 'results',
-    staleTime: 5 * 60 * 1000,
-  });
+  const upcomingEvents = allEventsList.filter(e => 
+    isEventPublic(e) && ['Published', 'Live', 'upcoming'].includes(e.status)
+  );
+
+  const completedEvents = allEventsList.filter(e =>
+    isEventPublic(e) && ['Completed', 'completed'].includes(e.status)
+  );
+
+  const isLoading = false;
+  const completedLoading = false;
 
   const { data: seriesMap = {} } = useQuery({
     queryKey: ['series'],
