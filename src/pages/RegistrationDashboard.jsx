@@ -1107,6 +1107,9 @@ export default function RegistrationDashboard() {
                   onArchiveAttempt={() => setShowArchiveWarning(true)}
                   onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
                   onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
+                  canEditEventCore={canUserEditEventCore}
+                  canApproveAsTrack={canApproveAsTrack({ isAdmin, selectedEvent, userTrackAccess })}
+                  canApproveAsSeries={canApproveAsSeries({ isAdmin, selectedEvent, userSeriesAccess })}
                 />
               )}
 
