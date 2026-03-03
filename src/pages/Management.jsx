@@ -7,12 +7,12 @@ import ManagementSearch from '@/components/management/ManagementSearch';
 import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
-import { SECTIONS } from '@/components/management/ManagementSidebar';
+import { MANAGEMENT_SECTIONS } from '@/components/management/managementConfig';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function Management() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(SECTIONS[0].title);
+  const [activeTab, setActiveTab] = useState(MANAGEMENT_SECTIONS[0].title);
 
   return (
     <>
@@ -24,7 +24,7 @@ export default function Management() {
           <div className="mt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-lg mb-6">
-                {SECTIONS.map(section => (
+                {MANAGEMENT_SECTIONS.map(section => (
                   <TabsTrigger
                     key={section.title}
                     value={section.title}
@@ -35,7 +35,7 @@ export default function Management() {
                 ))}
               </TabsList>
 
-              {SECTIONS.map(section => (
+              {MANAGEMENT_SECTIONS.map(section => (
                 <TabsContent key={section.title} value={section.title}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {section.items.map(item => {
