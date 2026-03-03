@@ -1027,8 +1027,18 @@ export default function RegistrationDashboard() {
                   announcerMode={announcerMode}
                   onSelectSession={(sessionId) => {
                     setActiveTab('results');
-                    // Store selected session in a way ResultsManager can access it
                     sessionStorage.setItem('selectedSessionId', sessionId);
+                  }}
+                  onEntriesNavigate={(params) => {
+                    // Switch to entries tab and push filter params to URL
+                    setActiveTab('entries');
+                    const next = new URLSearchParams(searchParams);
+                    next.set('tab', 'entries');
+                    if (params.classId) next.set('classId', params.classId); else next.delete('classId');
+                    if (params.payment) next.set('payment', params.payment); else next.delete('payment');
+                    if (params.checkin) next.set('checkin', params.checkin); else next.delete('checkin');
+                    if (params.tech) next.set('tech', params.tech); else next.delete('tech');
+                    setSearchParams(next, { replace: true });
                   }}
                 />
               )}
