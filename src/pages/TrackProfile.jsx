@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
 
 const DQ = applyDefaultQueryOptions();
@@ -403,8 +404,14 @@ export default function TrackProfile() {
           {/* Results */}
           <section id="section-results" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Results & Standings</h2>
-            {trackEventIds.length > 0 ? (
-              <ResultsPanel eventId={trackEventIds[0]} />
+            {trackEventIds.filter(id => {
+              const event = allEvents.find(e => e.id === id);
+              return event && isPublicVisible('Event', event);
+            }).length > 0 ? (
+              <ResultsPanel eventId={trackEventIds.filter(id => {
+                const event = allEvents.find(e => e.id === id);
+                return event && isPublicVisible('Event', event);
+              })[0]} />
             ) : (
               <p className="text-gray-500 text-sm">No events with results found for this track yet.</p>
             )}
