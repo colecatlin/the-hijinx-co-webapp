@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { isPublicVisible } from '@/components/core/publishModel';
 import { Link } from 'react-router-dom';
 
 const DQ = applyDefaultQueryOptions();
@@ -187,23 +188,40 @@ export default function EventResults() {
     return counts;
   }, [results]);
 
-  // Summary stats
+  // Filter to public-visible sessions
+  const publicSessions = useMemo(() => {
+    return sessions.filter(s => isPublicVisible('Session', s));
+  }, [sessions]);
+
+  // Summary stats (only public sessions)
   const summaryStats = useMemo(() => {
-    const official = sessions.filter(s => s.status === 'Official').length;
-    const locked = sessions.filter(s => s.status === 'Locked').length;
+    const official = publicSessions.filter(s => s.status === 'Official').length;
+    const locked = publicSessions.filter(s => s.status === 'Locked').length;
     return {
-      totalSessions: sessions.length,
+      totalSessions: publicSessions.length,
       official,
       locked,
-      totalResults: results.length
+      totalResults: results.filter(r => publicSessions.some(s => s.id === r.session_id)).length
     };
-  }, [sessions, results]);
+  }, [publicSessions, results]);
 
   // Default selected session: prefer Official/Locked, else most recent
   const defaultSession = useMemo(() => {
-    const officialOrLocked = sortedSessions.find(s => ['Official', 'Locked'].includes(s.status));
-    return officialOrLocked || sortedSessions[sortedSessions.length - 1] || null;
-  }, [sortedSessions]);
+    const publicSorted = [...publicSessions].sort((a, b) => {
+      const aTypeIndex = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
+      const bTypeIndex = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
+      const aTypeOrder = aTypeIndex >= 0 ? aTypeIndex : SESSION_TYPE_ORDER.length;
+      const bTypeOrder = bTypeIndex >= 0 ? bTypeIndex : SESSION_TYPE_ORDER.length;
+      if (aTypeOrder !== bTypeOrder) return aTypeOrder - bTypeOrder;
+      if (a.scheduled_time && b.scheduled_time) return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+      if (a.scheduled_time) return -1;
+      if (b.scheduled_time) return 1;
+      if (a.name && b.name) return a.name.localeCompare(b.name);
+      return 0;
+    });
+    const officialOrLocked = publicSorted.find(s => ['Official', 'Locked'].includes(s.status));
+    return officialOrLocked || publicSorted[publicSorted.length - 1] || null;
+  }, [publicSessions]);
 
   const activeSessionId = selectedSessionId || defaultSession?.id || null;
   const selectedSession = sessions.find(s => s.id === activeSessionId);
@@ -338,7 +356,7 @@ export default function EventResults() {
         )}
 
         {/* Sessions Grouped View */}
-        {sortedSessions.length > 0 ? (
+        {publicSessions.length > 0 ? (
           <div className="space-y-6">
             {groupedSessions.map((group, idx) => (
               <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
