@@ -15,12 +15,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import TrackForm from '@/components/management/TrackForm';
 import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
 import TrackSeriesSection from '@/components/management/TrackManagement/TrackSeriesSection';
+import ActivityTab from '@/components/management/ActivityTab';
+import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageTracks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
   const [selectedTracks, setSelectedTracks] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -121,10 +124,40 @@ export default function ManageTracks() {
       <ManagementShell
         title="Tracks"
         subtitle={`${tracks.length} total tracks`}
-        actions={<Button onClick={() => setShowForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button>}
+        actions={activeTab === 'data' ? <Button onClick={() => setShowForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
-        <div className="mb-6 flex items-center gap-3">
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Tracks</p>
+                <p className="text-2xl font-bold text-gray-900">{tracks.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{tracks.filter(t => t.status === 'Active').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Seasonal</p>
+                <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.status === 'Seasonal').length}</p>
+              </div>
+            </div>
+            <Button onClick={() => setShowForm(true)} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Track
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <div className="mb-6 flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -242,11 +275,43 @@ export default function ManageTracks() {
           </div>
         )}
 
-        {!isLoading && filteredTracks.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No tracks found
-          </div>
-        )}
+            {!isLoading && filteredTracks.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                No tracks found
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Track Relationships</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Series</p>
+                  <p className="text-lg font-semibold">Host Events</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Events</p>
+                  <p className="text-lg font-semibold">Hosted</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Manage track relationships by editing the track's sections.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <PublishTab 
+              entityCount={tracks.length}
+              draftCount={0}
+              liveCount={tracks.length}
+              hasPublishControl={false}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Track" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
