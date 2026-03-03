@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import AdvertisementForm from '@/components/management/AdvertisementForm';
+import ActivityTab from '@/components/management/ActivityTab';
 import { createPageUrl } from '@/components/utils';
 
 const AD_TYPES = {
@@ -36,6 +37,7 @@ export default function ManageAdvertising() {
   const [showAdForm, setShowAdForm] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const queryClient = useQueryClient();
 
@@ -173,11 +175,30 @@ export default function ManageAdvertising() {
     <ManagementLayout currentPage="ManageAdvertising">
       <ManagementShell title="Advertising" subtitle="View and manage advertising inquiries">
 
-        <Tabs defaultValue="ads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="inquiries">Advertising Inquiries</TabsTrigger>
-            <TabsTrigger value="ads">Active Advertisements</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
+            <TabsTrigger value="ads">Advertisements</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Advertising Inquiries</p>
+                <p className="text-2xl font-bold text-gray-900">{messages.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active Advertisements</p>
+                <p className="text-2xl font-bold text-gray-900">{ads.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">New Inquiries</p>
+                <p className="text-2xl font-bold text-yellow-600">{messages.filter(m => m.status === 'new').length}</p>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="inquiries" className="space-y-6">
             <div className="flex gap-3 mb-6">
@@ -411,6 +432,10 @@ export default function ManageAdvertising() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Advertisement" />
           </TabsContent>
         </Tabs>
 
