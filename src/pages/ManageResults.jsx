@@ -115,45 +115,24 @@ export default function ManageResults() {
 
   return (
     <ManagementLayout currentPage="ManageResults">
-      <ManagementShell title="Manage Results" subtitle={`${results.length} total results`}>
+      <ManagementShell
+        title="Results"
+        subtitle={`${results.length} total results`}
+        actions={<>
+          <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}><Upload className="w-4 h-4 mr-2" />Smart Import</Button>
+          <Button variant="outline" onClick={() => setShowUploadDialog(true)}><Upload className="w-4 h-4 mr-2" />Bulk Upload</Button>
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" onClick={handleDeleteSelected} disabled={bulkDeleteMutation.isPending || Array.from(selectedIds).some(id => { const result = filteredResults.find(r => r.id === id); return result && isResultOperational(result); })}>
+              {bulkDeleteMutation.isPending ? <BurnoutSpinner /> : <Trash2 className="w-4 h-4 mr-2" />}
+              {bulkDeleteMutation.isPending ? 'Doing a burnout...' : `Delete (${selectedIds.size})`}
+            </Button>
+          )}
+          <Button className="bg-gray-900" onClick={() => setShowAddDialog(true)}><Plus className="w-4 h-4 mr-2" />Add Result</Button>
+        </>}
+      >
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-blue-900 mb-1">Results Lifecycle Notice</h3>
           <p className="text-sm text-blue-800">Result lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
-        </div>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Smart Import
-            </Button>
-            <Button variant="outline" onClick={() => setShowUploadDialog(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Bulk Upload
-            </Button>
-            {selectedIds.size > 0 && (
-              <Button 
-                variant="destructive"
-                onClick={handleDeleteSelected}
-                disabled={bulkDeleteMutation.isPending || Array.from(selectedIds).some(id => {
-                  const result = filteredResults.find(r => r.id === id);
-                  return result && isResultOperational(result);
-                })}
-              >
-                {bulkDeleteMutation.isPending ? (
-                  <BurnoutSpinner />
-                ) : (
-                  <Trash2 className="w-4 h-4 mr-2" />
-                )}
-                {bulkDeleteMutation.isPending ? 'Doing a burnout...' : `Delete Selected (${selectedIds.size})`}
-              </Button>
-            )}
-            <Button className="bg-gray-900" onClick={() => setShowAddDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Result
-            </Button>
-          </div>
         </div>
 
         <div className="mb-6">
