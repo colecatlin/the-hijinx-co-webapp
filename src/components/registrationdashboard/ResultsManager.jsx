@@ -445,7 +445,7 @@ export default function ResultsManager({
                   {isLocked ? (
                     <>
                       <p className="text-xs text-purple-400 flex items-center gap-1"><Lock className="w-3 h-3" /> Session is locked</p>
-                      {can('results_lock') && (
+                      {can('results_unlock_session') && (
                         <Button size="sm" onClick={() => handleStatusTransition('Official')} disabled={updateSessionStatus.isPending} className="w-full bg-purple-800 hover:bg-purple-700 text-xs">
                           Unlock Session
                         </Button>
