@@ -204,13 +204,26 @@ export default function ResultsManager({
   const { mutateAsync: importResults, isPending: importing } = useDashboardMutation({
     operationType: 'results_imported',
     entityName: 'Results',
-    mutationFn: async (rows) => {
+    mutationFn: async ({ rows, meta }) => {
       const ops = rows.map((row) => base44.entities.Results.create(row));
       const created = await Promise.all(ops);
-      // Mark session input_source = CSV
       if (selectedSession) {
         await base44.entities.Session.update(selectedSession.id, { input_source: 'CSV' });
       }
+      // Write OperationLog batch record
+      base44.entities.OperationLog.create({
+        operation_type: 'results_csv_import',
+        status: created.length ? 'success' : 'failed',
+        entity_name: 'Results',
+        event_id: eventId,
+        message: `CSV import: ${created.length} rows imported, ${meta?.error_count || 0} errors`,
+        metadata: {
+          event_id: eventId,
+          session_id: sessionId,
+          series_class_id: selectedSession?.series_class_id,
+          ...(meta || {}),
+        },
+      }).catch(() => {});
       return created;
     },
     successMessage: 'Results imported',
