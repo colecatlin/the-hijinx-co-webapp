@@ -1,188 +1,59 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { ChevronRight, Clock, AlertCircle, Upload, ToggleLeft, ToggleRight } from 'lucide-react';
-import { toast } from 'sonner';
-import useDashboardMutation from './useDashboardMutation';
-
-// Tech checklist templates
-const TECH_TEMPLATES = {
-  'Generic': [
-    { label: 'Safety equipment present', help: 'Helmet, harness, etc.' },
-    { label: 'Fuel system secure', help: 'No leaks, proper caps' },
-    { label: 'Brakes functional', help: 'Test pedal feel and stopping' },
-    { label: 'Steering responsive', help: 'Check for play or damage' },
-    { label: 'Tires condition', help: 'Tread depth, inflation, damage' },
-    { label: 'Lights operational', help: 'Headlights, brake lights' },
-    { label: 'Suspension intact', help: 'Check for damage or excessive wear' },
-    { label: 'Engine runs smoothly', help: 'No unusual sounds or vibrations' },
-    { label: 'Belts and hoses intact', help: 'No cracks or leaks' },
-    { label: 'Electrical system OK', help: 'Battery, alternator, wiring' },
-  ],
-  'Off Road Short Course': [
-    { label: 'Roll cage secure', help: 'All welds intact' },
-    { label: 'Tie rods and steering', help: 'No play or damage' },
-    { label: 'A-arms and control arms', help: 'Check for bending' },
-    { label: 'Shocks functional', help: 'No leaks, full travel' },
-    { label: 'Skid plate intact', help: 'Protecting fuel and oil' },
-    { label: 'Fuel cell secure', help: 'Proper mounting, no leaks' },
-    { label: 'Seat and harness', help: 'Secure, no tears or damage' },
-    { label: 'Lights and safety', help: 'Kill switch, lights working' },
-    { label: 'Tires and wheels', help: 'Lug nuts tight, tread OK' },
-    { label: 'Fire extinguisher accessible', help: 'Mounted and ready' },
-  ],
-  'Asphalt Oval': [
-    { label: 'Brakes inspected', help: 'Pads, rotors, fluid' },
-    { label: 'Suspension springs', help: 'No cracks or bending' },
-    { label: 'Sway bars connected', help: 'Check end links' },
-    { label: 'Wheels and lug nuts', help: 'Tight, no cracks' },
-    { label: 'Fuel system safe', help: 'Fill cap tight, no leaks' },
-    { label: 'Safety harness', help: 'Properly installed, functional' },
-    { label: 'Driver window net', help: 'Properly mounted' },
-    { label: 'Engine bay secure', help: 'All components tight' },
-  ],
-  'Dirt Oval': [
-    { label: 'Cage and frame', help: 'Welds solid, no cracks' },
-    { label: 'Suspension play', help: 'Check all pivot points' },
-    { label: 'Drive shaft secure', help: 'No damage or vibration' },
-    { label: 'Fuel cell mounted', help: 'Properly strapped' },
-    { label: 'Brakes responsive', help: 'Full pressure and feel' },
-    { label: 'Lights working', help: 'Headlight, brake light' },
-    { label: 'Seat and belts', help: 'Secure and functional' },
-    { label: 'Tires pressure', help: 'Check before event' },
-  ],
-  'Road Course': [
-    { label: 'Brake system', help: 'Lines, pads, fluid level' },
-    { label: 'Suspension geometry', help: 'Alignment looks correct' },
-    { label: 'Steering rack', help: 'No leaks, responsive' },
-    { label: 'Tire condition', help: 'Tread, sidewalls, inflation' },
-    { label: 'Engine cooling', help: 'Radiator, fans, thermostat' },
-    { label: 'Transmission smooth', help: 'No grinding or slipping' },
-    { label: 'Exhaust intact', help: 'No leaks or damage' },
-    { label: 'Lights and wipers', help: 'All operational' },
-    { label: 'Safety equipment', help: 'Helmet, harness, fire suit' },
-    { label: 'Drive line intact', help: 'CV boots, U-joints' },
-  ],
-};
-
-import { QueryKeys } from '@/components/utils/queryKeys';
+import { AlertCircle, Wrench } from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
-import {
-  mergeNotes,
-  getBlock,
-} from './entryWorkflowHelper';
-import {
-  verifyEntryEventIntegrity,
-  GUARD_ERROR_MESSAGE,
-} from './contextGuardHelper';
+import useDashboardMutation from './useDashboardMutation';
+import TechEntryDrawer from './TechEntryDrawer';
 
 const DQ = applyDefaultQueryOptions();
+
+function techBadgeClass(status) {
+  switch (status) {
+    case 'Passed': return 'bg-green-500/20 text-green-400';
+    case 'Failed': return 'bg-red-500/20 text-red-400';
+    case 'Recheck Required': return 'bg-yellow-500/20 text-yellow-400';
+    default: return 'bg-gray-500/20 text-gray-400';
+  }
+}
 
 export default function TechManager({
   selectedEvent,
   user,
-  canAction,
   dashboardContext,
   invalidateAfterOperation: invalidateAfterOperationProp,
 }) {
+  const queryClient = useQueryClient();
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
+  const eventId = selectedEvent?.id;
+
+  // ── Filters ──
+  const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState('Generic');
-  const [checklist, setChecklist] = useState({});
-  const [notes, setNotes] = useState('');
-  const [notesMode, setNotesMode] = useState(false);
-  const [bulkMode, setBulkMode] = useState(false);
-  const [bulkUpdates, setBulkUpdates] = useState({});
-  const [isAuth, setIsAuth] = useState(false);
-  const queryClient = useQueryClient();
 
-  const eventId = selectedEvent?.id;
-  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
+  // ── Drawer ──
+  const [drawerEntry, setDrawerEntry] = useState(null);
 
-  const sharedMutationOpts = {
-    invalidateAfterOperation,
-    dashboardContext: dashboardContext ?? { eventId },
-    selectedEvent: selectedEvent ?? null,
-  };
-
-  const { mutateAsync: updateEntryAsync, isPending: updatePending } = useDashboardMutation({
-    operationType: 'tech_updated',
-    entityName: 'Entry',
-    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
-    successMessage: 'Entry updated',
-    ...sharedMutationOpts,
-  });
-
-  const { mutateAsync: bulkUpdateEntriesAsync, isPending: bulkPending } = useDashboardMutation({
-    operationType: 'tech_updated',
-    entityName: 'Entry',
-    mutationFn: async (updates) => {
-      const results = [];
-      for (const [entryId, data] of Object.entries(updates)) {
-        results.push(await base44.entities.Entry.update(entryId, data));
-      }
-      return results;
-    },
-    successMessage: 'Entries updated',
-    ...sharedMutationOpts,
-  });
-
-  // Compat shims
-  const updateMutation = {
-    isPending: updatePending,
-    mutate: (updateData) => {
-      if (!selectedEntry) return;
-      updateEntryAsync({ id: selectedEntry.id, data: updateData }).then((updated) => {
-        if (updated) setSelectedEntry(updated);
-      });
-    },
-  };
-
-  const bulkUpdateMutation = {
-    isPending: bulkPending,
-    mutate: (updates) => {
-      bulkUpdateEntriesAsync(updates).then(() => setBulkUpdates({}));
-    },
-  };
-
-  // Check auth status
-  useQuery({
-    queryKey: QueryKeys.auth.status(),
-    queryFn: async () => {
-      const status = await base44.auth.isAuthenticated();
-      setIsAuth(status);
-      return status;
-    },
-    ...DQ,
-  });
-
-  // Reset selection when event changes
-  React.useEffect(() => {
-    setSelectedEntry(null);
-    setBulkUpdates({});
+  // ── Reset on event change ──
+  useEffect(() => {
+    setSearch('');
     setClassFilter('all');
     setStatusFilter('all');
-    setSearchTerm('');
+    setDrawerEntry(null);
   }, [eventId]);
 
-  const { data: entries = [], isLoading: entriesLoading, isError: entriesError, refetch: refetchEntries } = useQuery({
-    queryKey: QueryKeys.entries.listByEvent(eventId),
+  // ── Queries ──
+  const { data: entries = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['entries', eventId, 'tech'],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
     ...DQ,
@@ -190,7 +61,7 @@ export default function TechManager({
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
+    queryFn: () => base44.entities.Driver.list('first_name', 500),
     ...DQ,
   });
 
@@ -206,291 +77,266 @@ export default function TechManager({
     ...DQ,
   });
 
-  const getDriverName = (driverId) => {
-    const driver = drivers.find((d) => d.id === driverId);
-    return driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown';
+  // ── Lookups ──
+  const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
+  const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
+
+  const getDriverName = (id) => {
+    const d = driversMap[id];
+    return d ? `${d.first_name} ${d.last_name}` : '—';
+  };
+  const getClassName = (entry) => {
+    if (!entry.series_class_id) return '—';
+    return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
   };
 
-  const getEventClassName = (seriesClassId) => {
-    const seriesClass = seriesClasses.find((sc) => sc.id === seriesClassId);
-    return seriesClass?.class_name || 'Unknown';
-  };
-
-  const classNames = useMemo(() => {
-    const names = new Set();
-    entries.forEach((e) => names.add(getEventClassName(e.series_class_id)));
-    return Array.from(names);
-  }, [entries, seriesClasses]);
-
-  // Memoize entries by class
-  const entriesByClass = useMemo(() => {
-    const grouped = {};
+  // ── Classes present in this event ──
+  const classOptions = useMemo(() => {
+    const seen = new Set();
     entries.forEach((e) => {
-      const cls = getEventClassName(e.series_class_id);
-      if (!grouped[cls]) grouped[cls] = [];
-      grouped[cls].push(e);
+      const name = getClassName(e);
+      if (name && name !== '—') seen.add(name);
     });
-    return grouped;
-  }, [entries, seriesClasses]);
+    return Array.from(seen).sort();
+  }, [entries, classesMap]);
 
+  // ── Filtering ──
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      if (classFilter !== 'all' && getEventClassName(entry.series_class_id) !== classFilter) return false;
-      if (statusFilter !== 'all' && entry.tech_status !== statusFilter) return false;
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        return (
-          entry.car_number.toLowerCase().includes(search) ||
-          getDriverName(entry.driver_id).toLowerCase().includes(search)
-        );
+      if (classFilter !== 'all' && getClassName(entry) !== classFilter) return false;
+      if (statusFilter !== 'all' && (entry.tech_status || 'Not Inspected') !== statusFilter) return false;
+      if (search) {
+        const s = search.toLowerCase();
+        const driver = driversMap[entry.driver_id];
+        const driverMatch = driver
+          ? `${driver.first_name} ${driver.last_name}`.toLowerCase().includes(s)
+          : false;
+        const carMatch = (entry.car_number || '').toLowerCase().includes(s);
+        if (!driverMatch && !carMatch) return false;
       }
       return true;
     });
-  }, [entries, classFilter, statusFilter, searchTerm, drivers, seriesClasses]);
+  }, [entries, classFilter, statusFilter, search, driversMap, classesMap]);
 
-  const getComplianceBadges = (entry) => {
-    const badges = [];
-    if (entry.waiver_status !== 'Verified') badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
-    if (entry.payment_status === 'Unpaid') badges.push({ label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
-    return badges;
+  // ── Summary stats ──
+  const stats = useMemo(() => {
+    const total = entries.length;
+    const passed = entries.filter((e) => e.tech_status === 'Passed').length;
+    const failed = entries.filter((e) => e.tech_status === 'Failed').length;
+    const recheck = entries.filter((e) => e.tech_status === 'Recheck Required').length;
+    const notInspected = entries.filter((e) => !e.tech_status || e.tech_status === 'Not Inspected').length;
+    const queue = entries
+      .filter((e) => e.tech_status !== 'Passed')
+      .sort((a, b) => {
+        const order = { Failed: 0, 'Recheck Required': 1, 'Not Inspected': 2 };
+        return (order[a.tech_status] ?? 2) - (order[b.tech_status] ?? 2);
+      });
+    return { total, passed, failed, recheck, notInspected, queue };
+  }, [entries]);
+
+  // ── Mutation ──
+  const { mutateAsync: updateEntry, isPending: saving } = useDashboardMutation({
+    operationType: 'tech_updated',
+    entityName: 'Entry',
+    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    successMessage: 'Tech updated',
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  });
+
+  const handleSave = async (id, payload) => {
+    await updateEntry({ id, data: payload });
+    setDrawerEntry((prev) => prev ? { ...prev, ...payload } : null);
   };
 
-  const handleSelectEntry = (entry) => {
-    setSelectedEntry(entry);
-    setNotes(entry.tech_notes || entry.notes || '');
-    setChecklist({});
-    setNotesMode(false);
+  const handleSaveAndNext = async (id, payload) => {
+    await updateEntry({ id, data: payload });
+    // Find next non-passed entry in filtered list
+    const idx = filteredEntries.findIndex((e) => e.id === id);
+    const next = filteredEntries.slice(idx + 1).find((e) => e.tech_status !== 'Passed');
+    setDrawerEntry(next || null);
   };
 
-  const handleSetTechStatus = async (status) => {
-    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
-      toast.error(GUARD_ERROR_MESSAGE);
-      return;
-    }
-    if (status === 'Passed' && selectedEntry?.entry_status !== 'Checked In') {
-      toast.error('Must be checked in first before marking Tech Passed.');
-      return;
-    }
-    const nextNotes = mergeNotes(selectedEntry.notes || '', {
-      'INDEX46_TECH_JSON': {
-        tech_status: status,
-        inspected_at: status !== 'Not Inspected' ? new Date().toISOString() : null,
-        inspector_user_id: status !== 'Not Inspected' ? currentUser?.id : null,
-      },
-    });
-    const update = { tech_status: status, notes: nextNotes };
-    if (status !== 'Not Inspected') {
-      update.tech_updated_at = new Date().toISOString();
-      if (currentUser?.full_name) {
-        update.tech_inspector = currentUser.full_name;
-      }
-    }
-    updateMutation.mutate(update);
-  };
-
-  const handleSaveNotes = async () => {
-    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
-      toast.error(GUARD_ERROR_MESSAGE);
-      return;
-    }
-    const nextNotes = mergeNotes(selectedEntry.notes || '', {
-      'INDEX46_TECH_JSON': { tech_notes: notes },
-    });
-    updateMutation.mutate({ notes: nextNotes });
-    setNotesMode(false);
-  };
-
-  const handleToggleChecklistItem = (idx) => {
-    setChecklist((prev) => ({
-      ...prev,
-      [idx]: !prev[idx],
-    }));
-  };
-
-  const handleSaveChecklist = () => {
-    const template = TECH_TEMPLATES[selectedTemplate];
-    const passed = Object.values(checklist).filter(Boolean).length;
-    const total = template.length;
-    const summary = `Tech checklist, ${selectedTemplate}, ${passed}/${total}`;
-    
-    const techBlock = getBlock(selectedEntry.notes, 'INDEX46_TECH_JSON');
-    let checklistNotes = techBlock.checklist_notes || '';
-    // Remove old checklist summary if exists
-    checklistNotes = checklistNotes.split('\n').filter(line => !line.startsWith('Tech checklist')).join('\n').trim();
-    const finalChecklistNotes = checklistNotes ? `${checklistNotes}\n${summary}` : summary;
-    
-    const nextNotes = mergeNotes(selectedEntry.notes || '', {
-      'INDEX46_TECH_JSON': { checklist_notes: finalChecklistNotes },
-    });
-    
-    updateMutation.mutate({ notes: nextNotes });
-    setChecklist({});
-  };
-
-  const handleBulkTechUpdate = (entryId, status) => {
-    const entry = entries.find(e => e.id === entryId);
-    const nextNotes = mergeNotes(entry?.notes || '', {
-      'INDEX46_TECH_JSON': {
-        tech_status: status,
-        inspected_at: status !== 'Not Inspected' ? new Date().toISOString() : null,
-        inspector_user_id: status !== 'Not Inspected' ? currentUser?.id : null,
-      },
-    });
-    const update = { tech_status: status, notes: nextNotes };
-    if (status !== 'Not Inspected') {
-      update.tech_updated_at = new Date().toISOString();
-      if (currentUser?.full_name) {
-        update.tech_inspector = currentUser.full_name;
-      }
-    }
-    setBulkUpdates(prev => ({ ...prev, [entryId]: update }));
-  };
-
-  const getTechStatusColor = (status) => {
-    switch (status) {
-      case 'Passed':
-        return 'bg-green-900/40 text-green-300';
-      case 'Failed':
-        return 'bg-red-900/40 text-red-300';
-      case 'RecheckRequired':
-        return 'bg-yellow-900/40 text-yellow-300';
-      default:
-        return 'bg-gray-900/40 text-gray-300';
-    }
-  };
-
-  const hasPermission = canAction?.includes('techUpdate');
-
+  // ── Guards ──
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-          <p className="text-gray-400">
-            Select Track/Series, season, and event above to manage tech inspection
-          </p>
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select a Track or Series, Season, and Event to manage tech inspection</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (!isAuth) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-          <p className="text-gray-400">Tech tools require login</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (entriesLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-14 bg-gray-800/50 rounded animate-pulse" />
-        ))}
+        {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-800/40 rounded animate-pulse" />)}
       </div>
     );
   }
 
-  if (entriesError) {
+  if (isError) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center space-y-3">
-          <p className="text-red-400 text-sm">Failed to load tech entries</p>
-          <Button size="sm" variant="outline" onClick={() => refetchEntries()} className="border-gray-700 text-gray-300">Retry</Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (entries.length === 0) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <p className="text-gray-400">No entries to inspect yet.</p>
+          <p className="text-red-400 text-sm">Failed to load entries</p>
+          <Button size="sm" variant="outline" onClick={refetch} className="border-gray-700 text-gray-300">Retry</Button>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Bulk Mode Toggle - Admin only */}
-      {user?.role === 'admin' && (
-        <div className="flex items-center gap-2 bg-[#171717] border border-gray-800 rounded-lg p-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setBulkMode(!bulkMode)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white"
-          >
-            {bulkMode ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-            <span className="text-xs font-medium">{bulkMode ? 'Bulk Mode' : 'Single Entry'}</span>
-          </Button>
-        </div>
-      )}
+    <div className="space-y-5">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Card A – Overview */}
+        <Card className="bg-[#171717] border-gray-800 md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-300 flex items-center gap-2">
+              <Wrench className="w-4 h-4" /> Tech Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-400">Total</span>
+              <span className="text-white font-semibold">{stats.total}</span>
+            </div>
+            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Passed')}>
+              <span className="text-gray-400">Passed</span>
+              <Badge className="text-xs bg-green-500/20 text-green-400">{stats.passed}</Badge>
+            </div>
+            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Failed')}>
+              <span className="text-gray-400">Failed</span>
+              <Badge className="text-xs bg-red-500/20 text-red-400">{stats.failed}</Badge>
+            </div>
+            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Recheck Required')}>
+              <span className="text-gray-400">Recheck</span>
+              <Badge className="text-xs bg-yellow-500/20 text-yellow-400">{stats.recheck}</Badge>
+            </div>
+            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Not Inspected')}>
+              <span className="text-gray-400">Not Inspected</span>
+              <Badge className="text-xs bg-gray-500/20 text-gray-400">{stats.notInspected}</Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Bulk Mode Table - Admin only */}
-      {bulkMode && user?.role === 'admin' ? (
-        <div className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">
+        {/* Card B – Work Queue */}
+        <Card className="bg-[#171717] border-gray-800 md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-300">Work Queue ({stats.queue.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {stats.queue.length === 0 ? (
+              <p className="text-xs text-green-400">All entries passed!</p>
+            ) : (
+              stats.queue.slice(0, 5).map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between cursor-pointer hover:opacity-80"
+                  onClick={() => setDrawerEntry(entry)}
+                >
+                  <span className="text-xs text-gray-300 truncate max-w-[120px]">
+                    {entry.car_number ? `#${entry.car_number}` : ''} {getDriverName(entry.driver_id)}
+                  </span>
+                  <Badge className={`text-xs ${techBadgeClass(entry.tech_status)}`}>
+                    {entry.tech_status || 'Not Inspected'}
+                  </Badge>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Search</label>
+            <Input
+              placeholder="Driver or car #…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Class</label>
+            <Select value={classFilter} onValueChange={setClassFilter}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All Classes</SelectItem>
+                {classOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Status</label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Not Inspected">Not Inspected</SelectItem>
+                <SelectItem value="Failed">Failed</SelectItem>
+                <SelectItem value="Recheck Required">Recheck Required</SelectItem>
+                <SelectItem value="Passed">Passed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      {filteredEntries.length === 0 ? (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="py-12 text-center">
+            <p className="text-gray-400 text-sm">
+              {entries.length === 0 ? 'No entries for this event yet.' : 'No entries match the current filters.'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-[#171717] border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead className="bg-gray-900 border-b border-gray-800">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-900/60 border-b border-gray-800">
                 <tr>
-                  <th className="text-left p-3 text-gray-400">Car #</th>
-                  <th className="text-left p-3 text-gray-400">Driver</th>
-                  <th className="text-left p-3 text-gray-400">Class</th>
-                  <th className="text-left p-3 text-gray-400">Status</th>
-                  <th className="text-center p-3 text-gray-400">Pass</th>
-                  <th className="text-center p-3 text-gray-400">Fail</th>
-                  <th className="text-center p-3 text-gray-400">Recheck</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Car #</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Driver</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Class</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Tech Status</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Inspector</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Last Updated</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-400 font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
-                {filteredEntries.slice(0, 25).map((entry) => (
-                  <tr key={entry.id} className="hover:bg-gray-900/50">
-                    <td className="p-3 text-white font-semibold">#{entry.car_number}</td>
-                    <td className="p-3 text-gray-300">{getDriverName(entry.driver_id)}</td>
-                    <td className="p-3 text-gray-400 text-xs">{getEventClassName(entry.series_class_id)}</td>
-                    <td className="p-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {bulkUpdates[entry.id]?.tech_status || entry.tech_status || 'Not Inspected'}
+              <tbody>
+                {filteredEntries.map((entry) => (
+                  <tr key={entry.id} className="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+                    <td className="px-3 py-2 text-white font-mono text-xs">{entry.car_number || '—'}</td>
+                    <td className="px-3 py-2 text-white text-xs">{getDriverName(entry.driver_id)}</td>
+                    <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
+                    <td className="px-3 py-2">
+                      <Badge className={`text-xs ${techBadgeClass(entry.tech_status)}`}>
+                        {entry.tech_status || 'Not Inspected'}
                       </Badge>
                     </td>
-                    <td className="p-3 text-center">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleBulkTechUpdate(entry.id, 'Passed')}
-                        disabled={bulkUpdateMutation.isPending}
-                        className={`text-xs ${bulkUpdates[entry.id]?.tech_status === 'Passed' ? 'bg-green-900/40 text-green-300' : 'text-gray-400'}`}
-                      >
-                        ✓
-                      </Button>
+                    <td className="px-3 py-2 text-gray-400 text-xs">{entry.tech_inspector_name || '—'}</td>
+                    <td className="px-3 py-2 text-gray-500 text-xs">
+                      {entry.tech_timestamp ? new Date(entry.tech_timestamp).toLocaleString() : '—'}
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="px-3 py-2 text-right">
                       <Button
                         size="sm"
-                        variant="ghost"
-                        onClick={() => handleBulkTechUpdate(entry.id, 'Failed')}
-                        disabled={bulkUpdateMutation.isPending}
-                        className={`text-xs ${bulkUpdates[entry.id]?.tech_status === 'Failed' ? 'bg-red-900/40 text-red-300' : 'text-gray-400'}`}
+                        variant="outline"
+                        onClick={() => setDrawerEntry(entry)}
+                        className="border-gray-700 text-gray-300 hover:bg-gray-800 h-7 text-xs"
                       >
-                        ✗
-                      </Button>
-                    </td>
-                    <td className="p-3 text-center">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleBulkTechUpdate(entry.id, 'Recheck Required')}
-                        disabled={bulkUpdateMutation.isPending}
-                        className={`text-xs ${bulkUpdates[entry.id]?.tech_status === 'Recheck Required' ? 'bg-yellow-900/40 text-yellow-300' : 'text-gray-400'}`}
-                      >
-                        !
+                        Inspect
                       </Button>
                     </td>
                   </tr>
@@ -498,292 +344,21 @@ export default function TechManager({
               </tbody>
             </table>
           </div>
-          {Object.keys(bulkUpdates).length > 0 && (
-            <div className="border-t border-gray-800 p-3 flex gap-2">
-              <Button
-                onClick={() => bulkUpdateMutation.mutate(bulkUpdates)}
-                disabled={bulkUpdateMutation.isPending}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-              >
-                Save {Object.keys(bulkUpdates).length} updates
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setBulkUpdates({})}
-                className="border-gray-700"
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Single Entry Mode */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left column: Search and list */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Controls bar */}
-          <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 space-y-3">
-            <div className="flex gap-3 flex-wrap">
-              <div className="flex-1 min-w-[120px]">
-                <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
-                <Select value={classFilter} onValueChange={setClassFilter}>
-                  <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    <SelectItem value="all">All Classes</SelectItem>
-                    {classNames.map((cls) => (
-                      <SelectItem key={cls} value={cls}>
-                        {cls}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex-1 min-w-[120px]">
-                <label className="text-xs font-medium text-gray-400 block mb-1">Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Not Inspected">Not Inspected</SelectItem>
-                    <SelectItem value="Passed">Passed</SelectItem>
-                    <SelectItem value="Failed">Failed</SelectItem>
-                    <SelectItem value="Recheck Required">Recheck Required</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
-              <Input
-                placeholder="Driver, car number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-[#262626] border-gray-700 text-white"
-              />
-            </div>
-          </div>
-
-          {/* Entries list */}
-          <div className="space-y-2">
-            {entriesLoading ? (
-              <p className="text-gray-400 text-sm">Loading...</p>
-            ) : filteredEntries.length === 0 ? (
-              <p className="text-gray-400 text-sm">No entries found.</p>
-            ) : (
-              filteredEntries.map((entry) => (
-                <button
-                  key={entry.id}
-                  onClick={() => handleSelectEntry(entry)}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    selectedEntry?.id === entry.id
-                      ? 'bg-gray-800 border-gray-600'
-                      : 'bg-[#171717] border-gray-800 hover:border-gray-700 hover:bg-gray-800/30'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-white">#{entry.car_number}</p>
-                      <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
-                  </div>
-
-                  <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant={entry.tech_status === 'Passed' ? 'default' : 'secondary'} className="text-xs">
-                      {entry.tech_status || 'Not Inspected'}
-                    </Badge>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Right column: Tech Inspector panel */}
-        {selectedEntry ? (
-          <Card className="bg-[#171717] border-gray-800 lg:sticky lg:top-4 lg:h-fit">
-            <CardHeader className="border-b border-gray-800 pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-white text-lg">{getDriverName(selectedEntry.driver_id)}</CardTitle>
-                  <p className="text-xs text-gray-400 mt-1">#{selectedEntry.car_number || '—'}</p>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4 py-4">
-              {/* Driver Info */}
-              <div className="bg-gray-900/50 rounded p-3">
-                <p className="text-xs text-gray-400">Class</p>
-                <p className="text-sm font-semibold text-white">{getEventClassName(selectedEntry.series_class_id)}</p>
-              </div>
-
-              {/* Check-in gate warning */}
-              {selectedEntry?.entry_status !== 'Checked In' && (
-                <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg p-3">
-                  <p className="text-xs text-amber-300 font-medium">
-                    Driver must be checked in before Tech Passed can be set.
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">Current status: {selectedEntry?.entry_status || 'Registered'}</p>
-                </div>
-              )}
-
-              {/* Tech Status */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-400">Tech Status</p>
-                <div className="space-y-2">
-                  {['Passed', 'Failed', 'Recheck Required', 'Not Inspected'].map((status) => (
-                    <Button
-                      key={status}
-                      onClick={() => handleSetTechStatus(status)}
-                      disabled={updateMutation.isPending || !hasPermission}
-                      variant={selectedEntry.tech_status === status ? 'default' : 'outline'}
-                      className={`w-full text-sm font-semibold ${
-                        selectedEntry.tech_status === status
-                          ? status === 'Passed'
-                            ? 'bg-green-600 hover:bg-green-700'
-                            : status === 'Failed'
-                            ? 'bg-red-600 hover:bg-red-700'
-                            : status === 'Recheck Required'
-                            ? 'bg-yellow-600 hover:bg-yellow-700'
-                            : 'bg-gray-600 hover:bg-gray-700'
-                          : 'border-gray-700 text-gray-300'
-                      }`}
-                    >
-                      {status}
-                    </Button>
-                  ))}
-                </div>
-                {!hasPermission && <p className="text-xs text-gray-500">View only</p>}
-              </div>
-
-              {/* Checklist */}
-              <div className="space-y-2 border-t border-gray-800 pt-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-gray-400">Checklist Template</label>
-                </div>
-                <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                  <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    {Object.keys(TECH_TEMPLATES).map((tmpl) => (
-                      <SelectItem key={tmpl} value={tmpl}>
-                        {tmpl}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {TECH_TEMPLATES[selectedTemplate].map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 p-2 bg-gray-900/50 rounded">
-                      <Checkbox
-                        checked={checklist[idx] || false}
-                        onCheckedChange={() => handleToggleChecklistItem(idx)}
-                        className="mt-1"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-white">{item.label}</p>
-                        {item.help && <p className="text-xs text-gray-400">{item.help}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {Object.keys(checklist).length > 0 && (
-                  <Button
-                    size="sm"
-                    onClick={handleSaveChecklist}
-                    disabled={updateMutation.isPending || !hasPermission}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    Save Checklist ({Object.values(checklist).filter(Boolean).length}/{TECH_TEMPLATES[selectedTemplate].length})
-                  </Button>
-                )}
-              </div>
-
-              {/* Notes */}
-              <div className="space-y-2 border-t border-gray-800 pt-4">
-                {!notesMode ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setNotesMode(true)}
-                    className="w-full border-gray-700"
-                  >
-                    {notes ? 'Edit Notes' : 'Add Notes'}
-                  </Button>
-                ) : (
-                  <>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Inspection notes..."
-                      rows={3}
-                      className="bg-[#262626] border-gray-700 text-white text-xs"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setNotesMode(false)}
-                        className="flex-1 border-gray-700"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSaveNotes}
-                        disabled={updateMutation.isPending || !hasPermission}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Inspector Info */}
-              <div className="bg-gray-900/50 rounded p-3 space-y-1 border-t border-gray-800 pt-4">
-                <p className="text-xs text-gray-400">Inspector</p>
-                <p className="text-xs font-medium text-white">{selectedEntry.tech_inspector || user?.full_name || 'Unknown'}</p>
-                <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
-                  <Clock className="w-3 h-3" />
-                  <span>{selectedEntry.tech_updated_at ? new Date(selectedEntry.tech_updated_at).toLocaleString() : 'Never'}</span>
-                </div>
-              </div>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSelectedEntry(null)}
-                className="w-full border-gray-700"
-              >
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="bg-[#171717] border-gray-800 lg:sticky lg:top-4">
-            <CardContent className="py-8 text-center">
-              <AlertCircle className="w-6 h-6 text-gray-500 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">Select an entry to inspect</p>
-            </CardContent>
-          </Card>
-        )}
-        </div>
+        </Card>
       )}
+
+      {/* Drawer */}
+      <TechEntryDrawer
+        open={!!drawerEntry}
+        onOpenChange={(open) => { if (!open) setDrawerEntry(null); }}
+        entry={drawerEntry}
+        driverName={drawerEntry ? getDriverName(drawerEntry.driver_id) : ''}
+        className={drawerEntry ? getClassName(drawerEntry) : ''}
+        currentUser={currentUser}
+        saving={saving}
+        onSave={handleSave}
+        onSaveAndNext={handleSaveAndNext}
+      />
     </div>
   );
 }
