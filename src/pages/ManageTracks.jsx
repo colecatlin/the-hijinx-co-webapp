@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
 import { Skeleton } from '@/components/ui/skeleton';
 import TrackForm from '@/components/management/TrackForm';
 import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
@@ -19,6 +20,7 @@ import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageTracks() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
@@ -246,6 +248,18 @@ export default function ManageTracks() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(buildRaceCoreUrl({
+                            orgType: 'track',
+                            orgId: track.id,
+                            tab: 'overview',
+                          }))}
+                          title="Open in Race Core"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
