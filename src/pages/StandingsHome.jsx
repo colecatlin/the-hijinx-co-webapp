@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
+import { isPublicVisible } from '@/components/core/publishModel';
 
 const DQ = applyDefaultQueryOptions();
 import { Link } from 'react-router-dom';
@@ -88,7 +89,11 @@ export default function StandingsHome() {
   }, [entries, activeSeason, selectedSeries]);
 
   const filteredEntries = useMemo(() => {
-    let data = entries.filter(e => e.season_year === activeSeason && isStandingsPublic(e));
+    let data = entries.filter(e => {
+      if (e.season_year !== activeSeason) return false;
+      // Standings are not public by publish model rules yet (treat as draft)
+      return isAdmin;
+    });
     if (selectedSeries !== 'all') data = data.filter(e => e.series_id === selectedSeries);
     if (selectedClass !== 'all') data = data.filter(e => e.class_name === selectedClass);
     data.sort((a, b) => {
@@ -98,7 +103,7 @@ export default function StandingsHome() {
       return (aVal - bVal) * sortDir;
     });
     return data;
-  }, [entries, activeSeason, selectedSeries, selectedClass, sortField, sortDir, isAdmin, events, sessions]);
+  }, [entries, activeSeason, selectedSeries, selectedClass, sortField, sortDir, isAdmin]);
 
   const toggleSort = (field) => {
     if (sortField === field) setSortDir(d => d * -1);
