@@ -143,8 +143,7 @@ export default function ManageStandings() {
   return (
     <ManagementLayout currentPage="ManageStandings">
       <ManagementShell title="Manage Standings" subtitle="Update championship standings">
-        <div className="flex justify-end mb-6">
-          <div className="flex gap-2">
+        <div className="flex justify-end gap-2 mb-6">
             <Button 
               variant="outline" 
               onClick={handleSyncFromSheets}
