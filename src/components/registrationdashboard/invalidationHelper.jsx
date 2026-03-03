@@ -79,14 +79,17 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'compliance_updated':
     case 'compliance_resolved':
     case 'compliance_scanned':
+    case 'tech_updated':
+    case 'tech_created':
+    case 'tech_deleted':
     case 'waiver_verified':
     case 'payment_collected':
     case 'gate_checkin':
     case 'gate_override_checkin':
     case 'wristband_assigned':
-      broad.push(['entries'], ['complianceFlags'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
+      broad.push(['entries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.driverPrograms(eventId), REG_QK.operationLogs(eventId));
-      if (eventId) exact.push(['complianceFlags', eventId]);
+      if (eventId) exact.push(['complianceFlags', eventId], ['techInspections', eventId]);
       break;
 
     case 'driver_updated':
