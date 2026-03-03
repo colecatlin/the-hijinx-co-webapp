@@ -77,7 +77,21 @@ export default function ResultsManager({
   // ── Queries ──
   const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
-    queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
+    queryFn: () => {
+      if (!eventId) return [];
+      // Fetch and sort by session_order then scheduled_time
+      return base44.entities.Session.filter({ event_id: eventId }).then(all =>
+        all.sort((a, b) => {
+          const orderA = a.session_order ?? 0;
+          const orderB = b.session_order ?? 0;
+          if (orderA !== orderB) return orderA - orderB;
+          if (a.scheduled_time && b.scheduled_time) {
+            return new Date(a.scheduled_time) - new Date(b.scheduled_time);
+          }
+          return 0;
+        })
+      );
+    },
     enabled: !!eventId,
     ...DQ,
   });
@@ -216,7 +230,7 @@ export default function ResultsManager({
   });
 
   const { mutateAsync: importResults, isPending: importing } = useDashboardMutation({
-    operationType: 'results_imported',
+    operationType: 'results_imported_csv',
     entityName: 'Results',
     mutationFn: async ({ rows, meta }) => {
       const ops = rows.map((row) => base44.entities.Results.create(row));
@@ -226,7 +240,7 @@ export default function ResultsManager({
       }
       // Write OperationLog batch record
       base44.entities.OperationLog.create({
-        operation_type: 'results_csv_import',
+        operation_type: 'results_imported_csv',
         status: created.length ? 'success' : 'failed',
         entity_name: 'Results',
         event_id: eventId,
@@ -235,6 +249,8 @@ export default function ResultsManager({
           event_id: eventId,
           session_id: sessionId,
           series_class_id: selectedSession?.series_class_id,
+          imported_count: created.length,
+          rejected_count: meta?.rejected_count || 0,
           ...(meta || {}),
         },
       }).catch(() => {});
@@ -323,7 +339,32 @@ export default function ResultsManager({
   };
 
   const handleSaveDraft = async (rows) => {
+    // Validate all car numbers exist in entries
+    const carNumberSet = new Set(entries.map(e => e.car_number));
+    const invalidRows = rows.filter(r => !r.car_number || !carNumberSet.has(r.car_number));
+    if (invalidRows.length > 0) {
+      toast.error(`${invalidRows.length} row(s) have invalid car numbers not found in entries`);
+      return;
+    }
+    
     await upsertResult(rows);
+    
+    // Log operation
+    try {
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'results_saved_draft',
+        status: 'success',
+        entity_name: 'Results',
+        event_id: eventId,
+        message: `Draft saved: ${rows.length} results`,
+        metadata: {
+          event_id: eventId,
+          session_id: sessionId,
+          row_count: rows.length,
+        },
+      });
+    } catch (_) {}
+    
     // If Official and rows were edited, revert to Provisional
     if (isOfficial && !isLocked) {
       await base44.entities.Session.update(selectedSession.id, { status: 'Provisional' });
