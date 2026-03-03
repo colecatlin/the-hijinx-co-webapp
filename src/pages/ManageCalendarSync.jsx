@@ -80,13 +80,11 @@ export default function ManageCalendarSync() {
 
   return (
     <ManagementLayout currentPage="ManageCalendarSync">
-      <ManagementShell title="Schedule Sync" subtitle="Sync ICS/webcal schedules into Events.">
-        <div className="flex justify-end mb-6">
-          <Button onClick={syncAll} disabled={!!syncingId} className="bg-[#232323] text-white gap-2">
-            {syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            Sync All
-          </Button>
-        </div>
+      <ManagementShell
+        title="Schedule Sync"
+        subtitle="Sync ICS/webcal schedules into Events"
+        actions={<Button onClick={syncAll} disabled={!!syncingId} className="bg-gray-900 gap-2">{syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}Sync All</Button>}
+      >
 
       {/* Calendar list */}
       <div className="space-y-4 mb-8">
