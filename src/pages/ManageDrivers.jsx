@@ -356,62 +356,19 @@ export default function ManageDrivers() {
 
   return (
     <ManagementLayout currentPage="ManageDrivers">
-      <ManagementShell title="Manage Drivers" subtitle={`${drivers.length} total drivers`}>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => downloadTemplate('driver', 'Driver')} title="Download import template">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-drivers').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-drivers"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button
-              onClick={async () => {
-                setBackfillingIds(true);
-                try {
-                  const res = await base44.functions.invoke('assignDriverNumericIds');
-                  toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`);
-                  queryClient.invalidateQueries({ queryKey: ['drivers'] });
-                } catch (e) {
-                  toast.error('Failed to assign IDs: ' + e.message);
-                } finally {
-                  setBackfillingIds(false);
-                }
-              }}
-              disabled={backfillingIds}
-              variant="outline"
-              className="border-blue-300 text-blue-700 hover:bg-blue-50"
-            >
-              <Hash className="w-4 h-4 mr-2" />
-              {backfillingIds ? 'Assigning...' : 'Assign IDs'}
-            </Button>
-            <Button
-              onClick={() => setShowDuplicateFinder(true)}
-              variant="outline"
-              className="border-amber-300 text-amber-700 hover:bg-amber-50"
-            >
-              <AlertCircle className="w-4 h-4 mr-2" />
-              Find Duplicates
-            </Button>
-            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Driver
-            </Button>
-          </div>
-        </div>
+      <ManagementShell
+        title="Drivers"
+        subtitle={`${drivers.length} total drivers`}
+        actions={<>
+          <input id="import-drivers" type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <Button variant="outline" onClick={() => downloadTemplate('driver', 'Driver')} title="Download import template"><Download className="w-4 h-4" /></Button>
+          <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={() => document.getElementById('import-drivers').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
+          <Button onClick={async () => { setBackfillingIds(true); try { const res = await base44.functions.invoke('assignDriverNumericIds'); toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`); queryClient.invalidateQueries({ queryKey: ['drivers'] }); } catch (e) { toast.error('Failed to assign IDs: ' + e.message); } finally { setBackfillingIds(false); } }} disabled={backfillingIds} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Hash className="w-4 h-4 mr-2" />{backfillingIds ? 'Assigning...' : 'Assign IDs'}</Button>
+          <Button onClick={() => setShowDuplicateFinder(true)} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"><AlertCircle className="w-4 h-4 mr-2" />Find Duplicates</Button>
+          <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
+        </>}
+      >
 
         {importResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
