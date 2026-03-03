@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Sparkles, ArrowUpDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Sparkles, ArrowUpDown, ExternalLink } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildRaceCoreUrl, getOrgContextFromEvent, getSeasonFromEvent } from '@/components/registrationdashboard/raceCoreLinks';
 import { format } from 'date-fns';
 import AddEventForm from '@/components/management/AddEventForm';
 import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
@@ -23,6 +24,7 @@ import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageEvents() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventForEdit, setSelectedEventForEdit] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -31,6 +33,7 @@ export default function ManageEvents() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [deletingEventId, setDeletingEventId] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -370,8 +373,31 @@ export default function ManageEvents() {
                         {event.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedEventForEdit(event)}>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          const { orgType, orgId } = getOrgContextFromEvent(event);
+                          const seasonYear = getSeasonFromEvent(event);
+                          navigate(buildRaceCoreUrl({
+                            orgType,
+                            orgId,
+                            seasonYear,
+                            eventId: event.id,
+                            tab: 'overview',
+                          }));
+                        }}
+                        title="Open in Race Core Ops"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setSelectedEventForEdit(event)}
+                        title="Edit metadata"
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
                       {isAdmin && <Button
