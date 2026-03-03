@@ -62,33 +62,33 @@ export default function MotorsportsHome() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#0F0F0F] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 text-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,_#1a1a2e_0%,_#0A0A0A_70%)]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-blue-500/5 blur-[120px] rounded-full" />
+      <div className="relative overflow-hidden border-b border-gray-200">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,_#f3f4f6_0%,_#ffffff_70%)]" />
+        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-blue-400/10 blur-[120px] rounded-full" />
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Hero Text */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               <div>
-                <span className="font-mono text-xs tracking-widest text-gray-400 uppercase">Motorsports Platform</span>
-                <h1 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 leading-tight">Index46</h1>
+                <span className="font-mono text-xs tracking-widest text-gray-600 uppercase">Motorsports Platform</span>
+                <h1 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 leading-tight text-gray-900">Index46</h1>
               </div>
-              <p className="text-lg text-gray-300 leading-relaxed">
+              <p className="text-lg text-gray-700 leading-relaxed">
                 The motorsports portfolio, registration, results, and operations engine.
               </p>
-              <div className="space-y-3 text-sm text-gray-400">
+              <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start gap-3">
-                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                   <span>Drivers build a portfolio and compete across series</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                   <span>Tracks and series run events through Race Core</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                   <span>Public pages show published and verified truth</span>
                 </div>
               </div>
@@ -100,12 +100,12 @@ export default function MotorsportsHome() {
                     Explore Drivers <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-900">
+                <Button asChild variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100">
                   <Link to={createPageUrl('EventDirectory')}>
                     Explore Events
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-900">
+                <Button asChild variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100">
                   <Link to={createPageUrl('SeriesHome')}>
                     Explore Series
                   </Link>
@@ -122,9 +122,9 @@ export default function MotorsportsHome() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative h-80 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center"
+              className="relative h-80 rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 border border-gray-200 flex items-center justify-center"
             >
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.1)_0%,_transparent_70%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.15)_0%,_transparent_70%)]" />
               <div className="relative text-center space-y-6">
                 <div className="grid grid-cols-3 gap-4 w-full px-6">
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-center">
@@ -147,10 +147,10 @@ export default function MotorsportsHome() {
       </div>
 
       {/* Quick Actions Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-gray-200">
         <div className="mb-8">
-          <h2 className="text-2xl font-black tracking-tight">Get Started</h2>
-          <p className="text-gray-400 text-sm mt-1">Everything you need to compete and manage</p>
+          <h2 className="text-2xl font-black tracking-tight text-gray-900">Get Started</h2>
+          <p className="text-gray-600 text-sm mt-1">Everything you need to compete and manage</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickActionCards.map((card, i) => {
@@ -164,15 +164,15 @@ export default function MotorsportsHome() {
                 transition={{ delay: i * 0.05 }}
               >
                 <Link to={createPageUrl(card.page)}>
-                  <Card className={`${color.bg} border ${color.border} ${color.hover} transition-all cursor-pointer h-full`}>
+                  <Card className={`${color.bg} border ${color.border} ${color.hover} transition-all cursor-pointer h-full bg-white`}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-lg ${color.bg} border ${color.border}`}>
                           <Icon className={`w-5 h-5 ${color.accent}`} />
                         </div>
                       </div>
-                      <h3 className="font-bold text-lg text-white">{card.title}</h3>
-                      <p className="text-sm text-gray-400 mt-2">{card.subtitle}</p>
+                      <h3 className="font-bold text-lg text-gray-900">{card.title}</h3>
+                      <p className="text-sm text-gray-600 mt-2">{card.subtitle}</p>
                     </CardContent>
                   </Card>
                 </Link>
@@ -183,50 +183,50 @@ export default function MotorsportsHome() {
       </div>
 
       {/* How It Works Section */}
-      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
-        <h2 className="text-2xl font-black tracking-tight mb-8">How It Works</h2>
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-gray-200">
+        <h2 className="text-2xl font-black tracking-tight mb-8 text-gray-900">How It Works</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-400" />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600" />
               </div>
-              <h3 className="font-bold text-lg">Create</h3>
-              <p className="text-sm text-gray-400">Build your profile and establish your racing programs</p>
+              <h3 className="font-bold text-lg text-gray-900">Create</h3>
+              <p className="text-sm text-gray-700">Build your profile and establish your racing programs</p>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Gauge className="w-5 h-5 text-purple-400" />
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                <Gauge className="w-5 h-5 text-purple-600" />
               </div>
-              <h3 className="font-bold text-lg">Operate</h3>
-              <p className="text-sm text-gray-400">Run events in Race Core with full operational control</p>
+              <h3 className="font-bold text-lg text-gray-900">Operate</h3>
+              <p className="text-sm text-gray-700">Run events in Race Core with full operational control</p>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-green-400" />
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
               </div>
-              <h3 className="font-bold text-lg">Publish</h3>
-              <p className="text-sm text-gray-400">The public site displays verified published results</p>
+              <h3 className="font-bold text-lg text-gray-900">Publish</h3>
+              <p className="text-sm text-gray-700">The public site displays verified published results</p>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* Trust and Integrity Section */}
-      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
-        <Card className="bg-white/5 border-white/10">
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-gray-200">
+        <Card className="bg-green-50 border-green-200">
           <CardContent className="pt-8">
             <div className="flex gap-6 items-start">
-              <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6 text-green-600" />
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold">Verified Results & Integrity</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900">Verified Results & Integrity</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
                   Results are the source of truth. Every result comes from track or series operations. Discrepancies are flagged for review. Your competition data is verified, auditable, and trusted.
                 </p>
               </div>
@@ -237,10 +237,10 @@ export default function MotorsportsHome() {
 
       {/* Footer CTA */}
       <div className="max-w-7xl mx-auto px-6 py-16">
-        <Card className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-white/10">
+        <Card className="bg-gradient-to-r from-blue-100 to-purple-100 border-gray-300">
           <CardContent className="pt-8 space-y-4">
-            <h3 className="text-2xl font-bold">Ready to Get on the Grid</h3>
-            <p className="text-gray-300 text-sm">Start building your racing portfolio or managing your events today.</p>
+            <h3 className="text-2xl font-bold text-gray-900">Ready to Get on the Grid</h3>
+            <p className="text-gray-700 text-sm">Start building your racing portfolio or managing your events today.</p>
             <div className="flex flex-wrap gap-3 pt-4">
               {!isAuthenticated ? (
                 <Button
