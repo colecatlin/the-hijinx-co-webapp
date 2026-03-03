@@ -116,7 +116,7 @@ export default function ManageAccess() {
 
   return (
     <ManagementLayout currentPage="ManageAccess">
-      <ManagementShell title="Access Management" subtitle="View and revoke user access to entities across the platform." maxWidth="max-w-5xl">
+      <ManagementShell title="Access Management" subtitle="View and revoke user access to entities across the platform" maxWidth="max-w-5xl">
 
         {/* Type tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
