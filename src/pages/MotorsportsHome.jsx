@@ -62,276 +62,203 @@ export default function MotorsportsHome() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#1a1a2e_0%,_#0A0A0A_60%)]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-[#E5FF00]/5 blur-[120px] rounded-full" />
-        <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <span className="font-mono text-xs tracking-[0.3em] text-[#E5FF00] uppercase">Hijinx Motorsports</span>
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight mt-3 leading-[0.92]">
-              The Racing<br />
-              <span className="text-[#E5FF00]">Dashboard.</span>
-            </h1>
-            <p className="text-gray-400 mt-4 max-w-md text-sm">
-              Live standings, upcoming races, driver profiles, and everything competition — all in one place.
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#0F0F0F] text-white">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden border-b border-white/5">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,_#1a1a2e_0%,_#0A0A0A_70%)]" />
+        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-blue-500/5 blur-[120px] rounded-full" />
+        <div className="relative max-w-7xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Hero Text */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+              <div>
+                <span className="font-mono text-xs tracking-widest text-gray-400 uppercase">Motorsports Platform</span>
+                <h1 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 leading-tight">Index46</h1>
+              </div>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                The motorsports portfolio, registration, results, and operations engine.
+              </p>
+              <div className="space-y-3 text-sm text-gray-400">
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <span>Drivers build a portfolio and compete across series</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <span>Tracks and series run events through Race Core</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-1 rounded-full bg-gray-500 mt-2 flex-shrink-0" />
+                  <span>Public pages show published and verified truth</span>
+                </div>
+              </div>
+
+              {/* Hero CTAs */}
+              <div className="flex flex-wrap gap-3 pt-4">
+                <Button asChild className="bg-white text-black hover:bg-gray-200">
+                  <Link to={createPageUrl('DriverDirectory')}>
+                    Explore Drivers <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-900">
+                  <Link to={createPageUrl('EventDirectory')}>
+                    Explore Events
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-900">
+                  <Link to={createPageUrl('SeriesHome')}>
+                    Explore Series
+                  </Link>
+                </Button>
+                <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                  <Link to={createPageUrl('Registration')}>
+                    Race Core
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Right: Visual Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative h-80 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.1)_0%,_transparent_70%)]" />
+              <div className="relative text-center space-y-6">
+                <div className="grid grid-cols-3 gap-4 w-full px-6">
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-center">
+                    <div className="text-3xl font-black text-blue-400">{drivers.length}</div>
+                    <div className="text-xs text-gray-400 mt-1">Drivers</div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-center">
+                    <div className="text-3xl font-black text-purple-400">{events.length}</div>
+                    <div className="text-xs text-gray-400 mt-1">Events</div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-center">
+                    <div className="text-3xl font-black text-green-400">{results.length}</div>
+                    <div className="text-xs text-gray-400 mt-1">Results</div>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
-        <div className="h-px bg-gradient-to-r from-[#E5FF00]/60 via-white/10 to-transparent" />
       </div>
 
-      {/* Stats Bar */}
-      <div className="border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat, i) => (
+      {/* Quick Actions Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
+        <div className="mb-8">
+          <h2 className="text-2xl font-black tracking-tight">Get Started</h2>
+          <p className="text-gray-400 text-sm mt-1">Everything you need to compete and manage</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {quickActionCards.map((card, i) => {
+            const color = colorMap[card.color];
+            const Icon = card.icon;
+            return (
               <motion.div
-                key={stat.label}
+                key={card.title}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07 }}
-                className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-4 border border-white/5"
-              >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.accent + '22' }}>
-                  <stat.icon className="w-4 h-4" style={{ color: stat.accent }} />
-                </div>
-                <div>
-                  <div className="text-2xl font-black">{stat.value || '—'}</div>
-                  <div className="text-xs text-gray-500">{stat.label}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
-
-        {/* Nav Cards */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-mono tracking-[0.2em] text-gray-500 uppercase">Explore</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
-            {navCards.map((card, i) => (
-              <motion.div
-                key={card.name}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Link
-                  to={createPageUrl(card.page)}
-                  className="group flex flex-col items-center justify-center gap-2 p-4 h-24 rounded-xl border border-white/5 bg-white/[0.03] hover:bg-white/10 hover:border-white/20 transition-all duration-200"
-                >
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.color} flex items-center justify-center`}>
-                    <card.icon className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors">{card.name}</span>
+                <Link to={createPageUrl(card.page)}>
+                  <Card className={`${color.bg} border ${color.border} ${color.hover} transition-all cursor-pointer h-full`}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-3 rounded-lg ${color.bg} border ${color.border}`}>
+                          <Icon className={`w-5 h-5 ${color.accent}`} />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg text-white">{card.title}</h3>
+                      <p className="text-sm text-gray-400 mt-2">{card.subtitle}</p>
+                    </CardContent>
+                  </Card>
                 </Link>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Upcoming Events - takes 2 cols */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-5 bg-[#E5FF00] rounded-full" />
-                <h2 className="font-bold text-sm uppercase tracking-widest text-gray-300">Upcoming Races</h2>
+      {/* How It Works Section */}
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
+        <h2 className="text-2xl font-black tracking-tight mb-8">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-400" />
               </div>
-              <Link to={createPageUrl('ScheduleHome')} className="text-xs text-gray-500 hover:text-[#E5FF00] flex items-center gap-1 transition-colors">
-                Full Schedule <ChevronRight className="w-3 h-3" />
-              </Link>
+              <h3 className="font-bold text-lg">Create</h3>
+              <p className="text-sm text-gray-400">Build your profile and establish your racing programs</p>
             </div>
-            <div className="space-y-2">
-              {upcomingEvents.slice(0, 6).map((event, i) => {
-                if (!event.event_date) return null;
-                const days = differenceInDays(parseISO(event.event_date), parseISO(new Date().toISOString().split('T')[0]));
-                const isToday = days === 0;
-                const isSoon = days <= 3;
-                return (
-                  <motion.div
-                    key={event.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                      isToday
-                        ? 'bg-[#E5FF00]/10 border-[#E5FF00]/30'
-                        : isSoon
-                        ? 'bg-white/[0.04] border-white/10'
-                        : 'bg-white/[0.02] border-white/5'
-                    }`}
-                  >
-                    <div className="text-center min-w-[48px]">
-                      <div className={`text-lg font-black ${isToday ? 'text-[#E5FF00]' : 'text-white'}`}>
-                        {isToday ? 'NOW' : days === 1 ? 'TMW' : format(parseISO(event.event_date), 'MMM d')}
-                      </div>
-                      {!isToday && days > 1 && (
-                        <div className="text-xs text-gray-500">{format(parseISO(event.event_date), 'yyyy')}</div>
-                      )}
-                    </div>
-                    <div className="w-px h-10 bg-white/10" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm truncate">{event.name}</div>
-                      <div className="text-xs text-gray-500 mt-0.5 truncate">{event.location_note || event.series}</div>
-                    </div>
-                    {isSoon && (
-                      <div className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-full ${isToday ? 'bg-[#E5FF00] text-black' : 'bg-white/10 text-gray-400'}`}>
-                        <Activity className="w-3 h-3" />
-                        {isToday ? 'LIVE' : `${days}d`}
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
-              {upcomingEvents.length === 0 && (
-                <div className="text-center py-12 text-gray-600 text-sm">No upcoming events found.</div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <Gauge className="w-5 h-5 text-purple-400" />
+              </div>
+              <h3 className="font-bold text-lg">Operate</h3>
+              <p className="text-sm text-gray-400">Run events in Race Core with full operational control</p>
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-green-400" />
+              </div>
+              <h3 className="font-bold text-lg">Publish</h3>
+              <p className="text-sm text-gray-400">The public site displays verified published results</p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Trust and Integrity Section */}
+      <div className="max-w-7xl mx-auto px-6 py-16 border-b border-white/5">
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="pt-8">
+            <div className="flex gap-6 items-start">
+              <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6 text-green-400" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold">Verified Results & Integrity</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Results are the source of truth. Every result comes from track or series operations. Discrepancies are flagged for review. Your competition data is verified, auditable, and trusted.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Footer CTA */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <Card className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-white/10">
+          <CardContent className="pt-8 space-y-4">
+            <h3 className="text-2xl font-bold">Ready to Get on the Grid</h3>
+            <p className="text-gray-300 text-sm">Start building your racing portfolio or managing your events today.</p>
+            <div className="flex flex-wrap gap-3 pt-4">
+              {!isAuthenticated ? (
+                <Button
+                  onClick={() => base44.auth.redirectToLogin()}
+                  className="bg-white text-black hover:bg-gray-200"
+                >
+                  <LogIn className="w-4 h-4 mr-2" /> Create Account
+                </Button>
+              ) : (
+                <Button asChild className="bg-white text-black hover:bg-gray-200">
+                  <Link to={createPageUrl('MyDashboard')}>
+                    <LayoutDashboard className="w-4 h-4 mr-2" /> Go to My Dashboard
+                  </Link>
+                </Button>
               )}
             </div>
-          </div>
-
-          {/* Right Column: Active Series + Next Race Countdown */}
-          <div className="space-y-6">
-            {/* Next Race Countdown */}
-            {nextEvent && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-[#E5FF00]/15 to-[#E5FF00]/5 border border-[#E5FF00]/20 rounded-xl p-5"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="w-4 h-4 text-[#E5FF00]" />
-                  <span className="text-xs font-mono tracking-widest text-[#E5FF00] uppercase">Next Race</span>
-                </div>
-                <div className="text-3xl font-black text-white leading-tight">
-                  {daysUntil === 0 ? 'Today!' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} Days`}
-                </div>
-                <div className="text-sm font-semibold text-white mt-2 leading-snug">{nextEvent.name}</div>
-                <div className="text-xs text-gray-400 mt-1">{nextEvent.location_note || nextEvent.series}</div>
-                <Link
-                  to={createPageUrl('ScheduleHome')}
-                  className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#E5FF00] hover:underline"
-                >
-                  View Full Schedule <ArrowRight className="w-3 h-3" />
-                </Link>
-              </motion.div>
-            )}
-
-            {/* Active Series */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1.5 h-5 bg-orange-500 rounded-full" />
-                <h2 className="font-bold text-sm uppercase tracking-widest text-gray-300">Active Series</h2>
-              </div>
-              <div className="space-y-2">
-                {allSeries.slice(0, 5).map((series, i) => (
-                  <motion.div
-                    key={series.id}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.07 }}
-                  >
-                    <Link
-                      to={createPageUrl('SeriesHome')}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/15 transition-all group"
-                    >
-                      <div className="w-7 h-7 rounded-md bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-                        <Zap className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold truncate group-hover:text-white transition-colors">{series.name}</div>
-                        <div className="text-[10px] text-gray-600">{series.discipline} · {series.region}</div>
-                      </div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                    </Link>
-                  </motion.div>
-                ))}
-                <Link
-                  to={createPageUrl('SeriesHome')}
-                  className="flex items-center justify-center gap-1 py-2.5 text-xs text-gray-600 hover:text-gray-300 transition-colors"
-                >
-                  View all series <ChevronRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Results */}
-        {recentResults.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-5 bg-green-500 rounded-full" />
-                <h2 className="font-bold text-sm uppercase tracking-widest text-gray-300">Recent Results</h2>
-              </div>
-              <Link to={createPageUrl('ResultsHome')} className="text-xs text-gray-500 hover:text-green-400 flex items-center gap-1 transition-colors">
-                All Results <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {recentResults.map((event, i) => (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-all"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Flag className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-[10px] font-mono text-green-400 uppercase">Completed</span>
-                  </div>
-                  <div className="font-semibold text-sm leading-snug">{event.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">{event.series}</div>
-                  <div className="text-xs text-gray-600 mt-2 font-mono">
-                    {event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : '—'}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Bottom CTA Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/5">
-          <Link
-            to={createPageUrl('DriverDirectory')}
-            className="group flex items-center justify-between p-5 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-all"
-          >
-            <div>
-              <div className="font-bold text-sm">Driver Profiles</div>
-              <div className="text-xs text-gray-500 mt-0.5">{allDrivers.length} drivers in the database</div>
-            </div>
-            <Users className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
-          </Link>
-          <Link
-            to={createPageUrl('TeamDirectory')}
-            className="group flex items-center justify-between p-5 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 transition-all"
-          >
-            <div>
-              <div className="font-bold text-sm">Team Directory</div>
-              <div className="text-xs text-gray-500 mt-0.5">{allTeams.length} teams registered</div>
-            </div>
-            <Building2 className="w-5 h-5 text-rose-400 group-hover:scale-110 transition-transform" />
-          </Link>
-          <Link
-            to={createPageUrl('TrackDirectory')}
-            className="group flex items-center justify-between p-5 rounded-xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all"
-          >
-            <div>
-              <div className="font-bold text-sm">Track Directory</div>
-              <div className="text-xs text-gray-500 mt-0.5">{allTracks.length} venues and circuits</div>
-            </div>
-            <MapPin className="w-5 h-5 text-teal-400 group-hover:scale-110 transition-transform" />
-          </Link>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
