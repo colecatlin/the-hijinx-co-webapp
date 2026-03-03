@@ -198,22 +198,17 @@ export default function ManageEvents() {
 
   return (
     <ManagementLayout currentPage="ManageEvents">
-      <ManagementShell title="Manage Events" subtitle={`${events.length} total events`}>
+      <ManagementShell
+        title="Events"
+        subtitle={`${events.length} total events`}
+        actions={<>
+          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />AI Generate</Button>
+          <Button onClick={() => setShowAddForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Event</Button>
+        </>}
+      >
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
           <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
-        </div>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50">
-            <Sparkles className="w-4 h-4 mr-2" />
-            AI Generate
-          </Button>
-          <Button onClick={() => setShowAddForm(true)} className="bg-gray-900">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Event
-          </Button>
         </div>
 
         <div className="mb-4 flex gap-2">
