@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import ManagementSearch from '@/components/management/ManagementSearch';
 import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
@@ -17,7 +18,7 @@ export default function Management() {
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
-        <div className="px-6 py-6 max-w-6xl mx-auto">
+        <ManagementShell title="Management" subtitle="Admin studio for Index46 data and site systems" maxWidth="max-w-6xl">
           <StatsBar />
 
           <div className="mt-6">
@@ -66,7 +67,7 @@ export default function Management() {
           <div className="mt-6">
             <DataHealthPanel />
           </div>
-        </div>
+        </ManagementShell>
       </ManagementLayout>
     </>
   );
