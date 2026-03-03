@@ -105,12 +105,13 @@ export default function Diagnostics() {
 
   if (user?.role !== 'admin') {
     return (
-      <PageShell>
-        <div className="max-w-7xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-2xl font-black mb-4">Access Denied</h1>
-          <p className="text-gray-600">This page is for administrators only.</p>
-        </div>
-      </PageShell>
+      <ManagementLayout currentPage="Diagnostics">
+        <ManagementShell title="Access Denied" subtitle="">
+          <div className="py-20 text-center">
+            <p className="text-gray-600">This page is for administrators only.</p>
+          </div>
+        </ManagementShell>
+      </ManagementLayout>
     );
   }
 
@@ -118,12 +119,12 @@ export default function Diagnostics() {
 
   if (isLoading) {
     return (
-      <PageShell>
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      <ManagementLayout currentPage="Diagnostics">
+        <ManagementShell title="Diagnostics" subtitle="">
           <Skeleton className="h-12 w-64 mb-8" />
           <Skeleton className="h-96" />
-        </div>
-      </PageShell>
+        </ManagementShell>
+      </ManagementLayout>
     );
   }
 
