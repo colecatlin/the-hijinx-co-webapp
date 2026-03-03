@@ -284,8 +284,8 @@ export default function ResultsManager({
     queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
   };
 
-  const handleImport = async (rows, skippedCount) => {
-    await importResults(rows);
+  const handleImport = async (rows, skippedCount, meta) => {
+    await importResults({ rows, meta });
     if (skippedCount) toast.warning(`${skippedCount} rows skipped (no driver match)`);
     queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
   };
