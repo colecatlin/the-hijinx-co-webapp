@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DASHBOARD_ITEM, MANAGEMENT_SECTIONS } from '@/components/management/managementConfig';
 
