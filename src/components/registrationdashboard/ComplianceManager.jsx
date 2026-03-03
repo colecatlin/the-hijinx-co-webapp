@@ -511,21 +511,18 @@ export default function ComplianceManager({
               </div>
 
               {/* Waiver toggle (admin only) */}
-              {isAdmin && selectedEntry.compliance && (
+              {isAdmin && (
                 <div className="border-t border-gray-700 pt-4 space-y-2">
                   <p className="text-xs font-medium text-gray-400 uppercase">Waiver</p>
                   <Button
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${isWaiverVerified(selectedEntry.compliance) ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
+                    className={`w-full border-gray-700 ${selectedEntry.waiver_status === 'Verified' ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    {isWaiverVerified(selectedEntry.compliance) ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
+                    {selectedEntry.waiver_status === 'Verified' ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
                   </Button>
-                  {selectedEntry.compliance.waiver?.verified_at && (
-                    <p className="text-xs text-gray-500">Verified: {new Date(selectedEntry.compliance.waiver.verified_at).toLocaleString()}</p>
-                  )}
                 </div>
               )}
 
