@@ -175,7 +175,7 @@ export default function CheckInManager({
 
   const getComplianceBadges = (entry) => {
     const badges = [];
-    if (!entry.waiver_verified) badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
+    if (entry.waiver_status !== 'Verified') badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
     if (entry.payment_status === 'Unpaid') badges.push({ label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
     if (!entry.tech_status || entry.tech_status === 'Not Inspected' || entry.tech_status === 'Recheck Required') badges.push({ label: 'Tech Pending', color: 'bg-orange-900/40 text-orange-300' });
     return badges;
