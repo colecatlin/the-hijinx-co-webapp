@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import SeriesForm from '@/components/management/SeriesForm';
 import CreateSeriesForm from '@/components/management/CreateSeriesForm';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';

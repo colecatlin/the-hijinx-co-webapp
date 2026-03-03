@@ -10,6 +10,7 @@ import FoodBeverageForm from '@/components/management/FoodBeverageForm';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { createPageUrl } from '@/components/utils';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 export default function ManageFoodBeverage() {
   const queryClient = useQueryClient();

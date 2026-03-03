@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Search, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import IssueForm from '@/components/management/IssueForm';
 import { createPageUrl } from '@/components/utils';
 

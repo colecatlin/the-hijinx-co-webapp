@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import AnnouncementForm from '@/components/management/AnnouncementForm';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';

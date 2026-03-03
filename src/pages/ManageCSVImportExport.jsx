@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SmartCSVImport from '@/components/management/SmartCSVImport';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 const ENTITY_TYPES = [
   'Driver', 'Team', 'Track', 'Series', 'Event', 'Results', 'Session',

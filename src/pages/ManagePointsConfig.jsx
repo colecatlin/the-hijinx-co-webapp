@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { createPageUrl } from '@/components/utils';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 function ConfigForm({ config, series, onSave, onCancel }) {
   const [form, setForm] = useState(config || {

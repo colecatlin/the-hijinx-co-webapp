@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import StoryForm from '@/components/management/StoryForm';
 import StorySubmissionsReview from '@/components/management/StorySubmissionsReview';
 import { createPageUrl } from '@/components/utils';

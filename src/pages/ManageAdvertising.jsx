@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 import AdvertisementForm from '@/components/management/AdvertisementForm';
 import { createPageUrl } from '@/components/utils';
 

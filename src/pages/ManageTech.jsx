@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import TechForm from '@/components/management/TechForm';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 export default function ManageTech() {
   const [showForm, setShowForm] = useState(false);
