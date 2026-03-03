@@ -220,8 +220,7 @@ export default function ManageEvents() {
         title="Events"
         subtitle={`${events.length} total events`}
         actions={activeTab === 'data' ? <>
-          <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />AI Generate</Button>
-          <Button onClick={() => setShowAddForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Event</Button>
+          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationLanding'))} className="border-gray-300 text-gray-700 hover:bg-gray-50"><Plus className="w-4 h-4 mr-2" />Create in Race Core</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -254,12 +253,8 @@ export default function ManageEvents() {
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
               <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
-              <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+              <p className="text-sm text-amber-800">Event creation and lifecycle management is handled exclusively through Race Core. Use the button in Data tab to create events.</p>
             </div>
-            <Button onClick={() => setShowAddForm(true)} className="w-full bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Event
-            </Button>
           </TabsContent>
 
           <TabsContent value="data" className="space-y-6">
