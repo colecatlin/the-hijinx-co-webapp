@@ -7,7 +7,7 @@ import ManagementSearch from '@/components/management/ManagementSearch';
 import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
-import { MANAGEMENT_SECTIONS } from '@/components/management/managementSections';
+import { MANAGEMENT_SECTIONS } from '@/components/management/ManagementSidebar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function Management() {
