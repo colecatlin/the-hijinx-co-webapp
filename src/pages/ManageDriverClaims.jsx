@@ -326,7 +326,7 @@ export default function ManageDriverClaims() {
 
   return (
     <ManagementLayout currentPage="ManageDriverClaims">
-      <ManagementShell title="Driver Result Claims" subtitle="Review and verify driver-submitted race results">
+      <ManagementShell title="Driver Claims" subtitle="Review and verify driver-submitted race results">
 
         {isLoading ? (
           <div className="animate-pulse space-y-4">
