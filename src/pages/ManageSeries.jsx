@@ -15,6 +15,8 @@ import CreateSeriesForm from '@/components/management/CreateSeriesForm';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import ActivityTab from '@/components/management/ActivityTab';
+import PublishTab from '@/components/management/PublishTab';
 import SeriesCoreDetailsSection from '@/components/management/SeriesManagement/SeriesCoreDetailsSection';
 import SeriesFormatSection from '@/components/management/SeriesManagement/SeriesFormatSection';
 import SeriesClassesSection from '@/components/management/SeriesManagement/SeriesClassesSection';
@@ -32,6 +34,7 @@ export default function ManageSeries() {
   const [showForm, setShowForm] = useState(false);
   const [selectedSeriesForEdit, setSelectedSeriesForEdit] = useState(null);
   const [selectedSeries, setSelectedSeries] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const queryClient = useQueryClient();
 
@@ -248,16 +251,46 @@ export default function ManageSeries() {
       <ManagementShell
         title="Series"
         subtitle={`${series.length} total series`}
-        actions={<>
+        actions={activeTab === 'data' ? <>
           <input id="import-series" type="file" accept=".json" onChange={handleImport} className="hidden" />
           <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template"><Download className="w-4 h-4" /></Button>
           <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
           <Button variant="outline" onClick={() => document.getElementById('import-series').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
           <Button onClick={handleAdd} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Series</Button>
-        </>}
+        </> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
-        <div className="flex gap-3 mb-6">
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Series</p>
+                <p className="text-2xl font-bold text-gray-900">{series.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{series.filter(s => s.status === 'Active').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Inactive</p>
+                <p className="text-2xl font-bold text-gray-500">{series.filter(s => s.status !== 'Active').length}</p>
+              </div>
+            </div>
+            <Button onClick={handleAdd} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Series
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -360,7 +393,47 @@ export default function ManageSeries() {
               </tbody>
             </table>
           </div>
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Series Relationships</h3>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Events</p>
+                  <p className="text-lg font-semibold">Calendar</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Tracks</p>
+                  <p className="text-lg font-semibold">Venues</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Drivers</p>
+                  <p className="text-lg font-semibold">Participants</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Classes</p>
+                  <p className="text-lg font-semibold">Categories</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Manage series relationships by editing the series' sections.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <PublishTab 
+              entityCount={series.length}
+              draftCount={0}
+              liveCount={series.length}
+              hasPublishControl={false}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Series" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
