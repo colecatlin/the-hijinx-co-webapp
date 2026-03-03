@@ -232,10 +232,29 @@ export default function ResultsManager({
 
   const updateSessionStatus = useMutation({
     mutationFn: async (newStatus) => {
+      const prevStatus = selectedSession?.status || 'Draft';
       const payload = { status: newStatus };
       if (newStatus === 'Locked') payload.locked = true;
       if (newStatus === 'Draft' || newStatus === 'Provisional') payload.locked = false;
       await base44.entities.Session.update(selectedSession.id, payload);
+
+      // Log operation
+      const opTypeMap = {
+        Provisional: 'session_marked_provisional',
+        Official: 'session_published_official',
+        Locked: 'session_locked',
+        Draft: 'results_saved_draft',
+      };
+      base44.entities.OperationLog.create({
+        operation_type: opTypeMap[newStatus] || 'session_status_changed',
+        status: 'success',
+        entity_name: 'Session',
+        entity_id: selectedSession.id,
+        event_id: eventId,
+        message: `Session status: ${prevStatus} → ${newStatus}`,
+        metadata: { before: prevStatus, after: newStatus, session_id: selectedSession.id },
+      }).catch(() => {});
+
       if (newStatus === 'Official' || newStatus === 'Provisional') {
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
@@ -245,7 +264,8 @@ export default function ResultsManager({
     },
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      invalidateAfterOperation('session_status_change', { eventId });
+      invalidateAfterOperation('session_status_updated', { eventId });
+      invalidateAfterOperation('standings_recalculated', { eventId });
       setPendingStatus(null);
       toast.success(`Session marked ${newStatus}`);
     },
