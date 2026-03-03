@@ -262,6 +262,9 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
+  // Legacy compatibility – declared early, used in canUserEditEventCore below
+  const isAdmin = user?.role === 'admin';
+
   // Fetch track collaborators
   const { data: trackCollaborators = [] } = useQuery({
     queryKey: ['trackCollaborators', selectedEvent?.track_id],
