@@ -94,12 +94,12 @@ export default function ManageFoodBeverage() {
       <ManagementShell title="Food & Beverage" subtitle="Manage food and beverage offerings">
         <div className="flex justify-end mb-6">
           <Button
-          onClick={() => {
-            setEditingItem(null);
-            setShowForm(true);
-          }}
-          className="bg-[#232323] hover:bg-[#1A3249]"
-        >
+            onClick={() => {
+              setEditingItem(null);
+              setShowForm(true);
+            }}
+            className="bg-[#232323] hover:bg-[#1A3249]"
+          >
           <Plus className="w-4 h-4 mr-2" />
           Add Item
         </Button>
