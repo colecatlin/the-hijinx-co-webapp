@@ -306,7 +306,7 @@ function RegistrationFlow({ user }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [showCreateDriver, setShowCreateDriver] = useState(false);
   const [driverFormData, setDriverFormData] = useState({ first_name: '', last_name: '', hometown_city: '', hometown_state: '' });
-  const [entryFormData, setEntryFormData] = useState({ series_class_id: '', car_number: '', transponder_id: '', team_id: '' });
+  const [entryFormData, setEntryFormData] = useState({ event_class_id: '', car_number: '', transponder_id: '', team_id: '' });
   const [registrationResult, setRegistrationResult] = useState(null);
 
   const { data: tracks = [] } = useQuery({ queryKey: ['tracks'], queryFn: () => base44.entities.Track.list('name', 200), ...DQ });
@@ -350,10 +350,10 @@ function RegistrationFlow({ user }) {
     ...DQ,
   });
 
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', selectedEvent?.series_id],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: selectedEvent.series_id }),
-    enabled: !!selectedEvent?.series_id,
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', selectedEvent?.id],
+    queryFn: () => base44.entities.EventClass.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
@@ -365,9 +365,9 @@ function RegistrationFlow({ user }) {
   });
 
   const { data: eventEntries = [] } = useQuery({
-    queryKey: ['entries', eventId, entryFormData.series_class_id],
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, series_class_id: entryFormData.series_class_id || undefined }),
-    enabled: !!eventId && !!entryFormData.series_class_id && currentStep === 4,
+    queryKey: ['entries', eventId, entryFormData.event_class_id],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, event_class_id: entryFormData.event_class_id || undefined }),
+    enabled: !!eventId && !!entryFormData.event_class_id && currentStep === 4,
     ...DQ,
   });
 
@@ -405,15 +405,17 @@ function RegistrationFlow({ user }) {
   const registerMutation = useMutation({
     mutationFn: async () => {
       if (!eventId || !myDriver?.id) throw new Error('Missing event or driver');
-      if (selectedEvent?.series_id && !entryFormData.series_class_id) throw new Error('Please select a class');
+      if (eventClasses.length > 0 && !entryFormData.event_class_id) throw new Error('Please select a class');
       if (!entryFormData.car_number.trim()) throw new Error('Car number is required');
       const dupCheck = eventEntries.filter(e => e.car_number === entryFormData.car_number.trim() && e.driver_id !== myDriver.id);
       if (dupCheck.length) throw new Error(`Car number ${entryFormData.car_number} already registered in this class`);
+      const selectedEventClass = eventClasses.find(ec => ec.id === entryFormData.event_class_id);
       const payload = {
         event_id: eventId,
         driver_id: myDriver.id,
+        event_class_id: entryFormData.event_class_id || undefined,
         series_id: selectedEvent.series_id || undefined,
-        series_class_id: entryFormData.series_class_id || undefined,
+        series_class_id: selectedEventClass?.series_class_id || undefined,
         car_number: entryFormData.car_number.trim(),
         transponder_id: entryFormData.transponder_id || undefined,
         team_id: entryFormData.team_id || undefined,
@@ -560,22 +562,22 @@ function RegistrationFlow({ user }) {
             <Card className="bg-[#171717] border-gray-800">
               <CardHeader><CardTitle className="text-white flex items-center gap-2"><Truck className="w-5 h-5" /> Entry Details</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {selectedEvent?.series_id && seriesClasses.length > 0 && (
-                  <div>
-                    <label className="text-xs text-gray-400 block mb-2">Class <span className="text-red-400">*</span></label>
-                    <Select value={entryFormData.series_class_id} onValueChange={val => setEntryFormData({ ...entryFormData, series_class_id: val })}>
-                      <SelectTrigger className="bg-[#262626] border-gray-700 text-white"><SelectValue placeholder="Select class..." /></SelectTrigger>
-                      <SelectContent className="bg-[#262626] border-gray-700">
-                        {seriesClasses.map(sc => <SelectItem key={sc.id} value={sc.id}>{sc.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                {!selectedEvent?.series_id && (
-                  <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-3">
-                    <p className="text-xs text-blue-400">This event is not linked to a series. Classes are optional.</p>
-                  </div>
-                )}
+                {eventClasses.length > 0 && (
+                   <div>
+                     <label className="text-xs text-gray-400 block mb-2">Class <span className="text-red-400">*</span></label>
+                     <Select value={entryFormData.event_class_id} onValueChange={val => setEntryFormData({ ...entryFormData, event_class_id: val })}>
+                       <SelectTrigger className="bg-[#262626] border-gray-700 text-white"><SelectValue placeholder="Select class..." /></SelectTrigger>
+                       <SelectContent className="bg-[#262626] border-gray-700">
+                         {eventClasses.map(ec => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 )}
+                 {eventClasses.length === 0 && (
+                   <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-3">
+                     <p className="text-xs text-blue-400">No classes yet. Check with event organizer or register without a class.</p>
+                   </div>
+                 )}
                 <div>
                   <label className="text-xs text-gray-400 block mb-2">Car Number <span className="text-red-400">*</span></label>
                   <Input value={entryFormData.car_number} onChange={e => setEntryFormData({ ...entryFormData, car_number: e.target.value })} className="bg-[#262626] border-gray-700 text-white" placeholder="e.g. 42" />
@@ -597,7 +599,7 @@ function RegistrationFlow({ user }) {
                 )}
                 <div className="flex gap-2 pt-4">
                   <Button variant="outline" onClick={() => setCurrentStep(2)} className="flex-1 border-gray-700 text-gray-300">Back</Button>
-                  <Button onClick={() => setCurrentStep(4)} disabled={selectedEvent?.series_id && !entryFormData.series_class_id} className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold">Review <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  <Button onClick={() => setCurrentStep(4)} disabled={eventClasses.length > 0 && !entryFormData.event_class_id} className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold">Review <ArrowRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </CardContent>
             </Card>
@@ -613,8 +615,8 @@ function RegistrationFlow({ user }) {
                 <div className="bg-[#262626] rounded-lg p-4 space-y-3 border border-gray-700 text-sm">
                   <div className="flex justify-between"><span className="text-gray-400">Event</span><span className="text-white font-medium">{selectedEvent?.name}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Driver</span><span className="text-white">{myDriver?.first_name} {myDriver?.last_name}</span></div>
-                  {entryFormData.series_class_id && (
-                    <div className="flex justify-between"><span className="text-gray-400">Class</span><span className="text-white">{seriesClasses.find(c => c.id === entryFormData.series_class_id)?.name}</span></div>
+                  {entryFormData.event_class_id && (
+                    <div className="flex justify-between"><span className="text-gray-400">Class</span><span className="text-white">{eventClasses.find(c => c.id === entryFormData.event_class_id)?.name}</span></div>
                   )}
                   <div className="flex justify-between"><span className="text-gray-400">Car #</span><span className="text-white">{entryFormData.car_number || '—'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="text-white">Registered</span></div>
@@ -647,7 +649,7 @@ function RegistrationFlow({ user }) {
                   <div><span className="text-gray-400">Payment:</span> <span className="text-white">{registrationResult.paymentStatus}</span></div>
                 </div>
                 <div className="flex gap-2 pt-4 flex-wrap">
-                  <Button variant="outline" onClick={() => { setCurrentStep(1); setEventId(''); setSelectedEvent(null); setEntryFormData({ series_class_id: '', car_number: '', transponder_id: '', team_id: '' }); setRegistrationResult(null); }} className="flex-1 border-gray-700 text-gray-300">
+                  <Button variant="outline" onClick={() => { setCurrentStep(1); setEventId(''); setSelectedEvent(null); setEntryFormData({ event_class_id: '', car_number: '', transponder_id: '', team_id: '' }); setRegistrationResult(null); }} className="flex-1 border-gray-700 text-gray-300">
                     Register Another
                   </Button>
                   {user?.role === 'admin' && selectedEvent && (
