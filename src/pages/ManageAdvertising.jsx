@@ -171,7 +171,7 @@ export default function ManageAdvertising() {
 
   return (
     <ManagementLayout currentPage="ManageAdvertising">
-      <ManagementShell title="Manage Advertising" subtitle="View and manage advertising inquiries">
+      <ManagementShell title="Advertising" subtitle="View and manage advertising inquiries">
 
         <Tabs defaultValue="ads" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
