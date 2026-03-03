@@ -162,13 +162,34 @@ export default function EntriesManager({
   });
 
   // ── Reset on event change ──
-  React.useEffect(() => {
+  useEffect(() => {
     setSelectedEntries(new Set());
     setShowAddDialog(false);
     setShowDetailDrawer(false);
     setSelectedEntry(null);
     setFilters({ class: 'all', entryStatus: 'all', paymentStatus: 'all', search: '' });
   }, [eventId]);
+
+  // ── Sync filters from URL params ──
+  useEffect(() => {
+    const classId = searchParams.get('classId');
+    const payment = searchParams.get('payment');
+    const checkin = searchParams.get('checkin');
+    const tech = searchParams.get('tech');
+
+    if (!classId && !payment && !checkin && !tech) return;
+
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (classId) next.class = classId; // classId maps to series_class_id or 'unassigned'
+      if (payment === 'paid') next.paymentStatus = 'Paid';
+      else if (payment === 'unpaid') next.paymentStatus = 'Unpaid';
+      if (checkin === 'checkedin') next.entryStatus = 'Checked In';
+      else if (checkin === 'notcheckedin') next.entryStatus = 'Registered';
+      // tech filter is handled separately below
+      return next;
+    });
+  }, [searchParams]);
 
   // ── Lookups ──
   const getDriverName = (driverId) => {
