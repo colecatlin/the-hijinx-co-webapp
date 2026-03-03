@@ -180,7 +180,6 @@ export default function ManageStandings() {
               <Plus className="w-4 h-4 mr-2" />
               Add Entry
             </Button>
-          </div>
         </div>
 
         {syncMessage && (
