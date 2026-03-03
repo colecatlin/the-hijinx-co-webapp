@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { isPublicVisible } from '@/components/core/publishModel';
 import { useNavigate } from 'react-router-dom';
 
 const DQ = applyDefaultQueryOptions();
@@ -240,11 +241,11 @@ export default function DriverProfile() {
     }
   };
 
-  // Split entries into upcoming and past events
+  // Split entries into upcoming and past events (public visible only)
   const upcomingEntries = entries
     .filter(entry => {
       const event = events.find(e => e.id === entry.event_id);
-      return event && ['Draft', 'Published', 'Live'].includes(event.status);
+      return event && isPublicVisible('Event', event);
     })
     .map(entry => {
       const event = events.find(e => e.id === entry.event_id);
@@ -255,7 +256,7 @@ export default function DriverProfile() {
   const pastEntries = entries
     .filter(entry => {
       const event = events.find(e => e.id === entry.event_id);
-      return event && event.status === 'completed';
+      return event && event.status === 'completed' && isPublicVisible('Event', event);
     })
     .map(entry => {
       const event = events.find(e => e.id === entry.event_id);
