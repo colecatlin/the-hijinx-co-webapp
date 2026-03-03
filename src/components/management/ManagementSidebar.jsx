@@ -7,7 +7,7 @@ import { MANAGEMENT_SECTIONS, DASHBOARD_ITEM } from './managementSections';
 
 export default function ManagementSidebar({ currentPage, onNavigate }) {
   const [expandedSections, setExpandedSections] = useState(
-    SECTIONS.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
+    MANAGEMENT_SECTIONS.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
   );
 
   const toggleSection = (title) => {
