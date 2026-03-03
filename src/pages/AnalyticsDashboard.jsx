@@ -84,7 +84,7 @@ export default function AnalyticsDashboard() {
   return (
     <ManagementLayout currentPage="AnalyticsDashboard">
       <ManagementShell title="Analytics Dashboard" subtitle="Insights and metrics across all motorsports data">
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-3 mb-6">
           <div className="flex items-center gap-3">
             <Popover>
               <PopoverTrigger asChild>
