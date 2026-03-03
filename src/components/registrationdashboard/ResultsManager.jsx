@@ -477,17 +477,17 @@ export default function ResultsManager({
             <Tabs value={entryMode} onValueChange={setEntryMode}>
               <TabsList className="bg-[#262626] border border-gray-700 w-full mb-4">
                 <TabsTrigger value="manual" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Manual Entry</TabsTrigger>
-                <TabsTrigger value="csv" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">CSV Import</TabsTrigger>
+                <TabsTrigger value="csv" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">CSV Upload</TabsTrigger>
+                <TabsTrigger value="api" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">API Sync</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Version History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="manual">
-                <ResultsEditorTable
+                <ResultsManualTable
                   session={selectedSession}
                   results={sessionResults}
                   drivers={drivers}
                   driverPrograms={driverPrograms}
-                  seriesClasses={seriesClasses}
                   selectedEvent={selectedEvent}
                   locked={isLocked}
                   onSave={handleSaveDraft}
@@ -496,7 +496,7 @@ export default function ResultsManager({
               </TabsContent>
 
               <TabsContent value="csv">
-                <ResultsImportPanel
+                <ResultsCsvImportDialog
                   session={selectedSession}
                   drivers={drivers}
                   driverPrograms={driverPrograms}
@@ -504,6 +504,14 @@ export default function ResultsManager({
                   locked={isLocked}
                   onImport={handleImport}
                   importing={importing}
+                />
+              </TabsContent>
+
+              <TabsContent value="api">
+                <ResultsApiSyncPanel
+                  session={selectedSession}
+                  selectedEvent={selectedEvent}
+                  locked={isLocked}
                 />
               </TabsContent>
 
