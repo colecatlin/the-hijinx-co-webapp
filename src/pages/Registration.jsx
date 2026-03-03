@@ -422,8 +422,10 @@ function RegistrationFlow({ user }) {
         entry_status: 'Registered',
         payment_status: 'Unpaid',
         tech_status: 'Not Inspected',
-        waiver_status: 'Missing',
-        compliance_status: 'Clear',
+        waiver_verified: false,
+        license_verified: false,
+        transponder_verified: false,
+        created_by_user_id: user?.id,
       };
       const existing = await base44.entities.Entry.filter({ event_id: eventId, driver_id: myDriver.id });
       let result;

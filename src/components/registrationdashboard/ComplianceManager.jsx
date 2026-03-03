@@ -139,8 +139,8 @@ export default function ComplianceManager({
     entries.forEach(entry => {
       const entryFlags = [];
 
-      // Waiver — use waiver_status field
-      const waiverOk = entry.waiver_status === 'Verified';
+      // Waiver — use waiver_verified boolean
+      const waiverOk = entry.waiver_verified === true;
       if (!waiverOk) {
         entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
         flags.waivers++;
@@ -219,11 +219,11 @@ export default function ComplianceManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const nextVerified = entry.waiver_status === 'Verified' ? 'Missing' : 'Verified';
-    await updateEntryAsync({ id: entry.id, data: { waiver_status: nextVerified } });
+    const nextVerified = !entry.waiver_verified;
+    await updateEntryAsync({ id: entry.id, data: { waiver_verified: nextVerified } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id,
-      nextVerified === 'Verified' ? 'Waiver verified' : 'Waiver unverified');
-    toast.success(nextVerified === 'Verified' ? 'Waiver verified' : 'Waiver cleared');
+      nextVerified ? 'Waiver verified' : 'Waiver unverified');
+    toast.success(nextVerified ? 'Waiver verified' : 'Waiver cleared');
   };
 
   // ── License status update ──────────────────────────────────────────────────
@@ -232,7 +232,7 @@ export default function ComplianceManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    await updateEntryAsync({ id: entry.id, data: { license_status: newStatus } });
+    await updateEntryAsync({ id: entry.id, data: { license_verified: newStatus === 'Valid' } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, `License status set to ${newStatus}`);
     toast.success(`License marked as ${newStatus}`);
   };
@@ -240,7 +240,7 @@ export default function ComplianceManager({
   // ── Notes save ─────────────────────────────────────────────────────────────
   const handleSaveNotes = async () => {
     if (!selectedEntry) return;
-    await updateEntryAsync({ id: selectedEntry.id, data: { compliance_notes: notesValue } });
+    await updateEntryAsync({ id: selectedEntry.id, data: { notes: notesValue } });
     await writeOperationLog('compliance_updated', selectedEntry.id, selectedEvent.id, 'Compliance notes updated');
     setEditingNotes(false);
     toast.success('Notes saved');
@@ -433,11 +433,9 @@ export default function ComplianceManager({
                           : <span className="text-yellow-400">✗ Missing</span>}
                       </td>
                       <td className="py-2 px-3">
-                        {entry.license_status === 'Unknown'
-                          ? <span className="text-orange-400">✗ Unknown</span>
-                          : entry.license_status === 'Expired'
-                          ? <span className="text-red-400">Expired</span>
-                          : <span className="text-green-400">✓ Valid</span>}
+                        {entry.license_verified
+                          ? <span className="text-green-400">✓ Verified</span>
+                          : <span className="text-orange-400">✗ Not Verified</span>}
                       </td>
                       <td className="py-2 px-3 text-xs text-gray-400">—</td>
                       <td className="py-2 px-3 text-xs text-gray-400">—</td>
@@ -498,15 +496,12 @@ export default function ComplianceManager({
                   <p className="text-white font-medium">{selectedEntry.tech_status || '—'}</p>
                 </div>
                 <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">License #</p>
-                  <p className="text-white font-medium">{selectedEntry.license_number || '—'}</p>
+                  <p className="text-xs text-gray-400 mb-1">License Verified</p>
+                  <p className="text-white font-medium">{selectedEntry.license_verified ? '✓ Yes' : '✗ No'}</p>
                 </div>
                 <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">License Expires</p>
-                  <p className={`font-medium ${selectedEntry.license_expiration_date && selectedEntry.license_expiration_date < today ? 'text-red-400' : 'text-white'}`}>
-                    {selectedEntry.license_expiration_date || '—'}
-                    {selectedEntry.license_expiration_date && selectedEntry.license_expiration_date < today && ' (EXPIRED)'}
-                  </p>
+                  <p className="text-xs text-gray-400 mb-1">Transponder</p>
+                  <p className="text-white font-medium">{selectedEntry.transponder_id || '—'}</p>
                 </div>
               </div>
 
@@ -518,10 +513,10 @@ export default function ComplianceManager({
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.waiver_status === 'Verified' ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
+                    className={`w-full border-gray-700 ${selectedEntry.waiver_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    {selectedEntry.waiver_status === 'Verified' ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
+                    {selectedEntry.waiver_verified ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
                   </Button>
                 </div>
               )}
@@ -529,18 +524,18 @@ export default function ComplianceManager({
               {/* License Status (admin only) */}
               {isAdmin && (
                 <div className="border-t border-gray-700 pt-4 space-y-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase">License Status</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['Unknown', 'Valid', 'Expired'].map(status => (
+                  <p className="text-xs font-medium text-gray-400 uppercase">License Verified</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[true, false].map(verified => (
                       <Button
-                        key={status}
+                        key={String(verified)}
                         size="sm"
-                        onClick={() => handleUpdateLicenseStatus(selectedEntry, status)}
+                        onClick={() => handleUpdateLicenseStatus(selectedEntry, verified ? 'Valid' : 'Unknown')}
                         disabled={updatePending}
-                        variant={selectedEntry.license_status === status ? 'default' : 'outline'}
-                        className={`border-gray-700 ${selectedEntry.license_status === status ? 'bg-blue-600 text-white' : 'text-gray-300'}`}
+                        variant={selectedEntry.license_verified === verified ? 'default' : 'outline'}
+                        className={`border-gray-700 ${selectedEntry.license_verified === verified ? 'bg-blue-600 text-white' : 'text-gray-300'}`}
                       >
-                        {status}
+                        {verified ? 'Verified' : 'Not Verified'}
                       </Button>
                     ))}
                   </div>
@@ -559,16 +554,16 @@ export default function ComplianceManager({
                 </div>
               )}
 
-              {/* Compliance notes */}
+              {/* Notes */}
               <div className="border-t border-gray-700 pt-4 space-y-2">
-                <p className="text-xs font-medium text-gray-400 uppercase">Compliance Notes</p>
+                <p className="text-xs font-medium text-gray-400 uppercase">Notes</p>
                 {!editingNotes ? (
                   <>
-                    {selectedEntry.compliance_notes
-                      ? <p className="text-sm text-gray-300 whitespace-pre-line">{selectedEntry.compliance_notes}</p>
+                    {selectedEntry.notes
+                      ? <p className="text-sm text-gray-300 whitespace-pre-line">{selectedEntry.notes}</p>
                       : <p className="text-xs text-gray-500">No notes</p>}
                     {isAdmin && (
-                      <Button size="sm" variant="outline" onClick={() => setEditingNotes(true)} className="border-gray-700 text-gray-300">
+                      <Button size="sm" variant="outline" onClick={() => { setNotesValue(selectedEntry.notes || ''); setEditingNotes(true); }} className="border-gray-700 text-gray-300">
                         <FileText className="w-3.5 h-3.5 mr-1.5" /> Edit Notes
                       </Button>
                     )}
@@ -580,7 +575,7 @@ export default function ComplianceManager({
                       onChange={e => setNotesValue(e.target.value)}
                       rows={3}
                       className="bg-[#262626] border-gray-700 text-white text-sm"
-                      placeholder="Compliance notes..."
+                      placeholder="Notes..."
                     />
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => setEditingNotes(false)} className="flex-1 border-gray-700">Cancel</Button>

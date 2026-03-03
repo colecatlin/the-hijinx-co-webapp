@@ -221,7 +221,7 @@ export default function CheckInManager({
     }
     if (isCheckedIn) {
       // Un-check-in — set entry_status back to Registered
-      await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Registered' } });
+      await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Registered', checkin_time: null, checked_in_by_user_id: null } });
       return;
     }
     const blockers = getCheckInBlockers(formData);
@@ -235,14 +235,28 @@ export default function CheckInManager({
       return;
     }
     // Set entry_status to Checked In
-    await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
+    await updateEntryAsync({
+      id: selectedEntry.id,
+      data: {
+        entry_status: 'Checked In',
+        checkin_time: new Date().toISOString(),
+        checked_in_by_user_id: currentUser?.id,
+      },
+    });
   };
 
   const handleOverrideCheckIn = async () => {
     setShowOverrideDialog(false);
     setPendingCheckIn(false);
     // Set entry_status to Checked In with admin override
-    await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
+    await updateEntryAsync({
+      id: selectedEntry.id,
+      data: {
+        entry_status: 'Checked In',
+        checkin_time: new Date().toISOString(),
+        checked_in_by_user_id: currentUser?.id,
+      },
+    });
     // Log override
     try {
       await base44.asServiceRole.entities.OperationLog.create({
@@ -262,8 +276,8 @@ export default function CheckInManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const nextVerified = !formData.waiver_status || formData.waiver_status === 'Missing' ? 'Verified' : 'Missing';
-    await updateEntryAsync({ id: selectedEntry.id, data: { waiver_status: nextVerified } });
+    const nextVerified = !formData.waiver_verified;
+    await updateEntryAsync({ id: selectedEntry.id, data: { waiver_verified: nextVerified } });
   };
 
   const handleTogglePayment = async () => {
@@ -444,7 +458,7 @@ export default function CheckInManager({
                 <div>
                   <p className="text-xs text-green-400 font-medium mb-1">Waiver</p>
                   <p className="text-sm font-semibold text-white">
-                    {myEntry.waiver_verified === true ? '✓ Verified' : '✗ Missing'}
+                    {myEntry.waiver_verified ? '✓ Verified' : '✗ Missing'}
                   </p>
                 </div>
               </div>
@@ -656,10 +670,10 @@ export default function CheckInManager({
                   {formData.entry_status === 'Checked In' ? 'Checked In ✓' : 'Not Checked In'}
                 </Badge>
                 <Badge
-                  variant={formData.waiver_status === 'Verified' ? 'default' : 'secondary'}
-                  className={`text-xs ${formData.waiver_status === 'Verified' ? 'bg-green-600' : ''}`}
+                  variant={formData.waiver_verified ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.waiver_verified ? 'bg-green-600' : ''}`}
                 >
-                  {formData.waiver_status === 'Verified' ? 'Waiver ✓' : 'Waiver ✗'}
+                  {formData.waiver_verified ? 'Waiver ✓' : 'Waiver ✗'}
                 </Badge>
                 <Badge
                   variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
@@ -716,12 +730,12 @@ export default function CheckInManager({
                 disabled={updateMutation.isPending}
                 variant="outline"
                 className={`w-full border-gray-700 ${
-                  formData.waiver_status === 'Verified'
+                  formData.waiver_verified
                     ? 'bg-green-900/20 text-green-300 border-green-700'
                     : 'text-gray-300 hover:bg-gray-800'
                 }`}
               >
-                {formData.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
               </Button>
 
               <Button
