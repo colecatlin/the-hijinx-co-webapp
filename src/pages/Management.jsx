@@ -18,7 +18,7 @@ export default function Management() {
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
-        <ManagementShell title="Management" subtitle="Admin studio for Index46 data and site systems" maxWidth="max-w-6xl">
+        <ManagementShell title="Management" subtitle="Admin studio for Index46 data and site systems" maxWidth="max-w-none">
           <StatsBar />
 
           <div className="mt-6">
