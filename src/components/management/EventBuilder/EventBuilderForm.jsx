@@ -54,7 +54,7 @@ function generateSlug(name) {
     .replace(/-+/g, '-');
 }
 
-export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin, isLiveMode, onArchiveAttempt }) {
+export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin, isLiveMode, onArchiveAttempt, canEditEventCore = true, canApproveAsTrack = false, canApproveAsSeries = false }) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     track_id: '',
@@ -198,6 +198,10 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   });
 
   const handleSave = (publish = false) => {
+    if (!canEditEventCore && !isAdmin) {
+      toast.error('You do not have planning rights to edit this event.');
+      return;
+    }
     if (!validate()) return;
 
     const selectedSeries = activeSeries.find(s => s.id === formData.series_id);
@@ -285,7 +289,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 <Select
                   value={formData.track_id}
                   onValueChange={v => handleChange('track_id', v)}
-                  disabled={!isAdmin || isLiveMode}
+                  disabled={!canEditEventCore || isLiveMode}
                 >
                   <SelectTrigger
                     className={`bg-[#262626] border-gray-700 text-white ${
@@ -312,7 +316,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 <Select
                   value={formData.series_id}
                   onValueChange={v => handleChange('series_id', v)}
-                  disabled={!isAdmin || isLiveMode}
+                  disabled={!canEditEventCore || isLiveMode}
                 >
                   <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
                     <SelectValue placeholder="Select series..." />
@@ -338,7 +342,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.season}
                 onChange={e => handleChange('season', e.target.value)}
                 placeholder="e.g., 2024"
-                disabled={!isAdmin || isLiveMode}
+                disabled={!canEditEventCore || isLiveMode}
                 className="bg-[#262626] border-gray-700 text-white"
               />
             </div>
@@ -352,7 +356,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.name}
                 onChange={e => handleChange('name', e.target.value)}
                 placeholder="Enter event name"
-                disabled={!isAdmin || isLiveMode}
+                disabled={!canEditEventCore || isLiveMode}
                 className={`bg-[#262626] border-gray-700 text-white ${
                   errors.name ? 'border-red-500' : ''
                 }`}
@@ -366,7 +370,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.slug}
                 onChange={e => handleChange('slug', e.target.value)}
                 placeholder="event-slug"
-                disabled={!isAdmin}
+                disabled={!canEditEventCore}
                 className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
               />
             </div>
@@ -381,7 +385,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   type="date"
                   value={formData.event_date}
                   onChange={e => handleChange('event_date', e.target.value)}
-                  disabled={!isAdmin || isLiveMode}
+                  disabled={!canEditEventCore || isLiveMode}
                   className={`bg-[#262626] border-gray-700 text-white ${
                     errors.event_date ? 'border-red-500' : ''
                   }`}
@@ -399,7 +403,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   type="date"
                   value={formData.end_date}
                   onChange={e => handleChange('end_date', e.target.value)}
-                  disabled={!isAdmin || isLiveMode}
+                  disabled={!canEditEventCore || isLiveMode}
                   className={`bg-[#262626] border-gray-700 text-white ${
                     errors.end_date ? 'border-red-500' : ''
                   }`}
@@ -416,7 +420,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
               <Select
                 value={formData.timezone}
                 onValueChange={v => handleChange('timezone', v)}
-                disabled={!isAdmin}
+                disabled={!canEditEventCore}
               >
                 <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
                   <SelectValue />
@@ -438,7 +442,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 <Select
                   value={formData.status}
                   onValueChange={v => handleChange('status', v)}
-                  disabled={!isAdmin}
+                  disabled={!canEditEventCore}
                 >
                   <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
                     <SelectValue />
@@ -460,7 +464,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   value={formData.round_number}
                   onChange={e => handleChange('round_number', e.target.value)}
                   placeholder="e.g., 1"
-                  disabled={!isAdmin}
+                  disabled={!canEditEventCore}
                   className="bg-[#262626] border-gray-700 text-white"
                 />
               </div>
@@ -473,7 +477,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.external_uid}
                 onChange={e => handleChange('external_uid', e.target.value)}
                 placeholder="UID from external calendar"
-                disabled={!isAdmin}
+                disabled={!canEditEventCore}
                 className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
               />
             </div>
@@ -485,13 +489,13 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 value={formData.location_note}
                 onChange={e => handleChange('location_note', e.target.value)}
                 placeholder="Additional location details..."
-                disabled={!isAdmin}
+                disabled={!canEditEventCore}
                 className="bg-[#262626] border-gray-700 text-white min-h-[80px]"
               />
             </div>
 
             {/* Action Buttons */}
-            {isAdmin && (
+            {canEditEventCore && (
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-800">
                 <Button
                   onClick={() => handleSave(false)}
@@ -544,11 +548,11 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
               </div>
             )}
 
-            {!isAdmin && (
+            {!canEditEventCore && (
               <div className="pt-4 border-t border-gray-800">
                 <p className="text-amber-500 text-sm flex items-center gap-2">
                   <Shield className="w-4 h-4" />
-                  Admin access required to make changes
+                  You do not have planning rights to edit this event
                 </p>
               </div>
             )}
