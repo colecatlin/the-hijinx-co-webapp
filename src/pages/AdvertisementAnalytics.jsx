@@ -91,11 +91,8 @@ export default function AdvertisementAnalytics() {
 
   return (
     <ManagementLayout currentPage="AdvertisementAnalytics">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Advertisement Analytics</h1>
-          <p className="text-gray-600 mt-1">Track impressions, clicks, and conversions across your ads</p>
-        </div>
+      <ManagementShell title="Advertisement Analytics" subtitle="Track impressions, clicks, and conversions across your ads">
+        <div>
 
         {/* Filters */}
         <Card className="p-6 mb-8">
