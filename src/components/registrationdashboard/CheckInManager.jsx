@@ -719,12 +719,12 @@ export default function CheckInManager({
                 disabled={updateMutation.isPending}
                 variant="outline"
                 className={`w-full border-gray-700 ${
-                  formData.waiver_verified
+                  formData.waiver_status === 'Verified'
                     ? 'bg-green-900/20 text-green-300 border-green-700'
                     : 'text-gray-300 hover:bg-gray-800'
                 }`}
               >
-                {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                {formData.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
               </Button>
 
               <Button
