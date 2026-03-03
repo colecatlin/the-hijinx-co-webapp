@@ -21,6 +21,7 @@ import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import EventResultsSubmissionForm from '@/components/EventResultsSubmissionForm';
+import { isEventPublic } from '@/components/system/publishHelpers';
 
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -43,7 +44,7 @@ export default function EventProfile() {
 
   const { event, track, isLoading, error } = useMotorsportsContext({ eventId });
 
-  const isPublicEvent = event && ['Published', 'Live', 'Completed'].includes(event.status) && event.publish_ready !== false;
+  const isPublicEvent = event && isEventPublic(event);
   const canViewDraft = user?.role === 'admin' && event && event.status === 'Draft';
 
   const { data: sessions = [] } = useQuery({
