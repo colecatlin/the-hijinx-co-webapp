@@ -118,14 +118,11 @@ export default function ManageTracks() {
 
   return (
     <ManagementLayout currentPage="ManageTracks">
-      <ManagementShell title="Manage Tracks" subtitle={`${tracks.length} total tracks`}>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <Button onClick={() => setShowForm(true)} className="bg-gray-900">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Track
-          </Button>
-        </div>
+      <ManagementShell
+        title="Tracks"
+        subtitle={`${tracks.length} total tracks`}
+        actions={<Button onClick={() => setShowForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button>}
+      >
 
         <div className="mb-6 flex items-center gap-3">
           <div className="relative flex-1">
