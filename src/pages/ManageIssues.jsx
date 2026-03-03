@@ -86,14 +86,11 @@ export default function ManageIssues() {
 
   return (
     <ManagementLayout currentPage="ManageIssues">
-      <ManagementShell title="Manage Issues" subtitle="Create and manage magazine issues">
-        <div className="flex justify-between items-center mb-6">
-          <div />
-          <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Issue
-          </Button>
-        </div>
+      <ManagementShell
+        title="Issues"
+        subtitle="Create and manage magazine issues"
+        actions={!showForm ? <Button onClick={handleAdd} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Issue</Button> : undefined}
+      >
 
         {showForm ? (
           <IssueForm
