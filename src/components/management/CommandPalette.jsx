@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { SECTIONS } from './ManagementSidebar';
+import { MANAGEMENT_SECTIONS as SECTIONS } from './managementSections';
 import { Search, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

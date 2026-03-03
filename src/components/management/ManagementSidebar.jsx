@@ -81,5 +81,3 @@ export default function ManagementSidebar({ currentPage, onNavigate }) {
     </div>
   );
 }
-
-export { MANAGEMENT_SECTIONS };
