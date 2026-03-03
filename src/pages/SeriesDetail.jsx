@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
 
 const DQ = applyDefaultQueryOptions();
@@ -132,13 +133,18 @@ export default function SeriesDetail() {
   const isOverride = !!series.override_competition_level;
   const activeClasses = seriesClasses.filter(c => c.active !== false);
 
-  const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
-  const pastEvents = events.filter(e => e.status === 'completed' || e.status === 'cancelled');
+  // Filter to public-visible events only
+  const publicEvents = events.filter(e => isPublicVisible('Event', e));
+  const upcomingEvents = publicEvents.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
+  const pastEvents = publicEvents.filter(e => e.status === 'completed' || e.status === 'cancelled');
 
-  // Season-filtered events
+  // Season-filtered events (public visible only)
   const seasonEvents = useMemo(() => {
-    return allEvents.filter(e => e.series_id === series?.id && e.season === seasonYear)
-      .sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+    return allEvents.filter(e => 
+      e.series_id === series?.id && 
+      e.season === seasonYear && 
+      isPublicVisible('Event', e)
+    ).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
   }, [allEvents, series?.id, seasonYear]);
 
   const tracksMap = useMemo(() => {
