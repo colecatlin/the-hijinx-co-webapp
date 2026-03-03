@@ -26,6 +26,8 @@ import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
+import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
+import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
 import { motion } from 'framer-motion';
 import {
   Select,
@@ -79,6 +81,7 @@ import {
   DoorOpen,
   Radio,
   BookOpen,
+  Gauge,
 } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
@@ -381,7 +384,7 @@ export default function RegistrationDashboard() {
 
   // Check if user has any accessible tabs
   const availableTabs = useMemo(() => {
-    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack'];
+    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'ops_center'];
     return tabKeys.filter(key => canTab(dashboardPermissions, key));
   }, [dashboardPermissions]);
 
@@ -1060,7 +1063,16 @@ export default function RegistrationDashboard() {
                   <BookOpen className="w-4 h-4 mr-2" /> Announcer Pack
                 </TabsTrigger>
               )}
-            </TabsList>
+              {isAdmin && (
+                <TabsTrigger
+                  value="opsCenter"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Gauge className="w-4 h-4 mr-2" /> Ops Center
+                </TabsTrigger>
+              )}
+              </TabsList>
 
             {/* Lazy-mounted tabs: only render active tab content */}
             <div className="mt-6">
@@ -1338,8 +1350,23 @@ export default function RegistrationDashboard() {
                   />
                 </div>
               )}
-            </div>
-          </Tabs>
+
+              {isAdmin && activeTab === 'opsCenter' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <OpsTimeline selectedEvent={selectedEvent} />
+                  </div>
+                  <div>
+                    <LiveControlPanel
+                      selectedEvent={selectedEvent}
+                      selectedSeries={selectedSeries}
+                      invalidateAfterOperation={invalidateAfterOperation}
+                    />
+                  </div>
+                </div>
+              )}
+              </div>
+              </Tabs>
         </div>
 
         {/* Modals */}
