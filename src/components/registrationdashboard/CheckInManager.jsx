@@ -175,7 +175,7 @@ export default function CheckInManager({
 
   const getComplianceBadges = (entry) => {
     const badges = [];
-    if (entry.waiver_status !== 'Verified') badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
+    if (!entry.waiver_verified) badges.push({ label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
     if (entry.payment_status === 'Unpaid') badges.push({ label: 'Unpaid', color: 'bg-red-900/40 text-red-300' });
     if (!entry.tech_status || entry.tech_status === 'Not Inspected' || entry.tech_status === 'Recheck Required') badges.push({ label: 'Tech Pending', color: 'bg-orange-900/40 text-orange-300' });
     return badges;
@@ -223,11 +223,8 @@ export default function CheckInManager({
       return;
     }
     if (isCheckedIn) {
-      // Un-check-in — update both native field and notes
-      const nextNotes = mergeNotes(formData.notes || '', {
-        'INDEX46_CHECKIN_JSON': { checked_in: false },
-      });
-      updateMutation.mutate({ entry_status: 'Registered', notes: nextNotes });
+      // Un-check-in — set entry_status back to Registered
+      await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Registered' } });
       return;
     }
     const blockers = getCheckInBlockers(formData);
@@ -240,27 +237,15 @@ export default function CheckInManager({
       }
       return;
     }
-    const nextNotes = mergeNotes(formData.notes || '', {
-      'INDEX46_CHECKIN_JSON': {
-        checked_in: true,
-        checked_in_at: new Date().toISOString(),
-        checked_in_by_user_id: currentUser?.id,
-      },
-    });
-    updateMutation.mutate({ entry_status: 'Checked In', notes: nextNotes });
+    // Set entry_status to Checked In
+    await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
   };
 
   const handleOverrideCheckIn = async () => {
     setShowOverrideDialog(false);
     setPendingCheckIn(false);
-    const nextNotes = mergeNotes(formData.notes || '', {
-      'INDEX46_CHECKIN_JSON': {
-        checked_in: true,
-        checked_in_at: new Date().toISOString(),
-        checked_in_by_user_id: currentUser?.id,
-      },
-    });
-    updateMutation.mutate({ entry_status: 'Checked In', notes: nextNotes });
+    // Set entry_status to Checked In with admin override
+    await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
     // Log override
     try {
       await base44.asServiceRole.entities.OperationLog.create({
@@ -280,16 +265,8 @@ export default function CheckInManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const complianceBlock = getBlock(formData.notes, 'INDEX46_COMPLIANCE_JSON');
-    const nextVerified = !complianceBlock.waiver_missing;
-    const nextNotes = mergeNotes(formData.notes || '', {
-      'INDEX46_COMPLIANCE_JSON': {
-        waiver_missing: !nextVerified,
-        waiver_verified_at: nextVerified ? new Date().toISOString() : null,
-        waiver_verified_by_user_id: nextVerified ? currentUser?.id : null,
-      },
-    });
-    updateMutation.mutate({ notes: nextNotes });
+    const nextVerified = !formData.waiver_verified;
+    await updateEntryAsync({ id: selectedEntry.id, data: { waiver_verified: nextVerified } });
   };
 
   const handleTogglePayment = async () => {
@@ -297,13 +274,9 @@ export default function CheckInManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const entryBlock = getBlock(formData.notes, 'INDEX46_ENTRY_JSON');
-    const currentPayment = formData.payment_status || entryBlock.payment_status || 'Unpaid';
+    const currentPayment = formData.payment_status || 'Unpaid';
     const nextPayment = currentPayment === 'Paid' ? 'Unpaid' : 'Paid';
-    const nextNotes = mergeNotes(formData.notes || '', {
-      'INDEX46_ENTRY_JSON': { payment_status: nextPayment },
-    });
-    updateMutation.mutate({ payment_status: nextPayment, notes: nextNotes });
+    await updateEntryAsync({ id: selectedEntry.id, data: { payment_status: nextPayment } });
   };
 
   const handleWristbandChange = async (delta) => {
@@ -313,10 +286,7 @@ export default function CheckInManager({
     }
     const newCount = Math.max(0, (formData?.wristband_count || 0) + delta);
     setFormData((prev) => ({ ...prev, wristband_count: newCount }));
-    const nextNotes = mergeNotes(formData.notes || '', {
-      'INDEX46_CHECKIN_JSON': { wristband_count: newCount },
-    });
-    updateMutation.mutate({ notes: nextNotes });
+    await updateEntryAsync({ id: selectedEntry.id, data: { wristband_count: newCount } });
   };
 
   const handleNotesChange = () => {
@@ -377,7 +347,7 @@ export default function CheckInManager({
     setQrPayloadInput('');
   };
 
-  const handleOneTapCheckIn = () => {
+  const handleOneTapCheckIn = async () => {
     const blockers = getCheckInBlockers(formData);
     if (blockers.length > 0) {
       if (isAdmin) {
@@ -388,7 +358,7 @@ export default function CheckInManager({
       }
       return;
     }
-    updateMutation.mutate({ entry_status: 'Checked In' });
+    await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
   };
 
   // Reset local selection when event changes
@@ -477,7 +447,7 @@ export default function CheckInManager({
                 <div>
                   <p className="text-xs text-green-400 font-medium mb-1">Waiver</p>
                   <p className="text-sm font-semibold text-white">
-                    {myEntry.waiver_verified === true || myEntry.waiver_status === 'Verified' ? '✓ Verified' : '✗ Missing'}
+                    {myEntry.waiver_verified === true ? '✓ Verified' : '✗ Missing'}
                   </p>
                 </div>
               </div>
@@ -689,10 +659,10 @@ export default function CheckInManager({
                   {formData.entry_status === 'Checked In' ? 'Checked In ✓' : 'Not Checked In'}
                 </Badge>
                 <Badge
-                  variant={formData.waiver_status === 'Verified' ? 'default' : 'secondary'}
-                  className={`text-xs ${formData.waiver_status === 'Verified' ? 'bg-green-600' : ''}`}
+                  variant={formData.waiver_verified ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.waiver_verified ? 'bg-green-600' : ''}`}
                 >
-                  {formData.waiver_status === 'Verified' ? 'Waiver ✓' : 'Waiver ✗'}
+                  {formData.waiver_verified ? 'Waiver ✓' : 'Waiver ✗'}
                 </Badge>
                 <Badge
                   variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
@@ -749,12 +719,12 @@ export default function CheckInManager({
                 disabled={updateMutation.isPending}
                 variant="outline"
                 className={`w-full border-gray-700 ${
-                  formData.waiver_status === 'Verified'
+                  formData.waiver_verified
                     ? 'bg-green-900/20 text-green-300 border-green-700'
                     : 'text-gray-300 hover:bg-gray-800'
                 }`}
               >
-                {formData.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
               </Button>
 
               <Button
