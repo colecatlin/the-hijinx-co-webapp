@@ -9,10 +9,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash, ExternalLink } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
 import DriverForm from '@/components/management/DriverForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
@@ -614,6 +615,17 @@ export default function ManageDrivers() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(buildRaceCoreUrl({
+                            tab: 'entries',
+                            focusDriverId: driver.id,
+                          }))}
+                          title="Open in Race Core"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
