@@ -30,13 +30,25 @@ export default function EventDirectory() {
 
   const { data: upcomingEvents = [], isLoading } = useQuery({
     queryKey: ['events-upcoming'],
-    queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'event_date', 200),
+    queryFn: async () => {
+      const all = await base44.entities.Event.list('event_date', 500);
+      return all.filter(e => 
+        ['Published', 'Live', 'upcoming'].includes(e.status) && 
+        e.publish_ready !== false
+      );
+    },
     staleTime: 3 * 60 * 1000,
   });
 
   const { data: completedEvents = [], isLoading: completedLoading } = useQuery({
     queryKey: ['events-completed'],
-    queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-event_date', 200),
+    queryFn: async () => {
+      const all = await base44.entities.Event.list('-event_date', 500);
+      return all.filter(e => 
+        ['Completed', 'completed'].includes(e.status) && 
+        e.publish_ready !== false
+      );
+    },
     enabled: activeTab === 'results',
     staleTime: 5 * 60 * 1000,
   });

@@ -83,6 +83,9 @@ export default function ManageEvents() {
     queryFn: () => base44.entities.Track.list(),
   });
 
+  const [approvalFilter, setApprovalFilter] = useState('all');
+  const [publishReadyFilter, setPublishReadyFilter] = useState('all');
+
   const filteredEvents = useMemo(() => {
     let result = events.filter(event =>
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,6 +94,16 @@ export default function ManageEvents() {
       result = result.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
     } else if (statusFilter === 'finished') {
       result = result.filter(e => e.status === 'completed' || e.status === 'cancelled');
+    }
+    if (approvalFilter === 'pending') {
+      result = result.filter(e => e.track_approval_status === 'pending' || e.series_approval_status === 'pending');
+    } else if (approvalFilter === 'approved') {
+      result = result.filter(e => e.track_approval_status === 'approved' && e.series_approval_status === 'approved');
+    }
+    if (publishReadyFilter === 'ready') {
+      result = result.filter(e => e.publish_ready === true);
+    } else if (publishReadyFilter === 'blocked') {
+      result = result.filter(e => e.publish_ready === false);
     }
     result = [...result].sort((a, b) => {
       const dateA = a.event_date ? new Date(a.event_date + 'T12:00:00') : new Date(0);
@@ -102,7 +115,7 @@ export default function ManageEvents() {
       return 0;
     });
     return result;
-  }, [events, searchQuery, sortBy, statusFilter]);
+  }, [events, searchQuery, sortBy, statusFilter, approvalFilter, publishReadyFilter]);
 
   if (showAIGenerator) {
     return (
@@ -293,6 +306,26 @@ export default function ManageEvents() {
               <SelectItem value="name_desc">Name (Z–A)</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={approvalFilter} onValueChange={setApprovalFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Approvals" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Approvals</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Both Approved</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={publishReadyFilter} onValueChange={setPublishReadyFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Publish Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="ready">Ready</SelectItem>
+              <SelectItem value="blocked">Blocked</SelectItem>
+            </SelectContent>
+          </Select>
           {isAdmin && selectedEvents.length > 0 && (
             <Button 
               variant="destructive" 
@@ -335,10 +368,13 @@ export default function ManageEvents() {
                     />
                   </th>}
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase">Actions</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Status</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Track Appr.</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series Appr.</th>
+                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Publish Ready</th>
+                   <th className="px-6 py-3 text-right text-xs font-bold uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -365,15 +401,40 @@ export default function ManageEvents() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs rounded ${
-                        event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                        event.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {event.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
+                       <span className={`px-2 py-1 text-xs rounded ${
+                         event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                         event.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                         'bg-green-100 text-green-800'
+                       }`}>
+                         {event.status}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4">
+                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
+                         event.track_approval_status === 'approved' ? 'bg-green-100 text-green-800' :
+                         event.track_approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                         'bg-yellow-100 text-yellow-800'
+                       }`}>
+                         {event.track_approval_status || 'pending'}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4">
+                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
+                         event.series_approval_status === 'approved' ? 'bg-green-100 text-green-800' :
+                         event.series_approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                         'bg-yellow-100 text-yellow-800'
+                       }`}>
+                         {event.series_approval_status || 'pending'}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4">
+                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
+                         event.publish_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                       }`}>
+                         {event.publish_ready ? 'Ready' : 'Blocked'}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4 text-right space-x-2">
                       <Button 
                         variant="outline" 
                         size="sm" 

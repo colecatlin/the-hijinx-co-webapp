@@ -43,7 +43,7 @@ export default function EventProfile() {
 
   const { event, track, isLoading, error } = useMotorsportsContext({ eventId });
 
-  const isPublicEvent = event && ['Published', 'Live', 'Completed'].includes(event.status);
+  const isPublicEvent = event && ['Published', 'Live', 'Completed'].includes(event.status) && event.publish_ready !== false;
   const canViewDraft = user?.role === 'admin' && event && event.status === 'Draft';
 
   const { data: sessions = [] } = useQuery({
