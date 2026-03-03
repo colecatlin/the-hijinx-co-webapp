@@ -526,72 +526,24 @@ export default function ComplianceManager({
                 </div>
               )}
 
-              {/* License (admin: edit + verify, driver: input only) */}
-              {selectedEntry.compliance && (
+              {/* License Status (admin only) */}
+              {isAdmin && (
                 <div className="border-t border-gray-700 pt-4 space-y-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase">License</p>
-                  {!editingLicense || editingLicense.entryId !== selectedEntry.id ? (
-                    <>
-                      <div className="grid grid-cols-2 gap-2 text-xs bg-gray-900/30 rounded p-2">
-                        <div>
-                          <p className="text-gray-400">Number</p>
-                          <p className="text-white font-medium">{selectedEntry.compliance.license?.license_number || '—'}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Expires</p>
-                          <p className="text-white font-medium">{selectedEntry.compliance.license?.expires_on || '—'}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className={`text-xs font-medium ${
-                          isLicenseVerified(selectedEntry.compliance) ? 'text-green-400' : 'text-yellow-400'
-                        }`}>
-                          Status: {isLicenseVerified(selectedEntry.compliance) ? '✓ Verified' : '✗ Not Verified'}
-                        </p>
-                      </div>
-                      {isAdmin ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingLicense({ entryId: selectedEntry.id, licenseNumber: selectedEntry.compliance.license?.license_number || '', expiresOn: selectedEntry.compliance.license?.expires_on || '' })}
-                          className="w-full border-gray-700 text-gray-300"
-                        >
-                          Edit License
-                        </Button>
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">License is verified by event staff.</p>
-                      )}
-                    </>
-                  ) : (
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="License number"
-                        value={editingLicense.licenseNumber || ''}
-                        onChange={(e) => setEditingLicense({ ...editingLicense, licenseNumber: e.target.value })}
-                        className="bg-[#262626] border-gray-700 text-white text-xs"
-                      />
-                      <Input
-                        type="date"
-                        value={editingLicense.expiresOn || ''}
-                        onChange={(e) => setEditingLicense({ ...editingLicense, expiresOn: e.target.value })}
-                        className="bg-[#262626] border-gray-700 text-white text-xs"
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setEditingLicense(null)} className="flex-1 border-gray-700">Cancel</Button>
-                        <Button size="sm" onClick={() => handleSaveLicense(selectedEntry)} disabled={updatePending} className="flex-1 bg-blue-600 hover:bg-blue-700">Save</Button>
-                      </div>
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleVerifyLicense(selectedEntry)}
-                          disabled={updatePending || !editingLicense.licenseNumber}
-                          className="w-full bg-green-600 hover:bg-green-700"
-                        >
-                          Verify License
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  <p className="text-xs font-medium text-gray-400 uppercase">License Status</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['Unknown', 'Valid', 'Expired'].map(status => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        onClick={() => handleUpdateLicenseStatus(selectedEntry, status)}
+                        disabled={updatePending}
+                        variant={selectedEntry.license_status === status ? 'default' : 'outline'}
+                        className={`border-gray-700 ${selectedEntry.license_status === status ? 'bg-blue-600 text-white' : 'text-gray-300'}`}
+                      >
+                        {status}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
 
