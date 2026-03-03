@@ -91,13 +91,13 @@ export default function ManagementSidebar({ onNavigate }) {
   // Filter logic
   const trimmed = query.trim().toLowerCase();
   const filteredSections = trimmed
-    ? MANAGEMENT_SECTIONS
+    ? SECTIONS
         .map(section => ({
           ...section,
           items: section.items.filter(item => item.name.toLowerCase().includes(trimmed)),
         }))
         .filter(section => section.items.length > 0)
-    : MANAGEMENT_SECTIONS;
+    : SECTIONS;
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto sticky top-0 flex flex-col">
