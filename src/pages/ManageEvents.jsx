@@ -19,6 +19,8 @@ import EventSessionsSection from '@/components/management/EventManagement/EventS
 import EventResultsSection from '@/components/management/EventManagement/EventResultsSection';
 import EventResultsInputSection from '@/components/management/EventManagement/EventResultsInputSection';
 import AIEventGenerator from '@/components/management/AIEventGenerator';
+import ActivityTab from '@/components/management/ActivityTab';
+import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageEvents() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -201,17 +203,56 @@ export default function ManageEvents() {
       <ManagementShell
         title="Events"
         subtitle={`${events.length} total events`}
-        actions={<>
+        actions={activeTab === 'data' ? <>
           <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />AI Generate</Button>
           <Button onClick={() => setShowAddForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Event</Button>
-        </>}
+        </> : undefined}
       >
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
-          <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
-        <div className="mb-4 flex gap-2">
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Events</p>
+                <p className="text-2xl font-bold text-gray-900">{events.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Upcoming</p>
+                <p className="text-2xl font-bold text-blue-600">{events.filter(e => e.status === 'upcoming').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">In Progress</p>
+                <p className="text-2xl font-bold text-green-600">{events.filter(e => e.status === 'in_progress').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Completed</p>
+                <p className="text-2xl font-bold text-gray-500">{events.filter(e => e.status === 'completed').length}</p>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
+              <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+            </div>
+            <Button onClick={() => setShowAddForm(true)} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Event
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
+              <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+            </div>
+
+            <div className="mb-4 flex gap-2">
           {['all', 'upcoming', 'finished'].map((f) => (
             <button
               key={f}
@@ -357,7 +398,43 @@ export default function ManageEvents() {
               </tbody>
             </table>
           </div>
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Event Relationships</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Series</p>
+                  <p className="text-lg font-semibold">Parent Series</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Track</p>
+                  <p className="text-lg font-semibold">Venue</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Sessions</p>
+                  <p className="text-lg font-semibold">Race Schedule</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Manage event relationships by editing the event's sections.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <PublishTab 
+              entityCount={events.length}
+              draftCount={0}
+              liveCount={events.length}
+              hasPublishControl={false}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Event" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
