@@ -226,45 +226,15 @@ export default function ComplianceManager({
     toast.success(nextVerified === 'Verified' ? 'Waiver verified' : 'Waiver cleared');
   };
 
-  // ── License save ───────────────────────────────────────────────────────────
-  const handleSaveLicense = async (entry) => {
-    if (!editingLicense) return;
+  // ── License status update ──────────────────────────────────────────────────
+  const handleUpdateLicenseStatus = async (entry, newStatus) => {
     if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const nextNotes = mergeNotes(entry.notes || '', {
-      'INDEX46_COMPLIANCE_JSON': {
-        license_number: editingLicense.licenseNumber || null,
-        license_expires_on: editingLicense.expiresOn || null,
-      },
-    });
-    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
-    await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License details updated');
-    setEditingLicense(null);
-    toast.success('License details saved');
-  };
-
-  // ── License verify ──────────────────────────────────────────────────────────
-  const handleVerifyLicense = async (entry) => {
-    if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
-      toast.error(GUARD_ERROR_MESSAGE);
-      return;
-    }
-    const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
-    if (!complianceBlock.license_number) {
-      toast.error('License number required');
-      return;
-    }
-    const nextNotes = mergeNotes(entry.notes || '', {
-      'INDEX46_COMPLIANCE_JSON': {
-        license_verified_at: new Date().toISOString(),
-        license_verified_by_user_id: currentUser?.id || null,
-      },
-    });
-    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
-    await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, 'License verified');
-    toast.success('License verified');
+    await updateEntryAsync({ id: entry.id, data: { license_status: newStatus } });
+    await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, `License status set to ${newStatus}`);
+    toast.success(`License marked as ${newStatus}`);
   };
 
   // ── Notes save ─────────────────────────────────────────────────────────────
