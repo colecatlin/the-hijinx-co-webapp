@@ -384,7 +384,6 @@ export default function ManageDriverClaims() {
             </TabsContent>
           </Tabs>
         )}
-      </div>
 
       {/* Review Dialog */}
       <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>

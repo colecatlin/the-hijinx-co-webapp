@@ -654,7 +654,6 @@ export default function ManageDrivers() {
             No drivers found
           </div>
         )}
-      </div>
 
         <DriverDuplicateFinder
           drivers={drivers}
