@@ -14,6 +14,8 @@ import { createPageUrl } from '@/components/utils';
 import TeamForm from '@/components/management/TeamForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
+import ActivityTab from '@/components/management/ActivityTab';
+import PublishTab from '@/components/management/PublishTab';
 import TeamCoreDetailsSection from '@/components/management/TeamManagement/TeamCoreDetailsSection';
 import TeamProgramsSection from '@/components/management/TeamManagement/TeamProgramsSection';
 import TeamVehiclesSection from '@/components/management/TeamManagement/TeamVehiclesSection';
@@ -32,6 +34,7 @@ export default function ManageTeams() {
   const [enriching, setEnriching] = useState(false);
   const [enrichResult, setEnrichResult] = useState(null);
   const [selectedTeams, setSelectedTeams] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -258,7 +261,7 @@ export default function ManageTeams() {
       <ManagementShell
         title="Teams"
         subtitle={`${teams.length} total teams`}
-        actions={<>
+        actions={activeTab === 'data' ? <>
           <input id="import-teams" type="file" accept=".json" onChange={handleImport} className="hidden" />
           <Button variant="outline" onClick={() => downloadTemplate('team', 'Team')} title="Download import template"><Download className="w-4 h-4" /></Button>
           <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
@@ -266,8 +269,39 @@ export default function ManageTeams() {
           <Button onClick={handleNascarImport} disabled={importing} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Sparkles className="w-4 h-4 mr-2" />{importing ? 'Importing...' : 'NASCAR Import'}</Button>
           <Button onClick={handleEnrich} disabled={enriching} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />{enriching ? 'Enriching...' : 'AI Enrich'}</Button>
           <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
-        </>}
+        </> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Teams</p>
+                <p className="text-2xl font-bold text-gray-900">{teams.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{teams.filter(t => t.status === 'Active').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Inactive</p>
+                <p className="text-2xl font-bold text-gray-500">{teams.filter(t => t.status !== 'Active').length}</p>
+              </div>
+            </div>
+            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Team
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
 
         {importResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
@@ -403,11 +437,47 @@ export default function ManageTeams() {
           </div>
         )}
 
-        {!isLoading && filteredTeams.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No teams found
-          </div>
-        )}
+            {!isLoading && filteredTeams.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                No teams found
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Team Relationships</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Drivers</p>
+                  <p className="text-lg font-semibold">In Roster</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Series</p>
+                  <p className="text-lg font-semibold">Programs</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Vehicles</p>
+                  <p className="text-lg font-semibold">Fleet</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Manage team relationships by editing the team's sections.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <PublishTab 
+              entityCount={teams.length}
+              draftCount={0}
+              liveCount={teams.length}
+              hasPublishControl={false}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Team" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
