@@ -9,7 +9,7 @@ import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 const DQ = applyDefaultQueryOptions();
 
 // onNavigate(params) — called with URLSearchParams-style object to deep-link into Entries tab
-export default function EntriesSummaryCard({ selectedEvent, entries = [], onNavigate }) {
+export default function EntriesSummaryCard({ selectedEvent, entries = [], entryCounts = {}, onNavigate }) {
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
@@ -17,6 +17,28 @@ export default function EntriesSummaryCard({ selectedEvent, entries = [], onNavi
   });
 
   const summary = useMemo(() => {
+    // Use entryCounts if provided (from useEntries hook), else fall back to computing
+    if (entryCounts.total !== undefined) {
+      return {
+        total: entryCounts.total,
+        paid: entryCounts.byPayment?.Paid || 0,
+        unpaid: entryCounts.byPayment?.Unpaid || 0,
+        checkedIn: entryCounts.byStatus?.['Checked In'] || 0,
+        notCheckedIn: entryCounts.byStatus?.Registered || 0,
+        teched: entryCounts.teched || 0,
+        notTeched: entryCounts.notTeched || 0,
+        classRows: Object.entries(entryCounts.byClass || {})
+          .map(([classId, items]) => {
+            const cid = classId === 'unassigned' ? '__unassigned__' : classId;
+            if (cid === '__unassigned__') return { label: 'Unassigned', classId: 'unassigned', count: items.length };
+            const sc = seriesClasses.find((c) => c.id === cid);
+            return { label: sc?.class_name || cid, classId: cid, count: items.length };
+          })
+          .sort((a, b) => b.count - a.count),
+      };
+    }
+
+    // Fallback: compute from entries
     const total = entries.length;
     const paid = entries.filter((e) => e.payment_status === 'Paid').length;
     const unpaid = total - paid;
@@ -48,7 +70,7 @@ export default function EntriesSummaryCard({ selectedEvent, entries = [], onNavi
       .sort((a, b) => b.count - a.count);
 
     return { total, paid, unpaid, checkedIn, notCheckedIn, teched, notTeched, classRows };
-  }, [entries, seriesClasses]);
+  }, [entries, entryCounts, seriesClasses]);
 
   const nav = (params) => onNavigate?.(params);
 
