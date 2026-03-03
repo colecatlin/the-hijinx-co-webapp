@@ -436,7 +436,7 @@ export default function ResultsManager({
             )}
 
             {/* Actions card */}
-            {can('results_save') && (
+            {(can('results_save_draft') || can('results_mark_provisional') || can('results_publish_official') || can('results_lock_session') || can('results_unlock_session')) && (
               <Card className="bg-[#171717] border-gray-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs text-gray-400 uppercase tracking-wide">Workflow</CardTitle>
