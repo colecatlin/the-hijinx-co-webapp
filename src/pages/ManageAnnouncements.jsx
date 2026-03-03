@@ -44,15 +44,11 @@ export default function ManageAnnouncements() {
 
   return (
     <ManagementLayout currentPage="ManageAnnouncements">
-      <ManagementShell title="Manage Announcements" subtitle="Create rotating announcements for the top of your site">
-        <div className="flex justify-end mb-6">
-          {!showForm && (
-            <Button onClick={handleAdd}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Announcement
-            </Button>
-          )}
-        </div>
+      <ManagementShell
+        title="Announcements"
+        subtitle="Manage rotating announcements for the top of the site"
+        actions={!showForm ? <Button onClick={handleAdd}><Plus className="w-4 h-4 mr-2" />Add Announcement</Button> : undefined}
+      >
 
         {showForm && (
           <AnnouncementForm
