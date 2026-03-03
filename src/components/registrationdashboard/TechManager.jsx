@@ -12,6 +12,8 @@ import { AlertCircle, Wrench } from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
+import { useTechInspections } from './hooks/useTechInspections';
+import { useTechTemplate } from './hooks/useTechTemplates';
 import TechEntryDrawer from './TechEntryDrawer';
 
 const DQ = applyDefaultQueryOptions();
@@ -77,6 +79,9 @@ export default function TechManager({
     ...DQ,
   });
 
+  // ── Tech inspections & templates ──
+  const { inspections, getByEntry } = useTechInspections(eventId);
+
   // ── Lookups ──
   const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
@@ -138,7 +143,34 @@ export default function TechManager({
   const { mutateAsync: updateEntry, isPending: saving } = useDashboardMutation({
     operationType: 'tech_updated',
     entityName: 'Entry',
-    mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      // Update Entry
+      const result = await base44.entities.Entry.update(id, data);
+      
+      // Update or create TechInspection if status changed
+      if (data.tech_status) {
+        const entry = entries.find(e => e.id === id);
+        if (entry) {
+          const existingInsp = getByEntry(id);
+          const inspectionData = {
+            event_id: eventId,
+            entry_id: id,
+            series_class_id: entry.series_class_id,
+            status: data.tech_status,
+            inspector_user_id: currentUser?.id,
+            inspected_date: new Date().toISOString(),
+          };
+          
+          if (existingInsp) {
+            await base44.entities.TechInspection.update(existingInsp.id, inspectionData);
+          } else {
+            await base44.entities.TechInspection.create(inspectionData);
+          }
+        }
+      }
+      
+      return result;
+    },
     successMessage: 'Tech updated',
     invalidateAfterOperation,
     dashboardContext: dashboardContext ?? { eventId },
