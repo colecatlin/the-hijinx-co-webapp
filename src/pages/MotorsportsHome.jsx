@@ -1,74 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
-  Trophy, Calendar, Flag, Users, Building2, MapPin,
-  ChevronRight, TrendingUp, Clock, Activity, Star,
-  Zap, ArrowRight
+  Users, Building2, MapPin, Zap, Trophy, Flag,
+  Zap as ZapIcon, Shield, Gauge, CheckCircle2, LogIn, LayoutDashboard,
+  ArrowRight
 } from 'lucide-react';
-import { format, parseISO, differenceInDays } from 'date-fns';
 
-const navCards = [
-  { name: 'Standings', icon: Trophy, page: 'StandingsHome', color: 'from-yellow-500 to-amber-600', accent: '#F59E0B' },
-  { name: 'Schedule', icon: Calendar, page: 'ScheduleHome', color: 'from-blue-500 to-indigo-600', accent: '#3B82F6' },
-  { name: 'Results', icon: Flag, page: 'ResultsHome', color: 'from-green-500 to-emerald-600', accent: '#10B981' },
-  { name: 'Drivers', icon: Users, page: 'DriverDirectory', color: 'from-purple-500 to-violet-600', accent: '#8B5CF6' },
-  { name: 'Teams', icon: Building2, page: 'TeamDirectory', color: 'from-rose-500 to-pink-600', accent: '#F43F5E' },
-  { name: 'Tracks', icon: MapPin, page: 'TrackDirectory', color: 'from-teal-500 to-cyan-600', accent: '#14B8A6' },
-  { name: 'Series', icon: Zap, page: 'SeriesHome', color: 'from-orange-500 to-red-600', accent: '#F97316' },
+const quickActionCards = [
+  { title: 'Drivers', subtitle: 'Build your portfolio', icon: Users, page: 'Profile', color: 'purple' },
+  { title: 'Teams', subtitle: 'Showcase your program', icon: Building2, page: 'TeamDirectory', color: 'rose' },
+  { title: 'Tracks', subtitle: 'Own your event data', icon: MapPin, page: 'TrackDirectory', color: 'teal' },
+  { title: 'Series', subtitle: 'Run a season', icon: ZapIcon, page: 'SeriesHome', color: 'orange' },
+  { title: 'Results', subtitle: 'See the truth', icon: Flag, page: 'StandingsHome', color: 'green' },
+  { title: 'Registration', subtitle: 'Register and race', icon: CheckCircle2, page: 'Registration', color: 'blue' },
 ];
 
+const colorMap = {
+  purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', hover: 'hover:bg-purple-500/20', accent: 'text-purple-400' },
+  rose: { bg: 'bg-rose-500/10', border: 'border-rose-500/30', hover: 'hover:bg-rose-500/20', accent: 'text-rose-400' },
+  teal: { bg: 'bg-teal-500/10', border: 'border-teal-500/30', hover: 'hover:bg-teal-500/20', accent: 'text-teal-400' },
+  orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', hover: 'hover:bg-orange-500/20', accent: 'text-orange-400' },
+  green: { bg: 'bg-green-500/10', border: 'border-green-500/30', hover: 'hover:bg-green-500/20', accent: 'text-green-400' },
+  blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', hover: 'hover:bg-blue-500/20', accent: 'text-blue-400' },
+};
+
 export default function MotorsportsHome() {
-  const today = new Date().toISOString().split('T')[0];
-
-  const { data: upcomingEvents = [] } = useQuery({
-    queryKey: ['events-upcoming'],
-    queryFn: () => base44.entities.Event.filter({ status: 'upcoming' }, 'event_date', 8),
-    staleTime: 3 * 60 * 1000,
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['auth-status'],
+    queryFn: () => base44.auth.isAuthenticated(),
   });
 
-  const { data: allDrivers = [] } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    enabled: !!isAuthenticated,
+  });
+
+  // Fetch counts for stats (lightweight)
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers-count'],
+    queryFn: () => base44.entities.Driver.list(),
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: allTeams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+  const { data: events = [] } = useQuery({
+    queryKey: ['events-count'],
+    queryFn: () => base44.entities.Event.list(),
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: allTracks = [] } = useQuery({
-    queryKey: ['tracks'],
-    queryFn: () => base44.entities.Track.list(),
+  const { data: results = [] } = useQuery({
+    queryKey: ['results-count'],
+    queryFn: () => base44.entities.Results.list(),
     staleTime: 10 * 60 * 1000,
   });
-
-  const { data: allSeries = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    staleTime: 10 * 60 * 1000,
-  });
-
-  const { data: recentResults = [] } = useQuery({
-    queryKey: ['events-completed'],
-    queryFn: () => base44.entities.Event.filter({ status: 'completed' }, '-event_date', 5),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const stats = [
-    { label: 'Drivers', value: allDrivers.length, icon: Users, accent: '#8B5CF6' },
-    { label: 'Teams', value: allTeams.length, icon: Building2, accent: '#F43F5E' },
-    { label: 'Tracks', value: allTracks.length, icon: MapPin, accent: '#14B8A6' },
-    { label: 'Active Series', value: allSeries.length, icon: Zap, accent: '#F97316' },
-  ];
-
-  const nextEvent = upcomingEvents.find(e => e.event_date);
-  const daysUntil = nextEvent?.event_date ? differenceInDays(parseISO(nextEvent.event_date), parseISO(new Date().toISOString().split('T')[0])) : null;
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
