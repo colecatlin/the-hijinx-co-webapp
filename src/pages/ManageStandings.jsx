@@ -144,8 +144,8 @@ export default function ManageStandings() {
     <ManagementLayout currentPage="ManageStandings">
       <ManagementShell title="Manage Standings" subtitle="Update championship standings">
         <div className="flex justify-end gap-2 mb-6">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleSyncFromSheets}
               disabled={syncStatus === 'loading'}
               className={syncStatus === 'success' ? 'border-green-500 text-green-700' : syncStatus === 'error' ? 'border-red-500 text-red-700' : ''}
