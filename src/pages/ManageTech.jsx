@@ -5,13 +5,16 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TechForm from '@/components/management/TechForm';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import ActivityTab from '@/components/management/ActivityTab';
 
 export default function ManageTech() {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
 
   const { data: items = [] } = useQuery({
@@ -96,11 +99,34 @@ export default function ManageTech() {
       <ManagementShell
         title="Tech"
         subtitle="Manage tech solutions and offerings"
-        actions={<Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button>}
+        actions={activeTab === 'data' ? <Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Items</p>
+                <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{items.filter(i => i.status === 'active').length}</p>
+              </div>
+            </div>
+            <Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Tech Item
+            </Button>
+          </TabsContent>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
+          <TabsContent value="data" className="space-y-6">
+            <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="tech-items">
             {(provided) => (
               <div
@@ -170,18 +196,24 @@ export default function ManageTech() {
           </Droppable>
         </DragDropContext>
 
-        <AnimatePresence>
-          {showForm && (
-            <TechForm
-              item={editingItem}
-              onSubmit={handleSubmit}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingItem(null);
-              }}
-            />
-          )}
-        </AnimatePresence>
+            <AnimatePresence>
+              {showForm && (
+                <TechForm
+                  item={editingItem}
+                  onSubmit={handleSubmit}
+                  onCancel={() => {
+                    setShowForm(false);
+                    setEditingItem(null);
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Tech" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
