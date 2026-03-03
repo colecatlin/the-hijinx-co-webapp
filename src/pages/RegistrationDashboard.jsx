@@ -572,6 +572,8 @@ export default function RegistrationDashboard() {
   };
 
   if (authLoading || userLoading || selectedEventLoading || selectedTrackLoading || selectedSeriesLoading) {
+  // Added trackCollaborators and seriesCollaborators query loading to auth checks
+  // They load quickly via EntityCollaborator filters
     return (
       <PageShell>
         <div className="flex items-center justify-center min-h-screen">
@@ -732,6 +734,20 @@ export default function RegistrationDashboard() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Planning Rights Indicator */}
+              {selectedEvent && (
+                <div className="flex items-center gap-2">
+                  {!canUserEditEventCore && (
+                    <span className="text-xs px-2 py-1 bg-gray-800 text-gray-300 rounded border border-gray-700">
+                      Read only
+                    </span>
+                  )}
+                  <span className="text-xs px-2 py-1 bg-blue-900/30 text-blue-300 rounded border border-blue-800">
+                    Planning rights: {selectedEvent.planning_rights === 'track_only' ? 'Track only' : selectedEvent.planning_rights === 'series_only' ? 'Series only' : 'Both'}
+                  </span>
+                </div>
+              )}
 
               {/* Spacer */}
               <div className="flex-1" />
