@@ -378,7 +378,7 @@ export default function ManageSeries() {
             </table>
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

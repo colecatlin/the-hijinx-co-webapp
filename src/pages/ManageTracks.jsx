@@ -250,7 +250,7 @@ export default function ManageTracks() {
             No tracks found
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

@@ -656,11 +656,12 @@ export default function ManageDrivers() {
         )}
       </div>
 
-      <DriverDuplicateFinder
-        drivers={drivers}
-        open={showDuplicateFinder}
-        onOpenChange={setShowDuplicateFinder}
-      />
+        <DriverDuplicateFinder
+          drivers={drivers}
+          open={showDuplicateFinder}
+          onOpenChange={setShowDuplicateFinder}
+        />
+      </ManagementShell>
     </ManagementLayout>
   );
 }

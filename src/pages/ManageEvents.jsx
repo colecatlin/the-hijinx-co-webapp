@@ -363,7 +363,7 @@ export default function ManageEvents() {
             </table>
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

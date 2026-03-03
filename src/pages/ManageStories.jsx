@@ -359,7 +359,7 @@ export default function ManageStories() {
             </TabsContent>
           </Tabs>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

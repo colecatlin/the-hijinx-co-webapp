@@ -195,7 +195,7 @@ export default function ManageSessions() {
             </table>
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

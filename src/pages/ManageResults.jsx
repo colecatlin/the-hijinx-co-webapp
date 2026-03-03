@@ -299,6 +299,7 @@ export default function ManageResults() {
           <ResultsBulkUpload onDone={() => setShowUploadDialog(false)} />
         </DialogContent>
       </Dialog>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

@@ -441,7 +441,7 @@ export default function ManageTeams() {
             No teams found
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }
