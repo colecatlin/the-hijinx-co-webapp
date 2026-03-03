@@ -385,7 +385,7 @@ export default function ManageDriverClaims() {
           </Tabs>
         )}
 
-      {/* Review Dialog */}
+        {/* Review Dialog */}
       <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
         <DialogContent>
           <DialogHeader>
@@ -430,7 +430,7 @@ export default function ManageDriverClaims() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+        </Dialog>
       </ManagementShell>
     </ManagementLayout>
   );
