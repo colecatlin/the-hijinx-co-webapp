@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import useEntries from './hooks/useEntries';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -34,11 +35,8 @@ export default function OverviewGrid({
   onEntriesNavigate,
 }) {
   // Load real entries for the selected event
-  const { data: entries = [] } = useQuery({
-    queryKey: ['entries', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+  const { entries, allEntries, counts: entryCounts } = useEntries({
+    eventId: selectedEvent?.id,
   });
 
   // Sort sessions by time
@@ -119,9 +117,9 @@ export default function OverviewGrid({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
-        <EntriesSummaryCard selectedEvent={selectedEvent} entries={entries} onNavigate={onEntriesNavigate} />
-        <RaceDayReadinessCard selectedEvent={selectedEvent} sessions={sessions} />
+         <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
+         <EntriesSummaryCard selectedEvent={selectedEvent} entries={allEntries} entryCounts={entryCounts} onNavigate={onEntriesNavigate} />
+         <RaceDayReadinessCard selectedEvent={selectedEvent} sessions={sessions} />
         <ComplianceAlertsCard selectedEvent={selectedEvent} />
         <ResultsStatusCard selectedEvent={selectedEvent} />
         <StandingsStatusCard selectedEvent={selectedEvent} dashboardContext={dashboardContext} selectedSeries={selectedSeries} />
