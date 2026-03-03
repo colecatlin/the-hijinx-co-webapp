@@ -11,6 +11,7 @@ import {
 import { format, subDays, startOfDay } from 'date-fns';
 import { TrendingUp, Eye, Mouse, CheckCircle } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import ManagementShell from '@/components/management/ManagementShell';
 
 const COLORS = ['#232323', '#1A3249', '#3B82F6', '#10B981', '#F59E0B'];
 
@@ -229,7 +230,8 @@ export default function AdvertisementAnalytics() {
             </div>
           )}
         </Card>
-      </div>
+        </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }
