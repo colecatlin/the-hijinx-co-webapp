@@ -6,6 +6,8 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ActivityTab from '@/components/management/ActivityTab';
+import PublishTab from '@/components/management/PublishTab';
 
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,6 +48,7 @@ export default function ManageDrivers() {
   const [bulkProfileStatus, setBulkProfileStatus] = useState('');
   const [bulkDiscipline, setBulkDiscipline] = useState('');
   const [applyingBulk, setApplyingBulk] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -359,7 +362,7 @@ export default function ManageDrivers() {
       <ManagementShell
         title="Drivers"
         subtitle={`${drivers.length} total drivers`}
-        actions={<>
+        actions={activeTab === 'data' ? <>
           <input id="import-drivers" type="file" accept=".json" onChange={handleImport} className="hidden" />
           <Button variant="outline" onClick={() => downloadTemplate('driver', 'Driver')} title="Download import template"><Download className="w-4 h-4" /></Button>
           <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
@@ -367,8 +370,43 @@ export default function ManageDrivers() {
           <Button onClick={async () => { setBackfillingIds(true); try { const res = await base44.functions.invoke('assignDriverNumericIds'); toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`); queryClient.invalidateQueries({ queryKey: ['drivers'] }); } catch (e) { toast.error('Failed to assign IDs: ' + e.message); } finally { setBackfillingIds(false); } }} disabled={backfillingIds} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Hash className="w-4 h-4 mr-2" />{backfillingIds ? 'Assigning...' : 'Assign IDs'}</Button>
           <Button onClick={() => setShowDuplicateFinder(true)} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"><AlertCircle className="w-4 h-4 mr-2" />Find Duplicates</Button>
           <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
-        </>}
+        </> : undefined}
       >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Drivers</p>
+                <p className="text-2xl font-bold text-gray-900">{drivers.length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Active</p>
+                <p className="text-2xl font-bold text-green-600">{drivers.filter(d => d.status === 'Active').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Profiles Live</p>
+                <p className="text-2xl font-bold text-blue-600">{drivers.filter(d => d.profile_status === 'live').length}</p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Part Time</p>
+                <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.status === 'Part Time').length}</p>
+              </div>
+            </div>
+            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Driver
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
 
         {importResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
@@ -606,17 +644,49 @@ export default function ManageDrivers() {
           </div>
         )}
 
-        {!isLoading && filteredDrivers.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No drivers found
-          </div>
-        )}
+            {!isLoading && filteredDrivers.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                No drivers found
+              </div>
+            )}
 
-        <DriverDuplicateFinder
-          drivers={drivers}
-          open={showDuplicateFinder}
-          onOpenChange={setShowDuplicateFinder}
-        />
+            <DriverDuplicateFinder
+              drivers={drivers}
+              open={showDuplicateFinder}
+              onOpenChange={setShowDuplicateFinder}
+            />
+          </TabsContent>
+
+          <TabsContent value="relationships" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Driver Relationships</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Teams</p>
+                  <p className="text-lg font-semibold">Associated via DriverProgram</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Series</p>
+                  <p className="text-lg font-semibold">Associated via DriverProgram</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Manage driver team and series associations by editing the driver's program section.</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="publish">
+            <PublishTab 
+              entityCount={drivers.length}
+              draftCount={drivers.filter(d => d.profile_status === 'draft').length}
+              liveCount={drivers.filter(d => d.profile_status === 'live').length}
+              hasPublishControl={true}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="Driver" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
