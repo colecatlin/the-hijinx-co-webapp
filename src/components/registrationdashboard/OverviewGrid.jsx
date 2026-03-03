@@ -120,7 +120,7 @@ export default function OverviewGrid({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <EventStatusCard selectedEvent={selectedEvent} selectedTrack={selectedTrack} dashboardContext={dashboardContext} />
-        <EntriesSummaryCard selectedEvent={selectedEvent} entries={entries} />
+        <EntriesSummaryCard selectedEvent={selectedEvent} entries={entries} onNavigate={onEntriesNavigate} />
         <RaceDayReadinessCard selectedEvent={selectedEvent} sessions={sessions} />
         <ComplianceAlertsCard selectedEvent={selectedEvent} />
         <ResultsStatusCard selectedEvent={selectedEvent} />
