@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ChevronDown, Search, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, Search, LayoutDashboard, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DASHBOARD_ITEM, MANAGEMENT_SECTIONS } from '@/components/management/managementConfig';
 
@@ -63,6 +63,19 @@ export default function ManagementSidebar({ onNavigate }) {
               >
                 <LayoutDashboard className="w-4 h-4 shrink-0" />
                 <span className="flex-1">{DASHBOARD_ITEM.name}</span>
+              </Link>
+
+              <Link
+                to={createPageUrl('RegistrationDashboard')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold',
+                  currentPage === 'RegistrationDashboard'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                )}
+              >
+                <Gauge className="w-4 h-4 shrink-0" />
+                <span className="flex-1">Race Core Ops</span>
               </Link>
               <div className="border-t border-gray-200 my-2" />
             </>
