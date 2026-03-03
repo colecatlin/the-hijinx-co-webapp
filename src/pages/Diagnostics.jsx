@@ -244,12 +244,9 @@ export default function Diagnostics() {
   };
 
   return (
-    <PageShell>
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black mb-2">Routing & Relations Diagnostics</h1>
-          <p className="text-gray-600">Admin-only health check for entity routes and relationships</p>
-        </div>
+    <ManagementLayout currentPage="Diagnostics">
+      <ManagementShell title="Diagnostics" subtitle="Admin-only health check for entity routes and relationships">
+        <div>
 
         {/* Broken Links Summary */}
         {brokenRecords.length > 0 && (
