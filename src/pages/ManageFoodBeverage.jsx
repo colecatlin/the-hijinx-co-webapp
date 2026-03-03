@@ -91,19 +91,11 @@ export default function ManageFoodBeverage() {
 
   return (
     <ManagementLayout currentPage="ManageFoodBeverage">
-      <ManagementShell title="Food & Beverage" subtitle="Manage food and beverage offerings">
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={() => {
-              setEditingItem(null);
-              setShowForm(true);
-            }}
-            className="bg-[#232323] hover:bg-[#1A3249]"
-          >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Item
-        </Button>
-      </div>
+      <ManagementShell
+        title="Food & Beverage"
+        subtitle="Manage food and beverage offerings"
+        actions={<Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button>}
+      >
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="food-beverage-list">
