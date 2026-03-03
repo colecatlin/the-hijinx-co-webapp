@@ -160,6 +160,7 @@ export default function ResultsManager({
   // ── Permission helpers ──
   const can = (action) => {
     if (isAdmin) return true;
+    if (typeof canAction === 'function') return canAction(action);
     if (Array.isArray(canAction)) return canAction.includes(action);
     return false;
   };
