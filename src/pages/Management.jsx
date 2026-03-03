@@ -24,7 +24,7 @@ export default function Management() {
           <div className="mt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-lg mb-6">
-                {MANAGEMENT_SECTIONS.map(section => (
+                {SECTIONS.map(section => (
                   <TabsTrigger
                     key={section.title}
                     value={section.title}
@@ -35,7 +35,7 @@ export default function Management() {
                 ))}
               </TabsList>
 
-              {MANAGEMENT_SECTIONS.map(section => (
+              {SECTIONS.map(section => (
                 <TabsContent key={section.title} value={section.title}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {section.items.map(item => {
