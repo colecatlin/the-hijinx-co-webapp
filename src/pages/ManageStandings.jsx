@@ -142,45 +142,20 @@ export default function ManageStandings() {
 
   return (
     <ManagementLayout currentPage="ManageStandings">
-      <ManagementShell title="Manage Standings" subtitle="Update championship standings">
-        <div className="flex justify-end gap-2 mb-6">
-            <Button
-              variant="outline"
-              onClick={handleSyncFromSheets}
-              disabled={syncStatus === 'loading'}
-              className={syncStatus === 'success' ? 'border-green-500 text-green-700' : syncStatus === 'error' ? 'border-red-500 text-red-700' : ''}
-            >
-              {syncStatus === 'loading' ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : syncStatus === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-              ) : syncStatus === 'error' ? (
-                <AlertCircle className="w-4 h-4 mr-2" />
-              ) : (
-                <Download className="w-4 h-4 mr-2" />
-              )}
-              Sync from Sheets
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-standings').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-standings"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Entry
-            </Button>
-        </div>
+      <ManagementShell
+        title="Standings"
+        subtitle="Update championship standings"
+        actions={<>
+          <input id="import-standings" type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <Button variant="outline" onClick={handleSyncFromSheets} disabled={syncStatus === 'loading'} className={syncStatus === 'success' ? 'border-green-500 text-green-700' : syncStatus === 'error' ? 'border-red-500 text-red-700' : ''}>
+            {syncStatus === 'loading' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : syncStatus === 'success' ? <CheckCircle2 className="w-4 h-4 mr-2" /> : syncStatus === 'error' ? <AlertCircle className="w-4 h-4 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
+            Sync from Sheets
+          </Button>
+          <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={() => document.getElementById('import-standings').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
+          <Button onClick={handleAdd} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Entry</Button>
+        </>}
+      >
 
         {syncMessage && (
           <div className={`mb-6 p-4 rounded-lg ${
