@@ -659,10 +659,10 @@ export default function CheckInManager({
                   {formData.entry_status === 'Checked In' ? 'Checked In ✓' : 'Not Checked In'}
                 </Badge>
                 <Badge
-                  variant={formData.waiver_verified ? 'default' : 'secondary'}
-                  className={`text-xs ${formData.waiver_verified ? 'bg-green-600' : ''}`}
+                  variant={formData.waiver_status === 'Verified' ? 'default' : 'secondary'}
+                  className={`text-xs ${formData.waiver_status === 'Verified' ? 'bg-green-600' : ''}`}
                 >
-                  {formData.waiver_verified ? 'Waiver ✓' : 'Waiver ✗'}
+                  {formData.waiver_status === 'Verified' ? 'Waiver ✓' : 'Waiver ✗'}
                 </Badge>
                 <Badge
                   variant={formData.payment_status === 'Paid' ? 'default' : 'secondary'}
