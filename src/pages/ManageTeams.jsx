@@ -255,52 +255,19 @@ export default function ManageTeams() {
 
   return (
     <ManagementLayout currentPage="ManageTeams">
-      <ManagementShell title="Manage Teams" subtitle={`${teams.length} total teams`}>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => downloadTemplate('team', 'Team')} title="Download import template">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-teams').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-teams"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button
-              onClick={handleNascarImport}
-              disabled={importing}
-              variant="outline"
-              className="border-blue-300 text-blue-700 hover:bg-blue-50"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {importing ? 'Importing...' : 'NASCAR Import'}
-            </Button>
-            <Button
-              onClick={handleEnrich}
-              disabled={enriching}
-              variant="outline"
-              className="border-purple-300 text-purple-700 hover:bg-purple-50"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {enriching ? 'Enriching...' : 'AI Enrich'}
-            </Button>
-            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Team
-            </Button>
-          </div>
-        </div>
+      <ManagementShell
+        title="Teams"
+        subtitle={`${teams.length} total teams`}
+        actions={<>
+          <input id="import-teams" type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <Button variant="outline" onClick={() => downloadTemplate('team', 'Team')} title="Download import template"><Download className="w-4 h-4" /></Button>
+          <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={() => document.getElementById('import-teams').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
+          <Button onClick={handleNascarImport} disabled={importing} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Sparkles className="w-4 h-4 mr-2" />{importing ? 'Importing...' : 'NASCAR Import'}</Button>
+          <Button onClick={handleEnrich} disabled={enriching} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />{enriching ? 'Enriching...' : 'AI Enrich'}</Button>
+          <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
+        </>}
+      >
 
         {importResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
