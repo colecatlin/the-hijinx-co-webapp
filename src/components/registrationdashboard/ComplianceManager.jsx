@@ -139,21 +139,20 @@ export default function ComplianceManager({
     entries.forEach(entry => {
       const entryFlags = [];
 
-      // Waiver — use new waiver_verified field, fall back to legacy waiver_status
-      const waiverOk = entry.waiver_verified === true || entry.waiver_status === 'Verified';
+      // Waiver — use waiver_status field
+      const waiverOk = entry.waiver_status === 'Verified';
       if (!waiverOk) {
         entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
         flags.waivers++;
       }
 
-      // License missing
-      if (!entry.license_number || entry.license_number.trim() === '') {
-        entryFlags.push({ type: 'missingLicense', label: 'No License', color: 'bg-orange-900/40 text-orange-300' });
-        flags.missingLicense++;
-      } else if (entry.license_expiration_date && entry.license_expiration_date < today) {
-        // License expired
+      // License — use license_status field
+      if (entry.license_status === 'Expired') {
         entryFlags.push({ type: 'expiredLicense', label: 'License Expired', color: 'bg-red-900/40 text-red-300' });
         flags.expiredLicense++;
+      } else if (entry.license_status === 'Unknown') {
+        entryFlags.push({ type: 'missingLicense', label: 'No License', color: 'bg-orange-900/40 text-orange-300' });
+        flags.missingLicense++;
       }
 
       // Payment
