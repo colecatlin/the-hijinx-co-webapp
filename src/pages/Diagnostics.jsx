@@ -246,8 +246,6 @@ export default function Diagnostics() {
   return (
     <ManagementLayout currentPage="Diagnostics">
       <ManagementShell title="Diagnostics" subtitle="Admin-only health check for entity routes and relationships">
-        <div>
-
         {/* Broken Links Summary */}
         {brokenRecords.length > 0 && (
           <Card className="mb-8 border-red-200 bg-red-50">
