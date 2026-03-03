@@ -71,6 +71,8 @@ export default function EntriesManager({
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
+  const [searchParams] = useSearchParams();
+
   // ── UI state ──
   const [filters, setFilters] = useState({ class: 'all', entryStatus: 'all', paymentStatus: 'all', search: '' });
   const [selectedEntries, setSelectedEntries] = useState(new Set());
