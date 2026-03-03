@@ -31,6 +31,7 @@ export default function OverviewGrid({
   complianceSeverity,
   announcerMode,
   onSelectSession,
+  onEntriesNavigate,
 }) {
   // Load real entries for the selected event
   const { data: entries = [] } = useQuery({
