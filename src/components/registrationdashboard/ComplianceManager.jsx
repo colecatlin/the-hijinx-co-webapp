@@ -433,20 +433,14 @@ export default function ComplianceManager({
                           : <span className="text-yellow-400">✗ Missing</span>}
                       </td>
                       <td className="py-2 px-3">
-                        {entry.licenseStatus === 'missing'
-                          ? <span className="text-orange-400">✗ None</span>
-                          : entry.licenseStatus === 'expired'
+                        {entry.license_status === 'Unknown'
+                          ? <span className="text-orange-400">✗ Unknown</span>
+                          : entry.license_status === 'Expired'
                           ? <span className="text-red-400">Expired</span>
-                          : <span className="text-green-400">✓ Verified</span>}
+                          : <span className="text-green-400">✓ Valid</span>}
                       </td>
-                      <td className="py-2 px-3 text-xs text-gray-400">
-                        {entry.compliance?.license?.expires_on || '—'}
-                      </td>
-                      <td className="py-2 px-3 text-xs text-gray-400">
-                        {entry.compliance?.license?.verified_at
-                          ? new Date(entry.compliance.license.verified_at).toLocaleDateString()
-                          : '—'}
-                      </td>
+                      <td className="py-2 px-3 text-xs text-gray-400">—</td>
+                      <td className="py-2 px-3 text-xs text-gray-400">—</td>
                       <td className="py-2 px-3">
                         <div className="flex flex-wrap gap-1">
                           {entry.flags.slice(0, 2).map((f, i) => (
