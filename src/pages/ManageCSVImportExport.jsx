@@ -152,11 +152,7 @@ export default function ManageCSVImportExport() {
 
   return (
     <ManagementLayout currentPage="ManageCSVImportExport">
-      <div className="max-w-2xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">CSV Import/Export</h1>
-        <p className="text-gray-600">Bulk import and export entity data as CSV files</p>
-      </div>
+      <ManagementShell title="CSV Import / Export" subtitle="Bulk import and export entity data as CSV files" maxWidth="max-w-2xl">
 
       <Card>
         <CardHeader>
@@ -407,7 +403,7 @@ export default function ManageCSVImportExport() {
           </div>
         </Alert>
       )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

@@ -169,19 +169,12 @@ export default function ManagePointsConfig() {
 
   return (
     <ManagementLayout currentPage="ManagePointsConfig">
-      <div className="max-w-5xl mx-auto px-6 py-10">
-      <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
-        <ArrowLeft className="w-3 h-3" /> Back to Management
-      </Link>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-[#232323]">Points Configuration</h1>
-          <p className="text-gray-500 mt-1">Link Google Sheets to series for automated standings calculation.</p>
+      <ManagementShell title="Points Configuration" subtitle="Link Google Sheets to series for automated standings calculation.">
+        <div className="flex justify-end mb-6">
+          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" /> Add Config
+          </Button>
         </div>
-        <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> Add Config
-        </Button>
-      </div>
 
       <div className="space-y-4">
         {configs.map(config => (
@@ -254,7 +247,7 @@ export default function ManagePointsConfig() {
           />
         </DialogContent>
       </Dialog>
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

@@ -58,12 +58,7 @@ export default function ManageHomepage() {
 
   return (
     <ManagementLayout currentPage="ManageHomepage">
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Homepage Settings</h1>
-          <p className="text-gray-600">Manage background images and visuals for homepage sections</p>
-        </div>
-
+      <ManagementShell title="Homepage Settings" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <div className="space-y-8">
           {SECTIONS.map(({ key, label }) => {
             const setting = getSetting(key);
@@ -80,9 +75,9 @@ export default function ManageHomepage() {
             );
           })}
         </div>
-      </div>
+      </ManagementShell>
     </ManagementLayout>
-    );
+  );
     }
 
 function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }) {

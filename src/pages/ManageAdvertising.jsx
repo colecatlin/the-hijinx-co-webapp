@@ -171,16 +171,7 @@ export default function ManageAdvertising() {
 
   return (
     <ManagementLayout currentPage="ManageAdvertising">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-4 transition-colors">
-          <ArrowLeft className="w-3 h-3" /> Back to Management
-        </Link>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Advertising</h1>
-            <p className="text-gray-600 mt-1">View and manage advertising inquiries</p>
-          </div>
-        </div>
+      <ManagementShell title="Manage Advertising" subtitle="View and manage advertising inquiries">
 
         <Tabs defaultValue="ads" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
@@ -440,7 +431,7 @@ export default function ManageAdvertising() {
             </div>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

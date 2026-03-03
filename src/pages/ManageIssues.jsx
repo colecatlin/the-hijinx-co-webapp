@@ -86,15 +86,9 @@ export default function ManageIssues() {
 
   return (
     <ManagementLayout currentPage="ManageIssues">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-4 transition-colors">
-          <ArrowLeft className="w-3 h-3" /> Back to Management
-        </Link>
+      <ManagementShell title="Manage Issues" subtitle="Create and manage magazine issues">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Issues</h1>
-            <p className="text-gray-600 mt-1">Create and manage magazine issues</p>
-          </div>
+          <div />
           <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
             <Plus className="w-4 h-4 mr-2" />
             Add Issue
@@ -210,7 +204,7 @@ export default function ManageIssues() {
             )}
           </>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

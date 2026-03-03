@@ -83,17 +83,8 @@ export default function AnalyticsDashboard() {
 
   return (
     <ManagementLayout currentPage="AnalyticsDashboard">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl('Management')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-2">Analytics Dashboard</h1>
-            <p className="text-gray-600">Insights and metrics across all motorsports data</p>
-          </div>
+      <ManagementShell title="Analytics Dashboard" subtitle="Insights and metrics across all motorsports data">
+        <div className="flex justify-end mb-6">
           <div className="flex items-center gap-3">
             <Popover>
               <PopoverTrigger asChild>
@@ -200,7 +191,7 @@ export default function AnalyticsDashboard() {
             <SeriesGrowthChart series={series} events={events} dateRange={dateRange} />
           </TabsContent>
         </Tabs>
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

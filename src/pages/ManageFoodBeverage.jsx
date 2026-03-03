@@ -91,16 +91,8 @@ export default function ManageFoodBeverage() {
 
   return (
     <ManagementLayout currentPage="ManageFoodBeverage">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-      <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-6 transition-colors">
-        <ArrowLeft className="w-3 h-3" /> Back to Management
-      </Link>
-      <div className="flex items-center justify-between mb-8">
-        <SectionHeader
-          label="Management"
-          title="Food & Beverage Items"
-          subtitle="Manage food and beverage offerings"
-        />
+      <ManagementShell title="Food & Beverage" subtitle="Manage food and beverage offerings">
+        <div className="flex justify-end mb-6">
         <Button
           onClick={() => {
             setEditingItem(null);
@@ -185,7 +177,7 @@ export default function ManageFoodBeverage() {
           }}
         />
       )}
-      </div>
-      </ManagementLayout>
-      );
+      </ManagementShell>
+    </ManagementLayout>
+  );
       }

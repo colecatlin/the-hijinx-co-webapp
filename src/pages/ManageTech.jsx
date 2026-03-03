@@ -93,9 +93,8 @@ export default function ManageTech() {
 
   return (
     <ManagementLayout currentPage="ManageTech">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Manage Tech</h1>
+      <ManagementShell title="Manage Tech" subtitle="Manage tech solutions and offerings">
+        <div className="flex justify-end mb-6">
           <Button
             onClick={() => {
               setEditingItem(null);
@@ -190,7 +189,7 @@ export default function ManageTech() {
             />
           )}
         </AnimatePresence>
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

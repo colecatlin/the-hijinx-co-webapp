@@ -44,28 +44,14 @@ export default function ManageAnnouncements() {
 
   return (
     <ManagementLayout currentPage="ManageAnnouncements">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <Link
-            to={createPageUrl('Management')}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
-          >
-            ← Back to Management
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Manage Announcements</h1>
-              <p className="text-gray-600 mt-2">
-                Create rotating announcements for the top of your site
-              </p>
-            </div>
-            {!showForm && (
-              <Button onClick={handleAdd}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Announcement
-              </Button>
-            )}
-          </div>
+      <ManagementShell title="Manage Announcements" subtitle="Create rotating announcements for the top of your site">
+        <div className="flex justify-end mb-6">
+          {!showForm && (
+            <Button onClick={handleAdd}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Announcement
+            </Button>
+          )}
         </div>
 
         {showForm && (
@@ -147,7 +133,7 @@ export default function ManageAnnouncements() {
             ))}
           </div>
         )}
-      </div>
+      </ManagementShell>
     </ManagementLayout>
   );
 }

@@ -326,18 +326,7 @@ export default function ManageDriverClaims() {
 
   return (
     <ManagementLayout currentPage="ManageDriverClaims">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <Link to={createPageUrl('Management')}>
-          <Button variant="ghost" size="sm" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Management
-          </Button>
-        </Link>
-
-        <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Driver Result Claims</h1>
-          <p className="text-gray-600">Review and verify driver-submitted race results</p>
-        </div>
+      <ManagementShell title="Driver Result Claims" subtitle="Review and verify driver-submitted race results">
 
         {isLoading ? (
           <div className="animate-pulse space-y-4">
@@ -443,6 +432,7 @@ export default function ManageDriverClaims() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </ManagementShell>
     </ManagementLayout>
   );
 }
