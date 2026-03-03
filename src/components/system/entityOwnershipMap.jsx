@@ -1,15 +1,16 @@
 /**
- * Entity Ownership Map - Documents which subsystem owns each entity.
+ * Entity Ownership Map
  * 
- * This is a reference for understanding data flow and responsibility.
- * Management = Master Data Studio (drivers, teams, tracks, series, etc.)
- * Race Core = Event Operations Console (events, sessions, entries, results, standings, etc.)
+ * Defines which subsystem owns each entity type for the unified Race Core and Management system.
+ * This is the single source of truth for data ownership boundaries.
  * 
- * Both systems write to OperationLog, but with different operation_type values.
+ * Management Studio = Master Data (drivers, teams, tracks, series, configs)
+ * Race Core Console = Event Operations (events, sessions, entries, results, compliance)
+ * Public Motorsports = Read-only published views
  */
 
 export const ENTITY_OWNERSHIP = {
-  // Management-owned entities (master data)
+  // Management Studio (Master Data Ownership)
   Driver: 'management',
   Team: 'management',
   Track: 'management',
@@ -22,10 +23,9 @@ export const ENTITY_OWNERSHIP = {
   OutletStory: 'management',
   OutletIssue: 'management',
   Announcement: 'management',
-  DriverProgram: 'management', // Hybrid: created in Management, updated by Race Core
-  Vehicle: 'management',
-  
-  // Race Core-owned entities (event operations)
+  Advertisement: 'management',
+
+  // Race Core Console (Event Operations Ownership)
   Event: 'racecore',
   Session: 'racecore',
   Entry: 'racecore',
@@ -33,35 +33,42 @@ export const ENTITY_OWNERSHIP = {
   TechInspection: 'racecore',
   Results: 'racecore',
   Standings: 'racecore',
-  EventClass: 'racecore',
-  
-  // Shared (both systems write)
-  OperationLog: 'shared',
-  EntityCollaborator: 'management', // Manages access
-  Invitation: 'management',
+  OperationLog: 'shared', // Written by both systems
+  DriverProgram: 'management', // Owned by management, used by race core
+
+  // System entities (read-only or meta)
+  User: 'system',
+  EntityCollaborator: 'system',
+  Invitation: 'system',
+  ImportLog: 'system',
 };
 
 /**
- * Get the owner of an entity type.
- * @param {string} entityName - Entity name (e.g., 'Driver', 'Event')
- * @returns {string} 'management' | 'racecore' | 'shared'
+ * Get the owner of an entity type
  */
-export function getEntityOwner(entityName) {
-  return ENTITY_OWNERSHIP[entityName] || 'unknown';
+export function getEntityOwner(entityType) {
+  return ENTITY_OWNERSHIP[entityType] || null;
 }
 
 /**
- * Check if entity is managed by Race Core.
+ * Check if entity type is owned by Management Studio
  */
-export function isRaceCoreEntity(entityName) {
-  return getEntityOwner(entityName) === 'racecore';
+export function isManagementOwned(entityType) {
+  return getEntityOwner(entityType) === 'management';
 }
 
 /**
- * Check if entity is managed by Management.
+ * Check if entity type is owned by Race Core
  */
-export function isManagementEntity(entityName) {
-  return getEntityOwner(entityName) === 'management';
+export function isRaceCoreOwned(entityType) {
+  return getEntityOwner(entityType) === 'racecore';
 }
 
-export default ENTITY_OWNERSHIP;
+/**
+ * Get all entities owned by a subsystem
+ */
+export function getEntitiesByOwner(owner) {
+  return Object.entries(ENTITY_OWNERSHIP)
+    .filter(([_, ownerType]) => ownerType === owner)
+    .map(([entityType, _]) => entityType);
+}
