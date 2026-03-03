@@ -460,25 +460,25 @@ export default function ResultsManager({
                         </div>
                       )}
                       {/* Step buttons */}
-                      {(selectedSession.status === 'Draft' || !selectedSession.status) && can('results_publish_provisional') && (
-                        <Button size="sm" onClick={() => handleStatusTransition('Provisional')} disabled={updateSessionStatus.isPending} className="w-full bg-blue-700 hover:bg-blue-600 text-xs">
+                      {(selectedSession.status === 'Draft' || !selectedSession.status) && can('results_mark_provisional') && (
+                       <Button size="sm" onClick={() => handleStatusTransition('Provisional')} disabled={updateSessionStatus.isPending} className="w-full bg-blue-700 hover:bg-blue-600 text-xs">
                           Mark Provisional
-                        </Button>
+                       </Button>
                       )}
                       {selectedSession.status === 'Provisional' && can('results_publish_official') && (
-                        <Button size="sm" onClick={() => handleStatusTransition('Official')} disabled={updateSessionStatus.isPending} className="w-full bg-green-700 hover:bg-green-600 text-xs">
+                       <Button size="sm" onClick={() => handleStatusTransition('Official')} disabled={updateSessionStatus.isPending} className="w-full bg-green-700 hover:bg-green-600 text-xs">
                           Publish Official
-                        </Button>
+                       </Button>
                       )}
-                      {selectedSession.status === 'Official' && can('results_lock') && (
-                        <Button size="sm" onClick={() => handleStatusTransition('Locked')} disabled={updateSessionStatus.isPending} className="w-full bg-purple-800 hover:bg-purple-700 text-xs">
-                          <Lock className="w-3 h-3 mr-1" /> Lock Session
-                        </Button>
+                      {selectedSession.status === 'Official' && can('results_lock_session') && (
+                       <Button size="sm" onClick={() => handleStatusTransition('Locked')} disabled={updateSessionStatus.isPending} className="w-full bg-purple-800 hover:bg-purple-700 text-xs">
+                         <Lock className="w-3 h-3 mr-1" /> Lock Session
+                       </Button>
                       )}
-                      {selectedSession.status === 'Provisional' && can('results_save') && (
-                        <Button size="sm" variant="outline" onClick={() => handleStatusTransition('Draft')} disabled={updateSessionStatus.isPending} className="w-full border-gray-700 text-gray-400 text-xs">
+                      {(selectedSession.status === 'Provisional' || selectedSession.status === 'Draft') && can('results_save_draft') && (
+                       <Button size="sm" variant="outline" onClick={() => handleStatusTransition('Draft')} disabled={updateSessionStatus.isPending} className="w-full border-gray-700 text-gray-400 text-xs">
                           Revert to Draft
-                        </Button>
+                       </Button>
                       )}
                     </>
                   )}
