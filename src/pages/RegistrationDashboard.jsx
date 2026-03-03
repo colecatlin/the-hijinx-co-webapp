@@ -383,16 +383,17 @@ export default function RegistrationDashboard() {
   // ── Debounced URL write (250 ms) ──────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (organizationType) params.set('orgType', organizationType);
-      if (organizationId) params.set('orgId', organizationId);
-      if (seasonYear) params.set('seasonYear', seasonYear);
-      if (eventId) params.set('eventId', eventId);
-      if (announcerMode) params.set('announcer', '1');
+      const params = new URLSearchParams(searchParams);
+      if (organizationType) params.set('orgType', organizationType); else params.delete('orgType');
+      if (organizationId) params.set('orgId', organizationId); else params.delete('orgId');
+      if (seasonYear) params.set('seasonYear', seasonYear); else params.delete('seasonYear');
+      if (eventId) params.set('eventId', eventId); else params.delete('eventId');
+      if (announcerMode) params.set('announcer', '1'); else params.delete('announcer');
+      if (activeTab && activeTab !== 'overview') params.set('tab', activeTab); else params.delete('tab');
       setSearchParams(params, { replace: true });
     }, 250);
     return () => clearTimeout(timer);
-  }, [organizationType, organizationId, seasonYear, eventId, announcerMode, setSearchParams]);
+  }, [organizationType, organizationId, seasonYear, eventId, announcerMode, activeTab, setSearchParams]);
 
   useEffect(() => {
     if (authLoading === false && !isAuthenticated) {
