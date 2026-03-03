@@ -402,6 +402,7 @@ export default function Diagnostics() {
               </div>
             </CardContent>
           </Card>
+        </div>
       </ManagementShell>
     </ManagementLayout>
   );
