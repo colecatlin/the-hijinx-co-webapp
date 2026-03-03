@@ -1,293 +1,199 @@
-import React, { useState, useMemo } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { createPageUrl } from '@/components/utils';
+import React, { useState, useEffect } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { X, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Check, LogOut, Trash2 } from 'lucide-react';
+import { createPageUrl } from '@/utils';
 
-export default function EntryDetailDrawer({ entry, onClose, onSave }) {
-  const queryClient = useQueryClient();
-  const [formData, setFormData] = useState(entry);
+export default function EntryDetailDrawer({
+  open,
+  onOpenChange,
+  entry,
+  drivers = [],
+  teams = [],
+  seriesClasses = [],
+  onSave,
+  onDelete,
+  saving = false,
+}) {
+  const [form, setForm] = useState({});
 
-  const { data: driver } = useQuery({
-    queryKey: ['driver', entry.driver_id],
-    queryFn: () => base44.entities.Driver.list({ id: entry.driver_id }),
-  });
+  useEffect(() => {
+    if (entry) setForm({ ...entry });
+  }, [entry]);
 
-  const { data: event } = useQuery({
-    queryKey: ['event', entry.event_id],
-    queryFn: () => base44.entities.Event.list({ id: entry.event_id }),
-  });
+  if (!entry) return null;
 
-  const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.update(entry.id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries'] });
-      onSave();
-    },
-  });
+  const driver = drivers.find((d) => d.id === entry.driver_id);
+  const team = teams.find((t) => t.id === entry.team_id);
 
-  const getComplianceFlags = (data) => {
-    const flags = [];
-    if (!data.waiver_verified) flags.push('Missing Waiver');
-    if (data.payment_status === 'Unpaid') flags.push('Unpaid');
-    if (
-      data.tech_status === 'NotInspected' ||
-      data.tech_status === 'RecheckRequired'
-    )
-      flags.push('Tech Pending');
-    if (!data.transponder_id) flags.push('Missing Transponder');
-    return flags;
-  };
+  const patch = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
-  const flags = useMemo(() => getComplianceFlags(formData), [formData]);
-
-  const handleSave = () => {
-    updateMutation.mutate(formData);
+  const handleQuickAction = (updates) => {
+    const merged = { ...form, ...updates };
+    setForm(merged);
+    onSave(entry.id, updates);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50">
-      {/* Drawer overlay */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="bg-[#1A1A1A] border-gray-700 w-full sm:w-[460px] overflow-y-auto flex flex-col">
+        <SheetHeader>
+          <SheetTitle className="text-white">Entry Details</SheetTitle>
+        </SheetHeader>
 
-      {/* Drawer panel */}
-      <div className="fixed right-0 top-0 bottom-0 w-96 bg-[#0A0A0A] border-l border-gray-800 shadow-2xl z-50 flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-100">Entry Details</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-800 rounded transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
+        <div className="flex-1 space-y-5 mt-4 overflow-y-auto pr-1">
+          {/* Links */}
+          <div className="flex gap-2 flex-wrap">
+            {driver && (
+              <a
+                href={createPageUrl(`DriverProfile?${driver.slug ? `slug=${driver.slug}` : `id=${driver.id}`}`)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="sm" variant="outline" className="border-blue-700 text-blue-400 hover:bg-blue-900/20">
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  {driver.first_name} {driver.last_name}
+                </Button>
+              </a>
+            )}
+            {team && (
+              <a
+                href={createPageUrl(`TeamProfile?id=${team.id}`)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  {team.name}
+                </Button>
+              </a>
+            )}
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-          {/* Links section */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Links
-            </h3>
-            <div className="space-y-2">
-              {driver && driver.length > 0 && (
-                <a
-                  href={createPageUrl(`DriverProfile?driverId=${entry.driver_id}`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs font-medium text-blue-400 transition-colors"
-                >
-                  Driver Profile
-                </a>
-              )}
-              {event && event.length > 0 && (
-                <a
-                  href={createPageUrl(`EventProfile?eventId=${entry.event_id}`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs font-medium text-blue-400 transition-colors"
-                >
-                  Event Profile
-                </a>
-              )}
-            </div>
+          {/* Quick toggles */}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-green-700 text-green-400 hover:bg-green-900/20"
+              onClick={() => handleQuickAction({ entry_status: 'Checked In' })}
+              disabled={form.entry_status === 'Checked In'}
+            >
+              <Check className="w-3 h-3 mr-1" /> Check In
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-700 text-emerald-400 hover:bg-emerald-900/20"
+              onClick={() => handleQuickAction({ payment_status: 'Paid' })}
+              disabled={form.payment_status === 'Paid'}
+            >
+              <Check className="w-3 h-3 mr-1" /> Mark Paid
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-purple-700 text-purple-400 hover:bg-purple-900/20"
+              onClick={() => handleQuickAction({ tech_status: 'Passed' })}
+              disabled={form.tech_status === 'Passed'}
+            >
+              <Check className="w-3 h-3 mr-1" /> Mark Teched
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-yellow-700 text-yellow-400 hover:bg-yellow-900/20"
+              onClick={() => handleQuickAction({ entry_status: 'Withdrawn' })}
+              disabled={form.entry_status === 'Withdrawn'}
+            >
+              <LogOut className="w-3 h-3 mr-1" /> Withdraw
+            </Button>
           </div>
 
           {/* Editable fields */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Entry Details
-            </h3>
-
+          <div className="space-y-3 border-t border-gray-700 pt-4">
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Car Number
-              </label>
-              <Input
-                type="text"
-                value={formData.car_number}
-                onChange={(e) =>
-                  setFormData({ ...formData, car_number: e.target.value })
-                }
-                className="bg-[#262626] border-gray-700"
-              />
+              <label className="text-xs text-gray-400 block mb-1">Car #</label>
+              <Input value={form.car_number || ''} onChange={(e) => patch('car_number', e.target.value)} className="bg-[#111] border-gray-600 text-white h-8" />
             </div>
-
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Transponder ID
-              </label>
-              <Input
-                type="text"
-                value={formData.transponder_id || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, transponder_id: e.target.value })
-                }
-                placeholder="Optional"
-                className="bg-[#262626] border-gray-700"
-              />
+              <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
+              <Input value={form.transponder_id || ''} onChange={(e) => patch('transponder_id', e.target.value)} className="bg-[#111] border-gray-600 text-white h-8" />
             </div>
-
+            {seriesClasses.length > 0 && (
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Class</label>
+                <Select value={form.series_class_id || ''} onValueChange={(v) => patch('series_class_id', v)}>
+                  <SelectTrigger className="bg-[#111] border-gray-600 text-white h-8"><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    <SelectItem value={null}>Unassigned</SelectItem>
+                    {seriesClasses.map((sc) => <SelectItem key={sc.id} value={sc.id}>{sc.class_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Entry Status
-              </label>
-              <Select
-                value={formData.entry_status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, entry_status: value })
-                }
-              >
-                <SelectTrigger className="bg-[#262626] border-gray-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+              <label className="text-xs text-gray-400 block mb-1">Entry Status</label>
+              <Select value={form.entry_status || ''} onValueChange={(v) => patch('entry_status', v)}>
+                <SelectTrigger className="bg-[#111] border-gray-600 text-white h-8"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="Registered">Registered</SelectItem>
-                  <SelectItem value="CheckedIn">Checked In</SelectItem>
+                  <SelectItem value="Checked In">Checked In</SelectItem>
+                  <SelectItem value="Teched">Teched</SelectItem>
                   <SelectItem value="Withdrawn">Withdrawn</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Payment Status
-              </label>
-              <Select
-                value={formData.payment_status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, payment_status: value })
-                }
-              >
-                <SelectTrigger className="bg-[#262626] border-gray-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+              <label className="text-xs text-gray-400 block mb-1">Payment Status</label>
+              <Select value={form.payment_status || ''} onValueChange={(v) => patch('payment_status', v)}>
+                <SelectTrigger className="bg-[#111] border-gray-600 text-white h-8"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="Unpaid">Unpaid</SelectItem>
                   <SelectItem value="Paid">Paid</SelectItem>
                   <SelectItem value="Refunded">Refunded</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Tech Status
-              </label>
-              <Select
-                value={formData.tech_status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, tech_status: value })
-                }
-              >
-                <SelectTrigger className="bg-[#262626] border-gray-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NotInspected">Not Inspected</SelectItem>
+              <label className="text-xs text-gray-400 block mb-1">Tech Status</label>
+              <Select value={form.tech_status || ''} onValueChange={(v) => patch('tech_status', v)}>
+                <SelectTrigger className="bg-[#111] border-gray-600 text-white h-8"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="Not Inspected">Not Inspected</SelectItem>
                   <SelectItem value="Passed">Passed</SelectItem>
                   <SelectItem value="Failed">Failed</SelectItem>
-                  <SelectItem value="RecheckRequired">Recheck Required</SelectItem>
+                  <SelectItem value="Recheck Required">Recheck Required</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-center gap-3 bg-gray-900 px-3 py-2 rounded">
-              <input
-                type="checkbox"
-                id="waiver"
-                checked={formData.waiver_verified}
-                onChange={(e) =>
-                  setFormData({ ...formData, waiver_verified: e.target.checked })
-                }
-                className="w-4 h-4"
-              />
-              <label htmlFor="waiver" className="text-xs font-medium text-gray-300">
-                Waiver Verified
-              </label>
-            </div>
-
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Wristband Count
-              </label>
-              <Input
-                type="number"
-                value={formData.wristband_count || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    wristband_count: e.target.value ? parseInt(e.target.value) : null,
-                  })
-                }
-                placeholder="Optional"
-                className="bg-[#262626] border-gray-700"
-              />
+              <label className="text-xs text-gray-400 block mb-1">Flags (comma-separated)</label>
+              <Input value={form.flags || ''} onChange={(e) => patch('flags', e.target.value)} className="bg-[#111] border-gray-600 text-white h-8" placeholder="e.g. missing_transponder" />
             </div>
-
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-1">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                placeholder="Admin notes..."
-                rows={4}
-                className="w-full bg-[#262626] border border-gray-700 rounded px-3 py-2 text-xs text-gray-300 resize-none"
-              />
+              <label className="text-xs text-gray-400 block mb-1">Notes</label>
+              <Textarea value={form.notes || ''} onChange={(e) => patch('notes', e.target.value)} className="bg-[#111] border-gray-600 text-white" rows={3} />
             </div>
           </div>
-
-          {/* Compliance flags */}
-          {flags.length > 0 && (
-            <div className="space-y-2 bg-red-900/10 border border-red-900/30 px-4 py-3 rounded">
-              <h3 className="text-xs font-semibold text-red-400 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" /> Compliance Flags
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {flags.map((flag) => (
-                  <span
-                    key={flag}
-                    className="px-2 py-1 bg-red-900/30 border border-red-900/50 text-red-300 text-xs font-medium rounded"
-                  >
-                    {flag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-gray-800 px-6 py-4 flex gap-3 bg-[#0A0A0A]">
-          <Button
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex-1 bg-green-600 hover:bg-green-700"
-          >
-            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+        <SheetFooter className="pt-4 border-t border-gray-700 flex items-center justify-between gap-2 flex-row">
+          <Button onClick={() => onDelete(entry.id)} variant="ghost" size="sm" className="text-red-400 hover:bg-red-900/20">
+            <Trash2 className="w-4 h-4" />
           </Button>
-          <Button onClick={onClose} variant="outline" className="border-gray-700">
-            Close
-          </Button>
-        </div>
-      </div>
-    </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button size="sm" onClick={() => onSave(entry.id, form)} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
