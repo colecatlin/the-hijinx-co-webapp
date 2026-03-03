@@ -3,41 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import ManagementSearch from '@/components/management/ManagementSearch';
 import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
-import { MANAGEMENT_SECTIONS } from '@/components/management/ManagementSidebar';
+import { SECTIONS } from '@/components/management/ManagementSidebar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 
 export default function Management() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(MANAGEMENT_SECTIONS[0].title);
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  // Admin-only guard
-  if (user && user.role !== 'admin') {
-    return (
-      <ManagementLayout currentPage="Management">
-        <ManagementShell title="Management" subtitle="Admin access required">
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-600 mb-4">You need administrator privileges to access this area.</p>
-            <button
-              onClick={() => navigate(createPageUrl('Home'))}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Go to Home
-            </button>
-          </div>
-        </ManagementShell>
-      </ManagementLayout>
-    );
-  }
+  const [activeTab, setActiveTab] = useState(SECTIONS[0].title);
 
   return (
     <>
@@ -74,15 +49,8 @@ export default function Management() {
                           <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center shrink-0 transition-colors">
                             {Icon && <Icon className="w-5 h-5 text-gray-600" />}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                              {item.shortcut && (
-                                <span className="text-[10px] font-mono text-gray-400 shrink-0">
-                                  ⌘{item.shortcut}
-                                </span>
-                              )}
-                            </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">{item.name}</p>
                             {item.description && (
                               <p className="text-xs text-gray-400 mt-0.5 leading-snug">{item.description}</p>
                             )}
