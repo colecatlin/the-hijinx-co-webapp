@@ -148,22 +148,14 @@ export default function ManageStories() {
 
   return (
     <ManagementLayout currentPage="ManageStories">
-      <ManagementShell title="Manage Stories" subtitle="Create, edit, and review outlet stories">
-        <div className="flex justify-between items-center mb-6">
-          <div />
-          {!showForm && (
-            <div className="flex gap-2">
-              <Button onClick={handleCategorizeAll} disabled={isCategorizingAll} variant="outline">
-                <Sparkles className="w-4 h-4 mr-2" />
-                {isCategorizingAll ? 'Categorizing...' : 'AI Categorize All'}
-              </Button>
-              <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Story
-              </Button>
-            </div>
-          )}
-        </div>
+      <ManagementShell
+        title="Stories"
+        subtitle="Create, edit, and publish outlet stories"
+        actions={!showForm ? <>
+          <Button onClick={handleCategorizeAll} disabled={isCategorizingAll} variant="outline"><Sparkles className="w-4 h-4 mr-2" />{isCategorizingAll ? 'Categorizing...' : 'AI Categorize All'}</Button>
+          <Button onClick={handleAdd} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Story</Button>
+        </> : undefined}
+      >
 
         {showForm ? (
           <StoryForm
