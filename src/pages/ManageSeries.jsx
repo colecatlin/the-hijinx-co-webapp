@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft, ExternalLink } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import SeriesForm from '@/components/management/SeriesForm';
@@ -15,6 +15,7 @@ import CreateSeriesForm from '@/components/management/CreateSeriesForm';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
 import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 import SeriesCoreDetailsSection from '@/components/management/SeriesManagement/SeriesCoreDetailsSection';
@@ -366,6 +367,18 @@ export default function ManageSeries() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(buildRaceCoreUrl({
+                            orgType: 'series',
+                            orgId: s.id,
+                            tab: 'overview',
+                          }))}
+                          title="Open in Race Core"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
