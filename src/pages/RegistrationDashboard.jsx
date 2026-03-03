@@ -85,6 +85,7 @@ import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardQueries from '@/components/registrationdashboard/useDashboardQueries';
 import { REG_QK } from '@/components/registrationdashboard/queryKeys';
+import { canEditEventCore, canApproveAsTrack, canApproveAsSeries } from '@/components/registrationdashboard/permissions/eventPlanningRights';
 
 // ─── Dashboard-wide React Query tunables ────────────────────────────────────
 // Canonical defaults live in queryDefaults.js; DQ is a convenience alias here.
@@ -254,6 +255,42 @@ export default function RegistrationDashboard() {
     queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
     enabled: !!isAuthenticated && !!selectedEvent?.series_id,
     ...DQ,
+  });
+
+  // Fetch track collaborators
+  const { data: trackCollaborators = [] } = useQuery({
+    queryKey: ['trackCollaborators', selectedEvent?.track_id],
+    queryFn: () => (selectedEvent?.track_id 
+      ? base44.entities.EntityCollaborator.filter({ entity_type: 'Track', entity_id: selectedEvent.track_id })
+      : Promise.resolve([])),
+    enabled: !!isAuthenticated && !!selectedEvent?.track_id,
+    ...DQ,
+  });
+
+  // Fetch series collaborators
+  const { data: seriesCollaborators = [] } = useQuery({
+    queryKey: ['seriesCollaborators', selectedEvent?.series_id],
+    queryFn: () => (selectedEvent?.series_id 
+      ? base44.entities.EntityCollaborator.filter({ entity_type: 'Series', entity_id: selectedEvent.series_id })
+      : Promise.resolve([])),
+    enabled: !!isAuthenticated && !!selectedEvent?.series_id,
+    ...DQ,
+  });
+
+  // Derive planning rights access
+  const userTrackAccess = trackCollaborators.some(c => 
+    c.user_id === user?.id && ['owner', 'editor'].includes(c.role)
+  );
+  const userSeriesAccess = seriesCollaborators.some(c => 
+    c.user_id === user?.id && ['owner', 'editor'].includes(c.role)
+  );
+
+  const canUserEditEventCore = canEditEventCore({
+    isAdmin,
+    userId: user?.id,
+    selectedEvent,
+    userTrackAccess,
+    userSeriesAccess,
   });
 
   // ── Shared dashboard queries (standardized REG_QK keys) ──────────────────
