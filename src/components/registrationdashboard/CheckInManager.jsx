@@ -265,8 +265,8 @@ export default function CheckInManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const nextVerified = !formData.waiver_verified;
-    await updateEntryAsync({ id: selectedEntry.id, data: { waiver_verified: nextVerified } });
+    const nextVerified = !formData.waiver_status || formData.waiver_status === 'Missing' ? 'Verified' : 'Missing';
+    await updateEntryAsync({ id: selectedEntry.id, data: { waiver_status: nextVerified } });
   };
 
   const handleTogglePayment = async () => {
