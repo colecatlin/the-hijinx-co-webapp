@@ -17,6 +17,8 @@ export function isDriverPublic(driver) {
 
 /**
  * Check if an Event is publicly visible
+ * Requires publish_ready gate (both sides accepted and published per planning_rights)
+ * AND status in publishable state
  */
 export function isEventPublic(event) {
   if (!event) return false;
