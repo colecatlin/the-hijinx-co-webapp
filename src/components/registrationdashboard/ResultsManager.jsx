@@ -126,6 +126,19 @@ export default function ResultsManager({
     ...DQ,
   });
 
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: techTemplates = [] } = useQuery({
+    queryKey: ['techTemplates'],
+    queryFn: () => base44.entities.TechTemplate.list(),
+    ...DQ,
+  });
+
   // ── Derived data ──
   const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
 
@@ -282,6 +295,21 @@ export default function ResultsManager({
     if (new Set(positions).size !== positions.length) errs.push('Duplicate positions found');
     if (new Set(sessionResults.map((r) => r.driver_id)).size !== sessionResults.length)
       errs.push('Duplicate driver in session');
+
+    // Check tech requirements
+    const techFailures = [];
+    entries.forEach((entry) => {
+      // Find template for this entry's class
+      const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
+      if (template?.required_for_publish && entry.tech_status !== 'Passed') {
+        techFailures.push(entry.id);
+      }
+    });
+    
+    if (techFailures.length > 0) {
+      errs.push(`${techFailures.length} entries have not passed required tech inspection`);
+    }
+
     return errs;
   };
 
