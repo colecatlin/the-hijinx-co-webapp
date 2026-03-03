@@ -58,7 +58,7 @@ export default function ManageHomepage() {
 
   return (
     <ManagementLayout currentPage="ManageHomepage">
-      <ManagementShell title="Homepage Settings" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
+      <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <div className="space-y-8">
           {SECTIONS.map(({ key, label }) => {
             const setting = getSetting(key);
