@@ -134,11 +134,18 @@ export default function ResultsManager({
     ...DQ,
   });
 
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list(),
-    ...DQ,
-  });
+  const { data: eventClasses = [] } = useQuery({
+     queryKey: ['eventClasses', eventId],
+     queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order') : Promise.resolve([])),
+     enabled: !!eventId,
+     ...DQ,
+   });
+
+   const { data: seriesClasses = [] } = useQuery({
+     queryKey: ['seriesClasses'],
+     queryFn: () => base44.entities.SeriesClass.list(),
+     ...DQ,
+   });
 
   const { data: entries = [] } = useQuery({
     queryKey: ['entries', eventId],
@@ -162,23 +169,15 @@ export default function ResultsManager({
     return `${cls ? cls + ' – ' : ''}${s.session_type}${num}${s.name && s.name !== s.session_type ? ': ' + s.name : ''}`;
   };
 
-  // All distinct classes used in sessions
+  // Class options from EventClass
   const classOptions = useMemo(() => {
-    const seen = new Set();
-    sessions.forEach((s) => {
-      const name = s.series_class_id ? classesMap[s.series_class_id]?.class_name : s.class_name;
-      if (name) seen.add(name);
-    });
-    return Array.from(seen).sort();
-  }, [sessions, classesMap]);
+    return eventClasses.map((ec) => ({ id: ec.id, name: ec.name }));
+  }, [eventClasses]);
 
   const filteredSessions = useMemo(() => {
     if (classFilter === 'all') return sessions;
-    return sessions.filter((s) => {
-      const name = s.series_class_id ? classesMap[s.series_class_id]?.class_name : s.class_name;
-      return name === classFilter;
-    });
-  }, [sessions, classFilter, classesMap]);
+    return sessions.filter((s) => s.event_class_id === classFilter);
+  }, [sessions, classFilter]);
 
   // ── Lock state ──
   const isLocked = selectedSession?.status === 'Locked' || !!selectedSession?.locked;
@@ -438,7 +437,7 @@ export default function ResultsManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Classes</SelectItem>
-                {classOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {classOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

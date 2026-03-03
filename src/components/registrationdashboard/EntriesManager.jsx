@@ -128,6 +128,15 @@ export default function EntriesManager({
     ...DQ,
   });
 
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => eventId
+      ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order')
+      : Promise.resolve([]),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
     queryFn: () => seriesId
@@ -145,8 +154,14 @@ export default function EntriesManager({
     return d ? `${d.first_name} ${d.last_name}` : '—';
   };
   const getClassName = (entry) => {
-    if (!entry.series_class_id) return '—';
-    return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
+    if (entry.event_class_id) {
+      const ec = eventClasses.find((c) => c.id === entry.event_class_id);
+      if (ec) return ec.name;
+    }
+    if (entry.series_class_id) {
+      return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
+    }
+    return '—';
   };
 
   // ── Filtering ──
@@ -346,8 +361,7 @@ export default function EntriesManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Classes</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {seriesClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
+                {eventClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

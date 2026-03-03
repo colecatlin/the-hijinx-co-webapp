@@ -72,32 +72,23 @@ export default function ClassSessionBuilder({
     enabled: !!eventId,
   });
 
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order', 100) : Promise.resolve([])),
+    enabled: !!eventId,
+  });
+
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
     queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
     enabled: !!seriesId,
   });
 
-  // Data integrity: filter sessions to match selectedEvent and validate series_class integrity
-  const sessions = useMemo(() => {
-    if (!selectedEvent) return allSessions;
-    const validated = allSessions.filter((session) => {
-      // Must belong to selected event
-      if (session.event_id !== selectedEvent.id) {
-        return false;
-      }
-      // If session has series_class_id, validate it belongs to event's series
-      if (session.series_class_id) {
-        const matchingClass = seriesClasses.find((sc) => sc.id === session.series_class_id);
-        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
-          console.warn('Session series_class mismatch detected.');
-          return false;
-        }
-      }
-      return true;
-    });
-    return validated;
-  }, [allSessions, selectedEvent, seriesClasses]);
+  // Data integrity: filter sessions to match selectedEvent
+   const sessions = useMemo(() => {
+     if (!selectedEvent) return allSessions;
+     return allSessions.filter((session) => session.event_id === selectedEvent.id);
+   }, [allSessions, selectedEvent]);
 
   // Shared mutation wrappers
   const sharedMutationOpts = {
@@ -130,59 +121,81 @@ export default function ClassSessionBuilder({
     ...sharedMutationOpts,
   });
 
+  const { mutateAsync: createEventClass, isPending: creatingClass } = useDashboardMutation({
+    operationType: 'event_class_created',
+    entityName: 'EventClass',
+    mutationFn: (data) => base44.entities.EventClass.create(data),
+    successMessage: 'Class created',
+    ...sharedMutationOpts,
+  });
+
+  const { mutateAsync: updateEventClass, isPending: updatingClass } = useDashboardMutation({
+    operationType: 'event_class_updated',
+    entityName: 'EventClass',
+    mutationFn: ({ id, data }) => base44.entities.EventClass.update(id, data),
+    successMessage: 'Class updated',
+    ...sharedMutationOpts,
+  });
+
+  const { mutateAsync: deleteEventClass } = useDashboardMutation({
+    operationType: 'event_class_deleted',
+    entityName: 'EventClass',
+    mutationFn: (id) => base44.entities.EventClass.delete(id),
+    successMessage: 'Class deleted',
+    ...sharedMutationOpts,
+  });
+
   // Legacy useMutation adapters (wired to shared wrappers for UI state compat)
   const createSessionMutation = { mutate: (data) => createSession(data), isPending: creatingSession };
   const updateSessionMutation = { mutate: ({ id, data }) => updateSession({ id, data }), isPending: updatingSession };
   const deleteSessionMutation = { mutate: (id) => deleteSession(id) };
 
-  // Group sessions by class
-  const classGroups = useMemo(() => {
-    const groups = {};
+  // Group sessions by EventClass
+   const classGroups = useMemo(() => {
+     const groups = {};
 
-    sessions.forEach((session) => {
-      const classKey = session.series_class_id || session.class_name || 'Ungrouped';
-      const className = session.series_class_id
-        ? seriesClasses.find((sc) => sc.id === session.series_class_id)?.class_name || session.series_class_id
-        : session.class_name || 'Ungrouped';
+     // Add EventClass records
+     eventClasses.forEach((ec) => {
+       groups[ec.id] = {
+         id: ec.id,
+         key: ec.id,
+         name: ec.name,
+         className: ec.name,
+         series_class_id: ec.series_class_id,
+         max_entries: ec.max_entries,
+         status: ec.status,
+         class_order: ec.class_order || 0,
+         sessions: [],
+         isEventClass: true,
+       };
+     });
 
-      if (!groups[classKey]) {
-        groups[classKey] = {
-          key: classKey,
-          className,
-          series_class_id: session.series_class_id,
-          sessions: [],
-        };
-      }
+     // Attach sessions to their EventClass
+     sessions.forEach((session) => {
+       if (session.event_class_id && groups[session.event_class_id]) {
+         groups[session.event_class_id].sessions.push(session);
+       }
+     });
 
-      groups[classKey].sessions.push(session);
-    });
-
-    // Add pending class groups
-    pendingClassGroups.forEach((pg) => {
-      if (!groups[pg.key]) {
-        groups[pg.key] = {
-          ...pg,
-          sessions: [],
-        };
-      }
-    });
-
-    return Object.values(groups).sort((a, b) => a.className.localeCompare(b.className));
-  }, [sessions, seriesClasses, pendingClassGroups, selectedEvent]);
+     return Object.values(groups).sort((a, b) => (a.class_order || 0) - (b.class_order || 0));
+   }, [eventClasses, sessions, selectedEvent]);
 
   // Handlers
-  const handleAddClassGroup = () => {
-    const tempKey = `temp-${Date.now()}`;
-    setPendingClassGroups([
-      ...pendingClassGroups,
-      { key: tempKey, className: 'New Class Group', series_class_id: '', sessions: [] },
-    ]);
+  const handleAddClass = () => {
+    const newOrder = Math.max(0, ...eventClasses.map((ec) => ec.class_order || 0)) + 1;
+    const data = {
+      event_id: eventId,
+      name: 'New Class',
+      class_order: newOrder,
+      status: 'Open',
+    };
+    createEventClass(data);
   };
 
   const handleAddSession = (classGroup) => {
     setFormData({
+      event_class_id: classGroup.id,
       series_class_id: classGroup.series_class_id || '',
-      class_name: classGroup.series_class_id ? '' : classGroup.className,
       session_type: 'Practice',
       input_source: 'Manual',
       status: 'Draft',
@@ -194,8 +207,8 @@ export default function ClassSessionBuilder({
 
   const handleEditSession = (session) => {
     setFormData({
+      event_class_id: session.event_class_id || '',
       series_class_id: session.series_class_id || '',
-      class_name: session.class_name || '',
       session_type: session.session_type,
       session_number: session.session_number,
       name: session.name,
@@ -212,8 +225,9 @@ export default function ClassSessionBuilder({
   const handleDuplicateSession = (session) => {
     const newName = `${session.name} Copy`;
     const data = {
+      event_id: eventId,
+      event_class_id: session.event_class_id,
       series_class_id: session.series_class_id,
-      class_name: session.class_name,
       session_type: session.session_type,
       session_number: (session.session_number || 0) + 1,
       name: newName,
@@ -223,7 +237,6 @@ export default function ClassSessionBuilder({
       advancement_rules: session.advancement_rules,
       status: 'Draft',
       session_order: Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
-      event_id: eventId,
     };
     createSessionMutation.mutate(data);
   };
@@ -252,11 +265,15 @@ export default function ClassSessionBuilder({
       toast.error('Session name required');
       return;
     }
+    if (!formData.event_class_id) {
+      toast.error('Select a class for this session');
+      return;
+    }
 
     const data = {
       event_id: eventId,
+      event_class_id: formData.event_class_id,
       series_class_id: formData.series_class_id || undefined,
-      class_name: formData.class_name || undefined,
       session_type: formData.session_type,
       session_number: formData.session_number || undefined,
       name: formData.name,
@@ -310,42 +327,30 @@ export default function ClassSessionBuilder({
           <p className="text-sm text-gray-400 mt-1">Build the weekend structure, set order, lock when official</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={handleAddClassGroup}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" /> Add Class Group
-          </Button>
-          <Button
-            onClick={() => {
-              const firstGroup = classGroups[0];
-              if (firstGroup) {
-                handleAddSession(firstGroup);
-              } else {
-                toast.error('Create a class group first');
-              }
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" /> Add Session
-          </Button>
-        </div>
+           <Button
+             onClick={handleAddClass}
+             disabled={creatingClass}
+             className="bg-blue-600 hover:bg-blue-700 text-white"
+             size="sm"
+           >
+             <Plus className="w-4 h-4 mr-2" /> Add Class
+           </Button>
+         </div>
       </div>
 
       {/* Class Groups Accordion */}
       {classGroups.length === 0 ? (
         <Card className="bg-[#171717] border-gray-800">
           <CardContent className="py-8 text-center">
-            <p className="text-gray-400 text-sm mb-4">No class groups yet</p>
+            <p className="text-gray-400 text-sm mb-4">No classes yet</p>
             <Button
-              onClick={handleAddClassGroup}
+              onClick={handleAddClass}
+              disabled={creatingClass}
               variant="outline"
               className="border-gray-700 text-gray-300"
               size="sm"
             >
-              Add First Class Group
+              Add First Class
             </Button>
           </CardContent>
         </Card>
@@ -518,20 +523,32 @@ export default function ClassSessionBuilder({
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
-                <Select value={formData.session_type || 'Practice'} onValueChange={(val) => setFormData({ ...formData, session_type: val })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    <SelectItem value="Practice">Practice</SelectItem>
-                    <SelectItem value="Qualifying">Qualifying</SelectItem>
-                    <SelectItem value="Heat">Heat</SelectItem>
-                    <SelectItem value="LCQ">LCQ</SelectItem>
-                    <SelectItem value="Final">Final</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
+                  <Select value={formData.event_class_id || ''} onValueChange={(val) => setFormData({ ...formData, event_class_id: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue placeholder="Select class…" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
+                  <Select value={formData.session_type || 'Practice'} onValueChange={(val) => setFormData({ ...formData, session_type: val })}>
+                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Practice">Practice</SelectItem>
+                      <SelectItem value="Qualifying">Qualifying</SelectItem>
+                      <SelectItem value="Heat">Heat</SelectItem>
+                      <SelectItem value="LCQ">LCQ</SelectItem>
+                      <SelectItem value="Final">Final</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session Number</label>
