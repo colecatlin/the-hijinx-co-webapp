@@ -245,34 +245,17 @@ export default function ManageSeries() {
 
   return (
     <ManagementLayout currentPage="ManageSeries">
-      <ManagementShell title="Manage Series" subtitle={`${series.length} total series`}>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => document.getElementById('import-series').click()}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <input
-              id="import-series"
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-            <Button onClick={handleAdd} className="bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Series
-            </Button>
-          </div>
-        </div>
+      <ManagementShell
+        title="Series"
+        subtitle={`${series.length} total series`}
+        actions={<>
+          <input id="import-series" type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template"><Download className="w-4 h-4" /></Button>
+          <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={() => document.getElementById('import-series').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
+          <Button onClick={handleAdd} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Series</Button>
+        </>}
+      >
 
         <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
