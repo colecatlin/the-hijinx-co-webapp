@@ -72,6 +72,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'entry_created':
     case 'entry_updated':
     case 'entry_deleted':
+    case 'entry_withdrawn':
     case 'entry_bulk_updated':
     case 'entry_checked_in':
     case 'checkin_updated':
@@ -79,6 +80,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'compliance_updated':
     case 'compliance_resolved':
     case 'compliance_scanned':
+    case 'compliance_fixed':
     case 'tech_updated':
     case 'tech_created':
     case 'tech_deleted':
