@@ -220,7 +220,7 @@ export default function ManageEvents() {
         title="Events"
         subtitle={`${events.length} total events`}
         actions={activeTab === 'data' ? <>
-          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationLanding'))} className="border-gray-300 text-gray-700 hover:bg-gray-50"><Plus className="w-4 h-4 mr-2" />Create in Race Core</Button>
+          <Button variant="outline" onClick={() => window.location.href = createPageUrl('RegistrationLanding')} className="border-gray-300 text-gray-700 hover:bg-gray-50"><ExternalLink className="w-4 h-4 mr-2" />Go to Race Core</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
