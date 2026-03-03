@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { GitCompare } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
+import { isDriverPublic } from '@/components/system/publishHelpers';
 
 export default function DriverDirectory() {
   const navigate = useNavigate();
@@ -48,11 +49,13 @@ export default function DriverDirectory() {
     }
   };
 
-  const { data: drivers = [], isLoading: driversLoading } = useQuery({
-    queryKey: ['drivers', 'live'],
-    queryFn: () => base44.entities.Driver.filter({ profile_status: 'live' }),
+  const { data: allDrivers = [], isLoading: driversLoading } = useQuery({
+    queryKey: ['drivers-all'],
+    queryFn: () => base44.entities.Driver.list('first_name', 500),
     staleTime: 5 * 60 * 1000,
   });
+
+  const drivers = allDrivers.filter(isDriverPublic);
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
