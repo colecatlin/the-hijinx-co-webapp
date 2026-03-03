@@ -1,403 +1,334 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { AlertCircle, Download } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { AlertCircle, Download, RefreshCw, Send, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
-import PointsRulesetEditor from './standings/PointsRulesetEditor';
-import StandingsView from './standings/StandingsView';
-import StandingsStatus from './standings/StandingsStatus';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { calculateStandings, DEFAULT_POINTS_TABLE } from './standingsCalc';
+import PointsRulesetEditor from './PointsRulesetEditor';
+import StandingsTable from './StandingsTable';
+import StandingsChangeHistory from './StandingsChangeHistory';
 
-export default function PointsAndStandingsManager({ isAdmin, selectedEvent, standingsDirty, onClearDirty, onStandingsCalculated }) {
-  const [selectedSeries, setSelectedSeries] = useState('');
-  const [selectedSeason, setSelectedSeason] = useState('');
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedEventId, setSelectedEventId] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
+const DQ = applyDefaultQueryOptions();
+
+function buildDefaultPointsRows() {
+  return Object.entries(DEFAULT_POINTS_TABLE).map(([pos, pts]) => ({
+    position: parseInt(pos),
+    points: pts,
+  }));
+}
+
+function downloadCSV(rows, filename) {
+  const headers = ['rank', 'driver_name', 'car_number', 'total_points', 'events_counted', 'wins', 'podiums'];
+  const csv = [headers, ...rows.map((r) => headers.map((h) => `"${String(r[h] ?? '').replace(/"/g, '""')}"`))].map((r) => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+}
+
+export default function PointsAndStandingsManager({
+  selectedEvent,
+  isAdmin,
+  canAction: canActionProp,
+  dashboardContext,
+  invalidateAfterOperation: invalidateAfterOperationProp,
+  standingsDirty,
+  onClearDirty,
+  onStandingsCalculated,
+  sessions: sessionsProp,
+}) {
   const queryClient = useQueryClient();
+  const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
-  // Data fetching
-  const { data: series = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+  const orgType = dashboardContext?.orgType;
+  const orgId = dashboardContext?.orgId;
+  const selectedSeasonYear = dashboardContext?.season || '';
+  const eventId = selectedEvent?.id;
 
-  const { data: allEvents = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+  // ── Local UI state ──
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [includeNonFinals, setIncludeNonFinals] = useState(false);
+  const [includeProvisional, setIncludeProvisional] = useState(false);
+  const [pointsTableRows, setPointsTableRows] = useState(buildDefaultPointsRows());
+  const [calculatedRows, setCalculatedRows] = useState(null);
+  const [previousRows, setPreviousRows] = useState(null);
+  const [calculating, setCalculating] = useState(false);
 
+  const can = (action) => {
+    if (isAdmin) return true;
+    if (Array.isArray(canActionProp)) return canActionProp.includes(action);
+    return false;
+  };
+
+  // ── Queries ──
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', selectedSeries],
-    queryFn: () =>
-      selectedSeries
-        ? base44.entities.SeriesClass.filter({ series_id: selectedSeries })
-        : Promise.resolve([]),
-    enabled: !!selectedSeries,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    ...DQ,
   });
-
-  const { data: pointsConfigs = [] } = useQuery({
-    queryKey: ['pointsConfigs', selectedSeries, selectedSeason],
-    queryFn: () =>
-      selectedSeries && selectedSeason
-        ? base44.entities.PointsConfig.filter({
-            series_id: selectedSeries,
-            season_year: selectedSeason,
-          })
-        : Promise.resolve([]),
-    enabled: !!selectedSeries && !!selectedSeason,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const { data: standings = [] } = useQuery({
-    queryKey: ['standings', selectedSeries, selectedSeason, selectedClass],
-    queryFn: () =>
-      selectedSeries && selectedSeason && selectedClass
-        ? base44.entities.Standings.filter({
-            series_id: selectedSeries,
-            season_year: selectedSeason,
-            class_name: selectedClass,
-          })
-        : Promise.resolve([]),
-    enabled: !!selectedSeries && !!selectedSeason && !!selectedClass,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const { data: allSessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const { data: allDriverPrograms = [] } = useQuery({
-    queryKey: ['driverPrograms'],
-    queryFn: () => base44.entities.DriverProgram.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const { data: seriesClassesAll = [] } = useQuery({
-    queryKey: ['seriesClassesAll', selectedSeries],
-    queryFn: () =>
-      selectedSeries
-        ? base44.entities.SeriesClass.filter({ series_id: selectedSeries })
-        : Promise.resolve([]),
-    enabled: !!selectedSeries,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const { data: allResults = [] } = useQuery({
-    queryKey: ['results', selectedSeries, selectedSeason],
-    queryFn: () =>
-      selectedSeries && selectedSeason
-        ? base44.entities.Results.filter({
-            series_id: selectedSeries,
-          })
-        : Promise.resolve([]),
-    enabled: !!selectedSeries && !!selectedSeason,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  // Data integrity: filter results to match selected event if specified
-  const results = useMemo(() => {
-    if (!selectedEventId) return allResults;
-    const filtered = allResults.filter((result) => {
-      if (selectedEvent && result.event_id === selectedEvent.id && result.series_id !== selectedEvent.series_id) {
-        console.warn('Series mismatch detected for event-linked record.');
-        return false;
-      }
-      return true;
-    });
-    return filtered;
-  }, [allResults, selectedEventId, selectedEvent]);
-
-  // Data integrity: validate sessions
-  const validatedSessions = useMemo(() => {
-    if (!selectedEventId || !selectedEvent) return allSessions;
-    const validated = allSessions.filter((session) => {
-      if (session.event_id !== selectedEvent.id) {
-        return false;
-      }
-      if (session.series_class_id) {
-        const matchingClass = seriesClassesAll.find((sc) => sc.id === session.series_class_id);
-        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
-          console.warn('Session series_class mismatch detected.');
-          return false;
-        }
-      }
-      return true;
-    });
-    return validated;
-  }, [allSessions, selectedEventId, selectedEvent, seriesClassesAll]);
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    queryFn: () => base44.entities.Driver.list('first_name', 500),
+    ...DQ,
   });
 
-  // Memoize standing counts for quick access
-  const standingsCounts = useMemo(() => ({
-    total: standings.length,
-    withWins: standings.filter(s => s.wins && s.wins > 0).length,
-    withPodiums: standings.filter(s => s.podiums && s.podiums > 0).length,
-  }), [standings]);
+  // Events for the season + org
+  const { data: seasonEvents = [] } = useQuery({
+    queryKey: ['events', 'season', orgType, orgId, selectedSeasonYear],
+    queryFn: async () => {
+      if (!orgId || !selectedSeasonYear) return [];
+      const filter = orgType === 'series'
+        ? { series_id: orgId, season: selectedSeasonYear }
+        : { track_id: orgId, season: selectedSeasonYear };
+      return base44.entities.Event.filter(filter);
+    },
+    enabled: !!orgId && !!selectedSeasonYear,
+    ...DQ,
+  });
 
-  // Data integrity: validate results against DriverProgram and SeriesClass
-  const validatedResults = useMemo(() => {
-    if (!selectedEvent) return results;
-    
-    const validated = results.filter((result) => {
-      // Rule 2: If result has program_id, validate DriverProgram
-      if (result.program_id) {
-        const program = allDriverPrograms.find((dp) => dp.id === result.program_id);
-        if (!program) {
-          console.warn('Result to DriverProgram mismatch detected.');
-          return false;
-        }
-        if (program.event_id !== selectedEvent.id || program.series_id !== selectedEvent.series_id) {
-          console.warn('Result to DriverProgram mismatch detected.');
-          return false;
-        }
+  // All event IDs in scope (include selectedEvent even if season mismatch)
+  const scopedEventIds = useMemo(() => {
+    const ids = new Set(seasonEvents.map((e) => e.id));
+    if (eventId) ids.add(eventId);
+    return Array.from(ids);
+  }, [seasonEvents, eventId]);
+
+  // Sessions for all scoped events
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ['sessions', 'season', ...scopedEventIds],
+    queryFn: async () => {
+      if (!scopedEventIds.length) return sessionsProp || [];
+      // Use the sessions already passed for the selected event, plus fetch others
+      if (scopedEventIds.length === 1 && scopedEventIds[0] === eventId) {
+        return base44.entities.Session.filter({ event_id: scopedEventIds[0] });
       }
+      const all = await Promise.all(scopedEventIds.map((id) => base44.entities.Session.filter({ event_id: id })));
+      return all.flat();
+    },
+    enabled: scopedEventIds.length > 0,
+    ...DQ,
+  });
 
-      // Rule 3: If result has series_class_id, validate it belongs to event's series
-      if (result.series_class_id) {
-        const matchingClass = seriesClassesAll.find((sc) => sc.id === result.series_class_id);
-        if (matchingClass && matchingClass.series_id !== selectedEvent.series_id) {
-          console.warn('Result class mismatch detected.');
-          return false;
-        }
-      }
+  // Results for all scoped events
+  const { data: allResults = [] } = useQuery({
+    queryKey: ['results', 'season', ...scopedEventIds, selectedClassId],
+    queryFn: async () => {
+      if (!scopedEventIds.length) return [];
+      const all = await Promise.all(scopedEventIds.map((id) => base44.entities.Results.filter({ event_id: id })));
+      return all.flat();
+    },
+    enabled: scopedEventIds.length > 0 && !!selectedClassId,
+    ...DQ,
+  });
 
-      return true;
-    });
-    return validated;
-  }, [results, selectedEvent, allDriverPrograms, seriesClassesAll]);
+  // Published standings for comparison
+  const { data: publishedStandings = [] } = useQuery({
+    queryKey: ['standings', orgId, selectedSeasonYear, selectedClassId],
+    queryFn: async () => {
+      if (!selectedClassId) return [];
+      const selectedClass = seriesClasses.find((c) => c.id === selectedClassId);
+      return base44.entities.Standings.filter({
+        series_id: orgType === 'series' ? orgId : selectedEvent?.series_id || '',
+        season_year: selectedSeasonYear,
+        class_name: selectedClass?.class_name || '',
+      });
+    },
+    enabled: !!selectedClassId && !!selectedSeasonYear,
+    ...DQ,
+  });
 
-  // Standings calculation validation: filter results by session status and other rules
-  const standingsEligibleResults = useMemo(() => {
-    if (!selectedEvent || !selectedSeason) return [];
-
-    // Valid session statuses for standings calculation
-    const validStatuses = ['Official', 'Locked'];
-
-    // Filter by session status and program validity
-    let eligible = validatedResults.filter((result) => {
-      // Must have a valid program_id
-      if (!result.program_id) return false;
-
-      // Get associated session
-      const session = allSessions.find((s) => s.id === result.session_id);
-      if (!session) return false;
-
-      // Session must have valid status
-      if (!validStatuses.includes(session.status)) return false;
-
-      // Validate DriverProgram season alignment
-      const program = allDriverPrograms.find((dp) => dp.id === result.program_id);
-      if (!program) return false;
-      if (program.series_id !== selectedEvent.series_id || program.event_id !== selectedEvent.id) {
-        console.warn('DriverProgram season mismatch detected.');
-        return false;
-      }
-
-      return true;
-    });
-
-    // Handle duplicates: same driver_id + session_id, keep most recent
-    const deduped = {};
-    eligible.forEach((result) => {
-      const key = `${result.driver_id}:${result.session_id}`;
-      const existing = deduped[key];
-      if (existing) {
-        const existingDate = new Date(existing.created_date).getTime();
-        const resultDate = new Date(result.created_date).getTime();
-        if (resultDate > existingDate) {
-          console.warn('Duplicate result detected for driver and session.');
-          deduped[key] = result;
-        } else {
-          console.warn('Duplicate result detected for driver and session.');
-        }
-      } else {
-        deduped[key] = result;
+  // Class options based on sessions in scope
+  const classOptions = useMemo(() => {
+    const seen = new Map(); // id → name
+    allSessions.forEach((s) => {
+      if (s.series_class_id) {
+        const sc = seriesClasses.find((c) => c.id === s.series_class_id);
+        if (sc) seen.set(sc.id, sc.class_name);
       }
     });
-
-    return Object.values(deduped);
-  }, [validatedResults, selectedEvent, selectedSeason, allSessions, allDriverPrograms]);
-
-  // Check if standings can be calculated
-  const hasValidSessions = useMemo(() => {
-    if (!selectedEvent) return false;
-    const validStatuses = ['Official', 'Locked'];
-    return allSessions.some(
-      (s) =>
-        s.event_id === selectedEvent.id &&
-        validStatuses.includes(s.status)
-    );
-  }, [allSessions, selectedEvent]);
-
-  // Get unique seasons from series
-  const seasons = useMemo(() => {
-    if (!selectedSeries) return [];
-    const serie = series.find((s) => s.id === selectedSeries);
-    if (serie?.season_year) {
-      return [{ year: serie.season_year }];
+    // Also include all SeriesClass for the series
+    if (orgType === 'series' && orgId) {
+      seriesClasses.filter((c) => c.series_id === orgId).forEach((c) => seen.set(c.id, c.class_name));
     }
-    const uniqueYears = new Set(
-      validatedResults
-        .filter((r) => r.series_id === selectedSeries)
-        .map((r) => new Date(r.created_date).getFullYear())
-    );
-    return Array.from(uniqueYears).sort((a, b) => b - a);
-  }, [selectedSeries, series, validatedResults]);
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allSessions, seriesClasses, orgType, orgId]);
 
-  // Events for selected series
-  const seriesEvents = useMemo(() => {
-    if (!selectedSeries) return [];
-    return allEvents.filter((e) => e.series_id === selectedSeries);
-  }, [selectedSeries, allEvents]);
+  // Auto-select first class
+  useEffect(() => {
+    if (!selectedClassId && classOptions.length > 0) {
+      setSelectedClassId(classOptions[0].id);
+    }
+  }, [classOptions, selectedClassId]);
 
-  const currentPointsConfig = useMemo(() => {
-    return pointsConfigs.find((pc) => pc.status === 'published') ||
-      pointsConfigs[0] ||
-      null;
-  }, [pointsConfigs]);
+  // Build previousRows from published standings for change arrows
+  useEffect(() => {
+    if (publishedStandings.length) {
+      const prev = publishedStandings
+        .sort((a, b) => (a.position || 999) - (b.position || 999))
+        .map((s, idx) => ({
+          rank: s.position || idx + 1,
+          driver_id: s.driver_id,
+          driver_name: `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+        }));
+      setPreviousRows(prev);
+    }
+  }, [publishedStandings]);
 
-  const recalculateMutation = useMutation({
-    mutationFn: async (payload) => {
-      // Validate standings can be calculated
-      if (!hasValidSessions) {
-        toast.error('Standings cannot be calculated until sessions are Official.');
-        return Promise.reject(new Error('No valid sessions'));
-      }
+  // Sessions summary for the current class
+  const classSessionsInScope = useMemo(() => {
+    return allSessions.filter((s) => !selectedClassId || s.series_class_id === selectedClassId);
+  }, [allSessions, selectedClassId]);
 
-      // Show warning if not published
-      if (currentPointsConfig?.status !== 'published') {
-        return new Promise((resolve) => {
-          // Would normally show dialog, but we'll proceed for now
-          resolve();
-        });
-      }
+  const officialSessionCount = classSessionsInScope.filter((s) =>
+    s.status === 'Official' || s.status === 'Locked'
+  ).length;
 
-      const result = await base44.functions.invoke('recalculateStandings', {
-        seriesId: selectedSeries,
-        seasonYear: selectedSeason,
-        className: selectedClass,
+  // ── Recalculate (client-side) ──
+  const handleRecalculate = async () => {
+    if (!selectedClassId) { toast.error('Select a class first'); return; }
+    if (!officialSessionCount && !includeProvisional) {
+      toast.error('No Official/Locked sessions found. Enable "Include Provisional" or publish sessions first.');
+      return;
+    }
+    setCalculating(true);
+    try {
+      const rows = calculateStandings(allResults, allSessions, drivers, selectedClassId, {
+        includeNonFinals,
+        includeProvisional,
+        pointsTableRows,
       });
+      setCalculatedRows(rows);
+      toast.success(`Calculated standings for ${rows.length} drivers`);
+      if (onClearDirty) onClearDirty();
+      if (onStandingsCalculated) onStandingsCalculated();
 
-      // Log operation
-      await base44.functions.invoke('logOperation', {
-        operation_type: 'recalculate',
-        source_type: 'system',
-        entity_name: 'Standings',
-        function_name: 'recalculateStandings',
+      // Log to OperationLog
+      const selectedClass = seriesClasses.find((c) => c.id === selectedClassId);
+      base44.entities.OperationLog.create({
+        operation_type: 'standings_calculated',
         status: 'success',
+        entity_name: 'Standings',
+        event_id: eventId,
+        message: `Calculated standings for ${selectedClass?.class_name || selectedClassId}, ${rows.length} drivers`,
         metadata: {
-          series_id: selectedSeries,
-          season_year: selectedSeason,
-          class_name: selectedClass,
-          eligible_results_count: standingsEligibleResults.length,
+          series_id: orgType === 'series' ? orgId : selectedEvent?.series_id,
+          season: selectedSeasonYear,
+          class_name: selectedClass?.class_name,
+          driver_count: rows.length,
+          include_non_finals: includeNonFinals,
+          include_provisional: includeProvisional,
         },
+      }).catch(() => {});
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  // ── Publish standings ──
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      if (!calculatedRows?.length) throw new Error('Recalculate first');
+      const selectedClass = seriesClasses.find((c) => c.id === selectedClassId);
+      const className = selectedClass?.class_name || '';
+      const seriesId = orgType === 'series' ? orgId : selectedEvent?.series_id || '';
+
+      // Upsert one Standings record per driver
+      const ops = calculatedRows.map((row) => {
+        const driver = drivers.find((d) => d.id === row.driver_id);
+        const existing = publishedStandings.find((s) => s.driver_id === row.driver_id);
+        const payload = {
+          series_id: seriesId,
+          series_name: '',
+          season_year: selectedSeasonYear,
+          class_name: className,
+          position: row.rank,
+          driver_id: row.driver_id,
+          first_name: driver?.first_name || '',
+          last_name: driver?.last_name || '',
+          bib_number: driver?.primary_number || '',
+          total_points: row.total_points,
+          events_counted: row.events_counted,
+          wins: row.wins,
+          podiums: row.podiums,
+          bonus_points: 0,
+          last_calculated: new Date().toISOString(),
+        };
+        if (existing) return base44.entities.Standings.update(existing.id, payload);
+        return base44.entities.Standings.create(payload);
       });
 
-      return result;
+      await Promise.all(ops);
+
+      // Log
+      await base44.entities.OperationLog.create({
+        operation_type: 'standings_published',
+        status: 'success',
+        entity_name: 'Standings',
+        event_id: eventId,
+        message: `Published standings for ${className}, ${calculatedRows.length} drivers`,
+        metadata: {
+          series_id: seriesId,
+          season: selectedSeasonYear,
+          class_name: className,
+          driver_count: calculatedRows.length,
+          published: true,
+        },
+      }).catch(() => {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-      toast.success('Standings recalculated');
-      if (onClearDirty) {
-        onClearDirty();
-      }
-      if (onStandingsCalculated) {
-        onStandingsCalculated();
-      }
+      queryClient.invalidateQueries({ queryKey: ['standings', orgId, selectedSeasonYear, selectedClassId] });
+      invalidateAfterOperation('standings_published', { eventId, seriesId: orgType === 'series' ? orgId : selectedEvent?.series_id });
+      toast.success('Standings published');
     },
-    onError: (error) => {
-      if (error.message !== 'No valid sessions') {
-        toast.error(`Recalculation failed: ${error.message}`);
-      }
-    },
+    onError: (err) => toast.error(`Publish failed: ${err.message}`),
   });
 
   const handleExportCSV = () => {
-    if (standings.length === 0) {
-      toast.error('No standings to export');
-      return;
-    }
-
-    const headers = [
-      'Position',
-      'Driver',
-      'Total Points',
-      'Events Counted',
-      'Wins',
-      'Podiums',
-      'Bonus Points',
-      'Last Calculated',
-    ];
-
-    const rows = standings.map((s) => [
-      s.position || '-',
-      s.driver_name || '-',
-      s.total_points || 0,
-      s.events_counted || 0,
-      s.wins || 0,
-      s.podiums || 0,
-      s.bonus_points || 0,
-      s.last_calculated ? new Date(s.last_calculated).toLocaleDateString() : '-',
-    ]);
-
-    const csv =
-      [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(','))
-        .join('\n') + '\n';
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `standings-${selectedSeason}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
-
-    toast.success('Standings exported');
+    const rows = calculatedRows || (publishedStandings.length ? publishedStandings.map((s, idx) => ({
+      rank: s.position || idx + 1,
+      driver_name: `${s.first_name} ${s.last_name}`,
+      car_number: s.bib_number,
+      total_points: s.total_points,
+      events_counted: s.events_counted,
+      wins: s.wins,
+      podiums: s.podiums,
+    })) : null);
+    if (!rows?.length) { toast.error('No standings to export'); return; }
+    const cls = seriesClasses.find((c) => c.id === selectedClassId)?.class_name || 'standings';
+    downloadCSV(rows, `standings-${cls}-${selectedSeasonYear}.csv`);
+    toast.success('Exported');
   };
 
-  if (!isAdmin) {
+  const displayRows = calculatedRows || (publishedStandings.length ? publishedStandings.map((s, idx) => ({
+    rank: s.position || idx + 1,
+    driver_id: s.driver_id,
+    driver_name: `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+    car_number: s.bib_number,
+    total_points: s.total_points,
+    events_counted: s.events_counted,
+    wins: s.wins,
+    podiums: s.podiums,
+    tie_breaker_note: '',
+    round_points: {},
+  })) : null);
+
+  if (!isAdmin && !can('standings_recalculate')) {
     return (
-      <Card className="bg-[#262626] border-gray-700">
+      <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-8">
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-amber-400 font-medium">Admin only</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Points and Standings management is available to admins only.
-              </p>
-            </div>
+            <p className="text-sm text-amber-400">Points & Standings management requires admin access.</p>
           </div>
         </CardContent>
       </Card>
@@ -405,192 +336,141 @@ export default function PointsAndStandingsManager({ isAdmin, selectedEvent, stan
   }
 
   return (
-    <div className="space-y-4">
-      {/* Standings Dirty Banner */}
+    <div className="space-y-5">
+      {/* Dirty banner */}
       {standingsDirty && (
-        <Card className="bg-amber-900/30 border-amber-700/50">
-          <CardContent className="py-4">
-            <div className="flex gap-3 items-start">
-              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm text-amber-400 font-semibold">Standings Recalculation Required</p>
-                <p className="text-xs text-amber-300/80 mt-1">
-                  Official session results detected. Recalculate standings to publish updated championship points.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Control Bar */}
-      <Card className="bg-[#262626] border-gray-700">
-        <CardContent className="py-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-xs">
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">
-                Series *
-              </label>
-              <Select value={selectedSeries} onValueChange={setSelectedSeries}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="Select series..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
-                  {series.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-white">
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1 min-w-xs">
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">
-                Season
-              </label>
-              <Select value={selectedSeason} onValueChange={setSelectedSeason}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="Select season..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
-                  {seasons.map((s) => (
-                    <SelectItem
-                      key={s.year || s}
-                      value={(s.year || s).toString()}
-                      className="text-white"
-                    >
-                      {s.year || s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1 min-w-xs">
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">
-                Class
-              </label>
-              <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="Select class..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
-                  {seriesClasses.map((sc) => (
-                    <SelectItem key={sc.id} value={sc.class_name} className="text-white">
-                      {sc.class_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1 min-w-xs">
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">
-                Event (Optional)
-              </label>
-              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="All events" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
-                  <SelectItem value={null} className="text-white">
-                    All events
-                  </SelectItem>
-                  {seriesEvents.map((e) => (
-                    <SelectItem key={e.id} value={e.id} className="text-white">
-                      {e.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex gap-2">
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={() => recalculateMutation.mutate()}
-                 disabled={!selectedSeries || !selectedSeason || !selectedClass || !hasValidSessions}
-                 className="border-gray-700 text-gray-300 hover:bg-gray-800"
-               >
-                 Recalculate
-               </Button>
-               <Button
-                 size="sm"
-                 onClick={() => {
-                   if (currentPointsConfig?.status !== 'published') {
-                     toast.error('Publish rules first');
-                     return;
-                   }
-                   toast.success('Standings are now public');
-                 }}
-                 className="bg-blue-600 hover:bg-blue-700"
-               >
-                 Publish
-               </Button>
-               <Button
-                 variant="outline"
-                 size="sm"
-                 onClick={handleExportCSV}
-                 disabled={standings.length === 0}
-                 className="border-gray-700 text-gray-300 hover:bg-gray-800"
-               >
-                 <Download className="w-3 h-3 mr-1" /> Export
-               </Button>
-             </div>
+        <div className="bg-amber-950/30 border border-amber-800/50 rounded-lg p-3 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-amber-300">Standings Recalculation Required</p>
+            <p className="text-xs text-amber-400/80">Official session results have changed. Recalculate to update standings.</p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Status Card */}
-      {selectedSeries && selectedSeason && selectedClass && !hasValidSessions && (
-        <Card className="bg-[#262626] border-amber-700">
-          <CardContent className="py-6">
-            <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-amber-400 font-medium">Standings cannot be calculated</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Standings cannot be calculated until sessions are Official.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Status Card */}
-      {selectedSeries && selectedSeason && selectedClass && hasValidSessions && (
-        <StandingsStatus
-          standings={standings}
-          results={standingsEligibleResults}
-          sessions={validatedSessions}
-          selectedClass={selectedClass}
-        />
-      )}
-
-      {/* Two Column Layout */}
-      {selectedSeries && selectedSeason && selectedClass && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <PointsRulesetEditor
-            seriesId={selectedSeries}
-            seriesName={series.find((s) => s.id === selectedSeries)?.name}
-            seasonYear={selectedSeason}
-            selectedClass={selectedClass}
-            seriesClasses={seriesClasses}
-            pointsConfig={currentPointsConfig}
-          />
-          <StandingsView standings={standings} drivers={drivers} />
         </div>
       )}
 
-      {!selectedSeries && (
-        <Card className="bg-[#262626] border-gray-700">
-          <CardContent className="py-8 text-center">
-            <p className="text-gray-400">Select a series to view standings</p>
+      {/* Top control bar */}
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 space-y-3">
+        <div className="flex items-end gap-3 flex-wrap">
+          {/* Class selector */}
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-xs text-gray-400 block mb-1">Class</label>
+            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                <SelectValue placeholder="Select class…" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                {classOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Season (read-only display) */}
+          <div className="min-w-[100px]">
+            <label className="text-xs text-gray-400 block mb-1">Season</label>
+            <div className="h-8 px-3 flex items-center bg-[#1A1A1A] border border-gray-700 rounded text-xs text-gray-300">
+              {selectedSeasonYear || '—'}
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Switch checked={includeNonFinals} onCheckedChange={setIncludeNonFinals} />
+              <span className="text-xs text-gray-300">Include Heats & Qualifying</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Switch checked={includeProvisional} onCheckedChange={setIncludeProvisional} />
+              <span className="text-xs text-gray-300">Include Provisional</span>
+            </label>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2 ml-auto">
+            {can('standings_recalculate') && (
+              <Button size="sm" onClick={handleRecalculate} disabled={calculating || !selectedClassId} className="bg-blue-700 hover:bg-blue-600 h-8">
+                <RefreshCw className={`w-4 h-4 mr-1 ${calculating ? 'animate-spin' : ''}`} />
+                {calculating ? 'Calculating…' : 'Recalculate'}
+              </Button>
+            )}
+            {can('standings_publish') && (
+              <Button size="sm" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending || !calculatedRows?.length} className="bg-green-700 hover:bg-green-600 h-8">
+                <Send className="w-4 h-4 mr-1" />
+                {publishMutation.isPending ? 'Publishing…' : 'Publish'}
+              </Button>
+            )}
+            {can('standings_export') && (
+              <Button size="sm" variant="outline" onClick={handleExportCSV} className="border-gray-700 text-gray-300 h-8">
+                <Download className="w-4 h-4 mr-1" /> Export CSV
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Status summary */}
+        <div className="flex items-center gap-3 text-xs text-gray-500 border-t border-gray-800 pt-2">
+          <span>Sessions in scope: <span className="text-gray-300">{classSessionsInScope.length}</span></span>
+          <span>Official/Locked: <span className="text-green-400">{officialSessionCount}</span></span>
+          <span>Results loaded: <span className="text-gray-300">{allResults.filter((r) => !selectedClassId || r.series_class_id === selectedClassId).length}</span></span>
+          {calculatedRows && <Badge className="bg-blue-500/20 text-blue-400">Draft calculated — not published</Badge>}
+          {!calculatedRows && publishedStandings.length > 0 && <Badge className="bg-green-500/20 text-green-400">Showing published standings</Badge>}
+        </div>
+      </div>
+
+      {/* No class selected */}
+      {!selectedClassId && (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="py-12 text-center">
+            <Trophy className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400">Select a class above to view or calculate standings</p>
           </CardContent>
         </Card>
+      )}
+
+      {selectedClassId && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+          {/* Left: Points Ruleset */}
+          <div className="lg:col-span-1">
+            <PointsRulesetEditor
+              pointsTableRows={pointsTableRows}
+              onPointsTableChange={setPointsTableRows}
+              canEdit={can('points_ruleset_edit')}
+            />
+          </div>
+
+          {/* Main: Standings table + history */}
+          <div className="lg:col-span-3 space-y-5">
+            <Card className="bg-[#171717] border-gray-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-white flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  {seriesClasses.find((c) => c.id === selectedClassId)?.class_name || 'Standings'}
+                  {selectedSeasonYear && <span className="text-gray-400 font-normal">— {selectedSeasonYear}</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StandingsTable
+                  rows={displayRows}
+                  sessions={classSessionsInScope.filter((s) => s.status === 'Official' || s.status === 'Locked')}
+                  previousRows={calculatedRows ? previousRows : null}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-[#171717] border-gray-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs text-gray-400 uppercase tracking-wide">Change History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StandingsChangeHistory
+                  eventId={eventId}
+                  seriesId={orgType === 'series' ? orgId : selectedEvent?.series_id}
+                  seasonYear={selectedSeasonYear}
+                  classId={selectedClassId}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );
