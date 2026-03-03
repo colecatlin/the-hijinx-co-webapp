@@ -410,13 +410,18 @@ function RegistrationFlow({ user }) {
       const dupCheck = eventEntries.filter(e => e.car_number === entryFormData.car_number.trim() && e.driver_id !== myDriver.id);
       if (dupCheck.length) throw new Error(`Car number ${entryFormData.car_number} already registered in this class`);
       const payload = {
-        event_id: eventId, driver_id: myDriver.id,
+        event_id: eventId,
+        driver_id: myDriver.id,
         series_id: selectedEvent.series_id || undefined,
         series_class_id: entryFormData.series_class_id || undefined,
         car_number: entryFormData.car_number.trim(),
         transponder_id: entryFormData.transponder_id || undefined,
         team_id: entryFormData.team_id || undefined,
-        entry_status: 'Registered', payment_status: 'Unpaid', tech_status: 'Not Inspected', waiver_verified: false,
+        entry_status: 'Registered',
+        payment_status: 'Unpaid',
+        tech_status: 'Not Inspected',
+        waiver_status: 'Missing',
+        compliance_status: 'Clear',
       };
       const existing = await base44.entities.Entry.filter({ event_id: eventId, driver_id: myDriver.id });
       let result;
