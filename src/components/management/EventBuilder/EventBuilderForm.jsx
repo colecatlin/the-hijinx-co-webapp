@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { canTransition, applyTransition, cascadeEffects } from '@/components/racecore/operationalStateEngine';
 import {
   Save,
   Archive,
@@ -205,10 +206,40 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     if (!validate()) return;
 
     const selectedSeries = activeSeries.find(s => s.id === formData.series_id);
-
     const locationNoteWithTz = formData.location_note
       ? `TZ:${formData.timezone}|${formData.location_note}`
       : `TZ:${formData.timezone}`;
+
+    let targetStatus = publish ? 'in_progress' : formData.status;
+
+    // If editing an existing event, validate state transitions
+    if (selectedEventId && event) {
+      // Map Event status to operational state
+      const currentEventStatus = event.status || 'upcoming'; // upcoming = Draft
+      const nextEventStatus = targetStatus; // in_progress = Published
+
+      // For validation, map DB status to operational state
+      const statusMap = {
+        'upcoming': 'Draft',
+        'in_progress': 'Published',
+        'completed': 'Completed',
+        'cancelled': 'Archived',
+      };
+
+      const currentOpsState = statusMap[currentEventStatus] || 'Draft';
+      const nextOpsState = statusMap[nextEventStatus] || 'Draft';
+
+      if (!canTransition('Event', currentOpsState, nextOpsState)) {
+        toast.error(`Cannot transition Event from ${currentOpsState} to ${nextOpsState}`);
+        return;
+      }
+
+      // Get cascade instructions (for logging/future use)
+      const cascadeInstructions = cascadeEffects('Event', event, nextOpsState);
+      if (cascadeInstructions.warnings?.length > 0) {
+        cascadeInstructions.warnings.forEach(w => toast.info(w));
+      }
+    }
 
     const eventData = {
       track_id: formData.track_id,
@@ -219,7 +250,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       slug: formData.slug || generateSlug(formData.name),
       event_date: formData.event_date,
       end_date: formData.end_date,
-      status: publish ? 'in_progress' : formData.status,
+      status: targetStatus,
       round_number: formData.round_number ? parseInt(formData.round_number) : null,
       external_uid: formData.external_uid || null,
       location_note: locationNoteWithTz,
