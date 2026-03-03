@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Upload, ImageIcon } from 'lucide-react';
+import ActivityTab from '@/components/management/ActivityTab';
 
 const SECTIONS = [
   { key: 'apparel_bg', label: 'Apparel Section Background' },
@@ -15,6 +17,7 @@ const SECTIONS = [
 export default function ManageHomepage() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState({});
+  const [activeTab, setActiveTab] = useState('overview');
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ['homepageSettings'],
@@ -59,22 +62,42 @@ export default function ManageHomepage() {
   return (
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
-        <div className="space-y-8">
-          {SECTIONS.map(({ key, label }) => {
-            const setting = getSetting(key);
-            return (
-              <SectionEditor
-                key={key}
-                sectionKey={key}
-                label={label}
-                currentUrl={setting?.image_url || ''}
-                uploading={!!uploading[key]}
-                onFileUpload={(file) => handleFileUpload(key, label, file)}
-                onUrlSave={(url) => handleUrlSave(key, label, url)}
-              />
-            );
-          })}
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-1">Sections Configured</p>
+              <p className="text-2xl font-bold text-gray-900">{settings.length}</p>
+            </div>
+            <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-8">
+            {SECTIONS.map(({ key, label }) => {
+              const setting = getSetting(key);
+              return (
+                <SectionEditor
+                  key={key}
+                  sectionKey={key}
+                  label={label}
+                  currentUrl={setting?.image_url || ''}
+                  uploading={!!uploading[key]}
+                  onFileUpload={(file) => handleFileUpload(key, label, file)}
+                  onUrlSave={(url) => handleUrlSave(key, label, url)}
+                />
+              );
+            })}
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityTab entityName="HomepageSettings" />
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
