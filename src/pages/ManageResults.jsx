@@ -115,20 +115,14 @@ export default function ManageResults() {
 
   return (
     <ManagementLayout currentPage="ManageResults">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+      <ManagementShell title="Manage Results" subtitle={`${results.length} total results`}>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-blue-900 mb-1">Results Lifecycle Notice</h3>
           <p className="text-sm text-blue-800">Result lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
         </div>
 
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl('Management')}>
-            <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-2">Manage Results</h1>
-            <p className="text-gray-600">{results.length} total results</p>
-          </div>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1" />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}>
               <Upload className="w-4 h-4 mr-2" />

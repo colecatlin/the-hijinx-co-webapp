@@ -148,15 +148,9 @@ export default function ManageStories() {
 
   return (
     <ManagementLayout currentPage="ManageStories">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Link to={createPageUrl('Management')} className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#232323] mb-4 transition-colors">
-          <ArrowLeft className="w-3 h-3" /> Back to Management
-        </Link>
+      <ManagementShell title="Manage Stories" subtitle="Create, edit, and review outlet stories">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Stories</h1>
-            <p className="text-gray-600 mt-1">Create, edit, and review outlet stories</p>
-          </div>
+          <div />
           {!showForm && (
             <div className="flex gap-2">
               <Button onClick={handleCategorizeAll} disabled={isCategorizingAll} variant="outline">

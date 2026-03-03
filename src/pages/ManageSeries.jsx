@@ -245,12 +245,9 @@ export default function ManageSeries() {
 
   return (
     <ManagementLayout currentPage="ManageSeries">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Manage Series</h1>
-            <p className="text-gray-600 mt-1">{series.length} total series</p>
-          </div>
+      <ManagementShell title="Manage Series" subtitle={`${series.length} total series`}>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1" />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => downloadTemplate('series', 'Series')} title="Download import template">
               <Download className="w-4 h-4" />

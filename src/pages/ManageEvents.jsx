@@ -198,18 +198,14 @@ export default function ManageEvents() {
 
   return (
     <ManagementLayout currentPage="ManageEvents">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
+      <ManagementShell title="Manage Events" subtitle={`${events.length} total events`}>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
           <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
         </div>
 
-        <div className="flex items-center gap-4 mb-8">
-          <div />
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-2">Manage Events</h1>
-            <p className="text-gray-600">{events.length} total events</p>
-          </div>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1" />
           <Button variant="outline" onClick={() => setShowAIGenerator(true)} className="border-purple-300 text-purple-700 hover:bg-purple-50">
             <Sparkles className="w-4 h-4 mr-2" />
             AI Generate

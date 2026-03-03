@@ -255,13 +255,9 @@ export default function ManageTeams() {
 
   return (
     <ManagementLayout currentPage="ManageTeams">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center gap-4 mb-8">
-          <div />
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-2">Manage Teams</h1>
-            <p className="text-gray-600">{teams.length} total teams</p>
-          </div>
+      <ManagementShell title="Manage Teams" subtitle={`${teams.length} total teams`}>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1" />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => downloadTemplate('team', 'Team')} title="Download import template">
               <Download className="w-4 h-4" />
