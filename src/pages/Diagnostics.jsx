@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, AlertTriangle, XCircle, RefreshCw, Link as LinkIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle, AlertTriangle, XCircle, RefreshCw, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { buildProfileUrl, generateSlug, validateSlug } from '@/components/utils/routingContract';
 import { toast } from 'sonner';
 
@@ -51,6 +52,22 @@ export default function Diagnostics() {
   const { data: allEvents = [] } = useQuery({
     queryKey: ['all-events-diag'],
     queryFn: () => base44.entities.Event.list('-updated_date', 50),
+  });
+
+  // Race Core system health queries
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ['sessions-diag'],
+    queryFn: () => base44.entities.Session.list(),
+  });
+
+  const { data: allEntries = [] } = useQuery({
+    queryKey: ['entries-diag'],
+    queryFn: () => base44.entities.Entry.list(),
+  });
+
+  const { data: allStandings = [] } = useQuery({
+    queryKey: ['standings-diag'],
+    queryFn: () => base44.entities.Standings.list(),
   });
 
   const { data: allTracks = [] } = useQuery({
@@ -243,9 +260,37 @@ export default function Diagnostics() {
     );
   };
 
+  // Race Core Health Calculations
+  const unpublishedEvents = useMemo(() => {
+    return allEvents.filter(e => e.publish_ready === false || e.status === 'Draft');
+  }, [allEvents]);
+
+  const sessionsNotOfficial = useMemo(() => {
+    return allSessions.filter(s => !['Official', 'Locked'].includes(s.status));
+  }, [allSessions]);
+
+  const entriesMissingData = useMemo(() => {
+    return allEntries.filter(e => 
+      e.waiver_status === 'Missing' || 
+      e.tech_status === 'Not Inspected' || 
+      e.payment_status === 'Unpaid'
+    );
+  }, [allEntries]);
+
+  const standingsNotPublished = useMemo(() => {
+    return allStandings.filter(s => s.published !== true);
+  }, [allStandings]);
+
   return (
     <ManagementLayout currentPage="Diagnostics">
       <ManagementShell title="Diagnostics" subtitle="Admin-only health check for entity routes and relationships">
+        <Tabs defaultValue="data-health" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="data-health">Data Health</TabsTrigger>
+            <TabsTrigger value="race-core">Race Core Status</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="data-health" className="space-y-6">
         {/* Broken Links Summary */}
         {brokenRecords.length > 0 && (
           <Card className="mb-8 border-red-200 bg-red-50">
@@ -403,6 +448,162 @@ export default function Diagnostics() {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          <TabsContent value="race-core" className="space-y-6">
+            {/* A. Unpublished Events */}
+            <Card className={unpublishedEvents.length > 0 ? 'border-orange-200 bg-orange-50' : ''}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {unpublishedEvents.length > 0 ? (
+                    <AlertTriangle className="w-5 h-5 text-orange-600" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  )}
+                  A. Unpublished Events
+                  <Badge variant="outline">{unpublishedEvents.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              {unpublishedEvents.length > 0 && (
+                <CardContent>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {unpublishedEvents.map(e => (
+                      <div key={e.id} className="flex items-center justify-between p-2 border border-orange-200 rounded text-sm bg-white">
+                        <div>
+                          <p className="font-medium">{e.name}</p>
+                          <p className="text-xs text-gray-600">{e.status} • publish_ready={e.publish_ready ? 'true' : 'false'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* B. Sessions Not Official */}
+            <Card className={sessionsNotOfficial.length > 0 ? 'border-amber-200 bg-amber-50' : ''}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {sessionsNotOfficial.length > 0 ? (
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  )}
+                  B. Sessions Not Official/Locked
+                  <Badge variant="outline">{sessionsNotOfficial.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              {sessionsNotOfficial.length > 0 && (
+                <CardContent>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {sessionsNotOfficial.slice(0, 20).map(s => (
+                      <div key={s.id} className="flex items-center justify-between p-2 border border-amber-200 rounded text-sm bg-white">
+                        <div>
+                          <p className="font-medium">{s.name || s.session_type}</p>
+                          <p className="text-xs text-gray-600">Status: {s.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {sessionsNotOfficial.length > 20 && (
+                      <p className="text-xs text-gray-500 pt-2">... and {sessionsNotOfficial.length - 20} more</p>
+                    )}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* C. Entries Missing Data */}
+            <Card className={entriesMissingData.length > 0 ? 'border-red-200 bg-red-50' : ''}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {entriesMissingData.length > 0 ? (
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  )}
+                  C. Entries Missing Compliance
+                  <Badge variant="outline">{entriesMissingData.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              {entriesMissingData.length > 0 && (
+                <CardContent>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {entriesMissingData.slice(0, 20).map(e => (
+                      <div key={e.id} className="flex items-center justify-between p-2 border border-red-200 rounded text-sm bg-white">
+                        <div>
+                          <p className="font-medium">Entry #{e.car_number || e.id.slice(0, 8)}</p>
+                          <p className="text-xs text-gray-600">
+                            Waiver: {e.waiver_status} • Tech: {e.tech_status} • Payment: {e.payment_status}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {entriesMissingData.length > 20 && (
+                      <p className="text-xs text-gray-500 pt-2">... and {entriesMissingData.length - 20} more</p>
+                    )}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* D. Standings Not Published */}
+            <Card className={standingsNotPublished.length > 0 ? 'border-blue-200 bg-blue-50' : ''}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {standingsNotPublished.length > 0 ? (
+                    <AlertCircle className="w-5 h-5 text-blue-600" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  )}
+                  D. Standings Not Published
+                  <Badge variant="outline">{standingsNotPublished.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              {standingsNotPublished.length > 0 && (
+                <CardContent>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {standingsNotPublished.slice(0, 20).map(s => (
+                      <div key={s.id} className="flex items-center justify-between p-2 border border-blue-200 rounded text-sm bg-white">
+                        <div>
+                          <p className="font-medium">{s.series_name}</p>
+                          <p className="text-xs text-gray-600">Position {s.position} • Season {s.season_year}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {standingsNotPublished.length > 20 && (
+                      <p className="text-xs text-gray-500 pt-2">... and {standingsNotPublished.length - 20} more</p>
+                    )}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Summary */}
+            <Card className="bg-blue-50 border-blue-200">
+              <CardHeader>
+                <CardTitle>System Health Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-white rounded border border-blue-100">
+                  <p className="text-2xl font-bold text-blue-600">{unpublishedEvents.length}</p>
+                  <p className="text-xs text-gray-600 mt-1">Unpublished Events</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded border border-amber-100">
+                  <p className="text-2xl font-bold text-amber-600">{sessionsNotOfficial.length}</p>
+                  <p className="text-xs text-gray-600 mt-1">Draft/Provisional Sessions</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded border border-red-100">
+                  <p className="text-2xl font-bold text-red-600">{entriesMissingData.length}</p>
+                  <p className="text-xs text-gray-600 mt-1">Entries Missing Data</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded border border-blue-100">
+                  <p className="text-2xl font-bold text-blue-600">{standingsNotPublished.length}</p>
+                  <p className="text-xs text-gray-600 mt-1">Unpublished Standings</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </ManagementShell>
     </ManagementLayout>
   );
