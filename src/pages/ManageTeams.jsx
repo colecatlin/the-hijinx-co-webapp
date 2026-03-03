@@ -6,11 +6,12 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, ExternalLink } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
 import TeamForm from '@/components/management/TeamForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
@@ -27,6 +28,7 @@ import TeamOperationsSection from '@/components/management/TeamManagement/TeamOp
 import TeamCommunitySection from '@/components/management/TeamManagement/TeamCommunitySection';
 
 export default function ManageTeams() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeam, setEditingTeam] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -408,6 +410,17 @@ export default function ManageTeams() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(buildRaceCoreUrl({
+                            tab: 'entries',
+                            focusTeamId: team.id,
+                          }))}
+                          title="Open in Race Core"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
