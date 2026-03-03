@@ -5,7 +5,7 @@ import { ChevronDown, LayoutDashboard, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MANAGEMENT_SECTIONS, DASHBOARD_ITEM } from './managementSections';
 
-export { MANAGEMENT_SECTIONS };
+export { MANAGEMENT_SECTIONS, DASHBOARD_ITEM };
 
 export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
