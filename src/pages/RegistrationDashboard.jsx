@@ -177,7 +177,7 @@ export default function RegistrationDashboard() {
   const [eventId, setEventId] = useState(
     searchParams.get('eventId') || ''
   );
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [editingEventId, setEditingEventId] = useState('');
   const [announcerMode, setAnnouncerMode] = useState(searchParams.get('announcer') === '1');
 
