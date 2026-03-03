@@ -1,14 +1,14 @@
 /**
- * Unified publish state helpers.
+ * Unified Publish State Helpers
  * 
- * Normalizes publish checks across the system.
- * Public pages must use these helpers before rendering entities.
+ * Centralizes the logic for determining if entities are published/public.
+ * Used across Management, Race Core, and Public Motorsports subsystems.
+ * 
+ * SINGLE SOURCE OF TRUTH for publish state rules.
  */
 
 /**
- * Check if a Driver entity is publicly visible.
- * @param {object} driver - Driver entity
- * @returns {boolean}
+ * Check if a Driver is publicly visible
  */
 export function isDriverPublic(driver) {
   if (!driver) return false;
@@ -16,52 +16,43 @@ export function isDriverPublic(driver) {
 }
 
 /**
- * Check if an Event entity is publicly visible.
- * @param {object} event - Event entity
- * @returns {boolean}
+ * Check if an Event is publicly visible
  */
 export function isEventPublic(event) {
   if (!event) return false;
+  
   const isPublishReady = event.publish_ready === true;
-  const isPublishedStatus = ['Published', 'Live', 'Completed'].includes(event.status);
-  return isPublishReady && isPublishedStatus;
+  const isPublishableStatus = ['Published', 'Live', 'Completed'].includes(event.status);
+  
+  return isPublishReady && isPublishableStatus;
 }
 
 /**
- * Check if a Session is publicly visible (Official or Locked results).
- * @param {object} session - Session entity
- * @returns {boolean}
+ * Check if a Session is officially published (results locked)
  */
-export function isSessionPublic(session) {
+export function isSessionOfficial(session) {
   if (!session) return false;
   return ['Official', 'Locked'].includes(session.status);
 }
 
 /**
- * Check if Standings are published.
- * @param {object} standings - Standings entity
- * @returns {boolean}
+ * Check if Standings are published
  */
-export function areStandingsPublished(standings) {
+export function isStandingsPublished(standings) {
   if (!standings) return false;
   return standings.published === true;
 }
 
 /**
- * Check if Results are from a public session.
- * @param {object} result - Results entity
- * @param {object} session - Associated Session entity
- * @returns {boolean}
+ * Check if Results are publicly visible (session must be official)
  */
-export function isResultPublic(result, session) {
+export function areResultsPublic(result, session) {
   if (!result || !session) return false;
-  return isSessionPublic(session);
+  return isSessionOfficial(session);
 }
 
 /**
- * Check if a Team entity is publicly visible.
- * @param {object} team - Team entity
- * @returns {boolean}
+ * Check if a Team is publicly visible
  */
 export function isTeamPublic(team) {
   if (!team) return false;
@@ -69,50 +60,101 @@ export function isTeamPublic(team) {
 }
 
 /**
- * Check if a Series entity is publicly visible.
- * @param {object} series - Series entity
- * @returns {boolean}
+ * Check if a Track is publicly visible
  */
-export function isSeriesPublic(series) {
-  if (!series) return false;
-  // Series are typically always public once created
-  return true;
+export function isTrackPublic(track) {
+  if (!track) return false;
+  return track.profile_status === 'live';
 }
 
 /**
- * Filter an array of entities by public status.
- * @param {array} entities - Array of entities
- * @param {string} entityType - Type: 'Driver', 'Event', 'Session', 'Standings', etc.
- * @returns {array} Filtered entities
+ * Check if a Series is publicly visible
+ */
+export function isSeriesPublic(series) {
+  if (!series) return false;
+  return series.profile_status === 'live';
+}
+
+/**
+ * Check if an Outlet Story is published
+ */
+export function isStoryPublished(story) {
+  if (!story) return false;
+  return story.status === 'published';
+}
+
+/**
+ * Filter array of entities by public status
  */
 export function filterPublic(entities, entityType) {
-  if (!Array.isArray(entities)) return [];
+  if (!entities || !Array.isArray(entities)) return [];
+  
+  return entities.filter(entity => {
+    switch (entityType) {
+      case 'Driver':
+        return isDriverPublic(entity);
+      case 'Event':
+        return isEventPublic(entity);
+      case 'Session':
+        return isSessionOfficial(entity);
+      case 'Team':
+        return isTeamPublic(entity);
+      case 'Track':
+        return isTrackPublic(entity);
+      case 'Series':
+        return isSeriesPublic(entity);
+      case 'OutletStory':
+        return isStoryPublished(entity);
+      case 'Standings':
+        return isStandingsPublished(entity);
+      default:
+        return true;
+    }
+  });
+}
+
+/**
+ * Get publish state summary for an entity
+ * Returns: { isPublic: boolean, reason: string }
+ */
+export function getPublishStatus(entity, entityType) {
+  const status = { isPublic: false, reason: '' };
+  
+  if (!entity) {
+    status.reason = 'Entity not found';
+    return status;
+  }
   
   switch (entityType) {
     case 'Driver':
-      return entities.filter(isDriverPublic);
+      status.isPublic = isDriverPublic(entity);
+      status.reason = status.isPublic ? 'Profile live' : `Profile status: ${entity.profile_status}`;
+      break;
+      
     case 'Event':
-      return entities.filter(isEventPublic);
+      const publishReady = entity.publish_ready === true;
+      const statusOk = ['Published', 'Live', 'Completed'].includes(entity.status);
+      status.isPublic = publishReady && statusOk;
+      status.reason = !publishReady 
+        ? 'Not publish ready' 
+        : !statusOk 
+        ? `Status: ${entity.status}` 
+        : 'Published';
+      break;
+      
     case 'Session':
-      return entities.filter(isSessionPublic);
+      status.isPublic = isSessionOfficial(entity);
+      status.reason = status.isPublic ? 'Official/Locked' : `Status: ${entity.status}`;
+      break;
+      
     case 'Standings':
-      return entities.filter(areStandingsPublished);
-    case 'Team':
-      return entities.filter(isTeamPublic);
-    case 'Series':
-      return entities.filter(isSeriesPublic);
+      status.isPublic = isStandingsPublished(entity);
+      status.reason = status.isPublic ? 'Published' : 'Not published';
+      break;
+      
     default:
-      return entities;
+      status.reason = 'Unknown entity type';
   }
+  
+  return status;
 }
-
-export default {
-  isDriverPublic,
-  isEventPublic,
-  isSessionPublic,
-  areStandingsPublished,
-  isResultPublic,
-  isTeamPublic,
-  isSeriesPublic,
-  filterPublic,
-};
