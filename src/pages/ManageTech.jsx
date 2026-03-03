@@ -93,19 +93,11 @@ export default function ManageTech() {
 
   return (
     <ManagementLayout currentPage="ManageTech">
-      <ManagementShell title="Manage Tech" subtitle="Manage tech solutions and offerings">
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={() => {
-              setEditingItem(null);
-              setShowForm(true);
-            }}
-            className="bg-[#232323] hover:bg-[#1A1A1A]"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Item
-          </Button>
-        </div>
+      <ManagementShell
+        title="Tech"
+        subtitle="Manage tech solutions and offerings"
+        actions={<Button onClick={() => { setEditingItem(null); setShowForm(true); }} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Item</Button>}
+      >
 
 
         <DragDropContext onDragEnd={handleDragEnd}>
