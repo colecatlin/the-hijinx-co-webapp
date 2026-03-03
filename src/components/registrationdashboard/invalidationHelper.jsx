@@ -57,12 +57,17 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'results_updated':
     case 'results_published':
     case 'results_published_provisional':
+    case 'results_saved_draft':
+    case 'results_imported_csv':
       broad.push(['results'], ['sessions'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
       break;
 
     case 'results_published_official':
     case 'results_locked':
+    case 'session_marked_provisional':
+    case 'session_published_official':
+    case 'session_locked':
       broad.push(['results'], ['sessions'], ['standings'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
