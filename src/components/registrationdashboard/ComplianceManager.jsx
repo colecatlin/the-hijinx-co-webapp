@@ -219,19 +219,11 @@ export default function ComplianceManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const complianceBlock = getBlock(entry.notes, 'INDEX46_COMPLIANCE_JSON');
-    const nowVerified = !complianceBlock.waiver_missing;
-    const nextNotes = mergeNotes(entry.notes || '', {
-      'INDEX46_COMPLIANCE_JSON': {
-        waiver_missing: !nowVerified,
-        waiver_verified_at: !nowVerified ? new Date().toISOString() : null,
-        waiver_verified_by_user_id: !nowVerified ? currentUser?.id : null,
-      },
-    });
-    await updateEntryAsync({ id: entry.id, data: { notes: nextNotes } });
+    const nextVerified = entry.waiver_status === 'Verified' ? 'Missing' : 'Verified';
+    await updateEntryAsync({ id: entry.id, data: { waiver_status: nextVerified } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id,
-      !nowVerified ? 'Waiver verified' : 'Waiver unverified');
-    toast.success(!nowVerified ? 'Waiver verified' : 'Waiver cleared');
+      nextVerified === 'Verified' ? 'Waiver verified' : 'Waiver unverified');
+    toast.success(nextVerified === 'Verified' ? 'Waiver verified' : 'Waiver cleared');
   };
 
   // ── License save ───────────────────────────────────────────────────────────
