@@ -387,9 +387,6 @@ export default function RegistrationDashboard() {
     [user?.role]
   );
 
-  // Legacy compatibility – must come before being used in canEditEventCore
-  const isAdmin = user?.role === 'admin';
-
   // Check if user has any accessible tabs
   const availableTabs = useMemo(() => {
     const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'ops_center'];
