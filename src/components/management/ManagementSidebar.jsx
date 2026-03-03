@@ -78,7 +78,7 @@ export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
   const [query, setQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState(
-    MANAGEMENT_SECTIONS.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
+    SECTIONS.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
   );
 
   // Derive current page from pathname (e.g. "/ManageDrivers" → "ManageDrivers")
