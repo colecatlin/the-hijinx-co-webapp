@@ -252,7 +252,6 @@ export default function ManageResults() {
             </table>
           </div>
         )}
-      </div>
 
       {/* Add result dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -299,7 +298,7 @@ export default function ManageResults() {
           <ResultsBulkUpload onDone={() => setShowUploadDialog(false)} />
         </DialogContent>
       </Dialog>
-      </ManagementShell>
+    </ManagementShell>
     </ManagementLayout>
   );
 }
