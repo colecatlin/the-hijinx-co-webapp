@@ -193,19 +193,16 @@ export default function CheckInManager({
   const getCheckInBlockers = (fd) => {
     if (!fd) return [];
     const blockers = [];
-    const compliance = parseComplianceFromNotes(fd.notes);
-    
-    if (!isWaiverVerified(compliance)) blockers.push('Waiver not verified');
-    if (!isLicenseVerified(compliance)) {
-      if (!compliance?.license?.license_number) {
-        blockers.push('License number missing');
-      } else {
-        blockers.push('License not verified or expired');
-      }
+
+    if (fd.waiver_status !== 'Verified') blockers.push('Waiver not verified');
+
+    if (fd.license_status === 'Expired') {
+      blockers.push('License expired');
+    } else if (fd.license_status === 'Unknown') {
+      blockers.push('License not verified');
     }
 
-    const tech = parseTechFromNotes(fd.notes);
-    if (!tech?.transponder?.id) {
+    if (!fd.transponder_id) {
       blockers.push('Transponder missing');
     } else {
       // Check for transponder conflicts
