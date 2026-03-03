@@ -107,6 +107,7 @@ export default function ManageTech() {
           </Button>
         </div>
 
+
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="tech-items">
             {(provided) => (

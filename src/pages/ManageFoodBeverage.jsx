@@ -93,7 +93,7 @@ export default function ManageFoodBeverage() {
     <ManagementLayout currentPage="ManageFoodBeverage">
       <ManagementShell title="Food & Beverage" subtitle="Manage food and beverage offerings">
         <div className="flex justify-end mb-6">
-        <Button
+          <Button
           onClick={() => {
             setEditingItem(null);
             setShowForm(true);
