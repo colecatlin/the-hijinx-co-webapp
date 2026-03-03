@@ -206,12 +206,33 @@ export default function EntriesManager({
   };
   const hasFlags = (entry) => !!(entry.flags && entry.flags.trim().length > 0);
 
+  // ── Tech filter from URL ──
+  const techFilter = searchParams.get('tech');
+
   // ── Filtering ──
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      if (filters.class !== 'all' && getClassName(entry) !== filters.class) return false;
+      // Class filter: can be a class name (from select) or a series_class_id / 'unassigned' (from URL)
+      if (filters.class !== 'all') {
+        const isClassId = seriesClasses.some((sc) => sc.id === filters.class) || filters.class === 'unassigned';
+        if (isClassId) {
+          if (filters.class === 'unassigned') {
+            if (entry.series_class_id) return false;
+          } else {
+            if (entry.series_class_id !== filters.class) return false;
+          }
+        } else {
+          if (getClassName(entry) !== filters.class) return false;
+        }
+      }
       if (filters.entryStatus !== 'all' && entry.entry_status !== filters.entryStatus) return false;
       if (filters.paymentStatus !== 'all' && entry.payment_status !== filters.paymentStatus) return false;
+      // Tech filter from URL param
+      if (techFilter === 'teched') {
+        if (entry.tech_status !== 'Passed' && entry.tech_status !== 'Teched') return false;
+      } else if (techFilter === 'notteched') {
+        if (entry.tech_status === 'Passed' || entry.tech_status === 'Teched') return false;
+      }
       if (filters.search) {
         const s = filters.search.toLowerCase();
         const name = getDriverName(entry.driver_id).toLowerCase();
@@ -221,7 +242,7 @@ export default function EntriesManager({
       }
       return true;
     });
-  }, [entries, filters, drivers, seriesClasses]);
+  }, [entries, filters, drivers, seriesClasses, techFilter]);
 
   const uniqueClasses = useMemo(() => {
     const s = new Set();
