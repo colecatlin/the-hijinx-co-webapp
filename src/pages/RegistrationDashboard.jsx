@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { getPermissionsForRole, canTab, canAction } from '@/components/access/accessControl';
+import { canManageEntity } from '@/components/access/entityAccess';
 import PageShell from '@/components/shared/PageShell';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
@@ -184,6 +185,7 @@ export default function RegistrationDashboard() {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [editingEventId, setEditingEventId] = useState('');
   const [announcerMode, setAnnouncerMode] = useState(searchParams.get('announcer') === '1');
+  const [orgAccessDenied, setOrgAccessDenied] = useState(false);
 
   // Centralized invalidation helper – available to all tab components
   const invalidateAfterOperation = useMemo(
@@ -390,6 +392,22 @@ export default function RegistrationDashboard() {
 
   // Legacy compatibility
   const isAdmin = user?.role === 'admin';
+
+  // Check entity access for non-admins
+  useEffect(() => {
+    async function checkOrgAccess() {
+      if (!organizationId || isAdmin) {
+        setOrgAccessDenied(false);
+        return;
+      }
+
+      const entityType = organizationType === 'track' ? 'Track' : 'Series';
+      const hasAccess = await canManageEntity(entityType, organizationId);
+      setOrgAccessDenied(!hasAccess);
+    }
+
+    checkOrgAccess();
+  }, [organizationId, organizationType, isAdmin]);
 
   // Helper bound to queryClient
   const requireAdminOverride = useMemo(() => createRequireAdminOverride(queryClient), [queryClient]);
@@ -616,6 +634,34 @@ export default function RegistrationDashboard() {
 
   if (!user) {
     return null;
+  }
+
+  // Handle org access denied for non-admins
+  if (orgAccessDenied && organizationId && !isAdmin) {
+    return (
+      <PageShell>
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-400" /> Access Denied
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-300">
+                You do not have access to manage this {organizationType}. Request access using an access code or contact the owner.
+              </p>
+              <Button
+                onClick={() => navigate(createPageUrl('Profile'))}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Request Access
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageShell>
+    );
   }
 
   // Handle authenticated users with no accessible tabs
