@@ -5,64 +5,7 @@ import StatsBar from '@/components/management/StatsBar';
 import ManagementSidebar from '@/components/management/ManagementSidebar';
 import CommandPalette from '@/components/management/CommandPalette';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
-
-const MANAGEMENT_SECTIONS = [
-  {
-    title: 'Core Entities',
-    items: [
-      { name: 'Drivers', page: 'ManageDrivers', description: 'Manage all driver profiles and data' },
-      { name: 'Teams', page: 'ManageTeams', description: 'Manage racing teams and organizations' },
-      { name: 'Tracks', page: 'ManageTracks', description: 'Manage racing venues and facilities' },
-      { name: 'Series', page: 'ManageSeries', description: 'Manage racing series and championships' },
-      { name: 'Events', page: 'ManageEvents', description: 'Manage race events and schedules' },
-      { name: 'Sessions', page: 'ManageSessions', description: 'Manage race sessions and timing' },
-      { name: 'Results', page: 'ManageResults', description: 'Manage race results and standings' },
-      { name: 'Points Config', page: 'ManagePointsConfig', description: 'Link Google Sheets for automated standings calculation' },
-      { name: 'Driver Claims', page: 'ManageDriverClaims', description: 'Review driver-submitted results' },
-    ]
-  },
-  {
-    title: 'Content',
-    items: [
-      { name: 'Stories', page: 'ManageStories', description: 'Create and publish articles' },
-      { name: 'Issues', page: 'ManageIssues', description: 'Manage magazine issues' },
-    ]
-  },
-  {
-    title: 'Communications',
-    items: [
-      { name: 'Announcements', page: 'ManageAnnouncements', description: 'Manage rotating announcement bar' },
-      { name: 'Advertising', page: 'ManageAdvertising', description: 'Manage advertising inquiries' },
-      { name: 'Access Management', page: 'ManageAccess', description: 'Manage user access to entities' },
-    ]
-  },
-  {
-    title: 'Features',
-    items: [
-      { name: 'Food & Beverage', page: 'ManageFoodBeverage', description: 'Manage food and beverage offerings' },
-      { name: 'Tech', page: 'ManageTech', description: 'Manage tech solutions and offerings' },
-    ]
-  },
-  {
-    title: 'Analytics',
-    items: [
-      { name: 'Analytics Dashboard', page: 'AnalyticsDashboard', description: 'View insights and data trends' },
-    ]
-  },
-  {
-    title: 'Data & Integration',
-    items: [
-      { name: 'CSV Import/Export', page: 'ManageCSVImportExport', description: 'Bulk import/export all entities as CSV files' },
-      { name: 'Schedule Sync', page: 'ManageCalendarSync', description: 'Sync ICS/webcal schedules into Events' },
-    ]
-  },
-  {
-    title: 'Site Settings',
-    items: [
-      { name: 'Homepage', page: 'ManageHomepage', description: 'Manage homepage section images and visuals' },
-    ]
-  }
-];
+import { MANAGEMENT_SECTIONS } from '@/components/management/managementSections';
 
 export default function Management() {
   const location = useLocation();
