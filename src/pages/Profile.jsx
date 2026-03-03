@@ -5,9 +5,12 @@ import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, LogOut } from 'lucide-react';
+import { Save, LogOut, ExternalLink, Lock } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
+import { format } from 'date-fns';
 import GeneralTab from '@/components/profile/GeneralTab';
 import ManageTab from '@/components/profile/ManageTab';
 import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
@@ -47,6 +50,33 @@ export default function Profile() {
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: collaborations = [] } = useQuery({
+    queryKey: ['myCollaborations', user?.id],
+    queryFn: () => {
+      if (!user?.id) return [];
+      return base44.entities.EntityCollaborator.filter({ user_id: user.id });
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ['myInvitations', user?.email],
+    queryFn: () => {
+      if (!user?.email) return [];
+      return base44.entities.Invitation.filter({ email: user.email, status: 'pending' });
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: operationLogs = [] } = useQuery({
+    queryKey: ['myOperationLogs', user?.email],
+    queryFn: () => {
+      if (!user?.email) return [];
+      return base44.entities.OperationLog.filter({ user_email: user.email }, '-created_date', 20);
+    },
+    enabled: !!user?.email,
   });
 
   React.useEffect(() => {
@@ -158,14 +188,119 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="entities">My Entities</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
               <TabsTrigger value="story">Story</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
               <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+            </TabsContent>
+
+            <TabsContent value="entities" className="space-y-8">
+              {/* My Entities Section */}
+              {collaborations.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Entities I Manage</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {collaborations.map(collab => (
+                      <Card key={collab.id}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-base">{collab.entity_name}</CardTitle>
+                            <Badge className={collab.role === 'owner' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
+                              {collab.role}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{collab.entity_type}</p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                window.location.href = `${createPageUrl('RegistrationDashboard')}?orgType=${collab.entity_type.toLowerCase()}&orgId=${collab.entity_id}`;
+                              }}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              Race Core
+                            </Button>
+                            {collab.role === 'owner' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  window.location.href = `${createPageUrl('Profile')}?tab=access`;
+                                }}
+                              >
+                                <Lock className="w-3 h-3 mr-1" />
+                                Manage
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Invitations Section */}
+              {invitations.length > 0 && (
+                <div className="pt-6 border-t">
+                  <h2 className="text-2xl font-bold mb-4">Pending Invitations</h2>
+                  <div className="space-y-3">
+                    {invitations.map(inv => (
+                      <Card key={inv.id}>
+                        <CardContent className="pt-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">{inv.entity_name}</p>
+                              <p className="text-xs text-gray-600">{inv.entity_type}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                window.location.href = `${createPageUrl('AcceptInvitation')}?code=${inv.code}`;
+                              }}
+                            >
+                              Accept
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Activity Section */}
+              {operationLogs.length > 0 && (
+                <div className="pt-6 border-t">
+                  <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {operationLogs.map(log => (
+                      <div key={log.id} className="flex items-start justify-between p-3 border border-gray-200 rounded text-sm">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{log.operation_type}</p>
+                          <p className="text-xs text-gray-600">{log.message}</p>
+                          <p className="text-xs text-gray-500 mt-1">{format(new Date(log.created_date), 'MMM d, HH:mm')}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">{log.status || 'completed'}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {collaborations.length === 0 && invitations.length === 0 && (
+                <div className="p-8 text-center border border-gray-200 rounded-lg bg-gray-50">
+                  <p className="text-gray-600 mb-4">No entities yet. Use the access tab to request access.</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="access" className="space-y-8">
