@@ -33,7 +33,7 @@ export default function ManagementSidebar({ currentPage, onNavigate }) {
             <span className="flex-1">{DASHBOARD_ITEM.name}</span>
           </Link>
           <div className="border-t border-gray-200 my-2" />
-          {SECTIONS.map((section) => (
+          {MANAGEMENT_SECTIONS.map((section) => (
             <div key={section.title}>
               <button
                 onClick={() => toggleSection(section.title)}
