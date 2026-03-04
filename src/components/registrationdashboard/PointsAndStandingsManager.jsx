@@ -17,7 +17,7 @@ export default function PointsAndStandingsManager({
 }) {
   const queryClient = useQueryClient();
   const [isCalculating, setIsCalculating] = useState(false);
-  const [forceDefault, setForceDefault] = useState(false);
+
 
   // Determine target IDs for resolution
   const targetSeriesId = useMemo(() => {
@@ -202,22 +202,22 @@ export default function PointsAndStandingsManager({
                     <TableHead className="text-gray-400">Driver</TableHead>
                     <TableHead className="text-gray-400 text-right">Points</TableHead>
                     <TableHead className="text-gray-400 text-right">Wins</TableHead>
-                    <TableHead className="text-gray-400 text-right">Podiums</TableHead>
-                    <TableHead className="text-gray-400 text-right">Top 5</TableHead>
-                    <TableHead className="text-gray-400 text-right">Rounds</TableHead>
+                    <TableHead className="text-gray-400 text-right">2nd Place</TableHead>
+                    <TableHead className="text-gray-400 text-right">3rd Place</TableHead>
+                    <TableHead className="text-gray-400 text-right">Results</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {standingsWithInfo.map((s, idx) => (
                     <TableRow key={s.id} className="border-gray-700 hover:bg-gray-800">
-                      <TableCell className="text-white font-bold">{s.position}</TableCell>
-                      <TableCell className="text-white">{s.driver?.first_name} {s.driver?.last_name}</TableCell>
-                      <TableCell className="text-right text-white font-semibold">{s.points_total}</TableCell>
-                      <TableCell className="text-right text-gray-400">{s.wins}</TableCell>
-                      <TableCell className="text-right text-gray-400">{s.podiums}</TableCell>
-                      <TableCell className="text-right text-gray-400">{s.top5}</TableCell>
-                      <TableCell className="text-right text-gray-400">{s.rounds_counted}</TableCell>
-                    </TableRow>
+                        <TableCell className="text-white font-bold">{idx + 1}</TableCell>
+                        <TableCell className="text-white">{s.driver?.first_name} {s.driver?.last_name}</TableCell>
+                        <TableCell className="text-right text-white font-semibold">{s.total_points}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.wins}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.seconds}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.thirds}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.results_count}</TableCell>
+                      </TableRow>
                   ))}
                 </TableBody>
               </Table>
