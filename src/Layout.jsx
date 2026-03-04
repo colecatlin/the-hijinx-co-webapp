@@ -25,6 +25,7 @@ const navItems = [
     { name: 'Events', page: 'EventDirectory' },
     { name: 'Registration', page: 'RegistrationLanding' },
     { name: 'Competition System', page: 'CompetitionSystem' },
+    { name: 'Media Portal', page: 'MediaPortal' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
