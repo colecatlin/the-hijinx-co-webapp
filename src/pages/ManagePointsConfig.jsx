@@ -44,6 +44,11 @@ export default function ManagePointsConfig() {
     queryFn: () => base44.entities.SeriesClass.list()
   });
 
+  const { data: events = [] } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => base44.entities.Event.list().catch(() => [])
+  });
+
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.PointsConfig.create(data),
     onSuccess: () => {
@@ -138,6 +143,7 @@ export default function ManagePointsConfig() {
                   <TableHead className="text-gray-400">Series</TableHead>
                   <TableHead className="text-gray-400">Class</TableHead>
                   <TableHead className="text-gray-400">Season</TableHead>
+                  <TableHead className="text-gray-400">Event</TableHead>
                   <TableHead className="text-gray-400">Priority</TableHead>
                   <TableHead className="text-gray-400">Status</TableHead>
                   <TableHead className="text-gray-400 text-right">Actions</TableHead>
@@ -149,11 +155,12 @@ export default function ManagePointsConfig() {
                     <TableCell className="text-white font-medium">{config.name}</TableCell>
                     <TableCell className="text-gray-400">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
                     <TableCell className="text-gray-400">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
-                    <TableCell className="text-gray-400">{config.season}</TableCell>
-                    <TableCell className="text-gray-400">{config.priority || 100}</TableCell>
+                    <TableCell className="text-gray-400">{config.season || '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.event_id ? events.find(e => e.id === config.event_id)?.name || config.event_id : '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.priority || 0}</TableCell>
                     <TableCell>
-                      <Badge className={config.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
-                        {config.is_active ? 'Active' : 'Inactive'}
+                      <Badge className={config.status === 'active' || config.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                        {config.status === 'active' || config.is_active ? 'Active' : config.status || 'Inactive'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
@@ -182,6 +189,8 @@ export default function ManagePointsConfig() {
         configId={editingId}
         series={series}
         seriesClasses={seriesClasses}
+        events={events}
+        configs={configs}
         onSave={(data) => {
           if (editingId) {
             updateMutation.mutate({ id: editingId, data });
@@ -210,14 +219,17 @@ export default function ManagePointsConfig() {
   );
 }
 
-function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
+function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, events, configs, onSave }) {
   const [form, setForm] = useState({
     name: '',
     series_id: '',
     series_class_id: '',
     season: '',
+    event_id: '',
+    is_default: false,
+    status: 'active',
     is_active: true,
-    priority: 100,
+    priority: 0,
     applies_to_session_types: ['Final'],
     points_by_position: [50, 44, 40, 36, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
     bonus_rules: { fastest_lap: 0, most_laps_led: 0, pole_award: 0 },
@@ -225,6 +237,7 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
     notes: ''
   });
   const [pointsText, setPointsText] = useState('');
+  const [validationError, setValidationError] = useState('');
 
   const { data: config } = useQuery({
     queryKey: ['pointsConfig', configId],
@@ -233,6 +246,7 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
   });
 
   useEffect(() => {
+    setValidationError('');
     if (config && open) {
       setForm(config);
       setPointsText((config.points_by_position || []).join(', '));
@@ -242,8 +256,11 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
         series_id: '',
         series_class_id: '',
         season: '',
+        event_id: '',
+        is_default: false,
+        status: 'active',
         is_active: true,
-        priority: 100,
+        priority: 0,
         applies_to_session_types: ['Final'],
         points_by_position: [50, 44, 40, 36, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         bonus_rules: { fastest_lap: 0, most_laps_led: 0, pole_award: 0 },
@@ -255,10 +272,28 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
   }, [config, open]);
 
   const handleSave = () => {
+    setValidationError('');
+    
+    if (form.is_default && !form.event_id && !form.series_class_id) {
+      const otherDefaults = configs.filter(c =>
+        c.id !== configId &&
+        c.is_default === true &&
+        c.series_id === form.series_id &&
+        c.season === form.season &&
+        !c.event_id &&
+        !c.series_class_id
+      );
+      if (otherDefaults.length > 0) {
+        setValidationError('Only one default ruleset allowed per series and season.');
+        return;
+      }
+    }
+
     const points = pointsText.split(',').map(p => Number(p.trim())).filter(p => !isNaN(p));
     onSave({
       ...form,
-      points_by_position: points.length > 0 ? points : form.points_by_position
+      points_by_position: points.length > 0 ? points : form.points_by_position,
+      is_active: form.status === 'active'
     });
   };
 
@@ -272,6 +307,13 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
         </DialogHeader>
 
         <div className="space-y-6">
+          {validationError && (
+            <Alert className="bg-red-500/10 border-red-600">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-600 text-sm">{validationError}</AlertDescription>
+            </Alert>
+          )}
+
           {/* Basic Info */}
           <div className="space-y-3">
             <h3 className="font-semibold text-white">Basic Information</h3>
@@ -281,10 +323,6 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026 Stock" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Season *</label>
-                <Input value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026" />
-              </div>
-              <div>
                 <label className="text-xs text-gray-400 block mb-1">Series *</label>
                 <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
                   <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
@@ -292,6 +330,10 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
                     {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Season (optional)</label>
+                <Input value={form.season || ''} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026" />
               </div>
               <div>
                 <label className="text-xs text-gray-400 block mb-1">Class (optional)</label>
@@ -305,21 +347,44 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Event Override (optional)</label>
+                <Select value={form.event_id || ''} onValueChange={(v) => setForm({ ...form, event_id: v || '' })}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value={null}>None</SelectItem>
+                    {events.filter(e => !form.series_id || e.series_id === form.series_id).map(e => (
+                      <SelectItem key={e.id} value={e.id}>{e.name} ({e.event_date})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
           {/* Control Settings */}
           <div className="space-y-3">
             <h3 className="font-semibold text-white">Control Settings</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Priority (lower = higher)</label>
+                <label className="text-xs text-gray-400 block mb-1">Priority (higher = preferred)</label>
                 <Input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
               </div>
               <div>
-                <label className="flex items-center gap-2 text-xs text-gray-400">
-                  <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
-                  Active (available for resolution)
+                <label className="text-xs text-gray-400 block mb-1">Status</label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs text-gray-400 h-full pt-6">
+                  <input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} className="rounded" />
+                  Default for series/season
                 </label>
               </div>
             </div>
