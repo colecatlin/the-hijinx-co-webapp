@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
-import { calculateStandingsForSession } from './standings/calculateStandings';
+import { calculateStandingsForSession, recomputeStandingsForFinalSession } from './standings/calculateStandings';
 import ResultsManualTable from './ResultsManualTable';
 import ResultsCsvImportDialog from './ResultsCsvImportDialog';
 import ResultsApiSyncPanel from './ResultsApiSyncPanel';
@@ -326,28 +326,28 @@ export default function ResultsManager({
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
       if (newStatus === 'Official' && selectedSession?.session_type === 'Final') {
-        // Auto-calculate standings for Final sessions going Official
-        const prevStatuses = ['Draft', 'Provisional'];
-        if (prevStatuses.includes(prevStatus)) {
-          const sessionResults = await base44.entities.Results.filter({
-            event_id: eventId,
-            session_id: selectedSession.id,
-          }).catch(() => []);
-          calculateStandingsForSession({
-            session: selectedSession,
-            event: selectedEvent,
-            resultsList: sessionResults,
-            base44,
-            onComplete: ({ driversUpdated }) => {
-              invalidateAfterOperation('standings_recalculated', {
-                eventId,
-                seriesId: selectedEvent?.series_id,
-                seasonYear: selectedEvent?.season,
-              });
-              toast.success(`Standings updated for ${driversUpdated} drivers`);
-            },
-          });
-        }
+        // Recompute standings (handles idempotent revert+apply for Final sessions)
+        const sessionResults = await base44.entities.Results.filter({
+          event_id: eventId,
+          session_id: selectedSession.id,
+        }).catch(() => []);
+        recomputeStandingsForFinalSession({
+          session: selectedSession,
+          event: selectedEvent,
+          resultsList: sessionResults,
+          base44,
+          onComplete: ({ driversUpdated, reverted }) => {
+            invalidateAfterOperation('standings_updated', {
+              eventId,
+              seriesId: selectedEvent?.series_id,
+              seasonYear: selectedEvent?.season,
+            });
+            const msg = reverted
+              ? `Standings recomputed for ${driversUpdated} drivers (reverted prior, reapplied)`
+              : `Standings applied for ${driversUpdated} drivers`;
+            toast.success(msg);
+          },
+        });
       }
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
