@@ -23,6 +23,7 @@ import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
+import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
