@@ -119,8 +119,12 @@ export default function ComplianceManager({
     return d ? `${d.first_name} ${d.last_name}` : 'Unknown';
   };
 
-  const getClassName = (scId) => {
-    const sc = seriesClasses.find(s => s.id === scId);
+  const getClassName = (entry) => {
+    if (entry.event_class_id) {
+      const ec = eventClasses.find(c => c.id === entry.event_class_id);
+      if (ec) return ec.class_name;
+    }
+    const sc = seriesClasses.find(s => s.id === entry.series_class_id);
     return sc?.class_name || '—';
   };
 
