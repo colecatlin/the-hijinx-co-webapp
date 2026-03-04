@@ -1,209 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { AlertCircle, Plus, Minus, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, Search, Plus, Minus, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function GateConsole({
-  selectedEvent,
-  dashboardContext,
-  dashboardPermissions,
-  invalidateAfterOperation,
-}) {
-  const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('all');
-
-  // Load entries
-  const { data: entries = [], isLoading: entriesLoading } = useQuery({
-    queryKey: ['racecore', 'gate_console', 'entries', selectedEvent?.id],
-    queryFn: () =>
-      selectedEvent
-        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
-        : Promise.resolve([]),
-    enabled: !!selectedEvent,
-  });
-
-  // Load drivers
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['racecore', 'gate_console', 'drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-  });
-
-  // Load teams
-  const { data: teams = [] } = useQuery({
-    queryKey: ['racecore', 'gate_console', 'teams'],
-    queryFn: () => base44.entities.Team.list(),
-  });
-
-  // Mutations
-  const updateEntryMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.update(data.id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['racecore', 'gate_console', 'entries', selectedEvent?.id],
-      });
-    },
-  });
-
-  const logMutation = useMutation({
-    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
-  });
-
-  // Build maps
-  const driverMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
-  const teamMap = useMemo(() => new Map(teams.map(t => [t.id, t])), [teams]);
-
-  // Filter logic
-  const filteredEntries = useMemo(() => {
-    let filtered = entries;
-
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      filtered = filtered.filter(e => {
-        const driver = driverMap.get(e.driver_id);
-        const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
-        const carNum = (e.car_number || '').toLowerCase();
-        return driverName.includes(q) || carNum.includes(q);
-      });
-    }
-
-    // Filter type
-    if (filterType === 'unpaid') {
-      filtered = filtered.filter(e => e.payment_status === 'Unpaid');
-    } else if (filterType === 'waiver') {
-      filtered = filtered.filter(e => !e.waiver_verified);
-    } else if (filterType === 'not_checked_in') {
-      filtered = filtered.filter(e => !e.checkin_time);
-    }
-
-    return filtered;
-  }, [entries, search, filterType, driverMap]);
-
-  // Handlers
-  const handleCheckIn = async (entry) => {
-    try {
-      const nextCheckedIn = !entry.checkin_time;
-      await updateEntryMutation.mutateAsync({
-        id: entry.id,
-        checkin_time: nextCheckedIn ? new Date().toISOString() : null,
-      });
-
-      await logMutation.mutateAsync({
-        operation_type: 'gate_checkin_updated',
-        entity_name: 'Entry',
-        entity_id: entry.id,
-        status: 'success',
-        metadata: {
-          event_id: selectedEvent.id,
-          entry_id: entry.id,
-          checked_in: !!nextCheckedIn,
-        },
-      });
-
-      invalidateAfterOperation('entry_updated');
-      toast.success(nextCheckedIn ? 'Entry checked in' : 'Check-in removed');
-    } catch (error) {
-      toast.error('Failed to update check-in');
-      console.error(error);
-    }
-  };
-
-  const handlePaymentToggle = async (entry) => {
-    try {
-      const nextStatus = entry.payment_status === 'Paid' ? 'Unpaid' : 'Paid';
-      await updateEntryMutation.mutateAsync({
-        id: entry.id,
-        payment_status: nextStatus,
-      });
-
-      await logMutation.mutateAsync({
-        operation_type: 'gate_payment_updated',
-        entity_name: 'Entry',
-        entity_id: entry.id,
-        status: 'success',
-        metadata: {
-          event_id: selectedEvent.id,
-          entry_id: entry.id,
-          payment_status: nextStatus,
-        },
-      });
-
-      invalidateAfterOperation('entry_updated');
-      toast.success(`Payment marked as ${nextStatus}`);
-    } catch (error) {
-      toast.error('Failed to update payment');
-      console.error(error);
-    }
-  };
-
-  const handleWaiverToggle = async (entry) => {
-    try {
-      const nextVerified = !entry.waiver_verified;
-      await updateEntryMutation.mutateAsync({
-        id: entry.id,
-        waiver_verified: nextVerified,
-      });
-
-      await logMutation.mutateAsync({
-        operation_type: 'gate_waiver_updated',
-        entity_name: 'Entry',
-        entity_id: entry.id,
-        status: 'success',
-        metadata: {
-          event_id: selectedEvent.id,
-          entry_id: entry.id,
-          waiver_verified: nextVerified,
-        },
-      });
-
-      invalidateAfterOperation('entry_updated');
-      toast.success(nextVerified ? 'Waiver verified' : 'Waiver unverified');
-    } catch (error) {
-      toast.error('Failed to update waiver');
-      console.error(error);
-    }
-  };
-
-  const handleWristbandDelta = async (entry, delta) => {
-    try {
-      const nextCount = Math.max(0, (entry.wristband_count || 0) + delta);
-      await updateEntryMutation.mutateAsync({
-        id: entry.id,
-        wristband_count: nextCount,
-      });
-
-      await logMutation.mutateAsync({
-        operation_type: 'gate_wristbands_updated',
-        entity_name: 'Entry',
-        entity_id: entry.id,
-        status: 'success',
-        metadata: {
-          event_id: selectedEvent.id,
-          entry_id: entry.id,
-          wristband_count: nextCount,
-        },
-      });
-
-      invalidateAfterOperation('entry_updated');
-    } catch (error) {
-      toast.error('Failed to update wristbands');
-      console.error(error);
-    }
-  };
+export default function GateConsole({ selectedEvent, dashboardContext, dashboardPermissions, invalidateAfterOperation }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   if (!selectedEvent) {
     return (
@@ -216,158 +23,314 @@ export default function GateConsole({
     );
   }
 
+  // Load entries
+  const { data: entries = [], isLoading: entriesLoading } = useQuery({
+    queryKey: ['gateConsole', 'entries', selectedEvent.id],
+    queryFn: () => base44.entities.Entry.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent.id,
+  });
+
+  // Load drivers
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['gateConsole', 'drivers'],
+    queryFn: () => base44.entities.Driver.list(),
+  });
+
+  // Load teams
+  const { data: teams = [] } = useQuery({
+    queryKey: ['gateConsole', 'teams'],
+    queryFn: () => base44.entities.Team.list(),
+  });
+
+  // Build maps
+  const driverMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
+  const teamMap = useMemo(() => new Map(teams.map(t => [t.id, t])), [teams]);
+
+  // Mutations
+  const updateEntryMutation = useMutation({
+    mutationFn: ({ entryId, data }) => base44.entities.Entry.update(entryId, data),
+  });
+
+  const logOperationMutation = useMutation({
+    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
+  });
+
+  // Handle entry update
+  const handleEntryUpdate = async (entry, updates, operationType) => {
+    try {
+      await updateEntryMutation.mutateAsync({
+        entryId: entry.id,
+        data: updates,
+      });
+
+      // Log operation
+      await logOperationMutation.mutateAsync({
+        operation_type: operationType,
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: {
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          driver_id: entry.driver_id,
+          changes: updates,
+        },
+      });
+
+      // Invalidate queries
+      await invalidateAfterOperation('entry_updated', { entryId: entry.id });
+      toast.success(`Entry updated: ${operationType}`);
+    } catch (error) {
+      toast.error(`Failed to update entry: ${error.message}`);
+      console.error(error);
+    }
+  };
+
+  // Filter entries
+  const filteredEntries = useMemo(() => {
+    let filtered = entries;
+
+    // Search filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(e => {
+        const driver = driverMap.get(e.driver_id);
+        const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
+        return (
+          e.car_number?.toLowerCase().includes(q) ||
+          driverName.includes(q) ||
+          teamMap.get(e.team_id)?.name?.toLowerCase().includes(q)
+        );
+      });
+    }
+
+    // Status filter
+    if (filterStatus === 'unpaid') {
+      filtered = filtered.filter(e => e.payment_status !== 'Paid');
+    } else if (filterStatus === 'waiver_missing') {
+      filtered = filtered.filter(e => !e.waiver_verified);
+    } else if (filterStatus === 'not_checked_in') {
+      filtered = filtered.filter(e => e.entry_status !== 'Checked In');
+    }
+
+    return filtered;
+  }, [entries, searchQuery, filterStatus, driverMap, teamMap]);
+
   if (entriesLoading) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
+        <CardContent className="py-8 text-center">
           <p className="text-gray-400">Loading entries...</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (entries.length === 0) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-          <p className="text-gray-400">No entries yet</p>
-          <p className="text-sm text-gray-500 mt-2">Entries will appear here once created</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      {/* Search & Filter */}
+    <div className="space-y-6">
+      {/* Header */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader>
-          <CardTitle className="text-white text-sm">Search & Filter</CardTitle>
+          <CardTitle className="text-white">Gate Console</CardTitle>
+          <p className="text-sm text-gray-400 mt-2">Fast entry management for gate operations</p>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Input
-            placeholder="Search driver, car number, team..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-gray-900 border-gray-700 text-white text-sm"
-          />
+      </Card>
+
+      {/* Search & Filters */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-4 space-y-3">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Input
+                placeholder="Search driver, car number, team..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-gray-900 border-gray-700 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Quick Filter Buttons */}
           <div className="flex gap-2 flex-wrap">
-            {['all', 'unpaid', 'waiver', 'not_checked_in'].map(type => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-3 py-1.5 text-xs rounded transition-colors ${
-                  filterType === type
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            {['all', 'unpaid', 'waiver_missing', 'not_checked_in'].map((status) => (
+              <Button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                variant={filterStatus === status ? 'default' : 'outline'}
+                size="sm"
+                className={`text-xs ${
+                  filterStatus === status
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'border-gray-700 text-gray-400 hover:bg-gray-800'
                 }`}
               >
-                {type === 'all' && 'All'}
-                {type === 'unpaid' && 'Unpaid'}
-                {type === 'waiver' && 'Waiver Missing'}
-                {type === 'not_checked_in' && 'Not Checked In'}
-              </button>
+                {status === 'all' && 'All'}
+                {status === 'unpaid' && 'Unpaid'}
+                {status === 'waiver_missing' && 'Waiver Missing'}
+                {status === 'not_checked_in' && 'Not Checked In'}
+              </Button>
             ))}
+          </div>
+
+          <div className="text-xs text-gray-500">
+            {filteredEntries.length} of {entries.length} entries
           </div>
         </CardContent>
       </Card>
 
       {/* Entries Table */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">
-            Entries ({filteredEntries.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-700">
-                  <TableHead className="text-gray-400">Car #</TableHead>
-                  <TableHead className="text-gray-400">Driver</TableHead>
-                  <TableHead className="text-gray-400">Team</TableHead>
-                  <TableHead className="text-gray-400">Payment</TableHead>
-                  <TableHead className="text-gray-400">Waiver</TableHead>
-                  <TableHead className="text-gray-400">Checked In</TableHead>
-                  <TableHead className="text-gray-400">Wristbands</TableHead>
-                  <TableHead className="text-gray-400">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEntries.map(entry => {
-                  const driver = driverMap.get(entry.driver_id);
-                  const team = teamMap.get(entry.team_id);
+      {filteredEntries.length === 0 ? (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="py-12 text-center">
+            <AlertCircle className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400">No entries match the current filters</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full bg-[#171717] border border-gray-800 rounded-lg">
+            <thead className="bg-gray-800/50 border-b border-gray-800">
+              <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left">Car #</th>
+                <th className="px-4 py-3 text-left">Driver</th>
+                <th className="px-4 py-3 text-left">Class</th>
+                <th className="px-4 py-3 text-center">Payment</th>
+                <th className="px-4 py-3 text-center">Waiver</th>
+                <th className="px-4 py-3 text-center">Checked In</th>
+                <th className="px-4 py-3 text-right">Wristbands</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {filteredEntries.map((entry) => {
+                const driver = driverMap.get(entry.driver_id);
+                const team = teamMap.get(entry.team_id);
+                return (
+                  <tr key={entry.id} className="hover:bg-gray-900/30 transition-colors">
+                    <td className="px-4 py-3 text-sm font-semibold text-white">{entry.car_number}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">
+                      {driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown'}
+                      {team && <div className="text-xs text-gray-500">{team.name}</div>}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">{entry.series_class_id || 'N/A'}</td>
 
-                  return (
-                    <TableRow key={entry.id} className="border-gray-800 text-xs hover:bg-gray-900/50">
-                      <TableCell className="text-white font-semibold">{entry.car_number}</TableCell>
-                      <TableCell className="text-white">
-                        {driver ? `${driver.first_name} ${driver.last_name}` : '-'}
-                      </TableCell>
-                      <TableCell className="text-gray-400">{team?.name || '-'}</TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handlePaymentToggle(entry)}
-                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
-                            entry.payment_status === 'Paid'
-                              ? 'bg-green-900/30 text-green-300'
-                              : 'bg-red-900/30 text-red-300'
-                          }`}
-                        >
-                          {entry.payment_status === 'Paid' ? '✓ Paid' : '✗ Unpaid'}
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handleWaiverToggle(entry)}
-                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
-                            entry.waiver_verified
-                              ? 'bg-green-900/30 text-green-300'
-                              : 'bg-yellow-900/30 text-yellow-300'
-                          }`}
-                        >
-                          {entry.waiver_verified ? '✓' : '○'}
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handleCheckIn(entry)}
-                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
-                            entry.checkin_time
-                              ? 'bg-green-900/30 text-green-300'
-                              : 'bg-gray-800 text-gray-400'
-                          }`}
-                        >
-                          {entry.checkin_time ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                        </button>
-                      </TableCell>
-                      <TableCell className="text-white font-bold">{entry.wristband_count || 0}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => handleWristbandDelta(entry, -1)}
-                            className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-400"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => handleWristbandDelta(entry, 1)}
-                            className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-400"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                    {/* Payment Status */}
+                    <td className="px-4 py-3 text-center">
+                      <Button
+                        onClick={() =>
+                          handleEntryUpdate(
+                            entry,
+                            {
+                              payment_status:
+                                entry.payment_status === 'Paid' ? 'Unpaid' : 'Paid',
+                            },
+                            'gate_payment_updated'
+                          )
+                        }
+                        size="sm"
+                        variant="ghost"
+                        className={`text-xs h-7 ${
+                          entry.payment_status === 'Paid'
+                            ? 'bg-green-900/30 text-green-300 hover:bg-green-900/50'
+                            : 'bg-orange-900/30 text-orange-300 hover:bg-orange-900/50'
+                        }`}
+                      >
+                        {entry.payment_status === 'Paid' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      </Button>
+                    </td>
+
+                    {/* Waiver Status */}
+                    <td className="px-4 py-3 text-center">
+                      <Button
+                        onClick={() =>
+                          handleEntryUpdate(
+                            entry,
+                            { waiver_verified: !entry.waiver_verified },
+                            'gate_waiver_updated'
+                          )
+                        }
+                        size="sm"
+                        variant="ghost"
+                        className={`text-xs h-7 ${
+                          entry.waiver_verified
+                            ? 'bg-green-900/30 text-green-300 hover:bg-green-900/50'
+                            : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+                        }`}
+                      >
+                        {entry.waiver_verified ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      </Button>
+                    </td>
+
+                    {/* Check In Status */}
+                    <td className="px-4 py-3 text-center">
+                      <Button
+                        onClick={() =>
+                          handleEntryUpdate(
+                            entry,
+                            {
+                              entry_status:
+                                entry.entry_status === 'Checked In' ? 'Registered' : 'Checked In',
+                              checkin_time:
+                                entry.entry_status !== 'Checked In'
+                                  ? new Date().toISOString()
+                                  : entry.checkin_time,
+                            },
+                            'gate_checkin_updated'
+                          )
+                        }
+                        size="sm"
+                        variant="ghost"
+                        className={`text-xs h-7 ${
+                          entry.entry_status === 'Checked In'
+                            ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50'
+                            : 'bg-gray-900/30 text-gray-400 hover:bg-gray-800'
+                        }`}
+                      >
+                        {entry.entry_status === 'Checked In' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      </Button>
+                    </td>
+
+                    {/* Wristbands */}
+                    <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
+                      <Button
+                        onClick={() =>
+                          handleEntryUpdate(
+                            entry,
+                            { wristband_count: Math.max(0, (entry.wristband_count || 0) - 1) },
+                            'gate_wristbands_updated'
+                          )
+                        }
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs h-7 px-2 border border-gray-700 text-gray-400 hover:bg-gray-800"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </Button>
+                      <span className="text-sm font-semibold text-white w-6 text-center">
+                        {entry.wristband_count || 0}
+                      </span>
+                      <Button
+                        onClick={() =>
+                          handleEntryUpdate(
+                            entry,
+                            { wristband_count: (entry.wristband_count || 0) + 1 },
+                            'gate_wristbands_updated'
+                          )
+                        }
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs h-7 px-2 border border-gray-700 text-gray-400 hover:bg-gray-800"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
