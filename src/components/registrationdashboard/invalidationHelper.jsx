@@ -158,10 +158,18 @@ function getKeysForOperation(operationType, payload = {}) {
 
     case 'points_config_updated':
     case 'points_config_created':
-       broad.push(['pointsConfig'], ['standings'], ['operationLogs']);
+    case 'points_ruleset_updated':
+    case 'points_ruleset_created':
+       broad.push(['pointsConfig'], ['pointsRuleSets'], ['standings'], ['operationLogs']);
        if (seriesId) exact.push(['pointsConfig', seriesId]);
        if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
        if (seriesId) exact.push(REG_QK.standings(seriesId, seasonYear || 'any'));
+       break;
+    
+    case 'standings_recalculated':
+       broad.push(['standings'], ['drivers'], ['events'], ['operationLogs']);
+       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
+       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
        break;
 
     case 'import_completed':
