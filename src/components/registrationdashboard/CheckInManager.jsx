@@ -224,16 +224,17 @@ export default function CheckInManager({
   const handleCheckIn = useCallback(
     (item) => {
       if (!canEdit) return;
+      const now = new Date().toISOString();
       updateEntryMutation.mutate({
         entryId: item.id,
         data: {
           entry_status: 'Checked In',
-          checkin_time: new Date().toISOString(),
-          checked_in_by_user_id: item.currentUserId || '',
+          checkin_time: now,
+          checked_in_by_user_id: currentUser?.id || '',
         },
       });
     },
-    [canEdit, updateEntryMutation]
+    [canEdit, currentUser, updateEntryMutation]
   );
 
   const handleUndoCheckIn = useCallback(
