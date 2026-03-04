@@ -51,6 +51,9 @@ export default function CheckInManager({
   invalidateAfterOperation: invalidateAfterOperationProp,
 }) {
   const [classFilter, setClassFilter] = useState('all');
+  const [checkinFilter, setCheckinFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [techFilter, setTechFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [qrInput, setQrInput] = useState('');
   const [qrPayloadInput, setQrPayloadInput] = useState('');
@@ -61,6 +64,7 @@ export default function CheckInManager({
   const [notesMode, setNotesMode] = useState(false);
   const [showOverrideDialog, setShowOverrideDialog] = useState(false);
   const [pendingCheckIn, setPendingCheckIn] = useState(false);
+  const [creatingFromPrograms, setCreatingFromPrograms] = useState(false);
   const qrInputRef = useRef(null);
   const queryClient = useQueryClient();
   const today = new Date().toISOString().split('T')[0];
