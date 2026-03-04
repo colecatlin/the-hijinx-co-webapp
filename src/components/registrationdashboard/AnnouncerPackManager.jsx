@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { REG_QK } from './queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { fmtLapMs, buildBestResultPerDriver, buildAnnouncerCSV } from './announcerPackHelpers';
+import { fmtLapMs, buildBestResultPerDriver, buildAnnouncerCSV, getRecentPerformance } from './announcerPackHelpers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -224,6 +224,7 @@ export default function AnnouncerPackManager({
   const seasonYear = dashboardContext?.season;
 
   const [selectedClassFilter, setSelectedClassFilter] = useState('all');
+  const [selectedSession, setSelectedSession] = useState(null);
   const [sortByStanding, setSortByStanding] = useState(false);
   const classRefs = useRef({});
 
@@ -295,6 +296,16 @@ export default function AnnouncerPackManager({
   // best result per driver
   const bestResultMap = useMemo(() => buildBestResultPerDriver(allResults, sessions), [allResults, sessions]);
 
+  // recent performance per driver
+  const performanceMap = useMemo(() => {
+    const m = {};
+    entries.forEach((e) => {
+      const perf = getRecentPerformance(e.driver_id, allResults, sessions, seriesId, seasonYear);
+      m[e.driver_id] = perf;
+    });
+    return m;
+  }, [entries, allResults, sessions, seriesId, seasonYear]);
+
   // entries by class
   const entriesByClass = useMemo(() => {
     const m = {};
@@ -321,10 +332,19 @@ export default function AnnouncerPackManager({
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // ── Set default session on load ───────────────────────────────────────────
+  
+  const defaultSession = useMemo(() => {
+    if (selectedSession) return selectedSession;
+    // Prefer Final, else first session
+    const finalSession = sessions.find((s) => s.session_type === 'Final');
+    return finalSession || sessions[0] || null;
+  }, [sessions, selectedSession]);
+
   // ── Export CSV ────────────────────────────────────────────────────────────
 
   function handleExportCSV() {
-    const csv = buildAnnouncerCSV(filteredClasses, entriesByClass, driverMap, teamMap, standingsMap, bestResultMap);
+    const csv = buildAnnouncerCSV(filteredClasses, entriesByClass, driverMap, teamMap, standingsMap, bestResultMap, performanceMap);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -373,6 +393,25 @@ export default function AnnouncerPackManager({
               ))}
             </SelectContent>
           </Select>
+
+          {/* Session filter */}
+          {sessions.length > 0 && (
+            <Select value={selectedSession?.id || defaultSession?.id || ''} onValueChange={(sessionId) => {
+              const session = sessions.find((s) => s.id === sessionId);
+              setSelectedSession(session || null);
+            }}>
+              <SelectTrigger className="w-40 bg-[#262626] border-gray-700 text-white text-sm h-9">
+                <SelectValue placeholder="Select Session" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700 text-white">
+                {sessions.map((s) => (
+                  <SelectItem key={s.id} value={s.id} className="text-white focus:bg-gray-700">
+                    {s.name} ({s.session_type})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Sort toggle */}
           {Object.keys(standingsMap).length > 0 && (
@@ -438,6 +477,18 @@ export default function AnnouncerPackManager({
           />
 
           <Separator className="border-gray-800 print:border-gray-300" />
+
+          {/* ── Session Meta ────────────────────────────────────── */}
+          {defaultSession && (
+            <Card className="bg-[#171717] border-gray-800 print:border print:border-gray-300">
+              <CardContent className="py-3 text-xs text-gray-400 print:text-gray-700">
+                <div className="flex items-center justify-between flex-wrap">
+                  <span>Session: <strong className="text-white print:text-black">{defaultSession.name}</strong> ({defaultSession.session_type})</span>
+                  <span>Generated: {new Date().toLocaleString()}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* ── Section C: Per-Class Sheets ─────────────────────── */}
           <div className="space-y-8 print:space-y-6">
