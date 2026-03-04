@@ -1,28 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Edit2, CheckCircle2, Archive } from 'lucide-react';
-
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Plus, Edit2, Trash2, Archive, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function ManagePointsConfig() {
-  const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [filters, setFilters] = useState({ series_id: '', series_class_id: '', season_year: '', status: '' });
-  const [activateWarning, setActivateWarning] = useState(null);
+  const [filters, setFilters] = useState({ series_id: '', season: '' });
+  const [deleteWarning, setDeleteWarning] = useState(null);
 
+  // Load current user
   React.useEffect(() => {
-    base44.auth.me().then(user => {
+    (async () => {
+      const user = await base44.auth.me();
       setIsAdmin(user?.role === 'admin');
-    });
+    })();
   }, []);
 
   const { data: configs = [] } = useQuery({
@@ -55,42 +59,28 @@ export default function ManagePointsConfig() {
       queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] });
       setOpenDialog(false);
       setEditingId(null);
-      setActivateWarning(null);
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.PointsConfig.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] })
-  });
-
-  const filteredConfigs = configs.filter(c => {
-    if (filters.series_id && c.series_id !== filters.series_id) return false;
-    if (filters.series_class_id && c.series_class_id !== filters.series_class_id) return false;
-    if (filters.season_year && c.season_year !== filters.season_year) return false;
-    if (filters.status && c.status !== filters.status) return false;
-    return true;
-  });
-
-  const handleActivate = (config) => {
-    const conflict = configs.find(c =>
-      c.id !== config.id &&
-      c.series_id === config.series_id &&
-      (c.series_class_id || null) === (config.series_class_id || null) &&
-      c.season_year === config.season_year &&
-      c.status === 'Active'
-    );
-
-    if (conflict) {
-      setActivateWarning({ config, conflict });
-    } else {
-      updateMutation.mutate({ id: config.id, data: { status: 'Active' } });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] });
+      setDeleteWarning(null);
     }
-  };
+  });
 
-  const handleArchive = (id) => {
-    updateMutation.mutate({ id, data: { status: 'Archived' } });
-  };
+  const filteredConfigs = useMemo(() => {
+    return configs.filter(c => {
+      if (filters.series_id && c.series_id !== filters.series_id) return false;
+      if (filters.season && c.season !== filters.season) return false;
+      return true;
+    });
+  }, [configs, filters]);
+
+  const uniqueSeasons = useMemo(() => {
+    return [...new Set(configs.map(c => c.season))].sort().reverse();
+  }, [configs]);
 
   if (!isAdmin) {
     return <div className="p-6 text-center text-gray-400">Admin access required.</div>;
@@ -98,157 +88,143 @@ export default function ManagePointsConfig() {
 
   return (
     <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Points Configuration</h1>
-          <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" /> New Config
-          </Button>
-        </div>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-white">Points Configuration</h1>
+        <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" /> New Ruleset
+        </Button>
+      </div>
 
-        {/* Filters */}
-        <Card className="bg-gray-900 border-gray-700">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-4 gap-4">
+      {/* Filters */}
+      <Card className="bg-gray-900 border-gray-700">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-2">Series</label>
               <Select value={filters.series_id} onValueChange={(v) => setFilters({ ...filters, series_id: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Series" /></SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue placeholder="All Series" />
+                </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>All Series</SelectItem>
                   {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-
-              <Select value={filters.season_year} onValueChange={(v) => setFilters({ ...filters, season_year: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Season" /></SelectTrigger>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-2">Season</label>
+              <Select value={filters.season} onValueChange={(v) => setFilters({ ...filters, season: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue placeholder="All Seasons" />
+                </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>All Seasons</SelectItem>
-                  {[...new Set(configs.map(c => c.season_year))].sort().reverse().map(year => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={filters.status} onValueChange={(v) => setFilters({ ...filters, status: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Status" /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value={null}>All Status</SelectItem>
-                  <SelectItem value="Draft">Draft</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Archived">Archived</SelectItem>
+                  {uniqueSeasons.map(year => <SelectItem key={year} value={year}>{year}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-          </Card>
-
-          {/* Table */}
-        <Card className="bg-gray-900 border-gray-700">
-          <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-400">Name</TableHead>
-                    <TableHead className="text-gray-400">Series</TableHead>
-                    <TableHead className="text-gray-400">Class</TableHead>
-                    <TableHead className="text-gray-400">Season</TableHead>
-                    <TableHead className="text-gray-400">Status</TableHead>
-                    <TableHead className="text-gray-400">Updated</TableHead>
-                    <TableHead className="text-gray-400 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredConfigs.map((config) => (
-                    <TableRow key={config.id} className="border-gray-700 hover:bg-gray-800">
-                      <TableCell className="text-white">{config.name || 'Untitled'}</TableCell>
-                      <TableCell className="text-gray-400">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
-                      <TableCell className="text-gray-400">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
-                      <TableCell className="text-gray-400">{config.season_year}</TableCell>
-                      <TableCell>
-                        <Badge className={config.status === 'Active' ? 'bg-green-500/20 text-green-400' : config.status === 'Draft' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'}>
-                          {config.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-400 text-sm">{config.updated_date ? new Date(config.updated_date).toLocaleDateString() : '—'}</TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Button size="icon" variant="ghost" onClick={() => { setEditingId(config.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        {config.status === 'Draft' && (
-                          <Button size="icon" variant="ghost" onClick={() => handleActivate(config)} className="text-green-400 hover:text-green-300">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {config.status === 'Active' && (
-                          <Button size="icon" variant="ghost" onClick={() => handleArchive(config.id)} className="text-orange-400 hover:text-orange-300">
-                            <Archive className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(config.id)} className="text-red-400 hover:text-red-300">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-          </Card>
-
-          {/* Editor Dialog */}
-          <PointsConfigEditor
-          open={openDialog}
-          onOpenChange={setOpenDialog}
-          configId={editingId}
-          series={series}
-          seriesClasses={seriesClasses}
-          onSave={(data) => {
-            if (editingId) {
-              updateMutation.mutate({ id: editingId, data });
-            } else {
-              createMutation.mutate(data);
-            }
-          }}
-        />
-
-        {/* Activation Warning */}
-        {activateWarning && (
-          <Dialog open={!!activateWarning} onOpenChange={() => setActivateWarning(null)}>
-            <DialogContent className="bg-gray-900 border-gray-700">
-              <DialogHeader>
-                <DialogTitle className="text-white">Activate Config?</DialogTitle>
-              </DialogHeader>
-              <p className="text-gray-400">
-                There's already an active config for {activateWarning.series?.name} {activateWarning.config.series_class_id ? '/ ' + seriesClasses.find(c => c.id === activateWarning.config.series_class_id)?.class_name : ''} {activateWarning.config.season_year}.
-                <br /> Activate this one to replace it?
-              </p>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setActivateWarning(null)} className="border-gray-700">Cancel</Button>
-                <Button
-                  onClick={() => {
-                    updateMutation.mutate({ id: activateWarning.config.id, data: { status: 'Active' } });
-                  }}
-                  className="bg-yellow-600 hover:bg-yellow-700"
-                >
-                  Activate & Replace
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Table */}
+      <Card className="bg-gray-900 border-gray-700">
+        <CardContent className="pt-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-400">Name</TableHead>
+                  <TableHead className="text-gray-400">Series</TableHead>
+                  <TableHead className="text-gray-400">Class</TableHead>
+                  <TableHead className="text-gray-400">Season</TableHead>
+                  <TableHead className="text-gray-400">Priority</TableHead>
+                  <TableHead className="text-gray-400">Status</TableHead>
+                  <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredConfigs.map((config) => (
+                  <TableRow key={config.id} className="border-gray-700 hover:bg-gray-800">
+                    <TableCell className="text-white font-medium">{config.name}</TableCell>
+                    <TableCell className="text-gray-400">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
+                    <TableCell className="text-gray-400">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.season}</TableCell>
+                    <TableCell className="text-gray-400">{config.priority || 100}</TableCell>
+                    <TableCell>
+                      <Badge className={config.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                        {config.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditingId(config.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => updateMutation.mutate({ id: config.id, data: { is_active: !config.is_active } })} className={config.is_active ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}>
+                        <CheckCircle2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(config)} className="text-red-400 hover:text-red-300">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Editor Dialog */}
+      <PointsConfigEditor
+        open={openDialog}
+        onOpenChange={setOpenDialog}
+        configId={editingId}
+        series={series}
+        seriesClasses={seriesClasses}
+        onSave={(data) => {
+          if (editingId) {
+            updateMutation.mutate({ id: editingId, data });
+          } else {
+            createMutation.mutate(data);
+          }
+        }}
+      />
+
+      {/* Delete Warning */}
+      {deleteWarning && (
+        <AlertDialog open={!!deleteWarning} onOpenChange={() => setDeleteWarning(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Delete Ruleset?</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Are you sure you want to delete "{deleteWarning.name}"? This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteMutation.mutate(deleteWarning.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </div>
   );
 }
 
 function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
   const [form, setForm] = useState({
+    name: '',
     series_id: '',
     series_class_id: '',
-    season_year: '',
-    points_table_json: { '1': 25, '2': 20, '3': 16 }
+    season: '',
+    is_active: true,
+    priority: 100,
+    applies_to_session_types: ['Final'],
+    points_by_position: [50, 44, 40, 36, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+    bonus_rules: { fastest_lap: 0, most_laps_led: 0, pole_award: 0 },
+    tie_breaker_order: ['wins', 'seconds', 'thirds', 'best_finishes', 'latest_finish'],
+    notes: ''
   });
-
-  const [pointsRows, setPointsRows] = useState([]);
+  const [pointsText, setPointsText] = useState('');
 
   const { data: config } = useQuery({
     queryKey: ['pointsConfig', configId],
@@ -256,105 +232,171 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
     enabled: !!configId
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (config && open) {
       setForm(config);
-      const rows = Object.entries(config.points_table_json || {}).map(([pos, pts]) => ({ position: Number(pos), points: pts })).sort((a, b) => a.position - b.position);
-      setPointsRows(rows);
+      setPointsText((config.points_by_position || []).join(', '));
     } else if (!open) {
-      setForm({ series_id: '', series_class_id: '', season_year: '', points_table_json: { '1': 25, '2': 20, '3': 16 } });
-      setPointsRows([]);
+      setForm({
+        name: '',
+        series_id: '',
+        series_class_id: '',
+        season: '',
+        is_active: true,
+        priority: 100,
+        applies_to_session_types: ['Final'],
+        points_by_position: [50, 44, 40, 36, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+        bonus_rules: { fastest_lap: 0, most_laps_led: 0, pole_award: 0 },
+        tie_breaker_order: ['wins', 'seconds', 'thirds', 'best_finishes', 'latest_finish'],
+        notes: ''
+      });
+      setPointsText('');
     }
   }, [config, open]);
 
   const handleSave = () => {
-    const table = {};
-    pointsRows.forEach(row => {
-      if (row.position && row.points !== '') table[String(row.position)] = Number(row.points);
-    });
-
+    const points = pointsText.split(',').map(p => Number(p.trim())).filter(p => !isNaN(p));
     onSave({
       ...form,
-      points_table_json: table
+      points_by_position: points.length > 0 ? points : form.points_by_position
     });
   };
 
-  const addPointsRow = () => {
-    setPointsRows([...pointsRows, { position: Math.max(0, ...pointsRows.map(r => r.position)) + 1, points: '' }]);
-  };
+  const sessionTypeOptions = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-gray-900 border-gray-700 max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white">{configId ? 'Edit Config' : 'New Points Config'}</DialogTitle>
+          <DialogTitle className="text-white">{configId ? 'Edit Ruleset' : 'New Points Ruleset'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Name</label>
-              <Input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Series *</label>
-              <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Series Class (optional)</label>
-              <Select value={form.series_class_id || ''} onValueChange={(v) => setForm({ ...form, series_class_id: v || '' })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value={null}>All classes</SelectItem>
-                  {seriesClasses.filter(c => !form.series_id || c.series_id === form.series_id).map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Season Year *</label>
-              <Input value={form.season_year} onChange={(e) => setForm({ ...form, season_year: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
+        <div className="space-y-6">
+          {/* Basic Info */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Basic Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Name *</label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026 Stock" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Season *</label>
+                <Input value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Series *</label>
+                <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Class (optional)</label>
+                <Select value={form.series_class_id || ''} onValueChange={(v) => setForm({ ...form, series_class_id: v || '' })}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value={null}>All classes</SelectItem>
+                    {seriesClasses.filter(c => !form.series_id || c.series_id === form.series_id).map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <hr className="border-gray-700" />
-
+          {/* Control Settings */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-white">Points Table</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {pointsRows.map((row, idx) => (
-                <div key={idx} className="flex gap-2">
-                  <Input type="number" value={row.position} onChange={(e) => {
-                    const newRows = [...pointsRows];
-                    newRows[idx].position = Number(e.target.value);
-                    setPointsRows(newRows);
-                  }} className="bg-gray-800 border-gray-700 text-white w-20" placeholder="Position" />
-                  <Input type="number" value={row.points} onChange={(e) => {
-                    const newRows = [...pointsRows];
-                    newRows[idx].points = Number(e.target.value);
-                    setPointsRows(newRows);
-                  }} className="bg-gray-800 border-gray-700 text-white flex-1" placeholder="Points" />
-                  <Button size="sm" variant="ghost" onClick={() => setPointsRows(pointsRows.filter((_, i) => i !== idx))} className="text-red-400">Remove</Button>
-                </div>
+            <h3 className="font-semibold text-white">Control Settings</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Priority (lower = higher)</label>
+                <Input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs text-gray-400">
+                  <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
+                  Active (available for resolution)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Session Types */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Applies to Session Types</h3>
+            <div className="flex flex-wrap gap-2">
+              {sessionTypeOptions.map(type => (
+                <label key={type} className="flex items-center gap-2 text-sm text-gray-400">
+                  <input
+                    type="checkbox"
+                    checked={form.applies_to_session_types.includes(type)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setForm({ ...form, applies_to_session_types: [...form.applies_to_session_types, type] });
+                      } else {
+                        setForm({ ...form, applies_to_session_types: form.applies_to_session_types.filter(t => t !== type) });
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  {type}
+                </label>
               ))}
             </div>
-            <Button size="sm" variant="outline" onClick={addPointsRow} className="border-gray-700 text-gray-300">Add Position</Button>
           </div>
 
-          <hr className="border-gray-700" />
+          {/* Points Table */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Points by Position</h3>
+            <p className="text-xs text-gray-400">Comma-separated values (position 1, 2, 3, ...)</p>
+            <Textarea
+              value={pointsText}
+              onChange={(e) => setPointsText(e.target.value)}
+              className="bg-gray-800 border-gray-700 text-white font-mono text-sm"
+              rows={3}
+              placeholder="50, 44, 40, 36, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1"
+            />
+          </div>
 
+          {/* Bonus Rules */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Bonus Points</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Fastest Lap</label>
+                <Input type="number" value={form.bonus_rules.fastest_lap} onChange={(e) => setForm({ ...form, bonus_rules: { ...form.bonus_rules, fastest_lap: Number(e.target.value) } })} className="bg-gray-800 border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Most Laps Led</label>
+                <Input type="number" value={form.bonus_rules.most_laps_led} onChange={(e) => setForm({ ...form, bonus_rules: { ...form.bonus_rules, most_laps_led: Number(e.target.value) } })} className="bg-gray-800 border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Pole Award</label>
+                <Input type="number" value={form.bonus_rules.pole_award} onChange={(e) => setForm({ ...form, bonus_rules: { ...form.bonus_rules, pole_award: Number(e.target.value) } })} className="bg-gray-800 border-gray-700 text-white" />
+              </div>
+            </div>
+          </div>
 
+          {/* Notes */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Notes</h3>
+            <Textarea
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="bg-gray-800 border-gray-700 text-white"
+              rows={2}
+              placeholder="Admin notes about this ruleset..."
+            />
+          </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Config</Button>
+          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Ruleset</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
