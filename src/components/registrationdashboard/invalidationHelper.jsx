@@ -77,6 +77,13 @@ function getKeysForOperation(operationType, payload = {}) {
       if (eventId) exact.push(['officialResults', eventId]);
       break;
 
+    case 'event_class_created':
+    case 'event_class_updated':
+    case 'event_class_deleted':
+      broad.push(['eventClasses'], ['entries'], ['sessions'], ['operationLogs']);
+      if (eventId) exact.push(['eventClasses', eventId], REG_QK.entries(eventId), REG_QK.sessions(eventId));
+      break;
+
     case 'entries_updated':
     case 'entry_created':
     case 'entry_updated':
