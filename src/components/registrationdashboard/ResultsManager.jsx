@@ -735,14 +735,14 @@ export default function ResultsManager({
 
               <TabsContent value="csv">
                 <ResultsCsvImportDialog
-                  session={selectedSession}
-                  drivers={drivers}
-                  driverPrograms={driverPrograms}
-                  selectedEvent={selectedEvent}
-                  locked={isLocked}
-                  onImport={handleImport}
-                  importing={importing}
-                />
+                    session={selectedSession}
+                    drivers={drivers}
+                    entries={classEntries}
+                    selectedEvent={selectedEvent}
+                    locked={isLocked}
+                    onImport={handleImport}
+                    importing={importing}
+                  />
               </TabsContent>
 
               <TabsContent value="api">
