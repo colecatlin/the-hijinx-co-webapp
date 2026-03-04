@@ -209,7 +209,6 @@ export default function CheckInManager({
       }
       return;
     }
-    // Set entry_status to Checked In
     await updateEntryAsync({
       id: selectedEntry.id,
       data: {
@@ -218,6 +217,14 @@ export default function CheckInManager({
         checked_in_by_user_id: currentUser?.id,
       },
     });
+  };
+
+  const handleToggleTransponder = async () => {
+    if (!(await verifyEntryEventIntegrity(formData, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
+    await updateEntryAsync({ id: selectedEntry.id, data: { transponder_verified: !formData.transponder_verified } });
   };
 
   const handleOverrideCheckIn = async () => {
