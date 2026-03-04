@@ -20,6 +20,7 @@ import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
 import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
 import GateMode from '@/components/registrationdashboard/GateMode';
+import GateManager from '@/components/registrationdashboard/GateManager';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
