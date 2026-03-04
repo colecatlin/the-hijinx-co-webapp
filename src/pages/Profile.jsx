@@ -189,10 +189,11 @@ export default function Profile() {
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="entities">My Entities</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
+              <TabsTrigger value="racecore">Race Core Access</TabsTrigger>
               <TabsTrigger value="story">Story</TabsTrigger>
             </TabsList>
 
