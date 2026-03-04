@@ -271,14 +271,14 @@ export default function ClassSessionBuilder({
   };
 
   const handleMove = (session, direction, classGroup) => {
-    const sorted = [...classGroup.sessions].sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+    const sorted = [...classGroup.sessions].sort((a, b) => (a.run_order || 0) - (b.run_order || 0));
     const idx = sorted.findIndex((s) => s.id === session.id);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= sorted.length) return;
     const swap = sorted[swapIdx];
     Promise.all([
-      updateSession({ id: session.id, data: { session_order: swap.session_order || 0 } }),
-      updateSession({ id: swap.id, data: { session_order: session.session_order || 0 } }),
+      updateSession({ id: session.id, data: { run_order: swap.run_order || 0 } }),
+      updateSession({ id: swap.id, data: { run_order: session.run_order || 0 } }),
     ]);
   };
 
