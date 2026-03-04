@@ -1,618 +1,486 @@
-/**
- * Gate Manager
- * Check in, confirm entries, manage wristbands and payments.
- */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { REG_QK } from './queryKeys';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Zap, MapPin, Users, DollarSign, Clock } from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { AlertCircle, Link as LinkIcon, Plus, Minus, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
-import { canTab, canAction } from '@/components/access/accessControl';
 
 const DQ = applyDefaultQueryOptions();
 
 export default function GateManager({
   selectedEvent,
-  selectedTrack,
-  selectedSeries,
   dashboardContext,
   dashboardPermissions,
-  invalidateAfterOperation,
 }) {
-  const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
-  const hasAccess = canTab(dashboardPermissions, 'gate');
-  const canEdit = canAction(dashboardPermissions, 'import_csv') || dashboardPermissions?.role === 'admin';
+  const [searchInput, setSearchInput] = useState('');
+  const [scanInput, setScanInput] = useState('');
+  const [recentDecisions, setRecentDecisions] = useState({});
+  const scanInputRef = useRef(null);
 
-  // ── State ──────────────────────────────────────────────────────────────────
-
-  const [search, setSearch] = useState('');
-  const [classFilter, setClassFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [paymentFilter, setPaymentFilter] = useState('all');
-  const [selectedEntryId, setSelectedEntryId] = useState('');
-  const [editData, setEditData] = useState({});
-
-  // ── Queries ────────────────────────────────────────────────────────────────
-
+  // Load entries
   const { data: entries = [] } = useQuery({
-    queryKey: REG_QK.entries(eventId),
-    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId && hasAccess,
+    queryKey: ['racecore', 'gate', 'entries', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
+  // Load drivers
   const { data: drivers = [] } = useQuery({
-    queryKey: ['gateManager_drivers'],
-    queryFn: () => base44.entities.Driver.list('-created_date', 500),
-    staleTime: 60_000,
-    enabled: hasAccess,
+    queryKey: ['racecore', 'gate', 'drivers', entries.map(e => e.driver_id).join(',')],
+    queryFn: async () => {
+      if (entries.length === 0) return [];
+      const driverIds = [...new Set(entries.map(e => e.driver_id).filter(Boolean))];
+      const driverList = await Promise.all(
+        driverIds.map(id => base44.entities.Driver.get(id).catch(() => null))
+      );
+      return driverList.filter(Boolean);
+    },
+    enabled: entries.length > 0,
     ...DQ,
   });
 
+  // Load teams
   const { data: teams = [] } = useQuery({
-    queryKey: ['gateManager_teams'],
-    queryFn: () => base44.entities.Team.list('-created_date', 200),
-    staleTime: 60_000,
-    enabled: hasAccess,
+    queryKey: ['racecore', 'gate', 'teams', entries.map(e => e.team_id).filter(Boolean).join(',')],
+    queryFn: async () => {
+      if (entries.length === 0) return [];
+      const teamIds = [...new Set(entries.map(e => e.team_id).filter(Boolean))];
+      const teamList = await Promise.all(
+        teamIds.map(id => base44.entities.Team.get(id).catch(() => null))
+      );
+      return teamList.filter(Boolean);
+    },
+    enabled: entries.length > 0,
     ...DQ,
   });
 
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['gateManager_seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list('-created_date', 500),
-    staleTime: 60_000,
-    enabled: hasAccess,
-    ...DQ,
-  });
-
+  // Load operation logs for gate decisions
   const { data: operationLogs = [] } = useQuery({
-    queryKey: ['gateManager_operationLogs'],
-    queryFn: () => base44.entities.OperationLog.list('-created_date', 200),
-    staleTime: 30_000,
-    enabled: !!eventId && hasAccess,
+    queryKey: ['racecore', 'gate', 'logs', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.OperationLog.filter({ event_id: selectedEvent.id }, '-created_date', 500)
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-
-  const updateEntryMutation = useMutation({
-    mutationFn: ({ entryId, data }) => base44.entities.Entry.update(entryId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: REG_QK.entries(eventId) });
-      invalidateAfterOperation('entry_updated');
-      toast.success('Entry updated');
-    },
-    onError: (err) => {
-      console.error('Failed to update entry:', err);
-      toast.error('Failed to update entry');
-    },
-  });
-
-  const createOperationLogMutation = useMutation({
+  // Create operation log mutation
+  const createOpLogMutation = useMutation({
     mutationFn: (data) => base44.entities.OperationLog.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gateManager_operationLogs'] });
-      invalidateAfterOperation('operation_logged');
-      toast.success('Change recorded');
-    },
-    onError: (err) => {
-      console.error('Failed to log operation:', err);
-      toast.error('Failed to log operation');
+      queryClient.invalidateQueries({ queryKey: ['racecore', 'gate', 'logs'] });
     },
   });
 
-  // ── Derived data ───────────────────────────────────────────────────────────
+  // Build lookup maps
+  const driverMap = useMemo(() => {
+    const map = new Map();
+    drivers.forEach(d => map.set(d.id, d));
+    return map;
+  }, [drivers]);
 
-  const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
-  const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
-  const classMap = useMemo(
-    () => Object.fromEntries(seriesClasses.map((c) => [c.id, c])),
-    [seriesClasses]
-  );
+  const teamMap = useMemo(() => {
+    const map = new Map();
+    teams.forEach(t => map.set(t.id, t));
+    return map;
+  }, [teams]);
 
-  // Get unique classes from entries
-  const uniqueClasses = useMemo(() => {
-    const classIds = new Set();
-    entries.forEach((e) => {
-      if (e.event_class_id) classIds.add(e.event_class_id);
-    });
-    return Array.from(classIds);
-  }, [entries]);
-
-  // Filter and search
+  // Filter entries by search or scan
   const filteredEntries = useMemo(() => {
-    let result = [...entries];
+    let query = searchInput.trim().toLowerCase() || scanInput.trim();
+    if (!query) return [];
 
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((e) => {
-        const driver = driverMap[e.driver_id];
-        const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
-        const carNum = (e.car_number || '').toLowerCase();
-        const transponder = (e.transponder_id || '').toLowerCase();
-        return driverName.includes(q) || carNum.includes(q) || transponder.includes(q);
-      });
-    }
+    return entries.filter(entry => {
+      const driver = driverMap.get(entry.driver_id);
+      const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
+      const carNum = entry.car_number ? entry.car_number.toString().toLowerCase() : '';
+      const transponder = entry.transponder_id ? entry.transponder_id.toLowerCase() : '';
+      const numericId = entry.numeric_id ? entry.numeric_id.toLowerCase() : '';
+      const driverNumericId = driver?.numeric_id ? driver.numeric_id.toLowerCase() : '';
 
-    if (classFilter !== 'all') {
-      result = result.filter((e) => e.event_class_id === classFilter);
-    }
+      // Try exact matches first (for QR codes)
+      if (entry.id === query || numericId === query || driverNumericId === query) {
+        return true;
+      }
 
-    if (statusFilter !== 'all') {
-      result = result.filter((e) => e.entry_status === statusFilter);
-    }
-
-    if (paymentFilter !== 'all') {
-      result = result.filter((e) => e.payment_status === paymentFilter);
-    }
-
-    return result.sort((a, b) => {
-      const aName = driverMap[a.driver_id]?.last_name || '';
-      const bName = driverMap[b.driver_id]?.last_name || '';
-      return aName.localeCompare(bName);
+      // Then substring matches
+      return (
+        carNum.includes(query) ||
+        driverName.includes(query) ||
+        transponder.includes(query)
+      );
     });
-  }, [entries, driverMap, search, classFilter, statusFilter, paymentFilter]);
+  }, [searchInput, scanInput, entries, driverMap]);
 
-  // Get selected entry and related logs
-  const selectedEntry = useMemo(() => entries.find((e) => e.id === selectedEntryId), [entries, selectedEntryId]);
+  // Get gate logs for today
+  const todayLogs = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return operationLogs.filter(log => {
+      if (log.operation_type !== 'gate_decision') return false;
+      const logDate = new Date(log.created_date);
+      logDate.setHours(0, 0, 0, 0);
+      return logDate.getTime() === today.getTime();
+    });
+  }, [operationLogs]);
 
-  const entryOperationLogs = useMemo(() => {
-    if (!selectedEntry) return [];
-    return operationLogs
-      .filter((log) => {
+  // Counters
+  const counters = useMemo(() => {
+    return {
+      total: entries.length,
+      admitted: todayLogs.filter(l => {
         try {
-          const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
-          return metadata?.entry_id === selectedEntry.id && log.operation_type === 'gate_update';
+          return JSON.parse(l.metadata || '{}').decision === 'admit';
         } catch {
           return false;
         }
-      })
-      .slice(0, 10);
-  }, [operationLogs, selectedEntry]);
+      }).length,
+      denied: todayLogs.filter(l => {
+        try {
+          return JSON.parse(l.metadata || '{}').decision === 'deny';
+        } catch {
+          return false;
+        }
+      }).length,
+    };
+  }, [entries, todayLogs]);
 
-  // Initialize edit data when entry selected
-  React.useEffect(() => {
-    if (selectedEntry) {
-      setEditData({
-        car_number: selectedEntry.car_number || '',
-        transponder_id: selectedEntry.transponder_id || '',
-        wristband_count: selectedEntry.wristband_count || 0,
-        waiver_verified: selectedEntry.waiver_verified || false,
-        payment_status: selectedEntry.payment_status || 'Unpaid',
-        notes: selectedEntry.notes || '',
+  // Last gate decision for entry
+  const getLastGateDecision = (entryId) => {
+    const logs = operationLogs.filter(l => {
+      if (l.operation_type !== 'gate_decision') return false;
+      try {
+        return JSON.parse(l.metadata || '{}').entry_id === entryId;
+      } catch {
+        return false;
+      }
+    });
+    return logs[0];
+  };
+
+  // Handle admit
+  const handleAdmit = async (entry) => {
+    try {
+      await createOpLogMutation.mutateAsync({
+        event_id: selectedEvent.id,
+        operation_type: 'gate_decision',
+        source_type: 'gate_manager',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: JSON.stringify({
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          decision: 'admit',
+          scan_value: scanInput.trim() || null,
+          driver_id: entry.driver_id,
+          car_number: entry.car_number,
+        }),
+        notes: `Gate: Admitted ${entry.car_number ? '#' + entry.car_number : 'entry'}`,
       });
+
+      setRecentDecisions(prev => ({
+        ...prev,
+        [entry.id]: 'admit',
+      }));
+
+      toast.success(`Admitted #${entry.car_number}`);
+      setScanInput('');
+      scanInputRef.current?.focus();
+
+      setTimeout(() => {
+        setRecentDecisions(prev => ({
+          ...prev,
+          [entry.id]: null,
+        }));
+      }, 2000);
+    } catch (error) {
+      toast.error('Failed to record decision');
     }
-  }, [selectedEntry]);
+  };
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  // Handle deny
+  const handleDeny = async (entry) => {
+    try {
+      await createOpLogMutation.mutateAsync({
+        event_id: selectedEvent.id,
+        operation_type: 'gate_decision',
+        source_type: 'gate_manager',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: JSON.stringify({
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          decision: 'deny',
+          scan_value: scanInput.trim() || null,
+          driver_id: entry.driver_id,
+          car_number: entry.car_number,
+        }),
+        notes: `Gate: Denied ${entry.car_number ? '#' + entry.car_number : 'entry'}`,
+      });
 
-  const handleSaveUpdates = useCallback(() => {
-    if (!selectedEntry || !canEdit) return;
+      setRecentDecisions(prev => ({
+        ...prev,
+        [entry.id]: 'deny',
+      }));
 
-    const updates = {};
-    const changes = [];
+      toast.error(`Denied #${entry.car_number}`);
+      setScanInput('');
+      scanInputRef.current?.focus();
 
-    if (editData.car_number !== selectedEntry.car_number) {
-      updates.car_number = editData.car_number;
-      changes.push('car_number');
+      setTimeout(() => {
+        setRecentDecisions(prev => ({
+          ...prev,
+          [entry.id]: null,
+        }));
+      }, 2000);
+    } catch (error) {
+      toast.error('Failed to record decision');
     }
-    if (editData.transponder_id !== selectedEntry.transponder_id) {
-      updates.transponder_id = editData.transponder_id;
-      changes.push('transponder_id');
-    }
-    if (editData.wristband_count !== (selectedEntry.wristband_count || 0)) {
-      updates.wristband_count = editData.wristband_count;
-      changes.push('wristband_count');
-    }
-    if (editData.waiver_verified !== (selectedEntry.waiver_verified || false)) {
-      updates.waiver_verified = editData.waiver_verified;
-      changes.push('waiver_verified');
-    }
-    if (editData.payment_status !== (selectedEntry.payment_status || 'Unpaid')) {
-      updates.payment_status = editData.payment_status;
-      changes.push('payment_status');
-    }
-    if (editData.notes !== (selectedEntry.notes || '')) {
-      updates.notes = editData.notes;
-      changes.push('notes');
-    }
-
-    if (changes.length === 0) {
-      toast.info('No changes');
-      return;
-    }
-
-    // Log operation
-    createOperationLogMutation.mutate({
-      operation_type: 'gate_update',
-      source_type: 'manual',
-      entity_name: 'Entry',
-      entity_id: selectedEntry.id,
-      status: 'success',
-      metadata: JSON.stringify({
-        event_id: eventId,
-        entry_id: selectedEntry.id,
-        driver_id: selectedEntry.driver_id,
-        updates: changes,
-      }),
-    });
-
-    // Update entry
-    updateEntryMutation.mutate({
-      entryId: selectedEntry.id,
-      data: updates,
-    });
-  }, [selectedEntry, editData, canEdit, eventId, updateEntryMutation, createOperationLogMutation]);
-
-  const handleCheckIn = useCallback(() => {
-    if (!selectedEntry || !canEdit) return;
-    createOperationLogMutation.mutate({
-      operation_type: 'gate_update',
-      source_type: 'manual',
-      entity_name: 'Entry',
-      entity_id: selectedEntry.id,
-      status: 'success',
-      metadata: JSON.stringify({
-        event_id: eventId,
-        entry_id: selectedEntry.id,
-        driver_id: selectedEntry.driver_id,
-        updates: ['entry_status'],
-      }),
-    });
-    updateEntryMutation.mutate({
-      entryId: selectedEntry.id,
-      data: { entry_status: 'Checked In' },
-    });
-  }, [selectedEntry, canEdit, eventId, updateEntryMutation, createOperationLogMutation]);
-
-  const handleWithdraw = useCallback(() => {
-    if (!selectedEntry || !canEdit) return;
-    createOperationLogMutation.mutate({
-      operation_type: 'gate_update',
-      source_type: 'manual',
-      entity_name: 'Entry',
-      entity_id: selectedEntry.id,
-      status: 'success',
-      metadata: JSON.stringify({
-        event_id: eventId,
-        entry_id: selectedEntry.id,
-        driver_id: selectedEntry.driver_id,
-        updates: ['entry_status'],
-      }),
-    });
-    updateEntryMutation.mutate({
-      entryId: selectedEntry.id,
-      data: { entry_status: 'Withdrawn' },
-    });
-  }, [selectedEntry, canEdit, eventId, updateEntryMutation, createOperationLogMutation]);
-
-  // ── Empty/No access state ──────────────────────────────────────────────────
-
-  if (!hasAccess) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">You do not have access to Gate operations.</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  };
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-20 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-white font-semibold text-lg mb-1">Gate</p>
-          <p className="text-gray-400 text-sm">Select an event to access gate operations.</p>
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">Select an event to access Gate</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      {/* Counters */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-gray-400 text-xs mb-2">Total Entries</p>
+              <p className="text-3xl font-bold text-white">{counters.total}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-900/30 border-green-800">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-green-400 text-xs mb-2">Admitted Today</p>
+              <p className="text-3xl font-bold text-green-300">{counters.admitted}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-red-900/30 border-red-800">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-red-400 text-xs mb-2">Denied Today</p>
+              <p className="text-3xl font-bold text-red-300">{counters.denied}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-white text-2xl">Gate</CardTitle>
-              <p className="text-sm text-gray-400 mt-1">Confirm entries, wristbands, payments, gate notes</p>
-            </div>
-          </div>
+          <CardTitle className="text-white text-sm">Entry Lookup</CardTitle>
         </CardHeader>
-
-        {/* Controls */}
-        <CardContent className="space-y-3 border-t border-gray-700 pt-4">
-          <div className="flex gap-2">
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-2">Search (Car #, Driver Name, QR)</label>
             <Input
-              placeholder="Search driver, car number, transponder..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-[#262626] border-gray-700 text-white text-sm h-9 flex-1"
+              type="text"
+              placeholder="Search car number or driver name..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="bg-gray-900 border-gray-800 text-white"
             />
-            <Button
-              onClick={() => queryClient.invalidateQueries({ queryKey: REG_QK.entries(eventId) })}
-              className="bg-gray-700 hover:bg-gray-600 text-white text-xs h-9 px-3"
-            >
-              Refresh
-            </Button>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div>
-              <label className="text-xs text-gray-400 mb-1 block">Class</label>
-              <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value="all" className="text-white">All Classes</SelectItem>
-                  {uniqueClasses.map((classId) => (
-                    <SelectItem key={classId} value={classId} className="text-white">
-                      {classMap[classId]?.class_name || classId.slice(0, 8)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-400 mb-1 block">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value="all" className="text-white">All</SelectItem>
-                  <SelectItem value="Registered" className="text-white">Registered</SelectItem>
-                  <SelectItem value="Checked In" className="text-white">Checked In</SelectItem>
-                  <SelectItem value="Withdrawn" className="text-white">Withdrawn</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-400 mb-1 block">Payment</label>
-              <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value="all" className="text-white">All</SelectItem>
-                  <SelectItem value="Paid" className="text-white">Paid</SelectItem>
-                  <SelectItem value="Unpaid" className="text-white">Unpaid</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-2">Scan Code</label>
+            <Input
+              ref={scanInputRef}
+              type="text"
+              placeholder="Scan QR code or entry ID here..."
+              value={scanInput}
+              onChange={(e) => setScanInput(e.target.value)}
+              className="bg-gray-900 border-gray-800 text-white font-mono"
+              autoFocus
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Two Column Layout ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left: Entries Table */}
-        <div className="lg:col-span-2">
-          <Card className="bg-[#171717] border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Entries ({filteredEntries.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredEntries.length === 0 ? (
-                <p className="text-gray-500 text-sm py-6 text-center">No entries found</p>
-              ) : (
-                <div className="space-y-1 max-h-96 overflow-y-auto">
-                  {filteredEntries.map((entry) => {
-                    const driver = driverMap[entry.driver_id];
-                    const team = teamMap[entry.team_id];
-                    const className = classMap[entry.event_class_id]?.class_name || '—';
-                    const isSelected = selectedEntryId === entry.id;
-                    const isPaid = entry.payment_status === 'Paid';
-                    const isCheckedIn = entry.entry_status === 'Checked In';
+      {/* Results */}
+      <div className="space-y-3">
+        <AnimatePresence>
+          {filteredEntries.length === 0 && (searchInput.trim() || scanInput.trim()) && (
+            <Alert className="bg-yellow-900/20 border-yellow-800">
+              <AlertDescription className="text-yellow-400 text-xs">
+                No entries found
+              </AlertDescription>
+            </Alert>
+          )}
 
-                    return (
-                      <button
-                        key={entry.id}
-                        onClick={() => setSelectedEntryId(entry.id)}
-                        className={`w-full text-left p-2 rounded border transition-colors ${
-                          isSelected
-                            ? 'bg-blue-900/30 border-blue-600'
-                            : `bg-[#262626] border-gray-700 hover:border-gray-600 ${!isPaid ? 'border-red-700/50' : ''}`
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-white font-semibold text-sm">#{entry.car_number || driver?.primary_number || '—'}</span>
-                              {!isCheckedIn && <div className="w-2 h-2 rounded-full bg-yellow-500" />}
+          {filteredEntries.map((entry, idx) => {
+            const driver = driverMap.get(entry.driver_id);
+            const team = teamMap.get(entry.team_id);
+            const lastLog = getLastGateDecision(entry.id);
+            const recentDecision = recentDecisions[entry.id];
+
+            return (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <Card
+                  className={`border-2 transition-all ${
+                    recentDecision === 'admit'
+                      ? 'bg-green-900/40 border-green-600'
+                      : recentDecision === 'deny'
+                      ? 'bg-red-900/40 border-red-600'
+                      : 'bg-gray-900/50 border-gray-800 hover:border-gray-700'
+                  }`}
+                >
+                  <CardContent className="pt-4">
+                    <div className="space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-2xl font-bold text-white">#{entry.car_number}</p>
+                            {entry.numeric_id && (
+                              <Badge className="bg-gray-800 text-gray-300 text-xs font-mono">
+                                {entry.numeric_id}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm font-semibold text-white mt-1">
+                            {driver?.first_name} {driver?.last_name}
+                          </p>
+                          {driver?.hometown_city && (
+                            <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                              <MapPin className="w-3 h-3" />
+                              {driver.hometown_city}, {driver.hometown_state}
                             </div>
-                            <p className="text-xs text-gray-300">{driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown'}</p>
-                            <p className="text-xs text-gray-500">{className}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge className={`text-xs ${isCheckedIn ? 'bg-green-900/50 text-green-300' : 'bg-gray-700'}`}>
-                              {entry.entry_status || 'Registered'}
-                            </Badge>
-                            {!isPaid && <Badge className="text-xs bg-red-900/50 text-red-300">Unpaid</Badge>}
-                          </div>
+                          )}
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                      </div>
 
-        {/* Right: Entry Details */}
-        {selectedEntry && (
-          <div className="space-y-4">
-            <Card className="bg-[#171717] border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-white text-sm">Entry Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Driver link */}
-                {selectedEntry.driver_id && (
-                  <a
-                    href={createPageUrl(`DriverProfile?driverId=${selectedEntry.driver_id}`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-semibold"
-                  >
-                    <LinkIcon className="w-3 h-3" /> View Profile
-                  </a>
-                )}
+                      {/* Details grid */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {entry.series_class_id && (
+                          <div className="bg-gray-800/50 p-2 rounded">
+                            <p className="text-gray-400">Class</p>
+                            <p className="text-white font-semibold truncate">{entry.series_class_id}</p>
+                          </div>
+                        )}
+                        {entry.payment_status && (
+                          <div className="bg-gray-800/50 p-2 rounded flex items-center gap-2">
+                            <DollarSign className="w-3 h-3 text-gray-400" />
+                            <div>
+                              <p className="text-gray-400">Payment</p>
+                              <p className={`font-semibold ${
+                                entry.payment_status === 'Paid' ? 'text-green-400' : 'text-yellow-400'
+                              }`}>
+                                {entry.payment_status}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {entry.entry_status && (
+                          <div className="bg-gray-800/50 p-2 rounded">
+                            <p className="text-gray-400">Entry Status</p>
+                            <p className="text-white font-semibold truncate">{entry.entry_status}</p>
+                          </div>
+                        )}
+                        {entry.tech_status && (
+                          <div className="bg-gray-800/50 p-2 rounded">
+                            <p className="text-gray-400">Tech</p>
+                            <p className={`font-semibold ${
+                              entry.tech_status === 'Passed' ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {entry.tech_status}
+                            </p>
+                          </div>
+                        )}
+                        {team && (
+                          <div className="bg-gray-800/50 p-2 rounded col-span-2 flex items-center gap-2">
+                            <Users className="w-3 h-3 text-gray-400" />
+                            <p className="text-white font-semibold truncate">{team.name}</p>
+                          </div>
+                        )}
+                      </div>
 
-                {/* Team */}
-                {selectedEntry.team_id && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">Team</p>
-                    <p className="text-white text-sm">{teamMap[selectedEntry.team_id]?.name || '—'}</p>
-                  </div>
-                )}
-
-                {/* Car number */}
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Car Number</label>
-                  <Input
-                    value={editData.car_number}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, car_number: e.target.value }))}
-                    disabled={!canEdit}
-                    className="bg-[#262626] border-gray-700 text-white text-sm h-8"
-                  />
-                </div>
-
-                {/* Transponder */}
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Transponder</label>
-                  <Input
-                    value={editData.transponder_id}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, transponder_id: e.target.value }))}
-                    disabled={!canEdit}
-                    className="bg-[#262626] border-gray-700 text-white text-sm h-8"
-                  />
-                </div>
-
-                {/* Wristbands */}
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Wristbands</label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setEditData((prev) => ({ ...prev, wristband_count: Math.max(0, prev.wristband_count - 1) }))}
-                      disabled={!canEdit}
-                      className="bg-gray-700 hover:bg-gray-600 disabled:opacity-50 h-8 w-8 p-0"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="text-white font-semibold text-center w-8">{editData.wristband_count}</span>
-                    <Button
-                      onClick={() => setEditData((prev) => ({ ...prev, wristband_count: prev.wristband_count + 1 }))}
-                      disabled={!canEdit}
-                      className="bg-gray-700 hover:bg-gray-600 disabled:opacity-50 h-8 w-8 p-0"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Toggles */}
-                <div className="space-y-2 pt-2 border-t border-gray-700">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={editData.waiver_verified}
-                      onChange={(e) => setEditData((prev) => ({ ...prev, waiver_verified: e.target.checked }))}
-                      disabled={!canEdit}
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs text-gray-300">Waiver Verified</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={editData.payment_status === 'Paid'}
-                      onChange={(e) => setEditData((prev) => ({ ...prev, payment_status: e.target.checked ? 'Paid' : 'Unpaid' }))}
-                      disabled={!canEdit}
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-xs text-gray-300">Payment Collected</span>
-                  </label>
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Notes</label>
-                  <Textarea
-                    value={editData.notes}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, notes: e.target.value }))}
-                    disabled={!canEdit}
-                    className="bg-[#262626] border-gray-700 text-white text-xs h-16"
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex flex-col gap-2 pt-2 border-t border-gray-700">
-                  <Button
-                    onClick={handleSaveUpdates}
-                    disabled={!canEdit}
-                    className="w-full text-xs h-8 bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                  >
-                    Save Updates
-                  </Button>
-                  <Button
-                    onClick={handleCheckIn}
-                    disabled={!canEdit || selectedEntry.entry_status === 'Checked In'}
-                    className="w-full text-xs h-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    ✓ Check In
-                  </Button>
-                  <Button
-                    onClick={handleWithdraw}
-                    disabled={!canEdit || selectedEntry.entry_status === 'Withdrawn'}
-                    className="w-full text-xs h-8 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-1"
-                  >
-                    <LogOut className="w-3 h-3" /> Withdraw
-                  </Button>
-                </div>
-
-                {/* Recent actions */}
-                {entryOperationLogs.length > 0 && (
-                  <div className="pt-3 border-t border-gray-700">
-                    <p className="text-xs text-gray-400 mb-2">Recent Actions</p>
-                    <div className="space-y-1 text-xs max-h-32 overflow-y-auto">
-                      {entryOperationLogs.map((log) => (
-                        <div key={log.id} className="bg-[#262626] rounded p-1.5">
-                          <p className="text-gray-300">{new Date(log.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      {/* Wristband */}
+                      {entry.wristband_count !== undefined && (
+                        <div className="text-xs text-gray-400">
+                          Wristbands: <span className="text-white font-semibold">{entry.wristband_count}</span>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Last decision */}
+                      {lastLog && (
+                        <div className="text-xs text-gray-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Last gate: {new Date(lastLog.created_date).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      )}
+
+                      {/* Buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          onClick={() => handleAdmit(entry)}
+                          disabled={createOpLogMutation.isPending || recentDecision === 'admit'}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white gap-2 h-10"
+                        >
+                          <Check className="w-4 h-4" /> Admit
+                        </Button>
+                        <Button
+                          onClick={() => handleDeny(entry)}
+                          disabled={createOpLogMutation.isPending || recentDecision === 'deny'}
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2 h-10"
+                        >
+                          <X className="w-4 h-4" /> Deny
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
-    </div>
+
+      {!searchInput.trim() && !scanInput.trim() && (
+        <Card className="bg-gray-900/50 border-gray-800">
+          <CardContent className="py-12 text-center">
+            <Zap className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">Search or scan to find entries</p>
+          </CardContent>
+        </Card>
+      )}
+    </motion.div>
   );
 }
