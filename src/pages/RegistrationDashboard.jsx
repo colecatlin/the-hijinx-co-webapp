@@ -1391,19 +1391,13 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
-                selectedEvent ? (
-                  <AnnouncerConsole
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    dashboardContext={dashboardContext}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-20 text-center">
-                      <p className="text-gray-400">Select an event to access the Announcer Console</p>
-                    </CardContent>
-                  </Card>
-                )
+                <AnnouncerManager
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                />
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
