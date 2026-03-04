@@ -64,12 +64,7 @@ export default function CheckInManager({
     ...DQ,
   });
 
-  const { data: driverPrograms = [] } = useQuery({
-    queryKey: ['checkIn_driverPrograms'],
-    queryFn: () => (eventId ? base44.entities.DriverProgram.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId && hasAccess,
-    ...DQ,
-  });
+  // Use Entry as primary roster; no DriverProgram proxy
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['checkIn_drivers'],
