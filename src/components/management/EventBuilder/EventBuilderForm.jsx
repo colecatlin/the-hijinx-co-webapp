@@ -59,6 +59,12 @@ function generateSlug(name) {
 
 export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin, isLiveMode, onArchiveAttempt, canEditEventCore = true, canApproveAsTrack = false, canApproveAsSeries = false }) {
   const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60000,
+  });
   const [formData, setFormData] = useState({
     track_id: '',
     series_id: '',
