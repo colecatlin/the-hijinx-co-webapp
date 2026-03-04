@@ -21,6 +21,7 @@ const ROLE_PERMISSIONS = {
       gate: true,
       race_control: true,
       announcer_pack: true,
+      imports: true,
     },
     actions: {
       create_event: true,
@@ -55,6 +56,7 @@ const ROLE_PERMISSIONS = {
       gate: true,
       race_control: true,
       announcer_pack: true,
+      imports: true,
     },
     actions: {
       import_csv: true,
@@ -72,6 +74,7 @@ const ROLE_PERMISSIONS = {
       gate: true,
       race_control: true,
       announcer_pack: true,
+      imports: true,
     },
     actions: {
       import_csv: true,
