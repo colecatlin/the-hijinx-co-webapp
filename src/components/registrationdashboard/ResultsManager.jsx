@@ -342,8 +342,10 @@ export default function ResultsManager({
     },
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
-      invalidateAfterOperation('session_status_updated', { eventId });
-      invalidateAfterOperation('standings_recalculated', { eventId });
+      invalidateAfterOperation('session_updated', { eventId });
+      if (newStatus === 'Official' || newStatus === 'Locked') {
+        invalidateAfterOperation('standings_updated', { eventId });
+      }
       setPendingStatus(null);
       toast.success(`Session marked ${newStatus}`);
     },
