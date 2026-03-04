@@ -136,9 +136,9 @@ function getKeysForOperation(operationType, payload = {}) {
 
     case 'standings_recalculated':
     case 'standings_updated':
-      broad.push(['standings'], ['driverPrograms'], ['series'], ['events'], ['results'], ['operationLogs']);
+      broad.push(['standings'], ['driverPrograms'], ['series'], ['events'], ['results'], ['sessions'], ['entries'], ['operationLogs']);
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
-      if (eventId) exact.push(REG_QK.operationLogs(eventId));
+      if (eventId) exact.push(REG_QK.operationLogs(eventId), REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId));
       break;
 
     case 'import_completed':
