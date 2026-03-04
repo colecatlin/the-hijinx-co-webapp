@@ -428,18 +428,13 @@ function RegistrationFlow({ user }) {
         created_by_user_id: user?.id,
       };
       const existing = await base44.entities.Entry.filter({ event_id: eventId, driver_id: myDriver.id });
-      let result;
-      if (existing.length) {
-        result = await base44.entities.Entry.update(existing[0].id, payload);
-        await writeOperationLog('entry_updated', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
-      } else {
-        result = await base44.entities.Entry.create(payload);
-        await writeOperationLog('entry_created', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
-      }
+      if (existing.length) throw new Error('You are already registered for this event');
+      const result = await base44.entities.Entry.create(payload);
+      await writeOperationLog('entry_created', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
       return result;
     },
     onSuccess: (entry) => {
-      toast.success(existingEntry?.length ? 'Registration updated!' : 'Registered successfully!');
+      toast.success('Registered successfully!');
       setRegistrationResult({
         eventName: selectedEvent.name,
         driverName: `${myDriver.first_name} ${myDriver.last_name}`,
@@ -570,7 +565,7 @@ function RegistrationFlow({ user }) {
                      <Select value={entryFormData.event_class_id} onValueChange={val => setEntryFormData({ ...entryFormData, event_class_id: val })}>
                        <SelectTrigger className="bg-[#262626] border-gray-700 text-white"><SelectValue placeholder="Select class..." /></SelectTrigger>
                        <SelectContent className="bg-[#262626] border-gray-700">
-                         {eventClasses.map(ec => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
+                         {eventClasses.map(ec => <SelectItem key={ec.id} value={ec.id}>{ec.class_name}</SelectItem>)}
                        </SelectContent>
                      </Select>
                    </div>
@@ -618,7 +613,7 @@ function RegistrationFlow({ user }) {
                   <div className="flex justify-between"><span className="text-gray-400">Event</span><span className="text-white font-medium">{selectedEvent?.name}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Driver</span><span className="text-white">{myDriver?.first_name} {myDriver?.last_name}</span></div>
                   {entryFormData.event_class_id && (
-                    <div className="flex justify-between"><span className="text-gray-400">Class</span><span className="text-white">{eventClasses.find(c => c.id === entryFormData.event_class_id)?.name}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Class</span><span className="text-white">{eventClasses.find(c => c.id === entryFormData.event_class_id)?.class_name}</span></div>
                   )}
                   <div className="flex justify-between"><span className="text-gray-400">Car #</span><span className="text-white">{entryFormData.car_number || '—'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Status</span><span className="text-white">Registered</span></div>
@@ -626,7 +621,7 @@ function RegistrationFlow({ user }) {
                 <div className="flex gap-2 pt-4">
                   <Button variant="outline" onClick={() => setCurrentStep(3)} className="flex-1 border-gray-700 text-gray-300">Back</Button>
                   <Button onClick={() => registerMutation.mutate()} disabled={!entryFormData.car_number || registerMutation.isPending} className="flex-1 bg-white text-black hover:bg-gray-100 font-semibold">
-                    {registerMutation.isPending ? 'Submitting...' : (existingEntry?.length ? 'Update Registration' : 'Register')}
+                    {registerMutation.isPending ? 'Submitting...' : 'Register'}
                   </Button>
                 </div>
               </CardContent>
