@@ -12,6 +12,7 @@ import {
 import { Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { normalizeName } from './resolvers/driverResolver';
 
 const REQUIRED_COLS = ['car_number_or_driver_name', 'finish_position', 'status'];
 const OPTIONAL_COLS = ['car_number', 'driver_first_name', 'driver_last_name', 'driver_name', 'laps_completed', 'best_lap', 'points', 'session_type', 'heat_number'];
@@ -74,25 +75,30 @@ export default function ResultsCsvImportDialog({
   const getMapped = (raw, col) => { const src = mapping[col]; return src ? raw[src] || '' : ''; };
 
   const resolveDriver = (firstName, lastName, carNumber, fullName) => {
-    // Try car number first
+    // Try car number first (exact match on primary_number or program car_number)
     if (carNumber) {
-      const byNum = drivers.find((d) => d.primary_number === carNumber);
+      const byNum = drivers.find((d) => normalizeName(d.primary_number) === normalizeName(carNumber));
       if (byNum) return byNum;
-      const progByNum = driverPrograms.find((dp) => dp.car_number === carNumber);
+      const progByNum = driverPrograms.find((dp) => normalizeName(dp.car_number) === normalizeName(carNumber));
       if (progByNum) return drivers.find((d) => d.id === progByNum.driver_id) || null;
     }
-    // Full name
-    const fn = firstName || (fullName ? fullName.split(' ')[0] : '');
-    const ln = lastName || (fullName ? fullName.split(' ').slice(1).join(' ') : '');
+    // Full name — use normalizeName for consistent trimming/casing
+    const fn = normalizeName(firstName || (fullName ? fullName.split(' ')[0] : ''));
+    const ln = normalizeName(lastName || (fullName ? fullName.split(' ').slice(1).join(' ') : ''));
     if (!fn && !ln) return null;
-    const fl = `${fn} ${ln}`.toLowerCase().trim();
-    const exact = drivers.find((d) => `${d.first_name} ${d.last_name}`.toLowerCase() === fl);
-    if (exact) return exact;
-    const partial = drivers.filter((d) =>
-      d.first_name.toLowerCase().includes(fn.toLowerCase()) &&
-      d.last_name.toLowerCase().includes(ln.toLowerCase())
+    const fl = `${fn} ${ln}`.trim();
+    // Exact match only — if multiple, return null to avoid random resolution
+    const matches = drivers.filter(
+      (d) => `${normalizeName(d.first_name)} ${normalizeName(d.last_name)}`.trim() === fl
     );
-    return partial.length === 1 ? partial[0] : null;
+    if (matches.length === 1) return matches[0];
+    // Multiple matches — try to narrow by carNumber
+    if (matches.length > 1 && carNumber) {
+      const narrowed = matches.filter((d) => normalizeName(d.primary_number) === normalizeName(carNumber));
+      if (narrowed.length === 1) return narrowed[0];
+    }
+    // Ambiguous — return null (never guess)
+    return null;
   };
 
   const preview = csvData
