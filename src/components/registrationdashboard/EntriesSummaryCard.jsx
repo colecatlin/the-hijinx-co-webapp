@@ -10,67 +10,48 @@ const DQ = applyDefaultQueryOptions();
 
 // onNavigate(params) — called with URLSearchParams-style object to deep-link into Entries tab
 export default function EntriesSummaryCard({ selectedEvent, entries = [], entryCounts = {}, onNavigate }) {
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list(),
+  const eventId = selectedEvent?.id;
+
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }, 'class_order'),
+    enabled: !!eventId,
     ...DQ,
   });
 
+  const eventClassMap = useMemo(() => Object.fromEntries(eventClasses.map((c) => [c.id, c])), [eventClasses]);
+
   const summary = useMemo(() => {
-    // Use entryCounts if provided (from useEntries hook), else fall back to computing
-    if (entryCounts.total !== undefined) {
-      return {
-        total: entryCounts.total,
-        paid: entryCounts.byPayment?.Paid || 0,
-        unpaid: entryCounts.byPayment?.Unpaid || 0,
-        checkedIn: entryCounts.byStatus?.['Checked In'] || 0,
-        notCheckedIn: entryCounts.byStatus?.Registered || 0,
-        teched: entryCounts.teched || 0,
-        notTeched: entryCounts.notTeched || 0,
-        classRows: Object.entries(entryCounts.byClass || {})
-          .map(([classId, items]) => {
-            const cid = classId === 'unassigned' ? '__unassigned__' : classId;
-            if (cid === '__unassigned__') return { label: 'Unassigned', classId: 'unassigned', count: items.length };
-            const sc = seriesClasses.find((c) => c.id === cid);
-            return { label: sc?.class_name || cid, classId: cid, count: items.length };
-          })
-          .sort((a, b) => b.count - a.count),
-      };
-    }
+    const total = entryCounts.total ?? entries.length;
 
-    // Fallback: compute from entries
-    const total = entries.length;
-    const paid = entries.filter((e) => e.payment_status === 'Paid').length;
-    const unpaid = total - paid;
+    const byClassRaw = entryCounts.byClass ?? (() => {
+      const m = {};
+      entries.forEach((e) => {
+        const k = e.event_class_id || 'unassigned';
+        if (!m[k]) m[k] = [];
+        m[k].push(e);
+      });
+      return m;
+    })();
 
-    const checkedIn = entries.filter(
-      (e) => e.entry_status === 'Checked In' || e.entry_status === 'Teched'
-    ).length;
+    const paid = entryCounts.byPayment?.Paid ?? entries.filter((e) => e.payment_status === 'Paid').length;
+    const unpaid = (entryCounts.byPayment ? Object.entries(entryCounts.byPayment).reduce((s, [k, v]) => k !== 'Paid' ? s + v : s, 0) : total - paid);
+    const checkedIn = entryCounts.byStatus?.['Checked In'] ?? entries.filter((e) => e.entry_status === 'Checked In').length;
     const notCheckedIn = total - checkedIn;
-
-    const teched = entries.filter(
-      (e) => e.tech_status === 'Passed' || e.tech_status === 'Teched'
-    ).length;
+    const teched = entryCounts.teched ?? entries.filter((e) => e.tech_status === 'Passed').length;
     const notTeched = total - teched;
 
-    // Group by class
-    const byClass = {};
-    entries.forEach((e) => {
-      const key = e.series_class_id || '__unassigned__';
-      byClass[key] = (byClass[key] || 0) + 1;
-    });
-
-    // Build display list: resolve names, sort by count desc
-    const classRows = Object.entries(byClass)
-      .map(([classId, count]) => {
-        if (classId === '__unassigned__') return { label: 'Unassigned', classId: 'unassigned', count };
-        const sc = seriesClasses.find((c) => c.id === classId);
-        return { label: sc?.class_name || classId, classId, count };
+    const classRows = Object.entries(byClassRaw)
+      .map(([classId, items]) => {
+        const count = Array.isArray(items) ? items.length : items;
+        if (classId === 'unassigned') return { label: 'Unassigned', classId: 'unassigned', count };
+        const ec = eventClassMap[classId];
+        return { label: ec?.name || classId, classId, count };
       })
       .sort((a, b) => b.count - a.count);
 
     return { total, paid, unpaid, checkedIn, notCheckedIn, teched, notTeched, classRows };
-  }, [entries, entryCounts, seriesClasses]);
+  }, [entries, entryCounts, eventClassMap]);
 
   const nav = (params) => onNavigate?.(params);
 

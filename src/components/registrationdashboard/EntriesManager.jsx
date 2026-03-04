@@ -233,12 +233,14 @@ export default function EntriesManager({
     if (entries.some((e) => e.driver_id === addForm.driver_id)) {
       toast.error('Driver already entered for this event'); return;
     }
+    const selectedEventClass = eventClasses.find((ec) => ec.id === addForm.event_class_id);
     await createEntry({
       event_id: eventId,
       series_id: selectedEvent?.series_id,
       driver_id: addForm.driver_id,
       team_id: addForm.team_id || undefined,
-      series_class_id: addForm.series_class_id || undefined,
+      event_class_id: addForm.event_class_id || undefined,
+      series_class_id: selectedEventClass?.series_class_id || undefined,
       car_number: addForm.car_number || undefined,
       transponder_id: addForm.transponder_id || undefined,
       entry_status: 'Registered',
@@ -258,7 +260,14 @@ export default function EntriesManager({
 
   const handleBulkClass = async () => {
     if (!bulkClassId) { toast.error('Select a class'); return; }
-    const updates = Array.from(selectedEntries).map((id) => ({ id, data: { series_class_id: bulkClassId } }));
+    const selectedEventClass = eventClasses.find((ec) => ec.id === bulkClassId);
+    const updates = Array.from(selectedEntries).map((id) => ({
+      id,
+      data: {
+        event_class_id: bulkClassId,
+        series_class_id: selectedEventClass?.series_class_id || undefined,
+      },
+    }));
     await bulkUpdateEntries(updates);
     setShowBulkClassModal(false);
     setBulkClassId('');
@@ -404,13 +413,13 @@ export default function EntriesManager({
 
       {/* Bulk Actions */}
       {hasBulk && (
-        <div className="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
-          <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
-          <div className="flex gap-2 flex-wrap">
-            <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
-            {seriesClasses.length > 0 && (
-              <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
-            )}
+      <div className="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
+      <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
+      <div className="flex gap-2 flex-wrap">
+        <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
+        {eventClasses.length > 0 && (
+          <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
+        )}
             <Button onClick={handleBulkWithdraw} size="sm" variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/20">Withdraw</Button>
             <Button onClick={handleExportCSV} size="sm" variant="outline" className="border-gray-600 text-gray-300">
               <Download className="w-4 h-4 mr-1" /> Export Selected
@@ -566,13 +575,13 @@ export default function EntriesManager({
                 </SelectContent>
               </Select>
             </div>
-            {seriesClasses.length > 0 && (
+            {eventClasses.length > 0 && (
               <div>
                 <label className="text-xs text-gray-400 block mb-1">Class</label>
-                <Select value={addForm.series_class_id || ''} onValueChange={(v) => setAddForm({ ...addForm, series_class_id: v })}>
+                <Select value={addForm.event_class_id || ''} onValueChange={(v) => setAddForm({ ...addForm, event_class_id: v })}>
                   <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
-                    {seriesClasses.map((sc) => <SelectItem key={sc.id} value={sc.id}>{sc.class_name}</SelectItem>)}
+                    {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -629,13 +638,13 @@ export default function EntriesManager({
             <Select value={bulkClassId} onValueChange={setBulkClassId}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
-                {seriesClasses.map((sc) => <SelectItem key={sc.id} value={sc.id}>{sc.class_name}</SelectItem>)}
+                {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={handleBulkClass} disabled={bulkUpdating} className="bg-indigo-700 hover:bg-indigo-600">
+            <Button onClick={handleBulkClass} disabled={bulkUpdating || !eventClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
               {bulkUpdating ? 'Applying…' : 'Apply'}
             </Button>
           </DialogFooter>
