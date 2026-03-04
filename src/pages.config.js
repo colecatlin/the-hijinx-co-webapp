@@ -120,6 +120,7 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import UserDashboard from './pages/UserDashboard';
+import MediaPortal from './pages/MediaPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +198,7 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "UserDashboard": UserDashboard,
+    "MediaPortal": MediaPortal,
 }
 
 export const pagesConfig = {
