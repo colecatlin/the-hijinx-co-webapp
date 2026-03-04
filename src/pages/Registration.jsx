@@ -366,8 +366,8 @@ function RegistrationFlow({ user }) {
 
   const { data: eventEntries = [] } = useQuery({
     queryKey: ['entries', eventId, entryFormData.event_class_id],
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, event_class_id: entryFormData.event_class_id || undefined }),
-    enabled: !!eventId && !!entryFormData.event_class_id && currentStep === 4,
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId, event_class_id: entryFormData.event_class_id }),
+    enabled: !!eventId && !!entryFormData.event_class_id,
     ...DQ,
   });
 
