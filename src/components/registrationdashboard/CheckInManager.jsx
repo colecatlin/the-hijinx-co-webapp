@@ -369,11 +369,45 @@ export default function CheckInManager({
     await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Checked In' } });
   };
 
+  const handleCreateEntriesFromPrograms = async () => {
+    setCreatingFromPrograms(true);
+    try {
+      const programs = await base44.entities.DriverProgram.filter({ event_id: eventId });
+      if (!programs.length) { toast.error('No driver programs found for this event'); return; }
+      const existingEntries = await base44.entities.Entry.filter({ event_id: eventId });
+      const existingSet = new Set(existingEntries.map(e => e.driver_id));
+      const toCreate = programs.filter(p => p.driver_id && !existingSet.has(p.driver_id));
+      if (!toCreate.length) { toast.info('All programs already have entries'); return; }
+      await Promise.all(toCreate.map(p => base44.entities.Entry.create({
+        event_id: eventId,
+        driver_id: p.driver_id,
+        team_id: p.team_id || undefined,
+        series_id: p.series_id || undefined,
+        series_class_id: p.series_class_id || undefined,
+        event_class_id: p.event_class_id || undefined,
+        car_number: p.car_number || '',
+        entry_status: 'Registered',
+        payment_status: 'Unpaid',
+        tech_status: 'Not Inspected',
+        waiver_verified: false,
+        transponder_verified: false,
+      })));
+      invalidateAfterOperation('entry_updated', { eventId });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.entries.listByEvent(eventId) });
+      toast.success(`Created ${toCreate.length} entries`);
+    } finally {
+      setCreatingFromPrograms(false);
+    }
+  };
+
   // Reset local selection when event changes
   useEffect(() => {
     setSelectedEntry(null);
     setFormData(null);
     setClassFilter('all');
+    setCheckinFilter('all');
+    setPaymentFilter('all');
+    setTechFilter('all');
     setSearchTerm('');
   }, [eventId]);
 
