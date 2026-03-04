@@ -100,8 +100,26 @@ export default function OverviewGrid({
   const handlePublishResults = async () => {
     setPublishingResults(true);
     try {
-      const count = await publishAllResultsOfficial(selectedEvent.id);
-      toast.success(`Published results for ${count} sessions`);
+      // Set all results to Official and published for all sessions in event
+      const eventSessions = sessions.filter((s) => s.event_id === selectedEvent.id);
+      const sessionIds = eventSessions.map((s) => s.id);
+      const allEventResults = await Promise.all(
+        sessionIds.map((sid) => base44.entities.Results.filter({ session_id: sid }))
+      ).then((arrs) => arrs.flat());
+      
+      await Promise.all(
+        allEventResults
+          .filter((r) => r.status_state !== 'Official' && r.status_state !== 'Locked')
+          .map((r) =>
+            base44.entities.Results.update(r.id, {
+              status_state: 'Official',
+              published: true,
+              published_at: new Date().toISOString(),
+            })
+          )
+      );
+
+      toast.success(`Published results for ${eventSessions.length} sessions`);
       queryClient.invalidateQueries();
       invalidateAfterOperation?.('results_published', { eventId: selectedEvent.id });
     } catch (err) {

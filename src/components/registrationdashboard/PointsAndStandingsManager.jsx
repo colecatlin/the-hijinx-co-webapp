@@ -123,13 +123,13 @@ export default function PointsAndStandingsManager({
     ...DQ,
   });
 
-  // Results
+  // Results — filter by Official or Locked status_state only
   const { data: allResults = [] } = useQuery({
     queryKey: ['results', 'season', ...scopedEventIds, selectedClassId],
     queryFn: async () => {
       if (!scopedEventIds.length) return [];
       const all = await Promise.all(scopedEventIds.map((id) => base44.entities.Results.filter({ event_id: id })));
-      return all.flat();
+      return all.flat().filter((r) => r.status_state === 'Official' || r.status_state === 'Locked');
     },
     enabled: scopedEventIds.length > 0 && !!selectedClassId,
     ...DQ,
@@ -262,12 +262,12 @@ export default function PointsAndStandingsManager({
 
   // ── Recalculate using new calculator ──
   const handleRecalculate = async () => {
-   if (!selectedClassId) { toast.error('Select a class first'); return; }
-   setCalculating(true);
-   const t0 = Date.now();
-   try {
-     // Filter results for this class
-     const classResults = allResults.filter((r) => r.series_class_id === selectedClassId);
+    if (!selectedClassId) { toast.error('Select a class first'); return; }
+    setCalculating(true);
+    const t0 = Date.now();
+    try {
+      // Filter results for this class (already filtered to Official/Locked above)
+      const classResults = allResults.filter((r) => r.series_class_id === selectedClassId || r.series_class_id === selectedClassId);
 
      // Use new calculator with Finals-only sessions
      const { standings: calculatedStandings } = calculateStandings({
@@ -339,47 +339,40 @@ export default function PointsAndStandingsManager({
     mutationFn: async () => {
       if (!calculatedRows?.length) throw new Error('Recalculate first');
       const className = selectedClass?.class_name || '';
+      const rowsJson = JSON.stringify(calculatedRows);
 
-      // Delete old standings for this series/season/class first
-      try {
-        const oldStandings = await base44.entities.Standings.filter({
+      // Upsert single Standings record per series/season/class combo
+      const existingStandings = await base44.entities.Standings.filter({
+        series_id: seriesId,
+        season: selectedSeasonYear,
+        series_class_id: selectedClassId,
+      }).catch(() => []);
+
+      let standingsId;
+      if (existingStandings.length > 0) {
+        standingsId = existingStandings[0].id;
+        await base44.entities.Standings.update(standingsId, {
           series_id: seriesId,
-          season_year: selectedSeasonYear,
+          season: selectedSeasonYear,
           series_class_id: selectedClassId,
-        }).catch(() => []);
-        
-        // Delete old records
-        if (oldStandings.length > 0) {
-          await Promise.all(oldStandings.map((s) => base44.entities.Standings.delete(s.id).catch(() => {})));
-        }
-      } catch {
-        // Continue even if delete fails
+          rows_json: rowsJson,
+          published: true,
+          last_calculated: new Date().toISOString(),
+        });
+      } else {
+        const created = await base44.entities.Standings.create({
+          series_id: seriesId,
+          season: selectedSeasonYear,
+          series_class_id: selectedClassId,
+          rows_json: rowsJson,
+          published: true,
+          last_calculated: new Date().toISOString(),
+        });
+        standingsId = created.id;
       }
 
-      // Create new standings entries
-      const ops = calculatedRows.map((row) => {
-        const driver = drivers.find((d) => d.id === row.driver_id);
-        const payload = {
-          series_id: seriesId,
-          series_class_id: selectedClassId,
-          season_year: selectedSeasonYear,
-          driver_id: row.driver_id,
-          rank: row.rank,
-          total_points: row.total_points,
-          wins: row.wins || 0,
-          podiums: row.podiums || 0,
-          top5: row.top5 || 0,
-          top10: row.top10 || 0,
-          starts: row.events_counted || 0,
-          dnf_count: row.dnf_count || 0,
-        };
-        return base44.entities.Standings.create(payload);
-      });
-
-      const written = await Promise.all(ops);
-
       base44.entities.OperationLog.create({
-        operation_type: 'standings_recalculated',
+        operation_type: 'standings_published',
         status: 'success',
         entity_name: 'Standings',
         event_id: eventId,
@@ -390,13 +383,13 @@ export default function PointsAndStandingsManager({
           series_class_id: selectedClassId,
           class_name: className,
           driver_count: calculatedRows.length,
-          rows_written: written.length,
+          standings_id: standingsId,
         },
       }).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['standings', seriesId, selectedSeasonYear, selectedClassId] });
-      invalidateAfterOperation('standings_recalculated', { eventId, seriesId });
+      invalidateAfterOperation('standings_published', { eventId, seriesId });
       toast.success('Standings published');
     },
     onError: (err) => toast.error(`Publish failed: ${err.message}`),

@@ -211,7 +211,7 @@ export default function ResultsManager({
 
   const filteredSessions = useMemo(() => {
     if (classFilter === 'all') return sessions;
-    return sessions.filter((s) => s.event_class_id === classFilter);
+    return sessions.filter((s) => s.series_class_id === classFilter || s.event_class_id === classFilter);
   }, [sessions, classFilter]);
 
   // ── Lock state ──
@@ -253,6 +253,7 @@ export default function ResultsManager({
           series_class_id: row.series_class_id || selectedSession?.series_class_id || undefined,
           position: row.position !== '' ? parseInt(row.position) : null,
           status: row.status || 'Running',
+          status_state: row.status_state || 'Draft',
           laps_completed: row.laps_completed !== '' ? parseInt(row.laps_completed) : null,
           best_lap_time_ms: row.best_lap_time_ms !== '' ? parseInt(row.best_lap_time_ms) : null,
           points: row.points !== '' ? parseFloat(row.points) : null,
@@ -303,7 +304,17 @@ export default function ResultsManager({
     mutationFn: async (newStatus) => {
       const prevStatus = selectedSession?.status || 'Draft';
       const payload = { status: newStatus };
-      if (newStatus === 'Locked') payload.locked = true;
+      if (newStatus === 'Locked') {
+        payload.locked = true;
+        // Lock all results in this session
+        const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
+        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Locked' })));
+      }
+      if (newStatus === 'Official' && newStatus !== prevStatus) {
+        // Mark results as Official
+        const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
+        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Official', published: true, published_at: new Date().toISOString() })));
+      }
       if (newStatus === 'Draft' || newStatus === 'Provisional') payload.locked = false;
       await base44.entities.Session.update(selectedSession.id, payload);
 
