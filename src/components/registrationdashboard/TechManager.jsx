@@ -5,16 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { AlertCircle, Wrench } from 'lucide-react';
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter,
+} from '@/components/ui/sheet';
+import { AlertCircle, Wrench, CheckCircle, XCircle, RefreshCw, StickyNote, AlertTriangle } from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
-import { useTechInspections } from './hooks/useTechInspections';
-import { useTechTemplate } from './hooks/useTechTemplates';
-import TechEntryDrawer from './TechEntryDrawer';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -25,6 +26,12 @@ function techBadgeClass(status) {
     case 'Recheck Required': return 'bg-yellow-500/20 text-yellow-400';
     default: return 'bg-gray-500/20 text-gray-400';
   }
+}
+
+function rowHighlight(status) {
+  if (status === 'Failed') return 'bg-red-900/10 border-red-900/30';
+  if (status === 'Recheck Required') return 'bg-yellow-900/10 border-yellow-900/30';
+  return '';
 }
 
 export default function TechManager({
@@ -42,19 +49,20 @@ export default function TechManager({
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // ── Drawer ──
-  const [drawerEntry, setDrawerEntry] = useState(null);
+  // ── Notes drawer ──
+  const [notesEntry, setNotesEntry] = useState(null);
+  const [notesText, setNotesText] = useState('');
 
   // ── Reset on event change ──
   useEffect(() => {
     setSearch('');
     setClassFilter('all');
     setStatusFilter('all');
-    setDrawerEntry(null);
+    setNotesEntry(null);
   }, [eventId]);
 
   // ── Queries ──
-  const { data: entries = [], isLoading, isError, refetch } = useQuery({
+  const { data: allEntries = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['entries', eventId, 'tech'],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
@@ -69,7 +77,7 @@ export default function TechManager({
 
   const { data: eventClasses = [] } = useQuery({
     queryKey: ['eventClasses', eventId],
-    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order') : Promise.resolve([])),
+    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }, 'class_order'),
     enabled: !!eventId,
     ...DQ,
   });
@@ -80,8 +88,7 @@ export default function TechManager({
     ...DQ,
   });
 
-  // ── Tech inspections & templates ──
-  const { inspections, getByEntry } = useTechInspections(eventId);
+  const isAdmin = currentUser?.role === 'admin';
 
   // ── Lookups ──
   const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
@@ -93,15 +100,13 @@ export default function TechManager({
   };
   const getClassName = (entry) => {
     if (entry.event_class_id && eventClassMap[entry.event_class_id]) {
-      return eventClassMap[entry.event_class_id].name;
+      return eventClassMap[entry.event_class_id].class_name || eventClassMap[entry.event_class_id].name || '—';
     }
     return '—';
   };
 
-  // ── Classes from EventClass ──
-  const classOptions = useMemo(() => {
-    return eventClasses.map((ec) => ({ id: ec.id, name: ec.name }));
-  }, [eventClasses]);
+  // ── Entries: exclude Withdrawn ──
+  const entries = useMemo(() => allEntries.filter(e => e.entry_status !== 'Withdrawn'), [allEntries]);
 
   // ── Filtering ──
   const filteredEntries = useMemo(() => {
@@ -110,16 +115,14 @@ export default function TechManager({
       if (statusFilter !== 'all' && (entry.tech_status || 'Not Inspected') !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
-        const driver = driversMap[entry.driver_id];
-        const driverMatch = driver
-          ? `${driver.first_name} ${driver.last_name}`.toLowerCase().includes(s)
-          : false;
+        const d = driversMap[entry.driver_id];
+        const driverMatch = d ? `${d.first_name} ${d.last_name}`.toLowerCase().includes(s) : false;
         const carMatch = (entry.car_number || '').toLowerCase().includes(s);
         if (!driverMatch && !carMatch) return false;
       }
       return true;
     });
-  }, [entries, classFilter, statusFilter, search, driversMap, classesMap]);
+  }, [entries, classFilter, statusFilter, search, driversMap]);
 
   // ── Summary stats ──
   const stats = useMemo(() => {
@@ -128,64 +131,47 @@ export default function TechManager({
     const failed = entries.filter((e) => e.tech_status === 'Failed').length;
     const recheck = entries.filter((e) => e.tech_status === 'Recheck Required').length;
     const notInspected = entries.filter((e) => !e.tech_status || e.tech_status === 'Not Inspected').length;
-    const queue = entries
-      .filter((e) => e.tech_status !== 'Passed')
-      .sort((a, b) => {
-        const order = { Failed: 0, 'Recheck Required': 1, 'Not Inspected': 2 };
-        return (order[a.tech_status] ?? 2) - (order[b.tech_status] ?? 2);
-      });
-    return { total, passed, failed, recheck, notInspected, queue };
+    return { total, passed, failed, recheck, notInspected };
   }, [entries]);
 
   // ── Mutation ──
   const { mutateAsync: updateEntry, isPending: saving } = useDashboardMutation({
-    operationType: 'tech_updated',
+    operationType: 'entry_updated',
     entityName: 'Entry',
-    mutationFn: async ({ id, data }) => {
-      // Update Entry
-      const result = await base44.entities.Entry.update(id, data);
-      
-      // Update or create TechInspection if status changed
-      if (data.tech_status) {
-        const entry = entries.find(e => e.id === id);
-        if (entry) {
-          const existingInsp = getByEntry(id);
-          const inspectionData = {
-            event_id: eventId,
-            entry_id: id,
-            series_class_id: entry.series_class_id,
-            status: data.tech_status,
-            inspector_user_id: currentUser?.id,
-            inspected_date: new Date().toISOString(),
-          };
-          
-          if (existingInsp) {
-            await base44.entities.TechInspection.update(existingInsp.id, inspectionData);
-          } else {
-            await base44.entities.TechInspection.create(inspectionData);
-          }
-        }
-      }
-      
-      return result;
-    },
+    mutationFn: async ({ id, data }) => base44.entities.Entry.update(id, data),
     successMessage: 'Tech updated',
     invalidateAfterOperation,
     dashboardContext: dashboardContext ?? { eventId },
     selectedEvent: selectedEvent ?? null,
   });
 
-  const handleSave = async (id, payload) => {
-    await updateEntry({ id, data: payload });
-    setDrawerEntry((prev) => prev ? { ...prev, ...payload } : null);
+  const handleAction = async (entry, techStatus) => {
+    const now = new Date().toISOString();
+    await updateEntry({
+      id: entry.id,
+      data: {
+        tech_status: techStatus,
+        tech_time: now,
+        tech_inspector_user_id: currentUser?.id || '',
+      },
+    });
+    queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
   };
 
-  const handleSaveAndNext = async (id, payload) => {
-    await updateEntry({ id, data: payload });
-    // Find next non-passed entry in filtered list
-    const idx = filteredEntries.findIndex((e) => e.id === id);
-    const next = filteredEntries.slice(idx + 1).find((e) => e.tech_status !== 'Passed');
-    setDrawerEntry(next || null);
+  const openNotes = (entry) => {
+    setNotesEntry(entry);
+    setNotesText('');
+  };
+
+  const handleSaveNote = async () => {
+    if (!notesEntry || !notesText.trim()) return;
+    const timestamp = new Date().toLocaleString();
+    const append = `[${timestamp}] Tech: ${notesText.trim()}`;
+    const existing = notesEntry.notes ? notesEntry.notes + '\n' + append : append;
+    await updateEntry({ id: notesEntry.id, data: { notes: existing } });
+    queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
+    setNotesEntry(null);
+    setNotesText('');
   };
 
   // ── Guards ──
@@ -194,7 +180,7 @@ export default function TechManager({
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select a Track or Series, Season, and Event to manage tech inspection</p>
+          <p className="text-gray-400">Select an event to manage tech inspection</p>
         </CardContent>
       </Card>
     );
@@ -221,70 +207,31 @@ export default function TechManager({
 
   return (
     <div className="space-y-5">
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Card A – Overview */}
-        <Card className="bg-[#171717] border-gray-800 md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-300 flex items-center gap-2">
-              <Wrench className="w-4 h-4" /> Tech Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-400">Total</span>
-              <span className="text-white font-semibold">{stats.total}</span>
-            </div>
-            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Passed')}>
-              <span className="text-gray-400">Passed</span>
-              <Badge className="text-xs bg-green-500/20 text-green-400">{stats.passed}</Badge>
-            </div>
-            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Failed')}>
-              <span className="text-gray-400">Failed</span>
-              <Badge className="text-xs bg-red-500/20 text-red-400">{stats.failed}</Badge>
-            </div>
-            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Recheck Required')}>
-              <span className="text-gray-400">Recheck</span>
-              <Badge className="text-xs bg-yellow-500/20 text-yellow-400">{stats.recheck}</Badge>
-            </div>
-            <div className="flex justify-between text-xs cursor-pointer hover:opacity-80" onClick={() => setStatusFilter('Not Inspected')}>
-              <span className="text-gray-400">Not Inspected</span>
-              <Badge className="text-xs bg-gray-500/20 text-gray-400">{stats.notInspected}</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card B – Work Queue */}
-        <Card className="bg-[#171717] border-gray-800 md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-300">Work Queue ({stats.queue.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1.5">
-            {stats.queue.length === 0 ? (
-              <p className="text-xs text-green-400">All entries passed!</p>
-            ) : (
-              stats.queue.slice(0, 5).map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center justify-between cursor-pointer hover:opacity-80"
-                  onClick={() => setDrawerEntry(entry)}
-                >
-                  <span className="text-xs text-gray-300 truncate max-w-[120px]">
-                    {entry.car_number ? `#${entry.car_number}` : ''} {getDriverName(entry.driver_id)}
-                  </span>
-                  <Badge className={`text-xs ${techBadgeClass(entry.tech_status)}`}>
-                    {entry.tech_status || 'Not Inspected'}
-                  </Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {[
+          { label: 'Total', value: stats.total, cls: 'text-white' },
+          { label: 'Passed', value: stats.passed, cls: 'text-green-400', filter: 'Passed' },
+          { label: 'Failed', value: stats.failed, cls: 'text-red-400', filter: 'Failed' },
+          { label: 'Recheck', value: stats.recheck, cls: 'text-yellow-400', filter: 'Recheck Required' },
+          { label: 'Pending', value: stats.notInspected, cls: 'text-gray-400', filter: 'Not Inspected' },
+        ].map((s) => (
+          <button
+            key={s.label}
+            onClick={() => s.filter && setStatusFilter(statusFilter === s.filter ? 'all' : s.filter)}
+            className={`bg-[#171717] border rounded-lg p-3 text-left transition-colors ${
+              statusFilter === s.filter ? 'border-gray-500' : 'border-gray-800 hover:border-gray-700'
+            }`}
+          >
+            <p className="text-xs text-gray-400">{s.label}</p>
+            <p className={`text-xl font-bold ${s.cls}`}>{s.value}</p>
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
             <label className="text-xs text-gray-400 block mb-1">Search</label>
             <Input
@@ -300,12 +247,12 @@ export default function TechManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Classes</SelectItem>
-                {classOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {eventClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name || c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Status</label>
+            <label className="text-xs text-gray-400 block mb-1">Tech Status</label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -339,56 +286,129 @@ export default function TechManager({
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Driver</th>
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Class</th>
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Tech Status</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Inspector</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Last Updated</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-400 font-semibold">Action</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Transponder</th>
+                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Notes</th>
+                  <th className="px-3 py-2 text-right text-xs text-gray-400 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEntries.map((entry) => (
-                  <tr key={entry.id} className="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
-                    <td className="px-3 py-2 text-white font-mono text-xs">{entry.car_number || '—'}</td>
-                    <td className="px-3 py-2 text-white text-xs">{getDriverName(entry.driver_id)}</td>
-                    <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
-                    <td className="px-3 py-2">
-                      <Badge className={`text-xs ${techBadgeClass(entry.tech_status)}`}>
-                        {entry.tech_status || 'Not Inspected'}
-                      </Badge>
-                    </td>
-                    <td className="px-3 py-2 text-gray-400 text-xs">{entry.tech_inspector_name || '—'}</td>
-                    <td className="px-3 py-2 text-gray-500 text-xs">
-                      {entry.tech_timestamp ? new Date(entry.tech_timestamp).toLocaleString() : '—'}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setDrawerEntry(entry)}
-                        className="border-gray-700 text-gray-300 hover:bg-gray-800 h-7 text-xs"
-                      >
-                        Inspect
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredEntries.map((entry) => {
+                  const techStatus = entry.tech_status || 'Not Inspected';
+                  const isCheckedIn = entry.entry_status === 'Checked In';
+                  const passDisabled = techStatus === 'Passed' && !isAdmin;
+                  const highlight = rowHighlight(techStatus);
+                  const missingTransponder = !entry.transponder_id;
+
+                  return (
+                    <tr key={entry.id} className={`border-b border-gray-800 transition-colors hover:bg-gray-800/20 ${highlight}`}>
+                      <td className="px-3 py-2 text-white font-mono text-xs">
+                        {entry.car_number || '—'}
+                      </td>
+                      <td className="px-3 py-2 text-xs">
+                        <div className="flex items-center gap-1">
+                          {!isCheckedIn && (
+                            <AlertTriangle className="w-3 h-3 text-yellow-400 flex-shrink-0" title="Not checked in" />
+                          )}
+                          <span className="text-white">{getDriverName(entry.driver_id)}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
+                      <td className="px-3 py-2">
+                        <Badge className={`text-xs ${techBadgeClass(techStatus)}`}>
+                          {techStatus}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 text-xs">
+                        {missingTransponder ? (
+                          <Badge className="text-xs bg-orange-500/20 text-orange-400">Missing</Badge>
+                        ) : (
+                          <span className="text-gray-400 font-mono">{entry.transponder_id}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-gray-500 max-w-[140px] truncate" title={entry.notes || ''}>
+                        {entry.notes ? entry.notes.split('\n').pop() : '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="sm"
+                            disabled={passDisabled || saving}
+                            onClick={() => handleAction(entry, 'Passed')}
+                            className="h-6 px-2 text-xs bg-green-700/80 hover:bg-green-700 text-white border-0"
+                            title={passDisabled ? 'Already passed (admin to override)' : 'Pass'}
+                          >
+                            <CheckCircle className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={saving}
+                            onClick={() => handleAction(entry, 'Failed')}
+                            className="h-6 px-2 text-xs bg-red-700/80 hover:bg-red-700 text-white border-0"
+                            title="Fail"
+                          >
+                            <XCircle className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={saving}
+                            onClick={() => handleAction(entry, 'Recheck Required')}
+                            className="h-6 px-2 text-xs bg-yellow-700/80 hover:bg-yellow-700 text-white border-0"
+                            title="Recheck Required"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={saving}
+                            onClick={() => openNotes(entry)}
+                            className="h-6 px-2 text-xs border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800"
+                            title="Add note"
+                          >
+                            <StickyNote className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </Card>
       )}
 
-      {/* Drawer */}
-      <TechEntryDrawer
-        open={!!drawerEntry}
-        onOpenChange={(open) => { if (!open) setDrawerEntry(null); }}
-        entry={drawerEntry}
-        driverName={drawerEntry ? getDriverName(drawerEntry.driver_id) : ''}
-        className={drawerEntry ? getClassName(drawerEntry) : ''}
-        currentUser={currentUser}
-        saving={saving}
-        onSave={handleSave}
-        onSaveAndNext={handleSaveAndNext}
-      />
+      {/* Notes Drawer */}
+      <Sheet open={!!notesEntry} onOpenChange={(open) => { if (!open) { setNotesEntry(null); setNotesText(''); } }}>
+        <SheetContent className="bg-[#1A1A1A] border-gray-700 text-white">
+          <SheetHeader>
+            <SheetTitle className="text-white text-sm">
+              Add Inspector Note — #{notesEntry?.car_number} {notesEntry ? getDriverName(notesEntry.driver_id) : ''}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="py-4 space-y-3">
+            {notesEntry?.notes && (
+              <div className="bg-gray-900 rounded p-3 text-xs text-gray-400 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                {notesEntry.notes}
+              </div>
+            )}
+            <Textarea
+              placeholder="Enter tech note…"
+              value={notesText}
+              onChange={(e) => setNotesText(e.target.value)}
+              className="bg-[#262626] border-gray-700 text-white text-xs min-h-[80px]"
+            />
+          </div>
+          <SheetFooter className="gap-2">
+            <Button variant="outline" className="border-gray-700 text-gray-300" onClick={() => { setNotesEntry(null); setNotesText(''); }}>
+              Cancel
+            </Button>
+            <Button disabled={!notesText.trim() || saving} onClick={handleSaveNote} className="bg-blue-600 hover:bg-blue-700">
+              Save Note
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
