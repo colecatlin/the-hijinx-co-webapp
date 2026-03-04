@@ -38,6 +38,10 @@ const ROLE_PERMISSIONS = {
       review_media_request: true,
       revoke_media_credential: true,
       manage_media_policies: true,
+      approve_request: true,
+      deny_request: true,
+      issue_credential: true,
+      revoke_credential: true,
     },
   },
   user: {
@@ -77,6 +81,10 @@ const ROLE_PERMISSIONS = {
       review_media_request: true,
       revoke_media_credential: true,
       manage_media_policies: true,
+      approve_request: true,
+      deny_request: true,
+      issue_credential: true,
+      revoke_credential: true,
     },
   },
   entity_editor: {
@@ -100,6 +108,10 @@ const ROLE_PERMISSIONS = {
       respond_collaboration: true,
       publish_event: true,
       review_media_request: true,
+      approve_request: true,
+      deny_request: true,
+      issue_credential: true,
+      revoke_credential: true,
     },
   },
   public: {
