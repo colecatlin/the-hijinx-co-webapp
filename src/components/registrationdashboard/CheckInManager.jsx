@@ -184,24 +184,9 @@ export default function CheckInManager({
   const getCheckInBlockers = (fd) => {
     if (!fd) return [];
     const blockers = [];
-
-    if (fd.waiver_status !== 'Verified') blockers.push('Waiver not verified');
-
-    if (fd.license_status === 'Expired') {
-      blockers.push('License expired');
-    } else if (fd.license_status === 'Unknown') {
-      blockers.push('License not verified');
-    }
-
-    if (!fd.transponder_id) {
-      blockers.push('Transponder missing');
-    } else {
-      // Check for transponder conflicts
-      const conflictMap = buildEventConflictMap(entries);
-      if (conflictMap.entryFlags[fd.id]?.transponderDuplicate) {
-        blockers.push('Transponder conflict');
-      }
-    }
+    if (!fd.waiver_verified) blockers.push('Waiver not verified');
+    if (fd.payment_status === 'Unpaid') blockers.push('Payment unpaid');
+    if (!fd.transponder_verified) blockers.push('Transponder not verified');
     return blockers;
   };
 
