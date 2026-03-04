@@ -258,6 +258,19 @@ export default function ComplianceManager({
     toast.success('Notes saved');
   };
 
+  // ── Assign transponder ─────────────────────────────────────────────────────
+  const handleAssignTransponder = async () => {
+    if (!selectedEntry || !transponderInput.trim()) return;
+    if (!(await verifyEntryEventIntegrity(selectedEntry, selectedEvent, base44))) {
+      toast.error(GUARD_ERROR_MESSAGE);
+      return;
+    }
+    await updateEntryAsync({ id: selectedEntry.id, data: { transponder_id: transponderInput.trim(), transponder_verified: true } });
+    await writeOperationLog('compliance_updated', selectedEntry.id, selectedEvent.id, `Transponder assigned: ${transponderInput.trim()}`);
+    setAssigningTransponder(false);
+    toast.success('Transponder assigned');
+  };
+
   // Load current user's entry
   const { data: myEntry } = useQuery({
     queryKey: ['myEntry', currentUser?.id, selectedEvent?.id],
