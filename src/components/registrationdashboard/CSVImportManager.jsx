@@ -369,8 +369,14 @@ export default function CSVImportManager({
       skipped: result.skipped,
       created: result.created,
       updated: 0,
+      unresolved: result.unresolved || [],
     };
     setImportSummary(summary);
+
+    // Log unresolved warnings
+    if (summary.unresolved.length > 0) {
+      console.warn('CSVImportManager: unresolved drivers', summary.unresolved);
+    }
 
     // Log operation
     try {
