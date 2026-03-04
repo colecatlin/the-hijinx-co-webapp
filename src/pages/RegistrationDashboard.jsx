@@ -26,6 +26,7 @@ import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManagerRefactored from '@/components/registrationdashboard/GateManagerRefactored';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import GateConsole from '@/components/registrationdashboard/GateConsole';
+import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
@@ -1142,11 +1143,11 @@ export default function RegistrationDashboard() {
               )}
               {canTab(dashboardPermissions, 'gate') && (
                 <TabsTrigger
-                  value="gate"
+                  value="gateConsole"
                   disabled={!selectedEvent}
                   className="data-[state=active]:bg-green-800 data-[state=active]:text-green-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <DoorOpen className="w-4 h-4 mr-2" /> Gate
+                  <DoorOpen className="w-4 h-4 mr-2" /> Gate Console
                 </TabsTrigger>
               )}
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
@@ -1160,11 +1161,20 @@ export default function RegistrationDashboard() {
               )}
               {canTab(dashboardPermissions, 'race_control') && (
                 <TabsTrigger
+                  value="raceControlConsole"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-red-800 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Radio className="w-4 h-4 mr-2" /> Race Control Console
+                </TabsTrigger>
+              )}
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
+                <TabsTrigger
                   value="raceControl"
                   disabled={!selectedEvent}
                   className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Radio className="w-4 h-4 mr-2" /> Race Control
+                  <Radio className="w-4 h-4 mr-2" /> Race Control Manager
                 </TabsTrigger>
               )}
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
@@ -1467,6 +1477,24 @@ export default function RegistrationDashboard() {
 
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'paddock' && (
                 <PaddockManager
+                  selectedEvent={selectedEvent}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {canTab(dashboardPermissions, 'gate') && activeTab === 'gateConsole' && (
+                <GateConsole
+                  selectedEvent={selectedEvent}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {canTab(dashboardPermissions, 'race_control') && activeTab === 'raceControlConsole' && (
+                <RaceControlConsole
                   selectedEvent={selectedEvent}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
