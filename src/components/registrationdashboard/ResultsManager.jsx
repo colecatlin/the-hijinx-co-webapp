@@ -163,6 +163,28 @@ export default function ResultsManager({
   // ── Derived data ──
   const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
 
+  // Entries for this event, excluding Withdrawn
+  const entries = useMemo(() => allEntries.filter(e => e.entry_status !== 'Withdrawn'), [allEntries]);
+
+  // Entries scoped to the selected class (event_class_id match, or series_class_id fallback)
+  const classEntries = useMemo(() => {
+    if (!selectedSession) return [];
+    return entries.filter((e) => {
+      if (selectedSession.event_class_id) return e.event_class_id === selectedSession.event_class_id;
+      if (selectedSession.series_class_id) return e.series_class_id === selectedSession.series_class_id;
+      return true;
+    });
+  }, [entries, selectedSession]);
+
+  // program_id resolution map: driver_id → program_id
+  const programByDriver = useMemo(() => {
+    const map = {};
+    driverPrograms.forEach((dp) => {
+      if (dp.driver_id && dp.event_id === eventId) map[dp.driver_id] = dp.id;
+    });
+    return map;
+  }, [driverPrograms, eventId]);
+
   const getSessionLabel = (s) => {
     const cls = s.series_class_id ? classesMap[s.series_class_id]?.class_name : s.class_name;
     const num = s.session_number ? ` #${s.session_number}` : '';
