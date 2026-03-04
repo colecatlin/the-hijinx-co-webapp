@@ -10,6 +10,7 @@ import ResultsStatusCard from './ResultsStatusCard';
 import StandingsStatusCard from './StandingsStatusCard';
 import SystemAlertsFeed from './SystemAlertsFeed';
 import RaceDayReadinessCard from './RaceDayReadinessCard';
+import EventTimeline from './EventTimeline';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -263,6 +264,11 @@ export default function OverviewGrid({
         <ResultsStatusCard selectedEvent={selectedEvent} />
         <StandingsStatusCard selectedEvent={selectedEvent} dashboardContext={dashboardContext} selectedSeries={selectedSeries} />
         <SystemAlertsFeed selectedEvent={selectedEvent} dashboardContext={dashboardContext} />
+      </div>
+
+      {/* Event Timeline */}
+      <div>
+        <EventTimeline selectedEvent={selectedEvent} />
       </div>
     </div>
   );
