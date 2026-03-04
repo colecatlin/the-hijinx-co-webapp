@@ -33,6 +33,7 @@ import PointsAndStandingsManager from '@/components/registrationdashboard/Points
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
+import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -907,16 +908,28 @@ export default function RegistrationDashboard() {
             )}
 
             {/* Live Mode Badge */}
-           {isLiveMode && (
-             <div className="mb-6 bg-red-950/40 border border-red-800/50 rounded-lg p-4">
-               <div className="flex items-center gap-3">
-                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                 <span className="text-sm font-semibold text-red-300">LIVE EVENT MODE</span>
-               </div>
-             </div>
-           )}
+            {isLiveMode && (
+              <div className="mb-6 bg-red-950/40 border border-red-800/50 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-sm font-semibold text-red-300">LIVE EVENT MODE</span>
+                </div>
+              </div>
+            )}
 
-           {/* Authority Center Declaration */}
+            {/* Event Workspace Header */}
+            {selectedEvent && (
+              <EventWorkspaceHeader
+                dashboardContext={dashboardContext}
+                selectedEvent={selectedEvent}
+                selectedTrack={selectedTrack}
+                selectedSeries={selectedSeries}
+                dashboardPermissions={dashboardPermissions}
+                invalidateAfterOperation={invalidateAfterOperation}
+              />
+            )}
+
+            {/* Authority Center Declaration */}
            <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
