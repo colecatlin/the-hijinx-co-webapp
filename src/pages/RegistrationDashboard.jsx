@@ -38,6 +38,7 @@ import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
+import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
@@ -1164,7 +1165,8 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'race_control') && (
                 <TabsTrigger
                   value="race_control"
-                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Radio className="w-4 h-4 mr-2" /> Race Control
                 </TabsTrigger>
@@ -1485,9 +1487,11 @@ export default function RegistrationDashboard() {
                 />
               )}
 
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'race_control' && (
-                <RaceControlPanel
+              {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
+                <RaceControlManager
                   selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
