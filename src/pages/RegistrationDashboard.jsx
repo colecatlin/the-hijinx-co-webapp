@@ -38,6 +38,7 @@ import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
+import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1181,6 +1182,15 @@ export default function RegistrationDashboard() {
                   <Zap className="w-4 h-4 mr-2" /> Race Control
                 </TabsTrigger>
               )}
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
+                <TabsTrigger
+                  value="timing_sync"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-purple-800 data-[state=active]:text-purple-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Clock className="w-4 h-4 mr-2" /> Timing Sync
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1473,6 +1483,15 @@ export default function RegistrationDashboard() {
 
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'race_control' && (
                 <RaceControlPanel
+                  selectedEvent={selectedEvent}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'timing_sync' && (
+                <TimingSyncManager
                   selectedEvent={selectedEvent}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
