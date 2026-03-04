@@ -27,7 +27,9 @@ import {
   Shield,
   Loader2,
   Send,
+  AlertTriangle,
 } from 'lucide-react';
+import CollaborationApprovalPanel from '@/components/registrationdashboard/CollaborationApprovalPanel';
 
 const STATUS_OPTIONS = [
   { value: 'upcoming', label: 'Draft', color: 'bg-gray-500' },
