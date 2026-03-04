@@ -467,6 +467,25 @@ export default function CheckInManager({
     );
   }
 
+  if (!entriesLoading && entries.length === 0) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-16 text-center space-y-4">
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto" />
+          <p className="text-gray-300 font-medium">No entries for this event yet</p>
+          <p className="text-gray-500 text-sm">Create entries from existing driver programs to get started.</p>
+          <Button
+            onClick={handleCreateEntriesFromPrograms}
+            disabled={creatingFromPrograms}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {creatingFromPrograms ? 'Creating…' : 'Create Entries From Driver Programs'}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* My Check In card (shown if driver has entry) */}
