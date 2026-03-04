@@ -430,9 +430,26 @@ export default function ClassSessionBuilder({
 
                 <AccordionContent className="px-4 py-4 border-t border-gray-800">
                   {sortedSessions.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-xs text-gray-500 mb-3">No sessions in this class</p>
-                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-gray-700 text-gray-300">
+                    <div className="text-center py-4 space-y-3">
+                      <p className="text-xs text-gray-500">No sessions in this class</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <Button onClick={() => generateSessions('practice', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                          <Zap className="w-3 h-3 mr-1" /> Practice
+                        </Button>
+                        <Button onClick={() => generateSessions('qualifying', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                          <Zap className="w-3 h-3 mr-1" /> Qualifying
+                        </Button>
+                        <Button onClick={() => { setSelectedClassForGen(cg.id); setQuickGenDialog('heats'); }} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                          <Zap className="w-3 h-3 mr-1" /> Heats
+                        </Button>
+                        <Button onClick={() => generateSessions('lcq', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                          <Zap className="w-3 h-3 mr-1" /> LCQ
+                        </Button>
+                        <Button onClick={() => generateSessions('feature', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                          <Zap className="w-3 h-3 mr-1" /> Feature
+                        </Button>
+                      </div>
+                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-gray-700 text-gray-300 w-full">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
