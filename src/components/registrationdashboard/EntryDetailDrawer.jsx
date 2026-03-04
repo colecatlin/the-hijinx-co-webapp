@@ -2,7 +2,7 @@
  * Entry Detail Drawer
  * View and edit entry details, manage status and compliance
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -28,12 +28,25 @@ export default function EntryDetailDrawer({
   open,
   onOpenChange,
   entry,
-  driver,
-  team,
+  drivers = [],
+  teams = [],
+  seriesClasses = [],
   onSave,
   onDelete,
+  saving = false,
 }) {
   const [formData, setFormData] = useState(entry || {});
+
+  // Resolve driver and team from lists or props
+  const driver = useMemo(() => {
+    if (!entry?.driver_id) return null;
+    return drivers.find((d) => d.id === entry.driver_id);
+  }, [entry?.driver_id, drivers]);
+
+  const team = useMemo(() => {
+    if (!entry?.team_id) return null;
+    return teams.find((t) => t.id === entry.team_id);
+  }, [entry?.team_id, teams]);
 
   // Sync form when entry changes
   React.useEffect(() => {
@@ -64,7 +77,7 @@ export default function EntryDetailDrawer({
         }
       });
 
-      await onSave(patch);
+      await onSave(entry.id, patch);
       toast.success('Entry updated');
       onOpenChange(false);
     } catch (err) {
@@ -76,7 +89,7 @@ export default function EntryDetailDrawer({
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this entry?')) return;
     try {
-      await onDelete();
+      await onDelete(entry.id);
       toast.success('Entry deleted');
       onOpenChange(false);
     } catch (err) {
@@ -258,9 +271,10 @@ export default function EntryDetailDrawer({
           <div className="flex gap-2 justify-between">
             <Button
               onClick={handleDelete}
+              disabled={saving}
               variant="destructive"
               size="sm"
-              className="bg-red-900/40 text-red-300 hover:bg-red-900/60 border border-red-700"
+              className="bg-red-900/40 text-red-300 hover:bg-red-900/60 border border-red-700 disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4 mr-1" /> Delete
             </Button>
@@ -275,10 +289,11 @@ export default function EntryDetailDrawer({
               </Button>
               <Button
                 onClick={handleSave}
+                disabled={saving}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
               >
-                <Save className="w-4 h-4 mr-1" /> Save
+                <Save className="w-4 h-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>
