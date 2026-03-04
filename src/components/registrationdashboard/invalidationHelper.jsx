@@ -60,6 +60,8 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'operation_logged':
       broad.push(['operationLogs'], ['rc_results']);
       if (eventId) exact.push(REG_QK.operationLogs(eventId));
+      // Also invalidate timeline queries
+      if (eventId) exact.push(['operationLogs', eventId]);
       break;
 
     case 'red_flag':
@@ -118,6 +120,8 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'payment_collected':
     case 'gate_checkin':
     case 'gate_override_checkin':
+    case 'gate_verify':
+    case 'gate_updated':
     case 'wristband_assigned':
       broad.push(['entries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.driverPrograms(eventId), REG_QK.operationLogs(eventId));
@@ -167,6 +171,8 @@ function getKeysForOperation(operationType, payload = {}) {
       break;
 
     case 'race_control_override':
+    case 'race_control_incident':
+    case 'red_flag':
       broad.push(['sessions'], ['results'], ['standings'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId));
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
