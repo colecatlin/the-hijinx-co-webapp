@@ -34,13 +34,21 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
   const [seriesAccess, setSeriesAccess] = useState({ hasAccess: false, role: null });
   const [accessLoading, setAccessLoading] = useState(false);
 
-  const { data: collabs = [], isLoading } = useQuery({
+  const { data: event = null, isLoading: eventLoading } = useQuery({
+    queryKey: ['event', eventId],
+    queryFn: () => base44.entities.Event.get(eventId),
+    enabled: !!eventId,
+    staleTime: 15000,
+  });
+
+  const { data: collabs = [], isLoading: collabLoading } = useQuery({
     queryKey: ['eventCollaboration', eventId],
     queryFn: () => base44.entities.EventCollaboration.filter({ event_id: eventId }),
     enabled: !!eventId,
     staleTime: 15000,
   });
 
+  const isLoading = eventLoading || collabLoading;
   const collab = collabs[0] || null;
 
   // Resolve entity access whenever collab or user changes
@@ -90,13 +98,23 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
 
     const now = new Date().toISOString();
     const patch = side === 'track'
-      ? { track_status: 'accepted', track_accepted_by_user_id: currentUser?.id, track_accepted_date: now }
-      : { series_status: 'accepted', series_accepted_by_user_id: currentUser?.id, series_accepted_date: now };
+      ? { track_acceptance: 'accepted', track_accepted_by_user_id: currentUser?.id, track_accepted_date: now }
+      : { series_acceptance: 'accepted', series_accepted_by_user_id: currentUser?.id, series_accepted_date: now };
 
     await base44.entities.EventCollaboration.update(collab.id, patch);
+
+    // Call backend to update Event states
+    await base44.functions.invoke('respondEventCollaboration', {
+      eventId,
+      responderType: side,
+      decision: 'accepted',
+      userId: currentUser?.id
+    });
+
     const opType = side === 'track' ? 'event_collaboration_track_accepted' : 'event_collaboration_series_accepted';
     await logOperation(opType, `${side} approved collaboration`);
     queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
+    queryClient.invalidateQueries({ queryKey: ['event', eventId] });
     toast.success(`${side === 'track' ? 'Track' : 'Series'} approval accepted`);
   };
 
@@ -116,13 +134,23 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
     }
 
     const patch = decliningFor === 'track'
-      ? { track_status: 'declined', notes: declineNote }
-      : { series_status: 'declined', notes: declineNote };
+      ? { track_acceptance: 'rejected', notes: declineNote }
+      : { series_acceptance: 'rejected', notes: declineNote };
 
     await base44.entities.EventCollaboration.update(collab.id, patch);
+
+    // Call backend to update Event states
+    await base44.functions.invoke('respondEventCollaboration', {
+      eventId,
+      responderType: decliningFor,
+      decision: 'rejected',
+      userId: currentUser?.id
+    });
+
     const opType = decliningFor === 'track' ? 'event_collaboration_track_declined' : 'event_collaboration_series_declined';
     await logOperation(opType, `${decliningFor} declined: ${declineNote}`);
     queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
+    queryClient.invalidateQueries({ queryKey: ['event', eventId] });
     toast.success(`${decliningFor === 'track' ? 'Track' : 'Series'} approval declined`);
     setDecliningFor(null);
     setDeclineNote('');
@@ -138,8 +166,11 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
     </Card>
   );
 
-  const bothAccepted = collab.track_status === 'accepted' && collab.series_status === 'accepted';
-  const hasDecline = collab.track_status === 'declined' || collab.series_status === 'declined';
+  const trackState = event?.track_publish_state || collab?.track_acceptance || 'pending';
+  const seriesState = event?.series_publish_state || collab?.series_acceptance || 'pending';
+  const bothAccepted = trackState === 'accepted' && seriesState === 'accepted';
+  const publishReady = event?.publish_ready || false;
+  const hasDecline = trackState === 'rejected' || seriesState === 'rejected';
 
   return (
     <Card className="bg-[#171717] border-gray-800">
@@ -148,9 +179,14 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
           <Users className="w-4 h-4" />
           Collaboration Approval
         </CardTitle>
-        {bothAccepted && (
+        {publishReady && (
           <p className="text-green-400 text-xs mt-1 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Both sides approved — event can be published
+            <CheckCircle2 className="w-3 h-3" /> Published — both sides approved and published
+          </p>
+        )}
+        {bothAccepted && !publishReady && (
+          <p className="text-blue-400 text-xs mt-1 flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Accepted by both — ready to publish
           </p>
         )}
         {hasDecline && !bothAccepted && (
@@ -170,17 +206,17 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
         <div className="p-3 bg-[#262626] rounded-lg space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <StatusIcon status={collab.track_status} />
+              <StatusIcon status={trackState} />
               <div>
                 <p className="text-white text-sm font-medium">Track Approval</p>
-                {collab.track_accepted_date && (
+                {collab?.track_accepted_date && (
                   <p className="text-gray-500 text-xs">{format(new Date(collab.track_accepted_date), 'MMM d, yyyy')}</p>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <StatusBadge status={collab.track_status} />
-              {canTrack && collab.track_status === 'pending' && (
+              <StatusBadge status={trackState} />
+              {canTrack && trackState === 'pending' && (
                 <>
                   <Button size="sm" onClick={() => handleAccept('track')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
                   <Button size="sm" onClick={() => setDecliningFor('track')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
@@ -188,7 +224,7 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
               )}
             </div>
           </div>
-          {!canTrack && collab.track_status === 'pending' && (
+          {!canTrack && trackState === 'pending' && (
             <p className="text-gray-500 text-xs flex items-center gap-1 pl-7">
               <Lock className="w-3 h-3" /> You do not have permission to approve for this Track
             </p>
@@ -196,21 +232,21 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
         </div>
 
         {/* Series Approval */}
-        {collab.series_id ? (
+        {event?.series_id || collab?.series_id ? (
           <div className="p-3 bg-[#262626] rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <StatusIcon status={collab.series_status} />
+                <StatusIcon status={seriesState} />
                 <div>
                   <p className="text-white text-sm font-medium">Series Approval</p>
-                  {collab.series_accepted_date && (
+                  {collab?.series_accepted_date && (
                     <p className="text-gray-500 text-xs">{format(new Date(collab.series_accepted_date), 'MMM d, yyyy')}</p>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <StatusBadge status={collab.series_status} />
-                {canSeries && collab.series_status === 'pending' && (
+                <StatusBadge status={seriesState} />
+                {canSeries && seriesState === 'pending' && (
                   <>
                     <Button size="sm" onClick={() => handleAccept('series')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
                     <Button size="sm" onClick={() => setDecliningFor('series')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
@@ -218,7 +254,7 @@ export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUs
                 )}
               </div>
             </div>
-            {!canSeries && collab.series_status === 'pending' && (
+            {!canSeries && seriesState === 'pending' && (
               <p className="text-gray-500 text-xs flex items-center gap-1 pl-7">
                 <Lock className="w-3 h-3" /> You do not have permission to approve for this Series
               </p>
