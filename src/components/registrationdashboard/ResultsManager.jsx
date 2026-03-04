@@ -384,14 +384,6 @@ export default function ResultsManager({
   };
 
   const handleSaveDraft = async (rows) => {
-    // Validate all car numbers exist in entries
-    const carNumberSet = new Set(entries.map(e => e.car_number));
-    const invalidRows = rows.filter(r => !r.car_number || !carNumberSet.has(r.car_number));
-    if (invalidRows.length > 0) {
-      toast.error(`${invalidRows.length} row(s) have invalid car numbers not found in entries`);
-      return;
-    }
-    
     await upsertResult(rows);
     
     // Log operation
