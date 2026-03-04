@@ -641,6 +641,19 @@ export default function ResultsManager({
               </div>
             )}
 
+            {unmatchedResults.length > 0 && (
+              <div className="bg-orange-950/30 border border-orange-800/50 rounded-lg p-3">
+                <p className="text-xs font-semibold text-orange-300 mb-2">Unmatched Results ({unmatchedResults.length})</p>
+                <div className="space-y-1 text-xs text-orange-300">
+                  {unmatchedResults.slice(0, 3).map((r, i) => {
+                    const driver = drivers.find(d => d.id === r.driver_id);
+                    return <p key={i}>• {driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown'} (no Entry)</p>;
+                  })}
+                  {unmatchedResults.length > 3 && <p>• +{unmatchedResults.length - 3} more</p>}
+                </div>
+              </div>
+            )}
+
             {/* Actions card */}
             {(can('results_save_draft') || can('results_mark_provisional') || can('results_publish_official') || can('results_lock_session') || can('results_unlock_session')) && (
               <Card className="bg-[#171717] border-gray-800">
