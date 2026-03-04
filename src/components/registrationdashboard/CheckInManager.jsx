@@ -714,10 +714,10 @@ export default function CheckInManager({
                 className={`w-full border-gray-700 ${
                   formData.waiver_verified
                     ? 'bg-green-900/20 text-green-300 border-green-700'
-                    : 'text-gray-300 hover:bg-gray-800'
+                    : 'text-yellow-300 border-yellow-800/50 hover:bg-yellow-900/20'
                 }`}
               >
-                {formData.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                {formData.waiver_verified ? 'Waiver Verified ✓' : '⚠ Verify Waiver'}
               </Button>
 
               <Button
