@@ -153,6 +153,7 @@ function getKeysForOperation(operationType, payload = {}) {
        broad.push(['pointsConfig'], ['standings'], ['operationLogs']);
        if (seriesId) exact.push(['pointsConfig', seriesId]);
        if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+       if (seriesId) exact.push(REG_QK.standings(seriesId, seasonYear || 'any'));
        break;
 
     case 'import_completed':
