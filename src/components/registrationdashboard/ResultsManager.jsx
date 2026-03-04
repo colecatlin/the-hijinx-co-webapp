@@ -22,6 +22,8 @@ import ResultsManualTable from './ResultsManualTable';
 import ResultsCsvImportDialog from './ResultsCsvImportDialog';
 import ResultsApiSyncPanel from './ResultsApiSyncPanel';
 import ResultsVersionHistory from './ResultsVersionHistory';
+import { buildRoster, getRosterStats } from './rosterHelper';
+import { validateResults } from './resultsValidation';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -368,20 +370,39 @@ export default function ResultsManager({
     onError: () => toast.error('Failed to update session status'),
   });
 
+  // ── Roster building ──
+  const selectedClassId = classFilter !== 'all' ? classFilter : null;
+  const roster = useMemo(() => {
+    return buildRoster({
+      entries,
+      drivers,
+      seriesClasses,
+      selectedClassId,
+    });
+  }, [entries, drivers, seriesClasses, selectedClassId]);
+
+  const rosterStats = useMemo(() => getRosterStats(roster.rosterEntries), [roster.rosterEntries]);
+
   // ── Validation for Official ──
   const validateForOfficial = () => {
     const errs = [];
     if (!sessionResults.length) errs.push('No results entered');
     if (sessionResults.some((r) => !r.driver_id)) errs.push('All rows must have a driver');
-    const positions = sessionResults.filter((r) => r.status === 'Running').map((r) => r.position);
-    if (new Set(positions).size !== positions.length) errs.push('Duplicate positions found');
-    if (new Set(sessionResults.map((r) => r.driver_id)).size !== sessionResults.length)
-      errs.push('Duplicate driver in session');
+    
+    // Use validation engine
+    const { errors: validationErrs } = validateResults({
+      rows: sessionResults,
+      rosterByCarNumber: roster.rosterByCarNumber,
+      rosterByDriverId: roster.rosterByDriverId,
+    });
+
+    validationErrs.forEach((err) => {
+      errs.push(err.message);
+    });
 
     // Check tech requirements
     const techFailures = [];
     classEntries.forEach((entry) => {
-      // Find template for this entry's class
       const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
       if (template?.required_for_publish && entry.tech_status !== 'Passed') {
         techFailures.push(entry.id);
@@ -556,6 +577,19 @@ export default function ResultsManager({
                   <p>Results: <span className="text-gray-300">{sessionResults.length} rows</span></p>
                   <p>Updated: <span className="text-gray-300">{selectedSession.updated_date ? new Date(selectedSession.updated_date).toLocaleString() : 'Recently'}</span></p>
                 </div>
+
+                {/* Roster stats */}
+                {rosterStats.total > 0 && (
+                  <div className="border-t border-gray-700 pt-2 mt-2">
+                    <p className="text-xs text-gray-400 mb-1">Roster</p>
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge className="text-xs bg-gray-700 text-gray-300">Total: {rosterStats.total}</Badge>
+                      <Badge className="text-xs bg-green-900/40 text-green-300">Paid: {rosterStats.paid}</Badge>
+                      <Badge className="text-xs bg-blue-900/40 text-blue-300">Checked In: {rosterStats.checkedIn}</Badge>
+                      <Badge className="text-xs bg-purple-900/40 text-purple-300">Tech: {rosterStats.techPassed}</Badge>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -603,7 +637,7 @@ export default function ResultsManager({
                        </Button>
                       )}
                       {selectedSession.status === 'Official' && can('results_lock_session') && (
-                       <Button size="sm" onClick={() => handleStatusTransition('Locked')} disabled={updateSessionStatus.isPending} className="w-full bg-purple-800 hover:bg-purple-700 text-xs">
+                       <Button size="sm" onClick={() => handleStatusTransition('Locked')} disabled={updateSessionStatus.isPending || validationErrors.length > 0} className="w-full bg-purple-800 hover:bg-purple-700 text-xs disabled:opacity-50">
                          <Lock className="w-3 h-3 mr-1" /> Lock Session
                        </Button>
                       )}
