@@ -26,8 +26,13 @@ import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 
-const EMPTY_CLASS_FORM = { name: '', series_class_id: '', max_entries: '', status: 'Open', class_order: '', notes: '' };
-const EMPTY_SESSION_FORM = { event_class_id: '', session_type: 'Practice', name: '', session_number: '', scheduled_time: '', laps: '', input_source: 'Manual', status: 'Draft', advancement_rules: '' };
+const EMPTY_CLASS_FORM = {
+  class_name: '', series_class_id: '', max_entries: '', class_status: 'Open', class_order: '', notes: '',
+};
+const EMPTY_SESSION_FORM = {
+  event_class_id: '', session_type: 'Practice', name: '', session_number: '',
+  scheduled_time: '', laps: '', input_source: 'Manual', status: 'Draft', advancement_rules: '',
+};
 
 export default function ClassSessionBuilder({
   eventId,
@@ -39,17 +44,17 @@ export default function ClassSessionBuilder({
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
-  // ── Class dialog state ─────────────────────────────────────────────────────
+  // ── Class dialog ──────────────────────────────────────────────────────────
   const [classDialog, setClassDialog] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [classForm, setClassForm] = useState(EMPTY_CLASS_FORM);
-  const [deleteClassConfirm, setDeleteClassConfirm] = useState(null); // EventClass id
+  const [deleteClassConfirm, setDeleteClassConfirm] = useState(null);
 
-  // ── Session dialog state ───────────────────────────────────────────────────
+  // ── Session dialog ────────────────────────────────────────────────────────
   const [sessionDialog, setSessionDialog] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
   const [sessionForm, setSessionForm] = useState(EMPTY_SESSION_FORM);
-  const [lockConfirm, setLockConfirm] = useState(null); // session id
+  const [lockConfirm, setLockConfirm] = useState(null);
 
   const sharedOpts = {
     invalidateAfterOperation,
@@ -57,16 +62,16 @@ export default function ClassSessionBuilder({
     selectedEvent: selectedEvent ?? null,
   };
 
-  // ── Queries ────────────────────────────────────────────────────────────────
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions', eventId],
-    queryFn: () => base44.entities.Session.filter({ event_id: eventId }, 'session_order', 500),
-    enabled: !!eventId,
-  });
-
+  // ── Queries ───────────────────────────────────────────────────────────────
   const { data: eventClasses = [] } = useQuery({
     queryKey: ['eventClasses', eventId],
     queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }, 'class_order', 100),
+    enabled: !!eventId,
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions', eventId],
+    queryFn: () => base44.entities.Session.filter({ event_id: eventId }, 'session_order', 500),
     enabled: !!eventId,
   });
 
@@ -76,7 +81,6 @@ export default function ClassSessionBuilder({
     enabled: !!seriesId,
   });
 
-  // Entries count per class for delete guard
   const { data: entries = [] } = useQuery({
     queryKey: ['entries', eventId],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
@@ -89,31 +93,26 @@ export default function ClassSessionBuilder({
     mutationFn: (data) => base44.entities.EventClass.create(data),
     successMessage: 'Class created', ...sharedOpts,
   });
-
   const { mutateAsync: updateEventClass, isPending: updatingClass } = useDashboardMutation({
     operationType: 'event_class_updated', entityName: 'EventClass',
     mutationFn: ({ id, data }) => base44.entities.EventClass.update(id, data),
     successMessage: 'Class updated', ...sharedOpts,
   });
-
   const { mutateAsync: deleteEventClass } = useDashboardMutation({
     operationType: 'event_class_deleted', entityName: 'EventClass',
     mutationFn: (id) => base44.entities.EventClass.delete(id),
     successMessage: 'Class deleted', ...sharedOpts,
   });
-
   const { mutateAsync: createSession, isPending: creatingSession } = useDashboardMutation({
     operationType: 'session_created', entityName: 'Session',
     mutationFn: (data) => base44.entities.Session.create(data),
     successMessage: 'Session created', ...sharedOpts,
   });
-
   const { mutateAsync: updateSession } = useDashboardMutation({
     operationType: 'session_updated', entityName: 'Session',
     mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
     successMessage: 'Session updated', ...sharedOpts,
   });
-
   const { mutateAsync: deleteSession } = useDashboardMutation({
     operationType: 'session_deleted', entityName: 'Session',
     mutationFn: (id) => base44.entities.Session.delete(id),
@@ -131,9 +130,7 @@ export default function ClassSessionBuilder({
 
   const classGroups = useMemo(() => {
     const groups = {};
-    eventClasses.forEach((ec) => {
-      groups[ec.id] = { ...ec, sessions: [] };
-    });
+    eventClasses.forEach((ec) => { groups[ec.id] = { ...ec, sessions: [] }; });
     sessions.forEach((s) => {
       if (s.event_class_id && groups[s.event_class_id]) {
         groups[s.event_class_id].sessions.push(s);
@@ -145,31 +142,32 @@ export default function ClassSessionBuilder({
   // ── Class handlers ────────────────────────────────────────────────────────
   const openAddClass = () => {
     setEditingClass(null);
-    setClassForm({ ...EMPTY_CLASS_FORM, class_order: (Math.max(0, ...eventClasses.map((ec) => ec.class_order || 0)) + 1).toString() });
+    const nextOrder = eventClasses.length ? Math.max(...eventClasses.map((ec) => ec.class_order || 0)) + 1 : 1;
+    setClassForm({ ...EMPTY_CLASS_FORM, class_order: String(nextOrder) });
     setClassDialog(true);
   };
 
   const openEditClass = (ec) => {
     setEditingClass(ec);
     setClassForm({
-      name: ec.name || '',
+      class_name: ec.class_name || '',
       series_class_id: ec.series_class_id || '',
       max_entries: ec.max_entries != null ? String(ec.max_entries) : '',
-      status: ec.status || 'Open',
-      class_order: ec.class_order != null ? String(ec.class_order) : '',
+      class_status: ec.class_status || 'Open',
+      class_order: ec.class_order != null ? String(ec.class_order) : '0',
       notes: ec.notes || '',
     });
     setClassDialog(true);
   };
 
   const handleSaveClass = async () => {
-    if (!classForm.name.trim()) { toast.error('Class name required'); return; }
+    if (!classForm.class_name.trim()) { toast.error('Class name required'); return; }
     const payload = {
       event_id: eventId,
-      name: classForm.name.trim(),
+      class_name: classForm.class_name.trim(),
       series_class_id: classForm.series_class_id || undefined,
       max_entries: classForm.max_entries ? Number(classForm.max_entries) : undefined,
-      status: classForm.status,
+      class_status: classForm.class_status,
       class_order: classForm.class_order !== '' ? Number(classForm.class_order) : 0,
       notes: classForm.notes || undefined,
     };
@@ -182,9 +180,9 @@ export default function ClassSessionBuilder({
   };
 
   const handleDeleteClass = async (id) => {
-    const entryCount = entriesByClass[id] || 0;
-    if (entryCount > 0) {
-      toast.error(`Cannot delete — ${entryCount} entr${entryCount === 1 ? 'y' : 'ies'} assigned to this class`);
+    const count = entriesByClass[id] || 0;
+    if (count > 0) {
+      toast.error(`Cannot delete — ${count} entr${count === 1 ? 'y' : 'ies'} assigned to this class`);
       setDeleteClassConfirm(null);
       return;
     }
@@ -195,7 +193,11 @@ export default function ClassSessionBuilder({
   // ── Session handlers ──────────────────────────────────────────────────────
   const openAddSession = (classGroup) => {
     setEditingSession(null);
-    setSessionForm({ ...EMPTY_SESSION_FORM, event_class_id: classGroup.id, session_order: classGroup.sessions.length });
+    setSessionForm({
+      ...EMPTY_SESSION_FORM,
+      event_class_id: classGroup.id,
+      session_order: String(classGroup.sessions.length),
+    });
     setSessionDialog(true);
   };
 
@@ -231,7 +233,7 @@ export default function ClassSessionBuilder({
       advancement_rules: sessionForm.advancement_rules || undefined,
       session_order: editingSession
         ? editingSession.session_order
-        : Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
+        : (sessions.length ? Math.max(...sessions.map((s) => s.session_order || 0)) + 1 : 0),
     };
     if (editingSession) {
       await updateSession({ id: editingSession.id, data: payload });
@@ -242,6 +244,7 @@ export default function ClassSessionBuilder({
   };
 
   const handleDuplicate = (session) => {
+    const maxOrder = sessions.length ? Math.max(...sessions.map((s) => s.session_order || 0)) + 1 : 0;
     createSession({
       event_id: eventId,
       event_class_id: session.event_class_id,
@@ -251,16 +254,16 @@ export default function ClassSessionBuilder({
       laps: session.laps,
       input_source: 'Manual',
       status: 'Draft',
-      session_order: Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
+      session_order: maxOrder,
     });
   };
 
   const handleMove = (session, direction, classGroup) => {
-    const classSessions = classGroup.sessions.slice().sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
-    const idx = classSessions.findIndex((s) => s.id === session.id);
+    const sorted = [...classGroup.sessions].sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+    const idx = sorted.findIndex((s) => s.id === session.id);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= classSessions.length) return;
-    const swap = classSessions[swapIdx];
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    const swap = sorted[swapIdx];
     Promise.all([
       updateSession({ id: session.id, data: { session_order: swap.session_order || 0 } }),
       updateSession({ id: swap.id, data: { session_order: session.session_order || 0 } }),
@@ -276,12 +279,10 @@ export default function ClassSessionBuilder({
   const isLocked = (s) => s.status === 'Locked' || s.locked;
 
   const statusBadge = (s) => {
-    switch (s) {
-      case 'Open': return 'bg-green-500/20 text-green-400';
-      case 'Full': return 'bg-yellow-500/20 text-yellow-400';
-      case 'Closed': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
+    if (s === 'Open') return 'bg-green-500/20 text-green-400';
+    if (s === 'Full') return 'bg-yellow-500/20 text-yellow-400';
+    if (s === 'Closed') return 'bg-red-500/20 text-red-400';
+    return 'bg-gray-500/20 text-gray-400';
   };
 
   if (!eventId) {
@@ -311,7 +312,7 @@ export default function ClassSessionBuilder({
       {classGroups.length === 0 && (
         <Card className="bg-[#171717] border-gray-800">
           <CardContent className="py-10 text-center space-y-3">
-            <p className="text-gray-400 text-sm">No classes yet for this event</p>
+            <p className="text-gray-400 text-sm">No classes defined for this event yet</p>
             <Button onClick={openAddClass} disabled={creatingClass} variant="outline" size="sm" className="border-gray-700 text-gray-300">
               <Plus className="w-3 h-3 mr-1" /> Add First Class
             </Button>
@@ -334,8 +335,8 @@ export default function ClassSessionBuilder({
                   <div className="flex items-center gap-3 flex-1 text-left">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-white">{cg.name}</h3>
-                        <Badge className={`text-xs ${statusBadge(cg.status)}`}>{cg.status}</Badge>
+                        <h3 className="font-semibold text-white">{cg.class_name}</h3>
+                        <Badge className={`text-xs ${statusBadge(cg.class_status)}`}>{cg.class_status || 'Open'}</Badge>
                         {hasLocked && <Badge className="text-xs bg-yellow-900/40 text-yellow-300"><Lock className="w-3 h-3 mr-1 inline" />Locked</Badge>}
                         {isFull && <Badge className="text-xs bg-orange-900/40 text-orange-300">Full</Badge>}
                       </div>
@@ -404,7 +405,6 @@ export default function ClassSessionBuilder({
                           </div>
                         </div>
                       ))}
-
                       <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-gray-700 text-gray-300 mt-2">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
@@ -417,7 +417,7 @@ export default function ClassSessionBuilder({
         </Accordion>
       )}
 
-      {/* ── Add/Edit Class Dialog ───────────────────────────────────────────── */}
+      {/* ── Add/Edit Class Dialog ─────────────────────────────────────────── */}
       <Dialog open={classDialog} onOpenChange={setClassDialog}>
         <DialogContent className="bg-[#262626] border-gray-700 max-w-lg">
           <DialogHeader>
@@ -426,7 +426,7 @@ export default function ClassSessionBuilder({
           <div className="space-y-4">
             <div>
               <label className="text-xs text-gray-400 block mb-1">Class Name *</label>
-              <Input value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Pro Stock" />
+              <Input value={classForm.class_name} onChange={(e) => setClassForm({ ...classForm, class_name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Pro Stock" />
             </div>
             {seriesClasses.length > 0 && (
               <div>
@@ -446,13 +446,13 @@ export default function ClassSessionBuilder({
                 <Input type="number" value={classForm.max_entries} onChange={(e) => setClassForm({ ...classForm, max_entries: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Order</label>
+                <label className="text-xs text-gray-400 block mb-1">Display Order</label>
                 <Input type="number" value={classForm.class_order} onChange={(e) => setClassForm({ ...classForm, class_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="0" />
               </div>
             </div>
             <div>
               <label className="text-xs text-gray-400 block mb-1">Status</label>
-              <Select value={classForm.status} onValueChange={(v) => setClassForm({ ...classForm, status: v })}>
+              <Select value={classForm.class_status} onValueChange={(v) => setClassForm({ ...classForm, class_status: v })}>
                 <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="Open">Open</SelectItem>
@@ -475,20 +475,20 @@ export default function ClassSessionBuilder({
         </DialogContent>
       </Dialog>
 
-      {/* ── Add/Edit Session Dialog ─────────────────────────────────────────── */}
+      {/* ── Add/Edit Session Dialog ────────────────────────────────────────── */}
       <Dialog open={sessionDialog} onOpenChange={setSessionDialog}>
         <DialogContent className="bg-[#262626] border-gray-700 max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-white">{editingSession ? 'Edit Session' : 'Add Session'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
                 <Select value={sessionForm.event_class_id || ''} onValueChange={(v) => setSessionForm({ ...sessionForm, event_class_id: v })}>
                   <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
-                    {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
+                    {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.class_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -555,14 +555,14 @@ export default function ClassSessionBuilder({
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete Class Confirm ────────────────────────────────────────────── */}
+      {/* ── Delete Class Confirm ──────────────────────────────────────────── */}
       <AlertDialog open={!!deleteClassConfirm} onOpenChange={(o) => !o && setDeleteClassConfirm(null)}>
         <AlertDialogContent className="bg-[#262626] border-gray-700">
           <AlertDialogTitle className="text-white">Delete Class</AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
             {(entriesByClass[deleteClassConfirm] || 0) > 0
-              ? `This class has ${entriesByClass[deleteClassConfirm]} entries. Remove them first before deleting.`
-              : 'This will permanently delete the class and its sessions. Cannot be undone.'}
+              ? `This class has ${entriesByClass[deleteClassConfirm]} entr${entriesByClass[deleteClassConfirm] === 1 ? 'y' : 'ies'}. Remove them first.`
+              : 'This will permanently delete this class and all its sessions.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
             <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
@@ -573,7 +573,7 @@ export default function ClassSessionBuilder({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Lock Confirm ───────────────────────────────────────────────────── */}
+      {/* ── Lock Confirm ─────────────────────────────────────────────────── */}
       <AlertDialog open={!!lockConfirm} onOpenChange={(o) => !o && setLockConfirm(null)}>
         <AlertDialogContent className="bg-[#262626] border-gray-700">
           <AlertDialogTitle className="text-white">
@@ -581,7 +581,7 @@ export default function ClassSessionBuilder({
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
             {sessions.find((s) => s.id === lockConfirm)?.status === 'Locked'
-              ? 'Unlock this session to allow editing again.'
+              ? 'Unlock to allow editing again.'
               : 'Locking prevents all edits to this session.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
