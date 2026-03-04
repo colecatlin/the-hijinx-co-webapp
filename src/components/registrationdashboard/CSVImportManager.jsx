@@ -233,12 +233,29 @@ export default function CSVImportManager({
 
   // ── Import runners ────────────────────────────────────────────────────────
 
+  // Shared resolver context
+  const resolverContext = useMemo(() => ({
+    eventId,
+    seriesId: selectedSeries?.id,
+    drivers: drivers,
+    results: [],
+  }), [eventId, selectedSeries?.id, drivers]);
+
   async function runEntriesImport(rows) {
     let created = 0, skipped = 0;
+    const unresolved = [];
     for (const row of rows) {
-      const driverKey = `${(row.driver_first_name || '').toLowerCase().trim()} ${(row.driver_last_name || '').toLowerCase().trim()}`;
-      const driver = driverMap[driverKey];
-      if (!driver) { skipped++; continue; }
+      const driverId = await resolveDriverId({
+        firstName: row.driver_first_name || '',
+        lastName: row.driver_last_name || '',
+        carNumber: row.car_number,
+        ...resolverContext,
+      });
+      if (!driverId) {
+        skipped++;
+        unresolved.push({ firstName: row.driver_first_name, lastName: row.driver_last_name, carNumber: row.car_number });
+        continue;
+      }
 
       const eventClass = row.class_name ? eventClassMap[(row.class_name || '').toLowerCase().trim()] : null;
       if (!eventClass) { skipped++; continue; }
@@ -247,7 +264,7 @@ export default function CSVImportManager({
 
       await base44.entities.Entry.create({
         event_id: eventId,
-        driver_id: driver.id,
+        driver_id: driverId,
         event_class_id: eventClass.id,
         team_id: team?.id || null,
         car_number: row.car_number || '',
@@ -256,23 +273,32 @@ export default function CSVImportManager({
       });
       created++;
     }
-    return { created, skipped };
+    return { created, skipped, unresolved };
   }
 
   async function runResultsImport(rows) {
     let created = 0, skipped = 0;
+    const unresolved = [];
     for (const row of rows) {
       const session = row.session_name ? sessionMap[(row.session_name || '').toLowerCase().trim()] : null;
       if (!session) { skipped++; continue; }
 
-      const driverKey = `${(row.driver_first_name || '').toLowerCase().trim()} ${(row.driver_last_name || '').toLowerCase().trim()}`;
-      const driver = driverMap[driverKey];
-      if (!driver) { skipped++; continue; }
+      const driverId = await resolveDriverId({
+        firstName: row.driver_first_name || '',
+        lastName: row.driver_last_name || '',
+        carNumber: row.car_number,
+        ...resolverContext,
+      });
+      if (!driverId) {
+        skipped++;
+        unresolved.push({ firstName: row.driver_first_name, lastName: row.driver_last_name, carNumber: row.car_number });
+        continue;
+      }
 
       await base44.entities.Results.create({
         event_id: eventId,
         session_id: session.id,
-        driver_id: driver.id,
+        driver_id: driverId,
         car_number: row.car_number || '',
         position: row.position ? parseInt(row.position) : null,
         status: row.status || '',
@@ -281,21 +307,30 @@ export default function CSVImportManager({
       });
       created++;
     }
-    return { created, skipped };
+    return { created, skipped, unresolved };
   }
 
   async function runStandingsImport(rows) {
     let created = 0, skipped = 0;
+    const unresolved = [];
     const season = dashboardContext?.season || new Date().getFullYear().toString();
     for (const row of rows) {
-      const driverKey = `${(row.driver_first_name || '').toLowerCase().trim()} ${(row.driver_last_name || '').toLowerCase().trim()}`;
-      const driver = driverMap[driverKey];
-      if (!driver) { skipped++; continue; }
+      const driverId = await resolveDriverId({
+        firstName: row.driver_first_name || '',
+        lastName: row.driver_last_name || '',
+        carNumber: row.car_number,
+        ...resolverContext,
+      });
+      if (!driverId) {
+        skipped++;
+        unresolved.push({ firstName: row.driver_first_name, lastName: row.driver_last_name, carNumber: row.car_number });
+        continue;
+      }
 
       const seriesClass = row.class_name ? seriesClassMap[(row.class_name || '').toLowerCase().trim()] : null;
 
       await base44.entities.Standings.create({
-        driver_id: driver.id,
+        driver_id: driverId,
         series_class_id: seriesClass?.id || null,
         season: season,
         rank: row.rank ? parseInt(row.rank) : null,
@@ -306,7 +341,7 @@ export default function CSVImportManager({
       });
       created++;
     }
-    return { created, skipped };
+    return { created, skipped, unresolved };
   }
 
   async function handleImport() {
