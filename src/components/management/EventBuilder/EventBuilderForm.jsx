@@ -212,9 +212,12 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   const createMutation = useMutation({
     mutationFn: data => base44.entities.Event.create(data),
     onSuccess: async (newEvent) => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      // Create EventCollaboration after event creation
+      // Auto-setup EntityCollaborator links (owner + track/series owners)
+      await setupEventCollaborators(newEvent, currentUser?.id);
+      // Create EventCollaboration record
       await createCollaboration(newEvent.id, newEvent.track_id, newEvent.series_id);
+      invalidateAfterOperation('event_created', { eventId: newEvent.id });
+      invalidateAfterOperation('event_collaboration_updated', { eventId: newEvent.id });
       toast.success('Event created successfully');
       if (onEventCreated) {
         onEventCreated(newEvent.id);
