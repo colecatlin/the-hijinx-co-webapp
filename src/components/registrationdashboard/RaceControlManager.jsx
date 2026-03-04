@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { REG_QK } from './queryKeys';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
-import { calculateStandingsForSession } from './standings/calculateStandings';
+import { recomputeStandingsForFinalSession } from './standings/calculateStandings';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -202,25 +202,28 @@ export default function RaceControlManager({
       },
     });
 
-    // Auto-calculate standings when a Final session becomes Official
+    // Recompute standings when a Final session becomes Official
     const wasNotOfficial = ['Draft', 'Provisional', undefined, null, ''].includes(prevStatus);
     if (newStatus === 'Official' && session.session_type === 'Final' && wasNotOfficial) {
       const sessionResults = await base44.entities.Results.filter({
         event_id: eventId,
         session_id: session.id,
       }).catch(() => []);
-      calculateStandingsForSession({
+      recomputeStandingsForFinalSession({
         session,
         event: selectedEvent,
         resultsList: sessionResults,
         base44,
-        onComplete: ({ driversUpdated }) => {
-          inv('standings_recalculated', {
+        onComplete: ({ driversUpdated, reverted }) => {
+          inv('standings_updated', {
             eventId,
             seriesId: selectedEvent?.series_id,
             seasonYear: selectedEvent?.season,
           });
-          toast.success(`Standings updated for ${driversUpdated} drivers`);
+          const msg = reverted
+            ? `Standings recomputed for ${driversUpdated} drivers (reverted prior, reapplied)`
+            : `Standings applied for ${driversUpdated} drivers`;
+          toast.success(msg);
         },
       });
     }
