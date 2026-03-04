@@ -12,7 +12,7 @@ import SystemAlertsFeed from './SystemAlertsFeed';
 import RaceDayReadinessCard from './RaceDayReadinessCard';
 import EventTimeline from './EventTimeline';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useState } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -24,8 +24,12 @@ import {
   publishAllResultsOfficial,
   publishStandings,
 } from './publishActions';
+import EventStatusDashboard from './EventStatusDashboard';
 
 const DQ = applyDefaultQueryOptions();
+
+// Import useState since it was missing
+import { useState } from 'react';
 
 export default function OverviewGrid({
   dashboardContext,
@@ -166,6 +170,17 @@ export default function OverviewGrid({
 
   return (
     <div className="space-y-6">
+      {/* Event Status Dashboard */}
+      <EventStatusDashboard
+        selectedEvent={selectedEvent}
+        selectedTrack={selectedTrack}
+        selectedSeries={selectedSeries}
+        dashboardContext={dashboardContext}
+        dashboardPermissions={dashboardPermissions}
+        invalidateAfterOperation={invalidateAfterOperation}
+        onTabChange={() => {}} // Handled by parent
+      />
+
       {/* Publish Controls */}
       {canPublish ? (
         <Card className="bg-[#171717] border-gray-800">
