@@ -34,9 +34,19 @@ export default function ManagePointsConfig() {
     queryFn: () => base44.entities.PointsConfig.list()
   });
 
+  const { data: rulesets = [] } = useQuery({
+    queryKey: ['pointsRuleSets'],
+    queryFn: () => base44.entities.PointsRuleSet.list().catch(() => [])
+  });
+
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list()
+  });
+
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list().catch(() => [])
   });
 
   const { data: seriesClasses = [] } = useQuery({
@@ -75,6 +85,32 @@ export default function ManagePointsConfig() {
     }
   });
 
+  const createRulesetMutation = useMutation({
+    mutationFn: (data) => base44.entities.PointsRuleSet.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pointsRuleSets'] });
+      setOpenDialog(false);
+      setEditingId(null);
+    }
+  });
+
+  const updateRulesetMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.PointsRuleSet.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pointsRuleSets'] });
+      setOpenDialog(false);
+      setEditingId(null);
+    }
+  });
+
+  const deleteRulesetMutation = useMutation({
+    mutationFn: (id) => base44.entities.PointsRuleSet.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pointsRuleSets'] });
+      setDeleteWarning(null);
+    }
+  });
+
   const filteredConfigs = useMemo(() => {
     return configs.filter(c => {
       if (filters.series_id && c.series_id !== filters.series_id) return false;
@@ -98,6 +134,63 @@ export default function ManagePointsConfig() {
         <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4 mr-2" /> New Ruleset
         </Button>
+      </div>
+
+      {/* Points RuleSets Section */}
+      <div>
+        <h2 className="text-xl font-bold text-white mb-4">Points Rule Sets</h2>
+        
+        {/* Rulesets Table */}
+        <Card className="bg-gray-900 border-gray-700 mb-6">
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700">
+                    <TableHead className="text-gray-400">Name</TableHead>
+                    <TableHead className="text-gray-400">Series / Track</TableHead>
+                    <TableHead className="text-gray-400">Class</TableHead>
+                    <TableHead className="text-gray-400">Season</TableHead>
+                    <TableHead className="text-gray-400">Session Types</TableHead>
+                    <TableHead className="text-gray-400">Priority</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rulesets.map((rs) => (
+                    <TableRow key={rs.id} className="border-gray-700 hover:bg-gray-800">
+                      <TableCell className="text-white font-medium">{rs.name}</TableCell>
+                      <TableCell className="text-gray-400">
+                        {rs.series_id ? series.find(s => s.id === rs.series_id)?.name : tracks.find(t => t.id === rs.track_id)?.name || '—'}
+                      </TableCell>
+                      <TableCell className="text-gray-400">{rs.series_class_id ? seriesClasses.find(c => c.id === rs.series_class_id)?.class_name : '—'}</TableCell>
+                      <TableCell className="text-gray-400">{rs.season || '—'}</TableCell>
+                      <TableCell className="text-gray-400 text-xs">{(rs.applies_to_session_types || []).join(', ') || '—'}</TableCell>
+                      <TableCell className="text-gray-400">{rs.priority || 0}</TableCell>
+                      <TableCell>
+                        <Badge className={rs.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                          {rs.status || 'draft'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="icon" variant="ghost" onClick={() => { setEditingId(rs.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => updateRulesetMutation.mutate({ id: rs.id, data: { status: rs.status === 'active' ? 'draft' : 'active' } })} className={rs.status === 'active' ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}>
+                          <CheckCircle2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(rs)} className="text-red-400 hover:text-red-300">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -183,22 +276,33 @@ export default function ManagePointsConfig() {
       </Card>
 
       {/* Editor Dialog */}
-      <PointsConfigEditor
-        open={openDialog}
-        onOpenChange={setOpenDialog}
-        configId={editingId}
-        series={series}
-        seriesClasses={seriesClasses}
-        events={events}
-        configs={configs}
-        onSave={(data) => {
-          if (editingId) {
-            updateMutation.mutate({ id: editingId, data });
-          } else {
-            createMutation.mutate(data);
-          }
-        }}
-      />
+      {editingId ? (
+        <PointsRuleSetEditor
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          rulesetId={editingId}
+          series={series}
+          tracks={tracks}
+          seriesClasses={seriesClasses}
+          rulesets={rulesets}
+          onSave={(data) => {
+            updateRulesetMutation.mutate({ id: editingId, data });
+          }}
+        />
+      ) : (
+        <PointsRuleSetEditor
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          rulesetId={null}
+          series={series}
+          tracks={tracks}
+          seriesClasses={seriesClasses}
+          rulesets={rulesets}
+          onSave={(data) => {
+            createRulesetMutation.mutate(data);
+          }}
+        />
+      )}
 
       {/* Delete Warning */}
       {deleteWarning && (
@@ -211,7 +315,13 @@ export default function ManagePointsConfig() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteMutation.mutate(deleteWarning.id)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={() => {
+              if (deleteWarning.points_table_json !== undefined) {
+                deleteRulesetMutation.mutate(deleteWarning.id);
+              } else {
+                deleteMutation.mutate(deleteWarning.id);
+              }
+            }} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
           </AlertDialogContent>
         </AlertDialog>
       )}
