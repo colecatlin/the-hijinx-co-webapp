@@ -61,6 +61,7 @@ function generateSlug(name) {
 
 export default function EventBuilderForm({ selectedEventId, onEventCreated, isAdmin, isLiveMode, onArchiveAttempt, canEditEventCore = true, canApproveAsTrack = false, canApproveAsSeries = false }) {
   const queryClient = useQueryClient();
+  const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
