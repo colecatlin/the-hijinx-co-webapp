@@ -191,10 +191,20 @@ export default function ResultsManager({
     return `${cls ? cls + ' – ' : ''}${s.session_type}${num}${s.name && s.name !== s.session_type ? ': ' + s.name : ''}`;
   };
 
-  // Class options from EventClass
+  // Class options: prefer EventClass ids that have entries; fallback to all EventClasses
   const classOptions = useMemo(() => {
-    return eventClasses.map((ec) => ({ id: ec.id, name: ec.name }));
-  }, [eventClasses]);
+    const withEntries = new Set(entries.map(e => e.event_class_id).filter(Boolean));
+    const opts = eventClasses.map((ec) => ({ id: ec.id, name: ec.class_name || ec.name }));
+    if (withEntries.size > 0) {
+      // put classes that have entries first
+      return [...opts.filter(o => withEntries.has(o.id)), ...opts.filter(o => !withEntries.has(o.id))];
+    }
+    // fallback to seriesClasses if no eventClasses yet
+    if (opts.length === 0) {
+      return seriesClasses.map((sc) => ({ id: sc.id, name: sc.class_name }));
+    }
+    return opts;
+  }, [eventClasses, entries, seriesClasses]);
 
   const filteredSessions = useMemo(() => {
     if (classFilter === 'all') return sessions;
