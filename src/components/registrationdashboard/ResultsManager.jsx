@@ -287,6 +287,15 @@ export default function ResultsManager({
       if (newStatus === 'Official' || newStatus === 'Provisional') {
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
+      if (newStatus === 'Official') {
+        // Trigger standings recalculation (non-blocking — failure is logged, not surfaced)
+        base44.functions.invoke('triggerStandingsFromSession', {
+          session_id: selectedSession.id,
+          event_id: eventId,
+        }).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['standings'] });
+        }).catch(() => {});
+      }
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
       if (newStatus === 'Locked' && onResultsLocked) onResultsLocked();
