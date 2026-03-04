@@ -32,6 +32,15 @@ export default function MediaRequestsManager({
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
+  // Safety guards
+  if (!dashboardContext?.orgId || !dashboardContext?.orgType) {
+    return null;
+  }
+
+  if (!selectedEvent) {
+    return null;
+  }
+
   // Determine org context
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
   const orgEntityType = selectedTrack ? 'track' : 'series';

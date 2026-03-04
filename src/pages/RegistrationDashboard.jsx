@@ -33,9 +33,7 @@ import PointsAndStandingsManager from '@/components/registrationdashboard/Points
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
-import MediaRequestsManager from '@/components/registrationdashboard/MediaRequestsManager';
-import IssuedCredentialsManager from '@/components/registrationdashboard/IssuedCredentialsManager';
-import MediaPoliciesManager from '@/components/registrationdashboard/MediaPoliciesManager';
+import MediaTabContent from '@/components/registrationdashboard/MediaTabContent';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
@@ -78,31 +76,32 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  Plus,
-  Upload,
-  RefreshCw,
-  Send,
-  Download,
-  AlertCircle,
-  Download as DownloadIcon,
-  Users,
-  ClipboardCheck,
-  Flag,
-  Trophy,
-  FileText,
-  Plug,
-  History,
-  LayoutDashboard,
-  Wrench,
-  Car,
-  Shield,
-  Clock,
-  Mic,
-  DoorOpen,
-  Radio,
-  BookOpen,
-  Gauge,
-} from 'lucide-react';
+    Plus,
+    Upload,
+    RefreshCw,
+    Send,
+    Download,
+    AlertCircle,
+    Download as DownloadIcon,
+    Users,
+    ClipboardCheck,
+    Flag,
+    Trophy,
+    FileText,
+    Plug,
+    History,
+    LayoutDashboard,
+    Wrench,
+    Car,
+    Shield,
+    Clock,
+    Mic,
+    DoorOpen,
+    Radio,
+    BookOpen,
+    Gauge,
+    Film,
+  } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -184,6 +183,7 @@ export default function RegistrationDashboard() {
   const [showComplianceWarning, setShowComplianceWarning] = useState(false);
   const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
   const [showArchiveWarning, setShowArchiveWarning] = useState(false);
+  const [showMediaPortalDialog, setShowMediaPortalDialog] = useState(false);
   const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
   const [overrideText, setOverrideText] = useState('');
   const [overrideReason, setOverrideReason] = useState('');
@@ -357,6 +357,25 @@ export default function RegistrationDashboard() {
       });
     },
     enabled: !!isAuthenticated,
+    ...DQ,
+  });
+
+  // Load recent credential requests for Media Portal preview
+  const { data: recentCredentialRequests = [] } = useQuery({
+    queryKey: ['credential_requests_recent', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+      const allRequests = await base44.entities.CredentialRequest.filter({});
+      return allRequests
+        .filter(
+          (cr) =>
+            cr.target_entity_id === organizationId ||
+            (selectedEvent && cr.related_event_id === selectedEvent.id)
+        )
+        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+        .slice(0, 5);
+    },
+    enabled: !!organizationId && !!isAuthenticated,
     ...DQ,
   });
 
@@ -884,7 +903,17 @@ export default function RegistrationDashboard() {
                         <Download className="w-4 h-4 mr-1" /> Export
                       </Button>
                     )}
-                </div>
+                  {canTab(dashboardPermissions, 'media') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMediaPortalDialog(true)}
+                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                    >
+                      <Film className="w-4 h-4 mr-1" /> Media Portal
+                    </Button>
+                  )}
+                  </div>
 
                 {/* Announcer Mode Toggle */}
                 <Button
@@ -1551,32 +1580,15 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'media') && activeTab === 'media' && (
-                <div className="space-y-6">
-                  <MediaRequestsManager
-                    dashboardContext={dashboardContext}
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    selectedSeries={selectedSeries}
-                    dashboardPermissions={dashboardPermissions}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                  />
-                  <IssuedCredentialsManager
-                    dashboardContext={dashboardContext}
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    selectedSeries={selectedSeries}
-                    dashboardPermissions={dashboardPermissions}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                  />
-                  <MediaPoliciesManager
-                    dashboardContext={dashboardContext}
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    selectedSeries={selectedSeries}
-                    dashboardPermissions={dashboardPermissions}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                  />
-                </div>
+                <MediaTabContent
+                  dashboardContext={dashboardContext}
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                  onOpenEventBuilder={() => setActiveTab('eventBuilder')}
+                />
               )}
 
               {isAdmin && activeTab === 'opsCenter' && (
@@ -1765,6 +1777,43 @@ export default function RegistrationDashboard() {
             </Card>
           </div>
         )}
+
+        {/* Media Portal Preview Dialog */}
+        <Dialog open={showMediaPortalDialog} onOpenChange={setShowMediaPortalDialog}>
+          <DialogContent className="bg-[#262626] border-gray-700 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Film className="w-5 h-5 text-blue-400" /> Media Portal (Coming Soon)
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-400">
+                The Media Portal will allow media professionals to apply for credentials, submit assets, and track their requests. Full implementation coming in the next phase.
+              </p>
+              <div>
+                <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Recent Requests</p>
+                {recentCredentialRequests.length > 0 ? (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {recentCredentialRequests.map((req) => (
+                      <div key={req.id} className="bg-[#1A1A1A] border border-gray-700 rounded p-2 text-xs">
+                        <div className="text-gray-300">Request ID: {req.id?.slice(0, 8)}</div>
+                        <div className="text-gray-500">Status: {req.status}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No requests yet</p>
+                )}
+              </div>
+              <Button
+                onClick={() => setShowMediaPortalDialog(false)}
+                className="w-full bg-blue-700 hover:bg-blue-600"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </PageShell>
   );
