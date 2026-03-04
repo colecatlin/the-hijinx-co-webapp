@@ -346,6 +346,12 @@ export default function RegistrationDashboard() {
   const filteredEvents = useMemo(() => {
     let filtered = [...events];
 
+    // Non-admin: filter to only events the user has EntityCollaborator access to
+    if (!isAdmin && user?.id) {
+      const allowedEventIds = new Set(userEventCollaborators.map(c => c.entity_id));
+      filtered = filtered.filter(e => allowedEventIds.has(e.id));
+    }
+
     if (organizationType === 'track' && organizationId) {
       filtered = filtered.filter((e) => e.track_id === organizationId);
     } else if (organizationType === 'series' && organizationId) {
@@ -367,7 +373,7 @@ export default function RegistrationDashboard() {
 
     filtered.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
     return filtered;
-  }, [events, organizationType, organizationId, seasonYear, seriesList]);
+  }, [events, organizationType, organizationId, seasonYear, seriesList, isAdmin, user?.id, userEventCollaborators]);
 
   const seasons = useMemo(() => {
     const seasonSet = new Set();
