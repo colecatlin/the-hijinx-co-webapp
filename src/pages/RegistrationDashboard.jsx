@@ -229,6 +229,14 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
+  // Load Event collaborator records for current user (for non-admin filtering)
+  const { data: userEventCollaborators = [] } = useQuery({
+    queryKey: ['userEventCollaborators', user?.id],
+    queryFn: () => base44.entities.EntityCollaborator.filter({ user_id: user.id, entity_type: 'Event' }),
+    enabled: !!user?.id && !isAdmin,
+    ...DQ,
+  });
+
   // ── Shared dashboard context ──────────────────────────────────────────────
   const dashContext = useMemo(() => ({
     orgType: organizationType,
