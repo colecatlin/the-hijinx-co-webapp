@@ -180,10 +180,38 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     return Object.keys(newErrors).length === 0;
   };
 
+  const { data: collabRecords = [] } = useQuery({
+    queryKey: ['eventCollaboration', selectedEventId],
+    queryFn: () => base44.entities.EventCollaboration.filter({ event_id: selectedEventId }),
+    enabled: !!selectedEventId,
+    staleTime: 15000,
+  });
+  const collaboration = collabRecords[0] || null;
+
+  const canPublish = !selectedEventId || !collaboration
+    ? true // new event — no gating yet
+    : collaboration.track_status === 'accepted' && collaboration.series_status === 'accepted';
+
+  const createCollaboration = async (eventId, trackId, seriesId) => {
+    const existing = await base44.entities.EventCollaboration.filter({ event_id: eventId });
+    if (existing.length > 0) return; // already exists
+    await base44.entities.EventCollaboration.create({
+      event_id: eventId,
+      track_id: trackId,
+      series_id: seriesId || null,
+      track_status: 'pending',
+      series_status: seriesId ? 'pending' : 'accepted',
+      created_by_user_id: currentUser?.id || '',
+    });
+    queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
+  };
+
   const createMutation = useMutation({
     mutationFn: data => base44.entities.Event.create(data),
-    onSuccess: newEvent => {
+    onSuccess: async (newEvent) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      // Create EventCollaboration after event creation
+      await createCollaboration(newEvent.id, newEvent.track_id, newEvent.series_id);
       toast.success('Event created successfully');
       if (onEventCreated) {
         onEventCreated(newEvent.id);
