@@ -9,14 +9,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2, Edit2, CheckCircle2, Archive } from 'lucide-react';
-import ManagementLayout from '@/components/layouts/ManagementLayout';
+
 
 export default function ManagePointsConfig() {
+  const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
   const [openDialog, setOpenDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [filters, setFilters] = useState({ series_id: '', series_class_id: '', season_year: '', status: '' });
   const [activateWarning, setActivateWarning] = useState(null);
+
+  React.useEffect(() => {
+    base44.auth.me().then(user => {
+      setIsAdmin(user?.role === 'admin');
+    });
+  }, []);
 
   const { data: configs = [] } = useQuery({
     queryKey: ['pointsConfigs'],
@@ -85,9 +92,12 @@ export default function ManagePointsConfig() {
     updateMutation.mutate({ id, data: { status: 'Archived' } });
   };
 
+  if (!isAdmin) {
+    return <div className="p-6 text-center text-gray-400">Admin access required.</div>;
+  }
+
   return (
-    <ManagementLayout>
-      <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Points Configuration</h1>
           <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
@@ -227,7 +237,7 @@ export default function ManagePointsConfig() {
           </Dialog>
         )}
       </div>
-    </ManagementLayout>
+    </div>
   );
 }
 
