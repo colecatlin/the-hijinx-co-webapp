@@ -20,14 +20,14 @@ function getKeysForOperation(operationType, payload = {}) {
 
   switch (operationType) {
     case 'event_created':
-      broad.push(['events'], ['eventCollaboration'], ['operationLogs'], ['eventCollaborators']);
+      broad.push(['events'], ['seasonCalendarEvents'], ['eventCollaboration'], ['operationLogs'], ['eventCollaborators']);
       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId], ['eventCollaborators', eventId]);
       break;
 
     case 'event_updated':
     case 'event_status_changed':
     case 'event_published':
-      broad.push(['events'], ['selectedEvent'], ['operationLogs']);
+      broad.push(['events'], ['seasonCalendarEvents'], ['seasonCalendarSessions'], ['seasonCalendarEntries'], ['seasonCalendarResults'], ['selectedEvent'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
       break;
 
@@ -52,7 +52,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'session_start':
     case 'session_end':
     case 'session_cancel':
-      broad.push(['sessions'], ['session'], ['operationLogs'], ['rc_sessions']);
+      broad.push(['sessions'], ['session'], ['seasonCalendarSessions'], ['operationLogs'], ['rc_sessions']);
       if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
       break;
@@ -75,7 +75,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'results_published_provisional':
     case 'results_saved_draft':
     case 'results_imported_csv':
-      broad.push(['results'], ['sessions'], ['operationLogs']);
+      broad.push(['results'], ['seasonCalendarResults'], ['sessions'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
       break;
 
@@ -126,7 +126,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'gate_verify':
     case 'gate_updated':
     case 'wristband_assigned':
-      broad.push(['entries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
+      broad.push(['entries'], ['seasonCalendarEntries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.driverPrograms(eventId), REG_QK.operationLogs(eventId));
       if (eventId) exact.push(['complianceFlags', eventId], ['techInspections', eventId]);
       break;
