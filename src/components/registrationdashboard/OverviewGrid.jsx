@@ -13,7 +13,6 @@ import RaceDayReadinessCard from './RaceDayReadinessCard';
 import EventTimeline from './EventTimeline';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
