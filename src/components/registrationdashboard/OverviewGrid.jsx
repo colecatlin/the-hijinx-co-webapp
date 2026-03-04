@@ -52,10 +52,28 @@ export default function OverviewGrid({
 
   const canPublish = canAction(dashboardPermissions, 'publish_official');
 
-  // Load real entries for the selected event
-  const { entries, allEntries, counts: entryCounts } = useEntries({
-    eventId: selectedEvent?.id,
+  // Load real entries for the selected event (Entry entity only)
+  const { data: allEntries = [] } = useQuery({
+    queryKey: ['entries_overview', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
   });
+
+  // Derive entry counts from Entry records
+  const entryCounts = useMemo(() => {
+    if (!allEntries.length) return { total: 0, paid: 0, unpaid: 0, checkedIn: 0, notCheckedIn: 0, techPassed: 0, techNotPassed: 0 };
+    
+    return {
+      total: allEntries.length,
+      paid: allEntries.filter(e => e.payment_status === 'Paid').length,
+      unpaid: allEntries.filter(e => e.payment_status !== 'Paid').length,
+      checkedIn: allEntries.filter(e => e.entry_status === 'Checked In').length,
+      notCheckedIn: allEntries.filter(e => e.entry_status !== 'Checked In').length,
+      techPassed: allEntries.filter(e => e.tech_status === 'Passed').length,
+      techNotPassed: allEntries.filter(e => e.tech_status !== 'Passed').length,
+    };
+  }, [allEntries]);
 
   // Sort sessions by time
   const sortedSessions = useMemo(() => {
