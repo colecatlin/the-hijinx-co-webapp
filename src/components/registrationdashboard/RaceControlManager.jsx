@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { REG_QK } from './queryKeys';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { calculateStandingsForSession } from './standings/calculateStandings';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
