@@ -60,12 +60,45 @@ export function buildBestResultPerDriver(allResults, sessions) {
 }
 
 /**
+ * Compute recent performance (last 5 results) for a driver
+ */
+export function getRecentPerformance(driverId, allResults, sessions, seriesId, seasonYear) {
+  const sessionMeta = {};
+  sessions.forEach((s) => {
+    sessionMeta[s.id] = s;
+  });
+
+  // Filter results for this driver in selected series/season (if available)
+  let driverResults = allResults.filter((r) => r.driver_id === driverId);
+  if (seriesId) {
+    driverResults = driverResults.filter((r) => r.series_id === seriesId);
+  }
+  if (seasonYear) {
+    driverResults = driverResults.filter((r) => r.season === seasonYear);
+  }
+
+  // Sort by created_date descending and take last 5
+  driverResults = driverResults.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 5);
+
+  if (driverResults.length === 0) {
+    return { finishes: [], bestFinish: null, avgFinish: null, podiums: 0 };
+  }
+
+  const finishes = driverResults.map((r) => r.position).filter((p) => p != null);
+  const bestFinish = finishes.length > 0 ? Math.min(...finishes) : null;
+  const avgFinish = finishes.length > 0 ? (finishes.reduce((a, b) => a + b, 0) / finishes.length).toFixed(1) : null;
+  const podiums = finishes.filter((p) => p <= 3).length;
+
+  return { finishes, bestFinish, avgFinish, podiums };
+}
+
+/**
  * Generate CSV string for announcer pack entries.
  */
-export function buildAnnouncerCSV(classes, entriesByClass, driverMap, teamMap, standingsMap, bestResultMap) {
+export function buildAnnouncerCSV(classes, entriesByClass, driverMap, teamMap, standingsMap, bestResultMap, performanceMap = {}) {
   const headers = [
     'Class', 'Car #', 'Driver Name', 'Team', 'Hometown', 'Discipline',
-    'Standing Rank', 'Standing Points', 'Best Lap', 'Last Finish'
+    'Standing Rank', 'Standing Points', 'Best Lap', 'Last Finish', 'Best Finish', 'Avg Finish', 'Podiums'
   ];
   const rows = [headers.join(',')];
 
@@ -76,6 +109,7 @@ export function buildAnnouncerCSV(classes, entriesByClass, driverMap, teamMap, s
       const team = teamMap[entry.team_id];
       const standing = standingsMap[entry.driver_id];
       const result = bestResultMap[entry.driver_id];
+      const perf = performanceMap[entry.driver_id] || {};
       const row = [
         cls.class_name,
         entry.car_number || '',
@@ -87,6 +121,9 @@ export function buildAnnouncerCSV(classes, entriesByClass, driverMap, teamMap, s
         standing?.points ?? '',
         fmtLapMs(result?.best_lap_time_ms),
         result?.position ?? '',
+        perf.bestFinish ?? '',
+        perf.avgFinish ?? '',
+        perf.podiums ?? '',
       ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',');
       rows.push(row);
     });
