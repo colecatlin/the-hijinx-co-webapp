@@ -548,13 +548,20 @@ export default function CheckInManager({
                   />
                 </form>
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <div className="flex-1 min-w-[120px]">
+              <div className="flex gap-2 flex-wrap">
+                <div className="flex-1 min-w-[110px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
+                  <Input
+                    placeholder="Driver, car #..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-[#262626] border-gray-700 text-white h-8 text-xs"
+                  />
+                </div>
+                <div className="flex-1 min-w-[110px]">
                   <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
                   <Select value={classFilter} onValueChange={setClassFilter}>
-                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-[#262626] border-gray-700">
                       <SelectItem value="all">All Classes</SelectItem>
                       {classNames.map((cls) => (
@@ -563,14 +570,39 @@ export default function CheckInManager({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1 min-w-[120px]">
-                  <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
-                  <Input
-                    placeholder="Driver, car #..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-[#262626] border-gray-700 text-white"
-                  />
+                <div className="flex-1 min-w-[110px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Check-In</label>
+                  <Select value={checkinFilter} onValueChange={setCheckinFilter}>
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="checked_in">Checked In</SelectItem>
+                      <SelectItem value="not_checked_in">Not Checked In</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Payment</label>
+                  <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Unpaid">Unpaid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="text-xs font-medium text-gray-400 block mb-1">Tech</label>
+                  <Select value={techFilter} onValueChange={setTechFilter}>
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="passed">Passed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </>
