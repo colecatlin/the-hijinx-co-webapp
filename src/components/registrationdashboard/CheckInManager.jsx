@@ -156,6 +156,17 @@ export default function CheckInManager({
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
       if (classFilter !== 'all' && (entry.event_class_id || '') !== classFilter) return false;
+      if (checkinFilter !== 'all') {
+        if (checkinFilter === 'checked_in' && entry.entry_status !== 'Checked In') return false;
+        if (checkinFilter === 'not_checked_in' && entry.entry_status === 'Checked In') return false;
+      }
+      if (paymentFilter !== 'all' && (entry.payment_status || 'Unpaid') !== paymentFilter) return false;
+      if (techFilter !== 'all') {
+        const ts = entry.tech_status || 'Not Inspected';
+        if (techFilter === 'pending' && ts !== 'Not Inspected' && ts !== 'Recheck Required') return false;
+        if (techFilter === 'passed' && ts !== 'Passed') return false;
+        if (techFilter === 'failed' && ts !== 'Failed') return false;
+      }
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
         return (
@@ -166,7 +177,7 @@ export default function CheckInManager({
       }
       return true;
     });
-  }, [entries, classFilter, searchTerm, drivers, seriesClasses]);
+  }, [entries, classFilter, checkinFilter, paymentFilter, techFilter, searchTerm, drivers]);
 
   const getComplianceWarnings = (entry) => {
     const warnings = [];
