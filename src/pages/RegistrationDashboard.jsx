@@ -1425,6 +1425,16 @@ export default function RegistrationDashboard() {
                 </div>
               )}
 
+              {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (
+                <CSVImportManager
+                  selectedEvent={selectedEvent}
+                  selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
               {isAdmin && activeTab === 'opsCenter' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2">
