@@ -22,6 +22,7 @@ const ROLE_PERMISSIONS = {
       race_control: true,
       announcer_pack: true,
       imports: true,
+      media: true,
     },
     actions: {
       create_event: true,
@@ -34,6 +35,9 @@ const ROLE_PERMISSIONS = {
       respond_collaboration: true,
       request_planning_rights: true,
       publish_event: true,
+      review_media_request: true,
+      revoke_media_credential: true,
+      manage_media_policies: true,
     },
   },
   user: {
@@ -61,6 +65,7 @@ const ROLE_PERMISSIONS = {
       race_control: true,
       announcer_pack: true,
       imports: true,
+      media: true,
     },
     actions: {
       import_csv: true,
@@ -69,6 +74,9 @@ const ROLE_PERMISSIONS = {
       respond_collaboration: true,
       request_planning_rights: true,
       publish_event: true,
+      review_media_request: true,
+      revoke_media_credential: true,
+      manage_media_policies: true,
     },
   },
   entity_editor: {
@@ -83,6 +91,7 @@ const ROLE_PERMISSIONS = {
       race_control: true,
       announcer_pack: true,
       imports: true,
+      media: true,
     },
     actions: {
       import_csv: true,
@@ -90,6 +99,7 @@ const ROLE_PERMISSIONS = {
       configure_points: true,
       respond_collaboration: true,
       publish_event: true,
+      review_media_request: true,
     },
   },
   public: {
