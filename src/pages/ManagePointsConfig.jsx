@@ -13,6 +13,220 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Edit2, Trash2, Archive, CheckCircle2, AlertCircle } from 'lucide-react';
 
+function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, seriesClasses, rulesets, onSave }) {
+  const [form, setForm] = useState({
+    name: '',
+    series_id: '',
+    track_id: '',
+    series_class_id: '',
+    season: '',
+    status: 'draft',
+    priority: 0,
+    applies_to_session_types: ['Final'],
+    points_table_json: '',
+    bonus_rules_json: '',
+    drop_rounds_json: '',
+    tiebreaker_order_json: '',
+    notes: ''
+  });
+  const [validationError, setValidationError] = useState('');
+
+  const { data: ruleset } = useQuery({
+    queryKey: ['pointsRuleSet', rulesetId],
+    queryFn: () => rulesetId ? base44.entities.PointsRuleSet.get(rulesetId) : null,
+    enabled: !!rulesetId
+  });
+
+  useEffect(() => {
+    setValidationError('');
+    if (ruleset && open) {
+      setForm(ruleset);
+    } else if (!open) {
+      setForm({
+        name: '',
+        series_id: '',
+        track_id: '',
+        series_class_id: '',
+        season: '',
+        status: 'draft',
+        priority: 0,
+        applies_to_session_types: ['Final'],
+        points_table_json: '',
+        bonus_rules_json: '',
+        drop_rounds_json: '',
+        tiebreaker_order_json: '',
+        notes: ''
+      });
+    }
+  }, [ruleset, open]);
+
+  const handleSave = () => {
+    setValidationError('');
+    if (!form.name.trim()) {
+      setValidationError('Name is required');
+      return;
+    }
+    if (!form.series_id && !form.track_id) {
+      setValidationError('Series or Track is required');
+      return;
+    }
+    if (!form.points_table_json.trim()) {
+      setValidationError('Points table JSON is required');
+      return;
+    }
+    
+    try {
+      JSON.parse(form.points_table_json);
+    } catch (e) {
+      setValidationError('Points table JSON is invalid');
+      return;
+    }
+
+    onSave({
+      ...form,
+      series_id: form.series_id || null,
+      track_id: form.track_id || null,
+      series_class_id: form.series_class_id || null,
+      season: form.season || null
+    });
+  };
+
+  const sessionTypeOptions = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white">{rulesetId ? 'Edit Rule Set' : 'New Points Rule Set'}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {validationError && (
+            <Alert className="bg-red-500/10 border-red-600">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-600 text-sm">{validationError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Name *</label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026 Stock Points" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Series</label>
+              <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Select series" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>None</SelectItem>
+                  {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Track</label>
+              <Select value={form.track_id} onValueChange={(v) => setForm({ ...form, track_id: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Select track" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>None</SelectItem>
+                  {tracks.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Class</label>
+              <Select value={form.series_class_id || ''} onValueChange={(v) => setForm({ ...form, series_class_id: v || null })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>All classes</SelectItem>
+                  {seriesClasses.map(c => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Season</label>
+              <Input value={form.season || ''} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Status</label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-gray-400 block">Priority</label>
+              <Input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Applies to Session Types</label>
+            <div className="flex flex-wrap gap-2">
+              {sessionTypeOptions.map(type => (
+                <label key={type} className="flex items-center gap-2 text-sm text-gray-400">
+                  <input type="checkbox" checked={form.applies_to_session_types.includes(type)} onChange={(e) => {
+                    if (e.target.checked) {
+                      setForm({ ...form, applies_to_session_types: [...form.applies_to_session_types, type] });
+                    } else {
+                      setForm({ ...form, applies_to_session_types: form.applies_to_session_types.filter(t => t !== type) });
+                    }
+                  }} className="rounded" />
+                  {type}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Points Table JSON *</label>
+            <Textarea value={form.points_table_json} onChange={(e) => setForm({ ...form, points_table_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[100px]" placeholder='{"positions": {"1": 50, "2": 45}, "default": 0}' />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Bonus Rules JSON (optional)</label>
+            <Textarea value={form.bonus_rules_json} onChange={(e) => setForm({ ...form, bonus_rules_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='{"fastest_lap": 1, "most_laps_led": 1, "pole": 1}' />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Drop Rounds JSON (optional)</label>
+            <Textarea value={form.drop_rounds_json} onChange={(e) => setForm({ ...form, drop_rounds_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='{"enabled": true, "drop_count": 1}' />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Tiebreaker Order JSON (optional)</label>
+            <Textarea value={form.tiebreaker_order_json} onChange={(e) => setForm({ ...form, tiebreaker_order_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='["wins", "seconds", "thirds", "best_finish", "most_starts"]' />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Notes</label>
+            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="bg-gray-800 border-gray-700 text-white text-sm" rows={2} />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Rule Set</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function ManagePointsConfig() {
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState(false);
