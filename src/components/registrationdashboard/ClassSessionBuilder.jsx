@@ -396,7 +396,7 @@ export default function ClassSessionBuilder({
             const hasLocked = cg.sessions.some(isLocked);
             const entryCount = entriesByClass[cg.id] || 0;
             const isFull = cg.max_entries && entryCount >= cg.max_entries;
-            const sortedSessions = [...cg.sessions].sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+            const sortedSessions = [...cg.sessions].sort((a, b) => (a.run_order || 0) - (b.run_order || 0));
 
             return (
               <AccordionItem key={cg.id} value={cg.id} className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">
