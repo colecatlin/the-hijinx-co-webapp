@@ -114,16 +114,56 @@ export default function ComplianceManager({
   });
 
   const { mutateAsync: recomputeCompliance, isPending: recomputing } = useDashboardMutation({
-    operationType: 'compliance_recomputed',
+    operationType: 'entry_bulk_updated',
     entityName: 'Entry',
     mutationFn: async () => {
-      // Write compliance flags back to entries that need updates
-      const updates = complianceData.entriesToUpdate || [];
-      await Promise.all(
-        updates.map(({ id, flags }) =>
-          base44.entities.Entry.update(id, { compliance_flags_json: JSON.stringify(flags) })
-        )
-      );
+      // Recompute duplicate_number_flag and missing_transponder_flag for all entries
+      const updates = [];
+
+      // Group by series_class_id
+      const byClass = {};
+      entries.forEach((e) => {
+        const classId = e.series_class_id || 'unknown';
+        if (!byClass[classId]) byClass[classId] = [];
+        byClass[classId].push(e);
+      });
+
+      // Check for duplicates within each class
+      Object.values(byClass).forEach((classEntries) => {
+        const numberCounts = {};
+        classEntries.forEach((e) => {
+          if (!numberCounts[e.car_number]) numberCounts[e.car_number] = [];
+          numberCounts[e.car_number].push(e.id);
+        });
+
+        // Mark duplicates
+        Object.entries(numberCounts).forEach(([carNum, ids]) => {
+          if (ids.length > 1) {
+            ids.forEach((id) => {
+              const idx = updates.findIndex(u => u.id === id);
+              if (idx >= 0) {
+                updates[idx].data.duplicate_number_flag = true;
+              } else {
+                updates.push({ id, data: { duplicate_number_flag: true } });
+              }
+            });
+          }
+        });
+      });
+
+      // Check for missing transponders
+      entries.forEach((e) => {
+        const hasMissing = !e.transponder_id;
+        const idx = updates.findIndex(u => u.id === e.id);
+        if (idx >= 0) {
+          updates[idx].data.missing_transponder_flag = hasMissing;
+        } else {
+          updates.push({ id: e.id, data: { missing_transponder_flag: hasMissing } });
+        }
+      });
+
+      // Apply all updates
+      await Promise.all(updates.map(u => base44.entities.Entry.update(u.id, u.data)));
     },
     successMessage: 'Compliance flags updated',
     invalidateAfterOperation,

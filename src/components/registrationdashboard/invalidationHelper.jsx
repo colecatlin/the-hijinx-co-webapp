@@ -120,6 +120,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'entry_bulk_withdraw':
     case 'entry_checked_in':
     case 'checkin_updated':
+    case 'entry_tech_updated':
     case 'compliance_created':
     case 'compliance_updated':
     case 'compliance_resolved':
