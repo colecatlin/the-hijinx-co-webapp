@@ -16,6 +16,7 @@ import { AlertCircle, Wrench, CheckCircle, XCircle, RefreshCw, StickyNote, Alert
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
+import { normalizeName } from './resolvers/driverResolver';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -114,10 +115,10 @@ export default function TechManager({
       if (classFilter !== 'all' && (entry.event_class_id || '') !== classFilter) return false;
       if (statusFilter !== 'all' && (entry.tech_status || 'Not Inspected') !== statusFilter) return false;
       if (search) {
-        const s = search.toLowerCase();
+        const s = normalizeName(search);
         const d = driversMap[entry.driver_id];
-        const driverMatch = d ? `${d.first_name} ${d.last_name}`.toLowerCase().includes(s) : false;
-        const carMatch = (entry.car_number || '').toLowerCase().includes(s);
+        const driverMatch = d ? normalizeName(`${d.first_name} ${d.last_name}`).includes(s) : false;
+        const carMatch = normalizeName(entry.car_number).includes(s);
         if (!driverMatch && !carMatch) return false;
       }
       return true;

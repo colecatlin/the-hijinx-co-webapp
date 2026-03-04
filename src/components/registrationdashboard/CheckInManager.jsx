@@ -41,6 +41,7 @@ import {
   verifyEntryEventIntegrity,
   GUARD_ERROR_MESSAGE,
 } from './contextGuardHelper';
+import { normalizeName } from './resolvers/driverResolver';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -168,11 +169,11 @@ export default function CheckInManager({
         if (techFilter === 'failed' && ts !== 'Failed') return false;
       }
       if (searchTerm) {
-        const search = searchTerm.toLowerCase();
+        const search = normalizeName(searchTerm);
         return (
-          (entry.car_number || '').toLowerCase().includes(search) ||
-          getDriverName(entry.driver_id).toLowerCase().includes(search) ||
-          (entry.transponder_id || '').toLowerCase().includes(search)
+          normalizeName(entry.car_number).includes(search) ||
+          normalizeName(getDriverName(entry.driver_id)).includes(search) ||
+          normalizeName(entry.transponder_id).includes(search)
         );
       }
       return true;
