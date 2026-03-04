@@ -25,6 +25,8 @@ import useDashboardMutation from './useDashboardMutation';
 import ImportEntriesModal from './entries/ImportEntriesModal';
 import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
 import EntryDetailDrawer from './EntryDetailDrawer';
+import EntryCreateDrawer from './EntryCreateDrawer';
+import EntryEditDrawer from './EntryEditDrawer';
 import {
   DEFAULT_FILTERS,
   filtersFromParams,
@@ -97,9 +99,9 @@ export default function EntriesManager({
   // ── UI state ──
   const [selectedEntries, setSelectedEntries] = useState(new Set());
   const [detailEntry, setDetailEntry] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [addForm, setAddForm] = useState({});
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
   const [showSelfService, setShowSelfService] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   // Bulk
@@ -213,43 +215,46 @@ export default function EntriesManager({
   useEffect(() => {
     setSelectedEntries(new Set());
     setDetailEntry(null);
+    setEditingEntry(null);
   }, [eventId]);
+
+  // ── Summary stats ──
+  const stats = useMemo(() => ({
+    total: entries.length,
+    registered: entries.filter((e) => e.entry_status === 'Registered').length,
+    checkedIn: entries.filter((e) => e.entry_status === 'Checked In').length,
+    teched: entries.filter((e) => e.entry_status === 'Teched').length,
+    unpaid: entries.filter((e) => e.payment_status === 'Unpaid').length,
+    noTransponder: entries.filter((e) => !e.transponder_id).length,
+  }), [entries]);
 
   // ── Handlers ──
   const handleSaveEntry = async (id, data) => {
     await updateEntry({ id, data });
-    // Refresh detailEntry with latest data
-    setDetailEntry((prev) => prev ? { ...prev, ...data } : prev);
+    // Refresh UI
+    setEditingEntry(null);
+    setDetailEntry(null);
   };
 
   const handleDeleteEntry = async (id) => {
     await deleteEntry(id);
     setDetailEntry(null);
+    setEditingEntry(null);
     setShowDeleteConfirm(null);
   };
 
-  const handleAddEntry = async () => {
-    if (!addForm.driver_id) { toast.error('Driver required'); return; }
-    if (entries.some((e) => e.driver_id === addForm.driver_id)) {
-      toast.error('Driver already entered for this event'); return;
-    }
-    const selectedEventClass = eventClasses.find((ec) => ec.id === addForm.event_class_id);
-    await createEntry({
-      event_id: eventId,
-      series_id: selectedEvent?.series_id,
-      driver_id: addForm.driver_id,
-      team_id: addForm.team_id || undefined,
-      event_class_id: addForm.event_class_id || undefined,
-      series_class_id: selectedEventClass?.series_class_id || undefined,
-      car_number: addForm.car_number || undefined,
-      transponder_id: addForm.transponder_id || undefined,
-      entry_status: 'Registered',
-      payment_status: 'Unpaid',
-      tech_status: 'Not Inspected',
-      waiver_verified: false,
-    });
-    setShowAddDialog(false);
-    setAddForm({});
+  const handleEntryCreated = async () => {
+    setShowCreateDrawer(false);
+    refetch();
+    toast.success('Entry created successfully');
+    invalidateAfterOperation('entry_created', { eventId });
+  };
+
+  const handleEntryUpdated = async () => {
+    setEditingEntry(null);
+    refetch();
+    toast.success('Entry updated successfully');
+    invalidateAfterOperation('entry_updated', { eventId });
   };
 
   const handleBulkWithdraw = async () => {
@@ -341,6 +346,34 @@ export default function EntriesManager({
 
   return (
     <div className="space-y-4">
+      {/* Summary stats */}
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
+        <div className="text-center">
+          <p className="text-xs text-gray-400">Total</p>
+          <p className="text-lg font-bold text-white">{stats.total}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400">Registered</p>
+          <p className="text-lg font-bold text-blue-400">{stats.registered}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400">Checked In</p>
+          <p className="text-lg font-bold text-green-400">{stats.checkedIn}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400">Teched</p>
+          <p className="text-lg font-bold text-purple-400">{stats.teched}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400">Unpaid</p>
+          <p className="text-lg font-bold text-yellow-400">{stats.unpaid}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400">No Transponder</p>
+          <p className="text-lg font-bold text-red-400">{stats.noTransponder}</p>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -352,7 +385,7 @@ export default function EntriesManager({
         <div className="flex gap-2 flex-wrap justify-end">
           <Button onClick={() => setShowImportModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Import CSV</Button>
           <Button onClick={() => setShowSelfService(true)} size="sm" className="bg-purple-700 hover:bg-purple-600 text-white">My Registration</Button>
-          <Button onClick={() => setShowAddDialog(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={() => setShowCreateDrawer(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4 mr-1" /> Add Entry
           </Button>
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="border-gray-700 text-gray-300">
@@ -473,7 +506,7 @@ export default function EntriesManager({
                 {filteredEntries.map((entry) => (
                   <tr
                     key={entry.id}
-                    onClick={() => setDetailEntry(entry)}
+                    onClick={() => setEditingEntry(entry)}
                     className={`border-b border-gray-800 cursor-pointer transition-colors ${
                       rowNeedsAttention(entry)
                         ? 'bg-amber-950/20 hover:bg-amber-950/30'
@@ -527,17 +560,26 @@ export default function EntriesManager({
         </Card>
       )}
 
-      {/* Entry Detail Drawer */}
-      <EntryDetailDrawer
-        open={!!detailEntry}
-        onOpenChange={(open) => { if (!open) setDetailEntry(null); }}
-        entry={detailEntry}
+      {/* Create Entry Drawer */}
+      <EntryCreateDrawer
+        open={showCreateDrawer}
+        onOpenChange={setShowCreateDrawer}
+        selectedEvent={selectedEvent}
         drivers={drivers}
         teams={teams}
-        seriesClasses={seriesClasses}
-        onSave={handleSaveEntry}
-        onDelete={(id) => setShowDeleteConfirm(id)}
-        saving={updatingEntry}
+        classes={seriesClasses}
+        onCreated={handleEntryCreated}
+      />
+
+      {/* Edit Entry Drawer */}
+      <EntryEditDrawer
+        open={!!editingEntry}
+        onOpenChange={(open) => { if (!open) setEditingEntry(null); }}
+        entry={editingEntry}
+        drivers={drivers}
+        teams={teams}
+        classes={seriesClasses}
+        onUpdated={handleEntryUpdated}
       />
 
       {/* Delete confirm */}
@@ -559,50 +601,7 @@ export default function EntriesManager({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Add Entry Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-[#262626] border-gray-700">
-          <DialogHeader><DialogTitle className="text-white">Add Entry</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Driver *</label>
-              <Select value={addForm.driver_id || ''} onValueChange={(v) => setAddForm({ ...addForm, driver_id: v })}>
-                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select driver…" /></SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700 max-h-60">
-                  {drivers.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.first_name} {d.last_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {eventClasses.length > 0 && (
-              <div>
-                <label className="text-xs text-gray-400 block mb-1">Class</label>
-                <Select value={addForm.event_class_id || ''} onValueChange={(v) => setAddForm({ ...addForm, event_class_id: v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Car #</label>
-              <Input value={addForm.car_number || ''} onChange={(e) => setAddForm({ ...addForm, car_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 42" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
-              <Input value={addForm.transponder_id || ''} onChange={(e) => setAddForm({ ...addForm, transponder_id: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={handleAddEntry} disabled={creatingEntry} className="bg-blue-600 hover:bg-blue-700">
-              {creatingEntry ? 'Creating…' : 'Create Entry'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Bulk Transponder Modal */}
       <Dialog open={showBulkTransponderModal} onOpenChange={setShowBulkTransponderModal}>
