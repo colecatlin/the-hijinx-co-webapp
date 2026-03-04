@@ -400,12 +400,31 @@ export default function ResultsManager({
 
   const rosterStats = useMemo(() => getRosterStats(roster.rosterEntries), [roster.rosterEntries]);
 
+  // ── Entry matching for Results ──
+  const entryByDriverId = useMemo(() => {
+    const map = {};
+    allEntries.forEach((e) => {
+      if (e.driver_id) map[e.driver_id] = e;
+    });
+    return map;
+  }, [allEntries]);
+
+  // Check for unmatched results (no Entry record)
+  const unmatchedResults = useMemo(() => {
+    return sessionResults.filter((r) => r.driver_id && !entryByDriverId[r.driver_id]);
+  }, [sessionResults, entryByDriverId]);
+
   // ── Validation for Official ──
   const validateForOfficial = () => {
     const errs = [];
     if (!sessionResults.length) errs.push('No results entered');
     if (sessionResults.some((r) => !r.driver_id)) errs.push('All rows must have a driver');
     
+    // Check Entry roster integrity
+    if (unmatchedResults.length > 0) {
+      errs.push(`${unmatchedResults.length} result row(s) do not match any Entry in the event roster. Resolve before publishing Official.`);
+    }
+
     // Use validation engine
     const { errors: validationErrs } = validateResults({
       rows: sessionResults,
