@@ -27,7 +27,6 @@ import GateManagerRefactored from '@/components/registrationdashboard/GateManage
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import GateConsole from '@/components/registrationdashboard/GateConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
-import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
@@ -38,7 +37,6 @@ import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
-import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
