@@ -134,37 +134,49 @@ export default function ComplianceManager({
   const complianceData = useMemo(() => {
     if (!entries.length) return {
       totalEntries: 0, totalFlagged: 0,
-      flags: { waivers: 0, missingLicense: 0, expiredLicense: 0, payments: 0, transponders: 0, duplicates: 0 },
+      flags: { waivers: 0, licenses: 0, transponders: 0, duplicates: 0, payments: 0 },
       entriesMap: new Map(), severity: 'clear',
     };
 
+    // Duplicate car number: per event_id + event_class_id
+    const carNumberKey = (e) => `${e.event_id}|${e.event_class_id || ''}|${e.car_number || ''}`;
     const carNumberCounts = {};
     entries.forEach(e => {
-      const k = e.car_number || '';
-      if (k) carNumberCounts[k] = (carNumberCounts[k] || 0) + 1;
+      if (e.car_number) {
+        const k = carNumberKey(e);
+        carNumberCounts[k] = (carNumberCounts[k] || 0) + 1;
+      }
     });
 
-    const flags = { waivers: 0, missingLicense: 0, expiredLicense: 0, payments: 0, transponders: 0, duplicates: 0 };
+    const flags = { waivers: 0, licenses: 0, transponders: 0, duplicates: 0, payments: 0 };
     let totalFlagged = 0;
     const entriesMap = new Map();
 
     entries.forEach(entry => {
       const entryFlags = [];
 
-      // Waiver — use waiver_verified boolean
-      const waiverOk = entry.waiver_verified === true;
-      if (!waiverOk) {
+      // Missing waiver
+      if (!entry.waiver_verified) {
         entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
         flags.waivers++;
       }
 
-      // License — use license_status field
-      if (entry.license_status === 'Expired') {
-        entryFlags.push({ type: 'expiredLicense', label: 'License Expired', color: 'bg-red-900/40 text-red-300' });
-        flags.expiredLicense++;
-      } else if (entry.license_status === 'Unknown') {
-        entryFlags.push({ type: 'missingLicense', label: 'No License', color: 'bg-orange-900/40 text-orange-300' });
-        flags.missingLicense++;
+      // Missing transponder
+      if (!entry.transponder_verified || !entry.transponder_id || entry.transponder_id.trim() === '') {
+        entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
+        flags.transponders++;
+      }
+
+      // Duplicate car # (within same event+class)
+      if (entry.car_number && carNumberCounts[carNumberKey(entry)] > 1) {
+        entryFlags.push({ type: 'duplicates', label: 'Duplicate Car #', color: 'bg-orange-900/40 text-orange-300' });
+        flags.duplicates++;
+      }
+
+      // License not verified
+      if (!entry.license_verified) {
+        entryFlags.push({ type: 'licenses', label: 'License Unverified', color: 'bg-orange-900/40 text-orange-300' });
+        flags.licenses++;
       }
 
       // Payment
@@ -173,32 +185,20 @@ export default function ComplianceManager({
         flags.payments++;
       }
 
-      // Transponder
-      if (!entry.transponder_id || entry.transponder_id.trim() === '') {
-        entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
-        flags.transponders++;
-      }
-
-      // Duplicate car #
-      if (entry.car_number && carNumberCounts[entry.car_number] > 1) {
-        entryFlags.push({ type: 'duplicates', label: 'Duplicate #', color: 'bg-orange-900/40 text-orange-300' });
-        flags.duplicates++;
-      }
-
       if (entryFlags.length > 0) totalFlagged++;
 
       entriesMap.set(entry.id, {
         ...entry,
         driverName: getDriverName(entry.driver_id),
-        className: getClassName(entry.series_class_id),
+        className: getClassName(entry),
         flags: entryFlags,
-        waiverOk,
+        waiverOk: !!entry.waiver_verified,
       });
     });
 
     const severity = totalFlagged > 0 ? 'warning' : 'clear';
     return { totalEntries: entries.length, totalFlagged, flags, entriesMap, severity };
-  }, [entries, drivers, seriesClasses, today]);
+  }, [entries, drivers, eventClasses, seriesClasses]);
 
   React.useEffect(() => {
     if (onComplianceSeverityChange) onComplianceSeverityChange(complianceData.severity);
