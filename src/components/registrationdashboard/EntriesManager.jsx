@@ -27,6 +27,7 @@ import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
 import EntryDetailDrawer from './EntryDetailDrawer';
 import EntryCreateDrawer from './EntryCreateDrawer';
 import EntryEditDrawer from './EntryEditDrawer';
+import { useEntriesData } from './useEntriesData';
 import {
   DEFAULT_FILTERS,
   filtersFromParams,
