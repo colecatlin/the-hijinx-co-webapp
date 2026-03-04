@@ -1371,6 +1371,15 @@ export default function RegistrationDashboard() {
                 </div>
               )}
 
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'gateManager' && (
+                <GateManager
+                  selectedEvent={selectedEvent}
+                  isAdmin={isAdmin}
+                  currentUser={user}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
               {canTab(dashboardPermissions, 'announcer_pack') && activeTab === 'announcer_pack' && (
                 <div className="-mx-4 -mb-4">
                   <AnnouncerPackManager
