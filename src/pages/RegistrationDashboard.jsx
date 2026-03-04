@@ -1407,6 +1407,7 @@ export default function RegistrationDashboard() {
                   selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
