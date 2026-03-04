@@ -191,22 +191,26 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   });
   const collaboration = collabRecords[0] || null;
 
-  const canPublish = !selectedEventId || !collaboration
-    ? true // new event — no gating yet
-    : collaboration.track_status === 'accepted' && collaboration.series_status === 'accepted';
-
   const createCollaboration = async (eventId, trackId, seriesId) => {
-    const existing = await base44.entities.EventCollaboration.filter({ event_id: eventId });
-    if (existing.length > 0) return; // already exists
-    await base44.entities.EventCollaboration.create({
-      event_id: eventId,
-      track_id: trackId,
-      series_id: seriesId || null,
-      track_status: 'pending',
-      series_status: seriesId ? 'pending' : 'accepted',
-      created_by_user_id: currentUser?.id || '',
-    });
-    queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
+    if (!seriesId) return; // Only create collaboration if both track and series exist
+    
+    try {
+      const existing = await base44.entities.EventCollaboration.filter({ event_id: eventId });
+      if (existing.length > 0) return; // already exists
+      
+      // Call backend function to request collaboration
+      const orgType = currentUser?.role === 'admin' ? 'admin' : 'track'; // Assume track unless explicitly series
+      await base44.functions.invoke('requestEventCollaboration', {
+        eventId,
+        trackId,
+        seriesId,
+        requestedByType: orgType
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
+    } catch (error) {
+      console.warn('Collaboration creation error:', error);
+    }
   };
 
   const createMutation = useMutation({
@@ -586,25 +590,15 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   )}
                   {isEditing ? 'Update Draft' : 'Save Draft'}
                 </Button>
-                {canPublish ? (
-                  <Button
-                    onClick={() => handleSave(true)}
-                    disabled={isSaving}
-                    className="bg-green-700 hover:bg-green-600 text-white"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Publish Event
-                  </Button>
-                ) : (
-                  <Button
-                    disabled
-                    className="bg-gray-700 text-gray-400 cursor-not-allowed"
-                    title="Both Track and Series must approve before publishing"
-                  >
-                    <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />
-                    Publish Blocked — Awaiting Approvals
-                  </Button>
-                )}
+                <Button
+                  onClick={() => handleSave(true)}
+                  disabled={isSaving}
+                  className={event?.publish_ready ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
+                  title={event?.publish_ready ? "Publish event" : "Event requires mutual acceptance before publishing"}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {event?.publish_ready ? 'Publish Event' : 'Awaiting Mutual Acceptance'}
+                </Button>
                 {isEditing && (
                   <>
                     <Button

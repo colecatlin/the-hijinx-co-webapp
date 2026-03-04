@@ -31,6 +31,8 @@ function getKeysForOperation(operationType, payload = {}) {
       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
       break;
 
+    case 'event_collaboration_requested':
+    case 'event_collaboration_response':
     case 'event_collaboration_updated':
     case 'event_collaboration_track_accepted':
     case 'event_collaboration_series_accepted':
@@ -38,6 +40,12 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'event_collaboration_series_declined':
       broad.push(['events'], ['sessions'], ['results'], ['standings'], ['operationLogs'], ['eventCollaboration']);
       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId]);
+      break;
+    
+    case 'event_publish_attempt':
+    case 'event_published_mutual':
+      broad.push(['events'], ['sessions'], ['results'], ['standings'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId));
       break;
 
     case 'session_created':
