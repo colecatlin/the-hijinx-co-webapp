@@ -1,23 +1,37 @@
-import React, { useMemo, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { canTab } from '@/components/access/accessControl';
+import { createPageUrl } from '@/components/utils';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { AlertCircle, Search, X, Plus, Minus } from 'lucide-react';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { AlertCircle, Plus, Minus, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { createPageUrl } from '@/components/utils';
-
-const DQ = applyDefaultQueryOptions();
-
-const ENTRY_STATUS_OPTIONS = ['Registered', 'Checked In', 'Teched', 'Withdrawn'];
-const PAYMENT_STATUS_OPTIONS = ['Unpaid', 'Paid', 'Refunded', 'Comped'];
 
 export default function GateManager({
   selectedEvent,
@@ -26,248 +40,266 @@ export default function GateManager({
   invalidateAfterOperation,
 }) {
   const queryClient = useQueryClient();
-  const [searchText, setSearchText] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPayment, setFilterPayment] = useState('all');
-  const [selectedEntryId, setSelectedEntryId] = useState('');
-  const [entryMode, setEntryMode] = useState('entry');
+  const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('all');
+  const [entryStatusFilter, setEntryStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [techFilter, setTechFilter] = useState('all');
+  const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerNotes, setDrawerNotes] = useState('');
-  const [drawerWristbands, setDrawerWristbands] = useState(0);
+  const [wristbandCount, setWristbandCount] = useState(0);
+  const [gateNotes, setGateNotes] = useState('');
 
-  // Try to load Entry entity
-  const { data: entries = [], error: entryError, isLoading: entryLoading } = useQuery({
+  const canEdit = canTab(dashboardPermissions, 'gate');
+
+  // Load entries
+  const { data: entries = [], isLoading: entriesLoading } = useQuery({
     queryKey: ['racecore', 'gate', 'entries', selectedEvent?.id],
-    queryFn: async () => {
-      if (!selectedEvent?.id) return [];
-      try {
-        return await base44.entities.Entry.filter({ event_id: selectedEvent.id });
-      } catch (err) {
-        setEntryMode('proxy');
-        return [];
-      }
-    },
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    queryFn: () =>
+      selectedEvent
+        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
+        : Promise.resolve([]),
+    enabled: !!selectedEvent,
   });
 
-  // Load DriverProgram as fallback
-  const { data: programs = [] } = useQuery({
-    queryKey: ['racecore', 'gate', 'programs', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id 
-      ? base44.entities.DriverProgram.filter({ event_id: selectedEvent.id })
-      : Promise.resolve([])),
-    enabled: !!selectedEvent?.id && entryMode === 'proxy',
-    ...DQ,
-  });
-
-  // Load drivers for lookup
+  // Load drivers
   const { data: drivers = [] } = useQuery({
     queryKey: ['racecore', 'gate', 'drivers'],
     queryFn: () => base44.entities.Driver.list(),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
   });
 
-  // Determine actual display mode
-  const isProxyMode = entryError || entryMode === 'proxy' || (!entryLoading && entries.length === 0 && programs.length > 0);
-  
-  // Build driver lookup
-  const driverMap = useMemo(() => {
-    const map = {};
-    drivers.forEach(d => map[d.id] = d);
-    return map;
-  }, [drivers]);
+  // Load classes
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['racecore', 'gate', 'classes'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+  });
 
-  // Get selected entry/program
-  const selectedItem = useMemo(() => {
-    if (isProxyMode) {
-      return programs.find(p => p.id === selectedEntryId);
-    }
-    return entries.find(e => e.id === selectedEntryId);
-  }, [selectedEntryId, entries, programs, isProxyMode]);
+  // Build maps
+  const driverMap = useMemo(
+    () => new Map(drivers.map(d => [d.id, d])),
+    [drivers]
+  );
 
-  // Get driver for selected item
-  const selectedDriver = useMemo(() => {
-    if (!selectedItem) return null;
-    const driverId = selectedItem.driver_id;
-    return driverMap[driverId] || null;
-  }, [selectedItem, driverMap]);
+  const classMap = useMemo(
+    () => new Map(seriesClasses.map(c => [c.id, c])),
+    [seriesClasses]
+  );
+
+  // Mutations
+  const updateEntryMutation = useMutation({
+    mutationFn: (data) => base44.entities.Entry.update(data.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['racecore', 'gate', 'entries', selectedEvent.id],
+      });
+    },
+  });
+
+  const createLogMutation = useMutation({
+    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
+  });
 
   // Filter and search
-  const filteredItems = useMemo(() => {
-    let results = isProxyMode ? programs : entries;
+  const filteredEntries = useMemo(() => {
+    let filtered = entries;
 
-    // Search filter
-    if (searchText.trim()) {
-      const q = searchText.toLowerCase();
-      results = results.filter(item => {
-        const driver = driverMap[item.driver_id];
+    // Search by driver name, car number, transponder
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(e => {
+        const driver = driverMap.get(e.driver_id);
         const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
-        const carNum = (item.car_number || '').toLowerCase();
-        const transponder = (item.transponder_id || '').toLowerCase();
+        const carNum = (e.car_number || '').toLowerCase();
+        const transponder = (e.transponder_id || '').toLowerCase();
         return driverName.includes(q) || carNum.includes(q) || transponder.includes(q);
       });
     }
 
-    // Status filter
-    if (filterStatus !== 'all' && !isProxyMode) {
-      results = results.filter(e => e.entry_status === filterStatus);
+    // Class filter
+    if (classFilter !== 'all') {
+      filtered = filtered.filter(e => e.event_class_id === classFilter || e.series_class_id === classFilter);
+    }
+
+    // Entry status filter
+    if (entryStatusFilter !== 'all') {
+      filtered = filtered.filter(e => e.entry_status === entryStatusFilter);
     }
 
     // Payment filter
-    if (filterPayment !== 'all' && !isProxyMode) {
-      results = results.filter(e => e.payment_status === filterPayment);
+    if (paymentFilter !== 'all') {
+      filtered = filtered.filter(e => e.payment_status === paymentFilter);
     }
 
-    return results.sort((a, b) => (a.car_number || '').localeCompare(b.car_number || ''));
-  }, [entries, programs, searchText, filterStatus, filterPayment, driverMap, isProxyMode]);
+    // Tech filter
+    if (techFilter !== 'all') {
+      filtered = filtered.filter(e => e.tech_status === techFilter);
+    }
 
-  // Mutations
-  const updateEntryMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.update(data.id, data.updates),
-    onSuccess: (result, { id, updates }) => {
-      queryClient.invalidateQueries({ queryKey: ['racecore', 'gate', 'entries'] });
-      invalidateAfterOperation('entry_updated', { eventId: selectedEvent.id, entryId: id });
-      toast.success('Entry updated');
-    },
-    onError: () => toast.error('Failed to update entry'),
-  });
+    return filtered;
+  }, [entries, search, classFilter, entryStatusFilter, paymentFilter, techFilter, driverMap]);
 
-  const createLogMutation = useMutation({
-    mutationFn: (data) => base44.entities.OperationLog.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
-    },
-  });
+  // Stats
+  const stats = useMemo(() => {
+    return {
+      total: entries.length,
+      gateChecked: entries.filter(e => e.gate_checked_in === true).length,
+      flagged: entries.filter(e => 
+        e.payment_status === 'Unpaid' || 
+        !e.waiver_verified || 
+        e.tech_status === 'Not Inspected'
+      ).length,
+    };
+  }, [entries]);
 
-  // Handlers
-  const handleToggleCheckin = async (entry) => {
-    const newStatus = entry.entry_status === 'Checked In' ? 'Registered' : 'Checked In';
-    
+  // Handle gate check toggle
+  const handleGateCheck = async (entry) => {
+    if (!canEdit) return;
+
     try {
+      const nextValue = !entry.gate_checked_in;
       await updateEntryMutation.mutateAsync({
         id: entry.id,
-        updates: { entry_status: newStatus },
+        gate_checked_in: nextValue,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'gate_update',
+        operation_type: 'gate_check_updated',
         entity_name: 'Entry',
         entity_id: entry.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
           entry_id: entry.id,
-          field_changed: 'entry_status',
-          before: entry.entry_status,
-          after: newStatus,
-        }),
-        notes: `Check-in toggled: ${entry.entry_status} → ${newStatus}`,
+          gate_checked_in: nextValue,
+        },
       });
+
+      invalidateAfterOperation('entry_updated', { eventId: selectedEvent.id });
+      toast.success(nextValue ? 'Entry marked as gate checked' : 'Gate check removed');
     } catch (error) {
-      console.error('Failed to toggle check-in:', error);
+      toast.error('Failed to update gate status');
+      console.error(error);
     }
   };
 
-  const handleTogglePayment = async (entry) => {
-    const newStatus = entry.payment_status === 'Paid' ? 'Unpaid' : 'Paid';
-    
+  // Handle wristband update
+  const handleWristbandUpdate = async (entry, delta) => {
+    if (!canEdit) return;
+
     try {
+      const nextCount = Math.max(0, (entry.wristband_count || 0) + delta);
       await updateEntryMutation.mutateAsync({
         id: entry.id,
-        updates: { payment_status: newStatus },
+        wristband_count: nextCount,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'gate_update',
+        operation_type: 'wristbands_updated',
         entity_name: 'Entry',
         entity_id: entry.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
           entry_id: entry.id,
-          field_changed: 'payment_status',
-          before: entry.payment_status,
-          after: newStatus,
-        }),
-        notes: `Payment toggled: ${entry.payment_status} → ${newStatus}`,
+          wristband_count: nextCount,
+        },
       });
+
+      invalidateAfterOperation('entry_updated', { eventId: selectedEvent.id });
+      toast.success(`Wristbands updated to ${nextCount}`);
     } catch (error) {
-      console.error('Failed to toggle payment:', error);
+      toast.error('Failed to update wristbands');
+      console.error(error);
     }
   };
 
+  // Handle notes save
   const handleSaveNotes = async (entry) => {
+    if (!canEdit) return;
+
     try {
       await updateEntryMutation.mutateAsync({
         id: entry.id,
-        updates: { notes: drawerNotes },
+        gate_notes: gateNotes,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'gate_update',
+        operation_type: 'gate_notes_saved',
         entity_name: 'Entry',
         entity_id: entry.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
           entry_id: entry.id,
-          field_changed: 'notes',
-        }),
-        notes: `Gate notes updated`,
+          note_length: gateNotes.length,
+        },
       });
 
+      invalidateAfterOperation('entry_updated', { eventId: selectedEvent.id });
       setDrawerOpen(false);
+      toast.success('Notes saved');
     } catch (error) {
-      console.error('Failed to save notes:', error);
+      toast.error('Failed to save notes');
+      console.error(error);
     }
   };
 
-  const handleWristbandChange = async (entry, value) => {
-    setDrawerWristbands(value);
-    
-    try {
-      await updateEntryMutation.mutateAsync({
-        id: entry.id,
-        updates: { wristband_count: value },
-      });
-
-      await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'gate_update',
-        entity_name: 'Entry',
-        entity_id: entry.id,
-        status: 'success',
-        metadata: JSON.stringify({
-          event_id: selectedEvent.id,
-          entry_id: entry.id,
-          field_changed: 'wristband_count',
-          before: entry.wristband_count || 0,
-          after: value,
-        }),
-        notes: `Wristbands updated to ${value}`,
-      });
-    } catch (error) {
-      console.error('Failed to update wristbands:', error);
-    }
-  };
-
-  const openDrawer = (item) => {
-    setSelectedEntryId(item.id);
-    setDrawerNotes(item.notes || '');
-    setDrawerWristbands(item.wristband_count || 0);
+  // Open drawer
+  const openDrawer = (entry) => {
+    setSelectedEntryId(entry.id);
+    setWristbandCount(entry.wristband_count || 0);
+    setGateNotes(entry.gate_notes || '');
     setDrawerOpen(true);
   };
+
+  const selectedEntry = entries.find(e => e.id === selectedEntryId);
+  const selectedDriver = selectedEntry ? driverMap.get(selectedEntry.driver_id) : null;
+
+  // Helper to determine row highlight
+  const hasFlag = (entry) => 
+    entry.payment_status === 'Unpaid' || 
+    !entry.waiver_verified || 
+    entry.tech_status === 'Not Inspected';
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to access Gate</p>
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to access gate tools</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!canEdit) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <p className="text-gray-400">You don't have access to Gate tools</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entriesLoading) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">Loading entries...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+          <p className="text-gray-400">No entries exist yet</p>
+          <p className="text-sm text-gray-500 mt-2">Gate tools activate once entries are created</p>
         </CardContent>
       </Card>
     );
@@ -275,296 +307,351 @@ export default function GateManager({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="pt-6">
+            <p className="text-xs text-gray-400 mb-1">Total Entries</p>
+            <p className="text-2xl font-bold text-white">{stats.total}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="pt-6">
+            <p className="text-xs text-gray-400 mb-1">Gate Checked</p>
+            <p className="text-2xl font-bold text-green-400">{stats.gateChecked}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="pt-6">
+            <p className="text-xs text-gray-400 mb-1">Flagged</p>
+            <p className="text-2xl font-bold text-red-400">{stats.flagged}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search & Filters */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader>
-          <CardTitle className="text-white">Gate Check-In</CardTitle>
-          <p className="text-xs text-gray-400 mt-1">Quick entry lookup and status management</p>
+          <CardTitle className="text-white text-lg">Search & Filter</CardTitle>
         </CardHeader>
-      </Card>
-
-      {/* Proxy mode warning */}
-      {isProxyMode && (
-        <div className="bg-yellow-950/40 border border-yellow-800 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-yellow-300 mb-1">Entry Entity Not Found</p>
-            <p className="text-xs text-yellow-200">
-              Gate actions are disabled. Create an Entry entity to enable check-in, payment, and wristband management. Currently showing DriverProgram data in read-only mode.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Search and Filters */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="pt-6 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
-            <Input
-              placeholder="Search driver name, car number, or transponder…"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="pl-10 bg-gray-900 border-gray-800 text-white placeholder-gray-500"
-            />
-          </div>
-
-          {/* Filters */}
-          {!isProxyMode && (
-            <div className="grid grid-cols-2 gap-3">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="bg-gray-900 border-gray-800 text-white text-sm">
+        <CardContent className="space-y-4">
+          <Input
+            placeholder="Search driver, car number, transponder..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-gray-900 border-gray-700 text-white"
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Class</label>
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-800">
-                  <SelectItem value="all">All Status</SelectItem>
-                  {ENTRY_STATUS_OPTIONS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={filterPayment} onValueChange={setFilterPayment}>
-                <SelectTrigger className="bg-gray-900 border-gray-800 text-white text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-800">
-                  <SelectItem value="all">All Payment</SelectItem>
-                  {PAYMENT_STATUS_OPTIONS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  <SelectItem value="all" className="text-white">All Classes</SelectItem>
+                  {Array.from(classMap.values()).map(c => (
+                    <SelectItem key={c.id} value={c.id} className="text-white">
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Entry Status</label>
+              <Select value={entryStatusFilter} onValueChange={setEntryStatusFilter}>
+                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  <SelectItem value="all" className="text-white">All</SelectItem>
+                  <SelectItem value="Registered" className="text-white">Registered</SelectItem>
+                  <SelectItem value="Checked In" className="text-white">Checked In</SelectItem>
+                  <SelectItem value="Teched" className="text-white">Teched</SelectItem>
+                  <SelectItem value="Withdrawn" className="text-white">Withdrawn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Payment</label>
+              <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  <SelectItem value="all" className="text-white">All</SelectItem>
+                  <SelectItem value="Paid" className="text-white">Paid</SelectItem>
+                  <SelectItem value="Unpaid" className="text-white">Unpaid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Tech Status</label>
+              <Select value={techFilter} onValueChange={setTechFilter}>
+                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  <SelectItem value="all" className="text-white">All</SelectItem>
+                  <SelectItem value="Passed" className="text-white">Passed</SelectItem>
+                  <SelectItem value="Not Inspected" className="text-white">Not Inspected</SelectItem>
+                  <SelectItem value="Failed" className="text-white">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Entries Table */}
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="pt-6">
-          {filteredItems.length === 0 ? (
-            <p className="text-center text-gray-400 py-8">No entries found</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-gray-900/50">
-                  <TableRow className="border-gray-800">
-                    <TableHead className="text-xs text-gray-400">Car</TableHead>
-                    <TableHead className="text-xs text-gray-400">Driver</TableHead>
-                    <TableHead className="text-xs text-gray-400">Class</TableHead>
-                    <TableHead className="text-xs text-gray-400">Transponder</TableHead>
-                    {!isProxyMode && (
-                      <>
-                        <TableHead className="text-xs text-gray-400">Status</TableHead>
-                        <TableHead className="text-xs text-gray-400">Payment</TableHead>
-                        <TableHead className="text-xs text-gray-400">Wristbands</TableHead>
-                      </>
-                    )}
-                    <TableHead className="text-xs text-gray-400 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems.map(item => {
-                    const driver = driverMap[item.driver_id];
-                    const isCheckedIn = item.entry_status === 'Checked In';
-                    const isPaid = item.payment_status === 'Paid';
+        <CardHeader>
+          <CardTitle className="text-white">
+            Entries ({filteredEntries.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-400">Car #</TableHead>
+                  <TableHead className="text-gray-400">Driver</TableHead>
+                  <TableHead className="text-gray-400">Class</TableHead>
+                  <TableHead className="text-gray-400">Entry Status</TableHead>
+                  <TableHead className="text-gray-400">Payment</TableHead>
+                  <TableHead className="text-gray-400">Tech</TableHead>
+                  <TableHead className="text-gray-400">Gate</TableHead>
+                  <TableHead className="text-gray-400">Wristbands</TableHead>
+                  <TableHead className="text-gray-400">Flags</TableHead>
+                  <TableHead className="text-gray-400">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.map((entry) => {
+                  const driver = driverMap.get(entry.driver_id);
+                  const eventClass = classMap.get(entry.series_class_id);
 
-                    return (
-                      <TableRow key={item.id} className="border-gray-800 hover:bg-gray-900/30">
-                        <TableCell className="text-white font-semibold">{item.car_number || '—'}</TableCell>
-                        <TableCell className="text-white text-sm">
-                          {driver ? `${driver.first_name} ${driver.last_name}` : '—'}
-                        </TableCell>
-                        <TableCell className="text-gray-400 text-sm">{item.series_class_id || '—'}</TableCell>
-                        <TableCell className="text-gray-400 text-sm font-mono">{item.transponder_id || '—'}</TableCell>
-                        {!isProxyMode && (
-                          <>
-                            <TableCell>
-                              <Badge className={isCheckedIn ? 'bg-green-900/40 text-green-300' : 'bg-gray-800 text-gray-300'}>
-                                {item.entry_status || 'Registered'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={isPaid ? 'bg-blue-900/40 text-blue-300' : 'bg-orange-900/40 text-orange-300'}>
-                                {item.payment_status || 'Unpaid'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-white text-sm">{item.wristband_count || 0}</TableCell>
-                          </>
+                  return (
+                    <TableRow
+                      key={entry.id}
+                      className={`border-gray-800 cursor-pointer hover:bg-gray-900/50 ${
+                        hasFlag(entry) ? 'bg-red-950/20' : ''
+                      }`}
+                      onClick={() => openDrawer(entry)}
+                    >
+                      <TableCell className="text-white font-semibold text-sm">
+                        {entry.car_number || '-'}
+                      </TableCell>
+                      <TableCell className="text-white text-sm">
+                        {driver ? `${driver.first_name} ${driver.last_name}` : '-'}
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">
+                        {eventClass?.name || '-'}
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">
+                        <Badge variant="outline" className="text-xs">
+                          {entry.entry_status || 'Registered'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            entry.payment_status === 'Paid'
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-red-900/30 text-red-300'
+                          }`}
+                        >
+                          {entry.payment_status || 'Unpaid'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            entry.tech_status === 'Passed'
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-yellow-900/30 text-yellow-300'
+                          }`}
+                        >
+                          {entry.tech_status || 'Not Inspected'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGateCheck(entry);
+                          }}
+                          className={`p-1.5 rounded transition-colors ${
+                            entry.gate_checked_in
+                              ? 'bg-green-900/30 text-green-400'
+                              : 'bg-gray-800 text-gray-500 hover:bg-gray-700'
+                          }`}
+                        >
+                          {entry.gate_checked_in ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
+                        </button>
+                      </TableCell>
+                      <TableCell className="text-white text-sm font-semibold">
+                        {entry.wristband_count || 0}
+                      </TableCell>
+                      <TableCell>
+                        {hasFlag(entry) && (
+                          <Badge className="bg-red-900/40 text-red-300 text-xs">
+                            ⚠ Flag
+                          </Badge>
                         )}
-                        <TableCell className="text-right">
-                          {!isProxyMode && (
-                            <div className="flex gap-1 justify-end">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleToggleCheckin(item)}
-                                className={`h-7 px-2 text-xs ${isCheckedIn ? 'bg-green-900/40 text-green-300 hover:bg-green-900/60' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
-                                disabled={updateEntryMutation.isPending}
-                              >
-                                {isCheckedIn ? '✓ In' : 'Check In'}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleTogglePayment(item)}
-                                className={`h-7 px-2 text-xs ${isPaid ? 'bg-blue-900/40 text-blue-300 hover:bg-blue-900/60' : 'bg-orange-900/40 text-orange-300 hover:bg-orange-900/60'}`}
-                                disabled={updateEntryMutation.isPending}
-                              >
-                                {isPaid ? '✓ Paid' : 'Pay'}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => openDrawer(item)}
-                                className="h-7 px-2 text-xs bg-gray-800 text-gray-300 hover:bg-gray-700"
-                              >
-                                Details
-                              </Button>
-                            </div>
-                          )}
-                          {isProxyMode && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => openDrawer(item)}
-                              className="h-7 px-2 text-xs bg-gray-800 text-gray-300 hover:bg-gray-700 opacity-50 cursor-not-allowed"
-                              disabled
-                            >
-                              View
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDrawer(entry);
+                          }}
+                          className="text-gray-400 hover:text-white hover:bg-gray-800 text-xs"
+                        >
+                          Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Details Drawer */}
-      {selectedItem && selectedDriver && (
-        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <DrawerContent className="bg-[#262626] border-gray-800">
-            <DrawerHeader className="border-b border-gray-800">
-              <DrawerTitle className="text-white">
-                {selectedDriver.first_name} {selectedDriver.last_name} • #{selectedItem.car_number}
-              </DrawerTitle>
-              <DrawerClose className="text-gray-400 hover:text-white" />
-            </DrawerHeader>
+      {/* Entry Details Drawer */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent className="bg-[#262626] border-gray-700 w-full sm:w-96">
+          <SheetHeader>
+            <SheetTitle className="text-white">Entry Details</SheetTitle>
+            <SheetDescription className="text-gray-400">
+              Gate management for this entry
+            </SheetDescription>
+          </SheetHeader>
+          {selectedEntry && (
+            <div className="space-y-6 py-6">
+              {/* Driver Info */}
+              <div className="space-y-3 border-b border-gray-700 pb-4">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Driver</p>
+                  <p className="text-sm font-semibold text-white">
+                    {selectedDriver
+                      ? `${selectedDriver.first_name} ${selectedDriver.last_name}`
+                      : 'Unknown'}
+                  </p>
+                  {selectedDriver && (
+                    <a
+                      href={createPageUrl('DriverProfile', `id=${selectedDriver.id}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300"
+                    >
+                      View Profile →
+                    </a>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Car Number</p>
+                  <p className="text-sm font-semibold text-white">{selectedEntry.car_number}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Transponder</p>
+                  <p className="text-sm font-semibold text-white">
+                    {selectedEntry.transponder_id || 'Not assigned'}
+                  </p>
+                </div>
+              </div>
 
-            <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
-              {/* Driver Profile Link */}
+              {/* Gate Check */}
               <div>
-                <p className="text-xs text-gray-400 mb-2">Driver Profile</p>
+                <p className="text-xs text-gray-400 mb-3">Gate Check</p>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(createPageUrl('DriverProfile', `id=${selectedDriver.id}`), '_blank')}
-                  className="border-gray-700 text-blue-400 hover:bg-blue-900/20"
+                  onClick={() => handleGateCheck(selectedEntry)}
+                  className={`w-full ${
+                    selectedEntry.gate_checked_in
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
                 >
-                  View Profile
+                  {selectedEntry.gate_checked_in ? 'Checked In ✓' : 'Mark as Gate Complete'}
                 </Button>
               </div>
 
-              {/* Entry Details */}
-              {!isProxyMode && (
-                <>
-                  {/* Car Number */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Car Number</p>
-                    <p className="text-white font-mono">{selectedItem.car_number}</p>
+              {/* Wristbands */}
+              <div>
+                <p className="text-xs text-gray-400 mb-3">Wristbands</p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleWristbandUpdate(selectedEntry, -1)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <div className="flex-1 text-center">
+                    <p className="text-2xl font-bold text-white">{wristbandCount}</p>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleWristbandUpdate(selectedEntry, 1)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
 
-                  {/* Transponder */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Transponder</p>
-                    <p className="text-white font-mono">{selectedItem.transponder_id || '—'}</p>
-                  </div>
+              {/* Notes */}
+              <div>
+                <p className="text-xs text-gray-400 mb-2">Gate Notes</p>
+                <Textarea
+                  placeholder="Add gate-related notes..."
+                  value={gateNotes}
+                  onChange={(e) => setGateNotes(e.target.value)}
+                  className="bg-gray-900 border-gray-700 text-white text-sm h-24"
+                />
+                <Button
+                  onClick={() => handleSaveNotes(selectedEntry)}
+                  className="w-full mt-3 bg-blue-600 hover:bg-blue-700"
+                >
+                  Save Notes
+                </Button>
+              </div>
 
-                  {/* Wristbands */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-3">Wristbands</p>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleWristbandChange(selectedItem, Math.max(0, drawerWristbands - 1))}
-                        className="bg-gray-800 hover:bg-gray-700 text-white h-8 w-8 p-0"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <span className="text-white font-semibold w-8 text-center">{drawerWristbands}</span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleWristbandChange(selectedItem, drawerWristbands + 1)}
-                        className="bg-gray-800 hover:bg-gray-700 text-white h-8 w-8 p-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Waiver */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Waiver</p>
-                    <Badge className={selectedItem.waiver_verified ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'}>
-                      {selectedItem.waiver_verified ? 'Verified' : 'Not Verified'}
-                    </Badge>
-                  </div>
-
-                  {/* Status */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Entry Status</p>
-                    <Badge className="bg-gray-800 text-gray-300">
-                      {selectedItem.entry_status || 'Registered'}
-                    </Badge>
-                  </div>
-
-                  {/* Payment */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Payment</p>
-                    <Badge className={selectedItem.payment_status === 'Paid' ? 'bg-blue-900/40 text-blue-300' : 'bg-orange-900/40 text-orange-300'}>
-                      {selectedItem.payment_status || 'Unpaid'}
-                    </Badge>
-                  </div>
-
-                  {/* Notes */}
-                  <div>
-                    <p className="text-xs text-gray-400 mb-2">Gate Notes</p>
-                    <Textarea
-                      placeholder="Add gate notes…"
-                      value={drawerNotes}
-                      onChange={(e) => setDrawerNotes(e.target.value)}
-                      className="bg-gray-900 border-gray-800 text-white text-sm h-20"
-                    />
-                    <Button
-                      onClick={() => handleSaveNotes(selectedItem)}
-                      disabled={updateEntryMutation.isPending}
-                      className="mt-2 w-full bg-blue-700 hover:bg-blue-600 text-white h-8 text-xs"
-                    >
-                      Save Notes
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {/* Proxy mode info */}
-              {isProxyMode && (
-                <div className="bg-gray-900/50 p-4 rounded text-xs text-gray-400">
-                  <p>Driver Program data (read-only). Create Entry entity for full gate functionality.</p>
+              {/* Flags Summary */}
+              {hasFlag(selectedEntry) && (
+                <div className="bg-red-900/20 border border-red-800/50 rounded p-3">
+                  <p className="text-xs font-semibold text-red-300 mb-2">⚠ Flags</p>
+                  <ul className="text-xs text-red-200 space-y-1">
+                    {selectedEntry.payment_status === 'Unpaid' && (
+                      <li>• Unpaid</li>
+                    )}
+                    {!selectedEntry.waiver_verified && (
+                      <li>• Waiver not verified</li>
+                    )}
+                    {selectedEntry.tech_status === 'Not Inspected' && (
+                      <li>• Tech inspection pending</li>
+                    )}
+                  </ul>
                 </div>
               )}
             </div>
-          </DrawerContent>
-        </Drawer>
-      )}
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
