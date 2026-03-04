@@ -21,6 +21,7 @@ import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
 import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
 import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
+import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
@@ -1394,13 +1395,20 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                <div className="-mx-4 -mb-4">
-                  <GateMode
+                selectedEvent ? (
+                  <GateAttendantConsole
                     selectedEvent={selectedEvent}
-                    isAdmin={isAdmin}
-                    currentUser={user}
+                    selectedTrack={selectedTrack}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                    dashboardContext={dashboardContext}
                   />
-                </div>
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-20 text-center">
+                      <p className="text-gray-400">Select an event to access the Gate Attendant Console</p>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'gateManager' && (

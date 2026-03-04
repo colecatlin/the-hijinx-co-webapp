@@ -151,6 +151,11 @@ function getKeysForOperation(operationType, payload = {}) {
       if (eventId) exact.push(REG_QK.operationLogs(eventId));
       break;
 
+    case 'gate_updated':
+      broad.push(['entries'], ['operationLogs'], ['driverPrograms']);
+      if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId), REG_QK.driverPrograms(eventId));
+      break;
+
     case 'integration_sync_completed':
     case 'sync_completed':
     case 'sync_failed':
