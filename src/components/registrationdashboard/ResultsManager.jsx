@@ -130,12 +130,8 @@ export default function ResultsManager({
     ...DQ,
   });
 
-  const { data: driverPrograms = [] } = useQuery({
-    queryKey: ['driverPrograms', eventId],
-    queryFn: () => base44.entities.DriverProgram.filter({ event_id: eventId }),
-    enabled: !!eventId,
-    ...DQ,
-  });
+  // DriverProgram no longer used; Entry is the roster
+  // Kept for backwards compat if other components need it, but Results use Entry only
 
   const { data: eventClasses = [] } = useQuery({
      queryKey: ['eventClasses', eventId],
