@@ -40,6 +40,7 @@ import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import AnnouncerFeed from '@/components/registrationdashboard/AnnouncerFeed';
+import GateManager from '@/components/registrationdashboard/GateManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1201,6 +1202,15 @@ export default function RegistrationDashboard() {
                   <Mic className="w-4 h-4 mr-2" /> Announcer
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'gate') && (
+                <TabsTrigger
+                  value="gate"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-orange-800 data-[state=active]:text-orange-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Zap className="w-4 h-4 mr-2" /> Gate
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1514,6 +1524,14 @@ export default function RegistrationDashboard() {
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
                   selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                />
+              )}
+
+              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
+                <GateManager
+                  selectedEvent={selectedEvent}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                 />
