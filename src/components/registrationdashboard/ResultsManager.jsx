@@ -233,34 +233,36 @@ export default function ResultsManager({
     operationType: 'results_updated',
     entityName: 'Results',
     mutationFn: async (rows) => {
-      const rowErrors = {};
-      const ops = rows.map((row) => {
-        // Resolve program_id: row value → DriverProgram lookup → undefined
-        const resolvedProgramId = row.program_id || programByDriver[row.driver_id] || undefined;
+       const rowErrors = {};
+       const ops = rows.map((row) => {
+         // Resolve team_id and series_class_id from Entry if available
+         const entryData = entryByDriver[row.driver_id];
+         const resolvedTeamId = row.team_id || entryData?.team_id || undefined;
+         const resolvedClassId = row.series_class_id || entryData?.series_class_id || selectedSession?.series_class_id || undefined;
 
-        const payload = {
-          event_id: row.event_id || eventId,
-          session_id: row.session_id || sessionId,
-          session_type: selectedSession?.session_type || undefined,
-          driver_id: row.driver_id,
-          program_id: resolvedProgramId,
-          team_id: row.team_id || undefined,
-          series_id: selectedEvent?.series_id || undefined,
-          series_class_id: row.series_class_id || selectedSession?.series_class_id || undefined,
-          position: row.position !== '' ? parseInt(row.position) : null,
-          status: row.status || 'Running',
-          status_state: row.status_state || 'Draft',
-          laps_completed: row.laps_completed !== '' ? parseInt(row.laps_completed) : null,
-          best_lap_time_ms: row.best_lap_time_ms !== '' ? parseInt(row.best_lap_time_ms) : null,
-          points: row.points !== '' ? parseFloat(row.points) : null,
-          notes: row.notes || undefined,
-        };
-        if (row.id) return base44.entities.Results.update(row.id, payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
-        return base44.entities.Results.create(payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
-      });
-      await Promise.all(ops);
-      if (Object.keys(rowErrors).length) throw Object.assign(new Error('Some rows failed to save'), { rowErrors });
-    },
+         const payload = {
+           event_id: row.event_id || eventId,
+           session_id: row.session_id || sessionId,
+           session_type: selectedSession?.session_type || undefined,
+           driver_id: row.driver_id,
+           program_id: entryData?.id || undefined,
+           team_id: resolvedTeamId,
+           series_id: selectedEvent?.series_id || undefined,
+           series_class_id: resolvedClassId,
+           position: row.position !== '' ? parseInt(row.position) : null,
+           status: row.status || 'Running',
+           status_state: row.status_state || 'Draft',
+           laps_completed: row.laps_completed !== '' ? parseInt(row.laps_completed) : null,
+           best_lap_time_ms: row.best_lap_time_ms !== '' ? parseInt(row.best_lap_time_ms) : null,
+           points: row.points !== '' ? parseFloat(row.points) : null,
+           notes: row.notes || undefined,
+         };
+         if (row.id) return base44.entities.Results.update(row.id, payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
+         return base44.entities.Results.create(payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
+       });
+       await Promise.all(ops);
+       if (Object.keys(rowErrors).length) throw Object.assign(new Error('Some rows failed to save'), { rowErrors });
+     },
     successMessage: 'Results saved',
     ...sharedOpts,
   });
