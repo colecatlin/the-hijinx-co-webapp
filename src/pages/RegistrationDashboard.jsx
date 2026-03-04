@@ -1427,21 +1427,14 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
-                selectedEvent ? (
-                  <RaceControlConsole
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                    dashboardContext={dashboardContext}
-                    dashboardPermissions={dashboardPermissions}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-20 text-center">
-                      <p className="text-gray-400">Select an event to access Race Control</p>
-                    </CardContent>
-                  </Card>
-                )
+                <RaceControlManager
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
               )}
 
               {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (
