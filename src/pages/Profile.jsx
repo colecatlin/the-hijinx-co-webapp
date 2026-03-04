@@ -20,6 +20,7 @@ import FavoritesTab from '@/components/profile/FavoritesTab';
 import CodeInputTab from '@/components/profile/CodeInputTab';
 import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
 import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions';
+import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 
 export default function Profile() {
   const queryClient = useQueryClient();
