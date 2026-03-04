@@ -34,10 +34,12 @@ import { setupEventCollaborators } from '@/components/registrationdashboard/even
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
 const STATUS_OPTIONS = [
-  { value: 'upcoming', label: 'Draft', color: 'bg-gray-500' },
-  { value: 'in_progress', label: 'Published', color: 'bg-green-500' },
-  { value: 'completed', label: 'Completed', color: 'bg-blue-500' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+  { value: 'Draft', label: 'Draft', color: 'bg-gray-500' },
+  { value: 'PendingApproval', label: 'Pending Approval', color: 'bg-amber-500' },
+  { value: 'Published', label: 'Published', color: 'bg-green-500' },
+  { value: 'Live', label: 'Live', color: 'bg-blue-500' },
+  { value: 'Completed', label: 'Completed', color: 'bg-purple-500' },
+  { value: 'Cancelled', label: 'Cancelled', color: 'bg-red-500' },
 ];
 
 const TIMEZONES = [
@@ -77,11 +79,15 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     event_date: '',
     end_date: '',
     timezone: 'America/Denver',
-    status: 'upcoming',
+    status: 'Draft',
     round_number: '',
     external_uid: '',
     location_note: '',
   });
+  const [trackAcceptance, setTrackAcceptance] = useState('Pending');
+  const [seriesAcceptance, setSeriesAcceptance] = useState('Pending');
+  const [trackPublishApproved, setTrackPublishApproved] = useState(false);
+  const [seriesPublishApproved, setSeriesPublishApproved] = useState(false);
   const [errors, setErrors] = useState({});
   const [slugEditedByUser, setSlugEditedByUser] = useState(false);
 
@@ -123,7 +129,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
         event_date: event.event_date || '',
         end_date: event.end_date || '',
         timezone: tzMatch ? tzMatch[1] : 'America/Denver',
-        status: event.status || 'upcoming',
+        status: event.status || 'Draft',
         round_number: event.round_number?.toString() || '',
         external_uid: event.external_uid || '',
         location_note: event.location_note
@@ -131,6 +137,10 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
           .replace(/^\|/, '')
           .trim() || '',
       });
+      setTrackAcceptance(event.track_acceptance_status || 'Pending');
+      setSeriesAcceptance(event.series_acceptance_status || 'Pending');
+      setTrackPublishApproved(event.track_publish_approved || false);
+      setSeriesPublishApproved(event.series_publish_approved || false);
     } else if (!selectedEventId) {
       setFormData({
         track_id: '',
@@ -141,11 +151,15 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
         event_date: '',
         end_date: '',
         timezone: 'America/Denver',
-        status: 'upcoming',
+        status: 'Draft',
         round_number: '',
         external_uid: '',
         location_note: '',
       });
+      setTrackAcceptance('Pending');
+      setSeriesAcceptance('Pending');
+      setTrackPublishApproved(false);
+      setSeriesPublishApproved(false);
       setSlugEditedByUser(false);
     }
   }, [event, selectedEventId]);
@@ -256,34 +270,34 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       ? `TZ:${formData.timezone}|${formData.location_note}`
       : `TZ:${formData.timezone}`;
 
-    let targetStatus = publish ? 'in_progress' : formData.status;
+    // Determine target status and collaboration fields
+    let targetStatus = formData.status;
+    let trackAcceptanceTarget = trackAcceptance;
+    let seriesAcceptanceTarget = seriesAcceptance;
+    let trackPublishTarget = trackPublishApproved;
+    let seriesPublishTarget = seriesPublishApproved;
 
-    // If editing an existing event, validate state transitions
-    if (selectedEventId && event) {
-      // Map Event status to operational state
-      const currentEventStatus = event.status || 'upcoming'; // upcoming = Draft
-      const nextEventStatus = targetStatus; // in_progress = Published
-
-      // For validation, map DB status to operational state
-      const statusMap = {
-        'upcoming': 'Draft',
-        'in_progress': 'Published',
-        'completed': 'Completed',
-        'cancelled': 'Archived',
-      };
-
-      const currentOpsState = statusMap[currentEventStatus] || 'Draft';
-      const nextOpsState = statusMap[nextEventStatus] || 'Draft';
-
-      if (!canTransition('Event', currentOpsState, nextOpsState)) {
-        toast.error(`Cannot transition Event from ${currentOpsState} to ${nextOpsState}`);
-        return;
+    // On creation, set acceptance based on who creates it
+    if (!selectedEventId) {
+      const orgType = currentUser?.role === 'admin' ? null : null; // admin creates both accepted
+      trackAcceptanceTarget = !selectedEventId && orgType === 'track' ? 'Accepted' : (!formData.track_id ? 'Pending' : 'Pending');
+      seriesAcceptanceTarget = !selectedEventId && orgType === 'series' ? 'Accepted' : (!formData.series_id ? 'Pending' : 'Pending');
+      if (isAdmin || !orgType) {
+        if (formData.track_id) trackAcceptanceTarget = 'Accepted';
+        if (formData.series_id) seriesAcceptanceTarget = 'Accepted';
       }
+    }
 
-      // Get cascade instructions (for logging/future use)
-      const cascadeInstructions = cascadeEffects('Event', event, nextOpsState);
-      if (cascadeInstructions.warnings?.length > 0) {
-        cascadeInstructions.warnings.forEach(w => toast.info(w));
+    // Publish gating: can only publish if both sides accepted AND approved
+    if (publish) {
+      if (trackAcceptanceTarget !== 'Accepted' || seriesAcceptanceTarget !== 'Accepted') {
+        toast.error('Both Track and Series must accept before publishing');
+        targetStatus = 'PendingApproval';
+      } else if (!trackPublishTarget || !seriesPublishTarget) {
+        toast.error('Both Track and Series must approve publish before publishing');
+        targetStatus = 'PendingApproval';
+      } else {
+        targetStatus = 'Published';
       }
     }
 
@@ -300,10 +314,15 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       round_number: formData.round_number ? parseInt(formData.round_number) : null,
       external_uid: formData.external_uid || null,
       location_note: locationNoteWithTz,
+      created_by_entity_type: !selectedEventId ? (isAdmin ? 'admin' : 'track') : undefined,
+      created_by_entity_id: !selectedEventId && formData.track_id && !isAdmin ? formData.track_id : undefined,
+      track_acceptance_status: trackAcceptanceTarget,
+      series_acceptance_status: seriesAcceptanceTarget,
+      track_publish_approved: trackPublishTarget,
+      series_publish_approved: seriesPublishTarget,
     };
 
     if (selectedEventId) {
-      // Ensure collaboration record exists on edit
       if (!collaboration) {
         createCollaboration(selectedEventId, formData.track_id, formData.series_id || null);
       }
@@ -319,8 +338,72 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     const archivedNote = `ARCHIVED|${formData.location_note || ''}`;
     updateMutation.mutate({
       id: selectedEventId,
-      data: { status: 'completed', location_note: archivedNote },
+      data: { status: 'Cancelled', location_note: archivedNote },
     });
+  };
+
+  const handleTrackAccept = async (accept = true) => {
+    if (!selectedEventId) return;
+    const newStatus = accept ? 'Accepted' : 'Rejected';
+    const now = new Date().toISOString();
+    await updateMutation.mutateAsync({
+      id: selectedEventId,
+      data: {
+        track_acceptance_status: newStatus,
+        track_accepted_by_user_id: currentUser?.id || '',
+        track_accepted_date: newStatus !== 'Pending' ? now : null,
+      },
+    });
+    setTrackAcceptance(newStatus);
+    invalidateAfterOperation('event_updated', { eventId: selectedEventId });
+  };
+
+  const handleSeriesAccept = async (accept = true) => {
+    if (!selectedEventId) return;
+    const newStatus = accept ? 'Accepted' : 'Rejected';
+    const now = new Date().toISOString();
+    await updateMutation.mutateAsync({
+      id: selectedEventId,
+      data: {
+        series_acceptance_status: newStatus,
+        series_accepted_by_user_id: currentUser?.id || '',
+        series_accepted_date: newStatus !== 'Pending' ? now : null,
+      },
+    });
+    setSeriesAcceptance(newStatus);
+    invalidateAfterOperation('event_updated', { eventId: selectedEventId });
+  };
+
+  const handleTrackPublishApproval = async () => {
+    if (!selectedEventId) return;
+    const newVal = !trackPublishApproved;
+    const now = new Date().toISOString();
+    await updateMutation.mutateAsync({
+      id: selectedEventId,
+      data: {
+        track_publish_approved: newVal,
+        track_publish_approved_by_user_id: newVal ? currentUser?.id || '' : null,
+        track_publish_approved_date: newVal ? now : null,
+      },
+    });
+    setTrackPublishApproved(newVal);
+    invalidateAfterOperation('event_updated', { eventId: selectedEventId });
+  };
+
+  const handleSeriesPublishApproval = async () => {
+    if (!selectedEventId) return;
+    const newVal = !seriesPublishApproved;
+    const now = new Date().toISOString();
+    await updateMutation.mutateAsync({
+      id: selectedEventId,
+      data: {
+        series_publish_approved: newVal,
+        series_publish_approved_by_user_id: newVal ? currentUser?.id || '' : null,
+        series_publish_approved_date: newVal ? now : null,
+      },
+    });
+    setSeriesPublishApproved(newVal);
+    invalidateAfterOperation('event_updated', { eventId: selectedEventId });
   };
 
   const handleDuplicate = () => {
@@ -592,12 +675,12 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                 </Button>
                 <Button
                   onClick={() => handleSave(true)}
-                  disabled={isSaving}
-                  className={event?.publish_ready ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
-                  title={event?.publish_ready ? "Publish event" : "Event requires mutual acceptance before publishing"}
+                  disabled={isSaving || (trackAcceptance !== 'Accepted' || seriesAcceptance !== 'Accepted' || !trackPublishApproved || !seriesPublishApproved)}
+                  className={trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
+                  title={trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? "Publish event" : "Event awaiting dual acceptance and approval"}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {event?.publish_ready ? 'Publish Event' : 'Awaiting Mutual Acceptance'}
+                  {trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? 'Publish Event' : 'Pending Approval'}
                 </Button>
                 {isEditing && (
                   <>
@@ -645,11 +728,124 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       {/* Right Column - Preview + Collaboration */}
       <div className="space-y-6">
         {selectedEventId && (
-          <CollaborationApprovalPanel
-            eventId={selectedEventId}
-            isAdmin={isAdmin}
-            currentUser={currentUser}
-          />
+          <>
+            <CollaborationApprovalPanel
+              eventId={selectedEventId}
+              isAdmin={isAdmin}
+              currentUser={currentUser}
+            />
+            
+            {/* Acceptance & Publish Approval Cards */}
+            {(canEditEventCore || isAdmin) && (
+              <>
+                <Card className="bg-blue-900/20 border-blue-800">
+                  <CardHeader className="border-b border-blue-800 pb-3">
+                    <CardTitle className="text-white text-sm flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Track Acceptance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-300">Status:</span>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        trackAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
+                        trackAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
+                        'bg-amber-900/50 text-amber-300'
+                      }`}>
+                        {trackAcceptance}
+                      </span>
+                    </div>
+                    {trackAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleTrackAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
+                          Accept
+                        </Button>
+                        <Button size="sm" onClick={() => handleTrackAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {formData.series_id && (
+                  <Card className="bg-purple-900/20 border-purple-800">
+                    <CardHeader className="border-b border-purple-800 pb-3">
+                      <CardTitle className="text-white text-sm flex items-center gap-2">
+                        <Shield className="w-4 h-4" />
+                        Series Acceptance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-300">Status:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          seriesAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
+                          seriesAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
+                          'bg-amber-900/50 text-amber-300'
+                        }`}>
+                          {seriesAcceptance}
+                        </span>
+                      </div>
+                      {seriesAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleSeriesAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
+                            Accept
+                          </Button>
+                          <Button size="sm" onClick={() => handleSeriesAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && (
+                  <>
+                    <Card className="bg-blue-900/20 border-blue-800">
+                      <CardHeader className="border-b border-blue-800 pb-3">
+                        <CardTitle className="text-white text-sm">Track Publish Approval</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <button
+                          onClick={() => handleTrackPublishApproval()}
+                          className={`w-full px-4 py-2 rounded text-sm font-medium transition-colors ${
+                            trackPublishApproved
+                              ? 'bg-green-900/50 text-green-300 border border-green-700'
+                              : 'bg-gray-900/50 text-gray-400 border border-gray-700 hover:bg-gray-800/50'
+                          }`}
+                        >
+                          {trackPublishApproved ? '✓ Approved' : 'Not Approved'}
+                        </button>
+                      </CardContent>
+                    </Card>
+
+                    {formData.series_id && (
+                      <Card className="bg-purple-900/20 border-purple-800">
+                        <CardHeader className="border-b border-purple-800 pb-3">
+                          <CardTitle className="text-white text-sm">Series Publish Approval</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <button
+                            onClick={() => handleSeriesPublishApproval()}
+                            className={`w-full px-4 py-2 rounded text-sm font-medium transition-colors ${
+                              seriesPublishApproved
+                                ? 'bg-green-900/50 text-green-300 border border-green-700'
+                                : 'bg-gray-900/50 text-gray-400 border border-gray-700 hover:bg-gray-800/50'
+                            }`}
+                          >
+                            {seriesPublishApproved ? '✓ Approved' : 'Not Approved'}
+                          </button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </>
         )}
         <Card className="bg-[#171717] border-gray-800">
           <CardHeader className="border-b border-gray-800">
