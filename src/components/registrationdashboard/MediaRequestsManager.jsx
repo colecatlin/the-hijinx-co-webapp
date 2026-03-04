@@ -50,12 +50,19 @@ export default function MediaRequestsManager({
 
   // Review mutation
   const reviewMutation = useMutation({
-    mutationFn: async ({ requestId, decision, notes }) => {
+    mutationFn: async ({ requestId, decision, notes, issuerEntityId, reviewerUserId }) => {
+      const actionMap = {
+        approved: 'approve',
+        denied: 'deny',
+        under_review: 'under_review',
+        change_requested: 'request_info',
+      };
       return base44.functions.invoke('media_reviewCredentialRequest', {
         request_id: requestId,
-        decision,
+        action: actionMap[decision] || decision,
         review_notes: notes,
-        issuer_entity_id: orgEntityId,
+        issuer_entity_id: issuerEntityId,
+        reviewer_user_id: reviewerUserId,
       });
     },
     onSuccess: () => {
@@ -71,7 +78,14 @@ export default function MediaRequestsManager({
 
   const handleAction = async (requestId, decision) => {
     setPending(true);
-    reviewMutation.mutate({ requestId, decision });
+    const user = await base44.auth.me();
+    reviewMutation.mutate({
+      requestId,
+      decision,
+      notes: '',
+      issuerEntityId: orgEntityId,
+      reviewerUserId: user.id,
+    });
   };
 
   const statusColor = (status) => {

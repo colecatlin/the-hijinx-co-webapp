@@ -49,11 +49,10 @@ export default function IssuedCredentialsManager({
 
   // Revoke mutation
   const revokeMutation = useMutation({
-    mutationFn: async (credentialId) => {
-      const user = await base44.auth.me();
+    mutationFn: async ({ credentialId, userId }) => {
       return base44.functions.invoke('media_revokeCredential', {
         credential_id: credentialId,
-        requester_user_id: user.id,
+        requester_user_id: userId,
       });
     },
     onSuccess: () => {
@@ -67,9 +66,10 @@ export default function IssuedCredentialsManager({
     },
   });
 
-  const handleRevoke = (credentialId) => {
+  const handleRevoke = async (credentialId) => {
     setPending(true);
-    revokeMutation.mutate(credentialId);
+    const user = await base44.auth.me();
+    revokeMutation.mutate({ credentialId, userId: user.id });
   };
 
   const statusColor = (status) => {

@@ -4,123 +4,250 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const payload = await req.json();
     const {
       request_id,
-      decision,
-      review_notes,
       issuer_entity_id,
-      buffer_hours = 12,
-    } = await req.json();
+      reviewer_user_id,
+      action,
+      review_notes = '',
+      approved_roles = null,
+      approved_access_level = null,
+      expires_at = null,
+      event_expiry_buffer_hours = 12,
+    } = payload;
 
-    if (!request_id || !decision) {
-      return Response.json(
-        { error: 'Missing request_id or decision' },
-        { status: 400 }
-      );
+    // Validate required fields
+    if (!request_id || !issuer_entity_id || !reviewer_user_id || !action) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Fetch the credential request
-    const credRequest = await base44.entities.CredentialRequest.list().then(
-      (all) => all.find((cr) => cr.id === request_id)
-    );
-
-    if (!credRequest) {
-      return Response.json(
-        { error: 'CredentialRequest not found' },
-        { status: 404 }
-      );
+    // Load the credential request
+    const credentialRequest = await base44.entities.CredentialRequest.get(request_id);
+    if (!credentialRequest) {
+      return Response.json({ error: 'Credential request not found' }, { status: 404 });
     }
 
-    // Update request status
-    await base44.entities.CredentialRequest.update(request_id, {
-      status: decision,
-      reviewed_by_user_id: user.id,
-      reviewed_at: new Date().toISOString(),
-      review_notes,
-    });
+    // Authority check: verify reviewer_user_id can act for issuer_entity_id
+    const isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const collaborators = await base44.entities.EntityCollaborator.filter({
+        user_id: reviewer_user_id,
+        entity_id: issuer_entity_id,
+      });
+      const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+      if (!hasAccess) {
+        return Response.json({ error: 'Not authorized' }, { status: 403 });
+      }
+    }
 
-    let credential_id = null;
+    const now = new Date().toISOString();
+    let updatedRequest = null;
+    let credential = null;
 
-    // If approved, issue credential
-    if (decision === 'approved') {
-      // Calculate expiry for event scopes
-      let expires_at = null;
-      if (credRequest.target_entity_type === 'event') {
-        const event = await base44.entities.Event.list().then((all) =>
-          all.find((e) => e.id === credRequest.target_entity_id)
+    if (action === 'under_review') {
+      updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
+        status: 'under_review',
+        reviewed_by_user_id: reviewer_user_id,
+        reviewed_at: now,
+        review_notes: review_notes,
+      });
+
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'media_request_under_review',
+        source_type: 'media',
+        entity_name: 'CredentialRequest',
+        entity_id: request_id,
+        status: 'success',
+        metadata: {
+          request_id,
+          issuer_entity_id,
+          reviewer_user_id,
+        },
+        notes: `Credential request moved to under_review by ${user.email}`,
+      });
+
+      return Response.json({ request: updatedRequest });
+    }
+
+    if (action === 'request_info') {
+      const infoNote = `INFO_REQUEST: ${review_notes}`;
+      updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
+        status: 'under_review',
+        reviewed_by_user_id: reviewer_user_id,
+        reviewed_at: now,
+        review_notes: infoNote,
+      });
+
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'media_request_info_requested',
+        source_type: 'media',
+        entity_name: 'CredentialRequest',
+        entity_id: request_id,
+        status: 'success',
+        metadata: {
+          request_id,
+          issuer_entity_id,
+          reviewer_user_id,
+        },
+        notes: `Info requested for credential request by ${user.email}`,
+      });
+
+      return Response.json({ request: updatedRequest });
+    }
+
+    if (action === 'deny') {
+      updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
+        status: 'denied',
+        reviewed_by_user_id: reviewer_user_id,
+        reviewed_at: now,
+        review_notes: review_notes,
+      });
+
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'media_request_denied',
+        source_type: 'media',
+        entity_name: 'CredentialRequest',
+        entity_id: request_id,
+        status: 'success',
+        metadata: {
+          request_id,
+          issuer_entity_id,
+          reviewer_user_id,
+        },
+        notes: `Credential request denied by ${user.email}`,
+      });
+
+      return Response.json({ request: updatedRequest });
+    }
+
+    if (action === 'approve') {
+      // Validate request status
+      if (!['applied', 'under_review'].includes(credentialRequest.status)) {
+        return Response.json(
+          { error: `Cannot approve request with status: ${credentialRequest.status}` },
+          { status: 400 }
         );
-        if (event) {
-          const eventDate = new Date(event.end_date || event.event_date);
-          const expiryDate = new Date(
-            eventDate.getTime() + buffer_hours * 3600000
-          );
-          expires_at = expiryDate.toISOString();
+      }
+
+      // Check for unresolved policy change requests
+      const policyAcceptances = await base44.entities.PolicyAcceptance.filter({
+        request_id,
+        status: 'change_requested',
+      });
+      if (policyAcceptances.length > 0) {
+        return Response.json(
+          { error: 'Policy change requests must be resolved before approval' },
+          { status: 400 }
+        );
+      }
+
+      // Check waiver requirements
+      const waiverTemplates = await base44.entities.WaiverTemplate.filter({
+        entity_id: issuer_entity_id,
+        active: true,
+      });
+      if (waiverTemplates.length > 0) {
+        const waiverSignatures = await base44.entities.WaiverSignature.filter({
+          holder_media_user_id: credentialRequest.holder_media_user_id,
+          request_id,
+        });
+        if (waiverSignatures.length === 0) {
+          const eventSigs = credentialRequest.related_event_id
+            ? await base44.entities.WaiverSignature.filter({
+                holder_media_user_id: credentialRequest.holder_media_user_id,
+                event_id: credentialRequest.related_event_id,
+              })
+            : [];
+          if (eventSigs.length === 0) {
+            return Response.json({ error: 'Waiver required' }, { status: 400 });
+          }
         }
       }
 
-      // Check for existing credential (one per media user per scope)
-      const existing = await base44.entities.MediaCredential.filter({
-        holder_media_user_id: credRequest.holder_media_user_id,
-        scope_entity_type: credRequest.target_entity_type,
-        scope_entity_id: credRequest.target_entity_id,
+      // Determine scope and expiry
+      let scopeEntityId = credentialRequest.target_entity_id;
+      let credentialExpiresAt = expires_at;
+
+      if (credentialRequest.related_event_id) {
+        scopeEntityId = credentialRequest.related_event_id;
+        // Calculate event-based expiry
+        const event = await base44.entities.Event.get(credentialRequest.related_event_id);
+        if (event) {
+          const endDate = event.end_date || event.event_date;
+          if (endDate) {
+            const endDateTime = new Date(endDate);
+            endDateTime.setHours(23, 59, 59, 999);
+            endDateTime.setHours(endDateTime.getHours() + event_expiry_buffer_hours);
+            credentialExpiresAt = endDateTime.toISOString();
+          }
+        }
+      }
+
+      // Create or update MediaCredential
+      const existingCreds = await base44.entities.MediaCredential.filter({
+        holder_media_user_id: credentialRequest.holder_media_user_id,
+        scope_entity_id: scopeEntityId,
       });
 
-      let credential;
-      if (existing.length > 0) {
+      const credentialData = {
+        issuer_entity_id,
+        holder_media_user_id: credentialRequest.holder_media_user_id,
+        scope_entity_id: scopeEntityId,
+        scope_entity_type: credentialRequest.target_entity_type,
+        roles: approved_roles || credentialRequest.requested_roles,
+        access_level: approved_access_level || credentialRequest.requested_access_level,
+        status: 'active',
+        issued_at: now,
+        expires_at: credentialExpiresAt,
+      };
+
+      if (existingCreds.length > 0) {
         // Update existing
         credential = await base44.entities.MediaCredential.update(
-          existing[0].id,
-          {
-            status: 'active',
-            issued_at: new Date().toISOString(),
-            expires_at,
-            roles: credRequest.requested_roles || [],
-            access_level: credRequest.requested_access_level || 'general',
-            issuer_entity_id,
-          }
+          existingCreds[0].id,
+          credentialData
         );
       } else {
         // Create new
-        credential = await base44.entities.MediaCredential.create({
-          holder_media_user_id: credRequest.holder_media_user_id,
-          scope_entity_type: credRequest.target_entity_type,
-          scope_entity_id: credRequest.target_entity_id,
-          issuer_entity_id,
-          roles: credRequest.requested_roles || [],
-          access_level: credRequest.requested_access_level || 'general',
-          status: 'active',
-          issued_at: new Date().toISOString(),
-          expires_at,
-        });
+        credential = await base44.entities.MediaCredential.create(credentialData);
       }
-      credential_id = credential.id;
+
+      // Update request
+      updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
+        status: 'approved',
+        reviewed_by_user_id: reviewer_user_id,
+        reviewed_at: now,
+        review_notes: review_notes,
+      });
+
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'media_request_approved',
+        source_type: 'media',
+        entity_name: 'CredentialRequest',
+        entity_id: request_id,
+        status: 'success',
+        metadata: {
+          request_id,
+          credential_id: credential.id,
+          issuer_entity_id,
+          reviewer_user_id,
+          scope_entity_id: scopeEntityId,
+          expires_at: credentialExpiresAt,
+        },
+        notes: `Credential request approved by ${user.email}`,
+      });
+
+      return Response.json({ request: updatedRequest, credential });
     }
 
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'media_review_credential_request',
-      entity_name: 'CredentialRequest',
-      entity_id: request_id,
-      status: 'success',
-      performed_by_user_id: user.id,
-      metadata_json: JSON.stringify({
-        decision,
-        credential_id,
-        issuer_entity_id,
-      }),
-    });
-
-    return Response.json({
-      request_id,
-      decision,
-      credential_id,
-    });
+    return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
+    console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

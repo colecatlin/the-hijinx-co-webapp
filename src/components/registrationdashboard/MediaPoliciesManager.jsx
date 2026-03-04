@@ -50,10 +50,11 @@ export default function MediaPoliciesManager({
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      return base44.entities.Policy.create({
-        entity_type: orgEntityType,
+      const { userId, ...policyData } = data;
+      return base44.functions.invoke('media_createOrUpdatePolicy', {
         entity_id: orgEntityId,
-        ...data,
+        user_id: userId,
+        ...policyData,
       });
     },
     onSuccess: () => {
@@ -77,10 +78,17 @@ export default function MediaPoliciesManager({
 
   // Toggle active mutation
   const toggleMutation = useMutation({
-    mutationFn: async (policyId) => {
+    mutationFn: async ({ policyId, active, userId }) => {
       const policy = policies.find((p) => p.id === policyId);
-      return base44.entities.Policy.update(policyId, {
-        active: !policy.active,
+      return base44.functions.invoke('media_createOrUpdatePolicy', {
+        policy_id: policyId,
+        entity_id: orgEntityId,
+        user_id: userId,
+        policy_type: policy.policy_type,
+        title: policy.title,
+        body_rich_text: policy.body_rich_text,
+        version: policy.version,
+        active,
       });
     },
     onSuccess: () => {
@@ -95,11 +103,18 @@ export default function MediaPoliciesManager({
       return;
     }
     setPending(true);
-    createMutation.mutate(formData);
+    const user = await base44.auth.me();
+    createMutation.mutate({ ...formData, userId: user.id });
   };
 
-  const handleToggleActive = (policyId) => {
-    toggleMutation.mutate(policyId);
+  const handleToggleActive = async (policyId) => {
+    const policy = policies.find((p) => p.id === policyId);
+    const user = await base44.auth.me();
+    toggleMutation.mutate({
+      policyId,
+      active: !policy.active,
+      userId: user.id,
+    });
   };
 
   if (!orgEntityId) {

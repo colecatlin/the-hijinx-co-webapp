@@ -4,58 +4,63 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { credential_id, reason } = await req.json();
+    const payload = await req.json();
+    const { credential_id, requester_user_id, revoke_notes = '' } = payload;
 
-    if (!credential_id) {
-      return Response.json(
-        { error: 'Missing credential_id' },
-        { status: 400 }
-      );
+    if (!credential_id || !requester_user_id) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Fetch the credential
-    const credential = await base44.entities.MediaCredential.list().then(
-      (all) => all.find((c) => c.id === credential_id)
-    );
-
+    // Load credential
+    const credential = await base44.entities.MediaCredential.get(credential_id);
     if (!credential) {
-      return Response.json(
-        { error: 'Credential not found' },
-        { status: 404 }
-      );
+      return Response.json({ error: 'Credential not found' }, { status: 404 });
     }
 
-    // Revoke the credential
-    const updated = await base44.entities.MediaCredential.update(credential_id, {
+    // Authority check
+    const isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const collaborators = await base44.entities.EntityCollaborator.filter({
+        user_id: requester_user_id,
+        entity_id: credential.issuer_entity_id,
+      });
+      const hasAccess = collaborators.some(c => c.role === 'owner');
+      if (!hasAccess) {
+        return Response.json({ error: 'Not authorized' }, { status: 403 });
+      }
+    }
+
+    // Revoke credential
+    const now = new Date().toISOString();
+    const updatedCredential = await base44.entities.MediaCredential.update(credential_id, {
       status: 'revoked',
-      revoked_at: new Date().toISOString(),
-      revoked_by_user_id: user.id,
-      notes: reason || 'Revoked by user',
+      revoked_at: now,
+      revoked_by_user_id: requester_user_id,
+      notes: (credential.notes ? credential.notes + ' | ' : '') + revoke_notes,
     });
 
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'media_revoke_credential',
+    await base44.asServiceRole.entities.OperationLog.create({
+      operation_type: 'media_credential_revoked',
+      source_type: 'media',
       entity_name: 'MediaCredential',
       entity_id: credential_id,
       status: 'success',
-      performed_by_user_id: user.id,
-      metadata_json: JSON.stringify({
-        reason,
+      metadata: {
+        credential_id,
         holder_media_user_id: credential.holder_media_user_id,
-      }),
+        issuer_entity_id: credential.issuer_entity_id,
+        requester_user_id,
+      },
+      notes: `Credential revoked by ${user.email}`,
     });
 
-    return Response.json({
-      credential_id,
-      status: 'revoked',
-    });
+    return Response.json({ credential: updatedCredential });
   } catch (error) {
+    console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
