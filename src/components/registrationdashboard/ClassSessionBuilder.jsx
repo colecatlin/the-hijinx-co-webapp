@@ -297,6 +297,63 @@ export default function ClassSessionBuilder({
     return 'bg-gray-500/20 text-gray-400';
   };
 
+  const generateSessions = async (type, classGroupId) => {
+    const classGroup = classGroups.find(cg => cg.id === classGroupId);
+    if (!classGroup) { toast.error('Class not found'); return; }
+
+    const maxRunOrder = sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0;
+    let sessionsToCreate = [];
+
+    if (type === 'heats') {
+      const entries = heatInputs.number_of_entries ? Number(heatInputs.number_of_entries) : 0;
+      const perHeat = heatInputs.cars_per_heat ? Number(heatInputs.cars_per_heat) : 1;
+      const numHeats = Math.ceil(entries / perHeat);
+      if (numHeats <= 0) { toast.error('Invalid heat configuration'); return; }
+      for (let i = 1; i <= numHeats; i++) {
+        sessionsToCreate.push({
+          event_id: eventId,
+          event_class_id: classGroupId,
+          series_class_id: classGroup.series_class_id,
+          session_type: 'Heat',
+          name: `Heat ${i}`,
+          session_number: i,
+          input_source: 'Manual',
+          status: 'Draft',
+          run_order: maxRunOrder + i - 1,
+        });
+      }
+    } else {
+      const sessionTypeMap = {
+        practice: { session_type: 'Practice', name: 'Practice' },
+        qualifying: { session_type: 'Qualifying', name: 'Qualifying' },
+        lcq: { session_type: 'LCQ', name: 'LCQ' },
+        feature: { session_type: 'Feature', name: 'Feature' },
+      };
+      const config = sessionTypeMap[type];
+      if (config) {
+        sessionsToCreate.push({
+          event_id: eventId,
+          event_class_id: classGroupId,
+          series_class_id: classGroup.series_class_id,
+          session_type: config.session_type,
+          name: config.name,
+          input_source: 'Manual',
+          status: 'Draft',
+          run_order: maxRunOrder,
+        });
+      }
+    }
+
+    try {
+      await Promise.all(sessionsToCreate.map((s) => createSession(s)));
+      toast.success(`${sessionsToCreate.length} session${sessionsToCreate.length === 1 ? '' : 's'} created`);
+      setQuickGenDialog(null);
+      setHeatInputs({ number_of_entries: '', cars_per_heat: '' });
+    } catch (err) {
+      toast.error('Failed to create sessions');
+    }
+  };
+
   if (!eventId) {
     return (
       <Card className="bg-[#171717] border-gray-800">
