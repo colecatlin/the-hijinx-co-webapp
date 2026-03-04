@@ -41,6 +41,7 @@ import RaceControlPanel from '@/components/registrationdashboard/RaceControlPane
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
+import GateAttendantManager from '@/components/registrationdashboard/GateAttendantManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1146,9 +1147,9 @@ export default function RegistrationDashboard() {
                 <TabsTrigger
                   value="gate"
                   disabled={!selectedEvent}
-                  className="data-[state=active]:bg-orange-800 data-[state=active]:text-orange-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="data-[state=active]:bg-green-800 data-[state=active]:text-green-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Zap className="w-4 h-4 mr-2" /> Gate
+                  <DoorOpen className="w-4 h-4 mr-2" /> Gate
                 </TabsTrigger>
               )}
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
@@ -1495,6 +1496,8 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
                 <GateManager
                   selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                 />
