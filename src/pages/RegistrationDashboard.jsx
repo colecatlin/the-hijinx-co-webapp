@@ -36,6 +36,7 @@ import AuditLogManager from '@/components/registrationdashboard/AuditLogManager'
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
+import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1161,6 +1162,15 @@ export default function RegistrationDashboard() {
                   <Radio className="w-4 h-4 mr-2" /> Race Control
                 </TabsTrigger>
               )}
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
+                <TabsTrigger
+                  value="paddock"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-amber-800 data-[state=active]:text-amber-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Users className="w-4 h-4 mr-2" /> Paddock
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1436,6 +1446,15 @@ export default function RegistrationDashboard() {
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
                   selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'paddock' && (
+                <PaddockManager
+                  selectedEvent={selectedEvent}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
