@@ -138,9 +138,9 @@ export default function ManagePointsConfig() {
               </Select>
             </div>
           </CardContent>
-        </Card>
+          </Card>
 
-        {/* Table */}
+          {/* Table */}
         <Card className="bg-gray-900 border-gray-700">
           <CardContent className="pt-6">
             <div className="overflow-x-auto">
@@ -193,10 +193,10 @@ export default function ManagePointsConfig() {
               </Table>
             </div>
           </CardContent>
-        </Card>
+          </Card>
 
-        {/* Editor Dialog */}
-        <PointsConfigEditor
+          {/* Editor Dialog */}
+          <PointsConfigEditor
           open={openDialog}
           onOpenChange={setOpenDialog}
           configId={editingId}
@@ -235,9 +235,8 @@ export default function ManagePointsConfig() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        )}
-      </div>
-    </div>
+          )}
+          </div>
   );
 }
 
