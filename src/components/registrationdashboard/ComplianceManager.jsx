@@ -85,6 +85,13 @@ export default function ComplianceManager({
     ...DQ,
   });
 
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: QueryKeys.entries.listByEvent ? ['eventClasses', selectedEvent?.id] : ['eventClasses', selectedEvent?.id],
+    queryFn: () => base44.entities.EventClass.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
