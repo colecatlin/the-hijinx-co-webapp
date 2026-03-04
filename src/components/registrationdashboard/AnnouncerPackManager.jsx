@@ -1,16 +1,24 @@
 /**
  * Announcer Pack Manager
- * Generates a clean, printable event briefing with export to CSV and clipboard.
+ * Generates printable driver lists and event notes for announcers.
  */
-import React, { useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { REG_QK } from './queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { Download, Copy, FileText } from 'lucide-react';
+import { Download, Printer, Sparkles, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DQ = applyDefaultQueryOptions();
@@ -18,18 +26,19 @@ const DQ = applyDefaultQueryOptions();
 export default function AnnouncerPackManager({
   selectedEvent,
   selectedTrack,
+  selectedSeries,
   dashboardContext,
+  dashboardPermissions,
 }) {
   const eventId = selectedEvent?.id;
+  const [packGenerated, setPackGenerated] = useState(false);
+  const [classFilter, setClassFilter] = useState('all');
+  const [sessionTypeFilter, setSessionTypeFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('car');
+  const [includeMedia, setIncludeMedia] = useState(true);
+  const [notes, setNotes] = useState('');
 
   // ── Queries ────────────────────────────────────────────────────────────────
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: REG_QK.sessions(eventId),
-    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
-    ...DQ,
-  });
 
   const { data: entries = [] } = useQuery({
     queryKey: REG_QK.entries(eventId),
@@ -42,13 +51,6 @@ export default function AnnouncerPackManager({
     queryKey: REG_QK.driverPrograms(eventId),
     queryFn: () => (eventId ? base44.entities.DriverProgram.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: !!eventId && entries.length === 0,
-    ...DQ,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: REG_QK.results(eventId),
-    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
     ...DQ,
   });
 
@@ -73,10 +75,24 @@ export default function AnnouncerPackManager({
     ...DQ,
   });
 
-  const { data: series = [] } = useQuery({
-    queryKey: ['announcerPack_series'],
-    queryFn: () => base44.entities.Series.list('-created_date', 100),
+  const { data: results = [] } = useQuery({
+    queryKey: REG_QK.results(eventId),
+    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: driverMedia = [] } = useQuery({
+    queryKey: ['announcerPack_driverMedia'],
+    queryFn: () => base44.entities.DriverMedia.list('-created_date', 500),
     staleTime: 60_000,
+    ...DQ,
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: REG_QK.sessions(eventId),
+    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
     ...DQ,
   });
 
@@ -85,464 +101,447 @@ export default function AnnouncerPackManager({
   const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
   const classMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
-  const seriesMap = useMemo(() => Object.fromEntries(series.map((s) => [s.id, s])), [series]);
+  const mediaMap = useMemo(
+    () => Object.fromEntries(driverMedia.map((m) => [m.driver_id, m])),
+    [driverMedia]
+  );
 
   // Use entries if available, fallback to DriverProgram
   const listData = useMemo(() => {
     if (entries.length > 0) return entries;
-    return driverPrograms.map((dp) => ({
-      id: dp.id,
-      event_id: dp.event_id,
-      driver_id: dp.driver_id,
-      series_class_id: dp.series_class_id,
-      team_id: dp.team_id,
-      car_number: dp.car_number,
-      _from_driver_program: true,
-    }));
+    return driverPrograms;
   }, [entries, driverPrograms]);
 
-  // Group entries by class
-  const entriesByClass = useMemo(() => {
-    const grouped = {};
+  // Get unique classes from entries
+  const uniqueClasses = useMemo(() => {
+    const classIds = new Set();
     listData.forEach((e) => {
-      const classId = e.series_class_id || 'unassigned';
-      if (!grouped[classId]) grouped[classId] = [];
-      grouped[classId].push(e);
+      if (e.series_class_id || e.event_class_id) {
+        classIds.add(e.series_class_id || e.event_class_id);
+      }
     });
-    return grouped;
+    return Array.from(classIds);
   }, [listData]);
 
-  // Sessions sorted
-  const sortedSessions = useMemo(() => {
-    return [...sessions].sort((a, b) => {
-      const orderA = a.session_order || 0;
-      const orderB = b.session_order || 0;
-      if (orderA !== orderB) return orderA - orderB;
-      const timeA = a.scheduled_time ? new Date(a.scheduled_time).getTime() : 0;
-      const timeB = b.scheduled_time ? new Date(b.scheduled_time).getTime() : 0;
-      return timeA - timeB;
-    });
-  }, [sessions]);
+  // Filter by class and session type
+  const filteredEntries = useMemo(() => {
+    let result = [...listData];
 
-  // Results by session
-  const resultsBySession = useMemo(() => {
-    const map = {};
-    results.forEach((r) => {
-      if (!map[r.session_id]) map[r.session_id] = [];
-      map[r.session_id].push(r);
+    if (classFilter !== 'all') {
+      result = result.filter(
+        (e) => (e.series_class_id || e.event_class_id) === classFilter
+      );
+    }
+
+    return result.sort((a, b) => {
+      const driverA = driverMap[a.driver_id];
+      const driverB = driverMap[b.driver_id];
+      const nameA = driverA ? `${driverA.first_name} ${driverA.last_name}`.toLowerCase() : '';
+      const nameB = driverB ? `${driverB.first_name} ${driverB.last_name}`.toLowerCase() : '';
+
+      if (sortBy === 'car') {
+        return (a.car_number || driverA?.primary_number || '').toString().localeCompare(
+          (b.car_number || driverB?.primary_number || '').toString()
+        );
+      } else if (sortBy === 'name') {
+        return nameA.localeCompare(nameB);
+      }
+      return 0;
     });
-    Object.keys(map).forEach((key) => {
-      map[key].sort((a, b) => (a.position || 999) - (b.position || 999));
-    });
-    return map;
-  }, [results]);
+  }, [listData, classFilter, sortBy, driverMap]);
 
   // Compute storylines
   const storylines = useMemo(() => {
+    if (filteredEntries.length === 0) return [];
+
     const lines = [];
 
-    // If results exist, add winner storyline
-    if (results.length > 0) {
-      const latestSession = sortedSessions[sortedSessions.length - 1];
-      if (latestSession && resultsBySession[latestSession.id]) {
-        const sessionResults = resultsBySession[latestSession.id];
-        if (sessionResults.length > 0) {
-          const winner = sessionResults[0];
-          const driver = driverMap[winner.driver_id];
-          if (driver) {
-            lines.push(`🏆 Latest winner: ${driver.first_name} ${driver.last_name} in ${latestSession.session_type}`);
-          }
+    // Returning winner
+    const drivers_with_results = filteredEntries.filter((e) => {
+      const driverResults = results.filter(
+        (r) => r.driver_id === e.driver_id && r.session_type === 'Final'
+      );
+      return driverResults.length > 0;
+    });
+
+    if (drivers_with_results.length > 0) {
+      const best_finisher = drivers_with_results.reduce((best, curr) => {
+        const curr_res = results.find(
+          (r) => r.driver_id === curr.driver_id && r.session_type === 'Final'
+        );
+        const best_res = results.find(
+          (r) => r.driver_id === best.driver_id && r.session_type === 'Final'
+        );
+        const curr_pos = curr_res?.position || 999;
+        const best_pos = best_res?.position || 999;
+        return curr_pos < best_pos ? curr : best;
+      });
+
+      const best_res = results.find(
+        (r) => r.driver_id === best_finisher.driver_id && r.session_type === 'Final'
+      );
+      if (best_res && best_res.position === 1) {
+        const best_driver = driverMap[best_finisher.driver_id];
+        if (best_driver) {
+          lines.push(
+            `Returning winner: ${best_driver.first_name} ${best_driver.last_name} (${best_finisher.car_number || best_driver.primary_number})`
+          );
         }
       }
     }
 
-    // Podium finishers
-    if (Object.keys(resultsBySession).length > 0) {
-      const allPodiumDrivers = new Set();
-      Object.values(resultsBySession).forEach((sessionResults) => {
-        sessionResults.slice(0, 3).forEach((r) => {
-          if (driverMap[r.driver_id]) allPodiumDrivers.add(r.driver_id);
-        });
+    // Most consistent
+    if (drivers_with_results.length > 0) {
+      const consistency = drivers_with_results.map((e) => {
+        const driver_finals = results.filter(
+          (r) => r.driver_id === e.driver_id && r.session_type === 'Final'
+        );
+        const avg_pos =
+          driver_finals.length > 0
+            ? driver_finals.reduce((sum, r) => sum + (r.position || 999), 0) /
+              driver_finals.length
+            : 999;
+        return { entry: e, avg_pos };
       });
-      if (allPodiumDrivers.size > 0) {
-        lines.push(`🎯 Podium finishers this weekend: ${allPodiumDrivers.size} unique drivers`);
+
+      const most_consistent = consistency.sort((a, b) => a.avg_pos - b.avg_pos)[0];
+      if (most_consistent && most_consistent.avg_pos < 999) {
+        const driver = driverMap[most_consistent.entry.driver_id];
+        if (driver) {
+          lines.push(
+            `Most consistent: ${driver.first_name} ${driver.last_name} (avg finish ${most_consistent.avg_pos.toFixed(1)})`
+          );
+        }
       }
     }
 
-    // Entry count
-    if (listData.length > 0) {
-      lines.push(`📊 Total entries: ${listData.length} drivers across ${Object.keys(entriesByClass).length} classes`);
-    }
+    return lines;
+  }, [filteredEntries, results, driverMap]);
 
-    // Session count
-    if (sortedSessions.length > 0) {
-      lines.push(`⏱️ Schedule: ${sortedSessions.length} sessions planned`);
-    }
+  // ── Actions ────────────────────────────────────────────────────────────────
 
-    // Class battles
-    Object.entries(entriesByClass).forEach(([classId, classEntries]) => {
-      if (classEntries.length > 10) {
-        const className = classMap[classId]?.class_name || 'Unassigned';
-        lines.push(`⚔️ Strong competition in ${className}: ${classEntries.length} entries`);
-      }
-    });
-
-    // Generic placeholders if needed
-    while (lines.length < 6) {
-      const placeholders = [
-        '👀 Watch for unexpected upsets this weekend',
-        '🔧 Technical issues could reshape the standings',
-        '🌟 Underdogs to watch: check the full entry list',
-        '💪 Veteran drivers looking to prove a point',
-        '🎪 Event promises exciting action in every session',
-      ];
-      lines.push(placeholders[lines.length % placeholders.length]);
-    }
-
-    return lines.slice(0, 10);
-  }, [results, sortedSessions, resultsBySession, driverMap, listData, entriesByClass, classMap]);
-
-  // Last updated
-  const lastUpdated = useMemo(() => {
-    const times = [
-      ...sessions.map((s) => new Date(s.created_date).getTime()),
-      ...results.map((r) => new Date(r.created_date).getTime()),
-      ...listData.map((e) => new Date(e.created_date).getTime()),
-    ];
-    if (times.length === 0) return new Date();
-    return new Date(Math.max(...times));
-  }, [sessions, results, listData]);
-
-  // ── Exports ────────────────────────────────────────────────────────────────
+  const handleGeneratePack = useCallback(() => {
+    setPackGenerated(true);
+    toast.success('Pack generated');
+    setTimeout(() => {
+      document.getElementById('announcer-pack-preview')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }, []);
 
   const handleExportCSV = useCallback(() => {
-    const rows = [];
-    const headers = [
-      'event_id',
-      'event_name',
-      'track_name',
-      'series_name',
-      'season',
-      'series_class_id',
-      'class_name',
-      'car_number',
-      'driver_id',
-      'driver_name',
-      'team_name',
-      'flags',
-    ];
-    rows.push(headers);
+    const rows = [['Car', 'Driver', 'Class', 'Team', 'Hometown', 'Manufacturer', 'Discipline', 'Instagram', 'YouTube']];
 
-    listData.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
       const driver = driverMap[entry.driver_id];
+      const cls = classMap[entry.series_class_id || entry.event_class_id];
       const team = teamMap[entry.team_id];
-      const cls = classMap[entry.series_class_id];
-      const seriesData = seriesMap[selectedEvent.series_id];
-
-      const flags = [];
-      if (entry.payment_status === 'Unpaid') flags.push('unpaid');
-      if (!entry.waiver_verified) flags.push('waiver_missing');
-      if (entry.tech_status && entry.tech_status !== 'Passed') flags.push('tech_pending');
-      if (!entry.transponder_id) flags.push('missing_transponder');
+      const media = mediaMap[entry.driver_id];
 
       rows.push([
-        selectedEvent.id || '',
-        selectedEvent.name || '',
-        selectedTrack?.name || '',
-        seriesData?.name || selectedEvent.series_name || '',
-        selectedEvent.season || '',
-        entry.series_class_id || '',
-        cls?.class_name || entry.class_name || '',
-        entry.car_number || driverMap[entry.driver_id]?.primary_number || '',
-        entry.driver_id || '',
-        driver ? `${driver.first_name} ${driver.last_name}` : '',
+        entry.car_number || driver?.primary_number || '',
+        driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown',
+        cls?.class_name || '',
         team?.name || '',
-        flags.join(', '),
+        driver ? `${driver.hometown_city || ''}${driver.hometown_state ? ', ' + driver.hometown_state : ''}` : '',
+        driver?.manufacturer || '',
+        driver?.primary_discipline || '',
+        media?.instagram_handle || '',
+        media?.youtube_channel || '',
       ]);
     });
 
-    const csv = rows.map((row) => row.map((cell) => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = rows.map((row) => row.map((cell) => `"${cell || ''}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${selectedEvent.name || 'event'}_entries.csv`;
+    a.download = `announcer_pack_${selectedEvent.name || 'event'}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success('CSV exported');
-  }, [listData, driverMap, teamMap, classMap, seriesMap, selectedEvent, selectedTrack]);
+  }, [filteredEntries, driverMap, classMap, teamMap, mediaMap, selectedEvent.name]);
 
-  const handleCopySummary = useCallback(() => {
-    const summary = [
-      '═════════════════════════════════════════',
-      'ANNOUNCER PACK - EVENT BRIEFING',
-      '═════════════════════════════════════════',
-      '',
-      '📌 EVENT OVERVIEW',
-      `Event: ${selectedEvent.name}`,
-      `Track: ${selectedTrack?.name || 'Not specified'}`,
-      `Date: ${selectedEvent.event_date}${selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date ? ` – ${selectedEvent.end_date}` : ''}`,
-      `Status: ${selectedEvent.status || 'Upcoming'}`,
-      '',
-      '⏰ SCHEDULE (Next 5)',
-      ...sortedSessions.slice(0, 5).map((s) => {
-        const time = s.scheduled_time ? new Date(s.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Time TBD';
-        return `  ${time} - ${s.session_type}${s.session_number ? ` ${s.session_number}` : ''} (${s.name || 'Unnamed'})`;
-      }),
-      '',
-      '👥 ENTRIES BY CLASS',
-      ...Object.entries(entriesByClass).map(([classId, classEntries]) => {
-        const className = classMap[classId]?.class_name || 'Unassigned';
-        return `  ${className}: ${classEntries.length} entries`;
-      }),
-      '',
-      '⭐ KEY STORYLINES',
-      ...storylines.map((s) => `  ${s}`),
-      '',
-      '📊 QUICK FACTS',
-      `  Total Entries: ${listData.length}`,
-      `  Classes: ${Object.keys(entriesByClass).length}`,
-      `  Sessions: ${sortedSessions.length}`,
-      `  Last Updated: ${lastUpdated.toLocaleString()}`,
-      '',
-      '═════════════════════════════════════════',
-    ].join('\n');
+  const handlePrint = useCallback(() => {
+    const printContent = document.getElementById('announcer-pack-content');
+    if (!printContent) return;
 
-    navigator.clipboard.writeText(summary);
-    toast.success('Summary copied to clipboard');
-  }, [selectedEvent, selectedTrack, sortedSessions, entriesByClass, classMap, listData, storylines, lastUpdated]);
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Announcer Pack - ${selectedEvent.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+            h1, h2 { page-break-after: avoid; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; page-break-inside: avoid; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; font-weight: bold; }
+            .section { page-break-inside: avoid; margin-bottom: 30px; }
+            .notes { border: 1px dashed #999; padding: 15px; min-height: 200px; margin-top: 20px; }
+            .header-info { background-color: #f9f9f9; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+            .storylines ul { margin: 10px 0; padding-left: 20px; }
+            .storylines li { margin: 5px 0; }
+            @media print {
+              .no-print { display: none; }
+              body { margin: 10px; }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  }, [selectedEvent.name]);
+
+  // ── Empty state ────────────────────────────────────────────────────────────
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-20 text-center">
-          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
           <p className="text-white font-semibold text-lg mb-1">Announcer Pack</p>
-          <p className="text-gray-400 text-sm">Select an event to generate a briefing.</p>
+          <p className="text-gray-400 text-sm">Select an event to generate announcer packs.</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <Card className="bg-[#171717] border-gray-800">
-        <CardHeader className="pb-3">
+        <CardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-white text-2xl">{selectedEvent.name}</CardTitle>
-              {selectedTrack && <p className="text-sm text-gray-400 mt-1">{selectedTrack.name}</p>}
-              <p className="text-xs text-gray-500 mt-1">
-                {selectedEvent.event_date}
-                {selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date ? ` – ${selectedEvent.end_date}` : ''}
-              </p>
+              <CardTitle className="text-white text-2xl">Announcer Pack</CardTitle>
+              <p className="text-sm text-gray-400 mt-1">Generate quick reference sheets for the booth</p>
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={handleCopySummary}
-                className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9"
-              >
-                <Copy className="w-3 h-3 mr-1" /> Copy Summary
-              </Button>
-              <Button
-                onClick={handleExportCSV}
+                onClick={handleGeneratePack}
                 className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
               >
-                <Download className="w-3 h-3 mr-1" /> Export CSV
+                <Sparkles className="w-3 h-3 mr-1" /> Generate Pack
               </Button>
+              {packGenerated && (
+                <>
+                  <Button
+                    onClick={handleExportCSV}
+                    className="bg-green-600 hover:bg-green-700 text-white text-xs h-9"
+                  >
+                    <Download className="w-3 h-3 mr-1" /> Export CSV
+                  </Button>
+                  <Button
+                    onClick={handlePrint}
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9"
+                  >
+                    <Printer className="w-3 h-3 mr-1" /> Print
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </CardHeader>
-      </Card>
 
-      {/* ── Event Overview ────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Event Overview</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="grid grid-cols-2 gap-4">
+        {/* Filters */}
+        <CardContent className="space-y-3 border-t border-gray-700 pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <p className="text-gray-500 text-xs">Name</p>
-              <p className="text-white">{selectedEvent.name}</p>
+              <label className="text-xs text-gray-400 mb-1 block">Class</label>
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="all" className="text-white">All Classes</SelectItem>
+                  {uniqueClasses.map((classId) => (
+                    <SelectItem key={classId} value={classId} className="text-white">
+                      {classMap[classId]?.class_name || classId.slice(0, 6)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
             <div>
-              <p className="text-gray-500 text-xs">Track</p>
-              <p className="text-white">{selectedTrack?.name || 'Not specified'}</p>
+              <label className="text-xs text-gray-400 mb-1 block">Sort By</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="car" className="text-white">Car Number</SelectItem>
+                  <SelectItem value="name" className="text-white">Driver Name</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <p className="text-gray-500 text-xs">Series</p>
-              <p className="text-white">{seriesMap[selectedEvent.series_id]?.name || selectedEvent.series_name || 'Not specified'}</p>
+
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeMedia}
+                  onChange={(e) => setIncludeMedia(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-xs text-gray-400">Include socials</span>
+              </label>
             </div>
-            <div>
-              <p className="text-gray-500 text-xs">Status</p>
-              <Badge className="bg-blue-900/40 text-blue-300 text-xs">{selectedEvent.status || 'Upcoming'}</Badge>
-            </div>
-            <div>
-              <p className="text-gray-500 text-xs">Dates</p>
-              <p className="text-white">
-                {selectedEvent.event_date}
-                {selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date ? ` – ${selectedEvent.end_date}` : ''}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-xs">Season</p>
-              <p className="text-white">{selectedEvent.season || 'Not specified'}</p>
+
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={true}
+                  disabled
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-xs text-gray-400">Include notes</span>
+              </label>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Schedule Snapshot ─────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Schedule Snapshot ({sortedSessions.length} sessions)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sortedSessions.length === 0 ? (
-            <p className="text-gray-500 text-xs py-4">No sessions built yet</p>
-          ) : (
-            <div className="space-y-2">
-              {sortedSessions.map((session) => (
-                <div key={session.id} className="bg-[#262626] rounded p-3 border border-gray-700 flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-white font-semibold text-sm">
-                      {session.session_type}
-                      {session.session_number ? ` ${session.session_number}` : ''}
-                      {session.name && session.name !== session.session_type ? ` — ${session.name}` : ''}
-                    </p>
-                    <p className="text-gray-400 text-xs">{classMap[session.series_class_id]?.class_name || 'Unassigned'}</p>
-                    {session.scheduled_time && (
-                      <p className="text-gray-500 text-xs">
-                        {new Date(session.scheduled_time).toLocaleString()}
-                      </p>
-                    )}
+      {/* ── Pack Preview ──────────────────────────────────────────────────── */}
+      {packGenerated && (
+        <div id="announcer-pack-preview" className="space-y-6">
+          <Card className="bg-[#171717] border-gray-800">
+            <CardContent id="announcer-pack-content" className="py-8 space-y-8">
+              {/* Event Header */}
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-white">{selectedEvent.name}</h1>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-400">
+                  <div>
+                    <p className="text-gray-500 text-xs">Track</p>
+                    <p className="text-white font-semibold">{selectedTrack?.name || 'N/A'}</p>
                   </div>
-                  <Badge className="bg-gray-700 text-gray-300 text-xs">{session.status || 'Draft'}</Badge>
+                  <div>
+                    <p className="text-gray-500 text-xs">Date</p>
+                    <p className="text-white font-semibold">
+                      {selectedEvent.event_date}
+                      {selectedEvent.end_date && ` – ${selectedEvent.end_date}`}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs">Status</p>
+                    <p className="text-white font-semibold">{selectedEvent.status || 'upcoming'}</p>
+                  </div>
+                  {selectedSeries && (
+                    <div>
+                      <p className="text-gray-500 text-xs">Series</p>
+                      <p className="text-white font-semibold">{selectedSeries.name}</p>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </div>
 
-      {/* ── Entry List by Class ───────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Entry List by Class ({listData.length} entries)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {listData.length === 0 ? (
-            <p className="text-gray-500 text-xs py-4">No entries yet</p>
-          ) : (
-            Object.entries(entriesByClass)
-              .sort((a, b) => {
-                const nameA = classMap[a[0]]?.class_name || a[0];
-                const nameB = classMap[b[0]]?.class_name || b[0];
-                return nameA.localeCompare(nameB);
-              })
-              .map(([classId, classEntries]) => (
-                <div key={classId}>
-                  <p className="text-white font-semibold text-xs uppercase tracking-wide mb-2">
-                    {classMap[classId]?.class_name || 'Unassigned'} ({classEntries.length})
-                  </p>
+              {/* Driver Roll Call */}
+              <div className="space-y-3">
+                <h2 className="text-xl font-bold text-white">Driver Roll Call ({filteredEntries.length})</h2>
+                {filteredEntries.length === 0 ? (
+                  <p className="text-gray-400 text-sm">No entries found for this filter.</p>
+                ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-gray-700">
-                          <th className="text-left text-gray-500 px-2 py-1">Car</th>
-                          <th className="text-left text-gray-500 px-2 py-1">Driver</th>
-                          <th className="text-left text-gray-500 px-2 py-1">Team</th>
-                          <th className="text-left text-gray-500 px-2 py-1">Flags</th>
+                    <table className="w-full text-xs bg-[#262626] rounded border border-gray-700">
+                      <thead className="bg-[#1A1A1A]">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Car</th>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Driver</th>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Class</th>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Team</th>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Hometown</th>
+                          <th className="px-3 py-2 text-left text-gray-300 font-semibold">Manufacturer</th>
+                          {includeMedia && (
+                            <>
+                              <th className="px-3 py-2 text-left text-gray-300 font-semibold">Instagram</th>
+                              <th className="px-3 py-2 text-left text-gray-300 font-semibold">YouTube</th>
+                            </>
+                          )}
                         </tr>
                       </thead>
-                      <tbody>
-                        {classEntries
-                          .sort((a, b) => {
-                            const driverA = driverMap[a.driver_id];
-                            const driverB = driverMap[b.driver_id];
-                            const nameA = driverA ? `${driverA.first_name} ${driverA.last_name}` : '';
-                            const nameB = driverB ? `${driverB.first_name} ${driverB.last_name}` : '';
-                            return nameA.localeCompare(nameB);
-                          })
-                          .map((entry) => {
-                            const driver = driverMap[entry.driver_id];
-                            const team = teamMap[entry.team_id];
-                            const flags = [];
-                            if (entry.payment_status === 'Unpaid') flags.push('unpaid');
-                            if (!entry.waiver_verified) flags.push('waiver');
-                            if (entry.tech_status && entry.tech_status !== 'Passed') flags.push('tech');
-                            if (!entry.transponder_id) flags.push('xpndr');
+                      <tbody className="divide-y divide-gray-700">
+                        {filteredEntries.map((entry) => {
+                          const driver = driverMap[entry.driver_id];
+                          const cls = classMap[entry.series_class_id || entry.event_class_id];
+                          const team = teamMap[entry.team_id];
+                          const media = mediaMap[entry.driver_id];
 
-                            return (
-                              <tr key={entry.id} className="border-b border-gray-800">
-                                <td className="px-2 py-1 text-gray-300 font-mono">
-                                  #{entry.car_number || driver?.primary_number || '—'}
-                                </td>
-                                <td className="px-2 py-1 text-gray-300">
-                                  {driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}
-                                </td>
-                                <td className="px-2 py-1 text-gray-500">{team?.name || '—'}</td>
-                                <td className="px-2 py-1 text-gray-400">
-                                  {flags.length > 0 ? flags.join(', ') : '✓'}
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          return (
+                            <tr key={entry.id} className="hover:bg-[#1A1A1A] transition-colors">
+                              <td className="px-3 py-2 font-mono text-white">
+                                #{entry.car_number || driver?.primary_number || '—'}
+                              </td>
+                              <td className="px-3 py-2 text-gray-300">
+                                {driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown'}
+                              </td>
+                              <td className="px-3 py-2 text-gray-400">{cls?.class_name || '—'}</td>
+                              <td className="px-3 py-2 text-gray-400">{team?.name || '—'}</td>
+                              <td className="px-3 py-2 text-gray-400">
+                                {driver
+                                  ? `${driver.hometown_city || ''}${driver.hometown_state ? ', ' + driver.hometown_state : ''}`
+                                  : '—'}
+                              </td>
+                              <td className="px-3 py-2 text-gray-400">{driver?.manufacturer || '—'}</td>
+                              {includeMedia && (
+                                <>
+                                  <td className="px-3 py-2 text-gray-400">{media?.instagram_handle || '—'}</td>
+                                  <td className="px-3 py-2 text-gray-400">{media?.youtube_channel || '—'}</td>
+                                </>
+                              )}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
+                )}
+              </div>
+
+              {/* Storylines */}
+              {storylines.length > 0 && (
+                <div className="space-y-3">
+                  <h2 className="text-xl font-bold text-white">Storylines</h2>
+                  <ul className="list-disc list-inside space-y-2 text-gray-300 text-sm">
+                    {storylines.map((line, idx) => (
+                      <li key={idx}>{line}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))
-          )}
-        </CardContent>
-      </Card>
+              )}
 
-      {/* ── Storylines ────────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Key Storylines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            {storylines.map((line, idx) => (
-              <li key={idx} className="text-gray-300 text-sm">
-                {line}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+              {/* Notes */}
+              <div className="space-y-3">
+                <h2 className="text-xl font-bold text-white">Announcer Notes</h2>
+                <Textarea
+                  placeholder="Add weekend notes, talking points, or booth reminders here..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="bg-[#262626] border-gray-700 text-white min-h-32"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* ── Quick Facts ───────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Quick Facts</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-500 text-xs">Total Entries</p>
-              <p className="text-white text-lg font-bold">{listData.length}</p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-xs">Classes</p>
-              <p className="text-white text-lg font-bold">{Object.keys(entriesByClass).length}</p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-xs">Sessions</p>
-              <p className="text-white text-lg font-bold">{sortedSessions.length}</p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-xs">Last Updated</p>
-              <p className="text-white text-xs">{lastUpdated.toLocaleString()}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Prompt */}
+      {!packGenerated && (
+        <Card className="bg-blue-900/20 border border-blue-800/50">
+          <CardContent className="py-6 text-center">
+            <p className="text-blue-300 text-sm">Click "Generate Pack" to create your announcer reference sheet</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
