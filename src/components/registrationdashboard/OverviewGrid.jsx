@@ -69,6 +69,89 @@ export default function OverviewGrid({
     });
   }, [sessions]);
 
+  // Publish handlers
+  const handlePublishSessions = async () => {
+    setPublishingSession(true);
+    try {
+      const count = await publishAllSessionsOfficial(selectedEvent.id);
+      toast.success(`Published ${count} sessions as Official`);
+      queryClient.invalidateQueries();
+      invalidateAfterOperation?.('session_published', { eventId: selectedEvent.id });
+    } catch (err) {
+      toast.error(`Publish failed: ${err.message}`);
+      base44.entities.OperationLog.create({
+        operation_type: 'publish',
+        status: 'error',
+        entity_name: 'Session',
+        event_id: selectedEvent.id,
+        message: `Failed to publish sessions: ${err.message}`,
+        metadata: JSON.stringify({
+          publish_type: 'publish_sessions_official',
+          error: err.message,
+        }),
+      }).catch(() => {});
+    } finally {
+      setPublishingSession(false);
+    }
+  };
+
+  const handlePublishResults = async () => {
+    setPublishingResults(true);
+    try {
+      const count = await publishAllResultsOfficial(selectedEvent.id);
+      toast.success(`Published results for ${count} sessions`);
+      queryClient.invalidateQueries();
+      invalidateAfterOperation?.('results_published', { eventId: selectedEvent.id });
+    } catch (err) {
+      toast.error(`Publish failed: ${err.message}`);
+      base44.entities.OperationLog.create({
+        operation_type: 'publish',
+        status: 'error',
+        entity_name: 'Results',
+        event_id: selectedEvent.id,
+        message: `Failed to publish results: ${err.message}`,
+        metadata: JSON.stringify({
+          publish_type: 'publish_results_official',
+          error: err.message,
+        }),
+      }).catch(() => {});
+    } finally {
+      setPublishingResults(false);
+    }
+  };
+
+  const handlePublishStandings = async () => {
+    setPublishingStandings(true);
+    try {
+      const count = await publishStandings(
+        selectedSeries?.id || selectedEvent?.series_id,
+        dashboardContext?.seasonYear || selectedEvent?.season,
+        selectedEvent.id
+      );
+      toast.success(`Published standings for ${count} drivers`);
+      queryClient.invalidateQueries();
+      invalidateAfterOperation?.('standings_published', {
+        eventId: selectedEvent.id,
+        seriesId: selectedSeries?.id || selectedEvent?.series_id,
+      });
+    } catch (err) {
+      toast.error(`Publish failed: ${err.message}`);
+      base44.entities.OperationLog.create({
+        operation_type: 'publish',
+        status: 'error',
+        entity_name: 'Standings',
+        event_id: selectedEvent.id,
+        message: `Failed to publish standings: ${err.message}`,
+        metadata: JSON.stringify({
+          publish_type: 'publish_standings',
+          error: err.message,
+        }),
+      }).catch(() => {});
+    } finally {
+      setPublishingStandings(false);
+    }
+  };
+
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -82,6 +165,46 @@ export default function OverviewGrid({
 
   return (
     <div className="space-y-6">
+      {/* Publish Controls */}
+      {canPublish ? (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Publish Controls</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Button
+              onClick={handlePublishSessions}
+              disabled={publishingSession}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
+            >
+              {publishingSession ? 'Publishing…' : 'Publish All Sessions'}
+            </Button>
+            <Button
+              onClick={handlePublishResults}
+              disabled={publishingResults}
+              className="bg-green-600 hover:bg-green-700 text-white text-xs h-9"
+            >
+              {publishingResults ? 'Publishing…' : 'Publish All Results'}
+            </Button>
+            <Button
+              onClick={handlePublishStandings}
+              disabled={publishingStandings}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9"
+            >
+              {publishingStandings ? 'Publishing…' : 'Publish Standings'}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-[#171717] border-gray-800">
+          <CardContent className="py-4">
+            <div className="flex gap-3 items-start">
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-300">Publish controls require admin access.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {complianceSeverity === 'warning' && (
         <Card className="bg-amber-900/30 border-amber-700/50">
           <CardContent className="py-4">
