@@ -254,17 +254,19 @@ export default function ClassSessionBuilder({
   };
 
   const handleDuplicate = (session) => {
-    const maxOrder = sessions.length ? Math.max(...sessions.map((s) => s.session_order || 0)) + 1 : 0;
+    const maxOrder = sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0;
     createSession({
       event_id: eventId,
       event_class_id: session.event_class_id,
       session_type: session.session_type,
       name: `${session.name} Copy`,
       session_number: session.session_number,
+      round_number: session.round_number,
       laps: session.laps,
+      duration_minutes: session.duration_minutes,
       input_source: 'Manual',
       status: 'Draft',
-      session_order: maxOrder,
+      run_order: maxOrder,
     });
   };
 
