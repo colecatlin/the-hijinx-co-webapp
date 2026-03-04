@@ -592,15 +592,23 @@ export default function ClassSessionBuilder({
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session #</label>
                 <Input type="number" value={sessionForm.session_number} onChange={(e) => setSessionForm({ ...sessionForm, session_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
-              </div>
-              <div>
+                </div>
+                <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Round #</label>
+                <Input type="number" value={sessionForm.round_number} onChange={(e) => setSessionForm({ ...sessionForm, round_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+                </div>
+                <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
                 <Input type="datetime-local" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
-              </div>
-              <div>
+                </div>
+                <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Duration (min)</label>
+                <Input type="number" value={sessionForm.duration_minutes} onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+                </div>
+                <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
                 <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
-              </div>
+                </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Input Source</label>
                 <Select value={sessionForm.input_source} onValueChange={(v) => setSessionForm({ ...sessionForm, input_source: v })}>
