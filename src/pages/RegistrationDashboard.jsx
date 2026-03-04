@@ -23,7 +23,7 @@ import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManage
 import AnnouncerConsole from '@/components/registrationdashboard/AnnouncerConsole';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import GateMode from '@/components/registrationdashboard/GateMode';
-import GateManager from '@/components/registrationdashboard/GateManager';
+import GateManagerRefactored from '@/components/registrationdashboard/GateManagerRefactored';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import GateConsole from '@/components/registrationdashboard/GateConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
@@ -1407,44 +1407,12 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                selectedEvent ? (
-                  <GateManager
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    dashboardContext={dashboardContext}
-                    dashboardPermissions={dashboardPermissions}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-20 text-center">
-                      <p className="text-gray-400">Select an event to access the Gate</p>
-                    </CardContent>
-                  </Card>
-                )
-              )}
-
-              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                selectedEvent ? (
-                  <GateManager
-                    selectedEvent={selectedEvent}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                    dashboardContext={dashboardContext}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-20 text-center">
-                      <p className="text-gray-400">Select an event to access the Gate Manager</p>
-                    </CardContent>
-                  </Card>
-                )
-              )}
-
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'gateManager' && (
-                <GateManager
+                <GateManagerRefactored
                   selectedEvent={selectedEvent}
-                  invalidateAfterOperation={invalidateAfterOperation}
+                  selectedTrack={selectedTrack}
                   dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
