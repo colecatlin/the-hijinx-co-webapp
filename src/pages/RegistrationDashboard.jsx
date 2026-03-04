@@ -1283,7 +1283,9 @@ export default function RegistrationDashboard() {
                     dashboardContext={dashboardContext} 
                     dashboardPermissions={dashboardPermissions}
                     selectedEvent={selectedEvent}
-                    onCheckinUpdated={() => invalidateAfterOperation('checkin_updated', { eventId: selectedEvent.id })}
+                    selectedTrack={selectedTrack}
+                    selectedSeries={selectedSeries}
+                    invalidateAfterOperation={invalidateAfterOperation}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
