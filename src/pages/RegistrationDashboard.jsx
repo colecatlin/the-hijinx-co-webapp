@@ -37,6 +37,7 @@ import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorksp
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
+import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1171,6 +1172,15 @@ export default function RegistrationDashboard() {
                   <Users className="w-4 h-4 mr-2" /> Paddock
                 </TabsTrigger>
               )}
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
+                <TabsTrigger
+                  value="race_control"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-red-800 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Zap className="w-4 h-4 mr-2" /> Race Control
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1454,6 +1464,15 @@ export default function RegistrationDashboard() {
 
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'paddock' && (
                 <PaddockManager
+                  selectedEvent={selectedEvent}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'race_control' && (
+                <RaceControlPanel
                   selectedEvent={selectedEvent}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
