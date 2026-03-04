@@ -154,15 +154,12 @@ export default function TechManager({
       tech_time: now,
       tech_inspector_user_id: currentUser?.id || '',
     };
-    if (techStatus === 'Passed') {
-      payload.entry_status = 'Teched';
-    }
     await updateEntry({
       id: entry.id,
       data: payload,
     });
     queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
-    invalidateAfterOperation('entry_tech_updated', { eventId });
+    invalidateAfterOperation('entry_updated', { eventId });
   };
 
   const openNotes = (entry) => {
@@ -177,7 +174,7 @@ export default function TechManager({
     const existing = notesEntry.tech_notes ? notesEntry.tech_notes + '\n' + append : append;
     await updateEntry({ id: notesEntry.id, data: { tech_notes: existing } });
     queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
-    invalidateAfterOperation('entry_tech_updated', { eventId });
+    invalidateAfterOperation('entry_updated', { eventId });
     setNotesEntry(null);
     setNotesText('');
   };

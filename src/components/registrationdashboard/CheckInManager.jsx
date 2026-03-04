@@ -58,13 +58,11 @@ export default function CheckInManager({
   // ── Queries ────────────────────────────────────────────────────────────────
 
   const { data: entries = [] } = useQuery({
-    queryKey: REG_QK.entries(eventId),
+    queryKey: ['entries_checkin', eventId],
     queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: !!eventId && hasAccess,
     ...DQ,
   });
-
-  // Use Entry as primary roster; no DriverProgram proxy
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['checkIn_drivers'],
@@ -238,6 +236,30 @@ export default function CheckInManager({
       updateEntryMutation.mutate({
         entryId: item.id,
         data: { entry_status: 'Registered', checkin_time: null },
+      });
+    },
+    [canEdit, updateEntryMutation]
+  );
+
+  const handlePaymentToggle = useCallback(
+    (item) => {
+      if (!canEdit) return;
+      const nextPaymentStatus = item.payment_status === 'Paid' ? 'Unpaid' : 'Paid';
+      updateEntryMutation.mutate({
+        entryId: item.id,
+        data: { payment_status: nextPaymentStatus },
+      });
+    },
+    [canEdit, updateEntryMutation]
+  );
+
+  const handleWaiverToggle = useCallback(
+    (item) => {
+      if (!canEdit) return;
+      const nextWaiverStatus = item.waiver_status === 'Verified' ? 'Missing' : 'Verified';
+      updateEntryMutation.mutate({
+        entryId: item.id,
+        data: { waiver_status: nextWaiverStatus },
       });
     },
     [canEdit, updateEntryMutation]
@@ -462,6 +484,20 @@ export default function CheckInManager({
                           ↶ Undo
                         </Button>
                       )}
+                      <Button
+                        onClick={() => handlePaymentToggle(item)}
+                        disabled={!canEdit}
+                        className={`text-xs h-7 px-2 disabled:opacity-50 ${item.payment_status === 'Paid' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+                      >
+                        ${item.payment_status === 'Paid' ? '✓' : '✗'}
+                      </Button>
+                      <Button
+                        onClick={() => handleWaiverToggle(item)}
+                        disabled={!canEdit}
+                        className={`text-xs h-7 px-2 disabled:opacity-50 ${item.waiver_status === 'Verified' ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700'}`}
+                      >
+                        {item.waiver_status === 'Verified' ? '✓' : '!'} Waiver
+                      </Button>
                       <Button
                         onClick={() => handleOpenNoteModal(item)}
                         disabled={!canEdit}

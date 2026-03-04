@@ -198,8 +198,8 @@ export default function ComplianceManager({
       entriesMap: new Map(), severity: 'clear',
     };
 
-    // Duplicate car number: per event_id + event_class_id (for non-withdrawn entries)
-    const carNumberKey = (e) => `${e.event_id}|${e.event_class_id || ''}|${e.car_number || ''}`;
+    // Duplicate car number: per event_id + series_class_id (for non-withdrawn entries)
+    const carNumberKey = (e) => `${e.event_id}|${e.series_class_id || ''}|${e.car_number || ''}`;
     const carNumberCounts = {};
     entries.forEach(e => {
       if (e.car_number && e.entry_status !== 'Withdrawn') {
@@ -219,7 +219,7 @@ export default function ComplianceManager({
       const entryFlags = [];
 
       // Missing waiver
-      if (!entry.waiver_verified) {
+      if (entry.waiver_status === 'Missing') {
         entryFlags.push({ type: 'waivers', label: 'Waiver Missing', color: 'bg-yellow-900/40 text-yellow-300' });
         flags.waivers++;
       }
@@ -236,9 +236,9 @@ export default function ComplianceManager({
         flags.duplicates++;
       }
 
-      // License not verified
-      if (!entry.license_verified) {
-        entryFlags.push({ type: 'licenses', label: 'License Unverified', color: 'bg-orange-900/40 text-orange-300' });
+      // License expired
+      if (entry.license_status === 'Expired') {
+        entryFlags.push({ type: 'licenses', label: 'License Expired', color: 'bg-orange-900/40 text-orange-300' });
         flags.licenses++;
       }
 
@@ -255,7 +255,7 @@ export default function ComplianceManager({
         driverName: getDriverName(entry.driver_id),
         className: getClassName(entry),
         flags: entryFlags,
-        waiverOk: !!entry.waiver_verified,
+        waiverOk: entry.waiver_status === 'Verified',
       });
 
       // Track entries that need flag updates
@@ -299,11 +299,11 @@ export default function ComplianceManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    const nextVerified = !entry.waiver_verified;
-    await updateEntryAsync({ id: entry.id, data: { waiver_verified: nextVerified } });
+    const nextStatus = entry.waiver_status === 'Verified' ? 'Missing' : 'Verified';
+    await updateEntryAsync({ id: entry.id, data: { waiver_status: nextStatus } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id,
-      nextVerified ? 'Waiver verified' : 'Waiver unverified');
-    toast.success(nextVerified ? 'Waiver verified' : 'Waiver cleared');
+      nextStatus === 'Verified' ? 'Waiver verified' : 'Waiver unverified');
+    toast.success(nextStatus === 'Verified' ? 'Waiver verified' : 'Waiver cleared');
   };
 
   // ── License status update ──────────────────────────────────────────────────
@@ -312,7 +312,7 @@ export default function ComplianceManager({
       toast.error(GUARD_ERROR_MESSAGE);
       return;
     }
-    await updateEntryAsync({ id: entry.id, data: { license_verified: newStatus === 'Valid' } });
+    await updateEntryAsync({ id: entry.id, data: { license_status: newStatus } });
     await writeOperationLog('compliance_updated', entry.id, selectedEvent.id, `License status set to ${newStatus}`);
     toast.success(`License marked as ${newStatus}`);
   };
@@ -523,14 +523,16 @@ export default function ComplianceManager({
                       <td className="py-2 px-3 text-gray-300">{entry.driverName}</td>
                       <td className="py-2 px-3 text-gray-400">{entry.className}</td>
                       <td className="py-2 px-3">
-                        {entry.waiverOk
+                        {entry.waiver_status === 'Verified'
                           ? <span className="text-green-400">✓ Verified</span>
                           : <span className="text-yellow-400">✗ Missing</span>}
                       </td>
                       <td className="py-2 px-3">
-                        {entry.license_verified
-                          ? <span className="text-green-400">✓ Verified</span>
-                          : <span className="text-orange-400">✗ Not Verified</span>}
+                        {entry.license_status === 'Valid'
+                          ? <span className="text-green-400">✓ Valid</span>
+                          : entry.license_status === 'Expired'
+                          ? <span className="text-red-400">✗ Expired</span>
+                          : <span className="text-gray-400">Unknown</span>}
                       </td>
                       <td className="py-2 px-3 text-xs text-gray-400">—</td>
                       <td className="py-2 px-3 text-xs text-gray-400">—</td>
@@ -592,8 +594,8 @@ export default function ComplianceManager({
                   <p className="text-white font-medium">{selectedEntry.tech_status || '—'}</p>
                 </div>
                 <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">License Verified</p>
-                  <p className="text-white font-medium">{selectedEntry.license_verified ? '✓ Yes' : '✗ No'}</p>
+                  <p className="text-xs text-gray-400 mb-1">License Status</p>
+                  <p className="text-white font-medium">{selectedEntry.license_status || 'Unknown'}</p>
                 </div>
                 <div className="bg-gray-900/50 rounded p-3">
                   <p className="text-xs text-gray-400 mb-1">Transponder</p>
@@ -611,22 +613,23 @@ export default function ComplianceManager({
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.waiver_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700 hover:bg-yellow-900/20'}`}
+                    className={`w-full border-gray-700 ${selectedEntry.waiver_status === 'Verified' ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700 hover:bg-yellow-900/20'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    {selectedEntry.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
+                    {selectedEntry.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
                   </Button>
 
-                  {/* Verify License */}
-                  <Button
-                    onClick={() => handleUpdateLicenseStatus(selectedEntry, selectedEntry.license_verified ? 'Unknown' : 'Valid')}
-                    disabled={updatePending}
-                    variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.license_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-orange-300 border-orange-700 hover:bg-orange-900/20'}`}
-                  >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {selectedEntry.license_verified ? 'License Verified ✓' : 'Verify License'}
-                  </Button>
+                  {/* Update License Status */}
+                  <Select value={selectedEntry.license_status || 'Unknown'} onValueChange={(val) => handleUpdateLicenseStatus(selectedEntry, val)}>
+                    <SelectTrigger className={`w-full border-gray-700 ${selectedEntry.license_status === 'Expired' ? 'border-red-700' : selectedEntry.license_status === 'Valid' ? 'border-green-700' : 'border-gray-700'}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value="Unknown">Unknown</SelectItem>
+                      <SelectItem value="Valid">Valid</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   {/* Assign Transponder */}
                   {!assigningTransponder ? (
