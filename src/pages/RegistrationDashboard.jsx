@@ -33,6 +33,9 @@ import PointsAndStandingsManager from '@/components/registrationdashboard/Points
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
+import MediaRequestsManager from '@/components/registrationdashboard/MediaRequestsManager';
+import IssuedCredentialsManager from '@/components/registrationdashboard/IssuedCredentialsManager';
+import MediaPoliciesManager from '@/components/registrationdashboard/MediaPoliciesManager';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
@@ -419,7 +422,7 @@ export default function RegistrationDashboard() {
 
   // Check if user has any accessible tabs
   const availableTabs = useMemo(() => {
-    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'imports', 'ops_center'];
+    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'imports', 'media', 'ops_center'];
     return tabKeys.filter(key => canTab(dashboardPermissions, key));
   }, [dashboardPermissions]);
 
@@ -1215,6 +1218,14 @@ export default function RegistrationDashboard() {
                   <Upload className="w-4 h-4 mr-2" /> Imports
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'media') && (
+                <TabsTrigger
+                  value="media"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Users className="w-4 h-4 mr-2" /> Media
+                </TabsTrigger>
+              )}
               {isAdmin && (
                 <TabsTrigger
                   value="opsCenter"
@@ -1537,6 +1548,35 @@ export default function RegistrationDashboard() {
                   dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
                 />
+              )}
+
+              {canTab(dashboardPermissions, 'media') && activeTab === 'media' && (
+                <div className="space-y-6">
+                  <MediaRequestsManager
+                    dashboardContext={dashboardContext}
+                    selectedEvent={selectedEvent}
+                    selectedTrack={selectedTrack}
+                    selectedSeries={selectedSeries}
+                    dashboardPermissions={dashboardPermissions}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                  />
+                  <IssuedCredentialsManager
+                    dashboardContext={dashboardContext}
+                    selectedEvent={selectedEvent}
+                    selectedTrack={selectedTrack}
+                    selectedSeries={selectedSeries}
+                    dashboardPermissions={dashboardPermissions}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                  />
+                  <MediaPoliciesManager
+                    dashboardContext={dashboardContext}
+                    selectedEvent={selectedEvent}
+                    selectedTrack={selectedTrack}
+                    selectedSeries={selectedSeries}
+                    dashboardPermissions={dashboardPermissions}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                  />
+                </div>
               )}
 
               {isAdmin && activeTab === 'opsCenter' && (
