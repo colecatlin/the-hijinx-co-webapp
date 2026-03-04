@@ -1,628 +1,488 @@
-import React, { useMemo, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { canTab } from '@/components/access/accessControl';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator';
-import { motion } from 'framer-motion';
-import { AlertCircle, Lock, Unlock, AlertTriangle } from 'lucide-react';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Lock, Unlock, MessageSquare, AlertCircle, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-
-const DQ = applyDefaultQueryOptions();
-
-const STATUS_OPTIONS = ['Draft', 'Provisional', 'Official', 'Locked'];
-const SEVERITY_OPTIONS = ['Low', 'Medium', 'High'];
 
 export default function RaceControlManager({
   selectedEvent,
-  selectedTrack,
-  selectedSeries,
   dashboardContext,
   dashboardPermissions,
   invalidateAfterOperation,
+  isAdmin,
 }) {
   const queryClient = useQueryClient();
-  const [selectedSessionId, setSelectedSessionId] = useState('');
-  const [selectedClassId, setSelectedClassId] = useState('all');
-  const [newStatus, setNewStatus] = useState('');
-  const [incidentNote, setIncidentNote] = useState('');
-  const [incidentSeverity, setIncidentSeverity] = useState('Medium');
-  const [overrideReason, setOverrideReason] = useState('');
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesText, setNotesText] = useState('');
+
+  // Check permissions
+  const canEdit = canTab(dashboardPermissions, 'race_control');
 
   // Load sessions
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['racecore', 'racecontrol', 'sessions', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id 
-      ? base44.entities.Session.filter({ event_id: selectedEvent.id })
-      : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+    queryKey: ['racecore', 'race_control', 'sessions', selectedEvent?.id],
+    queryFn: () => 
+      selectedEvent 
+        ? base44.entities.Session.filter({ event_id: selectedEvent.id })
+        : Promise.resolve([]),
+    enabled: !!selectedEvent,
   });
 
-  // Load results
-  const { data: results = [] } = useQuery({
-    queryKey: ['racecore', 'racecontrol', 'results', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id 
-      ? base44.entities.Results.filter({ event_id: selectedEvent.id })
-      : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
-  });
-
-  // Load series classes
+  // Load series classes for labels
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['racecore', 'racecontrol', 'classes', selectedSeries?.id || 'none'],
-    queryFn: () => (selectedSeries?.id 
-      ? base44.entities.SeriesClass.filter({ series_id: selectedSeries.id })
-      : base44.entities.SeriesClass.list()),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    queryKey: ['racecore', 'race_control', 'classes'],
+    queryFn: () => base44.entities.SeriesClass.list(),
   });
 
-  // Load operation logs
-  const { data: allLogs = [] } = useQuery({
-    queryKey: ['racecore', 'racecontrol', 'logs', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id 
-      ? base44.entities.OperationLog.filter({
-          event_id: selectedEvent.id,
-        }, '-created_date', 500)
-      : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
-  });
+  // Build maps
+  const classMap = useMemo(
+    () => new Map(seriesClasses.map(c => [c.id, c])),
+    [seriesClasses]
+  );
 
-  // Filter logs by operation type
-  const raceLogs = useMemo(() => {
-    return allLogs.filter(log => 
-      ['race_control_update', 'race_control_incident', 'race_control_override'].includes(log.operation_type)
-    );
-  }, [allLogs]);
+  // Group and sort sessions
+  const sessionsByClass = useMemo(() => {
+    const grouped = {};
+    sessions.forEach(s => {
+      const classKey = s.series_class_id || 'unassigned';
+      if (!grouped[classKey]) grouped[classKey] = [];
+      grouped[classKey].push(s);
+    });
 
-  // Get current user
-  const { data: user } = useQuery({
-    queryKey: ['auth', 'me'],
-    queryFn: () => base44.auth.me(),
-    ...DQ,
-  });
+    // Sort within each class
+    Object.keys(grouped).forEach(classKey => {
+      grouped[classKey].sort((a, b) => {
+        if (a.session_order !== b.session_order) return a.session_order - b.session_order;
+        if (a.session_type !== b.session_type) return (a.session_type || '').localeCompare(b.session_type);
+        return (a.session_number || 0) - (b.session_number || 0);
+      });
+    });
+
+    return grouped;
+  }, [sessions]);
+
+  // Status counts
+  const statusCounts = useMemo(() => {
+    const counts = { Draft: 0, Provisional: 0, Official: 0, Locked: 0 };
+    sessions.forEach(s => {
+      if (s.locked) counts.Locked++;
+      else if (s.status) counts[s.status] = (counts[s.status] || 0) + 1;
+    });
+    return counts;
+  }, [sessions]);
 
   // Mutations
   const updateSessionMutation = useMutation({
-    mutationFn: (data) => base44.entities.Session.update(data.id, data.updates),
+    mutationFn: (data) => base44.entities.Session.update(selectedEvent.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['racecore', 'racecontrol', 'sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['racecore', 'racecontrol', 'logs'] });
-      invalidateAfterOperation('session_updated', { eventId: selectedEvent.id });
+      queryClient.invalidateQueries({
+        queryKey: ['racecore', 'race_control', 'sessions', selectedEvent.id],
+      });
     },
   });
 
   const createLogMutation = useMutation({
-    mutationFn: (data) => base44.entities.OperationLog.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['racecore', 'racecontrol', 'logs'] });
-    },
+    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
   });
 
-  // Build class list
-  const classList = useMemo(() => {
-    const classes = new Set();
-    sessions.forEach(s => {
-      if (s.series_class_id) classes.add(s.series_class_id);
-    });
-    seriesClasses.forEach(sc => classes.add(sc.id));
-    return Array.from(classes).sort();
-  }, [sessions, seriesClasses]);
+  // Handle status change
+  const handleStatusChange = async (session, newStatus) => {
+    if (!canEdit) return;
 
-  // Filter sessions by class
-  const filteredSessions = useMemo(() => {
-    return sessions.filter(s => 
-      selectedClassId === 'all' || s.series_class_id === selectedClassId
-    ).sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
-  }, [sessions, selectedClassId]);
-
-  // Get selected session
-  const selectedSession = useMemo(() => 
-    sessions.find(s => s.id === selectedSessionId),
-    [sessions, selectedSessionId]
-  );
-
-  // Auto-select first session
-  if (!selectedSessionId && filteredSessions.length > 0) {
-    setSelectedSessionId(filteredSessions[0].id);
-  }
-
-  // Count results for selected session
-  const sessionResultCount = useMemo(() => {
-    if (!selectedSessionId) return 0;
-    return results.filter(r => r.session_id === selectedSessionId).length;
-  }, [results, selectedSessionId]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const counts = {
-      total: sessions.length,
-      draft: sessions.filter(s => s.status === 'Draft').length,
-      provisional: sessions.filter(s => s.status === 'Provisional').length,
-      official: sessions.filter(s => s.status === 'Official').length,
-      locked: sessions.filter(s => s.status === 'Locked' || s.locked).length,
-    };
-    return counts;
-  }, [sessions]);
-
-  // Handle status save
-  const handleSaveStatus = async () => {
-    if (!selectedSession || !newStatus) return;
-    
     try {
+      const beforeStatus = session.status || 'Draft';
+      
       await updateSessionMutation.mutateAsync({
-        id: selectedSession.id,
-        updates: { status: newStatus },
+        id: session.id,
+        status: newStatus,
+        locked: false, // Unlock when changing status manually
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'race_control_update',
+        operation_type: 'session_status_changed',
         entity_name: 'Session',
-        entity_id: selectedSession.id,
-        source_type: 'race_control',
+        entity_id: session.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
-          session_id: selectedSession.id,
-          previous_status: selectedSession.status,
-          new_status: newStatus,
-          locked_before: selectedSession.locked,
-          locked_after: selectedSession.locked,
-        }),
-        notes: `Status changed: ${selectedSession.status} → ${newStatus}`,
+          session_id: session.id,
+          before_status: beforeStatus,
+          after_status: newStatus,
+        },
       });
 
-      setNewStatus('');
-      toast.success('Session status updated');
+      invalidateAfterOperation('session_updated', { eventId: selectedEvent.id });
+      toast.success(`Session status changed to ${newStatus}`);
     } catch (error) {
-      toast.error('Failed to update session');
+      toast.error('Failed to update session status');
+      console.error(error);
     }
   };
 
-  // Handle lock
-  const handleLock = async () => {
-    if (!selectedSession) return;
+  // Handle lock toggle
+  const handleLockToggle = async (session) => {
+    if (!canEdit) return;
 
     try {
+      const beforeLocked = session.locked || false;
+      const afterLocked = !beforeLocked;
+      let newStatus = session.status;
+
+      if (afterLocked && newStatus === 'Locked') {
+        newStatus = 'Draft';
+      }
+
       await updateSessionMutation.mutateAsync({
-        id: selectedSession.id,
-        updates: { locked: true, status: 'Locked' },
+        id: session.id,
+        locked: afterLocked,
+        status: newStatus,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'race_control_update',
+        operation_type: 'session_lock_toggled',
         entity_name: 'Session',
-        entity_id: selectedSession.id,
-        source_type: 'race_control',
+        entity_id: session.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
-          session_id: selectedSession.id,
-          previous_status: selectedSession.status,
-          new_status: 'Locked',
-          locked_before: selectedSession.locked,
-          locked_after: true,
-        }),
-        notes: `Session locked`,
+          session_id: session.id,
+          before_locked: beforeLocked,
+          after_locked: afterLocked,
+        },
       });
 
-      toast.success('Session locked');
+      invalidateAfterOperation('session_updated', { eventId: selectedEvent.id });
+      toast.success(afterLocked ? 'Session locked' : 'Session unlocked');
     } catch (error) {
-      toast.error('Failed to lock session');
+      toast.error('Failed to toggle lock');
+      console.error(error);
     }
   };
 
-  // Handle unlock
-  const handleUnlock = async () => {
-    if (!selectedSession) return;
-
-    const nextStatus = selectedSession.status === 'Locked' ? 'Official' : selectedSession.status;
+  // Handle notes save
+  const handleSaveNotes = async (session) => {
+    if (!canEdit) return;
 
     try {
       await updateSessionMutation.mutateAsync({
-        id: selectedSession.id,
-        updates: { locked: false, status: nextStatus },
+        id: session.id,
+        rc_notes: notesText,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'race_control_update',
+        operation_type: 'race_control_note_saved',
         entity_name: 'Session',
-        entity_id: selectedSession.id,
-        source_type: 'race_control',
+        entity_id: session.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
-          session_id: selectedSession.id,
-          previous_status: selectedSession.status,
-          new_status: nextStatus,
-          locked_before: true,
-          locked_after: false,
-        }),
-        notes: `Session unlocked`,
+          session_id: session.id,
+          note_length: notesText.length,
+        },
       });
 
-      toast.success('Session unlocked');
+      invalidateAfterOperation('session_updated', { eventId: selectedEvent.id });
+      setNotesDialogOpen(false);
+      setNotesText('');
+      toast.success('Notes saved');
     } catch (error) {
-      toast.error('Failed to unlock session');
+      toast.error('Failed to save notes');
+      console.error(error);
     }
   };
 
-  // Handle log incident
-  const handleLogIncident = async () => {
-    if (!incidentNote.trim()) {
-      toast.error('Note cannot be empty');
-      return;
-    }
-
-    try {
-      await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
-        operation_type: 'race_control_incident',
-        entity_name: 'Event',
-        entity_id: selectedEvent.id,
-        source_type: 'race_control',
-        status: 'success',
-        metadata: JSON.stringify({
-          event_id: selectedEvent.id,
-          session_id: selectedSessionId || null,
-          severity: incidentSeverity,
-          note: incidentNote,
-          created_by_user_id: user?.id,
-        }),
-        notes: incidentNote,
-      });
-
-      setIncidentNote('');
-      setIncidentSeverity('Medium');
-      toast.success('Incident logged');
-    } catch (error) {
-      toast.error('Failed to log incident');
-    }
-  };
-
-  // Handle override
-  const handleOverride = async (action) => {
-    if (!selectedSession || !overrideReason.trim()) {
-      toast.error('Reason required');
-      return;
-    }
-
-    const updates = action === 'force_official' 
-      ? { status: 'Official', locked: false }
-      : { status: 'Locked', locked: true };
+  // Handle admin override
+  const handleAdminOverride = async (session) => {
+    if (!isAdmin) return;
 
     try {
       await updateSessionMutation.mutateAsync({
-        id: selectedSession.id,
-        updates,
+        id: session.id,
+        status: 'Official',
+        locked: true,
       });
 
       await createLogMutation.mutateAsync({
-        event_id: selectedEvent.id,
         operation_type: 'race_control_override',
         entity_name: 'Session',
-        entity_id: selectedSession.id,
-        source_type: 'race_control',
+        entity_id: session.id,
         status: 'success',
-        metadata: JSON.stringify({
+        metadata: {
           event_id: selectedEvent.id,
-          session_id: selectedSession.id,
-          requested_action: action,
-          reason: overrideReason,
-          previous_status: selectedSession.status,
-          new_status: updates.status,
-          locked_before: selectedSession.locked,
-          locked_after: updates.locked,
-          override_by_user_id: user?.id,
-        }),
-        notes: `Admin override: ${action}. Reason: ${overrideReason}`,
+          session_id: session.id,
+          action: 'official_and_lock',
+        },
       });
 
-      setOverrideReason('');
-      toast.success('Override applied');
+      invalidateAfterOperation('session_updated', { eventId: selectedEvent.id });
+      toast.success('Session set to Official and Locked');
     } catch (error) {
-      toast.error('Failed to apply override');
+      toast.error('Failed to apply admin override');
+      console.error(error);
     }
+  };
+
+  const openNotes = (session) => {
+    setSelectedSessionId(session.id);
+    setNotesText(session.rc_notes || '');
+    setNotesDialogOpen(true);
   };
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to access Race Control</p>
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to view race control</p>
         </CardContent>
       </Card>
     );
   }
 
-  const canOverride = dashboardPermissions?.actions?.includes('race_control_override');
+  if (!canEdit) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <p className="text-gray-400">You don't have access to Race Control</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Summary */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader>
-          <CardTitle className="text-white">Race Control</CardTitle>
-          <p className="text-xs text-gray-400 mt-1">Session management, incident logging, and admin overrides</p>
+          <CardTitle className="text-white">Session Status Summary</CardTitle>
         </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-gray-900/50 p-3 rounded">
+              <p className="text-xs text-gray-400 mb-1">Total Sessions</p>
+              <p className="text-xl font-bold text-white">{sessions.length}</p>
+            </div>
+            <div className="bg-blue-900/20 p-3 rounded border border-blue-800/50">
+              <p className="text-xs text-gray-400 mb-1">Draft</p>
+              <p className="text-xl font-bold text-blue-300">{statusCounts.Draft}</p>
+            </div>
+            <div className="bg-yellow-900/20 p-3 rounded border border-yellow-800/50">
+              <p className="text-xs text-gray-400 mb-1">Provisional</p>
+              <p className="text-xl font-bold text-yellow-300">{statusCounts.Provisional}</p>
+            </div>
+            <div className="bg-green-900/20 p-3 rounded border border-green-800/50">
+              <p className="text-xs text-gray-400 mb-1">Official</p>
+              <p className="text-xl font-bold text-green-300">{statusCounts.Official}</p>
+            </div>
+            <div className="bg-red-900/20 p-3 rounded border border-red-800/50">
+              <p className="text-xs text-gray-400 mb-1">Locked</p>
+              <p className="text-xl font-bold text-red-300">{statusCounts.Locked}</p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-xs text-gray-400 uppercase tracking-wide block">Class</label>
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-            <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-800">
-              <SelectItem value="all">All Classes</SelectItem>
-              {classList.map(cls => (
-                <SelectItem key={cls} value={cls}>
-                  {cls}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Sessions by Class */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white">Session Control</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sessionsLoading ? (
+            <p className="text-gray-400 text-sm">Loading sessions...</p>
+          ) : sessions.length === 0 ? (
+            <p className="text-gray-400 text-sm">No sessions found</p>
+          ) : (
+            <Accordion type="multiple" defaultValue={Object.keys(sessionsByClass).slice(0, 1)}>
+              {Object.entries(sessionsByClass).map(([classKey, classSessions]) => {
+                const classObj = classMap.get(classKey);
+                const classLabel = classObj?.name || (classKey === 'unassigned' ? 'Unassigned' : classKey);
 
-        <div className="space-y-2">
-          <label className="text-xs text-gray-400 uppercase tracking-wide block">Session</label>
-          <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-            <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-800">
-              {filteredSessions.map(s => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-5 gap-2">
-        {[
-          { label: 'Total', value: stats.total, color: 'bg-gray-900/30' },
-          { label: 'Draft', value: stats.draft, color: 'bg-blue-900/20' },
-          { label: 'Prov.', value: stats.provisional, color: 'bg-yellow-900/20' },
-          { label: 'Off.', value: stats.official, color: 'bg-green-900/20' },
-          { label: 'Lock', value: stats.locked, color: 'bg-red-900/20' },
-        ].map(stat => (
-          <Card key={stat.label} className={`border-gray-800 ${stat.color}`}>
-            <CardContent className="pt-4 text-center">
-              <div className="text-xl font-bold text-white">{stat.value}</div>
-              <div className="text-xs text-gray-400 mt-1">{stat.label}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Session Details */}
-      {selectedSession && (
-        <>
-          <Card className="bg-[#171717] border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">{selectedSession.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <p className="text-gray-400">Type</p>
-                  <p className="text-white font-semibold">{selectedSession.session_type}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Results</p>
-                  <p className="text-white font-semibold">{sessionResultCount}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Status</p>
-                  <Badge className={`mt-1 ${
-                    selectedSession.status === 'Official' ? 'bg-green-900/40 text-green-300' :
-                    selectedSession.status === 'Locked' ? 'bg-red-900/40 text-red-300' :
-                    selectedSession.status === 'Provisional' ? 'bg-yellow-900/40 text-yellow-300' :
-                    'bg-blue-900/40 text-blue-300'
-                  }`}>
-                    {selectedSession.status}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-gray-400">Locked</p>
-                  <p className="text-white font-semibold">{selectedSession.locked ? 'Yes' : 'No'}</p>
-                </div>
-              </div>
-
-              <Separator className="bg-gray-800" />
-
-              {/* Status Control */}
-              <div className="space-y-3">
-                <label className="text-xs text-gray-400 uppercase tracking-wide block">Change Status</label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
-                    <SelectValue placeholder="Select new status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-800">
-                    {STATUS_OPTIONS.map(s => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleSaveStatus}
-                  disabled={!newStatus || updateSessionMutation.isPending}
-                  className="w-full bg-blue-700 hover:bg-blue-600 text-white text-xs h-8"
-                >
-                  Save Status
-                </Button>
-              </div>
-
-              {/* Lock/Unlock */}
-              <div className="flex gap-2">
-                {!selectedSession.locked ? (
-                  <Button
-                    onClick={handleLock}
-                    disabled={updateSessionMutation.isPending}
-                    className="flex-1 bg-red-700 hover:bg-red-600 text-white text-xs h-8 gap-1"
-                  >
-                    <Lock className="w-3 h-3" /> Lock
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleUnlock}
-                    disabled={updateSessionMutation.isPending}
-                    className="flex-1 bg-amber-700 hover:bg-amber-600 text-white text-xs h-8 gap-1"
-                  >
-                    <Unlock className="w-3 h-3" /> Unlock
-                  </Button>
-                )}
-              </div>
-
-              {/* Admin Override */}
-              {canOverride && (
-                <>
-                  <Separator className="bg-gray-800" />
-                  <div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-lg">
-                    <p className="text-xs text-yellow-300 font-semibold mb-3 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Admin Override
-                    </p>
-                    <div className="space-y-2">
-                      <textarea
-                        placeholder="Reason for override..."
-                        value={overrideReason}
-                        onChange={(e) => setOverrideReason(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-700 rounded text-xs text-white p-2 h-16"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleOverride('force_official')}
-                          disabled={!overrideReason.trim() || updateSessionMutation.isPending}
-                          className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-7"
-                        >
-                          Force Official
-                        </Button>
-                        <Button
-                          onClick={() => handleOverride('force_lock')}
-                          disabled={!overrideReason.trim() || updateSessionMutation.isPending}
-                          className="flex-1 bg-red-700 hover:bg-red-600 text-white text-xs h-7"
-                        >
-                          Force Lock
-                        </Button>
+                return (
+                  <AccordionItem key={classKey} value={classKey}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center gap-3 text-left">
+                        <span className="font-semibold text-white">{classLabel}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {classSessions.length} sessions
+                        </Badge>
                       </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Incident Notes */}
-          <Card className="bg-[#171717] border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Log Incident</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Textarea
-                placeholder="Incident description..."
-                value={incidentNote}
-                onChange={(e) => setIncidentNote(e.target.value)}
-                className="bg-gray-900 border-gray-800 text-white text-xs h-16"
-              />
-              <Select value={incidentSeverity} onValueChange={setIncidentSeverity}>
-                <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-800">
-                  {SEVERITY_OPTIONS.map(sev => (
-                    <SelectItem key={sev} value={sev}>
-                      {sev}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={handleLogIncident}
-                disabled={!incidentNote.trim() || createLogMutation.isPending}
-                className="w-full bg-purple-700 hover:bg-purple-600 text-white text-xs h-8"
-              >
-                Log Incident
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Incident History */}
-          <Card className="bg-[#171717] border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Recent Incidents & Updates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {raceLogs.length === 0 ? (
-                <p className="text-xs text-gray-500">No incidents or updates logged</p>
-              ) : (
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {raceLogs.map((log, idx) => {
-                    const meta = (() => {
-                      try {
-                        return JSON.parse(log.metadata || '{}');
-                      } catch {
-                        return {};
-                      }
-                    })();
-
-                    return (
-                      <div key={idx} className="bg-gray-900/30 p-3 rounded text-xs border-l-2 border-gray-700">
-                        <div className="flex items-start gap-2 mb-1">
-                          <Badge className={`${
-                            log.operation_type === 'race_control_incident' ? 'bg-orange-900/40 text-orange-300' :
-                            log.operation_type === 'race_control_override' ? 'bg-red-900/40 text-red-300' :
-                            'bg-blue-900/40 text-blue-300'
-                          }`}>
-                            {log.operation_type === 'race_control_incident' ? 'Incident' :
-                             log.operation_type === 'race_control_override' ? 'Override' :
-                             'Update'}
-                          </Badge>
-                          {meta.severity && (
-                            <Badge className={`${
-                              meta.severity === 'High' ? 'bg-red-900/40 text-red-300' :
-                              meta.severity === 'Medium' ? 'bg-yellow-900/40 text-yellow-300' :
-                              'bg-blue-900/40 text-blue-300'
-                            }`}>
-                              {meta.severity}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-gray-300 mb-1">{log.notes || meta.note}</p>
-                        <p className="text-gray-500">
-                          {new Date(log.created_date).toLocaleString()}
-                        </p>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-gray-700">
+                              <TableHead className="text-gray-400">Order</TableHead>
+                              <TableHead className="text-gray-400">Session</TableHead>
+                              <TableHead className="text-gray-400">Type</TableHead>
+                              <TableHead className="text-gray-400">Time</TableHead>
+                              <TableHead className="text-gray-400">Status</TableHead>
+                              <TableHead className="text-gray-400">Locked</TableHead>
+                              <TableHead className="text-gray-400">Source</TableHead>
+                              <TableHead className="text-gray-400">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {classSessions.map((session) => (
+                              <TableRow key={session.id} className="border-gray-800">
+                                <TableCell className="text-white text-sm">
+                                  {session.session_order || '-'}
+                                </TableCell>
+                                <TableCell className="text-white text-sm">
+                                  {session.name}
+                                </TableCell>
+                                <TableCell className="text-gray-400 text-sm">
+                                  {session.session_type}
+                                </TableCell>
+                                <TableCell className="text-gray-400 text-sm">
+                                  {session.scheduled_time
+                                    ? new Date(session.scheduled_time).toLocaleTimeString()
+                                    : '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <Select
+                                    value={session.status || 'Draft'}
+                                    onValueChange={(v) => handleStatusChange(session, v)}
+                                  >
+                                    <SelectTrigger className="w-32 h-8 bg-gray-900 border-gray-700 text-white text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-gray-900 border-gray-700">
+                                      <SelectItem value="Draft" className="text-white">
+                                        Draft
+                                      </SelectItem>
+                                      <SelectItem value="Provisional" className="text-white">
+                                        Provisional
+                                      </SelectItem>
+                                      <SelectItem value="Official" className="text-white">
+                                        Official
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </TableCell>
+                                <TableCell>
+                                  <button
+                                    onClick={() => handleLockToggle(session)}
+                                    className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                                  >
+                                    {session.locked ? (
+                                      <Lock className="w-4 h-4 text-red-400" />
+                                    ) : (
+                                      <Unlock className="w-4 h-4 text-gray-500" />
+                                    )}
+                                  </button>
+                                </TableCell>
+                                <TableCell className="text-gray-400 text-sm">
+                                  {session.input_source || '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => openNotes(session)}
+                                      className="p-1 h-auto text-gray-400 hover:text-white hover:bg-gray-800"
+                                    >
+                                      <MessageSquare className="w-4 h-4" />
+                                    </Button>
+                                    {isAdmin && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleAdminOverride(session)}
+                                        className="p-1 h-auto text-yellow-500 hover:bg-yellow-900/20 hover:text-yellow-400"
+                                        title="Set to Official & Lock"
+                                      >
+                                        <Shield className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </motion.div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="bg-[#262626] border-gray-700 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Race Control Notes</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Add internal notes for this session
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Textarea
+              placeholder="Enter race control notes..."
+              value={notesText}
+              onChange={(e) => setNotesText(e.target.value)}
+              className="bg-gray-900 border-gray-600 text-white h-32"
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setNotesDialogOpen(false)}
+              className="border-gray-700 text-gray-300"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleSaveNotes(sessions.find(s => s.id === selectedSessionId))}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Save Notes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
