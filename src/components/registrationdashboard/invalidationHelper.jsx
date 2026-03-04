@@ -217,6 +217,14 @@ function getKeysForOperation(operationType, payload = {}) {
       broad.push(['policies'], ['operation_logs']);
       break;
 
+    case 'media_request_updated':
+      broad.push(['mediaRequests'], ['mediaCredentials'], ['policies'], ['policyAcceptances'], ['operationLogs']);
+      break;
+
+    case 'media_credential_updated':
+      broad.push(['mediaRequests'], ['mediaCredentials'], ['policies'], ['policyAcceptances'], ['operationLogs']);
+      break;
+
     case 'race_control_override':
     case 'race_control_incident':
     case 'red_flag':
