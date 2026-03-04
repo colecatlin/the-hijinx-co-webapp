@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertCircle, Lock, CheckCircle2, Download } from 'lucide-react';
+import { AlertCircle, Lock, CheckCircle2, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
@@ -538,12 +538,17 @@ export default function ResultsManager({
                 <CardTitle className="text-sm text-white">{getSessionLabel(selectedSession)}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={`text-xs ${statusBadgeClass(selectedSession.status)}`}>
                     {selectedSession.status || 'Draft'}
                   </Badge>
                   {selectedSession.status === 'Locked' && <Lock className="w-3 h-3 text-purple-400" />}
                   {selectedSession.status === 'Official' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+                  {(selectedSession.status === 'Official' || selectedSession.status === 'Locked') && (
+                    <Badge className="text-xs bg-green-500/20 text-green-400 flex items-center gap-1">
+                      <Eye className="w-3 h-3" /> Public
+                    </Badge>
+                  )}
                 </div>
                 <div className="text-xs text-gray-500 space-y-0.5">
                   <p>Type: <span className="text-gray-300">{selectedSession.session_type}</span></p>
