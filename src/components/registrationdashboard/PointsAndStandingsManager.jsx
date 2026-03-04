@@ -12,7 +12,8 @@ import { AlertCircle, Download, RefreshCw, Send, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
-import { calculateStandings, DEFAULT_POINTS_TABLE } from './standingsCalc';
+import { calculateStandings as calculateStandingsOld, DEFAULT_POINTS_TABLE } from './standingsCalc';
+import { calculateStandings } from './standingsCalculator';
 import PointsRulesetEditor from './PointsRulesetEditor';
 import StandingsTable from './StandingsTable';
 import StandingsHistoryPanel from './StandingsHistoryPanel';
@@ -220,74 +221,117 @@ export default function PointsAndStandingsManager({
 
   const selectedClass = seriesClasses.find((c) => c.id === selectedClassId);
 
-  // ── Recalculate: try backend function first, fall back to client-side ──
+  // ── Build points config array for calculator ──
+  const pointsConfigForCalc = useMemo(() => {
+   return pointsTableRows.map((row) => ({
+     position: row.position,
+     points: row.points || 0,
+   }));
+  }, [pointsTableRows]);
+
+  // ── Load PointsConfig from database (optional, for advanced setup) ──
+  const { data: dbPointsConfig = [] } = useQuery({
+   queryKey: ['pointsConfig', seriesId],
+   queryFn: () => (seriesId ? base44.entities.PointsConfig.filter({ series_id: seriesId }).catch(() => []) : Promise.resolve([])),
+   enabled: !!seriesId,
+   ...DQ,
+  });
+
+  // ── Load operation logs for last calculated time ──
+  const { data: standingsLogs = [] } = useQuery({
+   queryKey: ['operationLogs', 'standings_recalculated', seriesId, selectedSeasonYear],
+   queryFn: async () => {
+     if (!seriesId || !selectedSeasonYear) return [];
+     const logs = await base44.entities.OperationLog.filter({
+       operation_type: 'standings_recalculated',
+     }).catch(() => []);
+     return logs.filter((log) => {
+       try {
+         const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
+         return metadata?.series_id === seriesId && metadata?.season === selectedSeasonYear;
+       } catch {
+         return false;
+       }
+     }).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+   },
+   enabled: !!seriesId && !!selectedSeasonYear,
+   ...DQ,
+  });
+
+  const lastCalculatedTime = standingsLogs?.[0]?.created_date;
+
+  // ── Recalculate using new calculator ──
   const handleRecalculate = async () => {
-    if (!selectedClassId) { toast.error('Select a class first'); return; }
-    setCalculating(true);
-    const t0 = Date.now();
-    try {
-      let rows;
-      let source = 'client';
+   if (!selectedClassId) { toast.error('Select a class first'); return; }
+   setCalculating(true);
+   const t0 = Date.now();
+   try {
+     // Filter results for this class
+     const classResults = allResults.filter((r) => r.series_class_id === selectedClassId);
 
-      // Try backend function
-      try {
-        const res = await base44.functions.invoke('recalculateStandings', {
-          series_id: seriesId,
-          season: selectedSeasonYear,
-          series_class_id: selectedClassId,
-          ...(eventId ? { event_id: eventId } : {}),
-        });
-        if (res?.data?.standings?.length) {
-          rows = res.data.standings;
-          source = 'backend';
-        }
-      } catch {
-        // fall through to client-side
-      }
+     // Use new calculator with Finals-only sessions
+     const { standings: calculatedStandings } = calculateStandings({
+       results: classResults,
+       sessions: allSessions,
+       drivers,
+       pointsConfig: pointsConfigForCalc,
+       season: selectedSeasonYear,
+       seriesId,
+     });
 
-      if (!rows) {
-        if (!officialSessionCount && !includeProvisional) {
-          toast.error('No Official/Locked sessions. Enable "Include Provisional" or publish sessions first.');
-          return;
-        }
-        rows = calculateStandings(allResults, allSessions, drivers, selectedClassId, {
-          includeNonFinals,
-          includeProvisional,
-          pointsTableRows,
-        });
-      }
+     const duration = Date.now() - t0;
 
-      const duration = Date.now() - t0;
-      setCalculatedRows(rows);
-      toast.success(`Standings calculated for ${rows.length} drivers`);
-      if (onClearDirty) onClearDirty();
-      if (onStandingsCalculated) onStandingsCalculated();
+     // Convert to display format
+     const rows = calculatedStandings.map((s) => {
+       const driver = drivers.find((d) => d.id === s.driver_id);
+       return {
+         driver_id: s.driver_id,
+         rank: s.rank,
+         driver_name: driver ? `${driver.first_name} ${driver.last_name}` : '',
+         car_number: driver?.primary_number || '',
+         total_points: s.total_points,
+         events_counted: s.starts,
+         wins: s.wins,
+         podiums: s.podiums,
+         top5: s.top5,
+         top10: s.top10,
+         dnf_count: s.dnf_count,
+       };
+     });
 
-      // Invalidate related caches
-      invalidateAfterOperation('standings_recalculated', { eventId, seriesId });
-      queryClient.invalidateQueries({ queryKey: ['standings', seriesId, selectedSeasonYear, selectedClassId] });
+     setCalculatedRows(rows);
+     toast.success(`Standings calculated for ${rows.length} drivers`);
+     if (onClearDirty) onClearDirty();
+     if (onStandingsCalculated) onStandingsCalculated();
 
-      // Log
-      base44.entities.OperationLog.create({
-        operation_type: 'standings_recalculate',
-        status: 'success',
-        entity_name: 'Standings',
-        event_id: eventId,
-        message: `Recalculated standings: ${selectedClass?.class_name || selectedClassId}, ${rows.length} drivers`,
-        metadata: {
-          series_id: seriesId,
-          season: selectedSeasonYear,
-          class_id: selectedClassId,
-          class_name: selectedClass?.class_name,
-          driver_count: rows.length,
-          source,
-          event_scope: !!eventId,
-          duration_ms: duration,
-        },
-      }).catch(() => {});
-    } finally {
-      setCalculating(false);
-    }
+     // Log operation
+     base44.entities.OperationLog.create({
+       operation_type: 'standings_recalculated',
+       status: 'success',
+       entity_name: 'Standings',
+       event_id: eventId,
+       message: `Recalculated standings: ${selectedClass?.class_name || selectedClassId}, ${rows.length} drivers`,
+       metadata: {
+         series_id: seriesId,
+         season: selectedSeasonYear,
+         series_class_id: selectedClassId,
+         class_name: selectedClass?.class_name,
+         driver_count: rows.length,
+         rows_written: rows.length,
+         duration_ms: duration,
+       },
+     }).catch(() => {});
+
+     // Invalidate caches
+     invalidateAfterOperation('standings_recalculated', { eventId, seriesId });
+     queryClient.invalidateQueries({ queryKey: ['standings', seriesId, selectedSeasonYear, selectedClassId] });
+     queryClient.invalidateQueries({ queryKey: ['operationLogs', 'standings_recalculated', seriesId, selectedSeasonYear] });
+
+   } catch (err) {
+     toast.error(`Calculation failed: ${err.message}`);
+   } finally {
+     setCalculating(false);
+   }
   };
 
   // ── Publish standings ──
@@ -296,34 +340,46 @@ export default function PointsAndStandingsManager({
       if (!calculatedRows?.length) throw new Error('Recalculate first');
       const className = selectedClass?.class_name || '';
 
+      // Delete old standings for this series/season/class first
+      try {
+        const oldStandings = await base44.entities.Standings.filter({
+          series_id: seriesId,
+          season_year: selectedSeasonYear,
+          series_class_id: selectedClassId,
+        }).catch(() => []);
+        
+        // Delete old records
+        if (oldStandings.length > 0) {
+          await Promise.all(oldStandings.map((s) => base44.entities.Standings.delete(s.id).catch(() => {})));
+        }
+      } catch {
+        // Continue even if delete fails
+      }
+
+      // Create new standings entries
       const ops = calculatedRows.map((row) => {
         const driver = drivers.find((d) => d.id === row.driver_id);
-        const existing = publishedStandings.find((s) => s.driver_id === row.driver_id);
         const payload = {
           series_id: seriesId,
-          series_name: '',
+          series_class_id: selectedClassId,
           season_year: selectedSeasonYear,
-          class_name: className,
-          position: row.rank,
           driver_id: row.driver_id,
-          first_name: driver?.first_name || '',
-          last_name: driver?.last_name || '',
-          bib_number: driver?.primary_number || row.car_number || '',
+          rank: row.rank,
           total_points: row.total_points,
-          events_counted: row.events_counted,
-          wins: row.wins,
-          podiums: row.podiums,
-          bonus_points: 0,
-          last_calculated: new Date().toISOString(),
+          wins: row.wins || 0,
+          podiums: row.podiums || 0,
+          top5: row.top5 || 0,
+          top10: row.top10 || 0,
+          starts: row.events_counted || 0,
+          dnf_count: row.dnf_count || 0,
         };
-        if (existing) return base44.entities.Standings.update(existing.id, payload);
         return base44.entities.Standings.create(payload);
       });
 
-      await Promise.all(ops);
+      const written = await Promise.all(ops);
 
       base44.entities.OperationLog.create({
-        operation_type: 'standings_published',
+        operation_type: 'standings_recalculated',
         status: 'success',
         entity_name: 'Standings',
         event_id: eventId,
@@ -331,16 +387,16 @@ export default function PointsAndStandingsManager({
         metadata: {
           series_id: seriesId,
           season: selectedSeasonYear,
-          class_id: selectedClassId,
+          series_class_id: selectedClassId,
           class_name: className,
           driver_count: calculatedRows.length,
-          published: true,
+          rows_written: written.length,
         },
       }).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['standings', seriesId, selectedSeasonYear, selectedClassId] });
-      invalidateAfterOperation('standings_published', { eventId, seriesId });
+      invalidateAfterOperation('standings_recalculated', { eventId, seriesId });
       toast.success('Standings published');
     },
     onError: (err) => toast.error(`Publish failed: ${err.message}`),
@@ -491,9 +547,9 @@ export default function PointsAndStandingsManager({
           <span>Sessions: <span className="text-gray-300">{classSessionsInScope.length}</span></span>
           <span>Official/Locked: <span className="text-green-400">{officialSessionCount}</span></span>
           <span>Results loaded: <span className="text-gray-300">{allResults.filter((r) => !selectedClassId || r.series_class_id === selectedClassId).length}</span></span>
+          {lastCalculatedTime && <span>Last calculated: <span className="text-gray-300">{new Date(lastCalculatedTime).toLocaleString()}</span></span>}
           {calculatedRows && <Badge className="bg-blue-500/20 text-blue-400">Draft — not yet published</Badge>}
-          {!calculatedRows && publishedStandings.length > 0 && hasPublishMarker && <Badge className="bg-green-500/20 text-green-400">Published</Badge>}
-          {!calculatedRows && publishedStandings.length > 0 && !hasPublishMarker && <Badge className="bg-blue-500/20 text-blue-400">Calculated — not yet published</Badge>}
+          {!calculatedRows && publishedStandings.length > 0 && <Badge className="bg-green-500/20 text-green-400">Published</Badge>}
         </div>
       </div>
 
