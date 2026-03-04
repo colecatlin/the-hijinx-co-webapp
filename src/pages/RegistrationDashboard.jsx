@@ -1449,16 +1449,19 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'announcer_pack') && activeTab === 'announcer_pack' && (
-                <div className="-mx-4 -mb-4">
+                selectedEvent ? (
                   <AnnouncerPackManager
                     selectedEvent={selectedEvent}
                     selectedTrack={selectedTrack}
-                    selectedSeries={selectedSeries}
-                    dashboardPermissions={dashboardPermissions}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                    isAdmin={isAdmin}
+                    dashboardContext={dashboardContext}
                   />
-                </div>
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-20 text-center">
+                      <p className="text-gray-400">Select an event to access the Announcer Pack</p>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
