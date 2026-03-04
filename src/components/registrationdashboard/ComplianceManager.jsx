@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -407,10 +407,9 @@ export default function ComplianceManager({
             {recomputing ? 'Recomputing...' : 'Recompute Compliance Now'}
           </Button>
         )}
-      </div>
-      </div>
+        </div>
 
-      {/* Filters */}
+        {/* Filters */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
         <div className="flex gap-3 flex-wrap">
           <div className="flex-1 min-w-[120px]">
