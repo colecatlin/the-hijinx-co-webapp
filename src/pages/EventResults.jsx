@@ -188,9 +188,9 @@ export default function EventResults() {
     return counts;
   }, [results]);
 
-  // Filter to public-visible sessions
+  // Filter to only Official or Locked sessions (Race Core official data)
   const publicSessions = useMemo(() => {
-    return sessions.filter(s => isPublicVisible('Session', s));
+    return sessions.filter(s => ['Official', 'Locked'].includes(s.status));
   }, [sessions]);
 
   // Summary stats (only public sessions)

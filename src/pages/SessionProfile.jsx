@@ -133,6 +133,26 @@ export default function SessionProfile() {
     );
   }
 
+  // Block access to non-official sessions publicly
+  if (!['Official', 'Locked'].includes(session.status)) {
+    return (
+      <PageShell>
+        <div className="max-w-6xl mx-auto px-6 py-20 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <AlertCircle className="w-5 h-5 text-orange-600" />
+            <p className="text-gray-600 font-medium">Session is not official yet</p>
+          </div>
+          <p className="text-sm text-gray-500 mb-6">Official results will be available once the session is finalized.</p>
+          {event && (
+            <Link to={`${createPageUrl('EventResults')}?id=${event.id}`}>
+              <Button variant="outline">View Event Results</Button>
+            </Link>
+          )}
+        </div>
+      </PageShell>
+    );
+  }
+
   const sessionName = session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`;
   const racedayUrl = event ? `${createPageUrl('RegistrationDashboard')}?orgType=${event.series_id ? 'series' : 'track'}&orgId=${event.series_id || event.track_id}&seasonYear=${event.season}&eventId=${event.id}&tab=results&sessionId=${sessionId}` : '';
 

@@ -135,6 +135,7 @@ export default function EventProfile() {
     );
   }, [activeClassSessions, selectedSessionType]);
 
+  // Filter to only Official or Locked sessions (Race Core)
   const officialSessions = useMemo(() => {
     return sessions.filter(s => ['Official', 'Locked'].includes(s.status));
   }, [sessions]);

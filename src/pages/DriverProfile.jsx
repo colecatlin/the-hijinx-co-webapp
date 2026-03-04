@@ -241,6 +241,12 @@ export default function DriverProfile() {
     }
   };
 
+  // Filter results to only those from Official or Locked sessions (Race Core)
+  const officialResults = useMemo(() => {
+    const officialSessions = sessions.filter(s => ['Official', 'Locked'].includes(s.status));
+    return results.filter(r => officialSessions.some(s => s.id === r.session_id)).slice(0, 10);
+  }, [results, sessions]);
+
   // Split entries into upcoming and past events (public visible only)
   const upcomingEntries = entries
     .filter(entry => {
@@ -261,7 +267,9 @@ export default function DriverProfile() {
     .map(entry => {
       const event = events.find(e => e.id === entry.event_id);
       const track = tracks.find(t => t.id === event?.track_id);
-      const resultData = results.find(r => r.event_id === event?.id);
+      // Find official result for this entry
+      const officialSession = sessions.find(s => s.event_id === event.id && ['Official', 'Locked'].includes(s.status));
+      const resultData = officialSession ? results.find(r => r.session_id === officialSession.id && r.driver_id === driver.id) : null;
       return { entry, event, track, resultData };
     });
 
@@ -601,7 +609,51 @@ export default function DriverProfile() {
 
           <section id="section-results" className="bg-white p-8">
             <Separator className="mb-3" />
-            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Results & Standings</h2>
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Recent Official Results</h2>
+            {officialResults.length === 0 ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p>No official results yet.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Event</th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Session</th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Finish</th>
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">Pts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {officialResults.map((result) => {
+                      const session = sessions.find(s => s.id === result.session_id);
+                      const event = events.find(e => e.id === session?.event_id);
+                      return (
+                        <tr key={result.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-2">
+                            {event ? (
+                              <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="font-medium text-[#0A0A0A] hover:underline">
+                                {event.name}
+                              </Link>
+                            ) : '—'}
+                          </td>
+                          <td className="py-3 px-2 text-gray-600">{session?.name || '—'}</td>
+                          <td className="py-3 px-2 font-semibold">P{result.position || '—'}</td>
+                          <td className="py-3 px-2 text-right font-semibold">{result.points ?? '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section id="section-standings" className="bg-white p-8">
+            <Separator className="mb-3" />
+            <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Standings & Rankings</h2>
             <ResultsPanel driverId={driver.id} />
           </section>
 
