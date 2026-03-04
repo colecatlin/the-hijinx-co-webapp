@@ -642,8 +642,16 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
         </Card>
       </div>
 
-      {/* Right Column - Preview */}
+      {/* Right Column - Preview + Collaboration */}
       <div className="space-y-6">
+        {selectedEventId && (
+          <CollaborationApprovalPanel
+            eventId={selectedEventId}
+            canApproveAsTrack={canApproveAsTrack || isAdmin}
+            canApproveAsSeries={canApproveAsSeries || isAdmin}
+            currentUser={currentUser}
+          />
+        )}
         <Card className="bg-[#171717] border-gray-800">
           <CardHeader className="border-b border-gray-800">
             <CardTitle className="text-white text-sm">Event Preview</CardTitle>
