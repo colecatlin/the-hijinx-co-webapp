@@ -629,81 +629,52 @@ export default function CheckInManager({
           )}
         </div>
 
-        {/* Quick List: Top 25 Recent Entries */}
-        {!searchTerm && !classFilter !== 'all' && (
-          <div className="space-y-2">
-            <p className="text-xs text-gray-400 px-2">Recent entries (25)</p>
-            {entriesLoading ? (
-              <p className="text-gray-400 text-sm px-2">Loading...</p>
-            ) : filteredEntries.slice(0, 25).length === 0 ? (
-              <p className="text-gray-400 text-sm px-2">No entries found.</p>
-            ) : (
-              filteredEntries.slice(0, 25).map((entry) => (
+        {/* Entry List */}
+        <div className="space-y-2">
+          <p className="text-xs text-gray-400 px-1">{filteredEntries.length} entr{filteredEntries.length === 1 ? 'y' : 'ies'}</p>
+          {filteredEntries.length === 0 ? (
+            <p className="text-gray-500 text-sm px-1">No entries match these filters.</p>
+          ) : (
+            filteredEntries.slice(0, 50).map((entry) => {
+              const techStatus = entry.tech_status || 'Not Inspected';
+              const techPending = techStatus === 'Not Inspected' || techStatus === 'Recheck Required';
+              return (
                 <button
                   key={entry.id}
                   onClick={() => handleSelectEntry(entry)}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
                     selectedEntry?.id === entry.id
                       ? 'bg-gray-800 border-gray-600'
                       : 'bg-[#171717] border-gray-800 hover:border-gray-700 hover:bg-gray-800/30'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div>
-                      <p className="font-semibold text-white">#{entry.car_number}</p>
-                      <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
+                      <span className="font-semibold text-white text-sm">#{entry.car_number}</span>
+                      <span className="text-gray-400 text-sm ml-2">{getDriverName(entry.driver_id)}</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                    <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">{getEntryClassName(entry)}</p>
+                  <p className="text-xs text-gray-500 mb-1.5">{getEntryClassName(entry)}</p>
                   <div className="flex flex-wrap gap-1">
-                    <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
+                    <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className={`text-xs ${entry.entry_status === 'Checked In' ? 'bg-green-700' : ''}`}>
                       {entry.entry_status || 'Registered'}
                     </Badge>
+                    {!entry.waiver_verified && (
+                      <Badge variant="secondary" className="text-xs bg-yellow-900/40 text-yellow-300">Waiver Missing</Badge>
+                    )}
+                    {(entry.payment_status || 'Unpaid') === 'Unpaid' && (
+                      <Badge variant="secondary" className="text-xs bg-red-900/40 text-red-300">Unpaid</Badge>
+                    )}
+                    {techPending && (
+                      <Badge variant="secondary" className="text-xs bg-orange-900/40 text-orange-300">Tech Pending</Badge>
+                    )}
                   </div>
                 </button>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Filtered Search Results */}
-        {(searchTerm || classFilter !== 'all') && (
-          <div className="space-y-2">
-            <p className="text-xs text-gray-400 px-2">{filteredEntries.length} results</p>
-            {entriesLoading ? (
-              <p className="text-gray-400 text-sm px-2">Loading...</p>
-            ) : filteredEntries.length === 0 ? (
-              <p className="text-gray-400 text-sm px-2">No entries found.</p>
-            ) : (
-              filteredEntries.map((entry) => (
-                <button
-                  key={entry.id}
-                  onClick={() => handleSelectEntry(entry)}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    selectedEntry?.id === entry.id
-                      ? 'bg-gray-800 border-gray-600'
-                      : 'bg-[#171717] border-gray-800 hover:border-gray-700 hover:bg-gray-800/30'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-white">#{entry.car_number}</p>
-                      <p className="text-sm text-gray-400">{getDriverName(entry.driver_id)}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <p className="text-xs text-gray-500 mb-2">{getEntryClassName(entry)}</p>
-                  <div className="flex flex-wrap gap-1">
-                    <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
-                      {entry.entry_status || 'Registered'}
-                    </Badge>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Right column: Detail panel */}
