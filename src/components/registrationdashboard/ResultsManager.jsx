@@ -336,6 +336,9 @@ export default function ResultsManager({
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
       if (newStatus === 'Locked' && onResultsLocked) onResultsLocked();
+      if (newStatus === 'Locked' && selectedSession?.session_type === 'Final') {
+        invalidateAfterOperation('standings_updated', { eventId });
+      }
     },
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
