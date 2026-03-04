@@ -312,6 +312,10 @@ export default function Profile() {
               </div>
             </TabsContent>
 
+            <TabsContent value="racecore">
+              <RaceCoreAccessTab user={user} />
+            </TabsContent>
+
             <TabsContent value="story" className="space-y-8">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Submit a Story</h2>
