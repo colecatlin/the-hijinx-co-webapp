@@ -647,8 +647,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
         {selectedEventId && (
           <CollaborationApprovalPanel
             eventId={selectedEventId}
-            canApproveAsTrack={canApproveAsTrack || isAdmin}
-            canApproveAsSeries={canApproveAsSeries || isAdmin}
+            isAdmin={isAdmin}
             currentUser={currentUser}
           />
         )}
