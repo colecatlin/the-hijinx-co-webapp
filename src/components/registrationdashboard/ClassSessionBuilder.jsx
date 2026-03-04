@@ -1,52 +1,33 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
-  Plus,
-  Edit2,
-  Copy,
-  Trash2,
-  Lock,
-  LockOpen,
-  ChevronUp,
-  ChevronDown,
+  Plus, Edit2, Copy, Trash2, Lock, LockOpen, ChevronUp, ChevronDown, Settings,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+
+const EMPTY_CLASS_FORM = { name: '', series_class_id: '', max_entries: '', status: 'Open', class_order: '', notes: '' };
+const EMPTY_SESSION_FORM = { event_class_id: '', session_type: 'Practice', name: '', session_number: '', scheduled_time: '', laps: '', input_source: 'Manual', status: 'Draft', advancement_rules: '' };
 
 export default function ClassSessionBuilder({
   eventId,
@@ -58,15 +39,26 @@ export default function ClassSessionBuilder({
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
-  // State
-  const [showAddSessionDialog, setShowAddSessionDialog] = useState(false);
-  const [editingSession, setEditingSession] = useState(null);
-  const [formData, setFormData] = useState({});
-  const [showLockConfirm, setShowLockConfirm] = useState(null);
-  const [pendingClassGroups, setPendingClassGroups] = useState([]);
+  // ── Class dialog state ─────────────────────────────────────────────────────
+  const [classDialog, setClassDialog] = useState(false);
+  const [editingClass, setEditingClass] = useState(null);
+  const [classForm, setClassForm] = useState(EMPTY_CLASS_FORM);
+  const [deleteClassConfirm, setDeleteClassConfirm] = useState(null); // EventClass id
 
-  // Queries
-  const { data: allSessions = [] } = useQuery({
+  // ── Session dialog state ───────────────────────────────────────────────────
+  const [sessionDialog, setSessionDialog] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
+  const [sessionForm, setSessionForm] = useState(EMPTY_SESSION_FORM);
+  const [lockConfirm, setLockConfirm] = useState(null); // session id
+
+  const sharedOpts = {
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId },
+    selectedEvent: selectedEvent ?? null,
+  };
+
+  // ── Queries ────────────────────────────────────────────────────────────────
+  const { data: sessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => base44.entities.Session.filter({ event_id: eventId }, 'session_order', 500),
     enabled: !!eventId,
@@ -74,236 +66,222 @@ export default function ClassSessionBuilder({
 
   const { data: eventClasses = [] } = useQuery({
     queryKey: ['eventClasses', eventId],
-    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order', 100) : Promise.resolve([])),
+    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }, 'class_order', 100),
     enabled: !!eventId,
   });
 
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses', seriesId],
-    queryFn: () => (seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([])),
+    queryFn: () => seriesId ? base44.entities.SeriesClass.filter({ series_id: seriesId }) : Promise.resolve([]),
     enabled: !!seriesId,
   });
 
-  // Data integrity: filter sessions to match selectedEvent
-   const sessions = useMemo(() => {
-     if (!selectedEvent) return allSessions;
-     return allSessions.filter((session) => session.event_id === selectedEvent.id);
-   }, [allSessions, selectedEvent]);
-
-  // Shared mutation wrappers
-  const sharedMutationOpts = {
-    invalidateAfterOperation,
-    dashboardContext: dashboardContext ?? { eventId },
-    selectedEvent: selectedEvent ?? null,
-  };
-
-  const { mutateAsync: createSession, isPending: creatingSession } = useDashboardMutation({
-    operationType: 'session_created',
-    entityName: 'Session',
-    mutationFn: (data) => base44.entities.Session.create(data),
-    successMessage: 'Session created',
-    ...sharedMutationOpts,
+  // Entries count per class for delete guard
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId,
   });
 
-  const { mutateAsync: updateSession, isPending: updatingSession } = useDashboardMutation({
-    operationType: 'session_updated',
-    entityName: 'Session',
-    mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
-    successMessage: 'Session updated',
-    ...sharedMutationOpts,
-  });
-
-  const { mutateAsync: deleteSession } = useDashboardMutation({
-    operationType: 'session_deleted',
-    entityName: 'Session',
-    mutationFn: (id) => base44.entities.Session.delete(id),
-    successMessage: 'Session deleted',
-    ...sharedMutationOpts,
-  });
-
+  // ── Mutations ─────────────────────────────────────────────────────────────
   const { mutateAsync: createEventClass, isPending: creatingClass } = useDashboardMutation({
-    operationType: 'event_class_created',
-    entityName: 'EventClass',
+    operationType: 'event_class_created', entityName: 'EventClass',
     mutationFn: (data) => base44.entities.EventClass.create(data),
-    successMessage: 'Class created',
-    ...sharedMutationOpts,
+    successMessage: 'Class created', ...sharedOpts,
   });
 
   const { mutateAsync: updateEventClass, isPending: updatingClass } = useDashboardMutation({
-    operationType: 'event_class_updated',
-    entityName: 'EventClass',
+    operationType: 'event_class_updated', entityName: 'EventClass',
     mutationFn: ({ id, data }) => base44.entities.EventClass.update(id, data),
-    successMessage: 'Class updated',
-    ...sharedMutationOpts,
+    successMessage: 'Class updated', ...sharedOpts,
   });
 
   const { mutateAsync: deleteEventClass } = useDashboardMutation({
-    operationType: 'event_class_deleted',
-    entityName: 'EventClass',
+    operationType: 'event_class_deleted', entityName: 'EventClass',
     mutationFn: (id) => base44.entities.EventClass.delete(id),
-    successMessage: 'Class deleted',
-    ...sharedMutationOpts,
+    successMessage: 'Class deleted', ...sharedOpts,
   });
 
-  // Legacy useMutation adapters (wired to shared wrappers for UI state compat)
-  const createSessionMutation = { mutate: (data) => createSession(data), isPending: creatingSession };
-  const updateSessionMutation = { mutate: ({ id, data }) => updateSession({ id, data }), isPending: updatingSession };
-  const deleteSessionMutation = { mutate: (id) => deleteSession(id) };
+  const { mutateAsync: createSession, isPending: creatingSession } = useDashboardMutation({
+    operationType: 'session_created', entityName: 'Session',
+    mutationFn: (data) => base44.entities.Session.create(data),
+    successMessage: 'Session created', ...sharedOpts,
+  });
 
-  // Group sessions by EventClass
-   const classGroups = useMemo(() => {
-     const groups = {};
+  const { mutateAsync: updateSession } = useDashboardMutation({
+    operationType: 'session_updated', entityName: 'Session',
+    mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
+    successMessage: 'Session updated', ...sharedOpts,
+  });
 
-     // Add EventClass records
-     eventClasses.forEach((ec) => {
-       groups[ec.id] = {
-         id: ec.id,
-         key: ec.id,
-         name: ec.name,
-         className: ec.name,
-         series_class_id: ec.series_class_id,
-         max_entries: ec.max_entries,
-         status: ec.status,
-         class_order: ec.class_order || 0,
-         sessions: [],
-         isEventClass: true,
-       };
-     });
+  const { mutateAsync: deleteSession } = useDashboardMutation({
+    operationType: 'session_deleted', entityName: 'Session',
+    mutationFn: (id) => base44.entities.Session.delete(id),
+    successMessage: 'Session deleted', ...sharedOpts,
+  });
 
-     // Attach sessions to their EventClass
-     sessions.forEach((session) => {
-       if (session.event_class_id && groups[session.event_class_id]) {
-         groups[session.event_class_id].sessions.push(session);
-       }
-     });
+  // ── Derived ───────────────────────────────────────────────────────────────
+  const entriesByClass = useMemo(() => {
+    const map = {};
+    entries.forEach((e) => {
+      if (e.event_class_id) map[e.event_class_id] = (map[e.event_class_id] || 0) + 1;
+    });
+    return map;
+  }, [entries]);
 
-     return Object.values(groups).sort((a, b) => (a.class_order || 0) - (b.class_order || 0));
-   }, [eventClasses, sessions, selectedEvent]);
+  const classGroups = useMemo(() => {
+    const groups = {};
+    eventClasses.forEach((ec) => {
+      groups[ec.id] = { ...ec, sessions: [] };
+    });
+    sessions.forEach((s) => {
+      if (s.event_class_id && groups[s.event_class_id]) {
+        groups[s.event_class_id].sessions.push(s);
+      }
+    });
+    return Object.values(groups).sort((a, b) => (a.class_order || 0) - (b.class_order || 0));
+  }, [eventClasses, sessions]);
 
-  // Handlers
-  const handleAddClass = () => {
-    const newOrder = Math.max(0, ...eventClasses.map((ec) => ec.class_order || 0)) + 1;
-    const data = {
+  // ── Class handlers ────────────────────────────────────────────────────────
+  const openAddClass = () => {
+    setEditingClass(null);
+    setClassForm({ ...EMPTY_CLASS_FORM, class_order: (Math.max(0, ...eventClasses.map((ec) => ec.class_order || 0)) + 1).toString() });
+    setClassDialog(true);
+  };
+
+  const openEditClass = (ec) => {
+    setEditingClass(ec);
+    setClassForm({
+      name: ec.name || '',
+      series_class_id: ec.series_class_id || '',
+      max_entries: ec.max_entries != null ? String(ec.max_entries) : '',
+      status: ec.status || 'Open',
+      class_order: ec.class_order != null ? String(ec.class_order) : '',
+      notes: ec.notes || '',
+    });
+    setClassDialog(true);
+  };
+
+  const handleSaveClass = async () => {
+    if (!classForm.name.trim()) { toast.error('Class name required'); return; }
+    const payload = {
       event_id: eventId,
-      name: 'New Class',
-      class_order: newOrder,
-      status: 'Open',
+      name: classForm.name.trim(),
+      series_class_id: classForm.series_class_id || undefined,
+      max_entries: classForm.max_entries ? Number(classForm.max_entries) : undefined,
+      status: classForm.status,
+      class_order: classForm.class_order !== '' ? Number(classForm.class_order) : 0,
+      notes: classForm.notes || undefined,
     };
-    createEventClass(data);
+    if (editingClass) {
+      await updateEventClass({ id: editingClass.id, data: payload });
+    } else {
+      await createEventClass(payload);
+    }
+    setClassDialog(false);
   };
 
-  const handleAddSession = (classGroup) => {
-    setFormData({
-      event_class_id: classGroup.id,
-      series_class_id: classGroup.series_class_id || '',
-      session_type: 'Practice',
-      input_source: 'Manual',
-      status: 'Draft',
-      session_order: classGroup.sessions.length,
-    });
+  const handleDeleteClass = async (id) => {
+    const entryCount = entriesByClass[id] || 0;
+    if (entryCount > 0) {
+      toast.error(`Cannot delete — ${entryCount} entr${entryCount === 1 ? 'y' : 'ies'} assigned to this class`);
+      setDeleteClassConfirm(null);
+      return;
+    }
+    await deleteEventClass(id);
+    setDeleteClassConfirm(null);
+  };
+
+  // ── Session handlers ──────────────────────────────────────────────────────
+  const openAddSession = (classGroup) => {
     setEditingSession(null);
-    setShowAddSessionDialog(true);
+    setSessionForm({ ...EMPTY_SESSION_FORM, event_class_id: classGroup.id, session_order: classGroup.sessions.length });
+    setSessionDialog(true);
   };
 
-  const handleEditSession = (session) => {
-    setFormData({
-      event_class_id: session.event_class_id || '',
-      series_class_id: session.series_class_id || '',
-      session_type: session.session_type,
-      session_number: session.session_number,
-      name: session.name,
-      scheduled_time: session.scheduled_time || '',
-      laps: session.laps || '',
-      input_source: session.input_source,
-      advancement_rules: session.advancement_rules || '',
-      status: session.status,
-    });
+  const openEditSession = (session) => {
     setEditingSession(session);
-    setShowAddSessionDialog(true);
+    setSessionForm({
+      event_class_id: session.event_class_id || '',
+      session_type: session.session_type,
+      name: session.name,
+      session_number: session.session_number != null ? String(session.session_number) : '',
+      scheduled_time: session.scheduled_time || '',
+      laps: session.laps != null ? String(session.laps) : '',
+      input_source: session.input_source || 'Manual',
+      status: session.status || 'Draft',
+      advancement_rules: session.advancement_rules || '',
+    });
+    setSessionDialog(true);
   };
 
-  const handleDuplicateSession = (session) => {
-    const newName = `${session.name} Copy`;
-    const data = {
+  const handleSaveSession = async () => {
+    if (!sessionForm.name.trim()) { toast.error('Session name required'); return; }
+    if (!sessionForm.event_class_id) { toast.error('Select a class'); return; }
+    const payload = {
+      event_id: eventId,
+      event_class_id: sessionForm.event_class_id,
+      session_type: sessionForm.session_type,
+      name: sessionForm.name.trim(),
+      session_number: sessionForm.session_number ? Number(sessionForm.session_number) : undefined,
+      scheduled_time: sessionForm.scheduled_time || undefined,
+      laps: sessionForm.laps ? Number(sessionForm.laps) : undefined,
+      input_source: sessionForm.input_source,
+      status: sessionForm.status,
+      advancement_rules: sessionForm.advancement_rules || undefined,
+      session_order: editingSession
+        ? editingSession.session_order
+        : Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
+    };
+    if (editingSession) {
+      await updateSession({ id: editingSession.id, data: payload });
+    } else {
+      await createSession(payload);
+    }
+    setSessionDialog(false);
+  };
+
+  const handleDuplicate = (session) => {
+    createSession({
       event_id: eventId,
       event_class_id: session.event_class_id,
-      series_class_id: session.series_class_id,
       session_type: session.session_type,
-      session_number: (session.session_number || 0) + 1,
-      name: newName,
-      scheduled_time: session.scheduled_time,
+      name: `${session.name} Copy`,
+      session_number: session.session_number,
       laps: session.laps,
       input_source: 'Manual',
-      advancement_rules: session.advancement_rules,
       status: 'Draft',
       session_order: Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
-    };
-    createSessionMutation.mutate(data);
+    });
   };
 
-  const handleMoveSession = (session, direction) => {
-    const idx = sessions.findIndex((s) => s.id === session.id);
-    if (
-      (direction === 'up' && idx === 0) ||
-      (direction === 'down' && idx === sessions.length - 1)
-    ) {
-      return;
-    }
-
+  const handleMove = (session, direction, classGroup) => {
+    const classSessions = classGroup.sessions.slice().sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+    const idx = classSessions.findIndex((s) => s.id === session.id);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    const swapSession = sessions[swapIdx];
-
-    const temp = session.session_order || 0;
+    if (swapIdx < 0 || swapIdx >= classSessions.length) return;
+    const swap = classSessions[swapIdx];
     Promise.all([
-      updateSession({ id: session.id, data: { session_order: swapSession.session_order || 0 } }),
-      updateSession({ id: swapSession.id, data: { session_order: temp } }),
+      updateSession({ id: session.id, data: { session_order: swap.session_order || 0 } }),
+      updateSession({ id: swap.id, data: { session_order: session.session_order || 0 } }),
     ]);
-  };
-
-  const handleSaveSession = () => {
-    if (!formData.name) {
-      toast.error('Session name required');
-      return;
-    }
-    if (!formData.event_class_id) {
-      toast.error('Select a class for this session');
-      return;
-    }
-
-    const data = {
-      event_id: eventId,
-      event_class_id: formData.event_class_id,
-      series_class_id: formData.series_class_id || undefined,
-      session_type: formData.session_type,
-      session_number: formData.session_number || undefined,
-      name: formData.name,
-      scheduled_time: formData.scheduled_time || undefined,
-      laps: formData.laps ? Number(formData.laps) : undefined,
-      input_source: formData.input_source,
-      advancement_rules: formData.advancement_rules || undefined,
-      status: formData.status,
-      session_order: editingSession ? editingSession.session_order : Math.max(0, ...sessions.map((s) => s.session_order || 0)) + 1,
-    };
-
-    if (editingSession) {
-      updateSession({ id: editingSession.id, data }).then(() => {
-        setFormData({});
-        setEditingSession(null);
-        setShowAddSessionDialog(false);
-      });
-    } else {
-      createSession(data).then(() => {
-        setFormData({});
-        setEditingSession(null);
-        setShowAddSessionDialog(false);
-      });
-    }
   };
 
   const handleToggleLock = (session) => {
     const newStatus = session.status === 'Locked' ? 'Draft' : 'Locked';
     updateSession({ id: session.id, data: { status: newStatus, locked: newStatus === 'Locked' } });
-    setShowLockConfirm(null);
+    setLockConfirm(null);
+  };
+
+  const isLocked = (s) => s.status === 'Locked' || s.locked;
+
+  const statusBadge = (s) => {
+    switch (s) {
+      case 'Open': return 'bg-green-500/20 text-green-400';
+      case 'Full': return 'bg-yellow-500/20 text-yellow-400';
+      case 'Closed': return 'bg-red-500/20 text-red-400';
+      default: return 'bg-gray-500/20 text-gray-400';
+    }
   };
 
   if (!eventId) {
@@ -316,191 +294,118 @@ export default function ClassSessionBuilder({
     );
   }
 
-  const isLocked = (session) => session.status === 'Locked' || session.locked;
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-xl font-bold text-white">Classes & Sessions</h2>
-          <p className="text-sm text-gray-400 mt-1">Build the weekend structure, set order, lock when official</p>
+          <p className="text-sm text-gray-400 mt-1">Define classes, then build sessions under each class</p>
         </div>
-        <div className="flex gap-2">
-           <Button
-             onClick={handleAddClass}
-             disabled={creatingClass}
-             className="bg-blue-600 hover:bg-blue-700 text-white"
-             size="sm"
-           >
-             <Plus className="w-4 h-4 mr-2" /> Add Class
-           </Button>
-         </div>
+        <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Plus className="w-4 h-4 mr-1" /> Add Class
+        </Button>
       </div>
 
-      {/* Class Groups Accordion */}
-      {classGroups.length === 0 ? (
+      {/* Empty state */}
+      {classGroups.length === 0 && (
         <Card className="bg-[#171717] border-gray-800">
-          <CardContent className="py-8 text-center">
-            <p className="text-gray-400 text-sm mb-4">No classes yet</p>
-            <Button
-              onClick={handleAddClass}
-              disabled={creatingClass}
-              variant="outline"
-              className="border-gray-700 text-gray-300"
-              size="sm"
-            >
-              Add First Class
+          <CardContent className="py-10 text-center space-y-3">
+            <p className="text-gray-400 text-sm">No classes yet for this event</p>
+            <Button onClick={openAddClass} disabled={creatingClass} variant="outline" size="sm" className="border-gray-700 text-gray-300">
+              <Plus className="w-3 h-3 mr-1" /> Add First Class
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <Accordion type="multiple" className="space-y-2">
-          {classGroups.map((classGroup) => {
-            const hasLocked = classGroup.sessions.some(isLocked);
+      )}
+
+      {/* Accordion */}
+      {classGroups.length > 0 && (
+        <Accordion type="multiple" defaultValue={classGroups.map((cg) => cg.id)} className="space-y-2">
+          {classGroups.map((cg) => {
+            const hasLocked = cg.sessions.some(isLocked);
+            const entryCount = entriesByClass[cg.id] || 0;
+            const isFull = cg.max_entries && entryCount >= cg.max_entries;
+            const sortedSessions = [...cg.sessions].sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+
             return (
-              <AccordionItem
-                key={classGroup.key}
-                value={classGroup.key}
-                className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden"
-              >
-                <AccordionTrigger className="hover:bg-gray-800/50 px-4 py-3">
+              <AccordionItem key={cg.id} value={cg.id} className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">
+                <AccordionTrigger className="hover:bg-gray-800/50 px-4 py-3 [&>svg]:hidden">
                   <div className="flex items-center gap-3 flex-1 text-left">
-                    <div>
-                      <h3 className="font-semibold text-white">{classGroup.className}</h3>
-                      <p className="text-xs text-gray-400 mt-1">{classGroup.sessions.length} sessions</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-white">{cg.name}</h3>
+                        <Badge className={`text-xs ${statusBadge(cg.status)}`}>{cg.status}</Badge>
+                        {hasLocked && <Badge className="text-xs bg-yellow-900/40 text-yellow-300"><Lock className="w-3 h-3 mr-1 inline" />Locked</Badge>}
+                        {isFull && <Badge className="text-xs bg-orange-900/40 text-orange-300">Full</Badge>}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {entryCount}{cg.max_entries ? `/${cg.max_entries}` : ''} entr{entryCount === 1 ? 'y' : 'ies'} · {sortedSessions.length} session{sortedSessions.length !== 1 ? 's' : ''}
+                      </p>
                     </div>
-                    {hasLocked && (
-                      <Badge className="bg-yellow-900/40 text-yellow-300 ml-auto">
-                        <Lock className="w-3 h-3 mr-1" /> Locked
-                      </Badge>
-                    )}
+                    <div className="flex gap-1 mr-2" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={() => openEditClass(cg)} className="p-1.5 hover:bg-gray-700 rounded transition-colors" title="Edit class">
+                        <Settings className="w-3.5 h-3.5 text-gray-400" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteClassConfirm(cg.id)}
+                        className="p-1.5 hover:bg-red-900/30 rounded transition-colors"
+                        title={entryCount > 0 ? `${entryCount} entries — cannot delete` : 'Delete class'}
+                      >
+                        <Trash2 className={`w-3.5 h-3.5 ${entryCount > 0 ? 'text-gray-600' : 'text-red-400'}`} />
+                      </button>
+                    </div>
                   </div>
                 </AccordionTrigger>
+
                 <AccordionContent className="px-4 py-4 border-t border-gray-800">
-                  {classGroup.sessions.length === 0 ? (
+                  {sortedSessions.length === 0 ? (
                     <div className="text-center py-4">
-                      <p className="text-xs text-gray-500 mb-3">No sessions in this group</p>
-                      <Button
-                        onClick={() => handleAddSession(classGroup)}
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-700 text-gray-300"
-                      >
+                      <p className="text-xs text-gray-500 mb-3">No sessions in this class</p>
+                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-gray-700 text-gray-300">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {classGroup.sessions.map((session) => (
+                      {sortedSessions.map((session) => (
                         <div
                           key={session.id}
                           className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
-                            isLocked(session)
-                              ? 'bg-gray-800/30 border-gray-700 opacity-60'
-                              : 'bg-gray-800/50 border-gray-700 hover:bg-gray-700'
+                            isLocked(session) ? 'bg-gray-800/20 border-gray-700 opacity-60' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700/50'
                           }`}
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-gray-500 w-6">#{session.session_number || '-'}</span>
+                              <span className="text-xs font-mono text-gray-500 w-5 flex-shrink-0">#{session.session_number || '—'}</span>
                               <div>
                                 <p className="font-medium text-white text-sm truncate">{session.name}</p>
-                                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                                  <Badge className="bg-purple-500/20 text-purple-400 text-xs">
-                                    {session.session_type}
-                                  </Badge>
-                                  <Badge
-                                    className={`text-xs ${
-                                      isLocked(session)
-                                        ? 'bg-red-500/20 text-red-400'
-                                        : 'bg-gray-500/20 text-gray-300'
-                                    }`}
-                                  >
-                                    {session.status}
-                                  </Badge>
-                                  {session.laps && (
-                                    <Badge variant="outline" className="text-xs text-gray-400">
-                                      {session.laps}L
-                                    </Badge>
-                                  )}
-                                  {session.input_source && session.input_source !== 'Manual' && (
-                                    <Badge variant="outline" className="text-xs text-gray-400">
-                                      {session.input_source}
-                                    </Badge>
-                                  )}
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                  <Badge className="bg-purple-500/20 text-purple-400 text-xs">{session.session_type}</Badge>
+                                  <Badge className={`text-xs ${isLocked(session) ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-300'}`}>{session.status}</Badge>
+                                  {session.laps && <Badge variant="outline" className="text-xs text-gray-400">{session.laps}L</Badge>}
                                 </div>
                               </div>
                             </div>
                           </div>
-
                           <div className="flex gap-1 flex-shrink-0">
-                            {!isLocked(session) && (
-                              <>
-                                <button
-                                  onClick={() => handleMoveSession(session, 'up')}
-                                  className="p-1 hover:bg-gray-600 rounded transition-colors"
-                                  title="Move up"
-                                >
-                                  <ChevronUp className="w-3 h-3 text-gray-400" />
-                                </button>
-                                <button
-                                  onClick={() => handleMoveSession(session, 'down')}
-                                  className="p-1 hover:bg-gray-600 rounded transition-colors"
-                                  title="Move down"
-                                >
-                                  <ChevronDown className="w-3 h-3 text-gray-400" />
-                                </button>
-                              </>
-                            )}
-                            {!isLocked(session) && (
-                              <button
-                                onClick={() => handleEditSession(session)}
-                                className="p-1 hover:bg-gray-600 rounded transition-colors"
-                                title="Edit"
-                              >
-                                <Edit2 className="w-3 h-3 text-gray-400" />
-                              </button>
-                            )}
-                            {!isLocked(session) && (
-                              <button
-                                onClick={() => handleDuplicateSession(session)}
-                                className="p-1 hover:bg-gray-600 rounded transition-colors"
-                                title="Duplicate"
-                              >
-                                <Copy className="w-3 h-3 text-gray-400" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setShowLockConfirm(session.id)}
-                              className="p-1 hover:bg-gray-600 rounded transition-colors"
-                              title={isLocked(session) ? 'Unlock' : 'Lock'}
-                            >
-                              {isLocked(session) ? (
-                                <LockOpen className="w-3 h-3 text-yellow-400" />
-                              ) : (
-                                <Lock className="w-3 h-3 text-gray-400" />
-                              )}
+                            {!isLocked(session) && <>
+                              <button onClick={() => handleMove(session, 'up', cg)} className="p-1 hover:bg-gray-600 rounded" title="Move up"><ChevronUp className="w-3 h-3 text-gray-400" /></button>
+                              <button onClick={() => handleMove(session, 'down', cg)} className="p-1 hover:bg-gray-600 rounded" title="Move down"><ChevronDown className="w-3 h-3 text-gray-400" /></button>
+                              <button onClick={() => openEditSession(session)} className="p-1 hover:bg-gray-600 rounded" title="Edit"><Edit2 className="w-3 h-3 text-gray-400" /></button>
+                              <button onClick={() => handleDuplicate(session)} className="p-1 hover:bg-gray-600 rounded" title="Duplicate"><Copy className="w-3 h-3 text-gray-400" /></button>
+                            </>}
+                            <button onClick={() => setLockConfirm(session.id)} className="p-1 hover:bg-gray-600 rounded" title={isLocked(session) ? 'Unlock' : 'Lock'}>
+                              {isLocked(session) ? <LockOpen className="w-3 h-3 text-yellow-400" /> : <Lock className="w-3 h-3 text-gray-400" />}
                             </button>
                             {!isLocked(session) && session.status === 'Draft' && (
-                              <button
-                                onClick={() => deleteSessionMutation.mutate(session.id)}
-                                className="p-1 hover:bg-red-900/30 rounded transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-3 h-3 text-red-400" />
-                              </button>
+                              <button onClick={() => deleteSession(session.id)} className="p-1 hover:bg-red-900/30 rounded" title="Delete"><Trash2 className="w-3 h-3 text-red-400" /></button>
                             )}
                           </div>
                         </div>
                       ))}
 
-                      <Button
-                        onClick={() => handleAddSession(classGroup)}
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-gray-700 text-gray-300 mt-3"
-                      >
+                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-gray-700 text-gray-300 mt-2">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
@@ -512,96 +417,110 @@ export default function ClassSessionBuilder({
         </Accordion>
       )}
 
-      {/* Add/Edit Session Dialog */}
-      <Dialog open={showAddSessionDialog} onOpenChange={setShowAddSessionDialog}>
+      {/* ── Add/Edit Class Dialog ───────────────────────────────────────────── */}
+      <Dialog open={classDialog} onOpenChange={setClassDialog}>
+        <DialogContent className="bg-[#262626] border-gray-700 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white">{editingClass ? 'Edit Class' : 'Add Class'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Class Name *</label>
+              <Input value={classForm.name} onChange={(e) => setClassForm({ ...classForm, name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Pro Stock" />
+            </div>
+            {seriesClasses.length > 0 && (
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Linked Series Class (optional)</label>
+                <Select value={classForm.series_class_id || '__none'} onValueChange={(v) => setClassForm({ ...classForm, series_class_id: v === '__none' ? '' : v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    <SelectItem value="__none">None</SelectItem>
+                    {seriesClasses.map((sc) => <SelectItem key={sc.id} value={sc.id}>{sc.class_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Max Entries</label>
+                <Input type="number" value={classForm.max_entries} onChange={(e) => setClassForm({ ...classForm, max_entries: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Order</label>
+                <Input type="number" value={classForm.class_order} onChange={(e) => setClassForm({ ...classForm, class_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="0" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Status</label>
+              <Select value={classForm.status} onValueChange={(v) => setClassForm({ ...classForm, status: v })}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="Open">Open</SelectItem>
+                  <SelectItem value="Full">Full</SelectItem>
+                  <SelectItem value="Closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Notes</label>
+              <Textarea value={classForm.notes} onChange={(e) => setClassForm({ ...classForm, notes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" rows={2} placeholder="Optional admin notes" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClassDialog(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button onClick={handleSaveClass} disabled={creatingClass || updatingClass} className="bg-blue-600 hover:bg-blue-700">
+              {editingClass ? 'Update Class' : 'Create Class'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Add/Edit Session Dialog ─────────────────────────────────────────── */}
+      <Dialog open={sessionDialog} onOpenChange={setSessionDialog}>
         <DialogContent className="bg-[#262626] border-gray-700 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white">
-              {editingSession ? 'Edit Session' : 'Add Session'}
-            </DialogTitle>
+            <DialogTitle className="text-white">{editingSession ? 'Edit Session' : 'Add Session'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                  <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
-                  <Select value={formData.event_class_id || ''} onValueChange={(val) => setFormData({ ...formData, event_class_id: val })}>
-                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
-                      <SelectValue placeholder="Select class…" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#262626] border-gray-700">
-                      {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
-                  <Select value={formData.session_type || 'Practice'} onValueChange={(val) => setFormData({ ...formData, session_type: val })}>
-                    <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#262626] border-gray-700">
-                      <SelectItem value="Practice">Practice</SelectItem>
-                      <SelectItem value="Qualifying">Qualifying</SelectItem>
-                      <SelectItem value="Heat">Heat</SelectItem>
-                      <SelectItem value="LCQ">LCQ</SelectItem>
-                      <SelectItem value="Final">Final</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-              <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Session Number</label>
-                <Input
-                  type="number"
-                  placeholder="1"
-                  value={formData.session_number || ''}
-                  onChange={(e) => setFormData({ ...formData, session_number: e.target.value ? Number(e.target.value) : undefined })}
-                  className="bg-[#1A1A1A] border-gray-600 text-white"
-                />
+                <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
+                <Select value={sessionForm.event_class_id || ''} onValueChange={(v) => setSessionForm({ ...sessionForm, event_class_id: v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-400 uppercase block mb-1">Session Name</label>
-              <Input
-                placeholder="e.g., Heat 1, Final"
-                value={formData.name || ''}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-[#1A1A1A] border-gray-600 text-white"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
+                <Select value={sessionForm.session_type} onValueChange={(v) => setSessionForm({ ...sessionForm, session_type: v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Session Name *</label>
+                <Input value={sessionForm.name} onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Heat 1, Final" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Session #</label>
+                <Input type="number" value={sessionForm.session_number} onChange={(e) => setSessionForm({ ...sessionForm, session_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+              </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
-                <Input
-                  type="datetime-local"
-                  value={formData.scheduled_time || ''}
-                  onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
-                  className="bg-[#1A1A1A] border-gray-600 text-white"
-                />
+                <Input type="datetime-local" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
               </div>
-
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
-                <Input
-                  type="number"
-                  placeholder="Leave blank for unlimited"
-                  value={formData.laps || ''}
-                  onChange={(e) => setFormData({ ...formData, laps: e.target.value })}
-                  className="bg-[#1A1A1A] border-gray-600 text-white"
-                />
+                <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Input Source</label>
-                <Select value={formData.input_source || 'Manual'} onValueChange={(val) => setFormData({ ...formData, input_source: val })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={sessionForm.input_source} onValueChange={(v) => setSessionForm({ ...sessionForm, input_source: v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
                     <SelectItem value="Manual">Manual</SelectItem>
                     <SelectItem value="CSV">CSV</SelectItem>
@@ -609,13 +528,10 @@ export default function ClassSessionBuilder({
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Status</label>
-                <Select value={formData.status || 'Draft'} onValueChange={(val) => setFormData({ ...formData, status: val })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={sessionForm.status} onValueChange={(v) => setSessionForm({ ...sessionForm, status: v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Provisional">Provisional</SelectItem>
@@ -625,44 +541,56 @@ export default function ClassSessionBuilder({
                 </Select>
               </div>
             </div>
-
             <div>
               <label className="text-xs text-gray-400 uppercase block mb-1">Advancement Rules</label>
-              <Textarea
-                placeholder="Rules for driver advancement"
-                value={formData.advancement_rules || ''}
-                onChange={(e) => setFormData({ ...formData, advancement_rules: e.target.value })}
-                className="bg-[#1A1A1A] border-gray-600 text-white"
-              />
+              <Textarea value={sessionForm.advancement_rules} onChange={(e) => setSessionForm({ ...sessionForm, advancement_rules: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" rows={2} />
             </div>
           </div>
-
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddSessionDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveSession} className="bg-blue-600 hover:bg-blue-700">
+            <Button variant="outline" onClick={() => setSessionDialog(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button onClick={handleSaveSession} disabled={creatingSession} className="bg-blue-600 hover:bg-blue-700">
               {editingSession ? 'Update Session' : 'Create Session'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Lock Confirmation Dialog */}
-      <AlertDialog open={!!showLockConfirm} onOpenChange={(open) => !open && setShowLockConfirm(null)}>
+      {/* ── Delete Class Confirm ────────────────────────────────────────────── */}
+      <AlertDialog open={!!deleteClassConfirm} onOpenChange={(o) => !o && setDeleteClassConfirm(null)}>
         <AlertDialogContent className="bg-[#262626] border-gray-700">
-          <AlertDialogTitle className="text-white">Lock Session</AlertDialogTitle>
+          <AlertDialogTitle className="text-white">Delete Class</AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
-            Locking a session prevents editing. Are you sure?
+            {(entriesByClass[deleteClassConfirm] || 0) > 0
+              ? `This class has ${entriesByClass[deleteClassConfirm]} entries. Remove them first before deleting.`
+              : 'This will permanently delete the class and its sessions. Cannot be undone.'}
+          </AlertDialogDescription>
+          <div className="flex justify-end gap-2">
+            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            {(entriesByClass[deleteClassConfirm] || 0) === 0 && (
+              <AlertDialogAction onClick={() => handleDeleteClass(deleteClassConfirm)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+            )}
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Lock Confirm ───────────────────────────────────────────────────── */}
+      <AlertDialog open={!!lockConfirm} onOpenChange={(o) => !o && setLockConfirm(null)}>
+        <AlertDialogContent className="bg-[#262626] border-gray-700">
+          <AlertDialogTitle className="text-white">
+            {sessions.find((s) => s.id === lockConfirm)?.status === 'Locked' ? 'Unlock Session' : 'Lock Session'}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-400">
+            {sessions.find((s) => s.id === lockConfirm)?.status === 'Locked'
+              ? 'Unlock this session to allow editing again.'
+              : 'Locking prevents all edits to this session.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
             <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                const session = sessions.find((s) => s.id === showLockConfirm);
-                if (session) handleToggleLock(session);
-              }}
+              onClick={() => { const s = sessions.find((s) => s.id === lockConfirm); if (s) handleToggleLock(s); }}
               className="bg-yellow-600 hover:bg-yellow-700"
             >
-              {sessions.find((s) => s.id === showLockConfirm)?.status === 'Locked' ? 'Unlock' : 'Lock'}
+              Confirm
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
