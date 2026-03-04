@@ -318,6 +318,11 @@ export default function ResultsManager({
       if (newStatus === 'Draft' || newStatus === 'Provisional') payload.locked = false;
       await base44.entities.Session.update(selectedSession.id, payload);
 
+      // Sync results visibility based on session status
+      if (newStatus === 'Official' || newStatus === 'Locked' || newStatus === 'Provisional' || newStatus === 'Draft') {
+        await base44.functions.invoke('syncResultsVisibilityFromSession', { session_id: selectedSession.id }).catch(() => {});
+      }
+
       // Log operation
       const opTypeMap = {
         Provisional: 'session_marked_provisional',
@@ -372,6 +377,7 @@ export default function ResultsManager({
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
       invalidateAfterOperation('session_updated', { eventId });
+      invalidateAfterOperation('results_published', { eventId });
       if (newStatus === 'Official' || newStatus === 'Locked') {
         invalidateAfterOperation('standings_updated', { eventId });
       }
@@ -467,6 +473,10 @@ export default function ResultsManager({
   const handleImport = async (rows, skippedCount, meta) => {
     await importResults({ rows, meta });
     if (skippedCount) toast.warning(`${skippedCount} rows skipped (no driver match)`);
+    // Sync visibility if session has a session_id and might be Official
+    if (selectedSession?.id) {
+      await base44.functions.invoke('syncResultsVisibilityFromSession', { session_id: selectedSession.id }).catch(() => {});
+    }
     queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
   };
 

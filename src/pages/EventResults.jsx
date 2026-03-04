@@ -66,7 +66,7 @@ export default function EventResults() {
 
   const { data: results = [] } = useQuery({
     queryKey: QueryKeys.results.listByEvent(eventId),
-    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId, is_public: true }),
     enabled: !!eventId,
     ...DQ,
   });

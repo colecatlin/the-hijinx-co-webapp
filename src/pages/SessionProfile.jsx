@@ -40,7 +40,7 @@ export default function SessionProfile() {
 
   const { data: results = [] } = useQuery({
     queryKey: ['sessionResults', sessionId],
-    queryFn: () => base44.entities.Results.filter({ session_id: sessionId }),
+    queryFn: () => base44.entities.Results.filter({ session_id: sessionId, is_public: true }),
     enabled: !!sessionId,
   });
 
