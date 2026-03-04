@@ -40,6 +40,7 @@ import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import AnnouncerFeed from '@/components/registrationdashboard/AnnouncerFeed';
+import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
@@ -1211,6 +1212,15 @@ export default function RegistrationDashboard() {
                   <Zap className="w-4 h-4 mr-2" /> Gate
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'announcer') && (
+                <TabsTrigger
+                  value="announcer"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Mic className="w-4 h-4 mr-2" /> Announcer
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1532,6 +1542,16 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
                 <GateManager
                   selectedEvent={selectedEvent}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                />
+              )}
+
+              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
+                <AnnouncerManager
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                 />
