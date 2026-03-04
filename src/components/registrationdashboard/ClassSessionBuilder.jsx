@@ -234,14 +234,16 @@ export default function ClassSessionBuilder({
       session_type: sessionForm.session_type,
       name: sessionForm.name.trim(),
       session_number: sessionForm.session_number ? Number(sessionForm.session_number) : undefined,
+      round_number: sessionForm.round_number ? Number(sessionForm.round_number) : undefined,
       scheduled_time: sessionForm.scheduled_time || undefined,
+      duration_minutes: sessionForm.duration_minutes ? Number(sessionForm.duration_minutes) : undefined,
       laps: sessionForm.laps ? Number(sessionForm.laps) : undefined,
       input_source: sessionForm.input_source,
       status: sessionForm.status,
       advancement_rules: sessionForm.advancement_rules || undefined,
-      session_order: editingSession
-        ? editingSession.session_order
-        : (sessions.length ? Math.max(...sessions.map((s) => s.session_order || 0)) + 1 : 0),
+      run_order: editingSession
+        ? editingSession.run_order
+        : (sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0),
     };
     if (editingSession) {
       await updateSession({ id: editingSession.id, data: payload });
