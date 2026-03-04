@@ -581,7 +581,7 @@ export default function ClassSessionBuilder({
                 <Select value={sessionForm.session_type} onValueChange={(v) => setSessionForm({ ...sessionForm, session_type: v })}>
                   <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
-                    {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
