@@ -143,10 +143,17 @@ function getKeysForOperation(operationType, payload = {}) {
 
     case 'standings_recalculated':
     case 'standings_updated':
-      broad.push(['standings'], ['driverPrograms'], ['series'], ['events'], ['results'], ['sessions'], ['entries'], ['operationLogs']);
-      if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
-      if (eventId) exact.push(REG_QK.operationLogs(eventId), REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId));
-      break;
+       broad.push(['standings'], ['results'], ['sessions'], ['driverPrograms'], ['series'], ['events'], ['entries'], ['operationLogs']);
+       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+       if (eventId) exact.push(REG_QK.operationLogs(eventId), REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId));
+       break;
+
+    case 'points_config_updated':
+    case 'points_config_created':
+       broad.push(['pointsConfig'], ['standings'], ['operationLogs']);
+       if (seriesId) exact.push(['pointsConfig', seriesId]);
+       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+       break;
 
     case 'import_completed':
       broad.push(['results'], ['sessions'], ['entries'], ['operationLogs']);
