@@ -79,7 +79,7 @@ export default function PointsAndStandingsManager({
     return standings.map(s => ({
       ...s,
       driver: drivers.find(d => d.id === s.driver_id)
-    })).sort((a, b) => a.position - b.position);
+    })).sort((a, b) => (a.rank || a.position || 0) - (b.rank || b.position || 0));
   }, [standings, drivers]);
 
   // Calculate Standings mutation
@@ -147,8 +147,14 @@ export default function PointsAndStandingsManager({
                 <p className="text-xs font-semibold text-gray-400 mb-2">Tie Breaker Order:</p>
                 <p className="text-xs text-gray-300">{(resolvedConfig.tie_breaker_order || []).join(' → ') || 'N/A'}</p>
               </div>
-            </>
-          ) : (
+              {resolvedConfig.drop_rounds?.enabled && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 mb-2">Drop Rounds:</p>
+                  <p className="text-xs text-blue-300">Dropping {resolvedConfig.drop_rounds.count} lowest points round{resolvedConfig.drop_rounds.count !== 1 ? 's' : ''} per driver</p>
+                </div>
+              )}
+              </>
+              ) : (
             <Alert className="bg-orange-500/10 border-orange-600">
               <AlertCircle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-600 text-xs">
@@ -196,26 +202,26 @@ export default function PointsAndStandingsManager({
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-700">
-                    <TableHead className="text-gray-400">Position</TableHead>
-                    <TableHead className="text-gray-400">Driver</TableHead>
-                    <TableHead className="text-gray-400 text-right">Points</TableHead>
-                    <TableHead className="text-gray-400 text-right">Wins</TableHead>
-                    <TableHead className="text-gray-400 text-right">2nd Place</TableHead>
-                    <TableHead className="text-gray-400 text-right">3rd Place</TableHead>
-                    <TableHead className="text-gray-400 text-right">Results</TableHead>
-                  </TableRow>
-                </TableHeader>
+                    <TableRow className="border-gray-700">
+                      <TableHead className="text-gray-400">Rank</TableHead>
+                      <TableHead className="text-gray-400">Driver</TableHead>
+                      <TableHead className="text-gray-400 text-right">Points</TableHead>
+                      <TableHead className="text-gray-400 text-right">Wins</TableHead>
+                      <TableHead className="text-gray-400 text-right">2nd</TableHead>
+                      <TableHead className="text-gray-400 text-right">3rd</TableHead>
+                      <TableHead className="text-gray-400 text-right">Starts</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
-                  {standingsWithInfo.map((s, idx) => (
+                  {standingsWithInfo.map((s) => (
                     <TableRow key={s.id} className="border-gray-700 hover:bg-gray-800">
-                        <TableCell className="text-white font-bold">{idx + 1}</TableCell>
+                        <TableCell className="text-white font-bold">{s.rank || s.position || '-'}</TableCell>
                         <TableCell className="text-white">{s.driver?.first_name} {s.driver?.last_name}</TableCell>
-                        <TableCell className="text-right text-white font-semibold">{s.total_points}</TableCell>
-                        <TableCell className="text-right text-gray-400">{s.wins}</TableCell>
-                        <TableCell className="text-right text-gray-400">{s.seconds}</TableCell>
-                        <TableCell className="text-right text-gray-400">{s.thirds}</TableCell>
-                        <TableCell className="text-right text-gray-400">{s.results_count}</TableCell>
+                        <TableCell className="text-right text-white font-semibold">{s.points_total || s.total_points || 0}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.wins || 0}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.seconds || 0}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.thirds || 0}</TableCell>
+                        <TableCell className="text-right text-gray-400">{s.starts || s.results_count || 0}</TableCell>
                       </TableRow>
                   ))}
                 </TableBody>
