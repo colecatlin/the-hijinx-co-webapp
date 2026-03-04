@@ -687,6 +687,34 @@ export default function ClassSessionBuilder({
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
-}
+
+      {/* ── Heat Generator Dialog ──────────────────────────────────────────── */}
+      <Dialog open={quickGenDialog === 'heats'} onOpenChange={(o) => !o && setQuickGenDialog(null)}>
+        <DialogContent className="bg-[#262626] border-gray-700 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-white">Generate Heats</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Number of Entries</label>
+              <Input type="number" value={heatInputs.number_of_entries} onChange={(e) => setHeatInputs({ ...heatInputs, number_of_entries: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 18" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Cars Per Heat</label>
+              <Input type="number" value={heatInputs.cars_per_heat} onChange={(e) => setHeatInputs({ ...heatInputs, cars_per_heat: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 8" />
+            </div>
+            <p className="text-xs text-gray-500">
+              {heatInputs.number_of_entries && heatInputs.cars_per_heat
+                ? `Will create ${Math.ceil(Number(heatInputs.number_of_entries) / Number(heatInputs.cars_per_heat))} heat${Math.ceil(Number(heatInputs.number_of_entries) / Number(heatInputs.cars_per_heat)) !== 1 ? 's' : ''}`
+                : 'Enter values to preview'}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQuickGenDialog(null)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button onClick={() => generateSessions('heats', selectedClassForGen)} className="bg-blue-600 hover:bg-blue-700">Generate</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </div>
+      );
+      }
