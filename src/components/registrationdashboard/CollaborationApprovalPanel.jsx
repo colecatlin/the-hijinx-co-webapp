@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Users, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { getEntityAccessForUser, canApproveCollaboration } from './entityAccess';
 import { format } from 'date-fns';
 
 function StatusBadge({ status }) {
@@ -22,11 +23,16 @@ function StatusIcon({ status }) {
   return <Clock className="w-4 h-4 text-yellow-400" />;
 }
 
-export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack, canApproveAsSeries, currentUser }) {
+export default function CollaborationApprovalPanel({ eventId, isAdmin, currentUser }) {
   const queryClient = useQueryClient();
   const invalidateAfterOperation = buildInvalidateAfterOperation(queryClient);
   const [declineNote, setDeclineNote] = useState('');
   const [decliningFor, setDecliningFor] = useState(null); // 'track' | 'series'
+
+  // Access state
+  const [trackAccess, setTrackAccess] = useState({ hasAccess: false, role: null });
+  const [seriesAccess, setSeriesAccess] = useState({ hasAccess: false, role: null });
+  const [accessLoading, setAccessLoading] = useState(false);
 
   const { data: collabs = [], isLoading } = useQuery({
     queryKey: ['eventCollaboration', eventId],
@@ -37,6 +43,26 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
 
   const collab = collabs[0] || null;
 
+  // Resolve entity access whenever collab or user changes
+  useEffect(() => {
+    if (!currentUser?.id || !collab) return;
+    setAccessLoading(true);
+    Promise.all([
+      collab.track_id
+        ? getEntityAccessForUser(currentUser.id, 'Track', collab.track_id)
+        : Promise.resolve({ hasAccess: false, role: null }),
+      collab.series_id
+        ? getEntityAccessForUser(currentUser.id, 'Series', collab.series_id)
+        : Promise.resolve({ hasAccess: false, role: null }),
+    ]).then(([tAccess, sAccess]) => {
+      setTrackAccess(tAccess);
+      setSeriesAccess(sAccess);
+    }).finally(() => setAccessLoading(false));
+  }, [currentUser?.id, collab?.id, collab?.track_id, collab?.series_id]);
+
+  const canTrack = canApproveCollaboration('Track', trackAccess, isAdmin);
+  const canSeries = canApproveCollaboration('Series', seriesAccess, isAdmin);
+
   const logOperation = async (operationType, notes) => {
     await base44.entities.OperationLog.create({
       operation_type: operationType,
@@ -46,11 +72,22 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
       message: notes || operationType,
       status: 'completed',
     }).catch(() => {});
-    invalidateAfterOperation(operationType, { eventId });
+    invalidateAfterOperation('event_collaboration_updated', { eventId });
   };
 
   const handleAccept = async (side) => {
     if (!collab) return;
+
+    // Re-check access before writing
+    if (side === 'track' && !canTrack) {
+      toast.error('You do not have permission to approve for this Track');
+      return;
+    }
+    if (side === 'series' && !canSeries) {
+      toast.error('You do not have permission to approve for this Series');
+      return;
+    }
+
     const now = new Date().toISOString();
     const patch = side === 'track'
       ? { track_status: 'accepted', track_accepted_by_user_id: currentUser?.id, track_accepted_date: now }
@@ -65,6 +102,19 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
 
   const handleDeclineSubmit = async () => {
     if (!collab || !decliningFor) return;
+
+    // Re-check access before writing
+    if (decliningFor === 'track' && !canTrack) {
+      toast.error('You do not have permission to decline for this Track');
+      setDecliningFor(null);
+      return;
+    }
+    if (decliningFor === 'series' && !canSeries) {
+      toast.error('You do not have permission to decline for this Series');
+      setDecliningFor(null);
+      return;
+    }
+
     const patch = decliningFor === 'track'
       ? { track_status: 'declined', notes: declineNote }
       : { series_status: 'declined', notes: declineNote };
@@ -79,7 +129,7 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
   };
 
   if (!eventId) return null;
-  if (isLoading) return <div className="text-gray-500 text-sm py-2">Loading collaboration status...</div>;
+  if (isLoading || accessLoading) return <div className="text-gray-500 text-sm py-2">Loading collaboration status...</div>;
   if (!collab) return (
     <Card className="bg-[#1a1a1a] border-gray-800">
       <CardContent className="pt-4">
@@ -115,54 +165,66 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
         )}
       </CardHeader>
       <CardContent className="pt-4 space-y-4">
-        {/* Track Approval */}
-        <div className="flex items-center justify-between p-3 bg-[#262626] rounded-lg">
-          <div className="flex items-center gap-3">
-            <StatusIcon status={collab.track_status} />
-            <div>
-              <p className="text-white text-sm font-medium">Track Approval</p>
-              {collab.track_accepted_date && (
-                <p className="text-gray-500 text-xs">{format(new Date(collab.track_accepted_date), 'MMM d, yyyy')}</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <StatusBadge status={collab.track_status} />
-            {canApproveAsTrack && collab.track_status === 'pending' && (
-              <>
-                <Button size="sm" onClick={() => handleAccept('track')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
-                <Button size="sm" onClick={() => setDecliningFor('track')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
-              </>
-            )}
-          </div>
-        </div>
 
-        {/* Series Approval */}
-        {collab.series_id && (
-          <div className="flex items-center justify-between p-3 bg-[#262626] rounded-lg">
+        {/* Track Approval */}
+        <div className="p-3 bg-[#262626] rounded-lg space-y-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <StatusIcon status={collab.series_status} />
+              <StatusIcon status={collab.track_status} />
               <div>
-                <p className="text-white text-sm font-medium">Series Approval</p>
-                {collab.series_accepted_date && (
-                  <p className="text-gray-500 text-xs">{format(new Date(collab.series_accepted_date), 'MMM d, yyyy')}</p>
+                <p className="text-white text-sm font-medium">Track Approval</p>
+                {collab.track_accepted_date && (
+                  <p className="text-gray-500 text-xs">{format(new Date(collab.track_accepted_date), 'MMM d, yyyy')}</p>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <StatusBadge status={collab.series_status} />
-              {canApproveAsSeries && collab.series_status === 'pending' && (
+              <StatusBadge status={collab.track_status} />
+              {canTrack && collab.track_status === 'pending' && (
                 <>
-                  <Button size="sm" onClick={() => handleAccept('series')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
-                  <Button size="sm" onClick={() => setDecliningFor('series')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
+                  <Button size="sm" onClick={() => handleAccept('track')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
+                  <Button size="sm" onClick={() => setDecliningFor('track')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
                 </>
               )}
             </div>
           </div>
-        )}
+          {!canTrack && collab.track_status === 'pending' && (
+            <p className="text-gray-500 text-xs flex items-center gap-1 pl-7">
+              <Lock className="w-3 h-3" /> You do not have permission to approve for this Track
+            </p>
+          )}
+        </div>
 
-        {/* No series - show auto-accepted */}
-        {!collab.series_id && (
+        {/* Series Approval */}
+        {collab.series_id ? (
+          <div className="p-3 bg-[#262626] rounded-lg space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <StatusIcon status={collab.series_status} />
+                <div>
+                  <p className="text-white text-sm font-medium">Series Approval</p>
+                  {collab.series_accepted_date && (
+                    <p className="text-gray-500 text-xs">{format(new Date(collab.series_accepted_date), 'MMM d, yyyy')}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={collab.series_status} />
+                {canSeries && collab.series_status === 'pending' && (
+                  <>
+                    <Button size="sm" onClick={() => handleAccept('series')} className="h-7 px-2 text-xs bg-green-800 hover:bg-green-700 text-white border-0">Accept</Button>
+                    <Button size="sm" onClick={() => setDecliningFor('series')} className="h-7 px-2 text-xs bg-red-900 hover:bg-red-800 text-white border-0">Decline</Button>
+                  </>
+                )}
+              </div>
+            </div>
+            {!canSeries && collab.series_status === 'pending' && (
+              <p className="text-gray-500 text-xs flex items-center gap-1 pl-7">
+                <Lock className="w-3 h-3" /> You do not have permission to approve for this Series
+              </p>
+            )}
+          </div>
+        ) : (
           <div className="flex items-center justify-between p-3 bg-[#262626] rounded-lg opacity-60">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -172,7 +234,7 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
           </div>
         )}
 
-        {/* Decline reason */}
+        {/* Decline reason display */}
         {collab.notes && (collab.track_status === 'declined' || collab.series_status === 'declined') && (
           <div className="p-3 bg-red-950 border border-red-900 rounded-lg">
             <p className="text-red-400 text-xs font-medium mb-1">Decline Reason</p>
@@ -180,7 +242,7 @@ export default function CollaborationApprovalPanel({ eventId, canApproveAsTrack,
           </div>
         )}
 
-        {/* Decline dialog */}
+        {/* Decline input form */}
         {decliningFor && (
           <div className="p-3 bg-[#262626] border border-red-800 rounded-lg space-y-2">
             <p className="text-white text-sm font-medium">Reason for declining ({decliningFor})</p>
