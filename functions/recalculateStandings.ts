@@ -10,31 +10,32 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { series_id, season, series_class_id } = await req.json();
+    const { series_id, season, series_class_id, event_id } = await req.json();
 
-    if (!series_id || !season) {
-      return Response.json({ ok: false, error: 'Missing series_id or season' }, { status: 400 });
+    if (!series_id) {
+      return Response.json({ ok: false, error: 'Missing series_id' }, { status: 400 });
     }
 
     // Resolve the correct PointsConfig
     const configRes = await base44.functions.invoke('resolvePointsConfig', {
       series_id,
       series_class_id,
-      season
+      season,
+      event_id
     });
 
-    if (!configRes.data?.ok) {
+    const pointsConfig = configRes.data?.pointsConfig;
+    if (!pointsConfig) {
+      const errMsg = configRes.data?.error || 'No PointsConfig found for this series/season/class';
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'standings_recalculated',
-        status: 'error',
-        error_message: configRes.data?.error || 'Failed to resolve PointsConfig',
+        status: 'failed',
+        error_message: errMsg,
         entity_type: 'Standings',
-        details: { series_id, season, series_class_id }
+        details: { series_id, season, series_class_id, event_id, reason: 'no_points_config_found' }
       });
-      return Response.json({ ok: false, error: configRes.data?.error || 'No PointsConfig found' }, { status: 404 });
+      return Response.json({ ok: false, error: errMsg }, { status: 404 });
     }
-
-    const pointsConfig = configRes.data.pointsConfig;
 
     // Load all events for this series and season
     const events = await base44.asServiceRole.entities.Event.filter({
@@ -214,6 +215,7 @@ Deno.serve(async (req) => {
         series_id,
         season,
         series_class_id,
+        event_id,
         points_config_id: pointsConfig.id,
         standingsCount: standingsArray.length,
         resultsProcessed: filteredResults.length,
