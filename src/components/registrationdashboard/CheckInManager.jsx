@@ -135,8 +135,8 @@ export default function CheckInManager({
     [seriesClasses]
   );
 
-  // Use Entry as primary source, fallback to DriverProgram
-  const primaryData = entries.length > 0 ? entries : driverPrograms;
+  // Entry is the single source of truth for check-in
+  const primaryData = entries;
 
   // Get unique classes
   const uniqueClasses = useMemo(() => {
