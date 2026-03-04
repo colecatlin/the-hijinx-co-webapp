@@ -544,6 +544,7 @@ export default function ManagePointsConfig() {
 }
 
 function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, events, configs, onSave }) {
+  // Legacy PointsConfig editor - kept for backward compatibility
   const [form, setForm] = useState({
     name: '',
     series_id: '',
@@ -786,8 +787,8 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
           <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Ruleset</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+          </DialogFooter>
+          </DialogContent>
+          </Dialog>
+          );
+          };
