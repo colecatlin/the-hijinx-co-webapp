@@ -24,9 +24,6 @@ import {
   createLicenseState,
 } from './shared/complianceUtils';
 import {
-  buildEventConflictMap,
-} from './shared/techUtils';
-import {
   mergeNotes,
   getBlock,
 } from './entryWorkflowHelper';
