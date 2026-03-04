@@ -21,6 +21,7 @@ import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
 import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
 import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import AnnouncerConsole from '@/components/registrationdashboard/AnnouncerConsole';
+import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
