@@ -136,31 +136,24 @@ export default function CheckInManager({
     return driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown';
   };
 
-  const getEventClassName = (seriesClassId) => {
-    const seriesClass = seriesClasses.find((sc) => sc.id === seriesClassId);
-    return seriesClass?.class_name || 'Unknown';
+  const eventClassMap = useMemo(() => Object.fromEntries(eventClasses.map((c) => [c.id, c])), [eventClasses]);
+
+  const getEntryClassName = (entry) => {
+    if (entry.event_class_id && eventClassMap[entry.event_class_id]) {
+      return eventClassMap[entry.event_class_id].name;
+    }
+    return '—';
   };
 
   const classNames = useMemo(() => {
-    const names = new Set();
-    entries.forEach((e) => names.add(getEventClassName(e.series_class_id)));
-    return Array.from(names);
-  }, [entries, seriesClasses]);
-
-  // Memoize entries by class
-  const entriesByClass = useMemo(() => {
-    const grouped = {};
-    entries.forEach((e) => {
-      const cls = getEventClassName(e.series_class_id);
-      if (!grouped[cls]) grouped[cls] = [];
-      grouped[cls].push(e);
-    });
-    return grouped;
-  }, [entries, seriesClasses]);
+    const seen = new Map();
+    eventClasses.forEach((ec) => seen.set(ec.id, ec.name));
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }));
+  }, [eventClasses]);
 
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      if (classFilter !== 'all' && getEventClassName(entry.series_class_id) !== classFilter) return false;
+      if (classFilter !== 'all' && (entry.event_class_id || '') !== classFilter) return false;
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
         return (
@@ -508,7 +501,7 @@ export default function CheckInManager({
                     <SelectContent className="bg-[#262626] border-gray-700">
                       <SelectItem value="all">All Classes</SelectItem>
                       {classNames.map((cls) => (
-                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                        <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -573,7 +566,7 @@ export default function CheckInManager({
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-500" />
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
+                  <p className="text-xs text-gray-500 mb-2">{getEntryClassName(entry)}</p>
                   <div className="flex flex-wrap gap-1">
                     <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
                       {entry.entry_status || 'Registered'}
@@ -611,7 +604,7 @@ export default function CheckInManager({
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-500" />
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">{getEventClassName(entry.series_class_id)}</p>
+                  <p className="text-xs text-gray-500 mb-2">{getEntryClassName(entry)}</p>
                   <div className="flex flex-wrap gap-1">
                     <Badge variant={entry.entry_status === 'Checked In' ? 'default' : 'secondary'} className="text-xs">
                       {entry.entry_status || 'Registered'}
@@ -651,7 +644,7 @@ export default function CheckInManager({
             {/* Driver Info */}
             <div className="bg-gray-900/50 rounded p-3 space-y-2">
               <p className="text-xs text-gray-400">Class</p>
-              <p className="text-sm font-semibold text-white">{getEventClassName(selectedEntry.series_class_id)}</p>
+              <p className="text-sm font-semibold text-white">{getEntryClassName(selectedEntry)}</p>
               {formData.amount_due && (
                 <>
                   <p className="text-xs text-gray-400 mt-2">Amount Due</p>

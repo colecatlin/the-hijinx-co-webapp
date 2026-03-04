@@ -67,9 +67,10 @@ export default function TechManager({
     ...DQ,
   });
 
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list(),
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order') : Promise.resolve([])),
+    enabled: !!eventId,
     ...DQ,
   });
 
@@ -84,31 +85,28 @@ export default function TechManager({
 
   // ── Lookups ──
   const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
-  const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
+  const eventClassMap = useMemo(() => Object.fromEntries(eventClasses.map((c) => [c.id, c])), [eventClasses]);
 
   const getDriverName = (id) => {
     const d = driversMap[id];
     return d ? `${d.first_name} ${d.last_name}` : '—';
   };
   const getClassName = (entry) => {
-    if (!entry.series_class_id) return '—';
-    return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
+    if (entry.event_class_id && eventClassMap[entry.event_class_id]) {
+      return eventClassMap[entry.event_class_id].name;
+    }
+    return '—';
   };
 
-  // ── Classes present in this event ──
+  // ── Classes from EventClass ──
   const classOptions = useMemo(() => {
-    const seen = new Set();
-    entries.forEach((e) => {
-      const name = getClassName(e);
-      if (name && name !== '—') seen.add(name);
-    });
-    return Array.from(seen).sort();
-  }, [entries, classesMap]);
+    return eventClasses.map((ec) => ({ id: ec.id, name: ec.name }));
+  }, [eventClasses]);
 
   // ── Filtering ──
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      if (classFilter !== 'all' && getClassName(entry) !== classFilter) return false;
+      if (classFilter !== 'all' && (entry.event_class_id || '') !== classFilter) return false;
       if (statusFilter !== 'all' && (entry.tech_status || 'Not Inspected') !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
@@ -302,7 +300,7 @@ export default function TechManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Classes</SelectItem>
-                {classOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {classOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
