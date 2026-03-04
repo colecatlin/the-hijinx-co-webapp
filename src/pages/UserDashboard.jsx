@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import UserDashboardHome from '@/components/userdashboard/UserDashboardHome';
-import { BurnoutSpinner } from '@/components/shared/BurnoutSpinner';
+import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { ShieldAlert } from 'lucide-react';
 
 export default function UserDashboard() {
