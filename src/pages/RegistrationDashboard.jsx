@@ -19,6 +19,7 @@ import TechManager from '@/components/registrationdashboard/TechManager';
 import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
 import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
+import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
@@ -1387,11 +1388,20 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
-                <AnnouncerMode
-                  selectedEvent={selectedEvent}
-                  sessions={sessions}
-                  results={results}
-                />
+                selectedEvent ? (
+                  <AnnouncerManager
+                    selectedEvent={selectedEvent}
+                    selectedTrack={selectedTrack}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                    dashboardContext={dashboardContext}
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-20 text-center">
+                      <p className="text-gray-400">Select an event to access the Announcer Console</p>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (

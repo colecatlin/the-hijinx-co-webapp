@@ -156,6 +156,11 @@ function getKeysForOperation(operationType, payload = {}) {
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId), REG_QK.driverPrograms(eventId));
       break;
 
+    case 'announcer_updated':
+      broad.push(['sessions'], ['results'], ['drivers'], ['teams'], ['entries'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
+      break;
+
     case 'integration_sync_completed':
     case 'sync_completed':
     case 'sync_failed':
