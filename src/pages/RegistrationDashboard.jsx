@@ -34,6 +34,7 @@ import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
+import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -783,28 +784,26 @@ export default function RegistrationDashboard() {
                 </Select>
               </div>
 
-              {/* Event Selector */}
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-400 uppercase tracking-wide">Event</label>
-                <Select value={eventId} onValueChange={setEventId}>
-                  <SelectTrigger className="w-64 bg-[#262626] border-gray-700 text-white">
-                    <SelectValue placeholder="Select event..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700 max-h-80">
-                    {filteredEvents.map((event) => (
-                      <SelectItem key={event.id} value={event.id} className="text-white">
-                        <div className="flex flex-col">
-                          <span>{event.name}</span>
-                          <span className="text-xs text-gray-400">
-                            {event.event_date}
-                            {event.round_number ? ` • Round ${event.round_number}` : ''}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Event Switcher */}
+              <EventSwitcher
+                dashboardContext={dashboardContext}
+                selectedEvent={selectedEvent}
+                dashboardPermissions={dashboardPermissions}
+                onSelectEvent={(newEventId) => {
+                  setEventId(newEventId);
+                  const params = new URLSearchParams(searchParams);
+                  params.set('eventId', newEventId);
+                  setSearchParams(params, { replace: true });
+                }}
+                onClearEvent={() => {
+                  setEventId('');
+                  setActiveTab('overview');
+                  const params = new URLSearchParams(searchParams);
+                  params.delete('eventId');
+                  setSearchParams(params, { replace: true });
+                }}
+                onCreateEvent={handleCreateEvent}
+              />
 
               {/* Planning Rights Indicator */}
               {selectedEvent && (
