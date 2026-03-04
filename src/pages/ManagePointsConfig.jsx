@@ -242,8 +242,6 @@ export default function ManagePointsConfig() {
 }
 
 function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
-
-function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
   const [form, setForm] = useState({
     series_id: '',
     series_class_id: '',
@@ -297,7 +295,7 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 block mb-1">Name</label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
+              <Input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
             </div>
             <div>
               <label className="text-xs text-gray-400 block mb-1">Series *</label>
