@@ -580,14 +580,25 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   )}
                   {isEditing ? 'Update Draft' : 'Save Draft'}
                 </Button>
-                <Button
-                  onClick={() => handleSave(true)}
-                  disabled={isSaving}
-                  className="bg-green-700 hover:bg-green-600 text-white"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Publish Event
-                </Button>
+                {canPublish ? (
+                  <Button
+                    onClick={() => handleSave(true)}
+                    disabled={isSaving}
+                    className="bg-green-700 hover:bg-green-600 text-white"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Publish Event
+                  </Button>
+                ) : (
+                  <Button
+                    disabled
+                    className="bg-gray-700 text-gray-400 cursor-not-allowed"
+                    title="Both Track and Series must approve before publishing"
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />
+                    Publish Blocked — Awaiting Approvals
+                  </Button>
+                )}
                 {isEditing && (
                   <>
                     <Button
