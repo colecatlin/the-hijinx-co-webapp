@@ -41,6 +41,8 @@ import RaceControlPanel from '@/components/registrationdashboard/RaceControlPane
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
+import { getPermissionsForRole, canTab, canAction } from '@/components/access/accessControl';
+import { createPageUrl } from '@/components/utils';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1461,10 +1463,9 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
                 <GateManager
                   selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
+                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
