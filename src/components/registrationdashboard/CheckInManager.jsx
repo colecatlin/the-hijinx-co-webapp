@@ -140,15 +140,13 @@ export default function CheckInManager({
 
   const getEntryClassName = (entry) => {
     if (entry.event_class_id && eventClassMap[entry.event_class_id]) {
-      return eventClassMap[entry.event_class_id].name;
+      return eventClassMap[entry.event_class_id].class_name;
     }
     return '—';
   };
 
   const classNames = useMemo(() => {
-    const seen = new Map();
-    eventClasses.forEach((ec) => seen.set(ec.id, ec.name));
-    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }));
+    return eventClasses.map((ec) => ({ id: ec.id, name: ec.class_name }));
   }, [eventClasses]);
 
   const filteredEntries = useMemo(() => {
