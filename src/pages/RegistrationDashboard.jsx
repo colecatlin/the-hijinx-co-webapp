@@ -28,7 +28,6 @@ import GateAttendantConsole from '@/components/registrationdashboard/GateAttenda
 import GateConsole from '@/components/registrationdashboard/GateConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
-import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
 import ExportsManager from '@/components/registrationdashboard/ExportsManager';
