@@ -20,8 +20,8 @@ function getKeysForOperation(operationType, payload = {}) {
 
   switch (operationType) {
     case 'event_created':
-      broad.push(['events'], ['seasonCalendarEvents'], ['eventCollaboration'], ['operationLogs'], ['eventCollaborators']);
-      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId], ['eventCollaborators', eventId]);
+      broad.push(['events'], ['seasonCalendarEvents'], ['eventCollaboration'], ['eventCollaborations'], ['operationLogs'], ['eventCollaborators']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId], ['eventCollaborations', eventId], ['eventCollaborators', eventId]);
       break;
 
     case 'event_updated':
@@ -38,14 +38,15 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'event_collaboration_series_accepted':
     case 'event_collaboration_track_declined':
     case 'event_collaboration_series_declined':
-      broad.push(['events'], ['sessions'], ['results'], ['standings'], ['operationLogs'], ['eventCollaboration']);
-      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId]);
+      broad.push(['events'], ['eventCollaborations'], ['sessions'], ['results'], ['standings'], ['operationLogs'], ['eventCollaboration']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId], ['eventCollaborations', eventId]);
       break;
     
     case 'event_publish_attempt':
     case 'event_published_mutual':
-      broad.push(['events'], ['sessions'], ['results'], ['standings'], ['operationLogs']);
-      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId));
+    case 'event_published':
+      broad.push(['events'], ['eventCollaborations'], ['sessions'], ['results'], ['standings'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId), ['eventCollaborations', eventId]);
       break;
 
     case 'session_created':

@@ -31,6 +31,9 @@ const ROLE_PERMISSIONS = {
       export: true,
       race_control_override: true,
       configure_points: true,
+      respond_collaboration: true,
+      request_planning_rights: true,
+      publish_event: true,
     },
   },
   user: {
@@ -63,6 +66,9 @@ const ROLE_PERMISSIONS = {
       import_csv: true,
       export: true,
       configure_points: true,
+      respond_collaboration: true,
+      request_planning_rights: true,
+      publish_event: true,
     },
   },
   entity_editor: {
@@ -82,6 +88,8 @@ const ROLE_PERMISSIONS = {
       import_csv: true,
       export: true,
       configure_points: true,
+      respond_collaboration: true,
+      publish_event: true,
     },
   },
   public: {
