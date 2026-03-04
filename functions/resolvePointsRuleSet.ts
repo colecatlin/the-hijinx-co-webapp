@@ -3,173 +3,187 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { eventId, seriesClassId } = await req.json();
 
     if (!eventId) {
-      return Response.json({ ok: false, error: 'Missing eventId' }, { status: 400 });
+      return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
-    // Load the event
-    const event = await base44.asServiceRole.entities.Event.filter({ id: eventId });
-    if (event.length === 0) {
-      return Response.json({ ok: false, error: 'Event not found' }, { status: 404 });
+    // Fetch event and its associated series/track
+    const event = await base44.entities.Event.list().then(events =>
+      events.find(e => e.id === eventId)
+    );
+
+    if (!event) {
+      return Response.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    const eventRecord = event[0];
-    const seriesId = eventRecord.series_id;
-    const trackId = eventRecord.track_id;
-    const season = eventRecord.season;
+    // Step 1: Check for event-specific override
+    if (event.points_ruleset_id) {
+      const ruleset = await base44.entities.PointsRuleSet.list().then(rulesets =>
+        rulesets.find(r => r.id === event.points_ruleset_id)
+      );
 
-    // Step 1: Check for event override
-    if (eventRecord.points_ruleset_id) {
-      const rulesets = await base44.asServiceRole.entities.PointsRuleSet.filter({
-        id: eventRecord.points_ruleset_id
-      });
-      if (rulesets.length > 0 && rulesets[0].status === 'active') {
-        const ruleset = rulesets[0];
-        await base44.asServiceRole.entities.OperationLog.create({
+      if (ruleset && ruleset.status === 'active') {
+        // Log operation
+        await base44.entities.OperationLog.create({
           operation_type: 'points_ruleset_resolved',
-          status: 'success',
-          entity_type: 'Event',
+          entity_name: 'Event',
           entity_id: eventId,
-          details: {
+          event_id: eventId,
+          status: 'success',
+          source_type: 'api_function',
+          function_name: 'resolvePointsRuleSet',
+          message: `Resolved ruleset: ${ruleset.name} (event override)`,
+          metadata: {
             event_id: eventId,
-            series_class_id: seriesClassId || null,
+            series_class_id: seriesClassId,
             ruleset_id: ruleset.id,
             source: 'event_override'
           }
-        }).catch(() => {});
+        });
+
         return Response.json({
-          ok: true,
           ruleset,
           source: 'event_override',
-          reason: 'Event-specific override is active'
+          reason: 'Event has explicit override'
         });
       }
     }
 
-    // Step 2: Load all active rulesets that could match
-    const allRulesets = await base44.asServiceRole.entities.PointsRuleSet.filter({
-      status: 'active'
-    });
+    // Step 2: Match by most specific criteria
+    const allRulesets = await base44.entities.PointsRuleSet.list().then(rulesets =>
+      rulesets.filter(r => r.status === 'active')
+    );
 
-    // Helper to match and score
     const matches = [];
-    for (const ruleset of allRulesets) {
-      let score = 0;
-      let matchType = null;
 
-      // Series + Class + Season (highest specificity)
-      if (
-        ruleset.series_id === seriesId &&
-        ruleset.series_class_id === seriesClassId &&
-        ruleset.season === season &&
-        !ruleset.track_id
-      ) {
-        score = 6;
-        matchType = 'series_class_season';
-      }
-      // Series + Class (no season)
-      else if (
-        ruleset.series_id === seriesId &&
-        ruleset.series_class_id === seriesClassId &&
-        !ruleset.season &&
-        !ruleset.track_id
-      ) {
-        score = 5;
-        matchType = 'series_class';
-      }
-      // Series + Season (no class)
-      else if (
-        ruleset.series_id === seriesId &&
-        ruleset.season === season &&
-        !ruleset.series_class_id &&
-        !ruleset.track_id
-      ) {
-        score = 4;
-        matchType = 'series_season';
-      }
-      // Series only
-      else if (
-        ruleset.series_id === seriesId &&
-        !ruleset.series_class_id &&
-        !ruleset.season &&
-        !ruleset.track_id
-      ) {
-        score = 3;
-        matchType = 'series';
-      }
-      // Track + Season
-      else if (
-        ruleset.track_id === trackId &&
-        ruleset.season === season &&
-        !ruleset.series_id &&
-        !ruleset.series_class_id
-      ) {
-        score = 2;
-        matchType = 'track_season';
-      }
-      // Track only
-      else if (
-        ruleset.track_id === trackId &&
-        !ruleset.series_id &&
-        !ruleset.series_class_id &&
-        !ruleset.season
-      ) {
-        score = 1;
-        matchType = 'track';
-      }
+    // a) series_id + class_id + season
+    matches.push(
+      ...allRulesets.filter(r =>
+        r.series_id === event.series_id &&
+        r.series_class_id === seriesClassId &&
+        r.season === event.season
+      ).map(r => ({ ...r, specificity: 6 }))
+    );
 
-      if (score > 0) {
-        matches.push({
-          ruleset,
-          score,
-          matchType,
-          createdDate: new Date(ruleset.created_date || 0).getTime()
-        });
-      }
+    // b) series_id + class_id
+    if (matches.length === 0) {
+      matches.push(
+        ...allRulesets.filter(r =>
+          r.series_id === event.series_id &&
+          r.series_class_id === seriesClassId &&
+          !r.season
+        ).map(r => ({ ...r, specificity: 5 }))
+      );
+    }
+
+    // c) series_id + season
+    if (matches.length === 0) {
+      matches.push(
+        ...allRulesets.filter(r =>
+          r.series_id === event.series_id &&
+          !r.series_class_id &&
+          r.season === event.season
+        ).map(r => ({ ...r, specificity: 4 }))
+      );
+    }
+
+    // d) series_id only
+    if (matches.length === 0) {
+      matches.push(
+        ...allRulesets.filter(r =>
+          r.series_id === event.series_id &&
+          !r.series_class_id &&
+          !r.season
+        ).map(r => ({ ...r, specificity: 3 }))
+      );
+    }
+
+    // e) track_id + season
+    if (matches.length === 0) {
+      matches.push(
+        ...allRulesets.filter(r =>
+          r.track_id === event.track_id &&
+          r.season === event.season
+        ).map(r => ({ ...r, specificity: 2 }))
+      );
+    }
+
+    // f) track_id only
+    if (matches.length === 0) {
+      matches.push(
+        ...allRulesets.filter(r =>
+          r.track_id === event.track_id &&
+          !r.season
+        ).map(r => ({ ...r, specificity: 1 }))
+      );
     }
 
     if (matches.length === 0) {
+      // Log failure
+      await base44.entities.OperationLog.create({
+        operation_type: 'points_ruleset_resolved',
+        entity_name: 'Event',
+        entity_id: eventId,
+        event_id: eventId,
+        status: 'failed',
+        source_type: 'api_function',
+        function_name: 'resolvePointsRuleSet',
+        message: 'No active ruleset found for event',
+        metadata: {
+          event_id: eventId,
+          series_class_id: seriesClassId,
+          source: 'none'
+        }
+      });
+
       return Response.json({
-        ok: true,
         ruleset: null,
         source: 'none',
-        reason: 'No matching active ruleset found'
+        reason: 'No active ruleset found matching event criteria'
       });
     }
 
-    // Sort by score descending, then by created_date descending
+    // Sort by priority (desc) then created_date (desc)
     matches.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if (b.ruleset.priority !== a.ruleset.priority) {
-        return Number(b.ruleset.priority || 0) - Number(a.ruleset.priority || 0);
-      }
-      return b.createdDate - a.createdDate;
+      if (b.priority !== a.priority) return b.priority - a.priority;
+      return new Date(b.created_date) - new Date(a.created_date);
     });
 
-    const chosen = matches[0];
+    const selected = matches[0];
+    const source = selected.series_id ? 'series' : 'track';
 
-    await base44.asServiceRole.entities.OperationLog.create({
+    // Log success
+    await base44.entities.OperationLog.create({
       operation_type: 'points_ruleset_resolved',
-      status: 'success',
-      entity_type: 'Event',
+      entity_name: 'Event',
       entity_id: eventId,
-      details: {
+      event_id: eventId,
+      status: 'success',
+      source_type: 'api_function',
+      function_name: 'resolvePointsRuleSet',
+      message: `Resolved ruleset: ${selected.name} (${source})`,
+      metadata: {
         event_id: eventId,
-        series_class_id: seriesClassId || null,
-        ruleset_id: chosen.ruleset.id,
-        source: 'series_or_track'
+        series_class_id: seriesClassId,
+        ruleset_id: selected.id,
+        source
       }
-    }).catch(() => {});
+    });
 
     return Response.json({
-      ok: true,
-      ruleset: chosen.ruleset,
-      source: chosen.matchType,
-      reason: `Matched by ${chosen.matchType}`
+      ruleset: selected,
+      source,
+      reason: `Matched ${source} ruleset with specificity ${selected.specificity}`
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
