@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { REG_QK } from './queryKeys';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { recomputeStandingsForFinalSession } from './standings/calculateStandings';
+import LiveLeaderboard from './live/LiveLeaderboard';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -120,6 +121,32 @@ export default function RaceControlManager({
     queryFn: () =>
       base44.entities.OperationLog.filter({ metadata: { event_id: eventId } }, '-created_date', 20),
     enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: liveEntries = [] } = useQuery({
+    queryKey: ['rc_live_entries', eventId],
+    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: liveResults = [] } = useQuery({
+    queryKey: ['rc_live_results', eventId],
+    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: liveDrivers = [] } = useQuery({
+    queryKey: ['rc_live_drivers'],
+    queryFn: () => base44.entities.Driver.list('first_name', 500),
+    ...DQ,
+  });
+
+  const { data: liveTeams = [] } = useQuery({
+    queryKey: ['rc_live_teams'],
+    queryFn: () => base44.entities.Team.list(),
     ...DQ,
   });
 
@@ -562,6 +589,17 @@ export default function RaceControlManager({
           </Button>
         </CardContent>
       </Card>
+
+      {/* ── Live Leaderboard ───────────────────────────────────────────── */}
+      {sortedSessions.length > 0 && (
+        <LiveLeaderboard
+          session={sortedSessions[0]}
+          entries={liveEntries}
+          results={liveResults}
+          drivers={liveDrivers}
+          teams={liveTeams}
+        />
+      )}
 
       {/* ── Audit Summary ──────────────────────────────────────────────── */}
       <Card className="bg-[#171717] border-gray-800">
