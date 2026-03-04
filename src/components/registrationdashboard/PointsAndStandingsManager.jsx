@@ -492,7 +492,8 @@ export default function PointsAndStandingsManager({
           <span>Official/Locked: <span className="text-green-400">{officialSessionCount}</span></span>
           <span>Results loaded: <span className="text-gray-300">{allResults.filter((r) => !selectedClassId || r.series_class_id === selectedClassId).length}</span></span>
           {calculatedRows && <Badge className="bg-blue-500/20 text-blue-400">Draft — not yet published</Badge>}
-          {!calculatedRows && publishedStandings.length > 0 && <Badge className="bg-green-500/20 text-green-400">Showing published standings</Badge>}
+          {!calculatedRows && publishedStandings.length > 0 && hasPublishMarker && <Badge className="bg-green-500/20 text-green-400">Published</Badge>}
+          {!calculatedRows && publishedStandings.length > 0 && !hasPublishMarker && <Badge className="bg-blue-500/20 text-blue-400">Calculated — not yet published</Badge>}
         </div>
       </div>
 
