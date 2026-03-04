@@ -19,6 +19,11 @@ function getKeysForOperation(operationType, payload = {}) {
   const broad = [];
 
   switch (operationType) {
+    case 'event_created':
+      broad.push(['events'], ['eventCollaboration'], ['operationLogs'], ['eventCollaborators']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId), ['eventCollaboration', eventId], ['eventCollaborators', eventId]);
+      break;
+
     case 'event_updated':
     case 'event_status_changed':
     case 'event_published':

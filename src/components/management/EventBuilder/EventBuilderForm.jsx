@@ -30,6 +30,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import CollaborationApprovalPanel from '@/components/registrationdashboard/CollaborationApprovalPanel';
+import { setupEventCollaborators } from '@/components/registrationdashboard/eventCollaboratorSetup';
+import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
 const STATUS_OPTIONS = [
   { value: 'upcoming', label: 'Draft', color: 'bg-gray-500' },
