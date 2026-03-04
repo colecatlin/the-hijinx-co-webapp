@@ -112,6 +112,24 @@ export default function ComplianceManager({
     selectedEvent: selectedEvent ?? null,
   });
 
+  const { mutateAsync: recomputeCompliance, isPending: recomputing } = useDashboardMutation({
+    operationType: 'compliance_recomputed',
+    entityName: 'Entry',
+    mutationFn: async () => {
+      // Write compliance flags back to entries that need updates
+      const updates = complianceData.entriesToUpdate || [];
+      await Promise.all(
+        updates.map(({ id, flags }) =>
+          base44.entities.Entry.update(id, { compliance_flags_json: JSON.stringify(flags) })
+        )
+      );
+    },
+    successMessage: 'Compliance flags updated',
+    invalidateAfterOperation,
+    dashboardContext: dashboardContext ?? { eventId: selectedEvent?.id },
+    selectedEvent: selectedEvent ?? null,
+  });
+
   const getDriverName = (driverId) => {
     const d = drivers.find(dr => dr.id === driverId);
     return d ? `${d.first_name} ${d.last_name}` : 'Unknown';
@@ -128,7 +146,7 @@ export default function ComplianceManager({
 
   const today = new Date().toISOString().split('T')[0];
 
-  // ── Compliance computation ──────────────────────────────────────────────────
+  // ── Compliance computation from Entry ──────────────────────────────────────
   const complianceData = useMemo(() => {
     if (!entries.length) return {
       totalEntries: 0, totalFlagged: 0,
@@ -136,11 +154,11 @@ export default function ComplianceManager({
       entriesMap: new Map(), severity: 'clear',
     };
 
-    // Duplicate car number: per event_id + event_class_id
+    // Duplicate car number: per event_id + event_class_id (for non-withdrawn entries)
     const carNumberKey = (e) => `${e.event_id}|${e.event_class_id || ''}|${e.car_number || ''}`;
     const carNumberCounts = {};
     entries.forEach(e => {
-      if (e.car_number) {
+      if (e.car_number && e.entry_status !== 'Withdrawn') {
         const k = carNumberKey(e);
         carNumberCounts[k] = (carNumberCounts[k] || 0) + 1;
       }
@@ -149,8 +167,11 @@ export default function ComplianceManager({
     const flags = { waivers: 0, licenses: 0, transponders: 0, duplicates: 0, payments: 0 };
     let totalFlagged = 0;
     const entriesMap = new Map();
+    const entriesToUpdate = [];
 
     entries.forEach(entry => {
+      if (entry.entry_status === 'Withdrawn') return;
+      
       const entryFlags = [];
 
       // Missing waiver
@@ -160,7 +181,7 @@ export default function ComplianceManager({
       }
 
       // Missing transponder
-      if (!entry.transponder_verified || !entry.transponder_id || entry.transponder_id.trim() === '') {
+      if (!entry.transponder_id || entry.transponder_id.trim() === '') {
         entryFlags.push({ type: 'transponders', label: 'No Transponder', color: 'bg-purple-900/40 text-purple-300' });
         flags.transponders++;
       }
@@ -192,10 +213,15 @@ export default function ComplianceManager({
         flags: entryFlags,
         waiverOk: !!entry.waiver_verified,
       });
+
+      // Track entries that need flag updates
+      if (entryFlags.length > 0) {
+        entriesToUpdate.push({ id: entry.id, flags: entryFlags });
+      }
     });
 
     const severity = totalFlagged > 0 ? 'warning' : 'clear';
-    return { totalEntries: entries.length, totalFlagged, flags, entriesMap, severity };
+    return { totalEntries: entries.length, totalFlagged, flags, entriesMap, severity, entriesToUpdate };
   }, [entries, drivers, eventClasses, seriesClasses]);
 
   React.useEffect(() => {
@@ -352,23 +378,35 @@ export default function ComplianceManager({
           </CardContent>
         </Card>
       )}
-      {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {[
-          { label: 'Total', value: totalEntries, color: 'text-white' },
-          { label: 'Flagged', value: totalFlagged, color: 'text-orange-400' },
-          { label: 'Waivers', value: flags.waivers, color: 'text-yellow-400' },
-          { label: 'License', value: flags.licenses, color: 'text-orange-400' },
-          { label: 'No Xpndr', value: flags.transponders, color: 'text-purple-400' },
-          { label: 'Dup Car #', value: flags.duplicates, color: 'text-red-400' },
-        ].map(({ label, value, color }) => (
-          <Card key={label} className="bg-[#171717] border-gray-800">
-            <CardContent className="py-3 px-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Summary row + Recompute button */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {[
+            { label: 'Total', value: totalEntries, color: 'text-white' },
+            { label: 'Flagged', value: totalFlagged, color: 'text-orange-400' },
+            { label: 'Waivers', value: flags.waivers, color: 'text-yellow-400' },
+            { label: 'License', value: flags.licenses, color: 'text-orange-400' },
+            { label: 'No Xpndr', value: flags.transponders, color: 'text-purple-400' },
+            { label: 'Dup Car #', value: flags.duplicates, color: 'text-red-400' },
+          ].map(({ label, value, color }) => (
+            <Card key={label} className="bg-[#171717] border-gray-800">
+              <CardContent className="py-3 px-4">
+                <p className="text-xs text-gray-400 mb-1">{label}</p>
+                <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        {isAdmin && (
+          <Button
+            onClick={() => recomputeCompliance()}
+            disabled={recomputing}
+            className="w-full bg-blue-700 hover:bg-blue-600 text-xs h-8"
+          >
+            {recomputing ? 'Recomputing...' : 'Recompute Compliance Now'}
+          </Button>
+        )}
+      </div>
       </div>
 
       {/* Filters */}

@@ -224,59 +224,27 @@ export default function CheckInManager({
   const handleCheckIn = useCallback(
     (item) => {
       if (!canEdit) return;
-
-      // If item has entry_status field (Entry entity), update directly
-      if ('entry_status' in item) {
-        updateEntryMutation.mutate({
-          entryId: item.id,
-          data: { entry_status: 'Checked In' },
-        });
-      } else {
-        // Fallback: log to OperationLog (DriverProgram case)
-        createOperationLogMutation.mutate({
-          operation_type: 'checkin',
-          source_type: 'manual',
-          entity_name: 'Driver',
-          entity_id: item.driver_id,
-          status: 'success',
-          metadata: JSON.stringify({
-            event_id: eventId,
-            driver_id: item.driver_id,
-            checkin: true,
-            timestamp_client: new Date().toISOString(),
-          }),
-        });
-      }
+      updateEntryMutation.mutate({
+        entryId: item.id,
+        data: {
+          entry_status: 'Checked In',
+          checkin_time: new Date().toISOString(),
+          checked_in_by_user_id: item.currentUserId || '',
+        },
+      });
     },
-    [canEdit, eventId, updateEntryMutation, createOperationLogMutation]
+    [canEdit, updateEntryMutation]
   );
 
   const handleUndoCheckIn = useCallback(
     (item) => {
       if (!canEdit) return;
-
-      if ('entry_status' in item) {
-        updateEntryMutation.mutate({
-          entryId: item.id,
-          data: { entry_status: 'Registered' },
-        });
-      } else {
-        createOperationLogMutation.mutate({
-          operation_type: 'checkin',
-          source_type: 'manual',
-          entity_name: 'Driver',
-          entity_id: item.driver_id,
-          status: 'success',
-          metadata: JSON.stringify({
-            event_id: eventId,
-            driver_id: item.driver_id,
-            checkin: false,
-            timestamp_client: new Date().toISOString(),
-          }),
-        });
-      }
+      updateEntryMutation.mutate({
+        entryId: item.id,
+        data: { entry_status: 'Registered', checkin_time: null },
+      });
     },
-    [canEdit, eventId, updateEntryMutation, createOperationLogMutation]
+    [canEdit, updateEntryMutation]
   );
 
   const handleOpenNoteModal = useCallback((item) => {

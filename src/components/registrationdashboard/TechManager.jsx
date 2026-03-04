@@ -148,15 +148,20 @@ export default function TechManager({
 
   const handleAction = async (entry, techStatus) => {
     const now = new Date().toISOString();
+    const payload = {
+      tech_status: techStatus,
+      tech_time: now,
+      tech_inspector_user_id: currentUser?.id || '',
+    };
+    if (techStatus === 'Passed') {
+      payload.entry_status = 'Teched';
+    }
     await updateEntry({
       id: entry.id,
-      data: {
-        tech_status: techStatus,
-        tech_time: now,
-        tech_inspector_user_id: currentUser?.id || '',
-      },
+      data: payload,
     });
     queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
+    invalidateAfterOperation('entry_tech_updated', { eventId });
   };
 
   const openNotes = (entry) => {
@@ -168,9 +173,10 @@ export default function TechManager({
     if (!notesEntry || !notesText.trim()) return;
     const timestamp = new Date().toLocaleString();
     const append = `[${timestamp}] Tech: ${notesText.trim()}`;
-    const existing = notesEntry.notes ? notesEntry.notes + '\n' + append : append;
-    await updateEntry({ id: notesEntry.id, data: { notes: existing } });
+    const existing = notesEntry.tech_notes ? notesEntry.tech_notes + '\n' + append : append;
+    await updateEntry({ id: notesEntry.id, data: { tech_notes: existing } });
     queryClient.invalidateQueries({ queryKey: ['entries', eventId, 'tech'] });
+    invalidateAfterOperation('entry_tech_updated', { eventId });
     setNotesEntry(null);
     setNotesText('');
   };
@@ -326,8 +332,8 @@ export default function TechManager({
                           <span className="text-gray-400 font-mono">{entry.transponder_id}</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500 max-w-[140px] truncate" title={entry.notes || ''}>
-                        {entry.notes ? entry.notes.split('\n').pop() : '—'}
+                      <td className="px-3 py-2 text-xs text-gray-500 max-w-[140px] truncate" title={entry.tech_notes || ''}>
+                        {entry.tech_notes ? entry.tech_notes.split('\n').pop() : '—'}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-end gap-1">
@@ -388,11 +394,11 @@ export default function TechManager({
             </SheetTitle>
           </SheetHeader>
           <div className="py-4 space-y-3">
-            {notesEntry?.notes && (
-              <div className="bg-gray-900 rounded p-3 text-xs text-gray-400 max-h-32 overflow-y-auto whitespace-pre-wrap">
-                {notesEntry.notes}
-              </div>
-            )}
+            {notesEntry?.tech_notes && (
+                <div className="bg-gray-900 rounded p-3 text-xs text-gray-400 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                  {notesEntry.tech_notes}
+                </div>
+              )}
             <Textarea
               placeholder="Enter tech note…"
               value={notesText}
