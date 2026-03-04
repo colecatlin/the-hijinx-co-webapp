@@ -242,22 +242,13 @@ export default function ManagePointsConfig() {
 }
 
 function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
+
+function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
   const [form, setForm] = useState({
-    name: '',
     series_id: '',
     series_class_id: '',
     season_year: '',
-    status: 'Draft',
-    calculation_scope: 'per_event',
-    apply_to_session_types: ['Final'],
-    points_table_json: { '1': 25, '2': 20, '3': 16 },
-    participation_points: 0,
-    dnf_policy: 'finish_position_points',
-    dnf_minimum_points: 0,
-    bonus_rules_json: {},
-    drop_rounds: 0,
-    tie_break_order: ['wins', 'seconds', 'thirds', 'best_recent_finish'],
-    notes: ''
+    points_table_json: { '1': 25, '2': 20, '3': 16 }
   });
 
   const [pointsRows, setPointsRows] = useState([]);
@@ -269,10 +260,13 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
   });
 
   useEffect(() => {
-    if (config) {
+    if (config && open) {
       setForm(config);
       const rows = Object.entries(config.points_table_json || {}).map(([pos, pts]) => ({ position: Number(pos), points: pts })).sort((a, b) => a.position - b.position);
       setPointsRows(rows);
+    } else if (!open) {
+      setForm({ series_id: '', series_class_id: '', season_year: '', points_table_json: { '1': 25, '2': 20, '3': 16 } });
+      setPointsRows([]);
     }
   }, [config, open]);
 
@@ -358,52 +352,7 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
 
           <hr className="border-gray-700" />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Calculation Scope</label>
-              <Select value={form.calculation_scope} onValueChange={(v) => setForm({ ...form, calculation_scope: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="per_event">Per Event</SelectItem>
-                  <SelectItem value="per_session">Per Session</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">DNF Policy</label>
-              <Select value={form.dnf_policy} onValueChange={(v) => setForm({ ...form, dnf_policy: v })}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="finish_position_points">Finish Position Points</SelectItem>
-                  <SelectItem value="minimum_points">Minimum Points</SelectItem>
-                  <SelectItem value="zero_points">Zero Points</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          {form.dnf_policy === 'minimum_points' && (
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">DNF Minimum Points</label>
-              <Input type="number" value={form.dnf_minimum_points} onChange={(e) => setForm({ ...form, dnf_minimum_points: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Participation Points</label>
-              <Input type="number" value={form.participation_points} onChange={(e) => setForm({ ...form, participation_points: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Drop Rounds</label>
-              <Input type="number" value={form.drop_rounds} onChange={(e) => setForm({ ...form, drop_rounds: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-400 block mb-1">Notes</label>
-            <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="Optional notes" />
-          </div>
         </div>
 
         <DialogFooter>
