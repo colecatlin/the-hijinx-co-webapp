@@ -150,6 +150,31 @@ export default function PointsAndStandingsManager({
     ...DQ,
   });
 
+  // Publish marker detection
+  const { data: publishLogs = [] } = useQuery({
+    queryKey: ['publishLogs', seriesId, selectedSeasonYear, selectedClassId],
+    queryFn: async () => {
+      if (!seriesId || !selectedSeasonYear) return [];
+      const logs = await base44.entities.OperationLog.filter({
+        operation_type: 'publish',
+      }).catch(() => []);
+      return logs.filter((log) => {
+        try {
+          const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
+          return metadata?.publish_type === 'publish_standings' &&
+                 metadata?.series_id === seriesId &&
+                 metadata?.season === selectedSeasonYear;
+        } catch {
+          return false;
+        }
+      });
+    },
+    enabled: !!seriesId && !!selectedSeasonYear,
+    ...DQ,
+  });
+
+  const hasPublishMarker = publishLogs.length > 0;
+
   // Class options
   const classOptions = useMemo(() => {
     const seen = new Map();
