@@ -1196,33 +1196,6 @@ export default function RegistrationDashboard() {
                   <Clock className="w-4 h-4 mr-2" /> Timing Sync
                 </TabsTrigger>
               )}
-              {canTab(dashboardPermissions, 'announcer') && (
-                <TabsTrigger
-                  value="announcer"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-cyan-800 data-[state=active]:text-cyan-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Mic className="w-4 h-4 mr-2" /> Announcer
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'gate') && (
-                <TabsTrigger
-                  value="gate"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-orange-800 data-[state=active]:text-orange-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Zap className="w-4 h-4 mr-2" /> Gate
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'announcer') && (
-                <TabsTrigger
-                  value="announcer"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Mic className="w-4 h-4 mr-2" /> Announcer
-                </TabsTrigger>
-              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
