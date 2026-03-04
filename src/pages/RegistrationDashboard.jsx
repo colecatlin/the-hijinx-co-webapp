@@ -26,7 +26,6 @@ import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import GateConsole from '@/components/registrationdashboard/GateConsole';
-import GateManager from '@/components/registrationdashboard/GateManager';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
