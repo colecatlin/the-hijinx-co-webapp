@@ -1401,12 +1401,12 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                <GateManagerRefactored
+                <GateManager
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
