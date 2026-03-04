@@ -100,9 +100,11 @@ export default function EntriesManager({
   // ── UI state ──
   const [selectedEntries, setSelectedEntries] = useState(new Set());
   const [editingEntry, setEditingEntry] = useState(null);
+  const [detailEntry, setDetailEntry] = useState(null);
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
   const [showSelfService, setShowSelfService] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   // Bulk
   const [showBulkTransponderModal, setShowBulkTransponderModal] = useState(false);
   const [bulkTransponderInput, setBulkTransponderInput] = useState('');
@@ -377,7 +379,7 @@ export default function EntriesManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Classes</SelectItem>
-                {eventClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {seriesClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -444,7 +446,7 @@ export default function EntriesManager({
               {entries.length === 0 ? 'No entries yet for this event.' : 'No entries match the current filters.'}
             </p>
             {entries.length === 0 && (
-              <Button onClick={() => setShowAddDialog(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={() => setShowCreateDrawer(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="w-4 h-4 mr-1" /> Add First Entry
               </Button>
             )}
