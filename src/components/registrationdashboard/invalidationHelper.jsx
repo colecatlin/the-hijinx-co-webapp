@@ -123,9 +123,6 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'checkin_updated':
     case 'entry_tech_updated':
     case 'compliance_updated':
-    case 'media_request_updated':
-    case 'media_credential_updated':
-    case 'media_policy_updated':
     case 'compliance_created':
     case 'compliance_updated':
     case 'compliance_resolved':
@@ -141,7 +138,7 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'gate_verify':
     case 'gate_updated':
     case 'wristband_assigned':
-      broad.push(['entries'], ['seasonCalendarEntries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs']);
+      broad.push(['entries'], ['seasonCalendarEntries'], ['complianceFlags'], ['techInspections'], ['myEntry'], ['driverPrograms'], ['results'], ['standings'], ['events'], ['operationLogs'], ['credential_requests'], ['media_credentials'], ['policies']);
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.driverPrograms(eventId), REG_QK.operationLogs(eventId));
       if (eventId) exact.push(['complianceFlags', eventId], ['techInspections', eventId]);
       break;
@@ -200,8 +197,20 @@ function getKeysForOperation(operationType, payload = {}) {
       break;
 
     case 'gate_updated':
-      broad.push(['entries'], ['drivers'], ['eventClasses'], ['operationLogs']);
-      if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
+       broad.push(['entries'], ['drivers'], ['eventClasses'], ['operationLogs']);
+       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
+       break;
+
+    case 'media_request_updated':
+      broad.push(['credential_requests'], ['media_credentials'], ['operation_logs']);
+      break;
+
+    case 'media_credential_updated':
+      broad.push(['media_credentials'], ['operation_logs']);
+      break;
+
+    case 'media_policy_updated':
+      broad.push(['policies'], ['operation_logs']);
       break;
 
     case 'race_control_override':
