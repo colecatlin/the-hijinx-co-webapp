@@ -1,516 +1,373 @@
-/**
- * Gate Console
- * Validate entry status fast—scan, search, view status indicators, toggle states locally or persist if fields exist.
- */
-import React, { useState, useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-} from '@/components/ui/drawer';
-import { REG_QK } from './queryKeys';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { AlertCircle, QrCode, Search, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { AlertCircle, Plus, Minus, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-
-const DQ = applyDefaultQueryOptions();
 
 export default function GateConsole({
   selectedEvent,
-  selectedTrack,
-  invalidateAfterOperation,
   dashboardContext,
+  dashboardPermissions,
+  invalidateAfterOperation,
 }) {
-  const eventId = selectedEvent?.id;
-  const [classFilter, setClassFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [scanInput, setScanInput] = useState('');
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [localState, setLocalState] = useState({});
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('all');
 
-  // ── Queries ────────────────────────────────────────────────────────────────
-
-  const { data: entries = [] } = useQuery({
-    queryKey: REG_QK.entries(eventId),
-    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
-    ...DQ,
+  // Load entries
+  const { data: entries = [], isLoading: entriesLoading } = useQuery({
+    queryKey: ['racecore', 'gate_console', 'entries', selectedEvent?.id],
+    queryFn: () =>
+      selectedEvent
+        ? base44.entities.Entry.filter({ event_id: selectedEvent.id })
+        : Promise.resolve([]),
+    enabled: !!selectedEvent,
   });
 
-  const { data: driverPrograms = [] } = useQuery({
-    queryKey: REG_QK.driverPrograms(eventId),
-    queryFn: () => (eventId ? base44.entities.DriverProgram.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId && entries.length === 0,
-    ...DQ,
-  });
-
+  // Load drivers
   const { data: drivers = [] } = useQuery({
-    queryKey: ['gateConsole_drivers'],
-    queryFn: () => base44.entities.Driver.list('-created_date', 500),
-    staleTime: 60_000,
-    ...DQ,
+    queryKey: ['racecore', 'gate_console', 'drivers'],
+    queryFn: () => base44.entities.Driver.list(),
   });
 
+  // Load teams
   const { data: teams = [] } = useQuery({
-    queryKey: ['gateConsole_teams'],
-    queryFn: () => base44.entities.Team.list('-created_date', 200),
-    staleTime: 60_000,
-    ...DQ,
+    queryKey: ['racecore', 'gate_console', 'teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['gateConsole_eventClasses', eventId],
-    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
-    ...DQ,
+  // Mutations
+  const updateEntryMutation = useMutation({
+    mutationFn: (data) => base44.entities.Entry.update(data.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['racecore', 'gate_console', 'entries', selectedEvent?.id],
+      });
+    },
   });
 
-  // ── Derived data ───────────────────────────────────────────────────────────
+  const logMutation = useMutation({
+    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
+  });
 
-  const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
-  const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
-  const classMap = useMemo(() => Object.fromEntries(eventClasses.map((c) => [c.id, c])), [eventClasses]);
+  // Build maps
+  const driverMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
+  const teamMap = useMemo(() => new Map(teams.map(t => [t.id, t])), [teams]);
 
-  // Use entries if available, fallback to DriverProgram as proxy
-  const listData = useMemo(() => {
-    if (entries.length > 0) return entries;
-    return driverPrograms.map((dp) => ({
-      id: dp.id,
-      event_id: dp.event_id,
-      driver_id: dp.driver_id,
-      event_class_id: dp.event_class_id,
-      team_id: dp.team_id,
-      _from_driver_program: true,
-    }));
-  }, [entries, driverPrograms]);
+  // Filter logic
+  const filteredEntries = useMemo(() => {
+    let filtered = entries;
 
-  // Entries need attention
-  const needsAttention = useMemo(() => {
-    return listData.filter((entry) => {
-      const state = localState[entry.id] || {};
-      const waiver = entry.waiver_verified !== undefined ? entry.waiver_verified : state.waiver_verified;
-      const payment = entry.payment_status !== undefined ? entry.payment_status : state.payment_status;
-      const checkin = entry.gate_checked_in !== undefined ? entry.gate_checked_in : state.gate_checked_in;
-      const tech = entry.tech_status !== undefined ? entry.tech_status : state.tech_status;
-
-      return (
-        !waiver ||
-        payment === 'Unpaid' ||
-        !checkin ||
-        (tech && tech !== 'Passed') ||
-        !entry.transponder_id
-      );
-    }).sort((a, b) => {
-      const driverA = driverMap[a.driver_id];
-      const driverB = driverMap[b.driver_id];
-      const nameA = driverA ? `${driverA.first_name} ${driverA.last_name}`.toLowerCase() : '';
-      const nameB = driverB ? `${driverB.first_name} ${driverB.last_name}`.toLowerCase() : '';
-      return nameA.localeCompare(nameB);
-    });
-  }, [listData, localState, driverMap]);
-
-  // Filtered search results
-  const searchResults = useMemo(() => {
-    let filtered = [...listData];
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter((e) => {
-        const driver = driverMap[e.driver_id];
+    // Search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(e => {
+        const driver = driverMap.get(e.driver_id);
         const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
-        const carNum = (e.car_number || driverMap[e.driver_id]?.primary_number || '').toString();
-        const transponder = (e.transponder_id || '').toString().toLowerCase();
-        return driverName.includes(term) || carNum.includes(term) || transponder.includes(term);
+        const carNum = (e.car_number || '').toLowerCase();
+        return driverName.includes(q) || carNum.includes(q);
       });
     }
 
-    if (classFilter !== 'all') {
-      filtered = filtered.filter((e) => e.event_class_id === classFilter || e.series_class_id === classFilter);
+    // Filter type
+    if (filterType === 'unpaid') {
+      filtered = filtered.filter(e => e.payment_status === 'Unpaid');
+    } else if (filterType === 'waiver') {
+      filtered = filtered.filter(e => !e.waiver_verified);
+    } else if (filterType === 'not_checked_in') {
+      filtered = filtered.filter(e => !e.checkin_time);
     }
 
-    if (statusFilter === 'needs_attention') {
-      filtered = filtered.filter((e) => needsAttention.some((n) => n.id === e.id));
-    } else if (statusFilter === 'cleared') {
-      filtered = filtered.filter((e) => !needsAttention.some((n) => n.id === e.id));
+    return filtered;
+  }, [entries, search, filterType, driverMap]);
+
+  // Handlers
+  const handleCheckIn = async (entry) => {
+    try {
+      const nextCheckedIn = !entry.checkin_time;
+      await updateEntryMutation.mutateAsync({
+        id: entry.id,
+        checkin_time: nextCheckedIn ? new Date().toISOString() : null,
+      });
+
+      await logMutation.mutateAsync({
+        operation_type: 'gate_checkin_updated',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: {
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          checked_in: !!nextCheckedIn,
+        },
+      });
+
+      invalidateAfterOperation('entry_updated');
+      toast.success(nextCheckedIn ? 'Entry checked in' : 'Check-in removed');
+    } catch (error) {
+      toast.error('Failed to update check-in');
+      console.error(error);
     }
-
-    return filtered.sort((a, b) => {
-      const driverA = driverMap[a.driver_id];
-      const driverB = driverMap[b.driver_id];
-      const nameA = driverA ? `${driverA.first_name} ${driverA.last_name}`.toLowerCase() : '';
-      const nameB = driverB ? `${driverB.first_name} ${driverB.last_name}`.toLowerCase() : '';
-      return nameA.localeCompare(nameB);
-    });
-  }, [listData, searchTerm, classFilter, statusFilter, driverMap, needsAttention]);
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  const handleScan = useCallback(() => {
-    if (!scanInput.trim()) return;
-
-    const search = scanInput.toLowerCase();
-    const found = listData.find((e) => {
-      const driver = driverMap[e.driver_id];
-      if (driver?.numeric_id === scanInput) return true;
-      if (driver?.slug === scanInput) return true;
-      const carNum = (e.car_number || driver?.primary_number || '').toString();
-      if (carNum === scanInput) return true;
-      return false;
-    });
-
-    if (found) {
-      setSelectedEntry(found);
-      setScanInput('');
-    } else {
-      toast.error('Entry not found');
-    }
-  }, [scanInput, listData, driverMap]);
-
-  const handleToggleField = useCallback(async (entry, field, value) => {
-    // Use local state as fallback
-    const newState = { ...localState[entry.id] || {}, [field]: value };
-    setLocalState({ ...localState, [entry.id]: newState });
-
-    // Try to persist if Entry exists and field exists
-    if (!entry._from_driver_program && entry.id) {
-      try {
-        const updateData = {};
-        updateData[field] = value;
-        await base44.entities.Entry.update(entry.id, updateData);
-        invalidateAfterOperation('entry_updated', { eventId });
-        toast.success(`${field} updated`);
-      } catch (err) {
-        console.error(`Failed to update ${field}:`, err);
-        toast.error(`Could not persist ${field}—local changes saved`);
-      }
-    }
-  }, [localState, eventId, invalidateAfterOperation]);
-
-  // Get entry status values
-  const getEntryValue = (entry, field) => {
-    const local = localState[entry.id] || {};
-    if (field in local) return local[field];
-    return entry[field];
   };
 
-  // ── Empty state ────────────────────────────────────────────────────────────
+  const handlePaymentToggle = async (entry) => {
+    try {
+      const nextStatus = entry.payment_status === 'Paid' ? 'Unpaid' : 'Paid';
+      await updateEntryMutation.mutateAsync({
+        id: entry.id,
+        payment_status: nextStatus,
+      });
+
+      await logMutation.mutateAsync({
+        operation_type: 'gate_payment_updated',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: {
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          payment_status: nextStatus,
+        },
+      });
+
+      invalidateAfterOperation('entry_updated');
+      toast.success(`Payment marked as ${nextStatus}`);
+    } catch (error) {
+      toast.error('Failed to update payment');
+      console.error(error);
+    }
+  };
+
+  const handleWaiverToggle = async (entry) => {
+    try {
+      const nextVerified = !entry.waiver_verified;
+      await updateEntryMutation.mutateAsync({
+        id: entry.id,
+        waiver_verified: nextVerified,
+      });
+
+      await logMutation.mutateAsync({
+        operation_type: 'gate_waiver_updated',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: {
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          waiver_verified: nextVerified,
+        },
+      });
+
+      invalidateAfterOperation('entry_updated');
+      toast.success(nextVerified ? 'Waiver verified' : 'Waiver unverified');
+    } catch (error) {
+      toast.error('Failed to update waiver');
+      console.error(error);
+    }
+  };
+
+  const handleWristbandDelta = async (entry, delta) => {
+    try {
+      const nextCount = Math.max(0, (entry.wristband_count || 0) + delta);
+      await updateEntryMutation.mutateAsync({
+        id: entry.id,
+        wristband_count: nextCount,
+      });
+
+      await logMutation.mutateAsync({
+        operation_type: 'gate_wristbands_updated',
+        entity_name: 'Entry',
+        entity_id: entry.id,
+        status: 'success',
+        metadata: {
+          event_id: selectedEvent.id,
+          entry_id: entry.id,
+          wristband_count: nextCount,
+        },
+      });
+
+      invalidateAfterOperation('entry_updated');
+    } catch (error) {
+      toast.error('Failed to update wristbands');
+      console.error(error);
+    }
+  };
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-20 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-white font-semibold text-lg mb-1">Gate Console</p>
-          <p className="text-gray-400 text-sm">Select an event to begin entry validation.</p>
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to access Gate Console</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entriesLoading) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">Loading entries...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+          <p className="text-gray-400">No entries yet</p>
+          <p className="text-sm text-gray-500 mt-2">Entries will appear here once created</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {/* ── Left: Needs Attention Queue ───────────────────────────────────── */}
-      <div className="lg:col-span-1">
-        <Card className="bg-[#171717] border-gray-800 sticky top-24">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-white text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-500" /> Needs Attention
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 max-h-[70vh] overflow-y-auto">
-            {needsAttention.length === 0 ? (
-              <p className="text-gray-500 text-xs py-4">All clear!</p>
-            ) : (
-              needsAttention.map((entry) => {
-                const driver = driverMap[entry.driver_id];
-                const cls = classMap[entry.event_class_id];
-                return (
-                  <button
-                    key={entry.id}
-                    onClick={() => setSelectedEntry(entry)}
-                    className="w-full text-left bg-[#262626] rounded p-2 border border-yellow-900/40 hover:border-yellow-700 transition-colors"
-                  >
-                    <p className="text-white font-semibold text-xs">
-                      #{entry.car_number || driver?.primary_number || '—'}
-                    </p>
-                    <p className="text-gray-400 text-xs">{driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}</p>
-                    <p className="text-gray-500 text-xs">{cls?.class_name || 'Unassigned'}</p>
-                  </button>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-4">
+      {/* Search & Filter */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white text-sm">Search & Filter</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Input
+            placeholder="Search driver, car number, team..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-gray-900 border-gray-700 text-white text-sm"
+          />
+          <div className="flex gap-2 flex-wrap">
+            {['all', 'unpaid', 'waiver', 'not_checked_in'].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  filterType === type
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {type === 'all' && 'All'}
+                {type === 'unpaid' && 'Unpaid'}
+                {type === 'waiver' && 'Waiver Missing'}
+                {type === 'not_checked_in' && 'Not Checked In'}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* ── Right: Scan & Search ──────────────────────────────────────────── */}
-      <div className="lg:col-span-3 space-y-6">
-        {/* ── Header ────────────────────────────────────────────────────── */}
-        <Card className="bg-[#171717] border-gray-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-white">{selectedEvent.name}</CardTitle>
-            {selectedTrack && <p className="text-xs text-gray-400">{selectedTrack.name}</p>}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex flex-wrap gap-3">
-              <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="w-44 bg-[#262626] border-gray-700 text-white">
-                  <SelectValue placeholder="All Classes" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700 text-white">
-                  <SelectItem value="all" className="text-white">All Classes</SelectItem>
-                  {eventClasses.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="text-white">
-                      {c.class_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Entries Table */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white text-sm">
+            Entries ({filteredEntries.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-400">Car #</TableHead>
+                  <TableHead className="text-gray-400">Driver</TableHead>
+                  <TableHead className="text-gray-400">Team</TableHead>
+                  <TableHead className="text-gray-400">Payment</TableHead>
+                  <TableHead className="text-gray-400">Waiver</TableHead>
+                  <TableHead className="text-gray-400">Checked In</TableHead>
+                  <TableHead className="text-gray-400">Wristbands</TableHead>
+                  <TableHead className="text-gray-400">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.map(entry => {
+                  const driver = driverMap.get(entry.driver_id);
+                  const team = teamMap.get(entry.team_id);
 
-              <div className="flex gap-2">
-                {['All', 'Needs Attention', 'Cleared'].map((status) => (
-                  <Button
-                    key={status}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setStatusFilter(status === 'All' ? 'all' : status === 'Needs Attention' ? 'needs_attention' : 'cleared')}
-                    className={`text-xs ${
-                      statusFilter === (status === 'All' ? 'all' : status === 'Needs Attention' ? 'needs_attention' : 'cleared')
-                        ? 'bg-blue-900/40 border-blue-700 text-blue-300'
-                        : 'border-gray-700 text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    {status}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Scan & Search Tabs ────────────────────────────────────────── */}
-        <Tabs defaultValue="scan" className="w-full">
-          <TabsList className="bg-[#171717] border border-gray-800 p-1 h-auto flex gap-1">
-            <TabsTrigger value="scan" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2">
-              <QrCode className="w-4 h-4 mr-2" /> Scan
-            </TabsTrigger>
-            <TabsTrigger value="search" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2">
-              <Search className="w-4 h-4 mr-2" /> Search
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Scan Mode */}
-          <TabsContent value="scan" className="space-y-4">
-            <Card className="bg-[#171717] border-gray-800">
-              <CardContent className="pt-6 space-y-3">
-                <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Scan or Enter ID</label>
-                  <Input
-                    placeholder="Scan transponder, numeric ID, car number..."
-                    value={scanInput}
-                    onChange={(e) => setScanInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                    autoFocus
-                    className="bg-[#262626] border-gray-700 text-white text-lg h-12 font-mono"
-                  />
-                </div>
-                <Button onClick={handleScan} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  Look Up Entry
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Search Mode */}
-          <TabsContent value="search" className="space-y-4">
-            <Card className="bg-[#171717] border-gray-800">
-              <CardContent className="pt-6 space-y-3">
-                <Input
-                  placeholder="Search by driver name, car number, or transponder..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-[#262626] border-gray-700 text-white"
-                />
-
-                {searchResults.length === 0 ? (
-                  <p className="text-gray-500 text-sm py-8 text-center">No entries found</p>
-                ) : (
-                  <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                    {searchResults.map((entry) => {
-                      const driver = driverMap[entry.driver_id];
-                      const cls = classMap[entry.event_class_id];
-                      const needsAttn = needsAttention.some((n) => n.id === entry.id);
-
-                      return (
+                  return (
+                    <TableRow key={entry.id} className="border-gray-800 text-xs hover:bg-gray-900/50">
+                      <TableCell className="text-white font-semibold">{entry.car_number}</TableCell>
+                      <TableCell className="text-white">
+                        {driver ? `${driver.first_name} ${driver.last_name}` : '-'}
+                      </TableCell>
+                      <TableCell className="text-gray-400">{team?.name || '-'}</TableCell>
+                      <TableCell>
                         <button
-                          key={entry.id}
-                          onClick={() => setSelectedEntry(entry)}
-                          className={`w-full text-left rounded p-3 border transition-colors ${
-                            needsAttn
-                              ? 'bg-yellow-900/20 border-yellow-700 hover:border-yellow-600'
-                              : 'bg-[#262626] border-gray-700 hover:border-gray-600'
+                          onClick={() => handlePaymentToggle(entry)}
+                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+                            entry.payment_status === 'Paid'
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-red-900/30 text-red-300'
                           }`}
                         >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="text-white font-semibold text-sm">
-                                #{entry.car_number || driver?.primary_number || '—'}
-                              </p>
-                              <p className="text-gray-400 text-xs">{driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}</p>
-                              <p className="text-gray-500 text-xs">{cls?.class_name || 'Unassigned'}</p>
-                            </div>
-                            {needsAttn ? (
-                              <Badge className="bg-yellow-900/40 text-yellow-300 text-xs">⚠️</Badge>
-                            ) : (
-                              <Badge className="bg-green-900/40 text-green-300 text-xs">✓</Badge>
-                            )}
-                          </div>
+                          {entry.payment_status === 'Paid' ? '✓ Paid' : '✗ Unpaid'}
                         </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* ── Entry Detail Drawer ───────────────────────────────────────────– */}
-      <Drawer open={!!selectedEntry} onOpenChange={(open) => !open && setSelectedEntry(null)}>
-        <DrawerContent className="bg-[#171717] border-gray-800">
-          {selectedEntry && (
-            <>
-              <DrawerHeader>
-                <DrawerTitle className="text-white">
-                  {driverMap[selectedEntry.driver_id]
-                    ? `${driverMap[selectedEntry.driver_id].first_name} ${driverMap[selectedEntry.driver_id].last_name}`
-                    : 'Entry'}
-                </DrawerTitle>
-                <DrawerDescription className="text-gray-400">
-                  Car #{selectedEntry.car_number || driverMap[selectedEntry.driver_id]?.primary_number || '—'} •{' '}
-                  {classMap[selectedEntry.event_class_id]?.class_name || 'Unassigned'}
-                </DrawerDescription>
-              </DrawerHeader>
-
-              <div className="px-4 space-y-6 overflow-y-auto max-h-[60vh]">
-                {/* Status Indicators */}
-                <div className="p-3 bg-[#262626] rounded-lg border border-gray-700 space-y-2">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Status</p>
-                  <div className="space-y-1 text-sm">
-                    {entries.length > 0 || selectedEntry._from_driver_program ? (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Waiver Verified</span>
-                          <Badge
-                            className={`text-xs cursor-pointer ${
-                              getEntryValue(selectedEntry, 'waiver_verified')
-                                ? 'bg-green-900/40 text-green-300'
-                                : 'bg-red-900/40 text-red-300'
-                            }`}
-                            onClick={() =>
-                              handleToggleField(selectedEntry, 'waiver_verified', !getEntryValue(selectedEntry, 'waiver_verified'))
-                            }
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => handleWaiverToggle(entry)}
+                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+                            entry.waiver_verified
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-yellow-900/30 text-yellow-300'
+                          }`}
+                        >
+                          {entry.waiver_verified ? '✓' : '○'}
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => handleCheckIn(entry)}
+                          className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+                            entry.checkin_time
+                              ? 'bg-green-900/30 text-green-300'
+                              : 'bg-gray-800 text-gray-400'
+                          }`}
+                        >
+                          {entry.checkin_time ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                        </button>
+                      </TableCell>
+                      <TableCell className="text-white font-bold">{entry.wristband_count || 0}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleWristbandDelta(entry, -1)}
+                            className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-400"
                           >
-                            {getEntryValue(selectedEntry, 'waiver_verified') ? '✓ Yes' : '✗ No'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Payment</span>
-                          <Badge
-                            className={`text-xs cursor-pointer ${
-                              getEntryValue(selectedEntry, 'payment_status') === 'Paid'
-                                ? 'bg-green-900/40 text-green-300'
-                                : 'bg-red-900/40 text-red-300'
-                            }`}
-                            onClick={() =>
-                              handleToggleField(
-                                selectedEntry,
-                                'payment_status',
-                                getEntryValue(selectedEntry, 'payment_status') === 'Paid' ? 'Unpaid' : 'Paid'
-                              )
-                            }
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleWristbandDelta(entry, 1)}
+                            className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-400"
                           >
-                            {getEntryValue(selectedEntry, 'payment_status') === 'Paid' ? '✓ Paid' : '✗ Unpaid'}
-                          </Badge>
+                            <Plus className="w-3 h-3" />
+                          </button>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Check In</span>
-                          <Badge
-                            className={`text-xs cursor-pointer ${
-                              getEntryValue(selectedEntry, 'gate_checked_in')
-                                ? 'bg-green-900/40 text-green-300'
-                                : 'bg-gray-900/40 text-gray-300'
-                            }`}
-                            onClick={() =>
-                              handleToggleField(selectedEntry, 'gate_checked_in', !getEntryValue(selectedEntry, 'gate_checked_in'))
-                            }
-                          >
-                            {getEntryValue(selectedEntry, 'gate_checked_in') ? '✓ In' : '○ Out'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Tech Status</span>
-                          <Badge className="bg-blue-900/40 text-blue-300 text-xs">
-                            {getEntryValue(selectedEntry, 'tech_status') || 'Not Inspected'}
-                          </Badge>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-gray-500 text-xs italic">Not connected yet (local only)</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {entries.length > 0 || selectedEntry._from_driver_program ? (
-                  <div className="p-3 bg-[#262626] rounded-lg border border-gray-700">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Notes</p>
-                    <Textarea
-                      value={getEntryValue(selectedEntry, 'notes') || ''}
-                      onChange={(e) => {
-                        const newState = { ...localState[selectedEntry.id] || {}, notes: e.target.value };
-                        setLocalState({ ...localState, [selectedEntry.id]: newState });
-                      }}
-                      placeholder="Add notes..."
-                      className="bg-[#1a1a1a] border-gray-700 text-white text-sm h-16 resize-none"
-                    />
-                  </div>
-                ) : null}
-              </div>
-
-              <DrawerFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedEntry(null)}
-                  className="border-gray-700 text-gray-300"
-                >
-                  Close
-                </Button>
-              </DrawerFooter>
-            </>
-          )}
-        </DrawerContent>
-      </Drawer>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
