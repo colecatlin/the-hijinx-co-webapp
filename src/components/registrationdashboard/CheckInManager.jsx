@@ -727,10 +727,23 @@ export default function CheckInManager({
                 className={`w-full border-gray-700 ${
                   formData.payment_status === 'Paid'
                     ? 'bg-green-900/20 text-green-300 border-green-700'
-                    : 'text-gray-300 hover:bg-gray-800'
+                    : 'text-yellow-900/20 text-yellow-300 border-yellow-800/50 hover:bg-yellow-900/30'
                 }`}
               >
-                {formData.payment_status === 'Paid' ? 'Paid ✓' : 'Mark Paid'}
+                {formData.payment_status === 'Paid' ? 'Paid ✓' : '⚠ Mark Paid'}
+              </Button>
+
+              <Button
+                onClick={handleToggleTransponder}
+                disabled={updateMutation.isPending}
+                variant="outline"
+                className={`w-full border-gray-700 ${
+                  formData.transponder_verified
+                    ? 'bg-green-900/20 text-green-300 border-green-700'
+                    : 'text-orange-300 border-orange-800/50 hover:bg-orange-900/20'
+                }`}
+              >
+                {formData.transponder_verified ? 'Transponder Verified ✓' : '⚠ Verify Transponder'}
               </Button>
 
               {/* Wristbands (UI-only local counter) */}
