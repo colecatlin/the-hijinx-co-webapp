@@ -33,37 +33,22 @@ export default function PointsAndStandingsManager({
   const targetSeasonYear = useMemo(() => dashboardContext?.seasonYear, [dashboardContext]);
   const targetSeriesClassId = useMemo(() => selectedClass?.id || null, [selectedClass]);
 
-  // Load PointsConfig
-  const { data: allConfigs = [] } = useQuery({
-    queryKey: ['pointsConfigs'],
-    queryFn: () => base44.entities.PointsConfig.list()
+  // Resolve PointsConfig using the backend function
+  const { data: configResolution } = useQuery({
+    queryKey: ['resolvedPointsConfig', targetSeriesId, targetSeasonYear, targetSeriesClassId],
+    queryFn: async () => {
+      if (!targetSeriesId || !targetSeasonYear) return null;
+      const result = await base44.functions.invoke('resolvePointsConfig', {
+        series_id: targetSeriesId,
+        series_class_id: targetSeriesClassId || null,
+        season: targetSeasonYear
+      });
+      return result.data?.ok ? result.data.pointsConfig : null;
+    },
+    enabled: !!targetSeriesId && !!targetSeasonYear
   });
 
-  const resolvedConfig = useMemo(() => {
-    if (!targetSeriesId || !targetSeasonYear) return null;
-
-    // Try specific class config
-    const classConfig = allConfigs.find(c =>
-      c.series_id === targetSeriesId &&
-      c.season_year === targetSeasonYear &&
-      c.series_class_id === targetSeriesClassId &&
-      c.status === 'Active'
-    );
-    if (classConfig) return classConfig;
-
-    // Fall back to series-wide config
-    if (targetSeriesClassId) {
-      const seriesConfig = allConfigs.find(c =>
-        c.series_id === targetSeriesId &&
-        c.season_year === targetSeasonYear &&
-        (!c.series_class_id || c.series_class_id === null) &&
-        c.status === 'Active'
-      );
-      if (seriesConfig) return seriesConfig;
-    }
-
-    return null;
-  }, [allConfigs, targetSeriesId, targetSeasonYear, targetSeriesClassId]);
+  const resolvedConfig = configResolution;
 
   // Load Standings
   const { data: standings = [] } = useQuery({
@@ -73,7 +58,7 @@ export default function PointsAndStandingsManager({
 
       const query = {
         series_id: targetSeriesId,
-        season_year: targetSeasonYear
+        season: targetSeasonYear
       };
       if (targetSeriesClassId) {
         query.series_class_id = targetSeriesClassId;
@@ -104,10 +89,8 @@ export default function PointsAndStandingsManager({
       try {
         const response = await base44.functions.invoke('recalculateStandings', {
           series_id: targetSeriesId,
-          season_year: targetSeasonYear,
-          series_class_id: targetSeriesClassId || null,
-          event_id: selectedEvent?.id || null,
-          force_default: forceDefault
+          season: targetSeasonYear,
+          series_class_id: targetSeriesClassId || null
         });
 
         await queryClient.invalidateQueries({ queryKey: ['standings'] });
@@ -131,33 +114,45 @@ export default function PointsAndStandingsManager({
 
   return (
     <div className="space-y-6">
-      {/* Config Info Card */}
+      {/* Active Ruleset Card */}
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-green-500" />
-            Points Rules
+            Active Ruleset
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {resolvedConfig ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white">{resolvedConfig.name || 'Points Configuration'}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Scope: <span className="font-mono">{resolvedConfig.calculation_scope}</span> | 
-                    Drop Rounds: <span className="font-mono">{resolvedConfig.drop_rounds}</span>
-                  </p>
-                </div>
-                <Badge className="bg-green-500/20 text-green-400">Active</Badge>
+            <>
+              <div>
+                <p className="text-sm font-medium text-white">{resolvedConfig.name}</p>
+                <p className="text-xs text-gray-400 mt-1">Priority: {resolvedConfig.priority}</p>
               </div>
-            </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 mb-2">Applies to Session Types:</p>
+                <div className="flex flex-wrap gap-1">
+                  {(resolvedConfig.applies_to_session_types || ['Final']).map(type => (
+                    <Badge key={type} className="bg-blue-500/20 text-blue-300 text-xs">{type}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 mb-2">Points Table (first 10):</p>
+                <p className="text-xs text-gray-300 font-mono">
+                  {(resolvedConfig.points_by_position || []).slice(0, 10).join(', ')}...
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 mb-2">Tie Breaker Order:</p>
+                <p className="text-xs text-gray-300">{(resolvedConfig.tie_breaker_order || []).join(' → ') || 'N/A'}</p>
+              </div>
+            </>
           ) : (
             <Alert className="bg-orange-500/10 border-orange-600">
               <AlertCircle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-600">
-                No active points rules configured for {selectedSeries?.name} {selectedClass?.class_name ? `/ ${selectedClass.class_name}` : ''} {targetSeasonYear}.
+              <AlertDescription className="text-orange-600 text-xs">
+                No active points ruleset configured for {selectedSeries?.name} {selectedClass?.class_name ? `/ ${selectedClass.class_name}` : ''} {targetSeasonYear}.
                 {isAdmin && ' Go to Management → Points Configuration to set up.'}
               </AlertDescription>
             </Alert>
@@ -173,24 +168,17 @@ export default function PointsAndStandingsManager({
               <div>
                 <p className="text-sm text-white font-medium">Recalculate Standings</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Last calculated: {standings[0]?.last_calculated ? new Date(standings[0].last_calculated).toLocaleString() : 'Never'}
+                  Uses active ruleset: {resolvedConfig?.name || 'None'}
                 </p>
               </div>
-              <div className="flex gap-2">
-                {!resolvedConfig && (
-                  <label className="flex items-center gap-2 text-sm text-gray-400">
-                    <input type="checkbox" checked={forceDefault} onChange={(e) => setForceDefault(e.target.checked)} />
-                    Use Default Points
-                  </label>
-                )}
-                <Button
-                  onClick={() => calculateMutation.mutate()}
-                  disabled={isCalculating || (!resolvedConfig && !forceDefault)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
-                  {isCalculating ? 'Calculating...' : 'Recalculate'}
-                </Button>
+              <Button
+                    onClick={() => calculateMutation.mutate()}
+                    disabled={isCalculating || !resolvedConfig}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
+                    {isCalculating ? 'Calculating...' : 'Recalculate'}
+                  </Button>
               </div>
             </div>
           </CardContent>
