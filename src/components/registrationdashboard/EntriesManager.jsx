@@ -35,7 +35,7 @@ import {
   rowNeedsAttention,
 } from './entriesFilters';
 
-const DQ = applyDefaultQueryOptions();
+
 
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 function entryStatusBadge(status) {
@@ -98,9 +98,7 @@ export default function EntriesManager({
 
   // ── UI state ──
   const [selectedEntries, setSelectedEntries] = useState(new Set());
-  const [detailEntry, setDetailEntry] = useState(null);
   const [editingEntry, setEditingEntry] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
   const [showSelfService, setShowSelfService] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -110,41 +108,19 @@ export default function EntriesManager({
   const [showBulkClassModal, setShowBulkClassModal] = useState(false);
   const [bulkClassId, setBulkClassId] = useState('');
 
-  // ── Queries ──
-  const { data: entries = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['entries', eventId],
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+  // ── Data hook ──
+  const {
+    entries = [],
+    drivers = [],
+    teams = [],
+    classes: seriesClasses = [],
+    isLoading,
+    refetchAll,
+    entryEntityError,
+  } = useEntriesData({
+    selectedEventId: eventId,
+    seriesId,
     enabled: !!eventId,
-    ...DQ,
-  });
-
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list('first_name', 500),
-    ...DQ,
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list('name', 200),
-    ...DQ,
-  });
-
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', eventId],
-    queryFn: () => eventId
-      ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order')
-      : Promise.resolve([]),
-    enabled: !!eventId,
-    ...DQ,
-  });
-
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', seriesId],
-    queryFn: () => seriesId
-      ? base44.entities.SeriesClass.filter({ series_id: seriesId })
-      : base44.entities.SeriesClass.list(),
-    ...DQ,
   });
 
   // ── Lookups ──
@@ -156,10 +132,6 @@ export default function EntriesManager({
     return d ? `${d.first_name} ${d.last_name}` : '—';
   };
   const getClassName = (entry) => {
-    if (entry.event_class_id) {
-      const ec = eventClasses.find((c) => c.id === entry.event_class_id);
-      if (ec) return ec.name;
-    }
     if (entry.series_class_id) {
       return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
     }
@@ -214,7 +186,6 @@ export default function EntriesManager({
   // ── Reset on event change ──
   useEffect(() => {
     setSelectedEntries(new Set());
-    setDetailEntry(null);
     setEditingEntry(null);
   }, [eventId]);
 
@@ -245,15 +216,13 @@ export default function EntriesManager({
 
   const handleEntryCreated = async () => {
     setShowCreateDrawer(false);
-    refetch();
-    toast.success('Entry created successfully');
+    refetchAll();
     invalidateAfterOperation('entry_created', { eventId });
   };
 
   const handleEntryUpdated = async () => {
     setEditingEntry(null);
-    refetch();
-    toast.success('Entry updated successfully');
+    refetchAll();
     invalidateAfterOperation('entry_updated', { eventId });
   };
 
@@ -331,12 +300,11 @@ export default function EntriesManager({
     );
   }
 
-  if (isError) {
+  if (entryEntityError) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center space-y-3">
-          <p className="text-red-400 text-sm">Failed to load entries</p>
-          <Button size="sm" variant="outline" onClick={refetch} className="border-gray-700 text-gray-300">Retry</Button>
+        <CardContent className="py-12 text-center">
+          <p className="text-red-400 text-sm">{entryEntityError}</p>
         </CardContent>
       </Card>
     );
@@ -582,24 +550,7 @@ export default function EntriesManager({
         onUpdated={handleEntryUpdated}
       />
 
-      {/* Delete confirm */}
-      <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
-        <AlertDialogContent className="bg-[#262626] border-gray-700">
-          <AlertDialogTitle className="text-white">Delete Entry</AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
-            This will permanently delete this entry. Cannot be undone.
-          </AlertDialogDescription>
-          <div className="flex justify-end gap-2">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => handleDeleteEntry(showDeleteConfirm)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+
 
 
 
