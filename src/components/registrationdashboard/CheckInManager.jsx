@@ -196,7 +196,6 @@ export default function CheckInManager({
       return;
     }
     if (isCheckedIn) {
-      // Un-check-in — set entry_status back to Registered
       await updateEntryAsync({ id: selectedEntry.id, data: { entry_status: 'Registered', checkin_time: null, checked_in_by_user_id: null } });
       return;
     }
