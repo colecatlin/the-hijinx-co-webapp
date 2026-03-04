@@ -1,23 +1,17 @@
 /**
  * RaceControlManager.jsx
- * Live race operations panel for RegistrationDashboard.
+ * Race Control tab — event ops, session state, incident log, audit summary.
  */
-import React, { useState, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { logOperation } from './operationLogger';
-import { canAction } from '@/components/access/accessControl';
-import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
+import { REG_QK } from './queryKeys';
+import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -26,787 +20,569 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  AlertCircle,
-  RefreshCw,
-  Flag,
+  Radio,
   Play,
-  Square,
-  XCircle,
+  CheckCircle2,
   Lock,
   Unlock,
-  CheckCircle2,
-  FileText,
-  Users,
-  ExternalLink,
-  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  AlertCircle,
+  ClipboardList,
   Clock,
-  AlertTriangle,
+  Flag,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+const DQ = applyDefaultQueryOptions();
 
-const SESSION_TYPE_ORDER = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-function sortSessions(sessions) {
-  return [...sessions].sort((a, b) => {
-    const ai = SESSION_TYPE_ORDER.indexOf(a.session_type);
-    const bi = SESSION_TYPE_ORDER.indexOf(b.session_type);
-    if (ai !== bi) return ai - bi;
-    if ((a.session_number ?? 0) !== (b.session_number ?? 0))
-      return (a.session_number ?? 0) - (b.session_number ?? 0);
-    if (a.scheduled_time && b.scheduled_time)
-      return new Date(a.scheduled_time) - new Date(b.scheduled_time);
-    return 0;
-  });
-}
+const SESSION_STATUSES = ['Draft', 'Provisional', 'Official', 'Locked'];
 
 const STATUS_COLORS = {
-  Draft: 'bg-gray-700 text-gray-200',
-  Provisional: 'bg-yellow-700 text-yellow-100',
-  Official: 'bg-blue-700 text-blue-100',
-  Locked: 'bg-purple-800 text-purple-100',
-  scheduled: 'bg-slate-600 text-slate-200',
-  in_progress: 'bg-green-700 text-green-100',
-  completed: 'bg-teal-700 text-teal-100',
-  cancelled: 'bg-red-800 text-red-200',
-  Completed: 'bg-teal-700 text-teal-100',
-  Cancelled: 'bg-red-800 text-red-200',
+  Draft:       'bg-gray-700 text-gray-200',
+  Provisional: 'bg-yellow-800 text-yellow-100',
+  Official:    'bg-blue-800 text-blue-100',
+  Locked:      'bg-purple-900 text-purple-100',
+  scheduled:   'bg-slate-700 text-slate-200',
+  in_progress: 'bg-green-800 text-green-100',
+  completed:   'bg-teal-800 text-teal-100',
+  cancelled:   'bg-red-900 text-red-200',
+  Live:        'bg-green-800 text-green-100',
+  Completed:   'bg-teal-800 text-teal-100',
 };
 
 function StatusBadge({ status }) {
-  const cls = STATUS_COLORS[status] || 'bg-gray-600 text-gray-200';
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${cls}`}>
-      {status}
-    </span>
-  );
+  const cls = STATUS_COLORS[status] || 'bg-gray-700 text-gray-200';
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${cls}`}>{status}</span>;
 }
 
-function fmt(dt) {
-  if (!dt) return null;
-  return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function fmtTime(dt) {
+  if (!dt) return '—';
+  try { return format(new Date(dt), 'h:mm a'); } catch { return '—'; }
 }
 
-// ─── Issues computation ──────────────────────────────────────────────────────
-
-function computeIssues(session, results, entries, driverPrograms) {
-  if (!session) return [];
-  const issues = [];
-
-  // No results but Provisional/Official
-  if (
-    results.length === 0 &&
-    ['Provisional', 'Official'].includes(session.status)
-  ) {
-    issues.push('No results recorded but session is marked Provisional/Official.');
-  }
-
-  // Duplicate positions
-  if (results.length > 0) {
-    const positions = results.map((r) => r.position).filter((p) => p != null);
-    const seen = new Set();
-    for (const p of positions) {
-      if (seen.has(p)) {
-        issues.push(`Duplicate finishing position detected (position ${p}).`);
-        break;
-      }
-      seen.add(p);
-    }
-  }
-
-  // Drivers in results not in entry/program list
-  if (results.length > 0 && (entries.length > 0 || driverPrograms.length > 0)) {
-    const knownDriverIds = new Set([
-      ...entries.map((e) => e.driver_id),
-      ...driverPrograms.map((p) => p.driver_id),
-    ]);
-    const unknownDrivers = results.filter(
-      (r) => r.driver_id && !knownDriverIds.has(r.driver_id)
-    );
-    if (unknownDrivers.length > 0) {
-      issues.push(
-        `${unknownDrivers.length} result(s) reference driver(s) not found in event entries.`
-      );
-    }
-  }
-
-  return issues;
+function fmtDateTime(dt) {
+  if (!dt) return '—';
+  try { return format(new Date(dt), 'MMM d, h:mm a'); } catch { return '—'; }
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
+const INCIDENT_TYPES = ['On Track', 'Timing', 'Penalty', 'Safety', 'Other'];
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function RaceControlManager({
   selectedEvent,
   selectedSeries,
-  invalidateAfterOperation,
+  selectedTrack,
+  invalidateAfterOperation: invalidateProp,
   isAdmin,
   dashboardPermissions,
   currentUser,
 }) {
   const queryClient = useQueryClient();
-  const eventId = selectedEvent?.id;
-  const seriesId = selectedSeries?.id;
+  const inv = invalidateProp || buildInvalidateAfterOperation(queryClient);
 
-  const [activeSessionId, setActiveSessionId] = useState(null);
-  const [classFilter, setClassFilter] = useState('all');
-  const [redFlagOpen, setRedFlagOpen] = useState(false);
-  const [redFlagNotes, setRedFlagNotes] = useState('');
-  const [confirmModal, setConfirmModal] = useState(null); // { title, body, onConfirm }
+  const eventId = selectedEvent?.id || '';
 
-  // ── Queries ──────────────────────────────────────────────────────────────
+  // Per-row dirty state: { [sessionId]: { status, locked } }
+  const [rowEdits, setRowEdits] = useState({});
+  const [saving, setSaving] = useState({}); // { [sessionId]: bool }
+  const [eventSaving, setEventSaving] = useState(false);
 
-  const sessionsQuery = useQuery({
-    queryKey: ['rc_sessions', eventId],
+  // Incident form
+  const [incidentType, setIncidentType] = useState('On Track');
+  const [incidentSession, setIncidentSession] = useState('');
+  const [incidentMessage, setIncidentMessage] = useState('');
+  const [incidentSaving, setIncidentSaving] = useState(false);
+
+  // ── Queries ────────────────────────────────────────────────────────────────
+
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+    queryKey: REG_QK.sessions(eventId),
+    queryFn: () => base44.entities.Session.filter({ event_id: eventId }, 'session_order', 500),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => base44.entities.EventClass.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  const { data: opLogs = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['rc_op_logs', eventId],
     queryFn: () =>
-      base44.entities.Session.filter({ event_id: eventId }),
+      base44.entities.OperationLog.filter({ metadata: { event_id: eventId } }, '-created_date', 20),
     enabled: !!eventId,
-    staleTime: 15_000,
+    ...DQ,
   });
 
-  const seriesClassesQuery = useQuery({
-    queryKey: ['rc_series_classes', seriesId],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: seriesId }),
-    enabled: !!seriesId,
-    staleTime: 60_000,
-  });
+  // ── Derived ───────────────────────────────────────────────────────────────
 
-  const entriesQuery = useQuery({
-    queryKey: ['rc_entries', eventId],
-    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
-    enabled: !!eventId,
-    staleTime: 30_000,
-  });
-
-  const driverProgramsQuery = useQuery({
-    queryKey: ['rc_driver_programs', eventId],
-    queryFn: () => base44.entities.DriverProgram.filter({ event_id: eventId }),
-    enabled: !!eventId,
-    staleTime: 30_000,
-  });
-
-  const sessions = useMemo(
-    () => sortSessions(sessionsQuery.data || []),
-    [sessionsQuery.data]
+  const classMap = useMemo(
+    () => Object.fromEntries(eventClasses.map((c) => [c.id, c.class_name || c.id])),
+    [eventClasses]
   );
 
-  const seriesClasses = seriesClassesQuery.data || [];
-  const entries = entriesQuery.data || [];
-  const driverPrograms = driverProgramsQuery.data || [];
-
-  // Active session
-  const activeSession = useMemo(
-    () => sessions.find((s) => s.id === activeSessionId) || sessions[0] || null,
-    [sessions, activeSessionId]
+  const sortedSessions = useMemo(
+    () => [...sessions].sort((a, b) => (a.session_order ?? 0) - (b.session_order ?? 0)),
+    [sessions]
   );
 
-  // Results for active session
-  const resultsQuery = useQuery({
-    queryKey: ['rc_results', activeSession?.id],
-    queryFn: () =>
-      base44.entities.Results.filter({ session_id: activeSession.id }),
-    enabled: !!activeSession?.id,
-    staleTime: 10_000,
-    select: (data) =>
-      [...data].sort((a, b) => (a.position ?? 9999) - (b.position ?? 9999)),
-  });
+  const canMarkLive = isAdmin || ['entity_owner'].includes(currentUser?.role);
 
-  const results = resultsQuery.data || [];
+  // ── Row helpers ────────────────────────────────────────────────────────────
 
-  // Class name helper
-  const getClassName = useCallback(
-    (classId) => {
-      if (!classId) return null;
-      return seriesClasses.find((c) => c.id === classId)?.name || classId;
-    },
-    [seriesClasses]
-  );
+  function getRowVal(session, field) {
+    return rowEdits[session.id]?.[field] ?? session[field];
+  }
 
-  // Filtered sessions by class
-  const filteredSessions = useMemo(() => {
-    if (classFilter === 'all') return sessions;
-    return sessions.filter((s) => s.series_class_id === classFilter);
-  }, [sessions, classFilter]);
+  function setRowVal(sessionId, field, value) {
+    setRowEdits((prev) => ({
+      ...prev,
+      [sessionId]: { ...prev[sessionId], [field]: value },
+    }));
+  }
 
-  // Issues
-  const issues = useMemo(
-    () => computeIssues(activeSession, results, entries, driverPrograms),
-    [activeSession, results, entries, driverPrograms]
-  );
+  // ── Log helper ────────────────────────────────────────────────────────────
 
-  // Issues per session (count only)
-  const issueCountBySession = useMemo(() => {
-    const map = {};
-    sessions.forEach((s) => {
-      const r = results; // We only have full results for active session; use 0 for others
-      map[s.id] = s.id === activeSession?.id ? issues.length : 0;
-    });
-    return map;
-  }, [sessions, activeSession, issues, results]);
-
-  // ── Mutations helper ──────────────────────────────────────────────────────
-
-  const doSessionUpdate = useCallback(
-    async ({ updates, operationType, message, invalidateType, extraMeta }) => {
-      if (!activeSession) return;
-      try {
-        await base44.entities.Session.update(activeSession.id, updates);
-        await logOperation({
-          operation_type: operationType,
-          status: 'success',
-          entity_name: 'Session',
-          entity_id: activeSession.id,
-          event_id: eventId,
-          message: message || operationType,
-          meta_json: extraMeta,
-        });
-        invalidateAfterOperation(invalidateType || 'session_updated', { eventId });
-        toast.success(message || 'Done');
-      } catch (err) {
-        await logOperation({
-          operation_type: operationType,
-          status: 'failed',
-          entity_name: 'Session',
-          entity_id: activeSession.id,
-          event_id: eventId,
-          message: err?.message || 'Error',
-        });
-        toast.error(err?.message || 'Operation failed');
-      }
-    },
-    [activeSession, eventId, invalidateAfterOperation]
-  );
-
-  // ── Status workflow handlers ──────────────────────────────────────────────
-
-  const handleSetDraft = () =>
-    doSessionUpdate({
-      updates: { status: 'Draft' },
-      operationType: 'session_set_draft',
-      message: 'Session set to Draft.',
-      invalidateType: 'session_updated',
-    });
-
-  const handleMarkProvisional = () =>
-    doSessionUpdate({
-      updates: { status: 'Provisional' },
-      operationType: 'session_mark_provisional',
-      message: 'Session marked Provisional.',
-      invalidateType: 'session_updated',
-    });
-
-  const handlePublishOfficial = () => {
-    if (results.length === 0) {
-      setConfirmModal({
-        title: 'Publish Official — No Results',
-        body: 'This session has no results recorded. Are you sure you want to publish it as Official?',
-        onConfirm: () =>
-          doSessionUpdate({
-            updates: { status: 'Official' },
-            operationType: 'session_publish_official',
-            message: 'Session published as Official.',
-            invalidateType: 'results_published',
-          }),
-      });
-    } else {
-      doSessionUpdate({
-        updates: { status: 'Official' },
-        operationType: 'session_publish_official',
-        message: 'Session published as Official.',
-        invalidateType: 'results_published',
-      });
-    }
-  };
-
-  const handleLock = () => {
-    if (activeSession?.status !== 'Official') {
-      toast.error('Session must be Official before locking.');
-      return;
-    }
-    doSessionUpdate({
-      updates: { status: 'Locked' },
-      operationType: 'session_locked',
-      message: 'Session locked.',
-      invalidateType: 'session_locked',
-    });
-  };
-
-  const handleUnlock = () => {
-    if (!isAdmin) {
-      toast.error('Only admins can unlock a session.');
-      return;
-    }
-    doSessionUpdate({
-      updates: { status: 'Official' },
-      operationType: 'session_unlocked',
-      message: 'Session unlocked (set back to Official).',
-      invalidateType: 'session_updated',
-    });
-  };
-
-  // ── Live Ops handlers ─────────────────────────────────────────────────────
-
-  const handleStartSession = () =>
-    doSessionUpdate({
-      updates: { status: 'in_progress' },
-      operationType: 'session_start',
-      message: 'Session started.',
-      invalidateType: 'session_updated',
-    });
-
-  const handleEndSession = () =>
-    doSessionUpdate({
-      updates: { status: 'Completed' },
-      operationType: 'session_end',
-      message: 'Session ended.',
-      invalidateType: 'session_updated',
-    });
-
-  const handleCancelSession = () => {
-    setConfirmModal({
-      title: 'Cancel Session',
-      body: 'Are you sure you want to cancel this session? This cannot be easily undone.',
-      onConfirm: () =>
-        doSessionUpdate({
-          updates: { status: 'Cancelled' },
-          operationType: 'session_cancel',
-          message: 'Session cancelled.',
-          invalidateType: 'session_updated',
-        }),
-    });
-  };
-
-  const handleRedFlag = async () => {
+  async function writeLog({ operation_type, metadata, status = 'success' }) {
     try {
-      await logOperation({
-        operation_type: 'red_flag',
-        status: 'success',
+      await base44.entities.OperationLog.create({
+        operation_type,
+        source_type: 'RaceControlManager',
         entity_name: 'Session',
-        entity_id: activeSession?.id,
-        event_id: eventId,
-        message: redFlagNotes || 'Red flag issued.',
+        status,
+        metadata,
       });
-      invalidateAfterOperation('operation_logged', { eventId });
-      toast.success('Red flag logged.');
-      setRedFlagOpen(false);
-      setRedFlagNotes('');
-    } catch (err) {
-      toast.error('Failed to log red flag.');
+      queryClient.invalidateQueries({ queryKey: ['rc_op_logs', eventId] });
+    } catch (_) {}
+  }
+
+  // ── Save session row ──────────────────────────────────────────────────────
+
+  async function handleSaveRow(session) {
+    const edits = rowEdits[session.id];
+    if (!edits) return;
+
+    const changedFields = Object.keys(edits).filter((k) => edits[k] !== session[k]);
+    if (changedFields.length === 0) {
+      toast.info('No changes to save.');
+      return;
     }
-  };
 
-  // ── Refresh ───────────────────────────────────────────────────────────────
+    setSaving((p) => ({ ...p, [session.id]: true }));
 
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['rc_sessions', eventId] });
-    queryClient.invalidateQueries({ queryKey: ['rc_results', activeSession?.id] });
-    toast.success('Refreshed.');
-  };
+    const updates = Object.fromEntries(changedFields.map((k) => [k, edits[k]]));
+    const prevValues = Object.fromEntries(changedFields.map((k) => [k, session[k]]));
 
-  // ── No event guard ────────────────────────────────────────────────────────
+    await base44.entities.Session.update(session.id, updates);
+
+    // Determine invalidation type
+    const newStatus = edits.status ?? session.status;
+    let invType = 'session_updated';
+    if (newStatus === 'Official') invType = 'results_published';
+
+    await writeLog({
+      operation_type: 'session_updated',
+      metadata: {
+        event_id: eventId,
+        session_id: session.id,
+        session_name: session.name,
+        changed_fields: changedFields,
+        previous_values: prevValues,
+        new_values: updates,
+      },
+    });
+
+    inv(invType, { eventId });
+    toast.success(`Session "${session.name}" saved.`);
+
+    // Clear edits for this row
+    setRowEdits((p) => { const n = { ...p }; delete n[session.id]; return n; });
+    setSaving((p) => ({ ...p, [session.id]: false }));
+  }
+
+  // ── Reorder session ───────────────────────────────────────────────────────
+
+  async function handleReorder(session, direction) {
+    const idx = sortedSessions.findIndex((s) => s.id === session.id);
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sortedSessions.length) return;
+
+    const swapSession = sortedSessions[swapIdx];
+    const aOrder = session.session_order ?? idx;
+    const bOrder = swapSession.session_order ?? swapIdx;
+
+    await Promise.all([
+      base44.entities.Session.update(session.id, { session_order: bOrder }),
+      base44.entities.Session.update(swapSession.id, { session_order: aOrder }),
+    ]);
+
+    await writeLog({
+      operation_type: 'session_updated',
+      metadata: {
+        event_id: eventId,
+        session_id: session.id,
+        session_name: session.name,
+        changed_fields: ['session_order'],
+        previous_values: { session_order: aOrder },
+        new_values: { session_order: bOrder },
+      },
+    });
+
+    inv('session_updated', { eventId });
+    queryClient.invalidateQueries({ queryKey: REG_QK.sessions(eventId) });
+  }
+
+  // ── Event status actions ──────────────────────────────────────────────────
+
+  async function handleMarkEventStatus(newStatus) {
+    if (!selectedEvent) return;
+    setEventSaving(true);
+
+    const prev = selectedEvent.status;
+    await base44.entities.Event.update(selectedEvent.id, { status: newStatus });
+
+    const invType = newStatus === 'Completed' || newStatus === 'completed'
+      ? 'points_recalculated'
+      : 'event_updated';
+
+    await writeLog({
+      operation_type: 'event_status_changed',
+      metadata: {
+        event_id: eventId,
+        changed_fields: ['status'],
+        previous_values: { status: prev },
+        new_values: { status: newStatus },
+      },
+    });
+
+    inv(invType, { eventId });
+    toast.success(`Event marked ${newStatus}.`);
+    setEventSaving(false);
+  }
+
+  // ── Incident log ──────────────────────────────────────────────────────────
+
+  async function handleCreateIncident() {
+    if (!incidentMessage.trim()) {
+      toast.error('Please enter an incident message.');
+      return;
+    }
+    setIncidentSaving(true);
+
+    await base44.entities.OperationLog.create({
+      operation_type: 'incident_logged',
+      source_type: 'RaceControlManager',
+      entity_name: 'Event',
+      status: 'success',
+      metadata: {
+        event_id: eventId,
+        session_id: incidentSession || undefined,
+        incident_type: incidentType,
+        message: incidentMessage.trim(),
+      },
+    });
+
+    inv('operation_logged', { eventId });
+    queryClient.invalidateQueries({ queryKey: ['rc_op_logs', eventId] });
+    toast.success('Incident logged.');
+    setIncidentMessage('');
+    setIncidentSaving(false);
+  }
+
+  // ── Empty state ───────────────────────────────────────────────────────────
 
   if (!selectedEvent) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
-        Select an event to use Race Control.
-      </div>
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-20 text-center">
+          <Radio className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-white font-semibold text-lg mb-1">Race Control</p>
+          <p className="text-gray-400 text-sm">
+            Select Track or Series, Season, and Event above to activate race control.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
-    <div className="bg-[#0f1117] min-h-screen text-white p-4 space-y-4">
+    <div className="space-y-6">
 
-      {/* Top bar */}
-      <div className="flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Session selector */}
-          <Select
-            value={activeSession?.id || ''}
-            onValueChange={(val) => setActiveSessionId(val)}
-          >
-            <SelectTrigger className="w-56 bg-gray-800 border-gray-600 text-white text-sm h-9">
-              <SelectValue placeholder="Select session…" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-600 text-white">
-              {sessions.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white focus:bg-gray-700">
-                  {s.session_type} {s.session_number ? `#${s.session_number}` : ''}{' '}
-                  {getClassName(s.series_class_id)
-                    ? `— ${getClassName(s.series_class_id)}`
-                    : s.class_name
-                    ? `— ${s.class_name}`
-                    : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Class filter */}
-          <Select value={classFilter} onValueChange={setClassFilter}>
-            <SelectTrigger className="w-44 bg-gray-800 border-gray-600 text-white text-sm h-9">
-              <SelectValue placeholder="All classes" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-600 text-white">
-              <SelectItem value="all" className="text-white focus:bg-gray-700">All Classes</SelectItem>
-              {seriesClasses.map((c) => (
-                <SelectItem key={c.id} value={c.id} className="text-white focus:bg-gray-700">
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* ── Event Summary Strip ─────────────────────────────────────────── */}
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-red-400" />
+            <h2 className="text-lg font-bold text-white">{selectedEvent.name}</h2>
+            <StatusBadge status={selectedEvent.status || 'upcoming'} />
+          </div>
+          <p className="text-xs text-gray-500">
+            {selectedTrack?.name || '—'}
+            {selectedEvent.event_date ? ` · ${selectedEvent.event_date}` : ''}
+            {selectedEvent.round_number ? ` · Round ${selectedEvent.round_number}` : ''}
+          </p>
         </div>
 
-        {/* Quick buttons */}
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700 h-9"
-            onClick={handleRefresh}
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700 h-9"
-            onClick={() =>
-              window.location.assign(
-                createPageUrl('RegistrationDashboard') + '?tab=results'
-              )
-            }
-          >
-            <FileText className="w-3.5 h-3.5 mr-1.5" /> Results
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700 h-9"
-            onClick={() =>
-              window.location.assign(
-                createPageUrl('RegistrationDashboard') + '?tab=entries'
-              )
-            }
-          >
-            <Users className="w-3.5 h-3.5 mr-1.5" /> Entries
-          </Button>
-        </div>
+        {canMarkLive && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              disabled={eventSaving || selectedEvent.status === 'in_progress' || selectedEvent.status === 'Live'}
+              onClick={() => handleMarkEventStatus('in_progress')}
+              className="bg-green-700 hover:bg-green-600 text-white"
+            >
+              <Play className="w-3.5 h-3.5 mr-1.5" /> Mark Event Live
+            </Button>
+            <Button
+              size="sm"
+              disabled={eventSaving || selectedEvent.status === 'completed' || selectedEvent.status === 'Completed'}
+              onClick={() => handleMarkEventStatus('completed')}
+              className="bg-teal-800 hover:bg-teal-700 text-white"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Mark Completed
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Main grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* LEFT — Session Queue */}
-        <div className="bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-700 text-xs font-semibold uppercase tracking-wider text-gray-400">
-            Session Queue
-          </div>
-          {sessionsQuery.isLoading ? (
-            <div className="p-6 text-center text-gray-500 text-sm">Loading sessions…</div>
-          ) : filteredSessions.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 text-sm">No sessions found.</div>
-          ) : (
-            <div className="divide-y divide-gray-800">
-              {filteredSessions.map((s) => {
-                const isActive = activeSession?.id === s.id;
-                const className =
-                  getClassName(s.series_class_id) || s.class_name || '—';
-                const issueCount = s.id === activeSession?.id ? issues.length : 0;
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => setActiveSessionId(s.id)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-800 transition-colors ${
-                      isActive ? 'bg-gray-800 border-l-2 border-blue-500' : ''
-                    }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-white">
-                          {s.session_type}
-                          {s.session_number ? ` #${s.session_number}` : ''}
-                        </span>
-                        <span className="text-xs text-gray-400">{className}</span>
-                      </div>
-                      {s.scheduled_time && (
-                        <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500">
-                          <Clock className="w-3 h-3" />
-                          {fmt(s.scheduled_time)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <StatusBadge status={s.status} />
-                      {issueCount > 0 && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-700 text-red-100">
-                          {issueCount}
-                        </span>
-                      )}
-                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-                    </div>
-                  </button>
-                );
-              })}
+      {/* ── Sessions Panel ─────────────────────────────────────────────── */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+            <ClipboardList className="w-4 h-4" /> Sessions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {sessionsLoading && (
+            <div className="py-10 text-center text-sm text-gray-500">Loading sessions…</div>
+          )}
+          {!sessionsLoading && sortedSessions.length === 0 && (
+            <div className="py-10 text-center">
+              <p className="text-gray-400 text-sm">No sessions found.</p>
+              <p className="text-gray-600 text-xs mt-1">Create sessions in the Classes &amp; Sessions tab.</p>
             </div>
           )}
-        </div>
+          {sortedSessions.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+                    <th className="text-left px-4 py-2 w-10">#</th>
+                    <th className="text-left px-4 py-2">Class</th>
+                    <th className="text-left px-4 py-2">Session</th>
+                    <th className="text-left px-4 py-2">Type</th>
+                    <th className="text-left px-4 py-2">Time</th>
+                    <th className="text-left px-4 py-2">Status</th>
+                    <th className="text-left px-4 py-2">Locked</th>
+                    <th className="text-left px-4 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {sortedSessions.map((session, idx) => {
+                    const rowStatus = getRowVal(session, 'status');
+                    const rowLocked = getRowVal(session, 'locked');
+                    const isDirty = !!rowEdits[session.id];
+                    const isSaving = !!saving[session.id];
 
-        {/* RIGHT — Active Session Control Panel */}
-        <div className="space-y-3">
-          {!activeSession ? (
-            <div className="bg-gray-900 rounded-lg border border-gray-700 p-8 text-center text-gray-500 text-sm">
-              Select a session from the queue.
+                    return (
+                      <tr key={session.id} className={`hover:bg-[#1e1e1e] ${isDirty ? 'bg-amber-950/10' : ''}`}>
+                        {/* Order */}
+                        <td className="px-4 py-2">
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              disabled={idx === 0}
+                              onClick={() => handleReorder(session, 'up')}
+                              className="p-0.5 text-gray-500 hover:text-white disabled:opacity-20"
+                            >
+                              <ChevronUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              disabled={idx === sortedSessions.length - 1}
+                              onClick={() => handleReorder(session, 'down')}
+                              className="p-0.5 text-gray-500 hover:text-white disabled:opacity-20"
+                            >
+                              <ChevronDown className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Class */}
+                        <td className="px-4 py-2 text-gray-400 text-xs">
+                          {classMap[session.event_class_id] || session.class_name || '—'}
+                        </td>
+
+                        {/* Session name */}
+                        <td className="px-4 py-2 text-white font-medium">{session.name}</td>
+
+                        {/* Type */}
+                        <td className="px-4 py-2 text-gray-400 text-xs">{session.session_type}</td>
+
+                        {/* Scheduled time */}
+                        <td className="px-4 py-2 text-gray-500 text-xs">{fmtTime(session.scheduled_time)}</td>
+
+                        {/* Status dropdown */}
+                        <td className="px-4 py-2">
+                          <Select
+                            value={rowStatus || 'Draft'}
+                            onValueChange={(v) => setRowVal(session.id, 'status', v)}
+                            disabled={rowLocked && !isAdmin}
+                          >
+                            <SelectTrigger className="w-32 h-7 text-xs bg-[#262626] border-gray-700 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#262626] border-gray-700 text-white">
+                              {SESSION_STATUSES.map((s) => (
+                                <SelectItem key={s} value={s} className="text-white text-xs focus:bg-gray-700">
+                                  {s}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+
+                        {/* Locked toggle */}
+                        <td className="px-4 py-2">
+                          <button
+                            onClick={() => setRowVal(session.id, 'locked', !rowLocked)}
+                            disabled={rowStatus === 'Locked' && !isAdmin}
+                            className="p-1.5 rounded hover:bg-gray-700 transition-colors"
+                            title={rowLocked ? 'Unlock session' : 'Lock session'}
+                          >
+                            {rowLocked
+                              ? <Lock className="w-4 h-4 text-purple-400" />
+                              : <Unlock className="w-4 h-4 text-gray-500 hover:text-gray-300" />}
+                          </button>
+                        </td>
+
+                        {/* Save */}
+                        <td className="px-4 py-2">
+                          <Button
+                            size="sm"
+                            disabled={!isDirty || isSaving}
+                            onClick={() => handleSaveRow(session)}
+                            className="h-7 px-3 text-xs bg-blue-700 hover:bg-blue-600 text-white disabled:opacity-30"
+                          >
+                            {isSaving ? '…' : 'Save'}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            <>
-              {/* Session summary */}
-              <div className="bg-gray-900 rounded-lg border border-gray-700 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="text-lg font-bold text-white">
-                      {activeSession.session_type}
-                      {activeSession.session_number
-                        ? ` #${activeSession.session_number}`
-                        : ''}
-                    </div>
-                    <div className="text-sm text-gray-400 mt-0.5">
-                      {getClassName(activeSession.series_class_id) ||
-                        activeSession.class_name ||
-                        'No class'}
-                    </div>
-                    {activeSession.scheduled_time && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                        <Clock className="w-3 h-3" />
-                        Scheduled: {fmt(activeSession.scheduled_time)}
-                      </div>
-                    )}
-                  </div>
-                  <StatusBadge status={activeSession.status} />
-                </div>
-              </div>
+          )}
+        </CardContent>
+      </Card>
 
-              {/* Issues */}
-              {issues.length > 0 && (
-                <div className="bg-red-950 border border-red-800 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-red-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    {issues.length} Issue{issues.length > 1 ? 's' : ''} Detected
-                  </div>
-                  <ul className="space-y-1">
-                    {issues.map((iss, i) => (
-                      <li key={i} className="text-xs text-red-300 flex items-start gap-1.5">
-                        <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                        {iss}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+      {/* ── Incident Log Form ──────────────────────────────────────────── */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+            <Flag className="w-4 h-4 text-red-400" /> Log Incident
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-3">
+            <Select value={incidentType} onValueChange={setIncidentType}>
+              <SelectTrigger className="w-40 bg-[#262626] border-gray-700 text-white text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700 text-white">
+                {INCIDENT_TYPES.map((t) => (
+                  <SelectItem key={t} value={t} className="text-white focus:bg-gray-700">{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              {/* Status Workflow */}
-              <div className="bg-gray-900 rounded-lg border border-gray-700 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                  Status Workflow
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                    onClick={handleSetDraft}
-                    disabled={activeSession.status === 'Locked' && !isAdmin}
-                  >
-                    Set Draft
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-yellow-700 text-yellow-300 hover:bg-yellow-900 hover:text-yellow-100"
-                    onClick={handleMarkProvisional}
-                    disabled={activeSession.status === 'Locked' && !isAdmin}
-                  >
-                    Mark Provisional
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-blue-700 hover:bg-blue-600 text-white"
-                    onClick={handlePublishOfficial}
-                    disabled={activeSession.status === 'Locked' && !isAdmin}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                    Publish Official
-                  </Button>
-                  {activeSession.status !== 'Locked' ? (
-                    <Button
-                      size="sm"
-                      className="bg-purple-800 hover:bg-purple-700 text-white"
-                      onClick={handleLock}
-                      disabled={activeSession.status !== 'Official'}
-                      title={
-                        activeSession.status !== 'Official'
-                          ? 'Session must be Official to lock'
-                          : ''
-                      }
-                    >
-                      <Lock className="w-3.5 h-3.5 mr-1.5" />
-                      Lock Session
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className={`${
-                        isAdmin
-                          ? 'bg-orange-800 hover:bg-orange-700 text-white'
-                          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+            <Select value={incidentSession} onValueChange={setIncidentSession}>
+              <SelectTrigger className="w-48 bg-[#262626] border-gray-700 text-white text-sm">
+                <SelectValue placeholder="Session (optional)" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700 text-white">
+                <SelectItem value={null} className="text-gray-400 focus:bg-gray-700">No session</SelectItem>
+                {sortedSessions.map((s) => (
+                  <SelectItem key={s.id} value={s.id} className="text-white focus:bg-gray-700">
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Textarea
+            value={incidentMessage}
+            onChange={(e) => setIncidentMessage(e.target.value)}
+            placeholder="Describe the incident…"
+            className="bg-[#262626] border-gray-700 text-white placeholder-gray-600 min-h-[80px]"
+          />
+
+          <Button
+            onClick={handleCreateIncident}
+            disabled={incidentSaving || !incidentMessage.trim()}
+            className="bg-red-700 hover:bg-red-600 text-white"
+          >
+            {incidentSaving ? 'Logging…' : 'Create Incident'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* ── Audit Summary ──────────────────────────────────────────────── */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+            <Clock className="w-4 h-4 text-gray-400" /> Recent Activity
+            <span className="text-gray-600 font-normal text-xs">(last 20 ops)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {logsLoading && (
+            <div className="py-6 text-center text-sm text-gray-500">Loading logs…</div>
+          )}
+          {!logsLoading && opLogs.length === 0 && (
+            <div className="py-6 text-center text-sm text-gray-600">No activity logged yet.</div>
+          )}
+          {opLogs.length > 0 && (
+            <div className="divide-y divide-gray-800 max-h-64 overflow-y-auto">
+              {opLogs.map((log) => (
+                <div key={log.id} className="px-4 py-2.5 flex items-center justify-between gap-3">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <AlertCircle className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-300 font-medium truncate">{log.operation_type}</p>
+                      {log.metadata?.message && (
+                        <p className="text-xs text-gray-500 truncate">{log.metadata.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      className={`text-xs px-1.5 py-0.5 ${
+                        log.status === 'success'
+                          ? 'bg-green-900/50 text-green-300'
+                          : log.status === 'failed'
+                          ? 'bg-red-900/50 text-red-300'
+                          : 'bg-gray-800 text-gray-400'
                       }`}
-                      onClick={handleUnlock}
-                      disabled={!isAdmin}
-                      title={!isAdmin ? 'Admin only' : 'Unlock session (admin override)'}
                     >
-                      <Unlock className="w-3.5 h-3.5 mr-1.5" />
-                      Unlock (Admin)
-                    </Button>
-                  )}
+                      {log.status}
+                    </Badge>
+                    <span className="text-xs text-gray-600">{fmtDateTime(log.created_date)}</span>
+                  </div>
                 </div>
-              </div>
-
-              {/* Live Ops */}
-              <div className="bg-gray-900 rounded-lg border border-gray-700 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                  Live Ops
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-green-700 hover:bg-green-600 text-white"
-                    onClick={handleStartSession}
-                  >
-                    <Play className="w-3.5 h-3.5 mr-1.5" />
-                    Start Session
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-teal-700 hover:bg-teal-600 text-white"
-                    onClick={handleEndSession}
-                  >
-                    <Square className="w-3.5 h-3.5 mr-1.5" />
-                    End Session
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-red-700 text-red-400 hover:bg-red-950 hover:text-red-200"
-                    onClick={handleCancelSession}
-                  >
-                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                    Cancel Session
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-red-700 hover:bg-red-600 text-white"
-                    onClick={() => setRedFlagOpen(true)}
-                  >
-                    <Flag className="w-3.5 h-3.5 mr-1.5" />
-                    Red Flag Log
-                  </Button>
-                </div>
-              </div>
-
-              {/* Announcer */}
-              <div className="bg-gray-900 rounded-lg border border-gray-700 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                  Announcer
-                </div>
-                <a
-                  href={createPageUrl(`SessionProfile?id=${activeSession.id}`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700 w-full"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                    Open Session Profile
-                  </Button>
-                </a>
-              </div>
-            </>
+              ))}
+            </div>
           )}
-        </div>
-      </div>
-
-      {/* Red Flag Dialog */}
-      <Dialog open={redFlagOpen} onOpenChange={setRedFlagOpen}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-400">
-              <Flag className="w-4 h-4" /> Red Flag Log
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <p className="text-sm text-gray-400">
-              Add notes about this red flag. This will be logged in the Operation Log.
-            </p>
-            <Textarea
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 min-h-[80px]"
-              placeholder="Notes (optional)…"
-              value={redFlagNotes}
-              onChange={(e) => setRedFlagNotes(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              className="border-gray-600 text-gray-400"
-              onClick={() => setRedFlagOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button className="bg-red-700 hover:bg-red-600 text-white" onClick={handleRedFlag}>
-              Log Red Flag
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Generic confirm modal */}
-      <Dialog
-        open={!!confirmModal}
-        onOpenChange={(open) => { if (!open) setConfirmModal(null); }}
-      >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-yellow-400">
-              <AlertTriangle className="w-4 h-4" />
-              {confirmModal?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-300 py-2">{confirmModal?.body}</p>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              className="border-gray-600 text-gray-400"
-              onClick={() => setConfirmModal(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-yellow-700 hover:bg-yellow-600 text-white"
-              onClick={() => {
-                confirmModal?.onConfirm?.();
-                setConfirmModal(null);
-              }}
-            >
-              Confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }
