@@ -1,41 +1,19 @@
-/**
- * Announcer Manager
- * Generate announcer packs with storylines, grids, and quick facts.
- */
-import React, { useState, useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { REG_QK } from './queryKeys';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
+import { motion } from 'framer-motion';
+import { Printer, MapPin, Trophy, BookOpen } from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import {
-  formatDriverName,
-  formatDateTime,
-  buildClassOptionsFromSessions,
-  computeStorylines,
-  buildAnnouncerPackText,
-} from './announcerPackUtils';
-import { AlertCircle, Copy, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DQ = applyDefaultQueryOptions();
-
-function hasEntryEntity() {
-  try {
-    return !!base44?.entities?.Entry;
-  } catch {
-    return false;
-  }
-}
 
 export default function AnnouncerManager({
   selectedEvent,
@@ -44,383 +22,529 @@ export default function AnnouncerManager({
   dashboardContext,
   dashboardPermissions,
 }) {
-  const eventId = selectedEvent?.id;
-  const useEntry = hasEntryEntity();
-
-  // ── State ──────────────────────────────────────────────────────────────────
-
+  const queryClient = useQueryClient();
   const [selectedSessionId, setSelectedSessionId] = useState('');
-  const [classFilter, setClassFilter] = useState('all');
-  const [finalsOnly, setFinalsOnly] = useState(true);
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [noteText, setNoteText] = useState('');
+  const [showPackView, setShowPackView] = useState(false);
 
-  // ── Queries ────────────────────────────────────────────────────────────────
-
+  // Load sessions
   const { data: sessions = [] } = useQuery({
-    queryKey: REG_QK.sessions(eventId),
-    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
+    queryKey: ['racecore', 'announcer', 'sessions', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.Session.filter({ event_id: selectedEvent.id })
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
+  // Load results
   const { data: results = [] } = useQuery({
-    queryKey: REG_QK.results(eventId),
-    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
+    queryKey: ['racecore', 'announcer', 'results', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.Results.filter({ event_id: selectedEvent.id })
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
-  const { data: entries = [] } = useQuery({
-    queryKey: REG_QK.entries(eventId),
-    queryFn: () => (useEntry && eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId && useEntry,
+  // Load driver programs
+  const { data: programs = [] } = useQuery({
+    queryKey: ['racecore', 'announcer', 'programs', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.DriverProgram.filter({ event_id: selectedEvent.id })
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
-  const { data: driverPrograms = [] } = useQuery({
-    queryKey: ['announcerMgr_driverPrograms'],
-    queryFn: () => (!useEntry && eventId ? base44.entities.DriverProgram.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId && !useEntry,
-    ...DQ,
-  });
-
+  // Load drivers
   const { data: drivers = [] } = useQuery({
-    queryKey: ['announcerMgr_drivers'],
-    queryFn: () => base44.entities.Driver.list('-created_date', 500),
-    staleTime: 60_000,
+    queryKey: ['racecore', 'announcer', 'drivers', programs.map(p => p.driver_id).join(',')],
+    queryFn: async () => {
+      if (programs.length === 0) return [];
+      const driverIds = [...new Set(programs.map(p => p.driver_id).filter(Boolean))];
+      const driverList = await Promise.all(
+        driverIds.map(id => base44.entities.Driver.get(id).catch(() => null))
+      );
+      return driverList.filter(Boolean);
+    },
+    enabled: programs.length > 0,
     ...DQ,
   });
 
+  // Load teams
   const { data: teams = [] } = useQuery({
-    queryKey: ['announcerMgr_teams'],
-    queryFn: () => base44.entities.Team.list('-created_date', 200),
-    staleTime: 60_000,
+    queryKey: ['racecore', 'announcer', 'teams', programs.map(p => p.team_id).filter(Boolean).join(',')],
+    queryFn: async () => {
+      if (programs.length === 0) return [];
+      const teamIds = [...new Set(programs.map(p => p.team_id).filter(Boolean))];
+      const teamList = await Promise.all(
+        teamIds.map(id => base44.entities.Team.get(id).catch(() => null))
+      );
+      return teamList.filter(Boolean);
+    },
+    enabled: programs.length > 0,
     ...DQ,
   });
 
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['announcerMgr_seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list('-created_date', 500),
-    staleTime: 60_000,
+  // Load announcer notes
+  const { data: notes = [] } = useQuery({
+    queryKey: ['racecore', 'announcer', 'notes', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id 
+      ? base44.entities.OperationLog.filter(
+          { event_id: selectedEvent.id, operation_type: 'announcer_note' },
+          '-created_date',
+          50
+        )
+      : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
-  // ── Derived data ───────────────────────────────────────────────────────────
+  // Create operation log mutation
+  const createOpLogMutation = useMutation({
+    mutationFn: (data) => base44.entities.OperationLog.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['racecore', 'announcer', 'notes'] });
+      setNoteText('');
+      toast.success('Note saved');
+    },
+  });
 
-  const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
-  const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
-  const classMap = useMemo(
-    () => Object.fromEntries(seriesClasses.map((c) => [c.id, c])),
-    [seriesClasses]
-  );
+  // Build lookup maps
+  const driverMap = useMemo(() => {
+    const map = new Map();
+    drivers.forEach(d => map.set(d.id, d));
+    return map;
+  }, [drivers]);
 
-  // Filter sessions
-  const filteredSessions = useMemo(() => {
-    let result = [...sessions];
-    if (finalsOnly) {
-      result = result.filter((s) => s.session_type === 'Final');
-    }
-    return result.sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
-  }, [sessions, finalsOnly]);
+  const teamMap = useMemo(() => {
+    const map = new Map();
+    teams.forEach(t => map.set(t.id, t));
+    return map;
+  }, [teams]);
 
-  // Auto-select first session
-  const selectedSession = useMemo(() => {
-    if (!selectedSessionId && filteredSessions.length > 0) {
-      return filteredSessions[0];
-    }
-    return sessions.find((s) => s.id === selectedSessionId);
-  }, [sessions, filteredSessions, selectedSessionId]);
+  // Build class list
+  const classList = useMemo(() => {
+    const classes = new Set();
+    programs.forEach(p => {
+      if (p.series_class_id) classes.add(p.series_class_id);
+    });
+    sessions.forEach(s => {
+      if (s.series_class_id) classes.add(s.series_class_id);
+    });
+    return Array.from(classes).sort();
+  }, [programs, sessions]);
 
-  // Class options
-  const classOptions = useMemo(
-    () => buildClassOptionsFromSessions(sessions, seriesClasses),
-    [sessions, seriesClasses]
-  );
+  // Auto-select first session and class
+  if (!selectedSessionId && sessions.length > 0) {
+    setSelectedSessionId(sessions[0].id);
+  }
+  if (!selectedClassId && classList.length > 0) {
+    setSelectedClassId(classList[0]);
+  }
 
-  // Grid drivers (entries or driver programs)
-  const gridDrivers = useMemo(() => {
-    const raw = useEntry ? entries : driverPrograms;
-    let result = raw.map((item) => ({
-      ...item,
-      driver_id: item.driver_id,
-      car_number: item.car_number,
-      team_name: item.team_id ? teamMap[item.team_id]?.name : null,
-    }));
-
-    // Filter by class if not all
-    if (classFilter !== 'all') {
-      result = result.filter((item) => {
-        const itemClassId = item.event_class_id || item.series_class_id;
-        return itemClassId === classFilter;
+  // Get programs for selected class
+  const classPrograms = useMemo(() => {
+    if (!selectedClassId) return [];
+    return programs
+      .filter(p => p.series_class_id === selectedClassId)
+      .sort((a, b) => {
+        const numA = parseInt(a.car_number) || 0;
+        const numB = parseInt(b.car_number) || 0;
+        return numA - numB;
       });
+  }, [programs, selectedClassId]);
+
+  // Get top 3 for selected class and session
+  const top3 = useMemo(() => {
+    if (!selectedSessionId || !selectedClassId) return [];
+    const sessionResults = results
+      .filter(r => r.session_id === selectedSessionId)
+      .filter(r => {
+        // Try to match by program
+        const prog = programs.find(p => {
+          const entry = classPrograms.find(cp => cp.driver_id === r.driver_id);
+          return entry?.id === p.id;
+        });
+        return !!prog;
+      })
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 3);
+
+    return sessionResults.map(r => {
+      const program = classPrograms.find(p => p.driver_id === r.driver_id);
+      const driver = program ? driverMap.get(program.driver_id) : null;
+      const team = program ? teamMap.get(program.team_id) : null;
+      return { ...r, program, driver, team };
+    });
+  }, [selectedSessionId, selectedClassId, results, programs, classPrograms, driverMap, teamMap]);
+
+  // Get latest note for selected class
+  const classNote = useMemo(() => {
+    return notes.find(log => {
+      try {
+        const meta = JSON.parse(log.metadata || '{}');
+        return meta.series_class_id === selectedClassId;
+      } catch {
+        return false;
+      }
+    });
+  }, [notes, selectedClassId]);
+
+  // Handle save note
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) {
+      toast.error('Note cannot be empty');
+      return;
     }
 
-    return result;
-  }, [entries, driverPrograms, useEntry, teamMap, classFilter]);
-
-  // Top results for selected session
-  const topResults = useMemo(() => {
-    if (!selectedSession) return [];
-    let sessionResults = results.filter((r) => r.session_id === selectedSession.id);
-    sessionResults = sessionResults.filter((r) => r.position && r.position <= 10);
-    return sessionResults.sort((a, b) => (a.position || 999) - (b.position || 999));
-  }, [results, selectedSession]);
-
-  // Storylines
-  const storylines = useMemo(
-    () =>
-      computeStorylines({
-        drivers: Object.values(driverMap),
-        results,
-        sessions: filteredSessions,
-        track: selectedTrack,
-        driverMap,
-        classMap,
-      }),
-    [driverMap, classMap, results, filteredSessions, selectedTrack]
-  );
-
-  // Generate pack text
-  const packText = useMemo(
-    () =>
-      buildAnnouncerPackText({
-        selectedEvent,
-        selectedTrack,
-        selectedSession,
-        classFilter,
-        drivers: driverMap,
-        topResults,
-        gridDrivers,
-        storylines,
-      }),
-    [selectedEvent, selectedTrack, selectedSession, classFilter, driverMap, topResults, gridDrivers, storylines]
-  );
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  const handleCopyPack = useCallback(() => {
-    navigator.clipboard.writeText(packText);
-    toast.success('Pack copied to clipboard');
-  }, [packText]);
-
-  // ── Empty state ────────────────────────────────────────────────────────────
+    try {
+      await createOpLogMutation.mutateAsync({
+        event_id: selectedEvent.id,
+        operation_type: 'announcer_note',
+        source_type: 'announcer_manager',
+        entity_name: 'Event',
+        entity_id: selectedEvent.id,
+        status: 'success',
+        metadata: JSON.stringify({
+          event_id: selectedEvent.id,
+          series_class_id: selectedClassId,
+          session_id: selectedSessionId || null,
+          note: noteText,
+        }),
+        notes: `Announcer note for ${selectedClassId}`,
+      });
+    } catch (error) {
+      toast.error('Failed to save note');
+    }
+  };
 
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-20 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-white font-semibold text-lg mb-1">Announcer</p>
-          <p className="text-gray-400 text-sm">Select an event to access announcer tools.</p>
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">Select an event to access Announcer</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-white text-2xl">Announcer</CardTitle>
-              <p className="text-sm text-gray-400 mt-1">Storylines, grids, stats, quick facts</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      {showPackView ? (
+        // ANNOUNCER PACK VIEW
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-white">Announcer Pack</h2>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => window.print()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+              >
+                <Printer className="w-4 h-4" /> Print
+              </Button>
+              <Button
+                onClick={() => setShowPackView(false)}
+                variant="outline"
+                className="border-gray-700 text-white"
+              >
+                Back
+              </Button>
             </div>
           </div>
-        </CardHeader>
 
-        {/* Controls */}
-        <CardContent className="space-y-3 border-t border-gray-700 pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Pack content */}
+          <div className="bg-white text-black p-8 rounded-lg space-y-8 print:p-0 print:bg-white">
+            {/* Header */}
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Session</label>
-              <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  {filteredSessions.map((session) => (
-                    <SelectItem key={session.id} value={session.id} className="text-white">
-                      {session.name}
-                    </SelectItem>
+              <h1 className="text-4xl font-bold mb-2">{selectedEvent.name}</h1>
+              {selectedTrack && <p className="text-lg text-gray-600">{selectedTrack.name}</p>}
+              {selectedEvent.event_date && (
+                <p className="text-sm text-gray-600">{new Date(selectedEvent.event_date).toLocaleDateString()}</p>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Sessions list */}
+            <div>
+              <h2 className="text-2xl font-bold mb-3">Schedule</h2>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">Session</th>
+                    <th className="text-left p-2">Type</th>
+                    <th className="text-left p-2">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessions.map(s => (
+                    <tr key={s.id} className="border-b">
+                      <td className="p-2 font-semibold">{s.name}</td>
+                      <td className="p-2">{s.session_type}</td>
+                      <td className="p-2">{s.scheduled_time ? new Date(s.scheduled_time).toLocaleTimeString() : '-'}</td>
+                    </tr>
                   ))}
-                </SelectContent>
-              </Select>
+                </tbody>
+              </table>
             </div>
 
-            <div>
-              <label className="text-xs text-gray-400 mb-1 block">Class</label>
-              <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value="all" className="text-white">All Classes</SelectItem>
-                  {classOptions.map((opt) => (
-                    <SelectItem key={opt.id} value={opt.id} className="text-white">
-                      {opt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* By class */}
+            {classList.map(classId => {
+              const classProgs = programs.filter(p => p.series_class_id === classId).sort((a, b) => {
+                const numA = parseInt(a.car_number) || 0;
+                const numB = parseInt(b.car_number) || 0;
+                return numA - numB;
+              });
 
-            <div className="flex items-end col-span-2 md:col-span-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={finalsOnly}
-                  onChange={(e) => setFinalsOnly(e.target.checked)}
-                  className="w-4 h-4 rounded"
-                />
-                <span className="text-xs text-gray-400">Finals only</span>
-              </label>
-            </div>
+              const classResults = results.filter(r => {
+                const prog = classProgs.find(cp => cp.driver_id === r.driver_id);
+                return !!prog;
+              }).sort((a, b) => a.position - b.position).slice(0, 3);
+
+              const classNote = notes.find(log => {
+                try {
+                  return JSON.parse(log.metadata || '{}').series_class_id === classId;
+                } catch {
+                  return false;
+                }
+              });
+
+              return (
+                <div key={classId} className="break-after-page">
+                  <h2 className="text-2xl font-bold mb-3">{classId}</h2>
+
+                  {/* Roster */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-2">Roster</h3>
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Car</th>
+                          <th className="text-left p-2">Driver</th>
+                          <th className="text-left p-2">Team</th>
+                          <th className="text-left p-2">Hometown</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classProgs.map(prog => {
+                          const driver = driverMap.get(prog.driver_id);
+                          const team = teamMap.get(prog.team_id);
+                          return (
+                            <tr key={prog.id} className="border-b">
+                              <td className="p-2 font-semibold">#{prog.car_number}</td>
+                              <td className="p-2">{driver?.first_name} {driver?.last_name}</td>
+                              <td className="p-2">{team?.name || '-'}</td>
+                              <td className="p-2 text-xs">{driver?.hometown_city}, {driver?.hometown_state}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Top 3 */}
+                  {classResults.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-2">Top 3</h3>
+                      <table className="w-full text-sm border-collapse">
+                        <tbody>
+                          {classResults.map((result, idx) => {
+                            const prog = classProgs.find(p => p.driver_id === result.driver_id);
+                            const driver = prog ? driverMap.get(prog.driver_id) : null;
+                            return (
+                              <tr key={idx} className="border-b">
+                                <td className="p-2 font-bold">{result.position}</td>
+                                <td className="p-2">{driver?.first_name} {driver?.last_name}</td>
+                                <td className="p-2 text-xs">{result.race_time || '-'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Note */}
+                  {classNote && (
+                    <div className="bg-gray-100 p-3 rounded text-sm italic">
+                      {(() => {
+                        try {
+                          return JSON.parse(classNote.metadata || '{}').note;
+                        } catch {
+                          return classNote.notes;
+                        }
+                      })()}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              onClick={handleCopyPack}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9"
-            >
-              <Copy className="w-3 h-3 mr-1" /> Copy Pack
-            </Button>
-            <Button
-              disabled
-              className="bg-gray-700 text-gray-400 text-xs h-9 cursor-not-allowed"
-            >
-              <Download className="w-3 h-3 mr-1" /> Export PDF (Coming soon)
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Content ────────────────────────────────────────────────────────── */}
-      {filteredSessions.length === 0 ? (
-        <Card className="bg-[#171717] border-gray-800">
-          <CardContent className="py-12 text-center text-gray-500 text-sm">
-            No sessions yet. Add sessions in Classes & Sessions.
-          </CardContent>
-        </Card>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left pane: selectors and snapshot */}
-          <div className="space-y-4">
-            {/* Event Snapshot */}
-            <Card className="bg-[#171717] border-gray-800">
+        // MAIN ANNOUNCER VIEW
+        <div className="space-y-6">
+          {/* Header */}
+          <Card className="bg-[#171717] border-gray-800">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-white text-lg">{selectedEvent.name}</CardTitle>
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                    {selectedTrack && <span>{selectedTrack.name}</span>}
+                    {selectedEvent.event_date && <span>{new Date(selectedEvent.event_date).toLocaleDateString()}</span>}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowPackView(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                >
+                  <BookOpen className="w-4 h-4" /> Announcer Pack
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left: Session & Class selectors */}
+            <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
               <CardHeader>
-                <CardTitle className="text-white text-sm">Event Snapshot</CardTitle>
+                <CardTitle className="text-white text-sm">Control</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-xs">
-                <div className="flex justify-between"><span className="text-gray-400">Event</span><span className="text-white">{selectedEvent.name}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Track</span><span className="text-white">{selectedTrack?.name || '—'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Date</span><span className="text-white">{selectedEvent.event_date ? new Date(selectedEvent.event_date).toLocaleDateString() : '—'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Sessions</span><span className="text-white">{sessions.length}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Classes</span><span className="text-white">{classOptions.length}</span></div>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-xs text-gray-400 block mb-2">Session</label>
+                  <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
+                    <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-gray-800">
+                      {sessions.sort((a, b) => (a.session_order || 0) - (b.session_order || 0)).map(s => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-400 block mb-2">Class</label>
+                  <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                    <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-gray-800">
+                      {classList.map(cls => (
+                        <SelectItem key={cls} value={cls}>
+                          {cls}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Session Snapshot */}
-            {selectedSession && (
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white text-sm">Session Snapshot</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs">
-                  <div className="flex justify-between"><span className="text-gray-400">Session</span><span className="text-white">{selectedSession.name}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400">Type</span><span className="text-white">{selectedSession.session_type}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400">Scheduled</span><span className="text-white">{formatDateTime(selectedSession.scheduled_time)}</span></div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Status</span>
-                    <div className="flex items-center gap-2">
-                      <Badge className="text-xs bg-gray-700">{selectedSession.status || 'Draft'}</Badge>
-                      {selectedSession.locked && <Badge className="text-xs bg-red-900">Locked</Badge>}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+            {/* Middle: Roster */}
+            <Card className="bg-[#171717] border-gray-800 lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-white text-sm">Roster - {selectedClassId}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-gray-900/30">
+                      <TableRow>
+                        <TableHead className="text-gray-400 text-xs">Car</TableHead>
+                        <TableHead className="text-gray-400 text-xs">Driver</TableHead>
+                        <TableHead className="text-gray-400 text-xs">Team</TableHead>
+                        <TableHead className="text-gray-400 text-xs">Hometown</TableHead>
+                        <TableHead className="text-gray-400 text-xs">Discipline</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {classPrograms.map(prog => {
+                        const driver = driverMap.get(prog.driver_id);
+                        const team = teamMap.get(prog.team_id);
+                        return (
+                          <TableRow key={prog.id} className="border-gray-800">
+                            <TableCell className="text-sm font-semibold text-white">#{prog.car_number}</TableCell>
+                            <TableCell className="text-sm text-white">{driver?.first_name} {driver?.last_name}</TableCell>
+                            <TableCell className="text-xs text-gray-400">{team?.name || '-'}</TableCell>
+                            <TableCell className="text-xs text-gray-400">
+                              {driver?.hometown_city}, {driver?.hometown_state}
+                            </TableCell>
+                            <TableCell className="text-xs text-gray-400">{driver?.primary_discipline || '-'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Right pane: top 3, grid, storylines */}
-          <div className="space-y-4">
-            {/* Top 3 Preview */}
-            {topResults.length > 0 && (
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white text-sm">Top 3 Preview</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs">
-                  {topResults.slice(0, 3).map((r, idx) => {
-                    const driver = driverMap[r.driver_id];
-                    return (
-                      <div key={r.id} className="flex items-center gap-2">
-                        <span className="text-gray-500 font-semibold">{idx + 1}.</span>
-                        <span className="text-white flex-1">{formatDriverName(driver)}</span>
-                        <span className="text-gray-500">#{r.car_number || driver?.primary_number || '—'}</span>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Starting Grid / Entry List */}
-            {gridDrivers.length > 0 && (
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white text-sm">Starting Grid</CardTitle>
-                </CardHeader>
-                <CardContent className="max-h-64 overflow-y-auto">
-                  <div className="space-y-1 text-xs font-mono">
-                    {gridDrivers.slice(0, 15).map((item, idx) => {
-                      const driver = driverMap[item.driver_id];
-                      return (
-                        <div key={item.id || idx} className="flex gap-2 text-gray-300">
-                          <span className="w-2 text-gray-600">#{item.car_number || driver?.primary_number || '—'}</span>
-                          <span className="flex-1 truncate">{formatDriverName(driver)}</span>
-                          {item.team_name && <span className="text-gray-500 text-xs">{item.team_name.slice(0, 12)}</span>}
+            {/* Right: Highlights & Notes */}
+            <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="text-white text-sm flex items-center gap-2">
+                  <Trophy className="w-4 h-4" /> Top 3
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {top3.length > 0 ? (
+                  <div className="space-y-2">
+                    {top3.map((result, idx) => (
+                      <div key={idx} className="p-2 bg-gray-900/50 rounded text-xs">
+                        <div className="text-yellow-400 font-bold">#{result.position}</div>
+                        <div className="text-white font-semibold">
+                          {result.driver?.first_name} {result.driver?.last_name}
                         </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Storylines */}
-            {storylines.length > 0 && (
-              <Card className="bg-[#171717] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white text-sm">Storylines</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-xs text-gray-300">
-                    {storylines.slice(0, 6).map((line, idx) => (
-                      <li key={idx} className="flex gap-2">
-                        <span className="text-purple-400">•</span>
-                        <span>{line}</span>
-                      </li>
+                        <div className="text-gray-400">{result.team?.name}</div>
+                      </div>
                     ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-xs">No official results yet</p>
+                )}
+
+                <Separator className="bg-gray-800 my-4" />
+
+                <div className="space-y-2">
+                  <label className="text-xs text-gray-400 block">Notes</label>
+                  <Textarea
+                    placeholder="Announcer notes..."
+                    value={noteText || (classNote ? (() => {
+                      try {
+                        return JSON.parse(classNote.metadata || '{}').note;
+                      } catch {
+                        return classNote.notes || '';
+                      }
+                    })() : '')}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    className="bg-gray-900 border-gray-800 text-white text-xs h-20"
+                  />
+                  <Button
+                    onClick={handleSaveNote}
+                    disabled={!noteText.trim() || createOpLogMutation.isPending}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8"
+                  >
+                    Save Note
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
-
-      {/* ── Pack preview ──────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white text-sm">Full Pack (Text)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <pre className="bg-[#262626] border border-gray-700 rounded p-3 text-xs text-gray-300 overflow-x-auto max-h-96 overflow-y-auto font-mono whitespace-pre-wrap break-words">
-            {packText}
-          </pre>
-        </CardContent>
-      </Card>
-    </div>
+    </motion.div>
   );
 }
