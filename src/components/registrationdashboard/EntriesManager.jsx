@@ -230,22 +230,25 @@ export default function EntriesManager({
     const updates = Array.from(selectedEntries).map((id) => ({ id, data: { entry_status: 'Withdrawn' } }));
     await bulkUpdateEntries(updates);
     setSelectedEntries(new Set());
+    refetchAll();
+    invalidateAfterOperation('entry_bulk_withdraw', { eventId });
   };
 
   const handleBulkClass = async () => {
     if (!bulkClassId) { toast.error('Select a class'); return; }
-    const selectedEventClass = eventClasses.find((ec) => ec.id === bulkClassId);
+    const selected = seriesClasses.find((c) => c.id === bulkClassId);
     const updates = Array.from(selectedEntries).map((id) => ({
       id,
       data: {
-        event_class_id: bulkClassId,
-        series_class_id: selectedEventClass?.series_class_id || undefined,
+        series_class_id: bulkClassId,
       },
     }));
     await bulkUpdateEntries(updates);
     setShowBulkClassModal(false);
     setBulkClassId('');
     setSelectedEntries(new Set());
+    refetchAll();
+    invalidateAfterOperation('entry_bulk_class_change', { eventId });
   };
 
   const handleBulkTransponders = async () => {
@@ -268,6 +271,8 @@ export default function EntriesManager({
     setShowBulkTransponderModal(false);
     setBulkTransponderInput('');
     setSelectedEntries(new Set());
+    refetchAll();
+    invalidateAfterOperation('entry_bulk_transponder', { eventId });
   };
 
   const handleExportCSV = () => {
@@ -418,8 +423,8 @@ export default function EntriesManager({
       <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
       <div className="flex gap-2 flex-wrap">
         <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
-        {eventClasses.length > 0 && (
-          <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
+        {seriesClasses.length > 0 && (
+        <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
         )}
             <Button onClick={handleBulkWithdraw} size="sm" variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/20">Withdraw</Button>
             <Button onClick={handleExportCSV} size="sm" variant="outline" className="border-gray-600 text-gray-300">
@@ -586,15 +591,15 @@ export default function EntriesManager({
           <div>
             <label className="text-xs text-gray-400 block mb-2">Select new class</label>
             <Select value={bulkClassId} onValueChange={setBulkClassId}>
-              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
-                {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={handleBulkClass} disabled={bulkUpdating || !eventClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  {seriesClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+              <Button onClick={handleBulkClass} disabled={bulkUpdating || !seriesClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
               {bulkUpdating ? 'Applying…' : 'Apply'}
             </Button>
           </DialogFooter>
