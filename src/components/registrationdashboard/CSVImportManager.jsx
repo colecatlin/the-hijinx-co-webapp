@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileText, AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveDriverId } from './resolvers/driverResolver';
 
 const DQ = applyDefaultQueryOptions();
 
