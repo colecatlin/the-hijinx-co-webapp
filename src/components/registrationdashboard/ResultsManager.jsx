@@ -175,14 +175,14 @@ export default function ResultsManager({
     });
   }, [entries, selectedSession]);
 
-  // program_id resolution map: driver_id → program_id
-  const programByDriver = useMemo(() => {
+  // Entry-based roster: team_id and series_class_id come from Entry
+  const entryByDriver = useMemo(() => {
     const map = {};
-    driverPrograms.forEach((dp) => {
-      if (dp.driver_id && dp.event_id === eventId) map[dp.driver_id] = dp.id;
+    allEntries.forEach((e) => {
+      if (e.driver_id) map[e.driver_id] = e;
     });
     return map;
-  }, [driverPrograms, eventId]);
+  }, [allEntries]);
 
   const getSessionLabel = (s) => {
     const cls = s.series_class_id ? classesMap[s.series_class_id]?.class_name : s.class_name;
