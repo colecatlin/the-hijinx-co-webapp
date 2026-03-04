@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
+import PolicyAcceptancePanel from '@/components/media/PolicyAcceptancePanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -558,37 +559,94 @@ function MyRequestsList({ user }) {
 }
 
 function RequestDetailDialog({ requestId, open, onOpenChange }) {
-  const { data: request } = useQuery({
+  const [requestStatus, setRequestStatus] = useState(null);
+  const { data: request, refetch: refetchRequest } = useQuery({
     queryKey: ['credential_request', requestId],
     queryFn: () => base44.entities.CredentialRequest.get(requestId),
     enabled: !!requestId,
   });
 
+  const [resolvedScopeIds, setResolvedScopeIds] = useState([]);
+
+  // Resolve policy scope entity ids
+  useEffect(() => {
+    async function resolveScope() {
+      if (!request) return;
+
+      const ids = [request.target_entity_id];
+
+      // If target is an Event, also include track and series
+      if (request.target_entity_type === 'event' || request.related_event_id) {
+        try {
+          const eventId = request.related_event_id || request.target_entity_id;
+          const event = await base44.entities.Event.get(eventId);
+          if (event?.track_id && !ids.includes(event.track_id)) {
+            ids.push(event.track_id);
+          }
+          if (event?.series_id && !ids.includes(event.series_id)) {
+            ids.push(event.series_id);
+          }
+        } catch (err) {
+          // Event not found or already handled
+        }
+      }
+
+      setResolvedScopeIds(ids);
+    }
+
+    resolveScope();
+  }, [request]);
+
+  const statusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'under_review': return 'bg-blue-100 text-blue-800';
+      case 'change_requested': return 'bg-orange-100 text-orange-800';
+      case 'denied': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-gray-900">Request Details</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {request && (
             <>
-              <div>
-                <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Status</p>
-                <Badge className={request.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
-                  {request.status}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Access Level</p>
-                <p className="text-gray-900">{request.requested_access_level}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Status</p>
+                  <Badge className={statusColor(requestStatus || request.status)}>
+                    {requestStatus || request.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Access Level</p>
+                  <p className="text-gray-900">{request.requested_access_level}</p>
+                </div>
               </div>
               <div>
                 <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Roles</p>
                 <p className="text-gray-900">{request.requested_roles?.join(', ') || '—'}</p>
               </div>
-              <div className="bg-blue-50 border border-blue-100 rounded p-3">
-                <p className="text-sm text-blue-900">Policies, waivers, deliverables, and rights acceptance will appear here next.</p>
+
+              {/* Policies Section */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="font-semibold text-gray-900 mb-4">Required Policies</h3>
+                {resolvedScopeIds.length > 0 && (
+                  <PolicyAcceptancePanel
+                    mediaUserId={request.holder_media_user_id}
+                    request={request}
+                    resolvedScopeEntityIds={resolvedScopeIds}
+                    onRequestStatusChange={(newStatus) => {
+                      setRequestStatus(newStatus);
+                      refetchRequest();
+                    }}
+                  />
+                )}
               </div>
             </>
           )}
