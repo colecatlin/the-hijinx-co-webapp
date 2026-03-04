@@ -293,6 +293,10 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     };
 
     if (selectedEventId) {
+      // Ensure collaboration record exists on edit
+      if (!collaboration) {
+        createCollaboration(selectedEventId, formData.track_id, formData.series_id || null);
+      }
       updateMutation.mutate({ id: selectedEventId, data: eventData });
     } else {
       createMutation.mutate(eventData);
