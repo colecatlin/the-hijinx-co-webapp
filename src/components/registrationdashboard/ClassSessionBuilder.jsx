@@ -56,6 +56,11 @@ export default function ClassSessionBuilder({
   const [editingSession, setEditingSession] = useState(null);
   const [sessionForm, setSessionForm] = useState(EMPTY_SESSION_FORM);
   const [lockConfirm, setLockConfirm] = useState(null);
+  
+  // ── Quick generate dialog ──────────────────────────────────────────────────
+  const [quickGenDialog, setQuickGenDialog] = useState(null);
+  const [heatInputs, setHeatInputs] = useState({ number_of_entries: '', cars_per_heat: '' });
+  const [selectedClassForGen, setSelectedClassForGen] = useState(null);
 
   const sharedOpts = {
     invalidateAfterOperation,
