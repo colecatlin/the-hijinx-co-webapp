@@ -65,7 +65,8 @@ export default function ComplianceManager({
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState('');
-  const [editingLicense, setEditingLicense] = useState(null); // {entryId, licenseNumber, expiresOn}
+  const [transponderInput, setTransponderInput] = useState('');
+  const [assigningTransponder, setAssigningTransponder] = useState(false);
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
 
