@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ export default function ManagePointsConfig() {
   const [deleteWarning, setDeleteWarning] = useState(null);
 
   // Load current user
-  React.useEffect(() => {
+  useEffect(() => {
     (async () => {
       const user = await base44.auth.me();
       setIsAdmin(user?.role === 'admin');
@@ -232,7 +232,7 @@ function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasse
     enabled: !!configId
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (config && open) {
       setForm(config);
       setPointsText((config.points_by_position || []).join(', '));
