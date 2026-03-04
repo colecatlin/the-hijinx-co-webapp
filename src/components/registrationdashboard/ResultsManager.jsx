@@ -364,7 +364,7 @@ export default function ResultsManager({
 
     // Check tech requirements
     const techFailures = [];
-    entries.forEach((entry) => {
+    classEntries.forEach((entry) => {
       // Find template for this entry's class
       const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
       if (template?.required_for_publish && entry.tech_status !== 'Passed') {
