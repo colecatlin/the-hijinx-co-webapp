@@ -1540,17 +1540,6 @@ export default function RegistrationDashboard() {
                 />
               )}
 
-              {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
-                <RaceControlManager
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
               {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (
                 <CSVImportManager
                   selectedEvent={selectedEvent}
