@@ -41,8 +41,6 @@ import RaceControlPanel from '@/components/registrationdashboard/RaceControlPane
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
-import { getPermissionsForRole, canTab, canAction } from '@/components/access/accessControl';
-import { createPageUrl } from '@/components/utils';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
