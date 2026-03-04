@@ -455,26 +455,24 @@ export default function ClassSessionBuilder({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {sortedSessions.map((session) => (
-                        <div
-                          key={session.id}
-                          className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
-                            isLocked(session) ? 'bg-gray-800/20 border-gray-700 opacity-60' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700/50'
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-gray-500 w-5 flex-shrink-0">#{session.session_number || '—'}</span>
-                              <div>
-                                <p className="font-medium text-white text-sm truncate">{session.name}</p>
-                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                  <Badge className="bg-purple-500/20 text-purple-400 text-xs">{session.session_type}</Badge>
-                                  <Badge className={`text-xs ${isLocked(session) ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-300'}`}>{session.status}</Badge>
-                                  {session.laps && <Badge variant="outline" className="text-xs text-gray-400">{session.laps}L</Badge>}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                       <div className="text-xs text-gray-500 px-2 py-1 grid grid-cols-6 gap-2 font-mono">
+                         <span>Run</span><span>Name</span><span>Type</span><span>Round</span><span>Start</span><span>Dur</span>
+                       </div>
+                       {sortedSessions.map((session) => (
+                         <div
+                           key={session.id}
+                           className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
+                             isLocked(session) ? 'bg-gray-800/20 border-gray-700 opacity-60' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700/50'
+                           }`}
+                         >
+                           <div className="flex-1 min-w-0 grid grid-cols-6 gap-2 items-center">
+                             <span className="text-xs font-mono text-gray-400">#{session.run_order || '0'}</span>
+                             <p className="font-medium text-white text-sm truncate">{session.name}</p>
+                             <Badge className="bg-purple-500/20 text-purple-400 text-xs justify-self-start">{session.session_type}</Badge>
+                             <span className="text-xs text-gray-400">{session.round_number || '—'}</span>
+                             <span className="text-xs text-gray-400 truncate">{session.scheduled_time ? new Date(session.scheduled_time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</span>
+                             <span className="text-xs text-gray-400">{session.duration_minutes ? `${session.duration_minutes}m` : '—'}</span>
+                           </div>
                           <div className="flex gap-1 flex-shrink-0">
                             {!isLocked(session) && <>
                               <button onClick={() => handleMove(session, 'up', cg)} className="p-1 hover:bg-gray-600 rounded" title="Move up"><ChevronUp className="w-3 h-3 text-gray-400" /></button>
