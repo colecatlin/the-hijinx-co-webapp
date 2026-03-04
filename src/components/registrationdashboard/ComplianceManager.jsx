@@ -31,6 +31,7 @@ import {
   verifyEntryEventIntegrity,
   GUARD_ERROR_MESSAGE,
 } from './contextGuardHelper';
+import { normalizeName } from './resolvers/driverResolver';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -206,11 +207,11 @@ export default function ComplianceManager({
     if (classFilter !== 'all') results = results.filter(e => e.className === classFilter);
     if (flagTypeFilter !== 'all') results = results.filter(e => e.flags.some(f => f.type === flagTypeFilter));
     if (searchTerm) {
-      const s = searchTerm.toLowerCase();
+      const s = normalizeName(searchTerm);
       results = results.filter(e =>
-        e.driverName.toLowerCase().includes(s) ||
-        (e.car_number || '').toLowerCase().includes(s) ||
-        (e.transponder_id || '').toLowerCase().includes(s)
+        normalizeName(e.driverName).includes(s) ||
+        normalizeName(e.car_number).includes(s) ||
+        normalizeName(e.transponder_id).includes(s)
       );
     }
     return results;
