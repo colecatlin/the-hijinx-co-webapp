@@ -540,19 +540,33 @@ export default function CSVImportManager({
 
           {/* Import summary */}
           {importSummary && (
-            <Card className="bg-[#171717] border-gray-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-400" /> Import Complete
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                <SummaryRow label="Rows processed" value={importSummary.processed} />
-                <Separator className="border-gray-800" />
-                <SummaryRow label="Created" value={importSummary.created} color="text-green-400" />
-                <SummaryRow label="Skipped" value={importSummary.skipped} color={importSummary.skipped > 0 ? 'text-yellow-400' : 'text-gray-400'} />
-              </CardContent>
-            </Card>
+          <Card className="bg-[#171717] border-gray-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-white text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-green-400" /> Import Complete
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <SummaryRow label="Rows processed" value={importSummary.processed} />
+            <Separator className="border-gray-800" />
+            <SummaryRow label="Created" value={importSummary.created} color="text-green-400" />
+            <SummaryRow label="Skipped" value={importSummary.skipped} color={importSummary.skipped > 0 ? 'text-yellow-400' : 'text-gray-400'} />
+            {importSummary.unresolved?.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-800">
+                <p className="text-xs text-yellow-400 font-semibold mb-2 flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5" /> Unresolved Drivers ({importSummary.unresolved.length})
+                </p>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {importSummary.unresolved.map((u, i) => (
+                    <p key={i} className="text-xs text-gray-400 font-mono">
+                      {u.firstName} {u.lastName}{u.carNumber ? ` (#${u.carNumber})` : ''} — not found or ambiguous
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+          </Card>
           )}
         </div>
 
