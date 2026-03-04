@@ -26,6 +26,7 @@ import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import GateConsole from '@/components/registrationdashboard/GateConsole';
+import GateManager from '@/components/registrationdashboard/GateManager';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
 import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
@@ -1408,16 +1409,17 @@ export default function RegistrationDashboard() {
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
                 selectedEvent ? (
-                  <GateConsole
+                  <GateManager
                     selectedEvent={selectedEvent}
                     selectedTrack={selectedTrack}
-                    invalidateAfterOperation={invalidateAfterOperation}
                     dashboardContext={dashboardContext}
+                    dashboardPermissions={dashboardPermissions}
+                    invalidateAfterOperation={invalidateAfterOperation}
                   />
                 ) : (
                   <Card className="bg-[#171717] border-gray-800">
                     <CardContent className="py-20 text-center">
-                      <p className="text-gray-400">Select an event to access the Gate Console</p>
+                      <p className="text-gray-400">Select an event to access the Gate</p>
                     </CardContent>
                   </Card>
                 )
