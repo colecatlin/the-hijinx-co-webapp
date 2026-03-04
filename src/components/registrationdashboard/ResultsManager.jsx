@@ -147,7 +147,7 @@ export default function ResultsManager({
      ...DQ,
    });
 
-  const { data: entries = [] } = useQuery({
+  const { data: allEntries = [] } = useQuery({
     queryKey: ['entries', eventId],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
     enabled: !!eventId,
