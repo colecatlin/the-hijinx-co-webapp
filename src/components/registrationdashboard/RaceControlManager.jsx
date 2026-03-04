@@ -186,6 +186,7 @@ export default function RaceControlManager({
 
     // Determine invalidation type
     const newStatus = edits.status ?? session.status;
+    const prevStatus = session.status;
     let invType = 'session_updated';
     if (newStatus === 'Official') invType = 'results_published';
 
@@ -200,6 +201,29 @@ export default function RaceControlManager({
         new_values: updates,
       },
     });
+
+    // Auto-calculate standings when a Final session becomes Official
+    const wasNotOfficial = ['Draft', 'Provisional', undefined, null, ''].includes(prevStatus);
+    if (newStatus === 'Official' && session.session_type === 'Final' && wasNotOfficial) {
+      const sessionResults = await base44.entities.Results.filter({
+        event_id: eventId,
+        session_id: session.id,
+      }).catch(() => []);
+      calculateStandingsForSession({
+        session,
+        event: selectedEvent,
+        resultsList: sessionResults,
+        base44,
+        onComplete: ({ driversUpdated }) => {
+          inv('standings_recalculated', {
+            eventId,
+            seriesId: selectedEvent?.series_id,
+            seasonYear: selectedEvent?.season,
+          });
+          toast.success(`Standings updated for ${driversUpdated} drivers`);
+        },
+      });
+    }
 
     inv(invType, { eventId });
     toast.success(`Session "${session.name}" saved.`);
