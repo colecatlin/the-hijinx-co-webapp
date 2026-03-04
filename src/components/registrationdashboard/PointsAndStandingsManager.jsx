@@ -32,20 +32,22 @@ export default function PointsAndStandingsManager({
 
   const targetSeasonYear = useMemo(() => dashboardContext?.seasonYear, [dashboardContext]);
   const targetSeriesClassId = useMemo(() => selectedClass?.id || null, [selectedClass]);
+  const targetEventId = useMemo(() => selectedEvent?.id || null, [selectedEvent]);
 
   // Resolve PointsConfig using the backend function
   const { data: configResolution } = useQuery({
-    queryKey: ['resolvedPointsConfig', targetSeriesId, targetSeasonYear, targetSeriesClassId],
+    queryKey: ['resolvedPointsConfig', targetSeriesId, targetSeasonYear, targetSeriesClassId, targetEventId],
     queryFn: async () => {
-      if (!targetSeriesId || !targetSeasonYear) return null;
+      if (!targetSeriesId) return null;
       const result = await base44.functions.invoke('resolvePointsConfig', {
         series_id: targetSeriesId,
         series_class_id: targetSeriesClassId || null,
-        season: targetSeasonYear
+        season: targetSeasonYear || null,
+        event_id: targetEventId || null
       });
       return result.data?.ok ? result.data.pointsConfig : null;
     },
-    enabled: !!targetSeriesId && !!targetSeasonYear
+    enabled: !!targetSeriesId
   });
 
   const resolvedConfig = configResolution;
@@ -54,19 +56,21 @@ export default function PointsAndStandingsManager({
   const { data: standings = [] } = useQuery({
     queryKey: ['standings', targetSeriesId, targetSeasonYear, targetSeriesClassId],
     queryFn: async () => {
-      if (!targetSeriesId || !targetSeasonYear) return [];
+      if (!targetSeriesId) return [];
 
       const query = {
-        series_id: targetSeriesId,
-        season: targetSeasonYear
+        series_id: targetSeriesId
       };
+      if (targetSeasonYear) {
+        query.season_year = targetSeasonYear;
+      }
       if (targetSeriesClassId) {
         query.series_class_id = targetSeriesClassId;
       }
 
-      return await base44.entities.Standings.filter(query);
+      return await base44.entities.Standings.filter(query).catch(() => []);
     },
-    enabled: !!targetSeriesId && !!targetSeasonYear
+    enabled: !!targetSeriesId
   });
 
   // Load Driver info for standings display
@@ -89,11 +93,14 @@ export default function PointsAndStandingsManager({
       try {
         const response = await base44.functions.invoke('recalculateStandings', {
           series_id: targetSeriesId,
-          season: targetSeasonYear,
-          series_class_id: targetSeriesClassId || null
+          season: targetSeasonYear || null,
+          series_class_id: targetSeriesClassId || null,
+          event_id: targetEventId || null
         });
 
-        await queryClient.invalidateQueries({ queryKey: ['standings'] });
+        if (response.data?.ok) {
+          await queryClient.invalidateQueries({ queryKey: ['standings'] });
+        }
         return response.data;
       } finally {
         setIsCalculating(false);
@@ -101,12 +108,12 @@ export default function PointsAndStandingsManager({
     }
   });
 
-  if (!targetSeriesId || !targetSeasonYear) {
+  if (!targetSeriesId) {
     return (
       <Alert className="bg-yellow-500/10 border-yellow-600">
         <AlertCircle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-600">
-          Select a series and season to view standings.
+          Select a series to view standings.
         </AlertDescription>
       </Alert>
     );
@@ -114,20 +121,33 @@ export default function PointsAndStandingsManager({
 
   return (
     <div className="space-y-6">
-      {/* Active Ruleset Card */}
+      {/* Effective Ruleset Panel */}
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-green-500" />
-            Active Ruleset
+            Effective Ruleset
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {resolvedConfig ? (
             <>
-              <div>
-                <p className="text-sm font-medium text-white">{resolvedConfig.name}</p>
-                <p className="text-xs text-gray-400 mt-1">Priority: {resolvedConfig.priority}</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-white">{resolvedConfig.name}</p>
+                  <p className="text-xs text-gray-400 mt-1">Priority: {resolvedConfig.priority}</p>
+                </div>
+                <div className="flex gap-1">
+                  {resolvedConfig.event_id === targetEventId && (
+                    <Badge className="bg-purple-500/20 text-purple-300 text-xs">Event Override</Badge>
+                  )}
+                  {resolvedConfig.series_class_id && (
+                    <Badge className="bg-blue-500/20 text-blue-300 text-xs">Class Scoped</Badge>
+                  )}
+                  {resolvedConfig.is_default && (
+                    <Badge className="bg-green-500/20 text-green-300 text-xs">Default</Badge>
+                  )}
+                </div>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-400 mb-2">Applies to Session Types:</p>
@@ -155,14 +175,14 @@ export default function PointsAndStandingsManager({
               )}
               </>
               ) : (
-            <Alert className="bg-orange-500/10 border-orange-600">
-              <AlertCircle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-600 text-xs">
-                No active points ruleset configured for {selectedSeries?.name} {selectedClass?.class_name ? `/ ${selectedClass.class_name}` : ''} {targetSeasonYear}.
-                {isAdmin && ' Go to Management → Points Configuration to set up.'}
-              </AlertDescription>
-            </Alert>
-          )}
+                <Alert className="bg-orange-500/10 border-orange-600">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-600 text-xs">
+                    No active PointsConfig found for {selectedSeries?.name} {selectedClass?.class_name ? `/ ${selectedClass.class_name}` : ''} {targetSeasonYear || '(any season)'}.
+                    {isAdmin && ' Create one in Management → Points Configuration then try again.'}
+                  </AlertDescription>
+                </Alert>
+              )}
         </CardContent>
       </Card>
 
@@ -170,21 +190,31 @@ export default function PointsAndStandingsManager({
       {isAdmin && (
         <Card className="bg-gray-900 border-gray-700">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm text-white font-medium">Recalculate Standings</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Uses active ruleset: {resolvedConfig?.name || 'None'}
-                </p>
+            <div className="space-y-4">
+              {!resolvedConfig && (
+                <Alert className="bg-orange-500/10 border-orange-600">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-600 text-xs">
+                    No PointsConfig found. Create one in Management → Points Configuration.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm text-white font-medium">Recalculate Standings</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Uses ruleset: {resolvedConfig?.name || 'None'}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => calculateMutation.mutate()}
+                  disabled={isCalculating || !resolvedConfig}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
+                  {isCalculating ? 'Calculating...' : 'Recalculate'}
+                </Button>
               </div>
-              <Button
-                onClick={() => calculateMutation.mutate()}
-                disabled={isCalculating || !resolvedConfig}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
-                {isCalculating ? 'Calculating...' : 'Recalculate'}
-              </Button>
             </div>
           </CardContent>
         </Card>
