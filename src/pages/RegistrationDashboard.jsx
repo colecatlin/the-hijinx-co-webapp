@@ -24,6 +24,7 @@ import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
 import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
+import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
 import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
@@ -1459,17 +1460,21 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'race_control') && activeTab === 'race_control' && (
-                <div className="-mx-4 -mb-4">
-                  <RaceControlManager
+                selectedEvent ? (
+                  <RaceControlConsole
                     selectedEvent={selectedEvent}
-                    selectedSeries={selectedSeries}
                     selectedTrack={selectedTrack}
                     invalidateAfterOperation={invalidateAfterOperation}
-                    isAdmin={isAdmin}
+                    dashboardContext={dashboardContext}
                     dashboardPermissions={dashboardPermissions}
-                    currentUser={user}
                   />
-                </div>
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-20 text-center">
+                      <p className="text-gray-400">Select an event to access Race Control</p>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (

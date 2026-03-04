@@ -166,6 +166,12 @@ function getKeysForOperation(operationType, payload = {}) {
       if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
       break;
 
+    case 'race_control_override':
+      broad.push(['sessions'], ['results'], ['standings'], ['operationLogs']);
+      if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.results(eventId), REG_QK.operationLogs(eventId));
+      if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
+      break;
+
     case 'integration_sync_completed':
     case 'sync_completed':
     case 'sync_failed':
