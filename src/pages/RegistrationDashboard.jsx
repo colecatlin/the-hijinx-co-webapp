@@ -20,6 +20,7 @@ import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
 import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
 import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
+import AnnouncerConsole from '@/components/registrationdashboard/AnnouncerConsole';
 import GateMode from '@/components/registrationdashboard/GateMode';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
@@ -1390,10 +1391,9 @@ export default function RegistrationDashboard() {
 
               {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
                 selectedEvent ? (
-                  <AnnouncerManager
+                  <AnnouncerConsole
                     selectedEvent={selectedEvent}
                     selectedTrack={selectedTrack}
-                    invalidateAfterOperation={invalidateAfterOperation}
                     dashboardContext={dashboardContext}
                   />
                 ) : (
