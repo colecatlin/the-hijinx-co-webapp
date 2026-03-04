@@ -172,14 +172,13 @@ export default function PointsAndStandingsManager({
                 </p>
               </div>
               <Button
-                    onClick={() => calculateMutation.mutate()}
-                    disabled={isCalculating || !resolvedConfig}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
-                    {isCalculating ? 'Calculating...' : 'Recalculate'}
-                  </Button>
-              </div>
+                onClick={() => calculateMutation.mutate()}
+                disabled={isCalculating || !resolvedConfig}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
+                {isCalculating ? 'Calculating...' : 'Recalculate'}
+              </Button>
             </div>
           </CardContent>
         </Card>
