@@ -35,6 +35,7 @@ import IntegrationsManager from '@/components/registrationdashboard/Integrations
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
+import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -914,6 +915,23 @@ export default function RegistrationDashboard() {
                   <span className="text-sm font-semibold text-red-300">LIVE EVENT MODE</span>
                 </div>
               </div>
+            )}
+
+            {/* Season Calendar */}
+            {dashboardContext.orgId && dashboardContext.seasonYear && (
+              <SeasonCalendarManager
+                dashboardContext={dashboardContext}
+                selectedEvent={selectedEvent}
+                dashboardPermissions={dashboardPermissions}
+                onSelectEvent={(newEventId) => {
+                  setEventId(newEventId);
+                  const params = new URLSearchParams(searchParams);
+                  params.set('eventId', newEventId);
+                  setSearchParams(params, { replace: true });
+                }}
+                onCreateEvent={handleCreateEvent}
+                invalidateAfterOperation={invalidateAfterOperation}
+              />
             )}
 
             {/* Event Workspace Header */}
