@@ -1,252 +1,406 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Pencil, Trash2, RefreshCw, ExternalLink, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
-import { createPageUrl } from '@/components/utils';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
-
-function ConfigForm({ config, series, onSave, onCancel }) {
-  const [form, setForm] = useState(config || {
-    series_id: '',
-    series_name: '',
-    season_year: new Date().getFullYear().toString(),
-    spreadsheet_id: '',
-    spreadsheet_url: '',
-    sanctioning_body: '',
-    classes: [],
-    status: 'active',
-    notes: '',
-  });
-  const [classInput, setClassInput] = useState('');
-
-  const handleUrlChange = (url) => {
-    setForm(f => {
-      const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      return { ...f, spreadsheet_url: url, spreadsheet_id: match ? match[1] : f.spreadsheet_id };
-    });
-  };
-
-  const handleSeriesChange = (seriesId) => {
-    const found = series.find(s => s.id === seriesId);
-    setForm(f => ({ ...f, series_id: seriesId, series_name: found?.name || '' }));
-  };
-
-  const addClass = () => {
-    const trimmed = classInput.trim();
-    if (trimmed && !form.classes.includes(trimmed)) {
-      setForm(f => ({ ...f, classes: [...f.classes, trimmed] }));
-      setClassInput('');
-    }
-  };
-
-  const removeClass = (cls) => {
-    setForm(f => ({ ...f, classes: f.classes.filter(c => c !== cls) }));
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label>Series</Label>
-          <Select value={form.series_id} onValueChange={handleSeriesChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select series..." />
-            </SelectTrigger>
-            <SelectContent>
-              {series.map(s => (
-                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label>Season Year</Label>
-          <Input value={form.season_year} onChange={e => setForm(f => ({ ...f, season_year: e.target.value }))} placeholder="2026" />
-        </div>
-      </div>
-      <div className="space-y-1">
-        <Label>Sanctioning Body Name</Label>
-        <Input value={form.sanctioning_body} onChange={e => setForm(f => ({ ...f, sanctioning_body: e.target.value }))} placeholder="e.g., SCORE International" />
-      </div>
-      <div className="space-y-1">
-        <Label>Google Sheet URL</Label>
-        <Input value={form.spreadsheet_url} onChange={e => handleUrlChange(e.target.value)} placeholder="Paste full Google Sheets URL..." />
-        {form.spreadsheet_id && (
-          <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-            <CheckCircle className="w-3 h-3" /> Sheet ID detected: {form.spreadsheet_id.slice(0, 20)}...
-          </p>
-        )}
-      </div>
-      <div className="space-y-1">
-        <Label>Class Tabs <span className="text-gray-400 text-xs">(must match sheet tab names exactly)</span></Label>
-        <div className="flex gap-2">
-          <Input value={classInput} onChange={e => setClassInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addClass()} placeholder="e.g., Pro 4" />
-          <Button type="button" variant="outline" onClick={addClass}>Add</Button>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {form.classes.map(cls => (
-            <Badge key={cls} variant="secondary" className="gap-1 cursor-pointer" onClick={() => removeClass(cls)}>
-              {cls} ×
-            </Badge>
-          ))}
-        </div>
-      </div>
-      <div className="space-y-1">
-        <Label>Notes</Label>
-        <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
-      </div>
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={() => onSave(form)} disabled={!form.series_name || !form.spreadsheet_id}>Save</Button>
-      </div>
-    </div>
-  );
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Trash2, Edit2, CheckCircle2, Archive } from 'lucide-react';
+import ManagementLayout from '@/components/layouts/ManagementLayout';
 
 export default function ManagePointsConfig() {
   const queryClient = useQueryClient();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [recalculating, setRecalculating] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [filters, setFilters] = useState({ series_id: '', series_class_id: '', season_year: '', status: '' });
+  const [activateWarning, setActivateWarning] = useState(null);
 
   const { data: configs = [] } = useQuery({
     queryKey: ['pointsConfigs'],
-    queryFn: () => base44.entities.PointsConfig.list(),
+    queryFn: () => base44.entities.PointsConfig.list()
   });
 
   const { data: series = [] } = useQuery({
     queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
+    queryFn: () => base44.entities.Series.list()
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (data) => editing?.id
-      ? base44.entities.PointsConfig.update(editing.id, data)
-      : base44.entities.PointsConfig.create(data),
+  const { data: seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list()
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data) => base44.entities.PointsConfig.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] });
-      setDialogOpen(false);
-      setEditing(null);
-      toast.success('Points config saved.');
-    },
+      setOpenDialog(false);
+      setEditingId(null);
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.PointsConfig.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] });
+      setOpenDialog(false);
+      setEditingId(null);
+      setActivateWarning(null);
+    }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.PointsConfig.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] });
-      toast.success('Config deleted.');
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pointsConfigs'] })
   });
 
-  const handleRecalculate = async (config) => {
-    setRecalculating(config.id);
-    try {
-      const res = await base44.functions.invoke('recalculateStandings', {
-        series_name: config.series_name,
-        season_year: config.season_year,
-      });
-      const processed = res.data?.processed || [];
-      toast.success(`Recalculated standings for ${processed.length} class(es).`);
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-    } catch (e) {
-      toast.error('Recalculation failed: ' + e.message);
+  const filteredConfigs = configs.filter(c => {
+    if (filters.series_id && c.series_id !== filters.series_id) return false;
+    if (filters.series_class_id && c.series_class_id !== filters.series_class_id) return false;
+    if (filters.season_year && c.season_year !== filters.season_year) return false;
+    if (filters.status && c.status !== filters.status) return false;
+    return true;
+  });
+
+  const handleActivate = (config) => {
+    const conflict = configs.find(c =>
+      c.id !== config.id &&
+      c.series_id === config.series_id &&
+      (c.series_class_id || null) === (config.series_class_id || null) &&
+      c.season_year === config.season_year &&
+      c.status === 'Active'
+    );
+
+    if (conflict) {
+      setActivateWarning({ config, conflict });
+    } else {
+      updateMutation.mutate({ id: config.id, data: { status: 'Active' } });
     }
-    setRecalculating(null);
+  };
+
+  const handleArchive = (id) => {
+    updateMutation.mutate({ id, data: { status: 'Archived' } });
   };
 
   return (
-    <ManagementLayout currentPage="ManagePointsConfig">
-      <ManagementShell
-        title="Points Configuration"
-        subtitle="Link Google Sheets to series for automated standings calculation"
-        actions={<Button onClick={() => { setEditing(null); setDialogOpen(true); }}><Plus className="w-4 h-4 mr-2" />Add Config</Button>}
-      >
+    <ManagementLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Points Configuration</h1>
+          <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" /> New Config
+          </Button>
+        </div>
 
-      <div className="space-y-4">
-        {configs.map(config => (
-          <Card key={config.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{config.series_name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={config.status === 'active' ? 'default' : 'secondary'}>{config.status}</Badge>
-                    <span className="text-sm text-gray-500">{config.season_year}</span>
-                    {config.sanctioning_body && <span className="text-sm text-gray-400">· {config.sanctioning_body}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {config.spreadsheet_url && (
-                    <a href={config.spreadsheet_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="icon"><ExternalLink className="w-4 h-4" /></Button>
-                    </a>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRecalculate(config)}
-                    disabled={recalculating === config.id}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-1 ${recalculating === config.id ? 'animate-spin' : ''}`} />
-                    Recalculate
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => { setEditing(config); setDialogOpen(true); }}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(config.id)}>
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {(config.classes || []).map(cls => (
-                  <Badge key={cls} variant="outline">{cls}</Badge>
-                ))}
-                {config.spreadsheet_id && (
-                  <span className="text-xs text-gray-400 ml-auto">Sheet ID: {config.spreadsheet_id.slice(0, 16)}…</span>
-                )}
-              </div>
-              {config.notes && <p className="text-xs text-gray-400 mt-2">{config.notes}</p>}
-            </CardContent>
-          </Card>
-        ))}
-        {configs.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
-            <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-            No points configurations yet. Add one to get started.
-          </div>
+        {/* Filters */}
+        <Card className="bg-gray-900 border-gray-700">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-4 gap-4">
+              <Select value={filters.series_id} onValueChange={(v) => setFilters({ ...filters, series_id: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Series" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>All Series</SelectItem>
+                  {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.season_year} onValueChange={(v) => setFilters({ ...filters, season_year: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Season" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>All Seasons</SelectItem>
+                  {[...new Set(configs.map(c => c.season_year))].sort().reverse().map(year => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.status} onValueChange={(v) => setFilters({ ...filters, status: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Filter by Status" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>All Status</SelectItem>
+                  <SelectItem value="Draft">Draft</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Table */}
+        <Card className="bg-gray-900 border-gray-700">
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700">
+                    <TableHead className="text-gray-400">Name</TableHead>
+                    <TableHead className="text-gray-400">Series</TableHead>
+                    <TableHead className="text-gray-400">Class</TableHead>
+                    <TableHead className="text-gray-400">Season</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400">Updated</TableHead>
+                    <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredConfigs.map((config) => (
+                    <TableRow key={config.id} className="border-gray-700 hover:bg-gray-800">
+                      <TableCell className="text-white">{config.name || 'Untitled'}</TableCell>
+                      <TableCell className="text-gray-400">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
+                      <TableCell className="text-gray-400">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
+                      <TableCell className="text-gray-400">{config.season_year}</TableCell>
+                      <TableCell>
+                        <Badge className={config.status === 'Active' ? 'bg-green-500/20 text-green-400' : config.status === 'Draft' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'}>
+                          {config.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">{config.updated_date ? new Date(config.updated_date).toLocaleDateString() : '—'}</TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="icon" variant="ghost" onClick={() => { setEditingId(config.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        {config.status === 'Draft' && (
+                          <Button size="icon" variant="ghost" onClick={() => handleActivate(config)} className="text-green-400 hover:text-green-300">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {config.status === 'Active' && (
+                          <Button size="icon" variant="ghost" onClick={() => handleArchive(config.id)} className="text-orange-400 hover:text-orange-300">
+                            <Archive className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(config.id)} className="text-red-400 hover:text-red-300">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Editor Dialog */}
+        <PointsConfigEditor
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          configId={editingId}
+          series={series}
+          seriesClasses={seriesClasses}
+          onSave={(data) => {
+            if (editingId) {
+              updateMutation.mutate({ id: editingId, data });
+            } else {
+              createMutation.mutate(data);
+            }
+          }}
+        />
+
+        {/* Activation Warning */}
+        {activateWarning && (
+          <Dialog open={!!activateWarning} onOpenChange={() => setActivateWarning(null)}>
+            <DialogContent className="bg-gray-900 border-gray-700">
+              <DialogHeader>
+                <DialogTitle className="text-white">Activate Config?</DialogTitle>
+              </DialogHeader>
+              <p className="text-gray-400">
+                There's already an active config for {activateWarning.series?.name} {activateWarning.config.series_class_id ? '/ ' + seriesClasses.find(c => c.id === activateWarning.config.series_class_id)?.class_name : ''} {activateWarning.config.season_year}.
+                <br /> Activate this one to replace it?
+              </p>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setActivateWarning(null)} className="border-gray-700">Cancel</Button>
+                <Button
+                  onClick={() => {
+                    updateMutation.mutate({ id: activateWarning.config.id, data: { status: 'Active' } });
+                  }}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Activate & Replace
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Points Config' : 'New Points Config'}</DialogTitle>
-          </DialogHeader>
-          <ConfigForm
-            config={editing}
-            series={series}
-            onSave={(data) => saveMutation.mutate(data)}
-            onCancel={() => { setDialogOpen(false); setEditing(null); }}
-          />
-        </DialogContent>
-      </Dialog>
-      </ManagementShell>
     </ManagementLayout>
+  );
+}
+
+function PointsConfigEditor({ open, onOpenChange, configId, series, seriesClasses, onSave }) {
+  const [form, setForm] = useState({
+    name: '',
+    series_id: '',
+    series_class_id: '',
+    season_year: '',
+    status: 'Draft',
+    calculation_scope: 'per_event',
+    apply_to_session_types: ['Final'],
+    points_table_json: { '1': 25, '2': 20, '3': 16 },
+    participation_points: 0,
+    dnf_policy: 'finish_position_points',
+    dnf_minimum_points: 0,
+    bonus_rules_json: {},
+    drop_rounds: 0,
+    tie_break_order: ['wins', 'seconds', 'thirds', 'best_recent_finish'],
+    notes: ''
+  });
+
+  const [pointsRows, setPointsRows] = useState([]);
+
+  const { data: config } = useQuery({
+    queryKey: ['pointsConfig', configId],
+    queryFn: () => configId ? base44.entities.PointsConfig.list().then(all => all.find(c => c.id === configId)) : null,
+    enabled: !!configId
+  });
+
+  useEffect(() => {
+    if (config) {
+      setForm(config);
+      const rows = Object.entries(config.points_table_json || {}).map(([pos, pts]) => ({ position: Number(pos), points: pts })).sort((a, b) => a.position - b.position);
+      setPointsRows(rows);
+    }
+  }, [config, open]);
+
+  const handleSave = () => {
+    const table = {};
+    pointsRows.forEach(row => {
+      if (row.position && row.points !== '') table[String(row.position)] = Number(row.points);
+    });
+
+    onSave({
+      ...form,
+      points_table_json: table
+    });
+  };
+
+  const addPointsRow = () => {
+    setPointsRows([...pointsRows, { position: Math.max(0, ...pointsRows.map(r => r.position)) + 1, points: '' }]);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white">{configId ? 'Edit Config' : 'New Points Config'}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Name</label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Series *</label>
+              <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Series Class (optional)</label>
+              <Select value={form.series_class_id || ''} onValueChange={(v) => setForm({ ...form, series_class_id: v || '' })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value={null}>All classes</SelectItem>
+                  {seriesClasses.filter(c => !form.series_id || c.series_id === form.series_id).map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Season Year *</label>
+              <Input value={form.season_year} onChange={(e) => setForm({ ...form, season_year: e.target.value })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+          </div>
+
+          <hr className="border-gray-700" />
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Points Table</h3>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {pointsRows.map((row, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <Input type="number" value={row.position} onChange={(e) => {
+                    const newRows = [...pointsRows];
+                    newRows[idx].position = Number(e.target.value);
+                    setPointsRows(newRows);
+                  }} className="bg-gray-800 border-gray-700 text-white w-20" placeholder="Position" />
+                  <Input type="number" value={row.points} onChange={(e) => {
+                    const newRows = [...pointsRows];
+                    newRows[idx].points = Number(e.target.value);
+                    setPointsRows(newRows);
+                  }} className="bg-gray-800 border-gray-700 text-white flex-1" placeholder="Points" />
+                  <Button size="sm" variant="ghost" onClick={() => setPointsRows(pointsRows.filter((_, i) => i !== idx))} className="text-red-400">Remove</Button>
+                </div>
+              ))}
+            </div>
+            <Button size="sm" variant="outline" onClick={addPointsRow} className="border-gray-700 text-gray-300">Add Position</Button>
+          </div>
+
+          <hr className="border-gray-700" />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Calculation Scope</label>
+              <Select value={form.calculation_scope} onValueChange={(v) => setForm({ ...form, calculation_scope: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="per_event">Per Event</SelectItem>
+                  <SelectItem value="per_session">Per Session</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">DNF Policy</label>
+              <Select value={form.dnf_policy} onValueChange={(v) => setForm({ ...form, dnf_policy: v })}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="finish_position_points">Finish Position Points</SelectItem>
+                  <SelectItem value="minimum_points">Minimum Points</SelectItem>
+                  <SelectItem value="zero_points">Zero Points</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {form.dnf_policy === 'minimum_points' && (
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">DNF Minimum Points</label>
+              <Input type="number" value={form.dnf_minimum_points} onChange={(e) => setForm({ ...form, dnf_minimum_points: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Participation Points</label>
+              <Input type="number" value={form.participation_points} onChange={(e) => setForm({ ...form, participation_points: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Drop Rounds</label>
+              <Input type="number" value={form.drop_rounds} onChange={(e) => setForm({ ...form, drop_rounds: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Notes</label>
+            <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="Optional notes" />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Config</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
