@@ -1421,12 +1421,27 @@ export default function RegistrationDashboard() {
                 )
               )}
 
+              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
+                selectedEvent ? (
+                  <GateManager
+                    selectedEvent={selectedEvent}
+                    invalidateAfterOperation={invalidateAfterOperation}
+                    dashboardContext={dashboardContext}
+                  />
+                ) : (
+                  <Card className="bg-[#171717] border-gray-800">
+                    <CardContent className="py-20 text-center">
+                      <p className="text-gray-400">Select an event to access the Gate Manager</p>
+                    </CardContent>
+                  </Card>
+                )
+              )}
+
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'gateManager' && (
                 <GateManager
                   selectedEvent={selectedEvent}
-                  isAdmin={isAdmin}
-                  currentUser={user}
                   invalidateAfterOperation={invalidateAfterOperation}
+                  dashboardContext={dashboardContext}
                 />
               )}
 
