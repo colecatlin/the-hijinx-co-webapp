@@ -325,14 +325,29 @@ export default function ResultsManager({
       if (newStatus === 'Official' || newStatus === 'Provisional') {
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
-      if (newStatus === 'Official') {
-        // Trigger standings recalculation (non-blocking — failure is logged, not surfaced)
-        base44.functions.invoke('triggerStandingsFromSession', {
-          session_id: selectedSession.id,
-          event_id: eventId,
-        }).then(() => {
-          queryClient.invalidateQueries({ queryKey: ['standings'] });
-        }).catch(() => {});
+      if (newStatus === 'Official' && selectedSession?.session_type === 'Final') {
+        // Auto-calculate standings for Final sessions going Official
+        const prevStatuses = ['Draft', 'Provisional'];
+        if (prevStatuses.includes(prevStatus)) {
+          const sessionResults = await base44.entities.Results.filter({
+            event_id: eventId,
+            session_id: selectedSession.id,
+          }).catch(() => []);
+          calculateStandingsForSession({
+            session: selectedSession,
+            event: selectedEvent,
+            resultsList: sessionResults,
+            base44,
+            onComplete: ({ driversUpdated }) => {
+              invalidateAfterOperation('standings_recalculated', {
+                eventId,
+                seriesId: selectedEvent?.series_id,
+                seasonYear: selectedEvent?.season,
+              });
+              toast.success(`Standings updated for ${driversUpdated} drivers`);
+            },
+          });
+        }
       }
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
