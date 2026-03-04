@@ -5,7 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle } from 'lucide-react';
+import { reviewCredentialRequest } from './mediaApi';
 
 export default function MediaRequestsManager({
   dashboardContext,
@@ -16,13 +21,22 @@ export default function MediaRequestsManager({
   invalidateAfterOperation,
 }) {
   const [pending, setPending] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [approvalForm, setApprovalForm] = useState({
+    approved_access_level: '',
+    approved_roles: [],
+    expires_at: '',
+    event_expiry_buffer_hours: 12,
+  });
+  const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
   // Determine org context
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
   const orgEntityType = selectedTrack ? 'track' : 'series';
 
-  // Load credential requests
+  // Load credential requests with proper scoping
   const { data: requests = [] } = useQuery({
     queryKey: ['credential_requests', orgEntityId, selectedEvent?.id],
     queryFn: async () => {
@@ -31,7 +45,9 @@ export default function MediaRequestsManager({
       return allRequests.filter(
         (cr) =>
           cr.target_entity_id === orgEntityId ||
-          (selectedEvent && cr.related_event_id === selectedEvent.id)
+          (selectedEvent && cr.related_event_id === selectedEvent.id) ||
+          (selectedSeries && cr.target_entity_id === selectedSeries.id) ||
+          (selectedTrack && cr.target_entity_id === selectedTrack.id)
       );
     },
     enabled: !!orgEntityId,
@@ -50,41 +66,81 @@ export default function MediaRequestsManager({
 
   // Review mutation
   const reviewMutation = useMutation({
-    mutationFn: async ({ requestId, decision, notes, issuerEntityId, reviewerUserId }) => {
+    mutationFn: async ({ requestId, action, notes, issuerEntityId, reviewerUserId, payload }) => {
       const actionMap = {
-        approved: 'approve',
-        denied: 'deny',
         under_review: 'under_review',
-        change_requested: 'request_info',
+        request_info: 'request_info',
+        deny: 'deny',
+        approve: 'approve',
       };
-      return base44.functions.invoke('media_reviewCredentialRequest', {
+      const result = await reviewCredentialRequest({
         request_id: requestId,
-        action: actionMap[decision] || decision,
+        action: actionMap[action],
         review_notes: notes,
         issuer_entity_id: issuerEntityId,
         reviewer_user_id: reviewerUserId,
+        ...payload,
       });
+      if (!result.ok) throw new Error(result.errorMessage);
+      return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['credential_requests'] });
-      invalidateAfterOperation('media_request_updated');
+      invalidateAfterOperation(`media_request_${variables.action}`);
       setPending(false);
+      setApprovalDialogOpen(false);
+      setError('');
     },
-    onError: (error) => {
-      console.error('Review error:', error);
+    onError: (err) => {
+      setError(err.message);
       setPending(false);
     },
   });
 
-  const handleAction = async (requestId, decision) => {
+  const handleAction = async (requestId, action, payload = {}) => {
     setPending(true);
+    setError('');
     const user = await base44.auth.me();
     reviewMutation.mutate({
       requestId,
-      decision,
+      action,
       notes: '',
       issuerEntityId: orgEntityId,
       reviewerUserId: user.id,
+      payload,
+    });
+  };
+
+  const handleApproveClick = (requestId) => {
+    setSelectedRequestId(requestId);
+    setApprovalForm({
+      approved_access_level: '',
+      approved_roles: [],
+      expires_at: '',
+      event_expiry_buffer_hours: 12,
+    });
+    setError('');
+    setApprovalDialogOpen(true);
+  };
+
+  const handleConfirmApprove = async () => {
+    if (!selectedRequestId) return;
+    setPending(true);
+    setError('');
+    const user = await base44.auth.me();
+    const payload = {};
+    if (approvalForm.approved_access_level) payload.approved_access_level = approvalForm.approved_access_level;
+    if (approvalForm.approved_roles?.length > 0) payload.approved_roles = approvalForm.approved_roles;
+    if (approvalForm.expires_at) payload.expires_at = approvalForm.expires_at;
+    if (approvalForm.event_expiry_buffer_hours !== 12) payload.event_expiry_buffer_hours = approvalForm.event_expiry_buffer_hours;
+    
+    reviewMutation.mutate({
+      requestId: selectedRequestId,
+      action: 'approve',
+      notes: '',
+      issuerEntityId: orgEntityId,
+      reviewerUserId: user.id,
+      payload,
     });
   };
 
@@ -172,12 +228,12 @@ export default function MediaRequestsManager({
                       </Badge>
                     </TableCell>
                     <TableCell className="flex gap-1">
-                      {req.status === 'applied' && (
+                      {(req.status === 'applied' || req.status === 'under_review') && (
                         <>
                           <Button
                             size="sm"
                             disabled={pending}
-                            onClick={() => handleAction(req.id, 'approved')}
+                            onClick={() => handleApproveClick(req.id)}
                             className="h-6 px-2 text-xs bg-green-700 hover:bg-green-600"
                           >
                             Approve
@@ -185,22 +241,20 @@ export default function MediaRequestsManager({
                           <Button
                             size="sm"
                             disabled={pending}
-                            onClick={() => handleAction(req.id, 'denied')}
+                            onClick={() => handleAction(req.id, 'deny')}
                             className="h-6 px-2 text-xs bg-red-700 hover:bg-red-600"
                           >
                             Deny
                           </Button>
+                          <Button
+                            size="sm"
+                            disabled={pending}
+                            onClick={() => handleAction(req.id, 'request_info')}
+                            className="h-6 px-2 text-xs bg-yellow-700 hover:bg-yellow-600"
+                          >
+                            Info
+                          </Button>
                         </>
-                      )}
-                      {req.status === 'change_requested' && (
-                        <Button
-                          size="sm"
-                          disabled={pending}
-                          onClick={() => handleAction(req.id, 'under_review')}
-                          className="h-6 px-2 text-xs bg-yellow-700 hover:bg-yellow-600"
-                        >
-                          Review
-                        </Button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -210,6 +264,79 @@ export default function MediaRequestsManager({
           </div>
         )}
       </CardContent>
+
+      {/* Approval Dialog */}
+      <Dialog open={approvalDialogOpen} onOpenChange={setApprovalDialogOpen}>
+        <DialogContent className="bg-[#262626] border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Approve Credential Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {error && (
+              <div className="bg-red-900/30 border border-red-700 rounded p-3 text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Access Level (optional override)</label>
+              <Select value={approvalForm.approved_access_level} onValueChange={(v) => setApprovalForm({...approvalForm, approved_access_level: v})}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-700 text-white">
+                  <SelectValue placeholder="Use requested level" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value={null}>Use Requested</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="pit">Pit</SelectItem>
+                  <SelectItem value="hot_pit">Hot Pit</SelectItem>
+                  <SelectItem value="restricted">Restricted</SelectItem>
+                  <SelectItem value="drone">Drone</SelectItem>
+                  <SelectItem value="all_access">All Access</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {!selectedEvent && (
+              <>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Expires At (optional)</label>
+                  <Input
+                    type="datetime-local"
+                    value={approvalForm.expires_at}
+                    onChange={(e) => setApprovalForm({...approvalForm, expires_at: e.target.value})}
+                    className="bg-[#1A1A1A] border-gray-700 text-white"
+                  />
+                </div>
+              </>
+            )}
+            {selectedEvent && (
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Event Expiry Buffer (hours)</label>
+                <Input
+                  type="number"
+                  value={approvalForm.event_expiry_buffer_hours}
+                  onChange={(e) => setApprovalForm({...approvalForm, event_expiry_buffer_hours: parseInt(e.target.value) || 12})}
+                  className="bg-[#1A1A1A] border-gray-700 text-white"
+                />
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setApprovalDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmApprove}
+                disabled={pending}
+                className="bg-green-700 hover:bg-green-600"
+              >
+                {pending ? 'Approving...' : 'Approve'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -201,14 +201,18 @@ function getKeysForOperation(operationType, payload = {}) {
        if (eventId) exact.push(REG_QK.entries(eventId), REG_QK.operationLogs(eventId));
        break;
 
-    case 'media_request_updated':
+    case 'media_request_under_review':
+    case 'media_request_info_requested':
+    case 'media_request_denied':
+    case 'media_request_approved':
       broad.push(['credential_requests'], ['media_credentials'], ['operation_logs']);
       break;
 
-    case 'media_credential_updated':
+    case 'media_credential_revoked':
       broad.push(['media_credentials'], ['operation_logs']);
       break;
 
+    case 'media_policy_created':
     case 'media_policy_updated':
       broad.push(['policies'], ['operation_logs']);
       break;

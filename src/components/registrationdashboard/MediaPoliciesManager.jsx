@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertCircle, Plus } from 'lucide-react';
+import { upsertPolicy } from './mediaApi';
 
 export default function MediaPoliciesManager({
   dashboardContext,
@@ -21,6 +22,7 @@ export default function MediaPoliciesManager({
 }) {
   const [pending, setPending] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPolicyId, setEditingPolicyId] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     policy_type: 'general',
@@ -28,38 +30,44 @@ export default function MediaPoliciesManager({
     version: 1,
     active: true,
   });
+  const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
   // Determine org context
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
   const orgEntityType = selectedTrack ? 'track' : 'series';
 
-  // Load policies
+  // Load policies with proper scoping
   const { data: policies = [] } = useQuery({
-    queryKey: ['policies', orgEntityId],
+    queryKey: ['policies', orgEntityId, selectedEvent?.id],
     queryFn: async () => {
       if (!orgEntityId) return [];
-      const allPolicies = await base44.entities.Policy.filter({
-        entity_id: orgEntityId,
-      });
-      return allPolicies;
+      const allPolicies = await base44.entities.Policy.filter({});
+      return allPolicies.filter(
+        (p) =>
+          p.entity_id === orgEntityId ||
+          (selectedEvent && p.entity_id === selectedEvent.id)
+      );
     },
     enabled: !!orgEntityId,
   });
 
-  // Create mutation
-  const createMutation = useMutation({
+  // Create/Update mutation
+  const upsertMutation = useMutation({
     mutationFn: async (data) => {
       const { userId, ...policyData } = data;
-      return base44.functions.invoke('media_createOrUpdatePolicy', {
+      const result = await upsertPolicy({
         entity_id: orgEntityId,
         user_id: userId,
         ...policyData,
       });
+      if (!result.ok) throw new Error(result.errorMessage);
+      return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['policies'] });
-      invalidateAfterOperation('media_policy_updated');
+      const operationType = variables.policy_id ? 'media_policy_updated' : 'media_policy_created';
+      invalidateAfterOperation(operationType);
       setFormData({
         title: '',
         policy_type: 'general',
@@ -67,51 +75,61 @@ export default function MediaPoliciesManager({
         version: 1,
         active: true,
       });
+      setEditingPolicyId(null);
       setDialogOpen(false);
+      setError('');
       setPending(false);
     },
-    onError: (error) => {
-      console.error('Create error:', error);
+    onError: (err) => {
+      setError(err.message);
       setPending(false);
     },
   });
 
-  // Toggle active mutation
-  const toggleMutation = useMutation({
-    mutationFn: async ({ policyId, active, userId }) => {
-      const policy = policies.find((p) => p.id === policyId);
-      return base44.functions.invoke('media_createOrUpdatePolicy', {
-        policy_id: policyId,
-        entity_id: orgEntityId,
-        user_id: userId,
-        policy_type: policy.policy_type,
+  const handleOpenDialog = (policy = null) => {
+    if (policy) {
+      setEditingPolicyId(policy.id);
+      setFormData({
         title: policy.title,
+        policy_type: policy.policy_type,
         body_rich_text: policy.body_rich_text,
         version: policy.version,
-        active,
+        active: policy.active,
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policies'] });
-      invalidateAfterOperation('media_policy_updated');
-    },
-  });
+    } else {
+      setEditingPolicyId(null);
+      setFormData({
+        title: '',
+        policy_type: 'general',
+        body_rich_text: '',
+        version: 1,
+        active: true,
+      });
+    }
+    setError('');
+    setDialogOpen(true);
+  };
 
   const handleCreate = async () => {
     if (!formData.title || !formData.body_rich_text) {
-      alert('Title and body are required');
+      setError('Title and body are required');
       return;
     }
     setPending(true);
     const user = await base44.auth.me();
-    createMutation.mutate({ ...formData, userId: user.id });
+    upsertMutation.mutate({
+      ...(editingPolicyId && { policy_id: editingPolicyId }),
+      ...formData,
+      userId: user.id,
+    });
   };
 
   const handleToggleActive = async (policyId) => {
     const policy = policies.find((p) => p.id === policyId);
     const user = await base44.auth.me();
-    toggleMutation.mutate({
-      policyId,
+    upsertMutation.mutate({
+      policy_id: policyId,
+      ...policy,
       active: !policy.active,
       userId: user.id,
     });
@@ -139,15 +157,20 @@ export default function MediaPoliciesManager({
         <CardTitle className="text-white">Media Policies</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="h-8 px-3 bg-blue-700 hover:bg-blue-600">
+            <Button size="sm" className="h-8 px-3 bg-blue-700 hover:bg-blue-600" onClick={() => handleOpenDialog()}>
               <Plus className="w-3 h-3 mr-1" /> Create Policy
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-[#262626] border-gray-700">
             <DialogHeader>
-              <DialogTitle className="text-white">Create Policy</DialogTitle>
+              <DialogTitle className="text-white">{editingPolicyId ? 'Edit Policy' : 'Create Policy'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {error && (
+                <div className="bg-red-900/30 border border-red-700 rounded p-3 text-red-300 text-sm">
+                  {error}
+                </div>
+              )}
               <Input
                 placeholder="Policy Title"
                 value={formData.title}
@@ -183,6 +206,19 @@ export default function MediaPoliciesManager({
                 rows={6}
                 className="bg-[#1A1A1A] border-gray-700 text-white"
               />
+              {editingPolicyId && (
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Version (increment for update)</label>
+                  <Input
+                    type="number"
+                    value={formData.version}
+                    onChange={(e) =>
+                      setFormData({ ...formData, version: parseInt(e.target.value) || 1 })
+                    }
+                    className="bg-[#1A1A1A] border-gray-700 text-white"
+                  />
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -196,7 +232,7 @@ export default function MediaPoliciesManager({
                   disabled={pending}
                   className="flex-1 bg-green-700 hover:bg-green-600"
                 >
-                  Create
+                  {pending ? (editingPolicyId ? 'Saving...' : 'Creating...') : (editingPolicyId ? 'Save' : 'Create')}
                 </Button>
               </div>
             </div>
@@ -241,7 +277,15 @@ export default function MediaPoliciesManager({
                         {policy.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenDialog(policy)}
+                        className="h-6 px-2 text-xs border-gray-700"
+                      >
+                        Edit
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"

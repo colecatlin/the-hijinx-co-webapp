@@ -5,7 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle } from 'lucide-react';
+import { revokeCredential } from './mediaApi';
 
 export default function IssuedCredentialsManager({
   dashboardContext,
@@ -16,12 +19,16 @@ export default function IssuedCredentialsManager({
   invalidateAfterOperation,
 }) {
   const [pending, setPending] = useState(false);
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+  const [selectedCredentialId, setSelectedCredentialId] = useState(null);
+  const [revokeNotes, setRevokeNotes] = useState('');
+  const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
   // Determine org context
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
 
-  // Load issued credentials
+  // Load issued credentials with proper scoping
   const { data: credentials = [] } = useQuery({
     queryKey: ['media_credentials', orgEntityId, selectedEvent?.id],
     queryFn: async () => {
@@ -29,8 +36,10 @@ export default function IssuedCredentialsManager({
       const allCreds = await base44.entities.MediaCredential.filter({});
       return allCreds.filter(
         (c) =>
-          c.issuer_entity_id === orgEntityId ||
-          (selectedEvent && c.scope_entity_id === selectedEvent.id)
+          (selectedEvent && c.scope_entity_id === selectedEvent.id) ||
+          (selectedSeries && c.scope_entity_id === selectedSeries.id) ||
+          (selectedTrack && c.scope_entity_id === selectedTrack.id) ||
+          c.issuer_entity_id === orgEntityId
       );
     },
     enabled: !!orgEntityId,
@@ -49,27 +58,42 @@ export default function IssuedCredentialsManager({
 
   // Revoke mutation
   const revokeMutation = useMutation({
-    mutationFn: async ({ credentialId, userId }) => {
-      return base44.functions.invoke('media_revokeCredential', {
+    mutationFn: async ({ credentialId, userId, notes }) => {
+      const result = await revokeCredential({
         credential_id: credentialId,
         requester_user_id: userId,
+        revoke_notes: notes,
       });
+      if (!result.ok) throw new Error(result.errorMessage);
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['media_credentials'] });
-      invalidateAfterOperation('media_credential_updated');
+      invalidateAfterOperation('media_credential_revoked');
       setPending(false);
+      setRevokeDialogOpen(false);
+      setRevokeNotes('');
+      setError('');
     },
-    onError: (error) => {
-      console.error('Revoke error:', error);
+    onError: (err) => {
+      setError(err.message);
       setPending(false);
     },
   });
 
-  const handleRevoke = async (credentialId) => {
+  const handleRevokeClick = (credentialId) => {
+    setSelectedCredentialId(credentialId);
+    setRevokeNotes('');
+    setError('');
+    setRevokeDialogOpen(true);
+  };
+
+  const handleConfirmRevoke = async () => {
+    if (!selectedCredentialId) return;
     setPending(true);
+    setError('');
     const user = await base44.auth.me();
-    revokeMutation.mutate({ credentialId, userId: user.id });
+    revokeMutation.mutate({ credentialId: selectedCredentialId, userId: user.id, notes: revokeNotes });
   };
 
   const statusColor = (status) => {
@@ -155,7 +179,7 @@ export default function IssuedCredentialsManager({
                         <Button
                           size="sm"
                           disabled={pending}
-                          onClick={() => handleRevoke(cred.id)}
+                          onClick={() => handleRevokeClick(cred.id)}
                           className="h-6 px-2 text-xs bg-red-700 hover:bg-red-600"
                         >
                           Revoke
@@ -169,6 +193,48 @@ export default function IssuedCredentialsManager({
           </div>
         )}
       </CardContent>
+
+      {/* Revoke Dialog */}
+      <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
+        <DialogContent className="bg-[#262626] border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Revoke Credential</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {error && (
+              <div className="bg-red-900/30 border border-red-700 rounded p-3 text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Revoke Notes (optional)</label>
+              <Textarea
+                placeholder="Reason for revocation..."
+                value={revokeNotes}
+                onChange={(e) => setRevokeNotes(e.target.value)}
+                rows={3}
+                className="bg-[#1A1A1A] border-gray-700 text-white"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setRevokeDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmRevoke}
+                disabled={pending}
+                className="bg-red-700 hover:bg-red-600"
+              >
+                {pending ? 'Revoking...' : 'Revoke'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
