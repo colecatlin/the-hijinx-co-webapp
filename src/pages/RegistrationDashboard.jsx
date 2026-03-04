@@ -1496,8 +1496,6 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'announcer_pack') && activeTab === 'announcer_pack' && (
                 <AnnouncerPackManager
                   selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                 />
