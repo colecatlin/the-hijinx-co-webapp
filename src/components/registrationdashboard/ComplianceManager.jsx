@@ -453,9 +453,10 @@ export default function ComplianceManager({
                       <td className="py-2 px-3 text-center">
                         <Button size="sm" variant="outline" onClick={() => {
                           setSelectedEntry(entry);
-                          setNotesValue(entry.compliance_notes || '');
-                          setEditingNotes(false);
-                          setEditingLicense(null);
+                            setNotesValue(entry.notes || '');
+                            setEditingNotes(false);
+                            setTransponderInput(entry.transponder_id || '');
+                            setAssigningTransponder(false);
                         }} className="border-gray-700 text-gray-300 hover:bg-gray-800">
                           {isAdmin ? 'Edit' : 'View'}
                         </Button>
