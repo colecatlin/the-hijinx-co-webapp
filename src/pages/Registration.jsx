@@ -407,8 +407,11 @@ function RegistrationFlow({ user }) {
       if (!eventId || !myDriver?.id) throw new Error('Missing event or driver');
       if (eventClasses.length > 0 && !entryFormData.event_class_id) throw new Error('Please select a class');
       if (!entryFormData.car_number.trim()) throw new Error('Car number is required');
-      const dupCheck = eventEntries.filter(e => e.car_number === entryFormData.car_number.trim() && e.driver_id !== myDriver.id);
-      if (dupCheck.length) throw new Error(`Car number ${entryFormData.car_number} already registered in this class`);
+      // Duplicate car number within same event + class
+      if (entryFormData.event_class_id) {
+        const dupCar = eventEntries.filter(e => e.car_number === entryFormData.car_number.trim() && e.driver_id !== myDriver.id);
+        if (dupCar.length) throw new Error(`Car number ${entryFormData.car_number} is already taken in this class`);
+      }
       const selectedEventClass = eventClasses.find(ec => ec.id === entryFormData.event_class_id);
       const payload = {
         event_id: eventId,
