@@ -671,7 +671,23 @@ export default function CheckInManager({
               </div>
             </div>
 
-            {/* Compliance blockers */}
+            {/* Compliance warnings */}
+            {(() => {
+              const warnings = getComplianceWarnings(formData);
+              if (warnings.length === 0) return null;
+              return (
+                <div className="bg-yellow-950/20 border border-yellow-800/40 rounded-lg p-3 space-y-1">
+                  <p className="text-xs font-semibold text-yellow-300 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" /> Compliance Warnings
+                  </p>
+                  {warnings.map(w => (
+                    <p key={w.label} className="text-xs text-yellow-400">• {w.label}</p>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* Check-in blockers (only when not yet checked in) */}
             {!isCheckedIn && (() => {
               const blockers = getCheckInBlockers(formData);
               if (blockers.length === 0) return null;
