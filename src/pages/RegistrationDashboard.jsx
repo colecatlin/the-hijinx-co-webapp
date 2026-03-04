@@ -39,7 +39,6 @@ import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCale
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
-import AnnouncerFeed from '@/components/registrationdashboard/AnnouncerFeed';
 import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
 import GateManager from '@/components/registrationdashboard/GateManager';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
@@ -1137,7 +1136,8 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'announcer') && (
                 <TabsTrigger
                   value="announcer"
-                  className="data-[state=active]:bg-purple-800 data-[state=active]:text-purple-100 text-gray-400 px-4 py-2"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Mic className="w-4 h-4 mr-2" /> Announcer
                 </TabsTrigger>
@@ -1145,9 +1145,10 @@ export default function RegistrationDashboard() {
               {canTab(dashboardPermissions, 'gate') && (
                 <TabsTrigger
                   value="gate"
-                  className="data-[state=active]:bg-green-800 data-[state=active]:text-green-100 text-gray-400 px-4 py-2"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-orange-800 data-[state=active]:text-orange-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <DoorOpen className="w-4 h-4 mr-2" /> Gate
+                  <Zap className="w-4 h-4 mr-2" /> Gate
                 </TabsTrigger>
               )}
               {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
@@ -1492,13 +1493,10 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                <GateAttendantManager
+                <GateManager
                   selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
@@ -1526,34 +1524,6 @@ export default function RegistrationDashboard() {
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
-                <AnnouncerFeed
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                <GateManager
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
-                <AnnouncerManager
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
                 />
               )}
 
