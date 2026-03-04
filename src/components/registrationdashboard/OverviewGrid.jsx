@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Play } from 'lucide-react';
+import { Clock, Play, AlertCircle } from 'lucide-react';
 import EventStatusCard from './EventStatusCard';
 import EntriesSummaryCard from './EntriesSummaryCard';
 import ComplianceAlertsCard from './ComplianceAlertsCard';
@@ -11,11 +11,18 @@ import StandingsStatusCard from './StandingsStatusCard';
 import SystemAlertsFeed from './SystemAlertsFeed';
 import RaceDayReadinessCard from './RaceDayReadinessCard';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useEntries from './hooks/useEntries';
+import { toast } from 'sonner';
+import { canAction } from '@/components/access/accessControl';
+import {
+  publishAllSessionsOfficial,
+  publishAllResultsOfficial,
+  publishStandings,
+} from './publishActions';
 
 const DQ = applyDefaultQueryOptions();
 
