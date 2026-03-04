@@ -522,40 +522,59 @@ export default function ComplianceManager({
                 </div>
               </div>
 
-              {/* Waiver toggle (admin only) */}
+              {/* Action buttons (admin only) */}
               {isAdmin && (
-                <div className="border-t border-gray-700 pt-4 space-y-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase">Waiver</p>
+                <div className="border-t border-gray-700 pt-4 space-y-3">
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</p>
+
+                  {/* Verify Waiver */}
                   <Button
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.waiver_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700'}`}
+                    className={`w-full border-gray-700 ${selectedEntry.waiver_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700 hover:bg-yellow-900/20'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
-                    {selectedEntry.waiver_verified ? 'Waiver Verified ✓ — Click to Unverify' : 'Mark Waiver Verified'}
+                    {selectedEntry.waiver_verified ? 'Waiver Verified ✓' : 'Verify Waiver'}
                   </Button>
-                </div>
-              )}
 
-              {/* License Status (admin only) */}
-              {isAdmin && (
-                <div className="border-t border-gray-700 pt-4 space-y-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase">License Verified</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[true, false].map(verified => (
-                      <Button
-                        key={String(verified)}
-                        size="sm"
-                        onClick={() => handleUpdateLicenseStatus(selectedEntry, verified ? 'Valid' : 'Unknown')}
-                        disabled={updatePending}
-                        variant={selectedEntry.license_verified === verified ? 'default' : 'outline'}
-                        className={`border-gray-700 ${selectedEntry.license_verified === verified ? 'bg-blue-600 text-white' : 'text-gray-300'}`}
-                      >
-                        {verified ? 'Verified' : 'Not Verified'}
-                      </Button>
-                    ))}
-                  </div>
+                  {/* Verify License */}
+                  <Button
+                    onClick={() => handleUpdateLicenseStatus(selectedEntry, selectedEntry.license_verified ? 'Unknown' : 'Valid')}
+                    disabled={updatePending}
+                    variant="outline"
+                    className={`w-full border-gray-700 ${selectedEntry.license_verified ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-orange-300 border-orange-700 hover:bg-orange-900/20'}`}
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {selectedEntry.license_verified ? 'License Verified ✓' : 'Verify License'}
+                  </Button>
+
+                  {/* Assign Transponder */}
+                  {!assigningTransponder ? (
+                    <Button
+                      onClick={() => setAssigningTransponder(true)}
+                      variant="outline"
+                      className={`w-full border-gray-700 ${selectedEntry.transponder_verified && selectedEntry.transponder_id ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-purple-300 border-purple-700 hover:bg-purple-900/20'}`}
+                    >
+                      {selectedEntry.transponder_id
+                        ? `Transponder: ${selectedEntry.transponder_id}${selectedEntry.transponder_verified ? ' ✓' : ' (unverified)'}`
+                        : 'Assign Transponder'}
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Transponder ID"
+                        value={transponderInput}
+                        onChange={e => setTransponderInput(e.target.value)}
+                        className="bg-[#262626] border-gray-700 text-white"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setAssigningTransponder(false)} className="flex-1 border-gray-700 text-gray-300">Cancel</Button>
+                        <Button size="sm" onClick={handleAssignTransponder} disabled={updatePending || !transponderInput.trim()} className="flex-1 bg-purple-700 hover:bg-purple-600 text-white">Assign</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
