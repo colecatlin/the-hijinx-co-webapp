@@ -177,31 +177,3 @@ function formatLapTime(ms) {
   const millis = ms % 1000;
   return `${minutes}:${String(seconds).padStart(2, '0')}.${String(Math.floor(millis / 10)).padStart(2, '0')}`;
 }
-
-/**
- * Map status to label
- */
-function getStatusLabel(status) {
-  const map = {
-    'Running': 'Running',
-    'DNF': 'DNF',
-    'DNS': 'DNS',
-    'DSQ': 'DSQ',
-    'Pit': 'Pit',
-  };
-  return map[status] || 'Unknown';
-}
-
-/**
- * Map status to badge color
- */
-function getStatusColor(status) {
-  switch (status) {
-    case 'Running': return 'bg-green-500/20 text-green-400';
-    case 'DNF': return 'bg-orange-500/20 text-orange-400';
-    case 'DSQ': return 'bg-red-500/20 text-red-400';
-    case 'DNS': return 'bg-red-500/20 text-red-400';
-    case 'Pit': return 'bg-yellow-500/20 text-yellow-400';
-    default: return 'bg-gray-500/20 text-gray-400';
-  }
-}
