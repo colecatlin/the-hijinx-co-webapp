@@ -123,6 +123,9 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'checkin_updated':
     case 'entry_tech_updated':
     case 'compliance_updated':
+    case 'media_request_updated':
+    case 'media_credential_updated':
+    case 'media_policy_updated':
     case 'compliance_created':
     case 'compliance_updated':
     case 'compliance_resolved':
