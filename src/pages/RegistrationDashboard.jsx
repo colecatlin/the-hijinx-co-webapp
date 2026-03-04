@@ -39,6 +39,7 @@ import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCale
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
 import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
 import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
+import AnnouncerFeed from '@/components/registrationdashboard/AnnouncerFeed';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1191,6 +1192,15 @@ export default function RegistrationDashboard() {
                   <Clock className="w-4 h-4 mr-2" /> Timing Sync
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'announcer') && (
+                <TabsTrigger
+                  value="announcer"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-cyan-800 data-[state=active]:text-cyan-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Mic className="w-4 h-4 mr-2" /> Announcer
+                </TabsTrigger>
+              )}
               {canTab(dashboardPermissions, 'announcer_pack') && (
                 <TabsTrigger
                   value="announcer_pack"
@@ -1496,6 +1506,16 @@ export default function RegistrationDashboard() {
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
+                />
+              )}
+
+              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
+                <AnnouncerFeed
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
                 />
               )}
 
