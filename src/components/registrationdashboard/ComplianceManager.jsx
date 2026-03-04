@@ -384,11 +384,10 @@ export default function ComplianceManager({
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All Flags</SelectItem>
                 <SelectItem value="waivers">Missing Waiver</SelectItem>
-                <SelectItem value="missingLicense">Missing License</SelectItem>
-                <SelectItem value="expiredLicense">Expired License</SelectItem>
-                <SelectItem value="payments">Unpaid</SelectItem>
+                <SelectItem value="licenses">License Unverified</SelectItem>
                 <SelectItem value="transponders">No Transponder</SelectItem>
-                <SelectItem value="duplicates">Duplicate #</SelectItem>
+                <SelectItem value="duplicates">Duplicate Car #</SelectItem>
+                <SelectItem value="payments">Unpaid</SelectItem>
               </SelectContent>
             </Select>
           </div>
