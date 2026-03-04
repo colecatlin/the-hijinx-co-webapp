@@ -1372,9 +1372,10 @@ export default function RegistrationDashboard() {
                 <IntegrationsManager 
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin}
-                  onSyncCompleted={() => invalidateAfterOperation('integration_sync_completed', { eventId })}
-                  onImportCompleted={() => invalidateAfterOperation('import_completed', { eventId })}
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
