@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { sortStandingsWithTieBreakers } from './standingsTieBreakers.js';
 
 Deno.serve(async (req) => {
   try {
@@ -52,6 +53,8 @@ Deno.serve(async (req) => {
     }
 
     const eventIds = events.map(e => e.id);
+    const eventMap = {};
+    events.forEach(e => { eventMap[e.id] = e; });
 
     // Load all results for these events
     let allResults = [];
@@ -66,56 +69,124 @@ Deno.serve(async (req) => {
     // Filter by class if specified, and by session types
     const applicableSessionTypes = pointsConfig.applies_to_session_types || ['Final'];
     const filteredResults = allResults.filter(r => {
-      if (series_class_id && r.series_class_id !== series_class_id) {
-        return false;
-      }
+      if (!r.position || r.position <= 0) return false;
+      if (series_class_id && r.series_class_id !== series_class_id) return false;
       return applicableSessionTypes.includes(r.session_type);
     });
 
-    // Aggregate points per driver
-    const driverStandings = {};
-
+    // Build per-driver raw event results for drop rounds
+    const driverEvents = {};
     for (const result of filteredResults) {
       const driverId = result.driver_id;
       if (!driverId) continue;
-
-      if (!driverStandings[driverId]) {
-        driverStandings[driverId] = {
-          driver_id: driverId,
-          series_id,
-          season,
-          series_class_id: series_class_id || null,
-          total_points: 0,
-          wins: 0,
-          seconds: 0,
-          thirds: 0,
-          results_count: 0
-        };
-      }
-
-      const standing = driverStandings[driverId];
-
-      // Calculate points from position
-      if (result.position && result.position > 0) {
-        const posIndex = result.position - 1;
-        const points = pointsConfig.points_by_position[posIndex] || 0;
-        standing.total_points += points;
-
-        if (result.position === 1) standing.wins++;
-        else if (result.position === 2) standing.seconds++;
-        else if (result.position === 3) standing.thirds++;
-      }
-
-      standing.results_count++;
+      if (!driverEvents[driverId]) driverEvents[driverId] = [];
+      driverEvents[driverId].push({
+        event_id: result.event_id,
+        event_date: eventMap[result.event_id]?.event_date,
+        position: result.position,
+        points: pointsConfig.points_by_position[result.position - 1] || 0
+      });
     }
 
-    // Write standings records if entity exists
-    const standingsArray = Object.values(driverStandings);
+    // Apply drop rounds
+    const dropRoundsEnabled = pointsConfig.drop_rounds?.enabled && pointsConfig.drop_rounds?.count > 0;
+    const dropCount = dropRoundsEnabled ? pointsConfig.drop_rounds.count : 0;
+    let droppedRoundsCount = 0;
 
+    if (dropRoundsEnabled) {
+      for (const driverId in driverEvents) {
+        const events = driverEvents[driverId];
+        if (events.length > dropCount) {
+          events.sort((a, b) => a.points - b.points);
+          const toDropCount = Math.min(dropCount, events.length);
+          driverEvents[driverId] = events.slice(toDropCount);
+          droppedRoundsCount = toDropCount;
+        }
+      }
+    }
+
+    // Aggregate points per driver with tie-breaker stats
+    const driverStandings = {};
+
+    for (const driverId in driverEvents) {
+      const events = driverEvents[driverId];
+      if (events.length === 0) continue;
+
+      let total = 0;
+      let wins = 0;
+      let seconds = 0;
+      let thirds = 0;
+      const finishes = [];
+      let latestFinish = null;
+
+      for (let i = 0; i < events.length; i++) {
+        const evt = events[i];
+        total += evt.points;
+
+        if (evt.position === 1) wins++;
+        else if (evt.position === 2) seconds++;
+        else if (evt.position === 3) thirds++;
+
+        finishes.push(evt.position);
+        latestFinish = evt.position;
+      }
+
+      finishes.sort((a, b) => a - b);
+
+      driverStandings[driverId] = {
+        driver_id: driverId,
+        series_id,
+        season_year: season,
+        series_class_id: series_class_id || null,
+        points_total: total,
+        rank: 0,
+        wins,
+        seconds,
+        thirds,
+        best_finishes: finishes,
+        starts: events.length,
+        latest_finish: latestFinish,
+        rounds_counted: events.length,
+        points_breakdown: events.map(e => ({
+          event_id: e.event_id,
+          event_date: e.event_date,
+          points: e.points,
+          finish_position: e.position
+        })),
+        last_calculated: new Date().toISOString(),
+        calculation_source: 'RaceCore',
+        points_config_id: pointsConfig.id,
+        podiums: (wins + seconds + thirds),
+        top5: finishes.filter(f => f <= 5).length,
+        top10: finishes.filter(f => f <= 10).length
+      };
+    }
+
+    // Load drivers for name fields
+    let allDrivers = [];
+    try {
+      allDrivers = await base44.asServiceRole.entities.Driver.list();
+    } catch (err) {
+      console.log('Could not load drivers:', err.message);
+    }
+    const driverMap = {};
+    allDrivers.forEach(d => { driverMap[d.id] = d; });
+
+    // Apply tie-breaker sorting
+    let standingsArray = Object.values(driverStandings);
+    standingsArray = standingsArray.map(s => ({
+      ...s,
+      first_name: driverMap[s.driver_id]?.first_name || '',
+      last_name: driverMap[s.driver_id]?.last_name || ''
+    }));
+
+    standingsArray = sortStandingsWithTieBreakers(standingsArray, pointsConfig.tie_breaker_order);
+
+    // Write standings records if entity exists
     try {
       const existingStandings = await base44.asServiceRole.entities.Standings.filter({
         series_id,
-        season
+        season_year: season
       });
 
       // Delete old standings for this series/season/class
@@ -127,8 +198,8 @@ Deno.serve(async (req) => {
 
       // Create new standings
       for (const standing of standingsArray) {
-        standing.last_calculated = new Date().toISOString();
-        await base44.asServiceRole.entities.Standings.create(standing);
+        const { first_name, last_name, ...data } = standing;
+        await base44.asServiceRole.entities.Standings.create(data);
       }
     } catch (err) {
       console.log('Standings entity not available or error:', err.message);
@@ -143,9 +214,10 @@ Deno.serve(async (req) => {
         series_id,
         season,
         series_class_id,
-        pointsConfigId: pointsConfig.id,
+        points_config_id: pointsConfig.id,
         standingsCount: standingsArray.length,
-        resultsProcessed: filteredResults.length
+        resultsProcessed: filteredResults.length,
+        dropped_rounds_count: droppedRoundsCount
       }
     });
 
@@ -154,6 +226,7 @@ Deno.serve(async (req) => {
       pointsConfig,
       standingsCount: standingsArray.length,
       resultsProcessed: filteredResults.length,
+      droppedRoundsCount,
       standings: standingsArray
     });
   } catch (error) {
