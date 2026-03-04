@@ -40,7 +40,16 @@ export default function OverviewGrid({
   announcerMode,
   onSelectSession,
   onEntriesNavigate,
+  dashboardPermissions,
+  invalidateAfterOperation,
 }) {
+  const queryClient = useQueryClient();
+  const [publishingSession, setPublishingSession] = useState(false);
+  const [publishingResults, setPublishingResults] = useState(false);
+  const [publishingStandings, setPublishingStandings] = useState(false);
+
+  const canPublish = canAction(dashboardPermissions, 'publish_official');
+
   // Load real entries for the selected event
   const { entries, allEntries, counts: entryCounts } = useEntries({
     eventId: selectedEvent?.id,
