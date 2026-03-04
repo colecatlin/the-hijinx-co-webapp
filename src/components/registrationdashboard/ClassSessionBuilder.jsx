@@ -31,7 +31,8 @@ const EMPTY_CLASS_FORM = {
 };
 const EMPTY_SESSION_FORM = {
   event_class_id: '', session_type: 'Practice', name: '', session_number: '',
-  scheduled_time: '', laps: '', input_source: 'Manual', status: 'Draft', advancement_rules: '',
+  round_number: '', scheduled_time: '', duration_minutes: '', laps: '', 
+  input_source: 'Manual', status: 'Draft', advancement_rules: '',
 };
 
 export default function ClassSessionBuilder({
