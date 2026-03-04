@@ -28,9 +28,6 @@ import EventStatusDashboard from './EventStatusDashboard';
 
 const DQ = applyDefaultQueryOptions();
 
-// Import useState since it was missing
-import { useState } from 'react';
-
 export default function OverviewGrid({
   dashboardContext,
   selectedEvent,
