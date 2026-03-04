@@ -1,608 +1,591 @@
-import React, { useState, useMemo } from 'react';
+/**
+ * Exports Manager
+ * One-click exports for entries, sessions, results, and standings
+ */
+import React, { useState, useMemo, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Download, FileText, Users, CheckSquare, Wrench, Flag, Trophy } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { REG_QK } from './queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { AlertCircle, Download, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { canAction } from '@/components/access/accessControl';
 
 const DQ = applyDefaultQueryOptions();
-const ROW_LIMIT = 10_000;
 
-// ── CSV helpers ──────────────────────────────────────────────────────────────
+// ── Helper: Generate timestamp for filename ────────────────────────────────
+const getTimestamp = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}${month}${day}_${hours}${minutes}`;
+};
 
-function generateCSV(dataRows, columns) {
-  if (!dataRows || dataRows.length === 0) return '';
-  const headerRow = columns.map((c) => `"${c.label}"`).join(',');
-  const bodyRows = dataRows.map((row) =>
-    columns.map(({ key }) => {
-      const val = row[key];
-      if (val === null || val === undefined) return '""';
-      return `"${String(val).replace(/"/g, '""')}"`;
-    }).join(',')
-  );
-  return [headerRow, ...bodyRows].join('\n') + '\n';
-}
-
-function downloadCSV(csv, filename) {
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  window.URL.revokeObjectURL(url);
-  a.remove();
-}
-
-function slugify(str) {
-  return (str || 'unknown').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-}
-
-async function logExport(eventId, exportType, rowCount) {
-  try {
-    await base44.asServiceRole.entities.OperationLog.create({
-      operation_type: 'export_generated',
-      source_type: 'ExportsManager',
-      entity_name: 'Export',
-      status: 'success',
-      metadata: { event_id: eventId, export_type: exportType, row_count: rowCount },
+// ── Helper: Convert array of objects to CSV string ──────────────────────────
+const arrayToCSV = (data, headers) => {
+  if (data.length === 0) return headers.join(',');
+  const rows = [headers.join(',')];
+  data.forEach((item) => {
+    const row = headers.map((header) => {
+      const value = item[header];
+      if (value === undefined || value === null) return '';
+      if (typeof value === 'string' && value.includes(',')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return String(value);
     });
-  } catch (_) {
-    // non-blocking
-  }
-}
+    rows.push(row.join(','));
+  });
+  return rows.join('\n');
+};
 
-// ── Export type definitions ──────────────────────────────────────────────────
-
-const EXPORT_TYPES = [
-  {
-    id: 'entry_list',
-    label: 'Entry List',
-    description: 'All entries for the event with car #, driver, class, and status.',
-    icon: Users,
-    buttonLabel: 'Export Entry List CSV',
-    requiresEvent: true,
-    requiresSession: false,
-    requiresStandingsFilters: false,
-  },
-  {
-    id: 'checkin_report',
-    label: 'Check-In Report',
-    description: 'Check-in status, waiver, payment, and transponder verification.',
-    icon: CheckSquare,
-    buttonLabel: 'Export Check-In Report CSV',
-    requiresEvent: true,
-    requiresSession: false,
-    requiresStandingsFilters: false,
-  },
-  {
-    id: 'tech_report',
-    label: 'Tech Inspection Report',
-    description: 'Tech status, inspection times, and notes for each entry.',
-    icon: Wrench,
-    buttonLabel: 'Export Tech Report CSV',
-    requiresEvent: true,
-    requiresSession: false,
-    requiresStandingsFilters: false,
-  },
-  {
-    id: 'session_results',
-    label: 'Session Results',
-    description: 'Race results for a specific session (position, laps, points).',
-    icon: Flag,
-    buttonLabel: 'Export Session Results CSV',
-    requiresEvent: true,
-    requiresSession: true,
-    requiresStandingsFilters: false,
-  },
-  {
-    id: 'standings',
-    label: 'Standings Export',
-    description: 'Championship standings filtered by series, season, and class.',
-    icon: Trophy,
-    buttonLabel: 'Export Standings CSV',
-    requiresEvent: false,
-    requiresSession: false,
-    requiresStandingsFilters: true,
-  },
-];
-
-// ── Main component ───────────────────────────────────────────────────────────
+// ── Helper: Download CSV file ──────────────────────────────────────────────
+const downloadCSV = (csvContent, filename) => {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 export default function ExportsManager({
   selectedEvent,
+  selectedTrack,
   selectedSeries,
   dashboardContext,
-  isAdmin,
   dashboardPermissions,
-  onExportCompleted,
+  invalidateAfterOperation,
 }) {
-  const eventId = selectedEvent?.id || '';
-  const eventName = selectedEvent?.name || '';
+  const eventId = selectedEvent?.id;
+  const queryClient = useQueryClient();
+  const canExport = canAction(dashboardPermissions, 'export');
 
-  const [selectedSessionId, setSelectedSessionId] = useState('');
-  const [standingsSeriesId, setStandingsSeriesId] = useState(selectedSeries?.id || '');
-  const [standingsSeason, setStandingsSeason] = useState(dashboardContext?.season || '');
-  const [standingsClassId, setStandingsClassId] = useState('');
-  const [exportHistory, setExportHistory] = useState([]);
-  const [exporting, setExporting] = useState('');
+  // ── Queries ────────────────────────────────────────────────────────────────
 
-  // ── Data ──────────────────────────────────────────────────────────────────
+  const { data: entries = [] } = useQuery({
+    queryKey: REG_QK.entries(eventId),
+    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
+    ...DQ,
+  });
 
-  const { data: entries = [], isLoading: entriesLoading } = useQuery({
-    queryKey: ['entries', eventId],
-    queryFn: () => eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([]),
-    enabled: !!eventId,
+  const { data: driverPrograms = [] } = useQuery({
+    queryKey: ['exports_driverPrograms'],
+    queryFn: () => (eventId ? base44.entities.DriverProgram.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
     ...DQ,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions', eventId],
-    queryFn: () => eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([]),
-    enabled: !!eventId,
+    queryKey: REG_QK.sessions(eventId),
+    queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
     ...DQ,
   });
 
-  const { data: sessionResults = [] } = useQuery({
-    queryKey: ['results', eventId, selectedSessionId],
-    queryFn: () => selectedSessionId
-      ? base44.entities.Results.filter({ session_id: selectedSessionId })
-      : Promise.resolve([]),
-    enabled: !!selectedSessionId,
-    ...DQ,
-  });
-
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-    ...DQ,
-  });
-
-  const { data: eventClasses = [] } = useQuery({
-    queryKey: ['eventClasses', eventId],
-    queryFn: () => eventId ? base44.entities.EventClass.filter({ event_id: eventId }) : Promise.resolve([]),
-    enabled: !!eventId,
-    ...DQ,
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    ...DQ,
-  });
-
-  const { data: seriesList = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    ...DQ,
-  });
-
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', standingsSeriesId],
-    queryFn: () => standingsSeriesId
-      ? base44.entities.SeriesClass.filter({ series_id: standingsSeriesId })
-      : Promise.resolve([]),
-    enabled: !!standingsSeriesId,
+  const { data: results = [] } = useQuery({
+    queryKey: REG_QK.results(eventId),
+    queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
     ...DQ,
   });
 
   const { data: standings = [] } = useQuery({
-    queryKey: ['standings', standingsSeriesId, standingsSeason, standingsClassId],
-    queryFn: () => {
-      const filter = {};
-      if (standingsSeriesId) filter.series_id = standingsSeriesId;
-      if (standingsSeason) filter.season = standingsSeason;
-      if (standingsClassId) filter.series_class_id = standingsClassId;
-      return Object.keys(filter).length
-        ? base44.entities.Standings.filter(filter)
-        : base44.entities.Standings.list();
-    },
-    enabled: !!(standingsSeriesId && standingsSeason),
+    queryKey: ['exports_standings'],
+    queryFn: () => (eventId ? base44.entities.Standings.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
     ...DQ,
   });
 
-  // ── Lookup maps ───────────────────────────────────────────────────────────
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['exports_drivers'],
+    queryFn: () => base44.entities.Driver.list('-created_date', 1000),
+    staleTime: 60_000,
+    enabled: canExport,
+    ...DQ,
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['exports_teams'],
+    queryFn: () => base44.entities.Team.list('-created_date', 500),
+    staleTime: 60_000,
+    enabled: canExport,
+    ...DQ,
+  });
+
+  const { data: operationLogs = [] } = useQuery({
+    queryKey: ['exports_operationLogs'],
+    queryFn: () => base44.entities.OperationLog.list('-created_date', 200),
+    staleTime: 30_000,
+    enabled: !!eventId && canExport,
+    ...DQ,
+  });
+
+  const { data: eventClasses = [] } = useQuery({
+    queryKey: ['exports_eventClasses'],
+    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId && canExport,
+    ...DQ,
+  });
+
+  // ── Mutations ──────────────────────────────────────────────────────────────
+
+  const logExportMutation = useMutation({
+    mutationFn: (data) => base44.entities.OperationLog.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exports_operationLogs'] });
+      invalidateAfterOperation('operation_logged');
+    },
+    onError: (err) => {
+      console.error('Failed to log export:', err);
+    },
+  });
+
+  // ── Derived data ───────────────────────────────────────────────────────────
 
   const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
+  const sessionMap = useMemo(() => Object.fromEntries(sessions.map((s) => [s.id, s])), [sessions]);
   const classMap = useMemo(() => Object.fromEntries(eventClasses.map((c) => [c.id, c])), [eventClasses]);
 
-  const driverName = (id) => {
-    const d = driverMap[id];
-    return d ? `${d.first_name} ${d.last_name}`.trim() : id || '';
-  };
-  const teamName = (id) => teamMap[id]?.name || '';
-  const className = (ecId) => classMap[ecId]?.class_name || ecId || '';
+  // Filter export logs
+  const exportLogs = useMemo(() => {
+    return operationLogs
+      .filter((log) => log.operation_type === 'export' && log.metadata)
+      .slice(0, 25);
+  }, [operationLogs]);
 
-  // ── Entry-based exports ───────────────────────────────────────────────────
+  // ── Export functions ───────────────────────────────────────────────────────
 
-  function buildEntryListRows() {
-    const sorted = [...entries].sort((a, b) => {
-      const cn = className(a.event_class_id).localeCompare(className(b.event_class_id));
-      if (cn !== 0) return cn;
-      return (a.car_number || '').localeCompare(b.car_number || '', undefined, { numeric: true });
-    });
-    return sorted.map((e) => ({
-      car_number: e.car_number,
-      driver_name: driverName(e.driver_id),
-      team_name: teamName(e.team_id),
-      class_name: className(e.event_class_id),
-      entry_status: e.entry_status || '',
-      payment_status: e.payment_status || '',
-      tech_status: e.tech_status || '',
-      transponder_id: e.transponder_id || '',
-    }));
-  }
+  const exportEntries = useCallback(() => {
+    const timestamp = getTimestamp();
+    const filename = `entries_${eventId}_${timestamp}.csv`;
 
-  function buildCheckinRows() {
-    return entries.map((e) => ({
-      car_number: e.car_number,
-      driver_name: driverName(e.driver_id),
-      checkin_status: e.entry_status || '',
-      waiver_verified: e.waiver_verified ? 'Yes' : 'No',
-      payment_status: e.payment_status || '',
-      transponder_verified: e.transponder_verified ? 'Yes' : 'No',
-      tech_status: e.tech_status || '',
-    }));
-  }
+    const primaryData = entries.length > 0 ? entries : driverPrograms;
+    const exportData = primaryData.map((item) => {
+      const driver = driverMap[item.driver_id];
+      const team = teamMap[item.team_id];
+      const eventClass = classMap[item.event_class_id];
 
-  function buildTechRows() {
-    return entries.map((e) => ({
-      car_number: e.car_number,
-      driver_name: driverName(e.driver_id),
-      class_name: className(e.event_class_id),
-      tech_status: e.tech_status || '',
-      tech_time: e.tech_time || '',
-      tech_inspector_user_id: e.tech_inspector_user_id || '',
-      notes: e.tech_notes || e.notes || '',
-    }));
-  }
-
-  function buildSessionResultRows() {
-    const session = sessions.find((s) => s.id === selectedSessionId);
-    const sorted = [...sessionResults].sort((a, b) => (a.position || 9999) - (b.position || 9999));
-    const entryMap = Object.fromEntries(entries.map((e) => [e.id, e]));
-    return sorted.map((r) => {
-      const entry = entryMap[r.entry_id] || {};
       return {
-        position: r.position ?? '',
-        car_number: entry.car_number || r.car_number || '',
-        driver_name: driverName(r.driver_id),
-        status: r.status || '',
-        laps_completed: r.laps_completed ?? '',
-        best_lap_time_ms: r.best_lap_time_ms ?? '',
-        points: r.points ?? '',
-        notes: r.notes || '',
+        event_id: eventId,
+        event_name: selectedEvent?.name || '',
+        class_id: item.event_class_id || '',
+        class_name: eventClass?.class_name || '',
+        car_number: item.car_number || '',
+        driver_first_name: driver?.first_name || '',
+        driver_last_name: driver?.last_name || '',
+        team_name: team?.name || '',
+        status: item.entry_status || item.status || '',
       };
     });
-  }
 
-  function buildStandingsRows() {
-    const filtered = standingsClassId
-      ? standings.filter((s) => s.series_class_id === standingsClassId)
-      : standings;
-    const sorted = [...filtered].sort((a, b) => (a.rank || 9999) - (b.rank || 9999));
-    return sorted.map((s) => ({
-      rank: s.rank ?? '',
-      driver_name: driverName(s.driver_id) || s.driver_name || '',
-      points_total: s.points_total ?? '',
-      wins: s.wins ?? '',
-      podiums: s.podiums ?? '',
-    }));
-  }
+    const headers = [
+      'event_id',
+      'event_name',
+      'class_id',
+      'class_name',
+      'car_number',
+      'driver_first_name',
+      'driver_last_name',
+      'team_name',
+      'status',
+    ];
 
-  // ── Column definitions ────────────────────────────────────────────────────
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
 
-  const COLUMNS = {
-    entry_list: [
-      { key: 'car_number', label: 'Car #' },
-      { key: 'driver_name', label: 'Driver' },
-      { key: 'team_name', label: 'Team' },
-      { key: 'class_name', label: 'Class' },
-      { key: 'entry_status', label: 'Entry Status' },
-      { key: 'payment_status', label: 'Payment Status' },
-      { key: 'tech_status', label: 'Tech Status' },
-      { key: 'transponder_id', label: 'Transponder ID' },
-    ],
-    checkin_report: [
-      { key: 'car_number', label: 'Car #' },
-      { key: 'driver_name', label: 'Driver' },
-      { key: 'checkin_status', label: 'Check-In Status' },
-      { key: 'waiver_verified', label: 'Waiver Verified' },
-      { key: 'payment_status', label: 'Payment Status' },
-      { key: 'transponder_verified', label: 'Transponder Verified' },
-      { key: 'tech_status', label: 'Tech Status' },
-    ],
-    tech_report: [
-      { key: 'car_number', label: 'Car #' },
-      { key: 'driver_name', label: 'Driver' },
-      { key: 'class_name', label: 'Class' },
-      { key: 'tech_status', label: 'Tech Status' },
-      { key: 'tech_time', label: 'Tech Time' },
-      { key: 'tech_inspector_user_id', label: 'Inspector ID' },
-      { key: 'notes', label: 'Notes' },
-    ],
-    session_results: [
-      { key: 'position', label: 'Position' },
-      { key: 'car_number', label: 'Car #' },
-      { key: 'driver_name', label: 'Driver' },
-      { key: 'status', label: 'Status' },
-      { key: 'laps_completed', label: 'Laps' },
-      { key: 'best_lap_time_ms', label: 'Best Lap (ms)' },
-      { key: 'points', label: 'Points' },
-      { key: 'notes', label: 'Notes' },
-    ],
-    standings: [
-      { key: 'rank', label: 'Rank' },
-      { key: 'driver_name', label: 'Driver' },
-      { key: 'points_total', label: 'Points' },
-      { key: 'wins', label: 'Wins' },
-      { key: 'podiums', label: 'Podiums' },
-    ],
-  };
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'entries',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
 
-  // ── Export handler ────────────────────────────────────────────────────────
+    toast.success(`Exported ${exportData.length} entries`);
+  }, [eventId, entries, driverPrograms, selectedEvent, driverMap, teamMap, classMap, logExportMutation]);
 
-  const handleExport = async (typeId) => {
-    setExporting(typeId);
-    try {
-      let rows = [];
-      let filename = '';
-      const eventSlug = slugify(eventName);
+  const exportResults = useCallback(() => {
+    const timestamp = getTimestamp();
+    const filename = `results_${eventId}_${timestamp}.csv`;
 
-      switch (typeId) {
-        case 'entry_list':
-          rows = buildEntryListRows();
-          filename = `entries_${eventSlug}.csv`;
-          break;
-        case 'checkin_report':
-          rows = buildCheckinRows();
-          filename = `checkin_${eventSlug}.csv`;
-          break;
-        case 'tech_report':
-          rows = buildTechRows();
-          filename = `tech_${eventSlug}.csv`;
-          break;
-        case 'session_results': {
-          const session = sessions.find((s) => s.id === selectedSessionId);
-          rows = buildSessionResultRows();
-          filename = `results_${slugify(session?.name || selectedSessionId)}.csv`;
-          break;
-        }
-        case 'standings': {
-          const sc = seriesClasses.find((c) => c.id === standingsClassId);
-          rows = buildStandingsRows();
-          filename = `standings_${slugify(sc?.class_name || 'all')}_${standingsSeason || 'all'}.csv`;
-          break;
-        }
-        default:
-          return;
-      }
+    const exportData = results.map((result) => {
+      const driver = driverMap[result.driver_id];
+      const team = teamMap[result.team_id];
+      const session = sessionMap[result.session_id];
 
-      if (rows.length === 0) {
-        toast.warning('No data to export for the current selection.');
-        setExporting('');
-        return;
-      }
+      return {
+        event_id: eventId,
+        session_id: result.session_id || '',
+        session_name: session?.name || '',
+        session_type: session?.session_type || '',
+        series_class_id: result.series_class_id || '',
+        position: result.position || '',
+        driver_first_name: driver?.first_name || '',
+        driver_last_name: driver?.last_name || '',
+        team_name: team?.name || '',
+        laps_completed: result.laps_completed || '',
+        best_lap_time_ms: result.best_lap || '',
+        status: result.status || '',
+        points: result.points || '',
+      };
+    });
 
-      const capped = rows.slice(0, ROW_LIMIT);
-      if (rows.length > ROW_LIMIT) {
-        toast.warning(`Export capped at ${ROW_LIMIT.toLocaleString()} rows.`);
-      }
+    const headers = [
+      'event_id',
+      'session_id',
+      'session_name',
+      'session_type',
+      'series_class_id',
+      'position',
+      'driver_first_name',
+      'driver_last_name',
+      'team_name',
+      'laps_completed',
+      'best_lap_time_ms',
+      'status',
+      'points',
+    ];
 
-      const csv = generateCSV(capped, COLUMNS[typeId]);
-      downloadCSV(csv, filename);
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
 
-      await logExport(eventId, typeId, capped.length);
-      if (onExportCompleted) onExportCompleted();
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'results',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
 
-      setExportHistory((prev) => [
-        { id: Date.now(), typeId, filename, rows: capped.length, ts: new Date().toLocaleTimeString() },
-        ...prev.slice(0, 9),
-      ]);
+    toast.success(`Exported ${exportData.length} results`);
+  }, [eventId, results, driverMap, teamMap, sessionMap, logExportMutation]);
 
-      toast.success(`Exported ${capped.length} rows → ${filename}`);
-    } catch (err) {
-      toast.error(`Export failed: ${err.message}`);
-    } finally {
-      setExporting('');
+  const exportWeekendSummary = useCallback(() => {
+    const timestamp = getTimestamp();
+    const filename = `weekend_summary_${eventId}_${timestamp}.csv`;
+
+    const exportData = sessions.map((session) => {
+      const sessionResults = results.filter((r) => r.session_id === session.id);
+      const uniqueDrivers = new Set(sessionResults.map((r) => r.driver_id));
+
+      return {
+        session_id: session.id,
+        session_name: session.name,
+        session_type: session.session_type,
+        status: session.status || '',
+        results_count: sessionResults.length,
+        unique_drivers_count: uniqueDrivers.size,
+      };
+    });
+
+    const headers = ['session_id', 'session_name', 'session_type', 'status', 'results_count', 'unique_drivers_count'];
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
+
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'weekend_summary',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
+
+    toast.success(`Exported ${exportData.length} sessions`);
+  }, [eventId, sessions, results, logExportMutation]);
+
+  const exportStandings = useCallback(() => {
+    if (standings.length === 0) {
+      toast.info('No standings calculated yet');
+      return;
     }
-  };
 
-  // ── Guard: no event selected ───────────────────────────────────────────────
+    const timestamp = getTimestamp();
+    const filename = `standings_${selectedSeries?.id || eventId}_${dashboardContext?.seasonYear || 'unknown'}_${timestamp}.csv`;
 
-  if (!selectedEvent) {
+    const exportData = standings.map((standing) => {
+      const driver = driverMap[standing.driver_id];
+
+      return {
+        series_id: standing.series_id || '',
+        season: standing.season || dashboardContext?.seasonYear || '',
+        series_class_id: standing.series_class_id || '',
+        rank: standing.rank || '',
+        driver_first_name: driver?.first_name || '',
+        driver_last_name: driver?.last_name || '',
+        total_points: standing.total_points || '',
+      };
+    });
+
+    const headers = ['series_id', 'season', 'series_class_id', 'rank', 'driver_first_name', 'driver_last_name', 'total_points'];
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
+
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'standings',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
+
+    toast.success(`Exported ${exportData.length} standings`);
+  }, [eventId, standings, driverMap, selectedSeries, dashboardContext, logExportMutation]);
+
+  const exportPointsLedger = useCallback(() => {
+    const timestamp = getTimestamp();
+    const filename = `points_ledger_${eventId}_${timestamp}.csv`;
+
+    const exportData = results.map((result) => {
+      const driver = driverMap[result.driver_id];
+
+      return {
+        event_id: eventId,
+        session_id: result.session_id || '',
+        series_class_id: result.series_class_id || '',
+        driver_first_name: driver?.first_name || '',
+        driver_last_name: driver?.last_name || '',
+        points: result.points || '',
+        position: result.position || '',
+        status: result.status || '',
+      };
+    });
+
+    const headers = ['event_id', 'session_id', 'series_class_id', 'driver_first_name', 'driver_last_name', 'points', 'position', 'status'];
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
+
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'points_ledger',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
+
+    toast.success(`Exported ${exportData.length} points entries`);
+  }, [eventId, results, driverMap, logExportMutation]);
+
+  const exportIncidentLog = useCallback(() => {
+    const timestamp = getTimestamp();
+    const filename = `incident_log_${eventId}_${timestamp}.csv`;
+
+    const eventLogs = operationLogs.filter((log) => {
+      try {
+        const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
+        return metadata?.event_id === eventId;
+      } catch {
+        return false;
+      }
+    });
+
+    const exportData = eventLogs.map((log) => ({
+      created_date: log.created_date || '',
+      operation_type: log.operation_type || '',
+      status: log.status || '',
+      entity_name: log.entity_name || '',
+      event_id: eventId,
+      metadata_json: log.metadata || '',
+    }));
+
+    const headers = ['created_date', 'operation_type', 'status', 'entity_name', 'event_id', 'metadata_json'];
+    const csv = arrayToCSV(exportData, headers);
+    downloadCSV(csv, filename);
+
+    logExportMutation.mutate({
+      operation_type: 'export',
+      source_type: 'manual',
+      entity_name: 'ExportsCenter',
+      status: 'success',
+      metadata: JSON.stringify({
+        event_id: eventId,
+        export_type: 'incident_log',
+        row_count: exportData.length,
+        filename,
+        timestamp_client: new Date().toISOString(),
+      }),
+    });
+
+    toast.success(`Exported ${exportData.length} log entries`);
+  }, [eventId, operationLogs, logExportMutation]);
+
+  // ── Empty/No access state ──────────────────────────────────────────────────
+
+  if (!canExport) {
     return (
       <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-16 text-center">
-          <FileText className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">Select an event to generate exports</p>
-          <p className="text-xs text-gray-600 mt-1">Choose Track / Series → Season → Event above.</p>
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-white font-semibold mb-1">Export Access Required</p>
+          <p className="text-gray-400 text-sm">You do not have permission to export data for this event.</p>
         </CardContent>
       </Card>
     );
   }
 
-  // ── Available seasons for standings ───────────────────────────────────────
-  const standingsSeasons = useMemo(() => {
-    const years = new Set();
-    standings.forEach((s) => { if (s.season) years.add(s.season); });
-    return Array.from(years).sort((a, b) => b.localeCompare(a));
-  }, [standings]);
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-20 text-center">
+          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-white font-semibold text-lg mb-1">Exports</p>
+          <p className="text-gray-400 text-sm">Select an event to access exports.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-white">Exports Center</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{eventName}</p>
-        </div>
-        <Badge variant="outline" className="border-gray-600 text-gray-400 text-xs">
-          {entries.length} entries loaded
-        </Badge>
-      </div>
-
-      {/* Export Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {EXPORT_TYPES.map((type) => {
-          const Icon = type.icon;
-          const isActive = exporting === type.id;
-
-          // Per-type readiness check
-          const ready =
-            (!type.requiresEvent || !!eventId) &&
-            (!type.requiresSession || !!selectedSessionId) &&
-            (!type.requiresStandingsFilters || (!!standingsSeriesId && !!standingsSeason));
-
-          let warningMsg = '';
-          if (type.requiresSession && !selectedSessionId) warningMsg = 'Select a session below';
-          if (type.requiresStandingsFilters && !standingsSeriesId) warningMsg = 'Select series below';
-          if (type.requiresStandingsFilters && standingsSeriesId && !standingsSeason) warningMsg = 'Select season below';
-
-          return (
-            <Card key={type.id} className={`bg-[#1e1e1e] border-gray-800 flex flex-col ${!ready ? 'opacity-60' : ''}`}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-gray-800 rounded">
-                    <Icon className="w-4 h-4 text-gray-300" />
-                  </div>
-                  <CardTitle className="text-sm font-semibold text-white">{type.label}</CardTitle>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">{type.description}</p>
-              </CardHeader>
-              <CardContent className="pt-0 mt-auto">
-                {warningMsg && (
-                  <p className="text-xs text-amber-400 flex items-center gap-1 mb-2">
-                    <AlertCircle className="w-3 h-3" /> {warningMsg}
-                  </p>
-                )}
-                <Button
-                  size="sm"
-                  disabled={!ready || isActive}
-                  onClick={() => handleExport(type.id)}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs disabled:opacity-50"
-                >
-                  <Download className="w-3 h-3 mr-1.5" />
-                  {isActive ? 'Exporting…' : type.buttonLabel}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Session selector (for Session Results export) */}
-      <Card className="bg-[#1e1e1e] border-gray-800">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-gray-300">Session Results — Select Session</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-            <SelectTrigger className="bg-[#171717] border-gray-700 text-white w-full max-w-xs">
-              <SelectValue placeholder="Select a session…" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#262626] border-gray-700">
-              {sessions.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
-                  {s.name} {s.session_type ? `(${s.session_type})` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {sessions.length === 0 && (
-            <p className="text-xs text-gray-500 mt-1">No sessions found for this event.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Standings filters */}
-      <Card className="bg-[#1e1e1e] border-gray-800">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-gray-300">Standings Export — Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <div className="min-w-[180px]">
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Series</label>
-              <Select value={standingsSeriesId} onValueChange={(v) => { setStandingsSeriesId(v); setStandingsClassId(''); }}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="Select series…" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  {seriesList.map((s) => (
-                    <SelectItem key={s.id} value={s.id} className="text-white">{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="min-w-[140px]">
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Season</label>
-              <Select value={standingsSeason} onValueChange={setStandingsSeason}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="Season…" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  {['2026','2025','2024','2023'].map((y) => (
-                    <SelectItem key={y} value={y} className="text-white">{y}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="min-w-[180px]">
-              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Class (optional)</label>
-              <Select value={standingsClassId} onValueChange={setStandingsClassId}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white">
-                  <SelectValue placeholder="All classes" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  <SelectItem value={null} className="text-white">All classes</SelectItem>
-                  {seriesClasses.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="text-white">{c.class_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardHeader>
+          <div>
+            <CardTitle className="text-white text-2xl">Exports</CardTitle>
+            <p className="text-sm text-gray-400 mt-1">One-click exports for entries, sessions, results, and standings</p>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
-      {/* Export history */}
-      {exportHistory.length > 0 && (
-        <Card className="bg-[#1e1e1e] border-gray-800">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm text-gray-300">Recent Exports</CardTitle>
-              <Button size="sm" variant="ghost" onClick={() => setExportHistory([])} className="text-xs text-gray-500 h-6 px-2">
-                Clear
+      {/* ── Two Column Layout ──────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Export Buttons */}
+        <div className="lg:col-span-2 space-y-3">
+          <Card className="bg-[#171717] border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-white text-sm">Available Exports</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <Button
+                onClick={exportEntries}
+                className="text-xs h-12 bg-blue-600 hover:bg-blue-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Entries List
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {exportHistory.map((h) => (
-                <div key={h.id} className="flex items-center justify-between text-xs text-gray-400 py-1 border-b border-gray-800 last:border-0">
-                  <span className="font-mono text-gray-300">{h.filename}</span>
-                  <span className="text-gray-500">{h.rows} rows · {h.ts}</span>
+              <Button
+                onClick={exportResults}
+                className="text-xs h-12 bg-green-600 hover:bg-green-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Session Results
+              </Button>
+              <Button
+                onClick={exportWeekendSummary}
+                className="text-xs h-12 bg-purple-600 hover:bg-purple-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Weekend Summary
+              </Button>
+              <Button
+                onClick={exportStandings}
+                className="text-xs h-12 bg-orange-600 hover:bg-orange-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Standings
+              </Button>
+              <Button
+                onClick={exportPointsLedger}
+                className="text-xs h-12 bg-indigo-600 hover:bg-indigo-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Points Ledger
+              </Button>
+              <Button
+                onClick={exportIncidentLog}
+                className="text-xs h-12 bg-red-600 hover:bg-red-700 flex flex-col items-center justify-center gap-1"
+              >
+                <Download className="w-4 h-4" /> Incident Log
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: Export History */}
+        <div>
+          <Card className="bg-[#171717] border-gray-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white text-sm flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Export History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {exportLogs.length === 0 ? (
+                <p className="text-gray-500 text-xs py-4">No exports yet</p>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {exportLogs.map((log) => {
+                    let metadata = {};
+                    try {
+                      metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
+                    } catch {
+                      // ignore
+                    }
+
+                    const time = new Date(log.created_date).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+
+                    return (
+                      <div key={log.id} className="bg-[#262626] rounded p-2 text-xs space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300 font-semibold capitalize">
+                            {metadata.export_type?.replace(/_/g, ' ') || 'Unknown'}
+                          </span>
+                          <span className="text-gray-500">{time}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Badge className="text-xs bg-green-900/50 text-green-300">
+                            {metadata.row_count || 0} rows
+                          </Badge>
+                          <Badge className="text-xs bg-gray-700">{log.status}</Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1362,9 +1362,7 @@ export default function RegistrationDashboard() {
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
                   selectedSeries={selectedSeries}
-                  isAdmin={isAdmin}
-                  announcerMode={announcerMode}
-                  onExportCompleted={() => invalidateAfterOperation('export_completed', { eventId })}
+                  invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
 
