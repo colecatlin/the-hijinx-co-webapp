@@ -1120,6 +1120,14 @@ export default function RegistrationDashboard() {
                   <BookOpen className="w-4 h-4 mr-2" /> Announcer Pack
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'imports') && (
+                <TabsTrigger
+                  value="imports"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
+                >
+                  <Upload className="w-4 h-4 mr-2" /> Imports
+                </TabsTrigger>
+              )}
               {isAdmin && (
                 <TabsTrigger
                   value="opsCenter"
