@@ -137,13 +137,16 @@ export default function ComplianceManager({
   };
 
   const getClassName = (entry) => {
-    if (entry.event_class_id) {
-      const ec = eventClasses.find(c => c.id === entry.event_class_id);
-      if (ec) return ec.class_name;
-    }
-    const sc = seriesClasses.find(s => s.id === entry.series_class_id);
-    return sc?.class_name || '—';
-  };
+     if (entry.event_class_id) {
+       const ec = eventClasses.find(c => c.id === entry.event_class_id);
+       if (ec) return ec.class_name;
+     }
+     if (entry.series_class_id) {
+       const sc = seriesClasses.find(s => s.id === entry.series_class_id);
+       if (sc) return sc.class_name;
+     }
+     return '—';
+   };
 
   const today = new Date().toISOString().split('T')[0];
 
