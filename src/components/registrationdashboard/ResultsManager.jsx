@@ -618,8 +618,8 @@ export default function ResultsManager({
                 <ResultsManualTable
                   session={selectedSession}
                   results={sessionResults}
+                  entries={classEntries}
                   drivers={drivers}
-                  driverPrograms={driverPrograms}
                   selectedEvent={selectedEvent}
                   locked={isLocked}
                   onSave={handleSaveDraft}
