@@ -240,6 +240,15 @@ function getKeysForOperation(operationType, payload = {}) {
       if (payload.requestId) exact.push(['policyAcceptances', payload.requestId]);
       break;
 
+    case 'usage_rights_updated':
+      broad.push(['usageRights'], ['mediaRequests'], ['mediaCredentials']);
+      break;
+
+    case 'publish_target_updated':
+      broad.push(['publishTargets'], ['mediaRequests']);
+      if (payload.assetId) exact.push(['publishTargets', payload.assetId]);
+      break;
+
     case 'race_control_override':
     case 'race_control_incident':
     case 'red_flag':
