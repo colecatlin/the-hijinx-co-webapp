@@ -270,6 +270,14 @@ function getKeysForOperation(operationType, payload = {}) {
       if (payload.assetId) exact.push(['publishTargets', payload.assetId]);
       break;
 
+    case 'media_profile_updated':
+      broad.push(['mediaUsers'], ['mediaRequests'], ['myMediaUser']);
+      break;
+
+    case 'media_application_submitted':
+      broad.push(['mediaRequests'], ['policyAcceptances'], ['waiverSignatures'], ['deliverableAgreements'], ['mediaUsers']);
+      break;
+
     case 'race_control_override':
     case 'race_control_incident':
     case 'red_flag':
