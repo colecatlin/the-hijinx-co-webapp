@@ -180,45 +180,36 @@ export default function MyDashboard() {
            </div>
          </div>
 
-         {/* Quick Actions Bar */}
-         <div className="flex flex-wrap items-center gap-2 mb-8">
-           {collaborators.length > 0 ? (
-             <>
-               <Button
-                 size="sm"
-                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                 onClick={() => navigate(createPageUrl('RegistrationDashboard') + `?orgType=${collaborators[0].entity_type.toLowerCase()}&orgId=${collaborators[0].entity_id}`)}
-               >
-                 <ExternalLink className="w-3.5 h-3.5" /> Open Race Core
-               </Button>
-               <Button
-                 variant="outline"
-                 size="sm"
-                 className="gap-1.5 text-xs"
-                 onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
-               >
-                 <Plus className="w-3.5 h-3.5" /> Link Another Entity
-               </Button>
-             </>
-           ) : (
-             <>
-               <Button
-                 size="sm"
-                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                 onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
-               >
-                 <KeyRound className="w-3.5 h-3.5" /> Link an Entity
-               </Button>
-               <Button
-                 variant="outline"
-                 size="sm"
-                 className="gap-1.5 text-xs"
-                 onClick={() => navigate(createPageUrl('MotorsportsHome'))}
-               >
-                 <Trophy className="w-3.5 h-3.5" /> Browse Motorsports
-               </Button>
-             </>
-           )}
+         {/* Top Action Strip */}
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+           <Button
+             variant="outline"
+             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
+             onClick={() => navigate(createPageUrl('DriverDirectory'))}
+           >
+             <Users className="w-4 h-4" /> Explore Drivers
+           </Button>
+           <Button
+             variant="outline"
+             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
+             onClick={() => navigate(createPageUrl('EventDirectory'))}
+           >
+             <Trophy className="w-4 h-4" /> Explore Events
+           </Button>
+           <Button
+             variant="outline"
+             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
+             onClick={() => navigate(createPageUrl('Registration'))}
+           >
+             <KeyRound className="w-4 h-4" /> Registration
+           </Button>
+           <Button
+             variant="outline"
+             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
+             onClick={() => navigate(createPageUrl('Profile'))}
+           >
+             <User className="w-4 h-4" /> My Profile
+           </Button>
          </div>
 
          {/* My Entries Section */}
