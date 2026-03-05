@@ -222,6 +222,7 @@ function getKeysForOperation(operationType, payload = {}) {
       break;
 
     case 'media_credential_updated':
+    case 'media_credential_expired':
       broad.push(['mediaRequests'], ['mediaCredentials'], ['policies'], ['policyAcceptances'], ['operationLogs']);
       break;
 
