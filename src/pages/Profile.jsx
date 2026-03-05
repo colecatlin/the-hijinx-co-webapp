@@ -482,32 +482,10 @@ export default function Profile() {
              </TabsContent>
 
             {/* ── Entities Tab ─────────────────────────────────────────────── */}
-            <TabsContent value="entities" className="space-y-6">
+             <TabsContent value="entities" className="space-y-6">
 
-              {/* Fan Mode card – only when truly no entities and no invitations */}
-              {collaborations.length === 0 && invitations.length === 0 && (
-                <Card className="border border-gray-200 rounded-xl bg-white">
-                  <CardHeader>
-                    <CardTitle className="text-base">Fan Mode</CardTitle>
-                    <CardDescription>You are not linked to a driver, team, track, or series yet. You can still follow favorites and explore motorsports.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-2">
-                    <Link to={createPageUrl('DriverDirectory')}>
-                      <Button variant="outline" size="sm" className="text-xs gap-1.5">
-                        <Users className="w-3.5 h-3.5" /> Explore Drivers
-                      </Button>
-                    </Link>
-                    <Link to={createPageUrl('EventDirectory')}>
-                      <Button variant="outline" size="sm" className="text-xs gap-1.5">
-                        <Trophy className="w-3.5 h-3.5" /> Explore Events
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Entities I Manage */}
-              {collaborations.length > 0 ? (
+               {/* Entities I Manage */}
+               {collaborations.length > 0 ? (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Entities I Manage</CardTitle>
