@@ -704,6 +704,12 @@ export default function Profile() {
 
             {/* ── Race Core Tab ────────────────────────────────────────────── */}
             <TabsContent value="racecore" className="space-y-6">
+              <Card className="border border-gray-200 bg-gray-50">
+                <CardContent className="py-5">
+                  <p className="text-sm text-gray-700 font-semibold mb-1">Race Core</p>
+                  <p className="text-xs text-gray-500">Use Race Core to operate events, entries, check in, tech, results, exports, and logs.</p>
+                </CardContent>
+              </Card>
               <RaceCoreAccessTab user={user} />
             </TabsContent>
 
