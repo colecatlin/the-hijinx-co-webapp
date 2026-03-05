@@ -39,6 +39,15 @@ Deno.serve(async (req) => {
       return Response.json({ allow: true, reason: 'no_media_user_on_asset' });
     }
 
+    // Check AssetReview status
+    const reviews = await base44.asServiceRole.entities.AssetReview.filter({ asset_id, entity_id: governingEntityId });
+    if (reviews.length) {
+      const review = reviews[0];
+      if (review.status !== 'approved') {
+        return Response.json({ allow: false, reason: 'review_not_approved', review_id: review.id, review_status: review.status });
+      }
+    }
+
     // Check for usage rights agreement
     const agreements = await base44.asServiceRole.entities.UsageRightsAgreement.filter({
       entity_id: governingEntityId,
