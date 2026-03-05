@@ -22,6 +22,7 @@ import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import EventResultsSubmissionForm from '@/components/EventResultsSubmissionForm';
 import { isEventPublic } from '@/components/system/publishHelpers';
+import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);

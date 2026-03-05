@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import ResultsPanel from '@/components/results/ResultsPanel';
+import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);

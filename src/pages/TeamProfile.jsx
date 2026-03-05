@@ -15,6 +15,7 @@ import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import TeamScheduleResults from '@/components/teams/TeamScheduleResults';
 import TeamDriversSection from '@/components/teams/TeamDriversSection';
+import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);

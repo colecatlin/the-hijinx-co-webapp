@@ -30,6 +30,7 @@ import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
+import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 import { AlertCircle, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 
