@@ -742,6 +742,14 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       <div className="space-y-6">
         {selectedEventId && (
           <>
+            <EventLegitimacyPanel
+              selectedEventId={selectedEventId}
+              event={event}
+              isAdmin={isAdmin}
+              currentUser={currentUser}
+              invalidateAfterOperation={invalidateAfterOperation}
+            />
+
             <CollaborationApprovalPanel
               eventId={selectedEventId}
               isAdmin={isAdmin}
