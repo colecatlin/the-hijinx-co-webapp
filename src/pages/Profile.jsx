@@ -190,13 +190,13 @@ export default function Profile() {
   const isEntityManager = collaborations.length > 0;
 
   // Smart default tab: only override when no explicit tab in URL
-  const computedDefaultTab = tabFromUrl
-    ? tabFromUrl
+  const computedDefaultTab = normalizedTab
+    ? normalizedTab
     : collaborations.length === 0 && invitations.length > 0
       ? 'entities'
       : collaborations.length === 0 && invitations.length === 0
         ? 'access'
-        : 'general';
+        : 'account';
 
   // Build Race Core URL with optional season/event passthrough
   function getRaceCoreUrl(entityType, entityId) {
