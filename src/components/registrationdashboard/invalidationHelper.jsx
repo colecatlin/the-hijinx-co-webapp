@@ -225,6 +225,21 @@ function getKeysForOperation(operationType, payload = {}) {
       broad.push(['mediaRequests'], ['mediaCredentials'], ['policies'], ['policyAcceptances'], ['operationLogs']);
       break;
 
+    case 'policy_thread_updated':
+      broad.push(['policyThreads'], ['policyAcceptances'], ['mediaRequests']);
+      if (payload.requestId) exact.push(['policyThreads', payload.requestId]);
+      break;
+
+    case 'policy_message_updated':
+      broad.push(['policyMessages'], ['policyThreads']);
+      if (payload.threadId) exact.push(['policyMessages', payload.threadId]);
+      break;
+
+    case 'policy_acceptance_updated':
+      broad.push(['policyAcceptances'], ['mediaRequests'], ['policyThreads']);
+      if (payload.requestId) exact.push(['policyAcceptances', payload.requestId]);
+      break;
+
     case 'race_control_override':
     case 'race_control_incident':
     case 'red_flag':
