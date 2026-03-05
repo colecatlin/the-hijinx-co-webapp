@@ -695,6 +695,84 @@ export default function MediaApply() {
         </DialogContent>
       </Dialog>
 
+      {/* Sign Waiver Dialog */}
+      <Dialog open={!!waiverSignDialog} onOpenChange={o => !o && setWaiverSignDialog(null)}>
+        <DialogContent className="bg-[#1A1A1A] border-gray-700 max-w-lg">
+          <DialogHeader><DialogTitle className="text-white">Sign Waiver — {waiverSignDialog?.title}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="bg-[#0A0A0A] border border-gray-800 rounded p-3 max-h-32 overflow-y-auto">
+              <p className="text-gray-400 text-xs whitespace-pre-wrap">{waiverSignDialog?.body_rich_text}</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Full Legal Name *</label>
+                <Input value={waiverForm.signed_name} onChange={e => setWaiverForm(f => ({ ...f, signed_name: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Email *</label>
+                <Input type="email" value={waiverForm.signed_email} onChange={e => setWaiverForm(f => ({ ...f, signed_email: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Phone</label>
+                <Input value={waiverForm.signed_phone} onChange={e => setWaiverForm(f => ({ ...f, signed_phone: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Date of Birth</label>
+                <Input type="date" value={waiverForm.date_of_birth} onChange={e => setWaiverForm(f => ({ ...f, date_of_birth: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Emergency Contact Name</label>
+                <Input value={waiverForm.emergency_contact_name} onChange={e => setWaiverForm(f => ({ ...f, emergency_contact_name: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Emergency Contact Phone</label>
+                <Input value={waiverForm.emergency_contact_phone} onChange={e => setWaiverForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500">By signing, you agree to the waiver terms above. This constitutes a valid electronic signature.</p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" className="border-gray-700 text-gray-300" onClick={() => setWaiverSignDialog(null)}>Cancel</Button>
+              <Button
+                disabled={waiverSigning || !waiverForm.signed_name || !waiverForm.signed_email}
+                onClick={async () => {
+                  if (!waiverSignDialog || !mediaUser) return;
+                  setWaiverSigning(true);
+                  try {
+                    const now = new Date().toISOString();
+                    // Use a temporary placeholder request_id that will be updated on final submit
+                    const sig = await base44.entities.WaiverSignature.create({
+                      template_id: waiverSignDialog.id,
+                      holder_media_user_id: mediaUser.id,
+                      request_id: '_pending_',
+                      ...(selectedEvent?.id && { event_id: selectedEvent.id }),
+                      signed_name: waiverForm.signed_name,
+                      signed_email: waiverForm.signed_email,
+                      signed_phone: waiverForm.signed_phone || undefined,
+                      date_of_birth: waiverForm.date_of_birth || undefined,
+                      emergency_contact_name: waiverForm.emergency_contact_name || undefined,
+                      emergency_contact_phone: waiverForm.emergency_contact_phone || undefined,
+                      signed_at: now,
+                      status: 'valid',
+                      created_at: now,
+                    });
+                    setWaiverSignatures(prev => ({ ...prev, [waiverSignDialog.id]: sig }));
+                    toast.success('Waiver signed');
+                    setWaiverSignDialog(null);
+                  } catch (e) {
+                    toast.error('Failed to sign waiver: ' + e.message);
+                  } finally {
+                    setWaiverSigning(false);
+                  }
+                }}
+                className="bg-green-700 hover:bg-green-600"
+              >
+                {waiverSigning ? 'Signing...' : 'Sign Waiver'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Thread Dialog */}
       <Dialog open={!!threadDialog} onOpenChange={o => !o && setThreadDialog(null)}>
         <DialogContent className="bg-[#1A1A1A] border-gray-700 max-w-lg">
