@@ -736,28 +736,28 @@ export default function Profile() {
                <RaceCoreAccessTab user={user} />
              </TabsContent>
 
-            {/* ── Stories Tab ──────────────────────────────────────────────── */}
-            <TabsContent value="story" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Submit a Story</CardTitle>
-                  <CardDescription>Share your story with our editorial team for review.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <StorySubmissionForm user={user} />
-                </CardContent>
-              </Card>
+            {/* ── Story Tab ────────────────────────────────────────────────── */}
+             <TabsContent value="story" className="space-y-4">
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="text-base">Submit a Story</CardTitle>
+                   <CardDescription>Share your story with our editorial team for review.</CardDescription>
+                 </CardHeader>
+                 <CardContent>
+                   <StorySubmissionForm user={user} />
+                 </CardContent>
+               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Your Submissions</CardTitle>
-                  <CardDescription>View the status of your submitted stories.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ManageStorySubmissions user={user} />
-                </CardContent>
-              </Card>
-            </TabsContent>
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="text-base">Your Submissions</CardTitle>
+                   <CardDescription>View the status of your submitted stories.</CardDescription>
+                 </CardHeader>
+                 <CardContent>
+                   <ManageStorySubmissions user={user} />
+                 </CardContent>
+               </Card>
+             </TabsContent>
           </Tabs>
         </form>
 
