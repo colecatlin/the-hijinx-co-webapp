@@ -296,7 +296,7 @@ export default function Profile() {
                   type="button"
                   size="sm"
                   className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                  onClick={() => window.location.href = getRegistrationDashboardUrl(collaborations[0].entity_type, collaborations[0].entity_id)}
+                  onClick={() => window.location.href = getRaceCoreUrl(collaborations[0].entity_type, collaborations[0].entity_id)}
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> Open Race Core
                 </Button>
