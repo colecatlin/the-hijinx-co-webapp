@@ -390,18 +390,16 @@ export default function Profile() {
                 </CardContent>
               </Card>
 
-              <div className="flex items-center gap-4">
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={updateMutation.isPending}
-                  className="bg-[#232323] hover:bg-black text-white gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-            </TabsContent>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={updateMutation.isPending}
+                className="bg-[#232323] hover:bg-black text-white gap-2 w-full sm:w-auto"
+              >
+                <Save className="w-4 h-4" />
+                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+              </TabsContent>
 
             {/* ── Fan Tab ──────────────────────────────────────────────────── */}
              <TabsContent value="fan" className="space-y-6">
