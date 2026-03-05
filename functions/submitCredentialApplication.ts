@@ -40,6 +40,27 @@ Deno.serve(async (req) => {
       }
     }
 
+    // --- Deliverable agreement gate ---
+    const delivReqs = await base44.functions.invoke('getDeliverableRequirementsForRequest', { request_id });
+    const requiredDeliverables = delivReqs?.data?.requirements || [];
+
+    if (requiredDeliverables.length > 0) {
+      const existingAgreements = await base44.entities.DeliverableAgreement.filter({ request_id });
+      const acceptedReqIds = new Set(
+        existingAgreements.filter(a => a.status === 'accepted').map(a => a.requirement_id)
+      );
+      const missingAgreements = requiredDeliverables
+        .filter(r => !acceptedReqIds.has(r.id))
+        .map(r => r.id);
+
+      if (missingAgreements.length > 0) {
+        return Response.json({
+          error: 'Missing required deliverable acknowledgements',
+          missing_requirement_ids: missingAgreements,
+        }, { status: 422 });
+      }
+    }
+
     // --- Policy gate: check for change_requested acceptances ---
     const policyAcceptances = await base44.entities.PolicyAcceptance.filter({ request_id });
     const hasChangeRequested = policyAcceptances.some(pa => pa.status === 'change_requested');
