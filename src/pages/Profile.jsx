@@ -360,7 +360,7 @@ export default function Profile() {
              </div>
 
             {/* ── Account Tab ─────────────────────────────────────────────── */}
-            <TabsContent value="account" className="space-y-6">
+             <TabsContent value="general" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Account</CardTitle>
