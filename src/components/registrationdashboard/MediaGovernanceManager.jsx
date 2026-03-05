@@ -466,6 +466,21 @@ function RequestDetailDialog({
             </div>
           )}
 
+          {/* Policy Change Request Threads */}
+          <PolicyChangeRequestPanel
+            request={request}
+            applicantMediaUser={mediaUser}
+            dashboardPermissions={null}
+            currentUser={currentUser}
+            invalidateAfterOperation={(type, payload) => {
+              invalidateAfterOperation?.(type, payload);
+              // Auto-sync request status after acceptance updates
+              if (type === 'policy_acceptance_updated') {
+                syncRequestStatus();
+              }
+            }}
+          />
+
           {/* Actions */}
           <div className="flex gap-2 pt-4 border-t border-gray-700">
             <Button
