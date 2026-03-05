@@ -234,24 +234,12 @@ export default function MediaApply() {
         }
       }
 
-      // Create WaiverSignature
-      if (waiverTemplates.length > 0 && waiverSigned) {
-        for (const tmpl of waiverTemplates) {
-          await base44.entities.WaiverSignature.create({
-            template_id: tmpl.id,
-            holder_media_user_id: mediaUser.id,
-            request_id: credReq.id,
-            ...(selectedEvent?.id && { event_id: selectedEvent.id }),
-            signed_name: waiverForm.signed_name,
-            signed_email: waiverForm.signed_email,
-            signed_phone: waiverForm.signed_phone,
-            date_of_birth: waiverForm.date_of_birth || undefined,
-            emergency_contact_name: waiverForm.emergency_contact_name || undefined,
-            emergency_contact_phone: waiverForm.emergency_contact_phone || undefined,
-            signed_at: now,
-            status: 'valid',
-            created_at: now,
-          });
+      // Update waiverSignatures with correct request_id (signatures were created per-template)
+      // They are already created in DB via signWaiverForRequest during step 4; just update request_id
+      for (const tmpl of waiverTemplates) {
+        const sig = waiverSignatures[tmpl.id];
+        if (sig?.id) {
+          await base44.entities.WaiverSignature.update(sig.id, { request_id: credReq.id });
         }
       }
 
