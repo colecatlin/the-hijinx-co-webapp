@@ -319,8 +319,8 @@ export default function Profile() {
             <div className="overflow-x-auto -mx-4 px-4">
               <TabsList className="inline-flex w-auto min-w-full gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
                 <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Account</TabsTrigger>
-                <TabsTrigger value="entities" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Entities</TabsTrigger>
-                <TabsTrigger value="access" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Access</TabsTrigger>
+                <TabsTrigger value="entities" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">My Entities</TabsTrigger>
+                <TabsTrigger value="access" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Link Access</TabsTrigger>
                 <TabsTrigger value="racecore" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Race Core</TabsTrigger>
                 <TabsTrigger value="story" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Stories</TabsTrigger>
               </TabsList>
