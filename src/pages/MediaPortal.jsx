@@ -11,6 +11,7 @@ import ProfileTab from '@/components/media/portal/ProfileTab';
 import ApplyTab from '@/components/media/portal/ApplyTab';
 import MyRequestsTab from '@/components/media/portal/MyRequestsTab';
 import MyCredentialsTab from '@/components/media/portal/MyCredentialsTab';
+import MyAssetsTab from '@/components/media/portal/MyAssetsTab';
 
 export default function MediaPortal() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -138,6 +139,9 @@ export default function MediaPortal() {
             <TabsTrigger value="credentials" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
               My Credentials
             </TabsTrigger>
+            <TabsTrigger value="assets" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
+              My Assets
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -151,6 +155,9 @@ export default function MediaPortal() {
           </TabsContent>
           <TabsContent value="credentials">
             <MyCredentialsTab mediaUser={mediaUser} />
+          </TabsContent>
+          <TabsContent value="assets">
+            <MyAssetsTab mediaUser={mediaUser} />
           </TabsContent>
         </Tabs>
       </div>
