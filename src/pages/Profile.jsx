@@ -554,57 +554,7 @@ export default function Profile() {
 
             {/* ── Race Core Tab ────────────────────────────────────────────── */}
             <TabsContent value="racecore" className="space-y-6">
-              {collaborations.length > 0 ? (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Quick Launch</CardTitle>
-                      <CardDescription>Jump directly into Race Core for each entity you manage.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {collaborations.map(collab => (
-                        <div key={collab.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl bg-slate-50">
-                          <div>
-                            <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                {collab.entity_type}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                            onClick={() => window.location.href = getRegistrationDashboardUrl(collab.entity_type, collab.entity_id)}
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Launch
-                          </Button>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <RaceCoreAccessTab user={user} />
-                </>
-              ) : (
-                <Card className="border-2 border-dashed border-gray-200 bg-white">
-                  <CardContent className="py-12 text-center">
-                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                      <Rocket className="w-6 h-6 text-gray-400" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-1">Race Core is for race operations</h3>
-                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">Once you link an entity, you will be able to manage events, entries, compliance, tech, results, and exports.</p>
-                    <Link to={createPageUrl('Profile') + '?tab=access'}>
-                      <Button className="bg-[#232323] text-white hover:bg-black gap-2">
-                        <KeyRound className="w-4 h-4" />
-                        Link an Entity
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
+              <RaceCoreAccessTab user={user} />
             </TabsContent>
 
             {/* ── Stories Tab ──────────────────────────────────────────────── */}
