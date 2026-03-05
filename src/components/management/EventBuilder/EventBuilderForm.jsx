@@ -702,15 +702,34 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
                   )}
                   {isEditing ? 'Update Draft' : 'Save Draft'}
                 </Button>
-                <Button
-                  onClick={() => handleSave(true)}
-                  disabled={isSaving || (trackAcceptance !== 'Accepted' || seriesAcceptance !== 'Accepted' || !trackPublishApproved || !seriesPublishApproved)}
-                  className={trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
-                  title={trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? "Publish event" : "Event awaiting dual acceptance and approval"}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved ? 'Publish Event' : 'Pending Approval'}
-                </Button>
+                {(() => {
+                  const publishReady = trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved && isEntityConfirmed;
+                  const publishDisabled = isSaving || !publishReady;
+                  const publishTitle = !isEntityConfirmed
+                    ? 'Event must be confirmed by required parties before publishing'
+                    : !publishReady
+                    ? 'Event awaiting dual acceptance and approval'
+                    : 'Publish event';
+                  return (
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        onClick={() => handleSave(true)}
+                        disabled={publishDisabled}
+                        className={publishReady ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
+                        title={publishTitle}
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        {publishReady ? 'Publish Event' : 'Pending Approval'}
+                      </Button>
+                      {!isEntityConfirmed && selectedEventId && (
+                        <p className="text-xs text-amber-400 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          Event must be confirmed by required parties before publishing
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
                 {isEditing && (
                   <>
                     <Button
