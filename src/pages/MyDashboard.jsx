@@ -10,7 +10,7 @@ import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
-  Shield, Edit, Plus, KeyRound, LayoutDashboard
+  Shield, Edit, Plus, KeyRound, LayoutDashboard, ExternalLink, Star
 } from 'lucide-react';
 
 const ENTITY_ICONS = {
