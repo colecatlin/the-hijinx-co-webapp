@@ -439,6 +439,9 @@ export default function Profile() {
                                 {collab.role}
                               </Badge>
                             </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {collab.role === 'owner' ? 'You can invite editors and manage access.' : 'You can edit what the owner allows.'}
+                            </p>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
