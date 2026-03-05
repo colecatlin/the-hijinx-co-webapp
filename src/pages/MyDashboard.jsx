@@ -192,13 +192,24 @@ export default function MyDashboard() {
                 </p>
               </div>
             </div>
-            <Button
-              className="bg-[#232323] hover:bg-black text-white gap-2 flex-shrink-0 w-full sm:w-auto"
-              onClick={() => navigate(hasCols ? raceCoreUrl : createPageUrl('MotorsportsHome'))}
-            >
-              <ExternalLink className="w-4 h-4" />
-              {hasCols ? 'Open Race Core' : 'Browse Motorsports'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => navigate(createPageUrl('Profile'))}
+              >
+                <Edit className="w-3.5 h-3.5" /> Edit Profile
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
+              >
+                <KeyRound className="w-3.5 h-3.5" /> Enter Access Code
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
