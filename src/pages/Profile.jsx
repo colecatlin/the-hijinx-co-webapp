@@ -346,18 +346,18 @@ export default function Profile() {
         </div>
 
         {/* ── Tabs ─────────────────────────────────────────────────────────── */}
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue={computedDefaultTab} className="space-y-6">
-            <div className="overflow-x-auto -mx-4 px-4">
-              <TabsList className="inline-flex w-auto min-w-full gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
-                <TabsTrigger value="account" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Account</TabsTrigger>
-                <TabsTrigger value="fan" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Fan</TabsTrigger>
-                <TabsTrigger value="entities" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">My Entities</TabsTrigger>
-                <TabsTrigger value="access" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Link Access</TabsTrigger>
-                <TabsTrigger value="racecore" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Race Core</TabsTrigger>
-                <TabsTrigger value="story" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Story</TabsTrigger>
-              </TabsList>
-            </div>
+         <form onSubmit={handleSubmit}>
+           <Tabs defaultValue={computedDefaultTab} className="space-y-6">
+             <div className="overflow-x-auto -mx-4 px-4 bg-white border-b border-gray-200">
+               <TabsList className="inline-flex w-auto min-w-full gap-1 bg-transparent border-0 p-0 rounded-none shadow-none">
+                 <TabsTrigger value="general" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Account</TabsTrigger>
+                 <TabsTrigger value="fan" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Fan</TabsTrigger>
+                 <TabsTrigger value="entities" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Entities</TabsTrigger>
+                 <TabsTrigger value="access" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Access</TabsTrigger>
+                 <TabsTrigger value="racecore" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Race Core</TabsTrigger>
+                 <TabsTrigger value="story" className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323]">Story</TabsTrigger>
+               </TabsList>
+             </div>
 
             {/* ── Account Tab ─────────────────────────────────────────────── */}
             <TabsContent value="account" className="space-y-6">
