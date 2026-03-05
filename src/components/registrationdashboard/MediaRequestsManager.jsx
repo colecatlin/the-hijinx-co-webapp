@@ -244,6 +244,14 @@ export default function MediaRequestsManager({
                         {req.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-xs text-gray-400">
+                      {(() => {
+                        const sigs = waiverSigsForEvent.filter(s => s.holder_media_user_id === req.holder_media_user_id && s.status === 'valid');
+                        return sigs.length > 0
+                          ? <span className="text-green-400">{sigs.length} signed</span>
+                          : <span className="text-gray-600">—</span>;
+                      })()}
+                    </TableCell>
                     <TableCell className="flex gap-1">
                       {(req.status === 'applied' || req.status === 'under_review') && (
                         <>
