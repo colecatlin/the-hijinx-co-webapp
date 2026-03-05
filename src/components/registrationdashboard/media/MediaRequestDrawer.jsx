@@ -190,6 +190,7 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
             <TabsList className="bg-[#262626] border border-gray-700 mb-4">
               <TabsTrigger value="details" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Details</TabsTrigger>
               <TabsTrigger value="compliance" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Compliance</TabsTrigger>
+              <TabsTrigger value="deliverables" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Deliverables</TabsTrigger>
               <TabsTrigger value="threads" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Threads</TabsTrigger>
             </TabsList>
 
