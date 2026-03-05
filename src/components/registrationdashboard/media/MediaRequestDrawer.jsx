@@ -75,6 +75,16 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
     enabled: !!request?.id,
   });
 
+  // Load compliance profile
+  const { data: complianceRecord } = useQuery({
+    queryKey: ['mediaCompliance', request?.holder_media_user_id],
+    queryFn: async () => {
+      const recs = await base44.entities.MediaCompliance.filter({ holder_media_user_id: request.holder_media_user_id });
+      return recs[0] || null;
+    },
+    enabled: !!request?.holder_media_user_id,
+  });
+
   // Load required deliverables for approval gate
   const { data: requiredDeliverablesData } = useQuery({
     queryKey: ['requiredDeliverables', request?.id],
