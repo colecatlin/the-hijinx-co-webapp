@@ -45,9 +45,11 @@ export default function MediaApply() {
   const [threads, setThreads] = useState({}); // policyId -> thread
   const [threadDialog, setThreadDialog] = useState(null);
 
-  // Waiver
-  const [waiverSigned, setWaiverSigned] = useState(false);
+  // Waiver — per-template signing
+  const [waiverSignatures, setWaiverSignatures] = useState({}); // templateId -> signature record
+  const [waiverSignDialog, setWaiverSignDialog] = useState(null); // template being signed
   const [waiverForm, setWaiverForm] = useState({ signed_name: '', signed_email: '', signed_phone: '', date_of_birth: '', emergency_contact_name: '', emergency_contact_phone: '' });
+  const [waiverSigning, setWaiverSigning] = useState(false);
 
   // Deliverables
   const [deliverableAcks, setDeliverableAcks] = useState({}); // reqId -> 'accepted'|'declined'
