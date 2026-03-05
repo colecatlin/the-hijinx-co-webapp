@@ -14,6 +14,7 @@ import { AlertCircle, CheckCircle, ExternalLink, MessageSquare } from 'lucide-re
 import { toast } from 'sonner';
 import { STATUS_COLORS, computeEventCredentialExpiry } from './mediaAccess';
 import MediaThreadPanel from './MediaThreadPanel';
+import MediaDeliverablesPanel from './MediaDeliverablesPanel';
 
 export default function MediaRequestDrawer({ request, onClose, selectedEvent, selectedTrack, selectedSeries, currentUser, isAdmin, hasAuthority, issuerOptions, invalidateAfterOperation }) {
   const [denyDialog, setDenyDialog] = useState(false);
