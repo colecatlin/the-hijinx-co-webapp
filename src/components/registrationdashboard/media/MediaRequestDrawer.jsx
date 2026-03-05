@@ -367,6 +367,15 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
               </div>
             </TabsContent>
 
+            {/* DELIVERABLES TAB */}
+            <TabsContent value="deliverables" className="space-y-4">
+              <MediaDeliverablesPanel
+                request={request}
+                currentUser={currentUser}
+                invalidateAfterOperation={invalidateAfterOperation}
+              />
+            </TabsContent>
+
             {/* THREADS TAB */}
             <TabsContent value="threads">
               <MediaThreadPanel request={request} currentUser={currentUser} invalidateAfterOperation={invalidateAfterOperation} />
