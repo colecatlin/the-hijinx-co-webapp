@@ -1,16 +1,17 @@
 import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
-  Shield, Edit, Plus, KeyRound, LayoutDashboard, ExternalLink, Star
+  Shield, Edit, Plus, KeyRound, LayoutDashboard, ExternalLink, Star, Heart, Link2
 } from 'lucide-react';
 
 const ENTITY_ICONS = {
