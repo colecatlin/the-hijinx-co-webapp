@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { STATUS_COLORS, computeEventCredentialExpiry } from './mediaAccess';
 import MediaThreadPanel from './MediaThreadPanel';
 import MediaDeliverablesPanel from './MediaDeliverablesPanel';
+import MediaUsageRightsPanel from './MediaUsageRightsPanel';
 
 export default function MediaRequestDrawer({ request, onClose, selectedEvent, selectedTrack, selectedSeries, currentUser, isAdmin, hasAuthority, issuerOptions, invalidateAfterOperation }) {
   const [denyDialog, setDenyDialog] = useState(false);
@@ -210,10 +211,11 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
           </SheetHeader>
 
           <Tabs defaultValue="details">
-            <TabsList className="bg-[#262626] border border-gray-700 mb-4">
+            <TabsList className="bg-[#262626] border border-gray-700 mb-4 flex-wrap gap-y-1">
               <TabsTrigger value="details" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Details</TabsTrigger>
               <TabsTrigger value="compliance" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Compliance</TabsTrigger>
               <TabsTrigger value="deliverables" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Deliverables</TabsTrigger>
+              <TabsTrigger value="rights" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Rights</TabsTrigger>
               <TabsTrigger value="threads" className="text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700 text-xs">Threads</TabsTrigger>
             </TabsList>
 
@@ -419,6 +421,15 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
                 request={request}
                 currentUser={currentUser}
                 invalidateAfterOperation={invalidateAfterOperation}
+              />
+            </TabsContent>
+
+            {/* RIGHTS TAB */}
+            <TabsContent value="rights" className="space-y-4">
+              <MediaUsageRightsPanel
+                request={request}
+                currentUser={currentUser}
+                dashboardContext={{ orgId: selectedTrack?.id || selectedEvent?.track_id || selectedSeries?.id, orgType: selectedTrack ? 'track' : selectedSeries ? 'series' : 'event' }}
               />
             </TabsContent>
 
