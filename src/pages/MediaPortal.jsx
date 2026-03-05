@@ -30,11 +30,11 @@ export default function MediaPortal() {
   });
 
   const features = [
-    { icon: Camera, title: 'Apply for Credentials', desc: 'Request media access to tracks, series, and events.' },
-    { icon: Shield, title: 'Policy Compliance', desc: 'Review and accept required media policies digitally.' },
-    { icon: FileText, title: 'Digital Waivers', desc: 'Sign liability waivers without paper forms.' },
-    { icon: CheckCircle, title: 'Deliverables Tracking', desc: 'Acknowledge content requirements for your credentials.' },
-    { icon: Users, title: 'Media Profile', desc: 'Maintain your verified media professional profile.' },
+    { title: 'Apply for Credentials', desc: 'Request media access to tracks, series, and events.' },
+    { title: 'Policy Compliance', desc: 'Review and accept required media policies digitally.' },
+    { title: 'Digital Waivers', desc: 'Sign liability waivers without paper forms.' },
+    { title: 'Deliverables Tracking', desc: 'Acknowledge content requirements for your credentials.' },
+    { title: 'Media Profile', desc: 'Maintain your verified media professional profile.' },
   ];
 
   return (
@@ -94,10 +94,10 @@ export default function MediaPortal() {
       <div className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-bold text-white text-center mb-10">How It Works</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, title, desc }) => (
+          {features.map(({ title, desc }) => (
             <Card key={title} className="bg-[#171717] border-gray-800 hover:border-gray-600 transition-colors">
               <CardContent className="p-6">
-                <Icon className="w-8 h-8 text-blue-400 mb-3" />
+                <Camera className="w-8 h-8 text-blue-400 mb-3" />
                 <h3 className="text-white font-semibold mb-2">{title}</h3>
                 <p className="text-gray-400 text-sm">{desc}</p>
               </CardContent>
