@@ -723,7 +723,7 @@ export default function Profile() {
                  </Card>
                )}
 
-               {collaborations.length === 0 || !collaborations.some(c => c.entity_type === 'Track' || c.entity_type === 'Series') && (
+               {(collaborations.length === 0 || !collaborations.some(c => c.entity_type === 'Track' || c.entity_type === 'Series')) && (
                  <Card className="border border-gray-200 bg-gray-50">
                    <CardContent className="py-6 text-center">
                      <p className="text-sm text-gray-600">Race Core access appears once you manage a track or series.</p>
@@ -734,7 +734,7 @@ export default function Profile() {
                <RaceCoreAccessTab user={user} />
              </TabsContent>
 
-            {/* ── Story Tab ────────────────────────────────────────────────── */}
+             {/* ── Story Tab ────────────────────────────────────────────────── */}
              <TabsContent value="story" className="space-y-4">
                <Card>
                  <CardHeader>
