@@ -145,6 +145,12 @@ export default function MyDashboard() {
     }
   };
 
+  const handleRaceCore = (collaborator) => {
+    const orgType = collaborator.entity_type.toLowerCase();
+    const orgId = collaborator.entity_id;
+    navigate(createPageUrl('RegistrationDashboard') + `?orgType=${orgType}&orgId=${orgId}`);
+  };
+
   const handleEnterCode = () => {
     navigate(createPageUrl('Profile') + '?tab=access');
   };
