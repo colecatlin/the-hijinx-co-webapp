@@ -506,15 +506,39 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                            onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id)}
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Launch Race Core
-                          </Button>
+                          {(collab.entity_type === 'Track' || collab.entity_type === 'Series') ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                              onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id)}
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Race Core
+                            </Button>
+                          ) : collab.entity_type === 'Driver' ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 text-xs"
+                              onClick={() => window.location.href = createPageUrl('DriverProfile') + `?id=${collab.entity_id}`}
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Profile
+                            </Button>
+                          ) : collab.entity_type === 'Team' ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 text-xs"
+                              onClick={() => window.location.href = createPageUrl('TeamProfile') + `?id=${collab.entity_id}`}
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Profile
+                            </Button>
+                          ) : null}
                           <Button
                             type="button"
                             size="sm"
