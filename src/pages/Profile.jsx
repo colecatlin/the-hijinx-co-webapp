@@ -595,11 +595,11 @@ export default function Profile() {
                 </Card>
               )}
 
-              {/* Pending Invitations */}
+              {/* Invitations */}
               {invitations.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Pending Invitations</CardTitle>
+                    <CardTitle className="text-base">Invitations</CardTitle>
                     <CardDescription>Accept to gain access to these entities.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
