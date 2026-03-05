@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { ChevronRight, Send, MessageSquare } from 'lucide-react';
+import UsageRightsPanel from './UsageRightsPanel';
 
 const STATUS_COLORS = {
   draft: 'bg-gray-700 text-gray-300',
@@ -20,7 +21,7 @@ const STATUS_COLORS = {
   cancelled: 'bg-gray-800 text-gray-400',
 };
 
-function RequestDetail({ request, currentUser }) {
+function RequestDetail({ request, currentUser, mediaUser }) {
   const queryClient = useQueryClient();
   const [msgText, setMsgText] = useState({});
 
@@ -78,6 +79,7 @@ function RequestDetail({ request, currentUser }) {
           Policies
           {policyAcceptances.some(p => p.status === 'change_requested') && <span className="ml-1 w-1.5 h-1.5 rounded-full bg-orange-400 inline-block" />}
         </TabsTrigger>
+        <TabsTrigger value="rights" className="text-xs text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700">Rights</TabsTrigger>
         <TabsTrigger value="threads" className="text-xs text-gray-400 data-[state=active]:text-white data-[state=active]:bg-gray-700">
           Threads {threads.length > 0 && `(${threads.length})`}
         </TabsTrigger>
@@ -119,6 +121,10 @@ function RequestDetail({ request, currentUser }) {
             )}
           </div>
         ))}
+      </TabsContent>
+
+      <TabsContent value="rights" className="space-y-3">
+        <UsageRightsPanel request={request} mediaUser={mediaUser} />
       </TabsContent>
 
       <TabsContent value="threads" className="space-y-3">
@@ -249,7 +255,7 @@ export default function MyRequestsTab({ mediaUser, currentUser }) {
           <SheetHeader className="mb-4">
             <SheetTitle className="text-white">Request Details</SheetTitle>
           </SheetHeader>
-          {selectedReq && <RequestDetail request={selectedReq} currentUser={currentUser} />}
+          {selectedReq && <RequestDetail request={selectedReq} currentUser={currentUser} mediaUser={mediaUser} />}
         </SheetContent>
       </Sheet>
     </>
