@@ -304,14 +304,38 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
 
               {/* Waivers */}
               <div className="bg-[#262626] border border-gray-700 rounded p-4">
-                <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Waiver Signatures</p>
-                {waiverSigs.length === 0 ? (
-                  <p className="text-gray-600 text-xs">No waivers signed.</p>
-                ) : waiverSigs.map(sig => (
-                  <div key={sig.id} className="text-xs text-gray-300">
-                    <p>{getTemplateName(sig.template_id)} — signed {sig.signed_at ? new Date(sig.signed_at).toLocaleDateString() : '—'}</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">Waiver Signatures</p>
+                  {requiredWaivers.length > 0 && (
+                    <Badge className={missingWaivers.length === 0 ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}>
+                      {missingWaivers.length === 0 ? `${requiredWaivers.length}/${requiredWaivers.length} complete` : `Missing ${missingWaivers.length}`}
+                    </Badge>
+                  )}
+                </div>
+                {requiredWaivers.length === 0 ? (
+                  <p className="text-gray-600 text-xs">No waivers required for this request.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {requiredWaivers.map(tmpl => {
+                      const sig = waiverSigs.find(s => s.template_id === tmpl.id && s.status === 'valid');
+                      return (
+                        <div key={tmpl.id} className="flex items-start gap-2 text-xs">
+                          <Badge className={sig ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}>
+                            {sig ? '✓' : 'Missing'}
+                          </Badge>
+                          <div>
+                            <p className="text-gray-300 font-medium">{tmpl.title} <span className="text-gray-600">({tmpl._label})</span></p>
+                            {sig ? (
+                              <p className="text-gray-500">Signed by {sig.signed_name} on {new Date(sig.signed_at).toLocaleDateString()}</p>
+                            ) : (
+                              <p className="text-red-400">Not signed</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
               </div>
 
               {/* Deliverables */}
