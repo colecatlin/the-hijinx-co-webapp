@@ -206,6 +206,22 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   });
   const collaboration = collabRecords[0] || null;
 
+  // Load EntityConfirmation for publish gating
+  const { data: eventEntityList = [] } = useQuery({
+    queryKey: ['entityRecord', 'event', selectedEventId],
+    queryFn: () => base44.entities.Entity.filter({ entity_type: 'event', source_entity_id: selectedEventId }),
+    enabled: !!selectedEventId,
+    staleTime: 30000,
+  });
+  const eventEntityId = eventEntityList[0]?.id;
+  const { data: confirmationListEB = [] } = useQuery({
+    queryKey: ['entityConfirmation', eventEntityId],
+    queryFn: () => base44.entities.EntityConfirmation.filter({ event_entity_id: eventEntityId }),
+    enabled: !!eventEntityId,
+    staleTime: 15000,
+  });
+  const isEntityConfirmed = confirmationListEB[0]?.effective_status === 'confirmed';
+
   const createCollaboration = async (eventId, trackId, seriesId) => {
     if (!seriesId) return; // Only create collaboration if both track and series exist
     
