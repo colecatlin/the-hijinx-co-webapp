@@ -264,6 +264,23 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
                 )}
               </div>
 
+              {/* Compliance warning */}
+              {complianceRecord?.status === 'restricted' && (
+                <div className="bg-red-900/20 border border-red-800 rounded p-3 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-300 text-xs font-medium">Media compliance: RESTRICTED</p>
+                    <p className="text-red-400 text-xs">{complianceRecord.outstanding_requirements_count} outstanding requirement(s). Approval not recommended.</p>
+                  </div>
+                </div>
+              )}
+              {complianceRecord?.status === 'watchlist' && (
+                <div className="bg-yellow-900/20 border border-yellow-800 rounded p-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-400 shrink-0" />
+                  <p className="text-yellow-300 text-xs">Media compliance: watchlist — {complianceRecord.outstanding_requirements_count} outstanding requirement(s)</p>
+                </div>
+              )}
+
               {/* Actions */}
               {hasAuthority ? (
                 <div className="space-y-2">
