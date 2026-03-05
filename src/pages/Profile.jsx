@@ -694,15 +694,47 @@ export default function Profile() {
             </TabsContent>
 
             {/* ── Race Core Tab ────────────────────────────────────────────── */}
-            <TabsContent value="racecore" className="space-y-6">
-              <Card className="border border-gray-200 bg-gray-50">
-                <CardContent className="py-5">
-                  <p className="text-sm text-gray-700 font-semibold mb-1">Race Core</p>
-                  <p className="text-xs text-gray-500">Use Race Core to operate events, entries, check in, tech, results, exports, and logs.</p>
-                </CardContent>
-              </Card>
-              <RaceCoreAccessTab user={user} />
-            </TabsContent>
+             <TabsContent value="racecore" className="space-y-6">
+               <Card className="border border-gray-200 bg-blue-50">
+                 <CardContent className="py-5">
+                   <p className="text-sm text-gray-700 font-semibold mb-1">Race Core</p>
+                   <p className="text-xs text-gray-600">Operate events, entries, check-in, tech inspections, results, exports, and logs.</p>
+                 </CardContent>
+               </Card>
+
+               {collaborations.length > 0 && collaborations.some(c => c.entity_type === 'Track' || c.entity_type === 'Series') && (
+                 <Card>
+                   <CardHeader>
+                     <CardTitle className="text-base">Quick Launch</CardTitle>
+                     <CardDescription>Open Race Core for your managed tracks and series.</CardDescription>
+                   </CardHeader>
+                   <CardContent className="space-y-2">
+                     {collaborations.filter(c => c.entity_type === 'Track' || c.entity_type === 'Series').map(collab => (
+                       <Button
+                         key={collab.id}
+                         type="button"
+                         variant="outline"
+                         className="w-full justify-start gap-2 text-sm"
+                         onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id)}
+                       >
+                         <ExternalLink className="w-4 h-4" />
+                         Open Race Core for {collab.entity_name}
+                       </Button>
+                     ))}
+                   </CardContent>
+                 </Card>
+               )}
+
+               {collaborations.length === 0 || !collaborations.some(c => c.entity_type === 'Track' || c.entity_type === 'Series') && (
+                 <Card className="border border-gray-200 bg-gray-50">
+                   <CardContent className="py-6 text-center">
+                     <p className="text-sm text-gray-600">Race Core access appears once you manage a track or series.</p>
+                   </CardContent>
+                 </Card>
+               )}
+
+               <RaceCoreAccessTab user={user} />
+             </TabsContent>
 
             {/* ── Stories Tab ──────────────────────────────────────────────── */}
             <TabsContent value="story" className="space-y-6">
