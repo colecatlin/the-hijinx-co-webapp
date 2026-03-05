@@ -521,60 +521,36 @@ export default function MediaApply() {
                     <p className="text-gray-400">No waivers required for this target.</p>
                   </CardContent>
                 </Card>
-              ) : (
-                <>
-                  {waiverTemplates.map(tmpl => (
-                    <Card key={tmpl.id} className="bg-[#171717] border-gray-800">
-                      <CardHeader><CardTitle className="text-white text-sm">{tmpl.title}</CardTitle></CardHeader>
-                      <CardContent>
-                        <div className="bg-[#0A0A0A] border border-gray-800 rounded p-3 mb-4 max-h-40 overflow-y-auto">
-                          <p className="text-gray-400 text-xs whitespace-pre-wrap">{tmpl.body_rich_text}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardHeader><CardTitle className="text-white text-sm">Signature</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Full Legal Name *</label>
-                          <Input value={waiverForm.signed_name} onChange={e => setWaiverForm(f => ({ ...f, signed_name: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Email *</label>
-                          <Input type="email" value={waiverForm.signed_email} onChange={e => setWaiverForm(f => ({ ...f, signed_email: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Phone</label>
-                          <Input value={waiverForm.signed_phone} onChange={e => setWaiverForm(f => ({ ...f, signed_phone: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Date of Birth (optional)</label>
-                          <Input type="date" value={waiverForm.date_of_birth} onChange={e => setWaiverForm(f => ({ ...f, date_of_birth: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Emergency Contact Name</label>
-                          <Input value={waiverForm.emergency_contact_name} onChange={e => setWaiverForm(f => ({ ...f, emergency_contact_name: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Emergency Contact Phone</label>
-                          <Input value={waiverForm.emergency_contact_phone} onChange={e => setWaiverForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} className="bg-[#0A0A0A] border-gray-700 text-white" />
-                        </div>
+              ) : waiverTemplates.map(tmpl => {
+                const sig = waiverSignatures[tmpl.id];
+                const signed = sig?.status === 'valid';
+                return (
+                  <Card key={tmpl.id} className={`bg-[#171717] border-gray-800 ${signed ? 'border-green-800' : ''}`}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-white text-sm">{tmpl.title}</CardTitle>
+                        {signed ? (
+                          <Badge className="bg-green-900/60 text-green-300"><CheckCircle className="w-3 h-3 mr-1 inline" />Signed</Badge>
+                        ) : (
+                          <Badge className="bg-amber-900/60 text-amber-300">Required</Badge>
+                        )}
                       </div>
-                      <div className="flex items-start gap-3 mt-4 p-3 bg-[#0A0A0A] border border-gray-800 rounded">
-                        <input type="checkbox" id="waiverSign" checked={waiverSigned}
-                          onChange={e => setWaiverSigned(e.target.checked && !!waiverForm.signed_name && !!waiverForm.signed_email)}
-                          className="mt-0.5" />
-                        <label htmlFor="waiverSign" className="text-xs text-gray-300">
-                          By checking this box, I <strong>{waiverForm.signed_name || '___'}</strong>, agree to the terms of all waivers above and acknowledge this constitutes a valid electronic signature.
-                        </label>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-[#0A0A0A] border border-gray-800 rounded p-3 mb-4 max-h-40 overflow-y-auto">
+                        <p className="text-gray-400 text-xs whitespace-pre-wrap">{tmpl.body_rich_text}</p>
                       </div>
+                      {signed ? (
+                        <div className="text-xs text-green-400 mb-2">Signed by {sig.signed_name} on {new Date(sig.signed_at).toLocaleDateString()}</div>
+                      ) : (
+                        <Button size="sm" onClick={() => { setWaiverSignDialog(tmpl); setWaiverForm(f => ({ ...f, signed_name: mediaUser?.full_name || '', signed_email: mediaUser?.email || '' })); }} className="bg-blue-700 hover:bg-blue-600 text-xs">
+                          Sign This Waiver
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
-                </>
-              )}
+                );
+              })}
             </div>
           )}
 
