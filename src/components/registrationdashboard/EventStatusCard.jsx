@@ -124,7 +124,7 @@ export default function EventStatusCard({ selectedEvent, selectedTrack, dashboar
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge className={`${statusColor} text-xs`}>
             {selectedEvent?.status || 'Unknown'}
           </Badge>
@@ -133,6 +133,14 @@ export default function EventStatusCard({ selectedEvent, selectedTrack, dashboar
               <Clock className="w-3 h-3" /> {timeInfo}
             </span>
           )}
+          {effectiveStatus && LEGITIMACY_BADGE[effectiveStatus] && (() => {
+            const { cls, icon: Icon, label } = LEGITIMACY_BADGE[effectiveStatus];
+            return (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
+                <Icon className="w-3 h-3" /> {label}
+              </span>
+            );
+          })()}
         </div>
       </CardContent>
     </Card>
