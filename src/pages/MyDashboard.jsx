@@ -156,6 +156,17 @@ export default function MyDashboard() {
     navigate(createPageUrl('Profile') + '?tab=access');
   };
 
+  // Compute the Race Core deep link URL
+  const raceCoreUrl = useMemo(() => {
+    const first = collaborators.find(c => c.entity_type === 'Track' || c.entity_type === 'Series');
+    if (first) {
+      return createPageUrl('RegistrationDashboard') + `?orgType=${first.entity_type.toLowerCase()}&orgId=${first.entity_id}`;
+    }
+    return createPageUrl('RegistrationDashboard');
+  }, [collaborators]);
+
+  const hasCols = collaborators.length > 0;
+
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
     return null;
@@ -163,94 +174,113 @@ export default function MyDashboard() {
 
   return (
     <PageShell className="bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-         {/* Header */}
-         <div className="mb-10">
-           <div className="flex items-center gap-3 mb-2">
-             <div className="w-10 h-10 bg-[#232323] rounded-xl flex items-center justify-center">
-               <LayoutDashboard className="w-5 h-5 text-white" />
-             </div>
-             <div>
-               <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
-               {user && (
-                 <p className="text-sm text-gray-500">
-                   Welcome back, {user.full_name || user.email}
-                 </p>
-               )}
-             </div>
-           </div>
-         </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
-         {/* Top Action Strip */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-           <Button
-             variant="outline"
-             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
-             onClick={() => navigate(createPageUrl('DriverDirectory'))}
-           >
-             <Users className="w-4 h-4" /> Explore Drivers
-           </Button>
-           <Button
-             variant="outline"
-             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
-             onClick={() => navigate(createPageUrl('EventDirectory'))}
-           >
-             <Trophy className="w-4 h-4" /> Explore Events
-           </Button>
-           <Button
-             variant="outline"
-             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
-             onClick={() => navigate(createPageUrl('Registration'))}
-           >
-             <KeyRound className="w-4 h-4" /> Registration
-           </Button>
-           <Button
-             variant="outline"
-             className="justify-start gap-2 bg-white hover:bg-gray-100 border-gray-200"
-             onClick={() => navigate(createPageUrl('Profile'))}
-           >
-             <User className="w-4 h-4" /> My Profile
-           </Button>
-         </div>
+        {/* ── Hero Card ─────────────────────────────────────────────── */}
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#232323] rounded-xl flex items-center justify-center flex-shrink-0">
+                <LayoutDashboard className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight">My Dashboard</h1>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {hasCols
+                    ? 'Your operations hub — manage profiles and Race Core.'
+                    : 'Fan hub, favorites, and registration.'}
+                </p>
+              </div>
+            </div>
+            <Button
+              className="bg-[#232323] hover:bg-black text-white gap-2 flex-shrink-0 w-full sm:w-auto"
+              onClick={() => navigate(hasCols ? raceCoreUrl : createPageUrl('MotorsportsHome'))}
+            >
+              <ExternalLink className="w-4 h-4" />
+              {hasCols ? 'Open Race Core' : 'Browse Motorsports'}
+            </Button>
+          </CardContent>
+        </Card>
 
-         {/* My Entries Section */}
-         <div className="mb-12">
-           <MyEntriesSection user={user} isLoading={userLoading} />
-         </div>
+        {/* ── My Entries Section ─────────────────────────────────────── */}
+        <MyEntriesSection user={user} isLoading={userLoading} />
 
-         {isLoading ? (
+        {/* ── Loading ────────────────────────────────────────────────── */}
+        {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
               <Skeleton key={i} className="h-24 w-full rounded-xl" />
             ))}
           </div>
-        ) : collaborators.length === 0 ? (
+
+        ) : !hasCols ? (
+          /* ── Fan View ──────────────────────────────────────────────── */
           <>
             <EmptyState onEnterCode={handleEnterCode} />
-            <div className="mt-6 bg-white border border-gray-200 rounded-xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Star className="w-4 h-4 text-gray-500" />
-                <h3 className="font-semibold text-gray-900 text-sm">Fan tools</h3>
-              </div>
-              <ul className="text-sm text-gray-500 space-y-1 mb-5">
-                <li>· Favorites live in Profile</li>
-                <li>· Follow drivers and teams</li>
-              </ul>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('Profile'))}>
-                  Go to Profile
-                </Button>
-                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('DriverDirectory'))}>
-                  Explore Drivers
-                </Button>
-                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('EventDirectory'))}>
-                  Explore Events
-                </Button>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
+                <CardContent className="p-6 flex flex-col items-start gap-3">
+                  <div className="w-10 h-10 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Favorites</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Manage your followed drivers, teams, and series.</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="text-xs gap-1.5 mt-auto">
+                    Go to Favorites <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}>
+                <CardContent className="p-6 flex flex-col items-start gap-3">
+                  <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                    <Link2 className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Link a Profile</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Enter an access code to manage a driver, team, track, or series.</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="text-xs gap-1.5 mt-auto">
+                    Link Profile <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </>
+
         ) : (
-          <div className="space-y-8">
+          /* ── Entity Owner / Race Core View ─────────────────────────── */
+          <div className="space-y-6">
+
+            {/* Race Core Shortcuts strip */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                onClick={() => navigate(raceCoreUrl)}
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> Race Core
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                onClick={() => navigate(createPageUrl('Profile') + '?tab=entities')}
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" /> My Entities
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
+              >
+                <KeyRound className="w-3.5 h-3.5" /> Link Access
+              </Button>
+            </div>
+
+            {/* Grouped entity cards */}
             {Object.entries(grouped).map(([entityType, items]) => {
               const Icon = ENTITY_ICONS[entityType] || User;
               return (
@@ -276,19 +306,15 @@ export default function MyDashboard() {
               );
             })}
 
-            {/* Footer action */}
+            {/* Footer */}
             <div className="pt-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={handleEnterCode}
-                className="gap-2 text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Link Another Profile
+              <Button variant="outline" onClick={handleEnterCode} className="gap-2 text-sm">
+                <Plus className="w-4 h-4" /> Link Another Profile
               </Button>
             </div>
           </div>
         )}
+
       </div>
     </PageShell>
   );
