@@ -213,6 +213,51 @@ export default function MyDashboard() {
           </CardContent>
         </Card>
 
+        {/* ── Fan Hub Section ────────────────────────────────────────── */}
+        {user && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">Fan Hub</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_drivers || []).length}</div>
+                  <p className="text-xs text-gray-600 font-medium">Favorite Drivers</p>
+                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
+                    Manage
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_teams || []).length}</div>
+                  <p className="text-xs text-gray-600 font-medium">Favorite Teams</p>
+                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
+                    Manage
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_series || []).length}</div>
+                  <p className="text-xs text-gray-600 font-medium">Favorite Series</p>
+                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
+                    Manage
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_tracks || []).length}</div>
+                  <p className="text-xs text-gray-600 font-medium">Favorite Tracks</p>
+                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
+                    Manage
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {/* ── My Entries Section ─────────────────────────────────────── */}
         <MyEntriesSection user={user} isLoading={userLoading} />
 
