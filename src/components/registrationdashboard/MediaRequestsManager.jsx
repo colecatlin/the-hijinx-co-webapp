@@ -68,6 +68,13 @@ export default function MediaRequestsManager({
     queryFn: () => base44.entities.MediaUser.list(),
   });
 
+  // Load waiver signatures scoped to this event for completion indicators
+  const { data: waiverSigsForEvent = [] } = useQuery({
+    queryKey: ['waiverSigsEvent', selectedEvent?.id],
+    queryFn: () => base44.entities.WaiverSignature.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
+  });
+
   const getUserName = (mediaUserId) => {
     const mu = mediaUsers.find((m) => m.id === mediaUserId);
     return mu?.full_name || '—';
