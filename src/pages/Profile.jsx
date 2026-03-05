@@ -432,19 +432,25 @@ export default function Profile() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border-2 border-dashed border-gray-200 bg-white">
+                <Card className="border border-gray-200 rounded-xl bg-white">
                   <CardContent className="py-12 text-center">
                     <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <Users className="w-6 h-6 text-gray-400" />
                     </div>
-                    <h3 className="font-bold text-gray-900 mb-1">No entities linked yet</h3>
-                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">If you manage a driver, team, track, or series, link it with an access code.</p>
-                    <Link to={createPageUrl('Profile') + '?tab=access'}>
-                      <Button className="bg-[#232323] text-white hover:bg-black gap-2">
-                        <KeyRound className="w-4 h-4" />
-                        Enter Access Code
-                      </Button>
-                    </Link>
+                    <h3 className="font-bold text-gray-900 mb-1">You are set up as a fan</h3>
+                    <p className="text-sm text-gray-500 mb-5 max-w-sm mx-auto">Follow drivers, teams, series, and tracks, and keep your favorites here. If you manage a driver, team, track, or series, link it using an access code.</p>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <Link to={createPageUrl('Profile') + '?tab=general'}>
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                          Go to Favorites
+                        </Button>
+                      </Link>
+                      <Link to={createPageUrl('Profile') + '?tab=access'}>
+                        <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs">
+                          <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+                        </Button>
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               )}
