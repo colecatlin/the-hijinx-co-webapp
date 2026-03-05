@@ -564,38 +564,54 @@ export default function MediaApply() {
                     <p className="text-gray-400">No deliverable requirements for this target.</p>
                   </CardContent>
                 </Card>
-              ) : deliverables.map(req => {
-                const ack = deliverableAcks[req.id];
-                return (
-                  <Card key={req.id} className={`bg-[#171717] border-gray-800 ${ack === 'declined' ? 'border-orange-800' : ''}`}>
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="text-white text-sm font-medium">{req.title}</p>
-                          <p className="text-gray-500 text-xs">{req.requirement_type} • {req.enforcement_level} enforcement</p>
-                        </div>
-                        {ack && <Badge className={ack === 'accepted' ? 'bg-green-900/60 text-green-300' : 'bg-orange-900/60 text-orange-300'}>{ack}</Badge>}
-                      </div>
-                      {req.usage_rights_text && <p className="text-gray-400 text-xs mb-3 bg-[#0A0A0A] border border-gray-800 rounded p-2">{req.usage_rights_text}</p>}
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setDeliverableAcks(a => ({ ...a, [req.id]: 'accepted' }))}
-                          className={`flex-1 ${ack === 'accepted' ? 'bg-green-800 text-green-100' : 'bg-[#262626] border border-gray-700 text-gray-300 hover:bg-gray-700'}`}>
-                          <CheckCircle className="w-3 h-3 mr-1" /> I Agree
-                        </Button>
-                        <Button size="sm" onClick={() => setDeliverableAcks(a => ({ ...a, [req.id]: 'declined' }))}
-                          className={`flex-1 ${ack === 'declined' ? 'bg-orange-900 text-orange-100' : 'bg-[#262626] border border-gray-700 text-gray-300 hover:bg-gray-700'}`}>
-                          Decline
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              {deliverables.some(d => deliverableAcks[d.id] === 'declined') && (
-                <div className="flex items-start gap-2 bg-orange-900/20 border border-orange-800 rounded p-3">
-                  <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
-                  <p className="text-orange-300 text-xs">You have declined one or more deliverables. Your application will still be submitted but this may affect approval.</p>
-                </div>
+              ) : (
+                <>
+                  <div className="bg-[#171717] border border-gray-800 rounded p-3 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                    <p className="text-blue-300 text-xs">By acknowledging these requirements, you commit to delivering this content after the event. Failure to comply may affect future credential approvals.</p>
+                  </div>
+                  {deliverables.map(req => {
+                    const ack = deliverableAcks[req.id];
+                    let dueText = null;
+                    if (req.due_rule_type === 'hours_after_event_end') dueText = `${req.due_hours_after_event_end}h after event ends`;
+                    else if (req.due_rule_type === 'fixed_datetime' && req.due_datetime) dueText = new Date(req.due_datetime).toLocaleDateString();
+                    return (
+                      <Card key={req.id} className={`bg-[#171717] ${ack === 'accepted' ? 'border-green-800' : 'border-gray-800'}`}>
+                        <CardContent className="p-5">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-white text-sm font-semibold">{req.title}</p>
+                              <div className="flex gap-2 mt-1 flex-wrap">
+                                <span className="text-xs text-gray-500 bg-[#0A0A0A] border border-gray-800 rounded px-2 py-0.5">{req.requirement_type.replace('_', ' ')}</span>
+                                <span className={`text-xs rounded px-2 py-0.5 border ${req.enforcement_level === 'hard' ? 'text-red-400 border-red-900 bg-red-950/30' : req.enforcement_level === 'conditional' ? 'text-orange-400 border-orange-900 bg-orange-950/20' : 'text-gray-400 border-gray-700 bg-gray-900'}`}>
+                                  {req.enforcement_level} enforcement
+                                </span>
+                                {req.quantity_min && <span className="text-xs text-gray-400 bg-[#0A0A0A] border border-gray-800 rounded px-2 py-0.5">Min: {req.quantity_min}</span>}
+                              </div>
+                            </div>
+                            {ack && <Badge className={ack === 'accepted' ? 'bg-green-900/60 text-green-300' : 'bg-orange-900/60 text-orange-300'}>{ack === 'accepted' ? '✓ Acknowledged' : 'Declined'}</Badge>}
+                          </div>
+                          {dueText && <p className="text-xs text-gray-500 mb-2">Due: {dueText}</p>}
+                          {req.usage_rights_text && (
+                            <div className="bg-[#0A0A0A] border border-gray-800 rounded p-2 mb-3">
+                              <p className="text-gray-500 text-xs font-medium mb-1">Usage Rights</p>
+                              <p className="text-gray-400 text-xs">{req.usage_rights_text}</p>
+                            </div>
+                          )}
+                          {ack !== 'accepted' && (
+                            <Button size="sm" onClick={() => setDeliverableAcks(a => ({ ...a, [req.id]: 'accepted' }))}
+                              className="w-full bg-blue-800 hover:bg-blue-700 text-white text-xs">
+                              <CheckCircle className="w-3 h-3 mr-1" /> I acknowledge these deliverable requirements
+                            </Button>
+                          )}
+                          {ack === 'accepted' && (
+                            <p className="text-green-400 text-xs text-center py-1">✓ Acknowledged</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </>
               )}
             </div>
           )}
