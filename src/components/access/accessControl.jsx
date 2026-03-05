@@ -23,6 +23,7 @@ const ROLE_PERMISSIONS = {
       announcer_pack: true,
       imports: true,
       media: true,
+      media_portal: true,
     },
     actions: {
       create_event: true,
@@ -42,6 +43,7 @@ const ROLE_PERMISSIONS = {
       deny_request: true,
       issue_credential: true,
       revoke_credential: true,
+      manage_media: true,
     },
   },
   user: {
@@ -70,6 +72,7 @@ const ROLE_PERMISSIONS = {
       announcer_pack: true,
       imports: true,
       media: true,
+      media_portal: true,
     },
     actions: {
       import_csv: true,
@@ -85,6 +88,7 @@ const ROLE_PERMISSIONS = {
       deny_request: true,
       issue_credential: true,
       revoke_credential: true,
+      manage_media: true,
     },
   },
   entity_editor: {
@@ -100,6 +104,7 @@ const ROLE_PERMISSIONS = {
       announcer_pack: true,
       imports: true,
       media: true,
+      media_portal: true,
     },
     actions: {
       import_csv: true,
@@ -112,6 +117,7 @@ const ROLE_PERMISSIONS = {
       deny_request: true,
       issue_credential: true,
       revoke_credential: true,
+      manage_media: true,
     },
   },
   public: {
