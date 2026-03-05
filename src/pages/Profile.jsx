@@ -339,7 +339,7 @@ export default function Profile() {
 
         {/* ── Tabs ─────────────────────────────────────────────────────────── */}
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue={defaultTab} className="space-y-6">
+          <Tabs defaultValue={computedDefaultTab} className="space-y-6">
             <div className="overflow-x-auto -mx-4 px-4">
               <TabsList className="inline-flex w-auto min-w-full gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
                 <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Account</TabsTrigger>
