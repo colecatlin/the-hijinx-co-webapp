@@ -218,7 +218,20 @@ function getKeysForOperation(operationType, payload = {}) {
       break;
 
     case 'media_request_updated':
-      broad.push(['mediaRequests'], ['mediaCredentials'], ['policies'], ['policyAcceptances'], ['operationLogs']);
+      broad.push(['mediaRequests'], ['mediaCredentials'], ['policyAcceptances'], ['policyThreads'], ['policyMessages'], ['operationLogs']);
+      break;
+
+    case 'media_credential_issued':
+      broad.push(['mediaCredentials'], ['mediaRequests'], ['operationLogs']);
+      break;
+
+    case 'media_credential_revoked':
+      broad.push(['mediaCredentials'], ['operationLogs']);
+      break;
+
+    case 'policy_thread_message_posted':
+      broad.push(['policyThreads'], ['policyMessages']);
+      if (payload.threadId) exact.push(['policyMessages', payload.threadId]);
       break;
 
     case 'media_credential_updated':
