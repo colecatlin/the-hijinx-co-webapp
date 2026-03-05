@@ -7,14 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function MediaReviewPublishPanel({ dashboardContext, selectedEvent, currentUser, invalidateAfterOperation }) {
   const [selected, setSelected] = useState(null);
   const [notes, setNotes] = useState('');
   const [publishTargetType, setPublishTargetType] = useState('event_recap');
+  const [adminOverride, setAdminOverride] = useState(false);
   const queryClient = useQueryClient();
+  const isAdmin = currentUser?.role === 'admin';
 
   const entityId = dashboardContext?.orgId;
   const entityType = dashboardContext?.orgType;
@@ -42,6 +44,7 @@ export default function MediaReviewPublishPanel({ dashboardContext, selectedEven
   const approveMutation = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
+
       // Update review status
       await base44.entities.AssetReview.update(selected.id, {
         status: 'approved',
@@ -50,24 +53,32 @@ export default function MediaReviewPublishPanel({ dashboardContext, selectedEven
         updated_at: now,
       });
 
-      // Create PublishTarget
-      await base44.entities.PublishTarget.create({
+      // Use publishMediaAsset function (handles gate + admin override)
+      const publishRes = await base44.functions.invoke('publishMediaAsset', {
         asset_id: selected.asset_id,
         target_type: publishTargetType,
         target_entity_id: eventId || entityId,
-        status: 'published',
-        published_at: now,
-        created_at: now,
-        updated_at: now,
+        admin_override: adminOverride && isAdmin,
+        override_reason: adminOverride ? 'admin_override' : undefined,
       });
+
+      if (publishRes?.data?.error) {
+        const reason = publishRes.data.reason;
+        if (reason === 'rights_not_executed' || reason === 'rights_agreement_expired') {
+          throw new Error('Publish blocked: usage rights agreement is not fully executed.');
+        }
+        throw new Error(publishRes.data.error);
+      }
 
       queryClient.invalidateQueries({ queryKey: ['assetReviews'] });
       queryClient.invalidateQueries({ queryKey: ['publishTargets'] });
       invalidateAfterOperation?.('media_review_updated');
       invalidateAfterOperation?.('publish_target_updated', { assetId: selected.asset_id });
-      toast.success('Asset approved and published');
+      toast.success(adminOverride ? 'Asset published (admin override)' : 'Asset approved and published');
       setSelected(null);
+      setAdminOverride(false);
     },
+    onError: (err) => toast.error(err.message),
   });
 
   const rejectMutation = useMutation({
@@ -154,6 +165,18 @@ export default function MediaReviewPublishPanel({ dashboardContext, selectedEven
                 <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="bg-[#1A1A1A] border-gray-700 text-white resize-none" />
               </div>
 
+              {/* Admin override toggle */}
+              {isAdmin && (
+                <div className="flex items-center gap-2 bg-yellow-900/10 border border-yellow-900/30 rounded p-2">
+                  <ShieldAlert className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                  <label className="flex items-center gap-2 cursor-pointer flex-1">
+                    <input type="checkbox" checked={adminOverride} onChange={e => setAdminOverride(e.target.checked)}
+                      className="accent-yellow-500" />
+                    <span className="text-xs text-yellow-300">Admin override (bypass rights gate)</span>
+                  </label>
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button
                   onClick={() => rejectMutation.mutate()}
@@ -166,9 +189,9 @@ export default function MediaReviewPublishPanel({ dashboardContext, selectedEven
                 <Button
                   onClick={() => approveMutation.mutate()}
                   disabled={approveMutation.isPending}
-                  className="flex-1 bg-green-700 hover:bg-green-600"
+                  className={`flex-1 ${adminOverride ? 'bg-yellow-700 hover:bg-yellow-600' : 'bg-green-700 hover:bg-green-600'}`}
                 >
-                  <CheckCircle className="w-3 h-3 mr-1" />Approve & Publish
+                  <CheckCircle className="w-3 h-3 mr-1" />{adminOverride ? 'Override & Publish' : 'Approve & Publish'}
                 </Button>
               </div>
             </div>

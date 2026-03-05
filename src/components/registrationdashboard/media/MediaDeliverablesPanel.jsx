@@ -22,6 +22,7 @@ const REVIEW_ICONS = {
   rejected: XCircle,
 };
 
+// MediaDeliverablesPanel — exported unchanged, usage rights panel is separate
 export default function MediaDeliverablesPanel({ request, currentUser, invalidateAfterOperation }) {
   const queryClient = useQueryClient();
   const [reviewDialog, setReviewDialog] = useState(null); // { submission, action }
