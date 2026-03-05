@@ -228,6 +228,13 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     }
   };
 
+  const triggerEntityLinks = async (eventId) => {
+    try {
+      await base44.functions.invoke('ensureEventEntityLinks', { event_id: eventId });
+      queryClient.invalidateQueries({ queryKey: ['entityRecord', 'event', eventId] });
+    } catch (_) { /* non-fatal — panel will retry on next load */ }
+  };
+
   const createMutation = useMutation({
     mutationFn: data => base44.entities.Event.create(data),
     onSuccess: async (newEvent) => {
@@ -235,6 +242,8 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       await setupEventCollaborators(newEvent, currentUser?.id);
       // Create EventCollaboration record
       await createCollaboration(newEvent.id, newEvent.track_id, newEvent.series_id);
+      // Ensure unified Entity records and confirmation
+      await triggerEntityLinks(newEvent.id);
       invalidateAfterOperation('event_created', { eventId: newEvent.id });
       invalidateAfterOperation('event_collaboration_updated', { eventId: newEvent.id });
       toast.success('Event created successfully');
@@ -249,9 +258,12 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Event.update(id, data),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event', selectedEventId] });
+      // Re-sync entity links (track/series may have changed)
+      await triggerEntityLinks(variables.id || selectedEventId);
+      invalidateAfterOperation('event_updated', { eventId: variables.id || selectedEventId });
       toast.success('Event updated successfully');
     },
     onError: error => {
