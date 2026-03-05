@@ -160,6 +160,47 @@ export default function MyDashboard() {
            </div>
          </div>
 
+         {/* Quick Actions Bar */}
+         <div className="flex flex-wrap items-center gap-2 mb-8">
+           {collaborators.length > 0 ? (
+             <>
+               <Button
+                 size="sm"
+                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                 onClick={() => navigate(createPageUrl('RegistrationDashboard') + `?orgType=${collaborators[0].entity_type.toLowerCase()}&orgId=${collaborators[0].entity_id}`)}
+               >
+                 <ExternalLink className="w-3.5 h-3.5" /> Open Race Core
+               </Button>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 className="gap-1.5 text-xs"
+                 onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
+               >
+                 <Plus className="w-3.5 h-3.5" /> Link Another Entity
+               </Button>
+             </>
+           ) : (
+             <>
+               <Button
+                 size="sm"
+                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                 onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
+               >
+                 <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+               </Button>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 className="gap-1.5 text-xs"
+                 onClick={() => navigate(createPageUrl('MotorsportsHome'))}
+               >
+                 <Trophy className="w-3.5 h-3.5" /> Browse Motorsports
+               </Button>
+             </>
+           )}
+         </div>
+
          {/* My Entries Section */}
          <div className="mb-12">
            <MyEntriesSection user={user} isLoading={userLoading} />
