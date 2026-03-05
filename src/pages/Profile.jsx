@@ -404,56 +404,82 @@ export default function Profile() {
             </TabsContent>
 
             {/* ── Fan Tab ──────────────────────────────────────────────────── */}
-            <TabsContent value="fan" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-rose-500" /> Fan Mode
-                  </CardTitle>
-                  <CardDescription>Follow drivers, teams, series, and tracks so your dashboard and feeds feel personal.</CardDescription>
-                </CardHeader>
-              </Card>
+             <TabsContent value="fan" className="space-y-6">
+               <Card className="border border-gray-200 bg-white">
+                 <CardHeader>
+                   <CardTitle className="text-base flex items-center gap-2">
+                     <Heart className="w-4 h-4 text-rose-500" /> Fan Settings
+                   </CardTitle>
+                   <CardDescription>Favorites power your home feed and quick access.</CardDescription>
+                 </CardHeader>
+               </Card>
 
-              {collaborations.length === 0 && (
-                <Card className="border border-gray-200 bg-gray-50">
-                  <CardContent className="py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm">Manage a driver, team, track, or series?</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Link it to your account using an access code.</p>
-                    </div>
-                    <Link to={createPageUrl('Profile') + '?tab=access'}>
-                      <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs flex-shrink-0">
-                        <KeyRound className="w-3.5 h-3.5" /> Link a Driver, Team, Track, or Series
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
+               <Card>
+                 <CardContent className="pt-6">
+                   <FavoritesTab
+                     formData={formData}
+                     drivers={drivers}
+                     teams={teams}
+                     series={series}
+                     tracks={tracks}
+                     toggleFavorite={toggleFavorite}
+                   />
+                 </CardContent>
+               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <FavoritesTab
-                    formData={formData}
-                    drivers={drivers}
-                    teams={teams}
-                    series={series}
-                    tracks={tracks}
-                    toggleFavorite={toggleFavorite}
-                  />
-                </CardContent>
-              </Card>
-              <div>
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={updateMutation.isPending}
-                  className="bg-[#232323] hover:bg-black text-white gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {updateMutation.isPending ? 'Saving...' : 'Save Favorites'}
-                </Button>
-              </div>
-            </TabsContent>
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                 <Link to={createPageUrl('DriverDirectory')}>
+                   <Card className="border border-gray-200 cursor-pointer hover:shadow-md transition-shadow">
+                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                       <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                         <Users className="w-4 h-4 text-blue-600" />
+                       </div>
+                       <p className="text-xs font-medium text-gray-900">Drivers</p>
+                     </CardContent>
+                   </Card>
+                 </Link>
+                 <Link to={createPageUrl('TeamDirectory')}>
+                   <Card className="border border-gray-200 cursor-pointer hover:shadow-md transition-shadow">
+                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                       <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                         <Users className="w-4 h-4 text-purple-600" />
+                       </div>
+                       <p className="text-xs font-medium text-gray-900">Teams</p>
+                     </CardContent>
+                   </Card>
+                 </Link>
+                 <Link to={createPageUrl('TrackDirectory')}>
+                   <Card className="border border-gray-200 cursor-pointer hover:shadow-md transition-shadow">
+                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                       <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                         <MapPin className="w-4 h-4 text-green-600" />
+                       </div>
+                       <p className="text-xs font-medium text-gray-900">Tracks</p>
+                     </CardContent>
+                   </Card>
+                 </Link>
+                 <Link to={createPageUrl('SeriesHome')}>
+                   <Card className="border border-gray-200 cursor-pointer hover:shadow-md transition-shadow">
+                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                       <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
+                         <Trophy className="w-4 h-4 text-orange-600" />
+                       </div>
+                       <p className="text-xs font-medium text-gray-900">Series</p>
+                     </CardContent>
+                   </Card>
+                 </Link>
+               </div>
+
+               <Button
+                 type="submit"
+                 size="lg"
+                 disabled={updateMutation.isPending}
+                 className="bg-[#232323] hover:bg-black text-white gap-2"
+               >
+                 <Save className="w-4 h-4" />
+                 {updateMutation.isPending ? 'Saving...' : 'Save Favorites'}
+               </Button>
+             </TabsContent>
 
             {/* ── Entities Tab ─────────────────────────────────────────────── */}
             <TabsContent value="entities" className="space-y-6">
