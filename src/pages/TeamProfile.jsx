@@ -457,6 +457,15 @@ export default function TeamProfile() {
         <div id="section-schedule">
           <TeamScheduleResults teamId={team.id} />
         </div>
+
+        {/* Published Media Gallery */}
+        <div className="bg-white rounded-lg border border-gray-200 p-8 mt-16">
+          <PublicMediaGallery
+            targetType="team_gallery"
+            targetEntityId={team?.id}
+            title="Media"
+          />
+        </div>
       </div>
     </PageShell>
   );

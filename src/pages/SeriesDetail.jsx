@@ -554,6 +554,17 @@ export default function SeriesDetail() {
           </section>
         </div>
 
+        {/* Published Media Gallery */}
+        <div className="mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <PublicMediaGallery
+              targetType={['series_feed', 'event_recap']}
+              targetEntityId={series?.id}
+              title="Media"
+            />
+          </section>
+        </div>
+
         {/* Season Data Health Row */}
         <div className="mb-6">
           <section className="bg-white border border-gray-200 p-8">

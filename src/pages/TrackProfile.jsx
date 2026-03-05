@@ -608,6 +608,15 @@ export default function TrackProfile() {
             </section>
           )}
 
+          {/* Published Media Gallery */}
+          <section className="bg-white border border-gray-200 p-8">
+            <PublicMediaGallery
+              targetType="track_gallery"
+              targetEntityId={track?.id}
+              title="Media"
+            />
+          </section>
+
           {/* Community */}
           {community && (
             <section id="section-community" className="bg-white border border-gray-200 p-8">

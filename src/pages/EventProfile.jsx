@@ -683,6 +683,17 @@ export default function EventProfile() {
           </div>
         )}
 
+        {/* Published Media Gallery */}
+        <div className="mb-6">
+          <section className="bg-white border border-gray-200 p-8">
+            <PublicMediaGallery
+              targetType="event_recap"
+              targetEntityId={eventId}
+              title="Media"
+            />
+          </section>
+        </div>
+
         <div className="space-y-4">
           <section id="section-results" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Submit Results</h2>

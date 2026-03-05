@@ -671,6 +671,15 @@ export default function DriverProfile() {
             />
           </section>
 
+          <section className="bg-white p-8">
+            <Separator className="mb-3" />
+            <PublicMediaGallery
+              targetType="driver_gallery"
+              targetEntityId={driver?.id}
+              title="Media"
+            />
+          </section>
+
           <section id="section-social" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Social Media</h2>
