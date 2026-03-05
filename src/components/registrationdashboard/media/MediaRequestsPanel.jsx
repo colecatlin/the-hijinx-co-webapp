@@ -176,6 +176,18 @@ export default function MediaRequestsPanel({ dashboardContext, selectedEvent, cu
                   placeholder="Optional notes..."
                 />
               </div>
+              <div className="flex flex-col gap-2">
+                {selectedReq?.holder_media_user_id && (
+                  <a
+                    href={`${window.location.origin}${createPageUrl('MediaProfile')}?mediaUserId=${selectedReq.holder_media_user_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-400 hover:underline flex items-center gap-1"
+                  >
+                    View Media Profile ↗
+                  </a>
+                )}
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" className="border-gray-700 text-gray-300" onClick={() => setSelectedReq(null)}>Cancel</Button>
                 <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending} className="bg-blue-700 hover:bg-blue-600">
