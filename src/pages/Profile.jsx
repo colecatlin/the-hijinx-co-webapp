@@ -573,17 +573,17 @@ export default function Profile() {
 
                     {collaborations.length === 0 && (
                     <Card className="border border-gray-200 bg-blue-50">
-                    <CardContent className="py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">No managed entities yet</h3>
-                    <p className="text-xs text-gray-600 mt-1">Link a driver, team, track, or series using an access code.</p>
-                    </div>
-                    <Link to={createPageUrl('Profile') + '?tab=access'} className="flex-shrink-0">
-                    <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs">
-                      <KeyRound className="w-3.5 h-3.5" /> Enter Access Code
-                    </Button>
-                    </Link>
-                    </CardContent>
+                      <CardContent className="py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm">No managed entities yet</h3>
+                          <p className="text-xs text-gray-600 mt-1">Link a driver, team, track, or series using an access code.</p>
+                        </div>
+                        <Link to={createPageUrl('Profile') + '?tab=access'} className="flex-shrink-0">
+                          <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs">
+                            <KeyRound className="w-3.5 h-3.5" /> Enter Access Code
+                          </Button>
+                        </Link>
+                      </CardContent>
                     </Card>
                     )}
 
