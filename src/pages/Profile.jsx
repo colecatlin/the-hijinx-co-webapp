@@ -245,6 +245,48 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* ── Profile Summary Card ─────────────────────────────────────────── */}
+        <Card className="border border-gray-200 rounded-xl bg-white">
+          <CardContent className="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold text-gray-500 flex-shrink-0">
+                {(user.display_name || user.full_name || user.email || '?')[0].toUpperCase()}
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-base">{user.display_name || user.full_name || user.email}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <Badge className={`text-xs px-2 py-0.5 ${isEntityManager ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                    {isEntityManager ? 'Entity Account' : 'Fan Account'}
+                  </Badge>
+                  {invitations.length > 0 && (
+                    <Badge className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200">
+                      Invites: {invitations.length}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              {isEntityManager ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                  onClick={() => window.location.href = getRegistrationDashboardUrl(collaborations[0].entity_type, collaborations[0].entity_id)}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Race Core
+                </Button>
+              ) : (
+                <Link to={createPageUrl('Profile') + '?tab=access'}>
+                  <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs">
+                    <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── Global Quick Actions ─────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-2">
           <Link to={createPageUrl('MyDashboard')}>
