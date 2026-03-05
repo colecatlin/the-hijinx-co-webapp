@@ -633,7 +633,9 @@ export default function MediaApply() {
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-800">
                     <span className="text-gray-400">Waivers</span>
-                    <span className={waiverSigned || waiverTemplates.length === 0 ? 'text-green-400' : 'text-red-400'}>{waiverSigned || waiverTemplates.length === 0 ? 'Signed' : 'Not signed'}</span>
+                    <span className={waiverTemplates.every(t => waiverSignatures[t.id]?.status === 'valid') || waiverTemplates.length === 0 ? 'text-green-400' : 'text-red-400'}>
+                      {waiverTemplates.length === 0 ? 'None required' : `${Object.values(waiverSignatures).filter(s => s?.status === 'valid').length}/${waiverTemplates.length} signed`}
+                    </span>
                   </div>
                 </div>
                 {policies.some(p => policyAcceptances[p.id]?.status === 'change_requested') && (
