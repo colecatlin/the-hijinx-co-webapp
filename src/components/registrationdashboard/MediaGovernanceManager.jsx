@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import PolicyAcceptancePanel from '@/components/media/PolicyAcceptancePanel';
+import PolicyChangeRequestPanel from './PolicyChangeRequestPanel';
 
 export default function MediaGovernanceManager({
   dashboardContext,
