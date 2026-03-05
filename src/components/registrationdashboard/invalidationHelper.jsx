@@ -245,6 +245,26 @@ function getKeysForOperation(operationType, payload = {}) {
       broad.push(['usageRights'], ['mediaRequests'], ['mediaCredentials']);
       break;
 
+    case 'policy_updated':
+      broad.push(['policies'], ['mediaRequests']);
+      break;
+
+    case 'waiver_updated':
+      broad.push(['waivers'], ['waiverSignatures']);
+      break;
+
+    case 'deliverable_updated':
+      broad.push(['deliverables']);
+      break;
+
+    case 'media_asset_uploaded':
+      broad.push(['mediaAssets'], ['assetLinks'], ['assetReviews']);
+      break;
+
+    case 'media_review_updated':
+      broad.push(['assetReviews'], ['publishTargets'], ['mediaAssets']);
+      break;
+
     case 'publish_target_updated':
       broad.push(['publishTargets'], ['mediaRequests']);
       if (payload.assetId) exact.push(['publishTargets', payload.assetId]);
