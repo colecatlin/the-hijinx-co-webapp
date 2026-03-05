@@ -286,7 +286,7 @@ export default function MediaApply() {
     if (step === 1) return targetType === 'event' || true; // event selection is optional for track/series
     if (step === 2) return roles.length > 0 && !!assignmentDesc;
     if (step === 3) return policies.every(p => !!policyAcceptances[p.id]);
-    if (step === 4) return waiverTemplates.length === 0 || waiverSigned;
+    if (step === 4) return waiverTemplates.length === 0 || waiverTemplates.every(t => waiverSignatures[t.id]?.status === 'valid');
     if (step === 5) return deliverables.every(d => !!deliverableAcks[d.id]);
     return true;
   };
