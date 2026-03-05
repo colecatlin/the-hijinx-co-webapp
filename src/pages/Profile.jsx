@@ -670,7 +670,7 @@ export default function Profile() {
                  </CardContent>
                </Card>
 
-              <Card>
+               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Manage Access</CardTitle>
                   <CardDescription>Invite editors or revoke access for entities you own.</CardDescription>
