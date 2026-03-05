@@ -23,6 +23,32 @@ export default function EventStatusCard({ selectedEvent, selectedTrack, dashboar
     enabled: !!selectedEvent?.track_id && !selectedTrack,
   });
 
+  // Load Entity record for event to find confirmation
+  const { data: eventEntityList = [] } = useQuery({
+    queryKey: ['entityRecord', 'event', selectedEvent?.id],
+    queryFn: () => base44.entities.Entity.filter({ entity_type: 'event', source_entity_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
+    staleTime: 30000,
+  });
+  const eventEntityId = eventEntityList[0]?.id;
+
+  const { data: confirmationList = [] } = useQuery({
+    queryKey: ['entityConfirmation', eventEntityId],
+    queryFn: async () => {
+      const list = await base44.entities.EntityConfirmation.filter({ event_entity_id: eventEntityId });
+      if (!list.length && selectedEvent?.id) {
+        // Bootstrap silently
+        base44.functions.invoke('ensureEventEntityLinks', { event_id: selectedEvent.id })
+          .then(() => queryClient.invalidateQueries({ queryKey: ['entityRecord', 'event', selectedEvent.id] }))
+          .catch(() => {});
+      }
+      return list;
+    },
+    enabled: !!eventEntityId,
+    staleTime: 15000,
+  });
+  const effectiveStatus = confirmationList[0]?.effective_status || null;
+
   useEffect(() => {
     if (fetchedTrack) setTrack(fetchedTrack);
     else if (selectedTrack) setTrack(selectedTrack);
