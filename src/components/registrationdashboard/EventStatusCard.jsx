@@ -6,7 +6,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays, differenceInHours, format, isPast } from 'date-fns';
 
+const LEGITIMACY_BADGE = {
+  confirmed:            { cls: 'bg-green-900/50 text-green-300', icon: ShieldCheck, label: 'Confirmed' },
+  pending_confirmation: { cls: 'bg-amber-900/50 text-amber-300', icon: Clock, label: 'Pending confirmation' },
+  rejected:             { cls: 'bg-red-900/50 text-red-300', icon: ShieldAlert, label: 'Rejected' },
+};
+
 export default function EventStatusCard({ selectedEvent, selectedTrack, dashboardContext }) {
+  const queryClient = useQueryClient();
   const [track, setTrack] = useState(selectedTrack);
   const [timeInfo, setTimeInfo] = useState(null);
 
