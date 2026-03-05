@@ -213,7 +213,30 @@ export default function MyDashboard() {
             ))}
           </div>
         ) : collaborators.length === 0 ? (
-          <EmptyState onEnterCode={handleEnterCode} />
+          <>
+            <EmptyState onEnterCode={handleEnterCode} />
+            <div className="mt-6 bg-white border border-gray-200 rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="w-4 h-4 text-gray-500" />
+                <h3 className="font-semibold text-gray-900 text-sm">Fan tools</h3>
+              </div>
+              <ul className="text-sm text-gray-500 space-y-1 mb-5">
+                <li>· Favorites live in Profile</li>
+                <li>· Follow drivers and teams</li>
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('Profile'))}>
+                  Go to Profile
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('DriverDirectory'))}>
+                  Explore Drivers
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate(createPageUrl('EventDirectory'))}>
+                  Explore Events
+                </Button>
+              </div>
+            </div>
+          </>
         ) : (
           <div className="space-y-8">
             {Object.entries(grouped).map(([entityType, items]) => {
