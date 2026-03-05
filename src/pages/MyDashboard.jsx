@@ -34,13 +34,14 @@ const EDITOR_PAGES = {
   Series: 'EntityEditor',
 };
 
-function EntityCard({ collaborator, onManage }) {
+function EntityCard({ collaborator, onManage, onRaceCore }) {
   const Icon = ENTITY_ICONS[collaborator.entity_type] || User;
   const colorClass = ENTITY_COLORS[collaborator.entity_type] || 'bg-gray-50 border-gray-200 text-gray-700';
   const isOwner = collaborator.role === 'owner';
+  const showRaceCore = collaborator.entity_type === 'Track' || collaborator.entity_type === 'Series';
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between hover:shadow-md transition-shadow group">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-4">
         <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
           <Icon className="w-5 h-5" />
@@ -63,15 +64,28 @@ function EntityCard({ collaborator, onManage }) {
           </div>
         </div>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onManage(collaborator)}
-        className="gap-2 group-hover:bg-[#232323] group-hover:text-white group-hover:border-[#232323] transition-colors"
-      >
-        {collaborator.entity_type === 'Driver' ? 'Edit Profile' : 'Open Console'}
-        <ChevronRight className="w-4 h-4" />
-      </Button>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {showRaceCore && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onRaceCore(collaborator)}
+            className="gap-1.5 text-xs border-gray-200"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Race Core
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onManage(collaborator)}
+          className="gap-2 hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors"
+        >
+          {collaborator.entity_type === 'Driver' ? 'Edit Profile' : 'Open Console'}
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }
