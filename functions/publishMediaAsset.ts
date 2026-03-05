@@ -28,6 +28,8 @@ Deno.serve(async (req) => {
         error: 'Publish blocked',
         reason: gateResult.reason,
         agreement_id: gateResult.agreement_id,
+        review_id: gateResult.review_id,
+        review_status: gateResult.review_status,
       }, { status: 422 });
     }
 
