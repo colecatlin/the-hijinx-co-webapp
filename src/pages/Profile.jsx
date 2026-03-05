@@ -187,6 +187,23 @@ export default function Profile() {
   const isFan = collaborations.length === 0 && invitations.length === 0;
   const isEntityManager = collaborations.length > 0;
 
+  // Smart default tab: only override when no explicit tab in URL
+  const computedDefaultTab = tabFromUrl
+    ? tabFromUrl
+    : collaborations.length === 0 && invitations.length > 0
+      ? 'entities'
+      : collaborations.length === 0 && invitations.length === 0
+        ? 'access'
+        : 'general';
+
+  // Build Race Core URL with optional season/event passthrough
+  function getRaceCoreUrl(entityType, entityId) {
+    let url = createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
+    if (seasonYear) url += `&seasonYear=${seasonYear}`;
+    if (eventId) url += `&eventId=${eventId}`;
+    return url;
+  }
+
   if (userLoading || !formData) {
     return (
       <PageShell className="bg-slate-50 min-h-screen">
