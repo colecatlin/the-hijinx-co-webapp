@@ -55,6 +55,19 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
     queryFn: () => base44.entities.WaiverTemplate.list(),
   });
 
+  // Load required waivers for this request
+  const { data: requiredWaiversData } = useQuery({
+    queryKey: ['requiredWaivers', request?.id],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getRequiredWaiversForRequest', { request_id: request.id });
+      return res?.data?.templates || [];
+    },
+    enabled: !!request?.id,
+  });
+  const requiredWaivers = requiredWaiversData || [];
+  const signedTemplateIds = new Set(waiverSigs.filter(s => s.status === 'valid').map(s => s.template_id));
+  const missingWaivers = requiredWaivers.filter(t => !signedTemplateIds.has(t.id));
+
   const { data: deliverableAgreements = [] } = useQuery({
     queryKey: ['deliverableAgreementsForRequest', request?.id],
     queryFn: () => base44.entities.DeliverableAgreement.filter({ request_id: request.id }),
