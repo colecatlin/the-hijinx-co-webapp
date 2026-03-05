@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Save, LogOut, ExternalLink, Lock, Users, Trophy, Rocket, CheckCircle2, AlertCircle, ChevronRight, KeyRound } from 'lucide-react';
+import { Save, LogOut, ExternalLink, Lock, Users, Trophy, Rocket, CheckCircle2, AlertCircle, ChevronRight, KeyRound, Heart } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import GeneralTab from '@/components/profile/GeneralTab';
@@ -20,6 +20,7 @@ import CodeInputTab from '@/components/profile/CodeInputTab';
 import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
 import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions';
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
+import FavoritesTab from '@/components/profile/FavoritesTab';
 
 // ─── Helper functions ─────────────────────────────────────────────────────────
 function getRegistrationDashboardUrl(entityType, entityId) {
