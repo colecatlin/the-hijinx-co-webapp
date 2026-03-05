@@ -217,6 +217,7 @@ export default function MediaRequestsManager({
                   <TableHead className="text-gray-400">Roles</TableHead>
                   <TableHead className="text-gray-400">Access Level</TableHead>
                   <TableHead className="text-gray-400">Status</TableHead>
+                  <TableHead className="text-gray-400">Waivers</TableHead>
                   <TableHead className="text-gray-400">Actions</TableHead>
                 </TableRow>
               </TableHeader>
