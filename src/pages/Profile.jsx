@@ -51,7 +51,14 @@ export default function Profile() {
   const [formData, setFormData] = useState(null);
   const [activityFilter, setActivityFilter] = useState('all');
   const urlParams = new URLSearchParams(window.location.search);
-  const defaultTab = urlParams.get('tab') || 'general';
+  const seasonYear = urlParams.get('seasonYear');
+  const eventId = urlParams.get('eventId');
+
+  // Compute defaultTab after data loads — use a ref to avoid re-renders
+  // We compute it once at render time; collaborations/invitations may not be loaded yet on first render
+  // so we fall back to urlParams first, then re-evaluate when data settles via key on Tabs
+  const tabFromUrl = urlParams.get('tab');
+  const defaultTab = tabFromUrl || 'general';
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
