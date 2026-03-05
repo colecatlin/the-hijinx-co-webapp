@@ -267,6 +267,7 @@ export default function MyDashboard() {
                         key={collab.id}
                         collaborator={collab}
                         onManage={handleManage}
+                        onRaceCore={handleRaceCore}
                       />
                     ))}
                   </div>
