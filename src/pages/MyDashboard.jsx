@@ -270,42 +270,10 @@ export default function MyDashboard() {
           </div>
 
         ) : !hasCols ? (
-          /* ── Fan View ──────────────────────────────────────────────── */
-          <>
-            <EmptyState onEnterCode={handleEnterCode} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
-                <CardContent className="p-6 flex flex-col items-start gap-3">
-                  <div className="w-10 h-10 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-rose-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Favorites</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Manage your followed drivers, teams, and series.</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="text-xs gap-1.5 mt-auto">
-                    Go to Favorites <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}>
-                <CardContent className="p-6 flex flex-col items-start gap-3">
-                  <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
-                    <Link2 className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Link a Profile</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Enter an access code to manage a driver, team, track, or series.</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="text-xs gap-1.5 mt-auto">
-                    Link Profile <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </>
+           /* ── Fan View ──────────────────────────────────────────────── */
+           <EmptyState onEnterCode={handleEnterCode} />
 
-        ) : (
+         ) : (
           /* ── Entity Owner / Race Core View ─────────────────────────── */
           <div className="space-y-6">
 
