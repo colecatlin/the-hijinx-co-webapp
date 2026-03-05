@@ -225,7 +225,18 @@ export default function Profile() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Profile</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Profile</h1>
+              <Badge className={`text-xs px-2 py-0.5 ${
+                user?.role === 'admin'
+                  ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                  : collaborations.length > 0
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-600 border border-gray-200'
+              }`}>
+                {user?.role === 'admin' ? 'Admin' : collaborations.length > 0 ? 'Entity Access' : 'Fan'}
+              </Badge>
+            </div>
             <p className="text-sm text-gray-500 mt-1">Your account and access across Index46</p>
           </div>
           <button
