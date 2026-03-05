@@ -96,6 +96,7 @@ import ManageTeams from './pages/ManageTeams';
 import ManageTech from './pages/ManageTech';
 import ManageTracks from './pages/ManageTracks';
 import Management from './pages/Management';
+import MediaPortal from './pages/MediaPortal';
 import MotorsportsHome from './pages/MotorsportsHome';
 import MyDashboard from './pages/MyDashboard';
 import OutletAdvertising from './pages/OutletAdvertising';
@@ -120,7 +121,6 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import UserDashboard from './pages/UserDashboard';
-import MediaPortal from './pages/MediaPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -174,6 +174,7 @@ export const PAGES = {
     "ManageTech": ManageTech,
     "ManageTracks": ManageTracks,
     "Management": Management,
+    "MediaPortal": MediaPortal,
     "MotorsportsHome": MotorsportsHome,
     "MyDashboard": MyDashboard,
     "OutletAdvertising": OutletAdvertising,
@@ -198,7 +199,6 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "UserDashboard": UserDashboard,
-    "MediaPortal": MediaPortal,
 }
 
 export const pagesConfig = {

@@ -35,6 +35,7 @@ import IntegrationsManager from '@/components/registrationdashboard/Integrations
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import MediaTabContent from '@/components/registrationdashboard/MediaTabContent';
 import MediaGovernanceManager from '@/components/registrationdashboard/MediaGovernanceManager';
+import MediaPortal from '@/components/registrationdashboard/media/MediaPortal';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
@@ -102,6 +103,7 @@ import {
     BookOpen,
     Gauge,
     Film,
+    Camera,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { QueryKeys } from '@/components/utils/queryKeys';
@@ -442,7 +444,7 @@ export default function RegistrationDashboard() {
 
   // Check if user has any accessible tabs
   const availableTabs = useMemo(() => {
-    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'imports', 'media', 'ops_center'];
+    const tabKeys = ['overview', 'event_builder', 'classes_sessions', 'entries', 'compliance', 'checkin', 'tech', 'results', 'points_standings', 'exports', 'integrations', 'audit_log', 'announcer', 'gate', 'race_control', 'announcer_pack', 'imports', 'media', 'media_portal', 'ops_center'];
     return tabKeys.filter(key => canTab(dashboardPermissions, key));
   }, [dashboardPermissions]);
 
@@ -1256,6 +1258,15 @@ export default function RegistrationDashboard() {
                   <Users className="w-4 h-4 mr-2" /> Media
                 </TabsTrigger>
               )}
+              {canTab(dashboardPermissions, 'media_portal') && (
+                <TabsTrigger
+                  value="media_portal"
+                  disabled={!selectedEvent}
+                  className="data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Camera className="w-4 h-4 mr-2" /> Media
+                </TabsTrigger>
+              )}
               {isAdmin && (
                 <TabsTrigger
                   value="opsCenter"
@@ -1608,6 +1619,19 @@ export default function RegistrationDashboard() {
                     />
                   </TabsContent>
                 </Tabs>
+              )}
+
+              {canTab(dashboardPermissions, 'media_portal') && activeTab === 'media_portal' && (
+                <MediaPortal
+                  dashboardContext={dashboardContext}
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardPermissions={dashboardPermissions}
+                  currentUser={user}
+                  isAdmin={isAdmin}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                />
               )}
 
               {isAdmin && activeTab === 'opsCenter' && (
