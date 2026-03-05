@@ -368,7 +368,8 @@ export default function Profile() {
             <TabsContent value="account" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Account Details</CardTitle>
+                  <CardTitle className="text-base">Account</CardTitle>
+                  <CardDescription>Basic account details and preferences.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <GeneralTab user={user} formData={formData} setFormData={setFormData} />
