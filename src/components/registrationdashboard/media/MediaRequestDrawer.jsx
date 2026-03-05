@@ -75,6 +75,19 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
     enabled: !!request?.id,
   });
 
+  // Load required deliverables for approval gate
+  const { data: requiredDeliverablesData } = useQuery({
+    queryKey: ['requiredDeliverables', request?.id],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getDeliverableRequirementsForRequest', { request_id: request.id });
+      return res?.data?.requirements || [];
+    },
+    enabled: !!request?.id,
+  });
+  const requiredDeliverables = requiredDeliverablesData || [];
+  const acceptedAgreementReqIds = new Set(deliverableAgreements.filter(a => a.status === 'accepted').map(a => a.requirement_id));
+  const missingDeliverableAcks = requiredDeliverables.filter(r => !acceptedAgreementReqIds.has(r.id));
+
   const getTemplateName = (id) => waiverTemplates.find(t => t.id === id)?.title || id?.slice(0,8) || '—';
 
   const hasChangeRequested = policyAcceptances.some(p => p.status === 'change_requested');
