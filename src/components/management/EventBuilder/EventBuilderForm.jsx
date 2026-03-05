@@ -31,7 +31,6 @@ import {
 } from 'lucide-react';
 import CollaborationApprovalPanel from '@/components/registrationdashboard/CollaborationApprovalPanel';
 import EventLegitimacyPanel from '@/components/registrationdashboard/EventLegitimacyPanel';
-import { useQuery } from '@tanstack/react-query';
 import { setupEventCollaborators } from '@/components/registrationdashboard/eventCollaboratorSetup';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
