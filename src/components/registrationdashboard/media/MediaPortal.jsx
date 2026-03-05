@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
-import MediaRequestsPanel from './MediaRequestsPanel';
-import MediaCredentialsPanel from './MediaCredentialsPanel';
+import MediaConsole from './MediaConsole';
 import MediaPoliciesPanel from './MediaPoliciesPanel';
 import MediaWaiversPanel from './MediaWaiversPanel';
 import MediaDeliverablesPanel from './MediaDeliverablesPanel';
@@ -43,8 +42,7 @@ export default function MediaPortal({
   };
 
   const SUB_TABS = [
-    { key: 'requests',         label: 'Requests' },
-    { key: 'credentials',      label: 'Credentials' },
+    { key: 'console',          label: 'Requests & Credentials' },
     { key: 'policies',         label: 'Policies' },
     { key: 'waivers',          label: 'Waivers' },
     { key: 'deliverables',     label: 'Deliverables' },
@@ -73,11 +71,16 @@ export default function MediaPortal({
         </TabsList>
 
         <div className="mt-4">
-          <TabsContent value="requests">
-            <MediaRequestsPanel {...sharedProps} />
-          </TabsContent>
-          <TabsContent value="credentials">
-            <MediaCredentialsPanel {...sharedProps} />
+          <TabsContent value="console">
+            <MediaConsole
+              dashboardContext={dashboardContext}
+              selectedEvent={selectedEvent}
+              selectedTrack={selectedTrack}
+              selectedSeries={selectedSeries}
+              currentUser={currentUser}
+              isAdmin={isAdmin}
+              invalidateAfterOperation={invalidateAfterOperation}
+            />
           </TabsContent>
           <TabsContent value="policies">
             <MediaPoliciesPanel dashboardContext={dashboardContext} invalidateAfterOperation={invalidateAfterOperation} />
