@@ -485,31 +485,32 @@ export default function Profile() {
              <TabsContent value="entities" className="space-y-6">
 
                {/* Entities I Manage */}
-               {collaborations.length > 0 ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Entities I Manage</CardTitle>
-                    <CardDescription>Entities you own or edit on Index46.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {collaborations.map(collab => (
-                      <div key={collab.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl bg-slate-50 hover:bg-white transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                {collab.entity_type}
-                              </Badge>
-                              <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[collab.role] || 'bg-gray-100 text-gray-700'}`}>
-                                {collab.role}
-                              </Badge>
-                            </div>
-                            {collab.access_code && (
-                              <p className="text-xs text-gray-400 mt-1 font-mono">Access code: {collab.access_code}</p>
-                            )}
-                          </div>
-                        </div>
+               {collaborations.length > 0 && (
+                 <Card>
+                   <CardHeader>
+                     <CardTitle className="text-base">Entities I Manage</CardTitle>
+                     <CardDescription>Entities you own or edit on Index46.</CardDescription>
+                   </CardHeader>
+                   <CardContent className="space-y-3">
+                     {collaborations.map(collab => (
+                       <div key={collab.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl bg-white hover:shadow-md transition-shadow">
+                         <div className="flex items-center gap-3 flex-1">
+                           <div>
+                             <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
+                             <div className="flex items-center gap-2 mt-1 flex-wrap">
+                               <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                 {collab.entity_type}
+                               </Badge>
+                               <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[collab.role] || 'bg-gray-100 text-gray-700'}`}>
+                                 Role: {collab.role}
+                               </Badge>
+                               <span className="text-xs text-gray-500">Scope: {collab.entity_type}</span>
+                             </div>
+                             {collab.access_code && (
+                               <p className="text-xs text-gray-400 mt-1 font-mono">Access code: {collab.access_code}</p>
+                             )}
+                           </div>
+                         </div>
                         <div className="flex flex-wrap gap-2">
                           {(collab.entity_type === 'Track' || collab.entity_type === 'Series') ? (
                             <Button
