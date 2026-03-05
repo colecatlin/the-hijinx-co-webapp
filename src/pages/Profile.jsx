@@ -415,21 +415,26 @@ export default function Profile() {
                   <CardTitle className="text-base flex items-center gap-2">
                     <Heart className="w-4 h-4 text-rose-500" /> Fan Mode
                   </CardTitle>
-                  <CardDescription>Your favorites personalize your experience across Index46 — drivers, teams, tracks, and series you follow are surfaced on your dashboard and in results.</CardDescription>
+                  <CardDescription>Follow drivers, teams, series, and tracks so your dashboard and feeds feel personal.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                  <Link to={createPageUrl('DriverDirectory')}>
-                    <Button variant="outline" size="sm" className="text-xs gap-1.5">
-                      <Users className="w-3.5 h-3.5" /> Browse Drivers
-                    </Button>
-                  </Link>
-                  <Link to={createPageUrl('EventDirectory')}>
-                    <Button variant="outline" size="sm" className="text-xs gap-1.5">
-                      <Trophy className="w-3.5 h-3.5" /> Browse Events
-                    </Button>
-                  </Link>
-                </CardContent>
               </Card>
+
+              {collaborations.length === 0 && (
+                <Card className="border border-gray-200 bg-gray-50">
+                  <CardContent className="py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Manage a driver, team, track, or series?</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Link it to your account using an access code.</p>
+                    </div>
+                    <Link to={createPageUrl('Profile') + '?tab=access'}>
+                      <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs flex-shrink-0">
+                        <KeyRound className="w-3.5 h-3.5" /> Link a Driver, Team, Track, or Series
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardContent className="pt-6">
                   <FavoritesTab
