@@ -59,15 +59,13 @@ export default function MediaUploadsPanel({ dashboardContext, selectedEvent, cur
         });
       }
 
-      // Create AssetReview
-      await base44.entities.AssetReview.create({
-        asset_id: asset.id,
-        entity_type: entityType,
-        entity_id: entityId,
-        status: 'in_review',
-        created_at: now,
-        updated_at: now,
-      });
+      // Create AssetReview via function (upsert, governing entity logic)
+      const reviewEntityId = linkSubjectType === 'event' || linkSubjectType === 'track' || linkSubjectType === 'series'
+        ? (linkSubjectId || entityId)
+        : entityId;
+      if (reviewEntityId) {
+        await base44.functions.invoke('createOrGetAssetReview', { asset_id: asset.id, entity_id: reviewEntityId });
+      }
 
       queryClient.invalidateQueries({ queryKey: ['mediaAssets'] });
       queryClient.invalidateQueries({ queryKey: ['assetReviews'] });
