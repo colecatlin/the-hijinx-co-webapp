@@ -249,10 +249,19 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
                     </Button>
                   )}
                   {['applied', 'under_review', 'change_requested'].includes(request.status) && (
-                    <Button className="w-full bg-green-700 hover:bg-green-600 text-white" size="sm"
-                      onClick={() => { setIssueIssuerId(issuerOptions?.[0]?.id || ''); setIssueAccessLevel(request.requested_access_level || 'general'); setIssueRoles(request.requested_roles?.join(', ') || ''); setIssueDialog(true); }}>
-                      Approve & Issue Credential
-                    </Button>
+                    <>
+                      {missingWaivers.length > 0 && (
+                        <div className="bg-red-900/20 border border-red-800 rounded p-2 flex items-center gap-2 text-xs text-red-300">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          Cannot approve: {missingWaivers.length} required waiver(s) unsigned
+                        </div>
+                      )}
+                      <Button className="w-full bg-green-700 hover:bg-green-600 text-white disabled:opacity-40" size="sm"
+                        disabled={missingWaivers.length > 0}
+                        onClick={() => { setIssueIssuerId(issuerOptions?.[0]?.id || ''); setIssueAccessLevel(request.requested_access_level || 'general'); setIssueRoles(request.requested_roles?.join(', ') || ''); setIssueDialog(true); }}>
+                        Approve & Issue Credential
+                      </Button>
+                    </>
                   )}
                   {!['denied', 'cancelled', 'approved'].includes(request.status) && (
                     <Button className="w-full bg-red-900 hover:bg-red-800 text-white" size="sm"
