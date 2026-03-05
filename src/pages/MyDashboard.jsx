@@ -274,61 +274,40 @@ export default function MyDashboard() {
            <EmptyState onEnterCode={handleEnterCode} />
 
          ) : (
-          /* ── Entity Owner / Race Core View ─────────────────────────── */
-          <div className="space-y-6">
+            /* ── Entity Owner / Race Core View ─────────────────────────── */
+            <div className="space-y-6">
 
-            {/* Race Core Shortcuts strip */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                onClick={() => navigate(raceCoreUrl)}
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Race Core
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-                onClick={() => navigate(createPageUrl('Profile') + '?tab=entities')}
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" /> My Entities
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-                onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
-              >
-                <KeyRound className="w-3.5 h-3.5" /> Link Access
-              </Button>
-            </div>
+              {/* Section Header */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Entities You Manage</h2>
+                <p className="text-sm text-gray-500 mt-1">Owner or editor access based on your assigned role.</p>
+              </div>
 
-            {/* Grouped entity cards */}
-            {Object.entries(grouped).map(([entityType, items]) => {
-              const Icon = ENTITY_ICONS[entityType] || User;
-              return (
-                <div key={entityType}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon className="w-4 h-4 text-gray-500" />
-                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                      {entityType}s
-                    </h2>
-                    <span className="text-xs text-gray-400">({items.length})</span>
+              {/* Grouped entity cards */}
+              {Object.entries(grouped).map(([entityType, items]) => {
+                const Icon = ENTITY_ICONS[entityType] || User;
+                return (
+                  <div key={entityType}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon className="w-4 h-4 text-gray-500" />
+                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                        {entityType}s
+                      </h2>
+                      <span className="text-xs text-gray-400">({items.length})</span>
+                    </div>
+                    <div className="space-y-3">
+                      {items.map(collab => (
+                        <EntityCard
+                          key={collab.id}
+                          collaborator={collab}
+                          onManage={handleManage}
+                          onRaceCore={handleRaceCore}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    {items.map(collab => (
-                      <EntityCard
-                        key={collab.id}
-                        collaborator={collab}
-                        onManage={handleManage}
-                        onRaceCore={handleRaceCore}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
             {/* Footer */}
             <div className="pt-4 border-t border-gray-200">
