@@ -407,6 +407,53 @@ export default function Profile() {
               </div>
             </TabsContent>
 
+            {/* ── Fan Tab ──────────────────────────────────────────────────── */}
+            <TabsContent value="fan" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-rose-500" /> Fan Mode
+                  </CardTitle>
+                  <CardDescription>Your favorites personalize your experience across Index46 — drivers, teams, tracks, and series you follow are surfaced on your dashboard and in results.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  <Link to={createPageUrl('DriverDirectory')}>
+                    <Button variant="outline" size="sm" className="text-xs gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> Browse Drivers
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('EventDirectory')}>
+                    <Button variant="outline" size="sm" className="text-xs gap-1.5">
+                      <Trophy className="w-3.5 h-3.5" /> Browse Events
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <FavoritesTab
+                    formData={formData}
+                    drivers={drivers}
+                    teams={teams}
+                    series={series}
+                    tracks={tracks}
+                    toggleFavorite={toggleFavorite}
+                  />
+                </CardContent>
+              </Card>
+              <div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={updateMutation.isPending}
+                  className="bg-[#232323] hover:bg-black text-white gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {updateMutation.isPending ? 'Saving...' : 'Save Favorites'}
+                </Button>
+              </div>
+            </TabsContent>
+
             {/* ── Entities Tab ─────────────────────────────────────────────── */}
             <TabsContent value="entities" className="space-y-6">
 
