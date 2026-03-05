@@ -1,30 +1,55 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
-import SectionHeader from '@/components/shared/SectionHeader';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, LogOut, ExternalLink, Lock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Save, LogOut, ExternalLink, Lock, Users, Trophy, Rocket, CheckCircle2, AlertCircle, ChevronRight, KeyRound } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import GeneralTab from '@/components/profile/GeneralTab';
 import ManageTab from '@/components/profile/ManageTab';
-import TeamOwnerTab from '@/components/profile/TeamOwnerTab';
-import SeriesOwnerTab from '@/components/profile/SeriesOwnerTab';
-import TrackOwnerTab from '@/components/profile/TrackOwnerTab';
-import FavoritesTab from '@/components/profile/FavoritesTab';
 import CodeInputTab from '@/components/profile/CodeInputTab';
 import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
 import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions';
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 
+// ─── Helper functions ─────────────────────────────────────────────────────────
+function getRegistrationDashboardUrl(entityType, entityId) {
+  return createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
+}
+
+function getEditorUrl(entityType, entityId, accessCode) {
+  if (entityType === 'Driver') {
+    return createPageUrl('DriverEditor') + `?id=${entityId}`;
+  }
+  return createPageUrl('EntityEditor') + `?id=${accessCode}`;
+}
+
+// ─── Entity type colors ───────────────────────────────────────────────────────
+const ENTITY_TYPE_COLORS = {
+  Driver: 'bg-blue-50 text-blue-700 border-blue-200',
+  Team: 'bg-purple-50 text-purple-700 border-purple-200',
+  Track: 'bg-green-50 text-green-700 border-green-200',
+  Series: 'bg-orange-50 text-orange-700 border-orange-200',
+};
+
+const ROLE_COLORS = {
+  owner: 'bg-gray-900 text-white',
+  editor: 'bg-gray-100 text-gray-700',
+};
+
 export default function Profile() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState(null);
+  const [activityFilter, setActivityFilter] = useState('all');
   const urlParams = new URLSearchParams(window.location.search);
   const defaultTab = urlParams.get('tab') || 'general';
 
@@ -148,35 +173,34 @@ export default function Profile() {
     setFormData({ ...formData, [key]: updated });
   };
 
+  const handleLogout = () => {
+    base44.auth.logout(createPageUrl('Home'));
+  };
+
+  const isFan = collaborations.length === 0 && invitations.length === 0;
+  const isEntityManager = collaborations.length > 0;
+
   if (userLoading || !formData) {
     return (
-      <PageShell className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <Skeleton className="h-12 w-64 mb-8" />
-          <Skeleton className="h-96 w-full" />
+      <PageShell className="bg-slate-50 min-h-screen">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          <Skeleton className="h-12 w-64 mb-4" />
+          <Skeleton className="h-20 w-full mb-8 rounded-xl" />
+          <Skeleton className="h-96 w-full rounded-xl" />
         </div>
       </PageShell>
     );
   }
 
-  const getRoleSpecificTab = () => {
-    return null;
-  };
-
-  const handleLogout = () => {
-    base44.auth.logout(createPageUrl('Home'));
-  };
-
   return (
-    <PageShell className="bg-white">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-8">
+    <PageShell className="bg-slate-50 min-h-screen">
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="flex items-start justify-between">
           <div>
-            <SectionHeader
-              label="Your Profile"
-              title="Manage Your Account"
-              subtitle="Update your information and preferences"
-            />
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Profile</h1>
+            <p className="text-sm text-gray-500 mt-1">Your account and access across Index46</p>
           </div>
           <button
             onClick={handleLogout}
@@ -187,166 +211,392 @@ export default function Profile() {
           </button>
         </div>
 
+        {/* ── Save feedback strip ──────────────────────────────────────────── */}
+        {updateMutation.isSuccess && (
+          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+            Profile saved successfully.
+          </div>
+        )}
+        {updateMutation.isError && (
+          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            Save failed. Please try again.
+          </div>
+        )}
+
+        {/* ── Account Status Strip ─────────────────────────────────────────── */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex flex-wrap gap-6 divide-x divide-gray-100">
+              <div className="pr-6">
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Account Type</p>
+                <p className="font-bold text-gray-900 text-lg">{isEntityManager ? 'Entity Manager' : 'Fan'}</p>
+              </div>
+              <div className="px-6">
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Entities Linked</p>
+                <p className="font-bold text-gray-900 text-lg">{collaborations.length}</p>
+              </div>
+              <div className="pl-6">
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Pending Invites</p>
+                <p className="font-bold text-gray-900 text-lg">{invitations.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Global Quick Actions ─────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to={createPageUrl('MyDashboard')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Rocket className="w-3.5 h-3.5" /> My Dashboard
+            </Button>
+          </Link>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Users className="w-3.5 h-3.5" /> Browse Drivers
+            </Button>
+          </Link>
+          <Link to={createPageUrl('EventDirectory')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Trophy className="w-3.5 h-3.5" /> Browse Events
+            </Button>
+          </Link>
+          {isFan && (
+            <Link to={createPageUrl('Profile') + '?tab=access'}>
+              <Button size="sm" className="gap-1.5 text-xs bg-[#232323] text-white hover:bg-black">
+                <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {/* ── Tabs ─────────────────────────────────────────────────────────── */}
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="entities">My Entities</TabsTrigger>
-              <TabsTrigger value="access">Access</TabsTrigger>
-              <TabsTrigger value="racecore">Race Core Access</TabsTrigger>
-              <TabsTrigger value="story">Story</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-4 px-4">
+              <TabsList className="inline-flex w-auto min-w-full gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
+                <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Account</TabsTrigger>
+                <TabsTrigger value="entities" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Entities</TabsTrigger>
+                <TabsTrigger value="access" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Access</TabsTrigger>
+                <TabsTrigger value="racecore" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Race Core</TabsTrigger>
+                <TabsTrigger value="story" className="rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap data-[state=active]:bg-[#232323] data-[state=active]:text-white">Stories</TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="general">
-              <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+            {/* ── Account Tab ─────────────────────────────────────────────── */}
+            <TabsContent value="general" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Account Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Preferences</CardTitle>
+                  <CardDescription>Manage your communication preferences.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="newsletter_subscriber"
+                      checked={formData.newsletter_subscriber || false}
+                      onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })}
+                    />
+                    <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm">
+                      Subscribe to the Index46 newsletter
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex items-center gap-4">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={updateMutation.isPending}
+                  className="bg-[#232323] hover:bg-black text-white gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
             </TabsContent>
 
-            <TabsContent value="entities" className="space-y-8">
-              {/* My Entities Section */}
-              {collaborations.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Entities I Manage</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ── Entities Tab ─────────────────────────────────────────────── */}
+            <TabsContent value="entities" className="space-y-6">
+
+              {/* My Entities */}
+              {collaborations.length > 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">My Entities</CardTitle>
+                    <CardDescription>Entities you manage on Index46.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
                     {collaborations.map(collab => (
-                      <Card key={collab.id}>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">{collab.entity_name}</CardTitle>
-                            <Badge className={collab.role === 'owner' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
-                              {collab.role}
-                            </Badge>
+                      <div key={collab.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                {collab.entity_type}
+                              </Badge>
+                              <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[collab.role] || 'bg-gray-100 text-gray-700'}`}>
+                                {collab.role}
+                              </Badge>
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{collab.entity_type}</p>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex gap-2 flex-wrap">
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                            onClick={() => window.location.href = getRegistrationDashboardUrl(collab.entity_type, collab.entity_id)}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Launch Race Core
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-xs"
+                            onClick={() => window.location.href = getEditorUrl(collab.entity_type, collab.entity_id, collab.access_code)}
+                          >
+                            Open Editor
+                          </Button>
+                          {collab.role === 'owner' && (
                             <Button
+                              type="button"
                               size="sm"
                               variant="outline"
-                              onClick={() => {
-                                window.location.href = `${createPageUrl('RegistrationDashboard')}?orgType=${collab.entity_type.toLowerCase()}&orgId=${collab.entity_id}`;
-                              }}
+                              className="gap-1.5 text-xs"
+                              onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access'}
                             >
-                              <ExternalLink className="w-3 h-3 mr-1" />
-                              Race Core
+                              <Lock className="w-3 h-3" />
+                              Manage Access
                             </Button>
-                            {collab.role === 'owner' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  window.location.href = `${createPageUrl('Profile')}?tab=access`;
-                                }}
-                              >
-                                <Lock className="w-3 h-3 mr-1" />
-                                Manage
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Invitations Section */}
-              {invitations.length > 0 && (
-                <div className="pt-6 border-t">
-                  <h2 className="text-2xl font-bold mb-4">Pending Invitations</h2>
-                  <div className="space-y-3">
-                    {invitations.map(inv => (
-                      <Card key={inv.id}>
-                        <CardContent className="pt-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">{inv.entity_name}</p>
-                              <p className="text-xs text-gray-600">{inv.entity_type}</p>
-                            </div>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                window.location.href = `${createPageUrl('AcceptInvitation')}?code=${inv.code}`;
-                              }}
-                            >
-                              Accept
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Activity Section */}
-              {operationLogs.length > 0 && (
-                <div className="pt-6 border-t">
-                  <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {operationLogs.map(log => (
-                      <div key={log.id} className="flex items-start justify-between p-3 border border-gray-200 rounded text-sm">
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{log.operation_type}</p>
-                          <p className="text-xs text-gray-600">{log.message}</p>
-                          <p className="text-xs text-gray-500 mt-1">{format(new Date(log.created_date), 'MMM d, HH:mm')}</p>
+                          )}
                         </div>
-                        <Badge variant="outline" className="text-xs">{log.status || 'completed'}</Badge>
                       </div>
                     ))}
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-2 border-dashed border-gray-200 bg-white">
+                  <CardContent className="py-12 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-1">No entities linked yet</h3>
+                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">If you manage a driver, team, track, or series, link it with an access code.</p>
+                    <Link to={createPageUrl('Profile') + '?tab=access'}>
+                      <Button className="bg-[#232323] text-white hover:bg-black gap-2">
+                        <KeyRound className="w-4 h-4" />
+                        Enter Access Code
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
               )}
 
-              {collaborations.length === 0 && invitations.length === 0 && (
-                <div className="p-8 text-center border border-gray-200 rounded-lg bg-gray-50">
-                  <p className="text-gray-600 mb-4">No entities yet. Use the access tab to request access.</p>
-                </div>
+              {/* Pending Invitations */}
+              {invitations.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Pending Invitations</CardTitle>
+                    <CardDescription>Accept to gain access to these entities.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {invitations.map(inv => (
+                      <div key={inv.id} className="flex items-center justify-between p-4 border border-amber-100 bg-amber-50 rounded-xl">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{inv.entity_name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[inv.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                              {inv.entity_type}
+                            </Badge>
+                            {inv.expiration_date && (
+                              <span className="text-xs text-gray-500">Expires {format(new Date(inv.expiration_date), 'MMM d')}</span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                          onClick={() => window.location.href = `${createPageUrl('AcceptInvitation')}?code=${inv.code}`}
+                        >
+                          Accept <ChevronRight className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Recent Activity */}
+              {operationLogs.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base">Recent Activity</CardTitle>
+                        <CardDescription>Your personal activity log.</CardDescription>
+                      </div>
+                      <Select value={activityFilter} onValueChange={setActivityFilter}>
+                        <SelectTrigger className="w-32 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="errors">Errors</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {operationLogs.map(log => (
+                        <div key={log.id} className="flex items-start justify-between p-3 border border-gray-100 rounded-lg text-sm bg-slate-50">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 text-xs">{log.operation_type}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{log.message}</p>
+                            <p className="text-xs text-gray-400 mt-1">{format(new Date(log.created_date), 'MMM d, HH:mm')}</p>
+                          </div>
+                          <Badge variant="outline" className="text-xs ml-3 flex-shrink-0">{log.status || 'completed'}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
 
-            <TabsContent value="access" className="space-y-8">
-              <ManageTab user={user} />
-              <div className="pt-6 border-t">
-                <CodeInputTab user={user} />
-              </div>
+            {/* ── Access Tab ───────────────────────────────────────────────── */}
+            <TabsContent value="access" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Manage Access</CardTitle>
+                  <CardDescription>Owners can invite editors and revoke access. Editors can view their assigned entities.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ManageTab user={user} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Enter Access Code</CardTitle>
+                  <CardDescription>Use the 8-digit code provided by the entity owner.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CodeInputTab user={user} />
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="racecore">
-              <RaceCoreAccessTab user={user} />
+            {/* ── Race Core Tab ────────────────────────────────────────────── */}
+            <TabsContent value="racecore" className="space-y-6">
+              {collaborations.length > 0 ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Quick Launch</CardTitle>
+                      <CardDescription>Jump directly into Race Core for each entity you manage.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {collaborations.map(collab => (
+                        <div key={collab.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl bg-slate-50">
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                {collab.entity_type}
+                              </Badge>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                            onClick={() => window.location.href = getRegistrationDashboardUrl(collab.entity_type, collab.entity_id)}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Launch
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <RaceCoreAccessTab user={user} />
+                </>
+              ) : (
+                <Card className="border-2 border-dashed border-gray-200 bg-white">
+                  <CardContent className="py-12 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                      <Rocket className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-1">Race Core is for race operations</h3>
+                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">Once you link an entity, you will be able to manage events, entries, compliance, tech, results, and exports.</p>
+                    <Link to={createPageUrl('Profile') + '?tab=access'}>
+                      <Button className="bg-[#232323] text-white hover:bg-black gap-2">
+                        <KeyRound className="w-4 h-4" />
+                        Link an Entity
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
-            <TabsContent value="story" className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Submit a Story</h2>
-                <p className="text-gray-600 mb-6">Share your story with our editorial team for review</p>
-                <StorySubmissionForm user={user} />
-              </div>
+            {/* ── Stories Tab ──────────────────────────────────────────────── */}
+            <TabsContent value="story" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Submit a Story</CardTitle>
+                  <CardDescription>Share your story with our editorial team for review.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <StorySubmissionForm user={user} />
+                </CardContent>
+              </Card>
 
-              <div className="pt-6 border-t">
-                <h2 className="text-2xl font-bold mb-2">Your Submissions</h2>
-                <p className="text-gray-600 mb-6">View the status of your submitted stories</p>
-                <ManageStorySubmissions user={user} />
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Your Submissions</CardTitle>
+                  <CardDescription>View the status of your submitted stories.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ManageStorySubmissions user={user} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
-
-          <div className="flex gap-4 mt-8">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={updateMutation.isPending}
-              className="bg-[#232323] hover:bg-[#1A3249]"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
-
-            {updateMutation.isSuccess && (
-              <p className="text-sm text-green-600 flex items-center">Profile updated successfully!</p>
-            )}
-          </div>
         </form>
+
+        {/* ── CorePass Placeholder ──────────────────────────────────────────── */}
+        <Card className="border border-gray-200 bg-white opacity-60">
+          <CardContent className="py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-gray-900 text-base">CorePass</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Coming soon. Tickets, access, and identity across Index46.</p>
+            </div>
+            <Button disabled size="sm" variant="outline" className="text-xs shrink-0">
+              Coming Soon
+            </Button>
+          </CardContent>
+        </Card>
+
       </div>
     </PageShell>
   );
