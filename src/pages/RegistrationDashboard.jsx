@@ -34,6 +34,7 @@ import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
 import MediaTabContent from '@/components/registrationdashboard/MediaTabContent';
+import MediaGovernanceManager from '@/components/registrationdashboard/MediaGovernanceManager';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
@@ -1580,15 +1581,33 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'media') && activeTab === 'media' && (
-                <MediaTabContent
-                  dashboardContext={dashboardContext}
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                  onOpenEventBuilder={() => setActiveTab('eventBuilder')}
-                />
+                <Tabs defaultValue="portal" className="w-full">
+                  <TabsList className="bg-[#171717] border border-gray-800">
+                    <TabsTrigger value="portal" className="text-gray-400">Portal</TabsTrigger>
+                    <TabsTrigger value="governance" className="text-gray-400">Governance</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="portal" className="mt-6">
+                    <MediaTabContent
+                      dashboardContext={dashboardContext}
+                      selectedEvent={selectedEvent}
+                      selectedTrack={selectedTrack}
+                      selectedSeries={selectedSeries}
+                      dashboardPermissions={dashboardPermissions}
+                      invalidateAfterOperation={invalidateAfterOperation}
+                      onOpenEventBuilder={() => setActiveTab('eventBuilder')}
+                    />
+                  </TabsContent>
+                  <TabsContent value="governance" className="mt-6">
+                    <MediaGovernanceManager
+                      dashboardContext={dashboardContext}
+                      selectedEvent={selectedEvent}
+                      selectedTrack={selectedTrack}
+                      selectedSeries={selectedSeries}
+                      dashboardPermissions={dashboardPermissions}
+                      invalidateAfterOperation={invalidateAfterOperation}
+                    />
+                  </TabsContent>
+                </Tabs>
               )}
 
               {isAdmin && activeTab === 'opsCenter' && (
