@@ -671,10 +671,20 @@ export default function Profile() {
 
             {/* ── Access Tab ───────────────────────────────────────────────── */}
             <TabsContent value="access" className="space-y-6">
+              <Card className="border border-gray-200 bg-gray-50">
+                <CardContent className="py-5">
+                  <p className="text-sm text-gray-700 font-medium mb-1">How access works</p>
+                  <ul className="text-xs text-gray-500 space-y-1">
+                    <li>· <strong>Owners</strong> can invite editors and manage who has access to their entity.</li>
+                    <li>· <strong>Editors</strong> can manage what the owner assigns — profile, results, entries, and more.</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Manage Access</CardTitle>
-                  <CardDescription>Owners can invite editors and revoke access. Editors can view their assigned entities.</CardDescription>
+                  <CardDescription>Invite editors or revoke access for entities you own.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ManageTab user={user} />
