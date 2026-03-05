@@ -260,6 +260,7 @@ function RequestDetailDialog({
   const queryClient = useQueryClient();
 
   const { data: request, refetch: refetchRequest } = useQuery({
+
     queryKey: ['credential_request', requestId],
     queryFn: () => base44.entities.CredentialRequest.get(requestId),
     enabled: !!requestId,
@@ -317,6 +318,27 @@ function RequestDetailDialog({
 
     resolveScope();
   }, [request]);
+
+  // Auto-sync request status based on policy acceptances
+  const syncRequestStatus = async () => {
+    if (!request) return;
+    try {
+      const latest = await base44.entities.PolicyAcceptance.filter({ request_id: request.id });
+      const hasChangeRequested = latest.some((a) => a.status === 'change_requested');
+
+      if (request.status === 'applied' && hasChangeRequested) {
+        await base44.entities.CredentialRequest.update(request.id, { status: 'change_requested' });
+        queryClient.invalidateQueries({ queryKey: ['credential_request', request.id] });
+        queryClient.invalidateQueries({ queryKey: ['mediaRequests'] });
+      } else if (request.status === 'change_requested' && !hasChangeRequested) {
+        await base44.entities.CredentialRequest.update(request.id, { status: 'under_review' });
+        queryClient.invalidateQueries({ queryKey: ['credential_request', request.id] });
+        queryClient.invalidateQueries({ queryKey: ['mediaRequests'] });
+      }
+    } catch (err) {
+      // silent fail
+    }
+  };
 
   const approveMutation = useMutation({
     mutationFn: async () => {
