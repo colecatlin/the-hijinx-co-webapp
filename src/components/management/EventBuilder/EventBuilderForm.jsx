@@ -30,6 +30,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import CollaborationApprovalPanel from '@/components/registrationdashboard/CollaborationApprovalPanel';
+import EventLegitimacyPanel from '@/components/registrationdashboard/EventLegitimacyPanel';
 import { setupEventCollaborators } from '@/components/registrationdashboard/eventCollaboratorSetup';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
