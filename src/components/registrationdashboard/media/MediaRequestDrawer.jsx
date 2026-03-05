@@ -271,6 +271,12 @@ export default function MediaRequestDrawer({ request, onClose, selectedEvent, se
                           Cannot approve: {missingWaivers.length} required waiver(s) unsigned
                         </div>
                       )}
+                      {missingDeliverableAcks.length > 0 && (
+                        <div className="bg-orange-900/20 border border-orange-800 rounded p-2 flex items-center gap-2 text-xs text-orange-300">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          {missingDeliverableAcks.length} deliverable requirement(s) not acknowledged
+                        </div>
+                      )}
                       <Button className="w-full bg-green-700 hover:bg-green-600 text-white disabled:opacity-40" size="sm"
                         disabled={missingWaivers.length > 0}
                         onClick={() => { setIssueIssuerId(issuerOptions?.[0]?.id || ''); setIssueAccessLevel(request.requested_access_level || 'general'); setIssueRoles(request.requested_roles?.join(', ') || ''); setIssueDialog(true); }}>
