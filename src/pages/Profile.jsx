@@ -55,12 +55,9 @@ export default function Profile() {
   const seasonYear = urlParams.get('seasonYear');
   const eventId = urlParams.get('eventId');
 
-  // Compute defaultTab after data loads — use a ref to avoid re-renders
-  // We compute it once at render time; collaborations/invitations may not be loaded yet on first render
-  // so we fall back to urlParams first, then re-evaluate when data settles via key on Tabs
   const tabFromUrl = urlParams.get('tab');
-  // map legacy 'general' param to new 'account' tab
-  const normalizedTab = tabFromUrl === 'general' ? 'account' : tabFromUrl;
+  // Normalize tab: 'general' -> 'general' (old name kept), other tabs as-is
+  const normalizedTab = tabFromUrl;
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
