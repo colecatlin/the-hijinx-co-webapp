@@ -94,11 +94,11 @@ function EmptyState({ onEnterCode }) {
   return (
     <div className="text-center py-16 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
       <div className="w-16 h-16 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
-        <LayoutDashboard className="w-7 h-7 text-gray-400" />
+        <Star className="w-7 h-7 text-gray-400" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">No entities yet</h3>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">You are in Fan Mode</h3>
       <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-        You don't have any profiles assigned to your account. Enter an access code to link your driver, team, track, or series.
+        Follow drivers, save favorites, and explore events. If you manage a driver, team, track, or series, link it using an access code.
       </p>
       <Button
         onClick={onEnterCode}
