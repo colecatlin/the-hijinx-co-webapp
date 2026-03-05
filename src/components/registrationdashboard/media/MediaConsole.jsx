@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react';
 import { resolveMediaAuthority } from './mediaAccess';
 import MediaRequestsPanel from './MediaRequestsPanel';
 import MediaCredentialsPanel from './MediaCredentialsPanel';
+import MediaReviewQueuePanel from './MediaReviewQueuePanel';
 
 export default function MediaConsole({
   dashboardContext,
@@ -88,12 +89,15 @@ export default function MediaConsole({
       </div>
 
       <Tabs defaultValue="requests">
-        <TabsList className="bg-[#171717] border border-gray-800 p-1 flex gap-1">
+        <TabsList className="bg-[#171717] border border-gray-800 p-1 flex gap-1 flex-wrap">
           <TabsTrigger value="requests" className="data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-3 py-1.5">
             Requests
           </TabsTrigger>
           <TabsTrigger value="credentials" className="data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-3 py-1.5">
             Credentials
+          </TabsTrigger>
+          <TabsTrigger value="review_queue" className="data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-3 py-1.5">
+            Review Queue
           </TabsTrigger>
         </TabsList>
 
@@ -103,6 +107,9 @@ export default function MediaConsole({
           </TabsContent>
           <TabsContent value="credentials">
             <MediaCredentialsPanel {...sharedProps} />
+          </TabsContent>
+          <TabsContent value="review_queue">
+            <MediaReviewQueuePanel dashboardContext={dashboardContext} currentUser={currentUser} />
           </TabsContent>
         </div>
       </Tabs>
