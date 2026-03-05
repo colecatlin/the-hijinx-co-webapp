@@ -485,12 +485,12 @@ export default function Profile() {
                 </Card>
               )}
 
-              {/* My Entities */}
+              {/* Entities I Manage */}
               {collaborations.length > 0 ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">My Entities</CardTitle>
-                    <CardDescription>Entities you manage on Index46.</CardDescription>
+                    <CardTitle className="text-base">Entities I Manage</CardTitle>
+                    <CardDescription>Entities you own or edit on Index46.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {collaborations.map(collab => (
@@ -506,9 +506,9 @@ export default function Profile() {
                                 {collab.role}
                               </Badge>
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {collab.role === 'owner' ? 'You can invite editors and manage access.' : 'You can edit what the owner allows.'}
-                            </p>
+                            {collab.access_code && (
+                              <p className="text-xs text-gray-400 mt-1 font-mono">Access code: {collab.access_code}</p>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
