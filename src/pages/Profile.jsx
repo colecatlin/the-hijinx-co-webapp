@@ -189,11 +189,9 @@ export default function Profile() {
   // Smart default tab: only override when no explicit tab in URL
   const computedDefaultTab = normalizedTab
     ? normalizedTab
-    : collaborations.length === 0 && invitations.length > 0
-      ? 'entities'
-      : collaborations.length === 0 && invitations.length === 0
-        ? 'access'
-        : 'account';
+    : collaborations.length === 0
+      ? 'fan'
+      : 'entities';
 
   // Build Race Core URL with optional season/event passthrough
   function getRaceCoreUrl(entityType, entityId) {
