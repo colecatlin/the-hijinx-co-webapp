@@ -214,7 +214,7 @@ export default function Profile() {
   }
 
   return (
-    <PageShell className="bg-slate-50 min-h-screen">
+    <PageShell className="bg-gray-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
