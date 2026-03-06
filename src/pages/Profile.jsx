@@ -421,7 +421,7 @@ export default function Profile() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {collaborations.length === 0 ? (
+                  {resolvedEntities.length === 0 ? (
                     <div className="text-center py-6">
                       <p className="text-sm text-gray-500 mb-3">You haven't linked any entities yet.</p>
                       <Button
