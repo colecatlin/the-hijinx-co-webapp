@@ -173,6 +173,8 @@ export default function Profile() {
         state: data.state,
         country: data.country,
         newsletter_subscriber: data.newsletter_subscriber,
+        primary_entity_type: data.primary_entity_type,
+        primary_entity_id: data.primary_entity_id,
       });
       const response = await base44.functions.invoke('updateUserProfile', { formData: data });
       return response.data;
@@ -181,6 +183,16 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
   });
+
+  const setPrimaryEntity = (collab) => {
+    const updated = {
+      ...formData,
+      primary_entity_type: collab.entity_type,
+      primary_entity_id: collab.entity_id,
+    };
+    setFormData(updated);
+    updateMutation.mutate(updated);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
