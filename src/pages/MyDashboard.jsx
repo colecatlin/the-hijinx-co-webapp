@@ -137,6 +137,7 @@ function EmptyState({ onEnterCode }) {
 
 export default function MyDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -147,6 +148,14 @@ export default function MyDashboard() {
     queryKey: ['entityCollaborators', user?.email],
     queryFn: () => base44.entities.EntityCollaborator.filter({ user_email: user.email }),
     enabled: !!user?.email,
+  });
+
+  const setPrimaryMutation = useMutation({
+    mutationFn: async ({ entity_type, entity_id }) => {
+      await base44.auth.updateMe({ primary_entity_type: entity_type, primary_entity_id: entity_id });
+      await base44.functions.invoke('updateUserProfile', { formData: { primary_entity_type: entity_type, primary_entity_id: entity_id } });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
   });
 
   const isLoading = userLoading || collabLoading;
@@ -165,6 +174,18 @@ export default function MyDashboard() {
     [collaborators]
   );
 
+  // Resolve primary entity
+  const primaryCollab = useMemo(() => {
+    if (!user?.primary_entity_id) return null;
+    return collaborators.find(c => c.entity_id === user.primary_entity_id) || null;
+  }, [user, collaborators]);
+
+  // Fallback Race Core target
+  const raceCoreTarget = useMemo(() => {
+    if (primaryCollab) return primaryCollab;
+    return raceCoreCollabs[0] || null;
+  }, [primaryCollab, raceCoreCollabs]);
+
   const handleManage = (collaborator) => {
     if (collaborator.entity_type === 'Driver') {
       navigate(createPageUrl('DriverEditor') + `?id=${collaborator.entity_id}`);
@@ -177,6 +198,10 @@ export default function MyDashboard() {
     navigate(createPageUrl('RegistrationDashboard') + `?orgType=${collaborator.entity_type.toLowerCase()}&orgId=${collaborator.entity_id}`);
   };
 
+  const handleSetPrimary = (collaborator) => {
+    setPrimaryMutation.mutate({ entity_type: collaborator.entity_type, entity_id: collaborator.entity_id });
+  };
+
   const handleEnterCode = () => {
     navigate(createPageUrl('Profile') + '?tab=access');
   };
@@ -184,6 +209,7 @@ export default function MyDashboard() {
   const hasCols = collaborators.length > 0;
   const isAdmin = user?.role === 'admin';
   const hasEntities = collaborators.length > 0;
+  const primaryEntityStale = user?.primary_entity_id && !primaryCollab && collaborators.length > 0;
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
