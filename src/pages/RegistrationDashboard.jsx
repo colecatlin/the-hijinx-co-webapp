@@ -249,6 +249,9 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
+  // Declared early so it can be used in query enabled conditions below
+  const isAdmin = user?.role === 'admin';
+
   // Load Event collaborator records for current user (for non-admin filtering)
   const { data: userEventCollaborators = [] } = useQuery({
     queryKey: ['userEventCollaborators', user?.id],
