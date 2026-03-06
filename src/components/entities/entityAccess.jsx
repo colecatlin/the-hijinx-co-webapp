@@ -1,5 +1,6 @@
 /**
- * Shared access helpers for entity permissions.
+ * entityAccess.js
+ * Shared access-level helpers for entity permission checks.
  */
 
 export function isAdmin(user) {
