@@ -489,7 +489,7 @@ export default function Profile() {
                                 type="button"
                                 size="sm"
                                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                                onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id, seasonYear, eventId)}
+                                onClick={() => window.location.href = buildRaceCoreUrl(collab.entity_type, collab.entity_id, seasonYear, eventId)}
                               >
                                 <GaugeIcon className="w-3 h-3" />
                                 Race Core
