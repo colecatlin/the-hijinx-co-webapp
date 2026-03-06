@@ -174,13 +174,13 @@ export default function MyDashboard() {
   const isLoading = userLoading || collabLoading || resolvedLoading;
 
   const grouped = useMemo(() => {
-    return collaborators.reduce((acc, collab) => {
-      const type = collab.entity_type;
+    return resolvedEntities.reduce((acc, entity) => {
+      const type = entity.entity_type;
       if (!acc[type]) acc[type] = [];
-      acc[type].push(collab);
+      acc[type].push(entity);
       return acc;
     }, {});
-  }, [collaborators]);
+  }, [resolvedEntities]);
 
   const raceCoreCollabs = useMemo(
     () => getRaceCoreEntities(resolvedEntities),
