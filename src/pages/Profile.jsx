@@ -181,11 +181,11 @@ export default function Profile() {
     },
   });
 
-  const setPrimaryEntity = (collab) => {
+  const setPrimaryEntity = (entity) => {
     const updated = {
       ...formData,
-      primary_entity_type: collab.entity_type,
-      primary_entity_id: collab.entity_id,
+      primary_entity_type: entity.entity_type,
+      primary_entity_id: entity.entity_id,
     };
     setFormData(updated);
     updateMutation.mutate(updated);
