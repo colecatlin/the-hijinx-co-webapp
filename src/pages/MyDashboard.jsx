@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
