@@ -295,7 +295,6 @@ export default function RegistrationDashboard() {
     ...DQ,
   });
 
-  // Fetch track collaborators
   const { data: trackCollaborators = [] } = useQuery({
     queryKey: ['trackCollaborators', selectedEvent?.track_id],
     queryFn: () => (selectedEvent?.track_id 
