@@ -157,6 +157,12 @@ export default function MyDashboard() {
     enabled: !!user?.email,
   });
 
+  const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
+    queryKey: ['resolvedEntities', user?.id],
+    queryFn: () => getManagedEntitiesResolved(user),
+    enabled: !!user?.id,
+  });
+
   const setPrimaryMutation = useMutation({
     mutationFn: async ({ entity_type, entity_id }) => {
       await base44.auth.updateMe({ primary_entity_type: entity_type, primary_entity_id: entity_id });
