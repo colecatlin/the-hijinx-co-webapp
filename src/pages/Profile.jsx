@@ -256,7 +256,7 @@ export default function Profile() {
           </Badge>
           <Badge className="bg-blue-50 text-blue-700 border-blue-200">
             <Users className="w-3 h-3 mr-1 inline" />
-            {collaborations.length} {collaborations.length === 1 ? 'entity' : 'entities'}
+            {resolvedEntities.length} {resolvedEntities.length === 1 ? 'entity' : 'entities'}
           </Badge>
         </div>
 
