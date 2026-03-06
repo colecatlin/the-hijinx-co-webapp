@@ -24,18 +24,6 @@ import FavoritesTab from '@/components/profile/FavoritesTab';
 import { Star as StarIcon, Gauge as GaugeIcon } from 'lucide-react';
 import { getManagedEntitiesResolved, getPrimaryManagedEntity, getRaceCoreUrl, getEntityEditorUrl } from '@/components/entities/entityApi';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getEditorUrl(entityType, entityId, accessCode) {
-  if (entityType === 'Driver') return createPageUrl('DriverEditor') + `?id=${entityId}`;
-  return createPageUrl('EntityEditor') + `?id=${accessCode}`;
-}
-
-function buildRaceCoreUrl(entityType, entityId, seasonYear, eventId) {
-  let url = createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
-  if (seasonYear) url += `&seasonYear=${seasonYear}`;
-  if (eventId) url += `&eventId=${eventId}`;
-  return url;
-}
 
 const ENTITY_TYPE_COLORS = {
   Driver: 'bg-blue-50 text-blue-700 border-blue-200',
