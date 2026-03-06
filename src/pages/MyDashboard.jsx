@@ -440,7 +440,7 @@ export default function MyDashboard() {
                       const isThisPrimary = collab.entity_id === user?.primary_entity_id || collab.collaboration_id === explicitPrimary?.collaboration_id;
                       return (
                         <button
-                          key={collab.id}
+                          key={collab.collaboration_id || collab.entity_id}
                           onClick={() => handleRaceCore(collab)}
                           className={`w-full flex items-center justify-between px-4 py-3.5 text-white rounded-xl transition-colors group ${isThisPrimary ? 'bg-[#232323] ring-2 ring-amber-400/50' : 'bg-[#232323] hover:bg-black'}`}
                         >
