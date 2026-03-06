@@ -37,19 +37,29 @@ const SECTION_LABELS = {
   Series: 'Series',
 };
 
-function EntityCard({ collaborator, onManage, onRaceCore }) {
+const PRIMARY_ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series'];
+
+function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimary }) {
   const Icon = ENTITY_ICONS[collaborator.entity_type] || User;
   const colorClass = ENTITY_COLORS[collaborator.entity_type] || 'bg-gray-50 border-gray-200 text-gray-700';
   const isOwner = collaborator.role === 'owner';
+  const canBePrimary = PRIMARY_ENTITY_TYPES.includes(collaborator.entity_type);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-md transition-shadow">
+    <div className={`bg-white rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-md transition-shadow border-2 ${isPrimary ? 'border-[#232323]' : 'border-transparent border border-gray-200'}`}>
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
           <Icon className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 text-sm">{collaborator.entity_name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-900 text-sm">{collaborator.entity_name}</h3>
+            {isPrimary && (
+              <Badge className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200">
+                <Star className="w-3 h-3 mr-1 inline" />Primary
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-0.5">
             <Badge
               className={`text-xs px-2 py-0.5 ${isOwner ? 'bg-[#232323] text-white' : 'bg-gray-100 text-gray-600'}`}
@@ -63,7 +73,17 @@ function EntityCard({ collaborator, onManage, onRaceCore }) {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        {canBePrimary && !isPrimary && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onSetPrimary(collaborator)}
+            className="gap-1.5 text-xs text-gray-400 hover:text-amber-600"
+          >
+            <Star className="w-3.5 h-3.5" /> Set Primary
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"
