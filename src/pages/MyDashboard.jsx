@@ -66,6 +66,14 @@ function EntityCard({ collaborator, onManage, onRaceCore }) {
         <Button
           variant="outline"
           size="sm"
+          onClick={() => onRaceCore(collaborator)}
+          className="gap-1.5 text-xs"
+        >
+          <Gauge className="w-3.5 h-3.5" /> Race Core
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onManage(collaborator)}
           className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors"
         >
