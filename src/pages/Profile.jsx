@@ -364,6 +364,53 @@ export default function Profile() {
             {/* ── My Entities Tab ──────────────────────────────────────────── */}
             <TabsContent value="my_entities" className="space-y-6">
 
+              {/* Primary Entity Section */}
+              {collaborations.length > 0 && (() => {
+                const primaryCollab = collaborations.find(c => c.entity_id === user.primary_entity_id);
+                const primaryStale = user.primary_entity_id && !primaryCollab;
+                return (
+                  <Card className={primaryCollab ? 'border-2 border-[#232323]' : ''}>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <StarIcon className="w-4 h-4 text-amber-500" /> Primary Entity
+                      </CardTitle>
+                      <CardDescription>Your main operational home for Race Core.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {primaryStale && (
+                        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          Your primary entity is no longer linked. Choose a new one below.
+                        </p>
+                      )}
+                      {!primaryCollab && !primaryStale && (
+                        <p className="text-sm text-gray-500">Choose a primary entity below for faster Race Core access.</p>
+                      )}
+                      {primaryCollab && (
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">{primaryCollab.entity_name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200">
+                                <StarIcon className="w-3 h-3 mr-1 inline" />{primaryCollab.entity_type}
+                              </Badge>
+                              <Badge className="text-xs bg-gray-100 text-gray-600">{primaryCollab.role}</Badge>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                            onClick={() => window.location.href = createPageUrl('RegistrationDashboard') + `?orgType=${primaryCollab.entity_type.toLowerCase()}&orgId=${primaryCollab.entity_id}`}
+                          >
+                            <GaugeIcon className="w-3 h-3" /> Open Race Core
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
               {/* Entities I Manage */}
               <Card>
                 <CardHeader>
