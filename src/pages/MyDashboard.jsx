@@ -273,7 +273,7 @@ export default function MyDashboard() {
               </Button>
             </Link>
             {hasEntities && raceCoreTarget && (
-              <Link to={createPageUrl('RegistrationDashboard') + `?orgType=${raceCoreTarget.entity_type.toLowerCase()}&orgId=${raceCoreTarget.entity_id}`}>
+              <Link to={getRaceCoreUrl(raceCoreTarget)}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Gauge className="w-3.5 h-3.5" /> Open Race Core
                 </Button>
