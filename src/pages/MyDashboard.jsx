@@ -259,8 +259,8 @@ export default function MyDashboard() {
                 <Calendar className="w-3.5 h-3.5" /> Browse Events
               </Button>
             </Link>
-            {hasEntities && (
-              <Link to={createPageUrl('RegistrationDashboard')}>
+            {hasEntities && raceCoreTarget && (
+              <Link to={createPageUrl('RegistrationDashboard') + `?orgType=${raceCoreTarget.entity_type.toLowerCase()}&orgId=${raceCoreTarget.entity_id}`}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Gauge className="w-3.5 h-3.5" /> Open Race Core
                 </Button>
