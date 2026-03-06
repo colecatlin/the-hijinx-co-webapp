@@ -211,7 +211,7 @@ export default function Profile() {
 
   const defaultTab = tabFromUrl
     ? resolveTab(tabFromUrl)
-    : collaborations.length > 0 ? 'my_entities' : 'general';
+    : resolvedEntities.length > 0 ? 'my_entities' : 'general';
 
   if (userLoading || !formData) {
     return (
