@@ -111,6 +111,12 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
+  const { data: resolvedEntities = [] } = useQuery({
+    queryKey: ['resolvedEntities', user?.id],
+    queryFn: () => getManagedEntitiesResolved(user),
+    enabled: !!user?.id,
+  });
+
   const { data: invitations = [] } = useQuery({
     queryKey: ['myInvitations', user?.email],
     queryFn: () => {
