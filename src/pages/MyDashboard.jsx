@@ -11,6 +11,13 @@ import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  getManagedEntitiesResolved,
+  getPrimaryManagedEntity,
+  getRaceCoreEntities,
+  getRaceCoreUrl,
+  getEntityEditorUrl,
+} from '@/components/entities/entityApi';
+import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
   Flag, Gauge, Car, Calendar
