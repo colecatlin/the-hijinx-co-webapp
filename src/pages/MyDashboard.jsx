@@ -216,9 +216,9 @@ export default function MyDashboard() {
     navigate(createPageUrl('Profile') + '?tab=access');
   };
 
-  const hasCols = collaborators.length > 0;
+  const hasCols = resolvedEntities.length > 0;
   const isAdmin = user?.role === 'admin';
-  const hasEntities = collaborators.length > 0;
+  const hasEntities = resolvedEntities.length > 0;
   const explicitPrimary = user?.primary_entity_id
     ? resolvedEntities.find(e => e.entity_id === user.primary_entity_id)
     : null;
