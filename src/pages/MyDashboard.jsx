@@ -389,12 +389,14 @@ export default function MyDashboard() {
                       </div>
                       <div className="space-y-2">
                         {items.map(collab => (
-                          <EntityCard
-                            key={collab.id}
-                            collaborator={collab}
-                            onManage={handleManage}
-                            onRaceCore={handleRaceCore}
-                          />
+                                   <EntityCard
+                                     key={collab.id}
+                                     collaborator={collab}
+                                     onManage={handleManage}
+                                     onRaceCore={handleRaceCore}
+                                     isPrimary={collab.entity_id === user?.primary_entity_id}
+                                     onSetPrimary={handleSetPrimary}
+                                   />
                         ))}
                       </div>
                     </div>
