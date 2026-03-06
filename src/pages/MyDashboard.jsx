@@ -11,7 +11,8 @@ import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
-  Shield, Edit, Plus, KeyRound, LayoutDashboard, ExternalLink, Star, Heart, Link2
+  Shield, Edit, Plus, KeyRound, ExternalLink, Star,
+  Flag, Gauge, Car, Calendar
 } from 'lucide-react';
 
 const ENTITY_ICONS = {
@@ -28,31 +29,27 @@ const ENTITY_COLORS = {
   Series: 'bg-orange-50 border-orange-200 text-orange-700',
 };
 
-const EDITOR_PAGES = {
-  Driver: 'DriverEditor',
-  Team: 'EntityEditor',
-  Track: 'EntityEditor',
-  Series: 'EntityEditor',
+const SECTION_LABELS = {
+  Driver: 'Drivers',
+  Team: 'Teams',
+  Track: 'Tracks',
+  Series: 'Series',
 };
 
 function EntityCard({ collaborator, onManage, onRaceCore }) {
   const Icon = ENTITY_ICONS[collaborator.entity_type] || User;
   const colorClass = ENTITY_COLORS[collaborator.entity_type] || 'bg-gray-50 border-gray-200 text-gray-700';
   const isOwner = collaborator.role === 'owner';
-  const showRaceCore = collaborator.entity_type === 'Track' || collaborator.entity_type === 'Series';
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
-          <Icon className="w-5 h-5" />
+    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+          <Icon className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 text-base">{collaborator.entity_name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className={`text-xs px-2 py-0.5 border ${colorClass}`}>
-              {collaborator.entity_type}
-            </Badge>
+          <h3 className="font-semibold text-gray-900 text-sm">{collaborator.entity_name}</h3>
+          <div className="flex items-center gap-2 mt-0.5">
             <Badge
               className={`text-xs px-2 py-0.5 ${isOwner ? 'bg-[#232323] text-white' : 'bg-gray-100 text-gray-600'}`}
             >
@@ -66,25 +63,14 @@ function EntityCard({ collaborator, onManage, onRaceCore }) {
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {showRaceCore && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onRaceCore(collaborator)}
-            className="gap-1.5 text-xs border-gray-200"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Race Core
-          </Button>
-        )}
         <Button
           variant="outline"
           size="sm"
           onClick={() => onManage(collaborator)}
-          className="gap-2 hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors"
+          className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors"
         >
           {collaborator.entity_type === 'Driver' ? 'Edit Profile' : 'Open Console'}
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </Button>
       </div>
     </div>
@@ -93,21 +79,29 @@ function EntityCard({ collaborator, onManage, onRaceCore }) {
 
 function EmptyState({ onEnterCode }) {
   return (
-    <div className="text-center py-16 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-      <div className="w-16 h-16 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
-        <Star className="w-7 h-7 text-gray-400" />
+    <div className="text-center py-14 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+      <div className="w-14 h-14 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
+        <Star className="w-6 h-6 text-gray-400" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">You are in Fan Mode</h3>
+      <h3 className="text-lg font-bold text-gray-900 mb-2">You are in Fan Mode</h3>
       <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
         Follow drivers, save favorites, and explore events. If you manage a driver, team, track, or series, link it using an access code.
       </p>
-      <Button
-        onClick={onEnterCode}
-        className="bg-[#232323] hover:bg-[#1A3249] text-white gap-2"
-      >
-        <KeyRound className="w-4 h-4" />
-        Enter Access Code
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Button
+          onClick={onEnterCode}
+          className="bg-[#232323] hover:bg-black text-white gap-2"
+        >
+          <KeyRound className="w-4 h-4" />
+          Enter Access Code
+        </Button>
+        <Link to={createPageUrl('Profile') + '?tab=fan'}>
+          <Button variant="outline" className="w-full sm:w-auto gap-2">
+            <User className="w-4 h-4" />
+            Go to Profile
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -128,7 +122,6 @@ export default function MyDashboard() {
 
   const isLoading = userLoading || collabLoading;
 
-  // Group by entity type
   const grouped = useMemo(() => {
     return collaborators.reduce((acc, collab) => {
       const type = collab.entity_type;
@@ -137,6 +130,11 @@ export default function MyDashboard() {
       return acc;
     }, {});
   }, [collaborators]);
+
+  const raceCoreCollabs = useMemo(
+    () => collaborators.filter(c => c.entity_type === 'Track' || c.entity_type === 'Series'),
+    [collaborators]
+  );
 
   const handleManage = (collaborator) => {
     if (collaborator.entity_type === 'Driver') {
@@ -147,23 +145,12 @@ export default function MyDashboard() {
   };
 
   const handleRaceCore = (collaborator) => {
-    const orgType = collaborator.entity_type.toLowerCase();
-    const orgId = collaborator.entity_id;
-    navigate(createPageUrl('RegistrationDashboard') + `?orgType=${orgType}&orgId=${orgId}`);
+    navigate(createPageUrl('RegistrationDashboard') + `?orgType=${collaborator.entity_type.toLowerCase()}&orgId=${collaborator.entity_id}`);
   };
 
   const handleEnterCode = () => {
     navigate(createPageUrl('Profile') + '?tab=access');
   };
-
-  // Compute the Race Core deep link URL
-  const raceCoreUrl = useMemo(() => {
-    const first = collaborators.find(c => c.entity_type === 'Track' || c.entity_type === 'Series');
-    if (first) {
-      return createPageUrl('RegistrationDashboard') + `?orgType=${first.entity_type.toLowerCase()}&orgId=${first.entity_id}`;
-    }
-    return createPageUrl('RegistrationDashboard');
-  }, [collaborators]);
 
   const hasCols = collaborators.length > 0;
 
@@ -172,152 +159,170 @@ export default function MyDashboard() {
     return null;
   }
 
+  const welcomeName = user?.full_name || user?.email || '';
+
   return (
     <PageShell className="bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* ── Hero Card ─────────────────────────────────────────────── */}
-        <Card className="bg-white border border-gray-200 shadow-sm">
-          <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#232323] rounded-xl flex items-center justify-center flex-shrink-0">
-                <LayoutDashboard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 leading-tight">My Dashboard</h1>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {hasCols
-                    ? 'Your operations hub — manage profiles and Race Core.'
-                    : 'Fan hub, favorites, and registration.'}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5"
-                onClick={() => navigate(createPageUrl('Profile'))}
-              >
-                <Edit className="w-3.5 h-3.5" /> Edit Profile
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5"
-                onClick={() => navigate(createPageUrl('Profile') + '?tab=access')}
-              >
-                <KeyRound className="w-3.5 h-3.5" /> Enter Access Code
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* ── Dashboard Shell ─────────────────────────────────────── */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 space-y-8">
 
-        {/* ── Fan Hub Section ────────────────────────────────────────── */}
-        {user && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Fan Hub</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_drivers || []).length}</div>
-                  <p className="text-xs text-gray-600 font-medium">Favorite Drivers</p>
-                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
-                    Manage
-                  </Button>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_teams || []).length}</div>
-                  <p className="text-xs text-gray-600 font-medium">Favorite Teams</p>
-                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
-                    Manage
-                  </Button>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_series || []).length}</div>
-                  <p className="text-xs text-gray-600 font-medium">Favorite Series</p>
-                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
-                    Manage
-                  </Button>
-                </CardContent>
-              </Card>
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(createPageUrl('Profile') + '?tab=fan')}>
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className="text-2xl font-bold text-gray-900">{(user.favorite_tracks || []).length}</div>
-                  <p className="text-xs text-gray-600 font-medium">Favorite Tracks</p>
-                  <Button variant="ghost" size="sm" className="text-xs mt-auto">
-                    Manage
-                  </Button>
-                </CardContent>
-              </Card>
+          {/* ── Header ──────────────────────────────────────────────── */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Index46 Dashboard</h1>
+              {welcomeName && (
+                <p className="text-sm text-gray-500 mt-1">Welcome back, {welcomeName}</p>
+              )}
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <Link to={createPageUrl('Profile')}>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                  <User className="w-3.5 h-3.5" /> Profile
+                </Button>
+              </Link>
+              <Link to={createPageUrl('MotorsportsHome')}>
+                <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
+                  <Flag className="w-3.5 h-3.5" /> Browse Motorsports
+                </Button>
+              </Link>
             </div>
           </div>
-        )}
 
-        {/* ── My Entries Section ─────────────────────────────────────── */}
-        <MyEntriesSection user={user} isLoading={userLoading} />
+          <div className="border-t border-gray-100" />
 
-        {/* ── Loading ────────────────────────────────────────────────── */}
-        {isLoading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
-            ))}
+          {/* ── Fan Shortcuts ───────────────────────────────────────── */}
+          <div className="space-y-3">
+            <h2 className="text-base font-semibold text-gray-900">Fan Shortcuts</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <Link to={createPageUrl('DriverDirectory')}>
+                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-colors">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-700">Drivers</span>
+                </button>
+              </Link>
+              <Link to={createPageUrl('TeamDirectory')}>
+                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition-colors">
+                  <Users className="w-5 h-5 text-purple-600" />
+                  <span className="text-xs font-medium text-purple-700">Teams</span>
+                </button>
+              </Link>
+              <Link to={createPageUrl('TrackDirectory')}>
+                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl transition-colors">
+                  <MapPin className="w-5 h-5 text-green-600" />
+                  <span className="text-xs font-medium text-green-700">Tracks</span>
+                </button>
+              </Link>
+              <Link to={createPageUrl('SeriesHome')}>
+                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition-colors">
+                  <Trophy className="w-5 h-5 text-orange-600" />
+                  <span className="text-xs font-medium text-orange-700">Series</span>
+                </button>
+              </Link>
+              <Link to={createPageUrl('EventDirectory')}>
+                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors">
+                  <Calendar className="w-5 h-5 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-700">Events</span>
+                </button>
+              </Link>
+            </div>
           </div>
 
-        ) : !hasCols ? (
-           /* ── Fan View ──────────────────────────────────────────────── */
-           <EmptyState onEnterCode={handleEnterCode} />
+          <div className="border-t border-gray-100" />
 
-         ) : (
-            /* ── Entity Owner / Race Core View ─────────────────────────── */
-            <div className="space-y-6">
+          {/* ── My Activity ─────────────────────────────────────────── */}
+          <div className="space-y-3">
+            <h2 className="text-base font-semibold text-gray-900">My Activity</h2>
+            <MyEntriesSection user={user} isLoading={userLoading} />
+          </div>
 
-              {/* Section Header */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Entities You Manage</h2>
-                <p className="text-sm text-gray-500 mt-1">Owner or editor access based on your assigned role.</p>
+          <div className="border-t border-gray-100" />
+
+          {/* ── Managed Profiles + Race Core ────────────────────────── */}
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-20 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : !hasCols ? (
+            <EmptyState onEnterCode={handleEnterCode} />
+          ) : (
+            <div className="space-y-8">
+
+              {/* Managed Profiles */}
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-gray-900">Managed Profiles</h2>
+                  <Button variant="ghost" size="sm" onClick={handleEnterCode} className="gap-1.5 text-xs text-gray-500">
+                    <Plus className="w-3.5 h-3.5" /> Link Another
+                  </Button>
+                </div>
+
+                {Object.entries(grouped).map(([entityType, items]) => {
+                  const Icon = ENTITY_ICONS[entityType] || User;
+                  return (
+                    <div key={entityType}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="w-3.5 h-3.5 text-gray-400" />
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          {SECTION_LABELS[entityType] || entityType + 's'}
+                        </span>
+                        <span className="text-xs text-gray-300">({items.length})</span>
+                      </div>
+                      <div className="space-y-2">
+                        {items.map(collab => (
+                          <EntityCard
+                            key={collab.id}
+                            collaborator={collab}
+                            onManage={handleManage}
+                            onRaceCore={handleRaceCore}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Grouped entity cards */}
-              {Object.entries(grouped).map(([entityType, items]) => {
-                const Icon = ENTITY_ICONS[entityType] || User;
-                return (
-                  <div key={entityType}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Icon className="w-4 h-4 text-gray-500" />
-                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                        {entityType}s
-                      </h2>
-                      <span className="text-xs text-gray-400">({items.length})</span>
-                    </div>
-                    <div className="space-y-3">
-                      {items.map(collab => (
-                        <EntityCard
-                          key={collab.id}
-                          collaborator={collab}
-                          onManage={handleManage}
-                          onRaceCore={handleRaceCore}
-                        />
-                      ))}
-                    </div>
+              {/* Race Core */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-gray-500" />
+                  <h2 className="text-base font-semibold text-gray-900">Race Core</h2>
+                </div>
+
+                {raceCoreCollabs.length === 0 ? (
+                  <div className="py-5 px-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl text-center">
+                    <p className="text-sm text-gray-500">Race Core appears once you manage a track or series.</p>
                   </div>
-                );
-              })}
+                ) : (
+                  <div className="space-y-2">
+                    {raceCoreCollabs.map(collab => (
+                      <button
+                        key={collab.id}
+                        onClick={() => handleRaceCore(collab)}
+                        className="w-full flex items-center justify-between px-4 py-3.5 bg-[#232323] hover:bg-black text-white rounded-xl transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Gauge className="w-4 h-4 text-gray-300" />
+                          <div className="text-left">
+                            <p className="text-sm font-semibold">Open Race Core</p>
+                            <p className="text-xs text-gray-400">{collab.entity_name}</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            {/* Footer */}
-            <div className="pt-4 border-t border-gray-200">
-              <Button variant="outline" onClick={handleEnterCode} className="gap-2 text-sm">
-                <Plus className="w-4 h-4" /> Link Another Profile
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
+        </div>
       </div>
     </PageShell>
   );
