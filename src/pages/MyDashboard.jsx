@@ -261,6 +261,37 @@ export default function MyDashboard() {
 
           <div className="border-t border-gray-100" />
 
+          {/* ── Context Card ────────────────────────────────────────── */}
+          {!isLoading && (
+            <div className={`rounded-xl border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${hasEntities ? 'bg-[#232323] text-white border-[#232323]' : 'bg-blue-50 border-blue-200'}`}>
+              <div>
+                <h3 className={`font-semibold text-base ${hasEntities ? 'text-white' : 'text-blue-900'}`}>
+                  {hasEntities ? 'You manage race entities' : 'You are set up as a fan'}
+                </h3>
+                <p className={`text-sm mt-1 ${hasEntities ? 'text-gray-300' : 'text-blue-700'}`}>
+                  {hasEntities
+                    ? 'Jump into Race Core for weekend operations, or edit long term profiles in the editors.'
+                    : 'Follow drivers, teams, tracks, and series to build your feed. If you manage a racing entity, link it with an access code in Profile.'}
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                {hasEntities ? (
+                  <Link to={createPageUrl('RegistrationDashboard')}>
+                    <Button size="sm" className="gap-1.5 text-xs bg-white text-[#232323] hover:bg-gray-100 border-0">
+                      <Gauge className="w-3.5 h-3.5" /> Open Race Core
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to={createPageUrl('Profile') + '?tab=entities'}>
+                    <Button size="sm" className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white border-0">
+                      <KeyRound className="w-3.5 h-3.5" /> Go to Profile to link an entity
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── My Activity ─────────────────────────────────────────── */}
           <div className="space-y-3">
             <h2 className="text-base font-semibold text-gray-900">My Activity</h2>
