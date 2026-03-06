@@ -30,7 +30,7 @@ function getEditorUrl(entityType, entityId, accessCode) {
   return createPageUrl('EntityEditor') + `?id=${accessCode}`;
 }
 
-function getRaceCoreUrl(entityType, entityId, seasonYear, eventId) {
+function buildRaceCoreUrl(entityType, entityId, seasonYear, eventId) {
   let url = createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
   if (seasonYear) url += `&seasonYear=${seasonYear}`;
   if (eventId) url += `&eventId=${eventId}`;
