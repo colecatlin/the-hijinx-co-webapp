@@ -435,13 +435,13 @@ export default function Profile() {
                       </Button>
                     </div>
                   ) : (
-                    collaborations.map(collab => {
-                      const isThisPrimary = collab.entity_id === user.primary_entity_id;
+                    resolvedEntities.map(entity => {
+                      const isThisPrimary = entity.entity_id === user.primary_entity_id;
                       return (
-                        <div key={collab.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white hover:shadow-sm transition-shadow border-2 ${isThisPrimary ? 'border-[#232323]' : 'border-transparent border border-gray-100'}`}>
+                        <div key={entity.collaboration_id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white hover:shadow-sm transition-shadow border-2 ${isThisPrimary ? 'border-[#232323]' : 'border-transparent border border-gray-100'}`}>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
+                              <p className="font-semibold text-gray-900 text-sm">{entity.entity_name}</p>
                               {isThisPrimary && (
                                 <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200">
                                   <StarIcon className="w-3 h-3 mr-1 inline" />Primary
@@ -449,15 +449,15 @@ export default function Profile() {
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                {collab.entity_type}
+                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[entity.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                {entity.entity_type}
                               </Badge>
-                              <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[collab.role] || 'bg-gray-100 text-gray-700'}`}>
-                                {collab.role}
+                              <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[entity.role] || 'bg-gray-100 text-gray-700'}`}>
+                                {entity.role}
                               </Badge>
                             </div>
-                            {collab.access_code && (
-                              <p className="text-xs text-gray-400 mt-1 font-mono">Code: {collab.access_code}</p>
+                            {entity.access_code && (
+                              <p className="text-xs text-gray-400 mt-1 font-mono">Code: {entity.access_code}</p>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-2 flex-shrink-0">
@@ -467,17 +467,17 @@ export default function Profile() {
                                 size="sm"
                                 variant="ghost"
                                 className="gap-1.5 text-xs text-gray-400 hover:text-amber-600"
-                                onClick={() => setPrimaryEntity(collab)}
+                                onClick={() => setPrimaryEntity(entity)}
                               >
                                 <StarIcon className="w-3 h-3" /> Set Primary
                               </Button>
                             )}
-                            {(collab.entity_type === 'Track' || collab.entity_type === 'Series') && (
+                            {(entity.entity_type === 'Track' || entity.entity_type === 'Series') && (
                               <Button
                                 type="button"
                                 size="sm"
                                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                                onClick={() => window.location.href = buildRaceCoreUrl(collab.entity_type, collab.entity_id, seasonYear, eventId)}
+                                onClick={() => window.location.href = getRaceCoreUrl(entity, { seasonYear, eventId })}
                               >
                                 <GaugeIcon className="w-3 h-3" />
                                 Race Core
@@ -488,11 +488,11 @@ export default function Profile() {
                               size="sm"
                               variant="outline"
                               className="gap-1.5 text-xs"
-                              onClick={() => window.location.href = getEditorUrl(collab.entity_type, collab.entity_id, collab.access_code)}
+                              onClick={() => window.location.href = getEntityEditorUrl(entity)}
                             >
                               Editor
                             </Button>
-                            {collab.role === 'owner' && (
+                            {entity.role === 'owner' && (
                               <Button
                                 type="button"
                                 size="sm"
