@@ -22,6 +22,7 @@ import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions'
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
 import { Star as StarIcon, Gauge as GaugeIcon } from 'lucide-react';
+import { getManagedEntitiesResolved, getPrimaryManagedEntity, getRaceCoreUrl, getEntityEditorUrl } from '@/components/entities/entityApi';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getEditorUrl(entityType, entityId, accessCode) {
