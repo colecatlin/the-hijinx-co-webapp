@@ -437,7 +437,7 @@ export default function MyDashboard() {
                 ) : (
                   <div className="space-y-2">
                     {raceCoreCollabs.map(collab => {
-                      const isThisPrimary = collab.entity_id === user?.primary_entity_id;
+                      const isThisPrimary = collab.entity_id === user?.primary_entity_id || collab.collaboration_id === explicitPrimary?.collaboration_id;
                       return (
                         <button
                           key={collab.id}
