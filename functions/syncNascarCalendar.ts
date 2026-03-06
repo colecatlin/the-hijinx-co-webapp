@@ -1,4 +1,16 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// --- inline normalization helpers (no local imports) ---
+function normalizeName(value) {
+  if (!value) return '';
+  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function buildEntitySlug(value) { return normalizeName(value).replace(/\s+/g, '-'); }
+function buildCanonicalKey({ entity_type, name, external_uid }) {
+  const type = (entity_type || '').toLowerCase();
+  if (external_uid) return `${type}:${external_uid}`;
+  return `${type}:${normalizeName(name)}`;
+}
 
 const ICS_URL = 'https://ics.ecal.com/ecal-sub/69979e639e74540002951554/NASCAR.ics';
 
