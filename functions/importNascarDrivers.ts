@@ -1,26 +1,60 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { slugify, normalizeManufacturer, createDriverKey } from './helpers/stringUtils.js';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// --- inline normalization helpers (no local imports allowed) ---
+function normalizeName(value) {
+  if (!value) return '';
+  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function buildEntitySlug(value) { return normalizeName(value).replace(/\s+/g, '-'); }
+function buildCanonicalKey({ entity_type, name, external_uid }) {
+  const type = (entity_type || '').toLowerCase();
+  if (external_uid) return `${type}:${external_uid}`;
+  return `${type}:${normalizeName(name)}`;
+}
+
+function normalizeManufacturer(mfr) {
+  const m = (mfr || '').toLowerCase();
+  if (m.includes('toyota')) return 'Toyota';
+  if (m.includes('ford')) return 'Ford';
+  if (m.includes('chevy') || m.includes('chevrolet')) return 'Chevrolet';
+  if (m.includes('honda')) return 'Honda';
+  return 'Other';
+}
+
+// Safe upsert for a source entity: returns existing or creates new record
+async function upsertEntity(model, entity_type, matchFilters, createPayload) {
+  // Try filters in order
+  for (const filter of matchFilters) {
+    if (Object.values(filter).every(v => v)) {
+      const results = await model.filter(filter);
+      if (results && results.length > 0) return { record: results[0], action: 'found' };
+    }
+  }
+  const record = await model.create(createPayload);
+  return { record, action: 'created' };
+}
+
+const SERIES_CONFIGS = [
+  { id: 1, name: 'NASCAR Cup Series',                      slug: 'nascar-cup-series' },
+  { id: 2, name: "NASCAR O'Reilly Auto Parts Series",       slug: 'nascar-oreilly-auto-parts-series' },
+  { id: 3, name: 'NASCAR Craftsman Truck Series',           slug: 'nascar-craftsman-truck-series' },
+];
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
-    const dry_run = body.dry_run !== false;
+    const dry_run   = body.dry_run !== false;
     const series_ids = body.series_ids || [1, 2, 3];
 
-    const seriesConfigs = [
-      { id: 1, name: 'NASCAR Cup Series', slug: 'nascar-cup-series' },
-      { id: 2, name: "NASCAR O'Reilly Auto Parts Series", slug: 'nascar-oreilly-auto-parts-series' },
-      { id: 3, name: 'NASCAR Craftsman Truck Series', slug: 'nascar-craftsman-truck-series' },
-    ].filter(c => series_ids.includes(c.id));
+    const seriesConfigs = SERIES_CONFIGS.filter(c => series_ids.includes(c.id));
 
-    // Use LLM to fetch full driver rosters from the web
+    // Use LLM to fetch driver rosters
     const llmPrompt = `Please provide the complete 2026 NASCAR driver roster for the following series: ${seriesConfigs.map(c => c.name).join(', ')}.
 
 For each series, list ALL full-time drivers competing in the 2026 season.
@@ -46,12 +80,12 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
             items: {
               type: 'object',
               properties: {
-                first_name: { type: 'string' },
-                last_name: { type: 'string' },
-                car_number: { type: 'string' },
-                manufacturer: { type: 'string' },
-                series: { type: 'string' },
-                team_name: { type: 'string' },
+                first_name:  { type: 'string' },
+                last_name:   { type: 'string' },
+                car_number:  { type: 'string' },
+                manufacturer:{ type: 'string' },
+                series:      { type: 'string' },
+                team_name:   { type: 'string' },
               },
             },
           },
@@ -61,108 +95,129 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
 
     const nascarDrivers = llmResult?.drivers || [];
 
-    // Load existing DB data
-    const [existingDrivers, existingSeries, existingPrograms, existingTeams] = await Promise.all([
-      base44.asServiceRole.entities.Driver.list('-created_date', 500),
-      base44.asServiceRole.entities.Series.list(),
+    // Load existing DB data once
+    const [existingPrograms] = await Promise.all([
       base44.asServiceRole.entities.DriverProgram.list('-created_date', 1000),
-      base44.asServiceRole.entities.Team.list('-created_date', 500),
     ]);
-
-    const driverMap = new Map();
-    for (const d of existingDrivers) {
-      const key = createDriverKey(d.first_name, d.last_name);
-      driverMap.set(key, d);
-    }
-
-    const seriesMap = new Map();
-    for (const s of existingSeries) {
-      seriesMap.set(s.name, s);
-      if (s.slug) seriesMap.set(s.slug, s);
-    }
 
     const programSet = new Set();
     for (const p of existingPrograms) {
       programSet.add(`${p.driver_id}|${p.series_name}|${p.season || '2026'}`);
     }
 
-    const teamMap = new Map();
-    for (const t of existingTeams) {
-      teamMap.set(t.name?.toLowerCase(), t);
-    }
-
-    const stats = { drivers_created: 0, drivers_found: 0, programs_created: 0, teams_created: 0, skipped: 0 };
+    const stats = { drivers_created: 0, drivers_found: 0, series_created: 0, series_found: 0, programs_created: 0, teams_created: 0, teams_found: 0, skipped: 0 };
     const log = [];
 
-    // Ensure all series exist — match by name OR slug to avoid duplicates
+    // ---- STEP 1: Ensure all series exist using safe upsert ----
+    const seriesMap = new Map(); // config.name -> record
+
     for (const config of seriesConfigs) {
-      const existing = seriesMap.get(config.name) || seriesMap.get(config.slug);
-      if (!existing) {
-        if (!dry_run) {
-          const created = await base44.asServiceRole.entities.Series.create({
-            name: config.name,
-            slug: config.slug,
-            discipline: 'Stock Car',
-            status: 'Active',
-            season_year: '2026',
-            sanctioning_body: 'NASCAR',
-          });
-          seriesMap.set(config.name, created);
-          seriesMap.set(config.slug, created);
-          log.push(`Created series: ${config.name}`);
+      const normN = normalizeName(config.name);
+      const cKey  = buildCanonicalKey({ entity_type: 'series', name: config.name });
+
+      if (dry_run) {
+        const existing = await base44.asServiceRole.entities.Series.filter({ canonical_key: cKey });
+        if (existing && existing.length > 0) {
+          seriesMap.set(config.name, existing[0]);
+          log.push(`[DRY RUN] Found series: ${config.name}`);
+          stats.series_found++;
         } else {
-          const mock = { id: `dry-run-${config.id}`, name: config.name };
-          seriesMap.set(config.name, mock);
-          seriesMap.set(config.slug, mock);
+          seriesMap.set(config.name, { id: `dry-run-${config.id}`, name: config.name });
           log.push(`[DRY RUN] Would create series: ${config.name}`);
+          stats.series_created++;
         }
-      } else {
-        // Make sure it's also accessible by name in case it was found by slug
-        seriesMap.set(config.name, existing);
-        log.push(`Found existing series: ${config.name}`);
+        continue;
       }
+
+      const { record, action } = await upsertEntity(
+        base44.asServiceRole.entities.Series,
+        'series',
+        [
+          { canonical_key: cKey },
+          { canonical_slug: config.slug },
+          { normalized_name: normN },
+        ],
+        {
+          name: config.name,
+          slug: config.slug,
+          normalized_name: normN,
+          canonical_slug: config.slug,
+          canonical_key: cKey,
+          discipline: 'Stock Car',
+          status: 'Active',
+          season_year: '2026',
+          sanctioning_body: 'NASCAR',
+          data_source: 'importNascarDrivers',
+          sync_last_seen_at: new Date().toISOString(),
+        }
+      );
+
+      seriesMap.set(config.name, record);
+      if (action === 'created') { stats.series_created++; log.push(`Created series: ${config.name}`); }
+      else { stats.series_found++; log.push(`Found existing series: ${config.name}`); }
     }
 
     log.push(`LLM returned ${nascarDrivers.length} total drivers across all series`);
 
+    // ---- STEP 2: Upsert drivers and teams ----
     for (const driverData of nascarDrivers) {
       const { first_name: first, last_name: last, car_number, manufacturer, series: seriesName, team_name } = driverData;
       if (!first || !last || !seriesName) { stats.skipped++; continue; }
 
-      // Upsert team if provided
+      // Upsert Team
       let teamRecord = null;
       if (team_name) {
-        const teamKey = team_name.toLowerCase();
-        teamRecord = teamMap.get(teamKey);
-        if (!teamRecord) {
-          stats.teams_created++;
-          if (!dry_run) {
-            teamRecord = await base44.asServiceRole.entities.Team.create({
+        const teamNorm = normalizeName(team_name);
+        const teamKey  = buildCanonicalKey({ entity_type: 'team', name: team_name });
+
+        if (dry_run) {
+          const existing = await base44.asServiceRole.entities.Team.filter({ canonical_key: teamKey });
+          if (existing && existing.length > 0) { teamRecord = existing[0]; stats.teams_found++; }
+          else { teamRecord = { id: `dry-run-team-${teamNorm}` }; stats.teams_created++; log.push(`[DRY RUN] Would create team: ${team_name}`); }
+        } else {
+          const { record, action } = await upsertEntity(
+            base44.asServiceRole.entities.Team,
+            'team',
+            [{ canonical_key: teamKey }, { normalized_name: teamNorm }],
+            {
               name: team_name,
-              slug: slugify(team_name),
+              slug: buildEntitySlug(team_name),
+              normalized_name: teamNorm,
+              canonical_slug: buildEntitySlug(team_name),
+              canonical_key: teamKey,
               primary_discipline: 'Stock Car',
               team_level: 'National',
               status: 'Active',
               country: 'United States',
               headquarters_state: 'NC',
               headquarters_city: 'Concord',
-            });
-            teamMap.set(teamKey, teamRecord);
-            log.push(`Created team: ${team_name}`);
-          } else {
-            teamRecord = { id: `dry-run-team-${teamKey}` };
-            log.push(`[DRY RUN] Would create team: ${team_name}`);
-          }
+              data_source: 'importNascarDrivers',
+              sync_last_seen_at: new Date().toISOString(),
+            }
+          );
+          teamRecord = record;
+          if (action === 'created') { stats.teams_created++; log.push(`Created team: ${team_name}`); }
+          else { stats.teams_found++; }
         }
       }
 
-      const fullKey = createDriverKey(first, last);
-      let driver = driverMap.get(fullKey);
+      // Upsert Driver
+      const fullName  = `${first} ${last}`;
+      const normN     = normalizeName(fullName);
+      const driverKey = buildCanonicalKey({ entity_type: 'driver', name: fullName });
 
-      if (!driver) {
-        stats.drivers_created++;
-        if (!dry_run) {
-          driver = await base44.asServiceRole.entities.Driver.create({
+      let driverRecord = null;
+
+      if (dry_run) {
+        const existing = await base44.asServiceRole.entities.Driver.filter({ canonical_key: driverKey });
+        if (existing && existing.length > 0) { driverRecord = existing[0]; stats.drivers_found++; }
+        else { driverRecord = { id: `dry-run-${normN}` }; stats.drivers_created++; log.push(`[DRY RUN] Would create driver: ${fullName}`); }
+      } else {
+        const { record, action } = await upsertEntity(
+          base44.asServiceRole.entities.Driver,
+          'driver',
+          [{ canonical_key: driverKey }, { normalized_name: normN }],
+          {
             first_name: first,
             last_name: last,
             primary_number: car_number,
@@ -170,48 +225,53 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
             primary_discipline: 'Stock Car',
             status: 'Active',
             hometown_country: 'United States',
-            slug: slugify(`${first} ${last}`),
+            slug: buildEntitySlug(fullName),
+            normalized_name: normN,
+            canonical_slug: buildEntitySlug(fullName),
+            canonical_key: driverKey,
             team_id: teamRecord?.id || null,
-          });
-          driverMap.set(fullKey, driver);
-          log.push(`Created driver: ${first} ${last} (${seriesName})`);
-        } else {
-          driver = { id: `dry-run-${fullKey}` };
-          log.push(`[DRY RUN] Would create: ${first} ${last} (${seriesName} #${car_number})`);
-        }
-      } else {
-        stats.drivers_found++;
-        // Update team_id on existing driver if not already set
-        if (!dry_run && teamRecord?.id && !driver.team_id) {
-          await base44.asServiceRole.entities.Driver.update(driver.id, { team_id: teamRecord.id });
-          log.push(`  Updated team on driver: ${first} ${last} → ${team_name}`);
+            data_source: 'importNascarDrivers',
+            sync_last_seen_at: new Date().toISOString(),
+          }
+        );
+        driverRecord = record;
+        if (action === 'created') { stats.drivers_created++; log.push(`Created driver: ${fullName} (${seriesName})`); }
+        else {
+          stats.drivers_found++;
+          // Update team_id if not set
+          if (teamRecord?.id && !record.team_id) {
+            await base44.asServiceRole.entities.Driver.update(record.id, { team_id: teamRecord.id, sync_last_seen_at: new Date().toISOString() });
+            log.push(`  Updated team on driver: ${fullName} → ${team_name}`);
+          }
         }
       }
 
       // Create DriverProgram if not already exists
-      const programKey = `${driver.id}|${seriesName}|2026`;
-      if (!programSet.has(programKey) && driver.id) {
-        const seriesRecord = seriesMap.get(seriesName);
-        stats.programs_created++;
-        if (!dry_run) {
-          await base44.asServiceRole.entities.DriverProgram.create({
-            driver_id: driver.id,
-            series_id: seriesRecord?.id || null,
-            series_name: seriesName,
-            team_id: teamRecord?.id || null,
-            team_name: team_name || null,
-            car_number: car_number,
-            start_year: 2026,
-            status: 'active',
-            participation_status: 'Full-Time',
-          });
-          programSet.add(programKey);
-          log.push(`  Program: ${first} ${last} → ${seriesName} #${car_number}${team_name ? ` (${team_name})` : ''}`);
+      if (driverRecord?.id) {
+        const programKey = `${driverRecord.id}|${seriesName}|2026`;
+        if (!programSet.has(programKey)) {
+          const seriesRecord = seriesMap.get(seriesName);
+          stats.programs_created++;
+          if (!dry_run) {
+            await base44.asServiceRole.entities.DriverProgram.create({
+              driver_id: driverRecord.id,
+              series_id: seriesRecord?.id || null,
+              series_name: seriesName,
+              team_id: teamRecord?.id || null,
+              team_name: team_name || null,
+              car_number: car_number,
+              start_year: 2026,
+              status: 'active',
+              participation_status: 'Full-Time',
+            });
+            programSet.add(programKey);
+            log.push(`  Program: ${fullName} → ${seriesName} #${car_number}${team_name ? ` (${team_name})` : ''}`);
+          } else {
+            log.push(`  [DRY RUN] Program: ${fullName} → ${seriesName} #${car_number}`);
+          }
         } else {
-          log.push(`  [DRY RUN] Program: ${first} ${last} → ${seriesName} #${car_number}${team_name ? ` (${team_name})` : ''}`);
+          stats.skipped++;
         }
-      } else {
-        stats.skipped++;
       }
     }
 
