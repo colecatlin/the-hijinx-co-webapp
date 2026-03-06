@@ -219,7 +219,10 @@ export default function MyDashboard() {
   const hasCols = collaborators.length > 0;
   const isAdmin = user?.role === 'admin';
   const hasEntities = collaborators.length > 0;
-  const primaryEntityStale = user?.primary_entity_id && !primaryCollab && collaborators.length > 0;
+  const explicitPrimary = user?.primary_entity_id
+    ? resolvedEntities.find(e => e.entity_id === user.primary_entity_id)
+    : null;
+  const primaryEntityStale = user?.primary_entity_id && !explicitPrimary && resolvedEntities.length > 0;
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
