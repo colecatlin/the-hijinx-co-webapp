@@ -158,6 +158,8 @@ export default function Profile() {
         favorite_teams: user.favorite_teams || [],
         favorite_series: user.favorite_series || [],
         favorite_tracks: user.favorite_tracks || [],
+        primary_entity_type: user.primary_entity_type || '',
+        primary_entity_id: user.primary_entity_id || '',
       });
     }
   }, [user]);
