@@ -330,8 +330,8 @@ export default function MyDashboard() {
                 </p>
               </div>
               <div className="flex-shrink-0">
-                {hasEntities ? (
-                  <Link to={createPageUrl('RegistrationDashboard')}>
+                {hasEntities && raceCoreTarget ? (
+                  <Link to={createPageUrl('RegistrationDashboard') + `?orgType=${raceCoreTarget.entity_type.toLowerCase()}&orgId=${raceCoreTarget.entity_id}`}>
                     <Button size="sm" className="gap-1.5 text-xs bg-white text-[#232323] hover:bg-gray-100 border-0">
                       <Gauge className="w-3.5 h-3.5" /> Open Race Core
                     </Button>
