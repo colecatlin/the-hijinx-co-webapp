@@ -360,7 +360,7 @@ export default function Profile() {
             <TabsContent value="my_entities" className="space-y-6">
 
               {/* Primary Entity Section */}
-              {collaborations.length > 0 && (() => {
+              {resolvedEntities.length > 0 && (() => {
                 const primaryEntity = getPrimaryManagedEntity(user, resolvedEntities);
                 const explicitPrimary = user.primary_entity_id
                   ? resolvedEntities.find(e => e.entity_id === user.primary_entity_id)
