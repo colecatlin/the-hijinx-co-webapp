@@ -411,28 +411,42 @@ export default function MyDashboard() {
                   <h2 className="text-base font-semibold text-gray-900">Race Core</h2>
                 </div>
 
+                {primaryEntityStale && (
+                  <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+                    Your primary entity is no longer linked. Choose a new one from the list above.
+                  </div>
+                )}
+
                 {raceCoreCollabs.length === 0 ? (
                   <div className="py-5 px-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl text-center">
                     <p className="text-sm text-gray-500">Race Core appears once you manage a track or series.</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {raceCoreCollabs.map(collab => (
-                      <button
-                        key={collab.id}
-                        onClick={() => handleRaceCore(collab)}
-                        className="w-full flex items-center justify-between px-4 py-3.5 bg-[#232323] hover:bg-black text-white rounded-xl transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Gauge className="w-4 h-4 text-gray-300" />
-                          <div className="text-left">
-                            <p className="text-sm font-semibold">Open Race Core</p>
-                            <p className="text-xs text-gray-400">{collab.entity_name}</p>
+                    {raceCoreCollabs.map(collab => {
+                      const isThisPrimary = collab.entity_id === user?.primary_entity_id;
+                      return (
+                        <button
+                          key={collab.id}
+                          onClick={() => handleRaceCore(collab)}
+                          className={`w-full flex items-center justify-between px-4 py-3.5 text-white rounded-xl transition-colors group ${isThisPrimary ? 'bg-[#232323] ring-2 ring-amber-400/50' : 'bg-[#232323] hover:bg-black'}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Gauge className="w-4 h-4 text-gray-300" />
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold">Open Race Core</p>
+                                {isThisPrimary && (
+                                  <span className="text-xs px-1.5 py-0.5 bg-amber-400/20 text-amber-300 rounded border border-amber-400/30">Primary</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400">{collab.entity_name}</p>
+                            </div>
                           </div>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
-                      </button>
-                    ))}
+                          <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
