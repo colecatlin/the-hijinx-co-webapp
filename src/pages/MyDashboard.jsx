@@ -153,6 +153,8 @@ export default function MyDashboard() {
   };
 
   const hasCols = collaborators.length > 0;
+  const isAdmin = user?.role === 'admin';
+  const hasEntities = collaborators.length > 0;
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
