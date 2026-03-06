@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Save, LogOut, ExternalLink, Lock, Users, Trophy, CheckCircle2, AlertCircle, ChevronRight, KeyRound, Heart, MapPin } from 'lucide-react';
+import { Save, LogOut, ExternalLink, Lock, ChevronRight, CheckCircle2, AlertCircle, Heart, KeyRound, Users, Gauge } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import GeneralTab from '@/components/profile/GeneralTab';
@@ -26,6 +26,13 @@ import FavoritesTab from '@/components/profile/FavoritesTab';
 function getEditorUrl(entityType, entityId, accessCode) {
   if (entityType === 'Driver') return createPageUrl('DriverEditor') + `?id=${entityId}`;
   return createPageUrl('EntityEditor') + `?id=${accessCode}`;
+}
+
+function getRaceCoreUrl(entityType, entityId, seasonYear, eventId) {
+  let url = createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
+  if (seasonYear) url += `&seasonYear=${seasonYear}`;
+  if (eventId) url += `&eventId=${eventId}`;
+  return url;
 }
 
 const ENTITY_TYPE_COLORS = {
@@ -43,15 +50,19 @@ const ROLE_COLORS = {
 // ─── Tab alias mapping ────────────────────────────────────────────────────────
 function resolveTab(param) {
   const map = {
-    general: 'account',
-    account: 'account',
-    entities: 'entities',
-    access: 'entities',
-    racecore: 'racecore',
+    // new tab names
+    general: 'general',
+    my_entities: 'my_entities',
+    access_codes: 'access_codes',
     story: 'story',
-    fan: 'fan',
+    // legacy aliases
+    account: 'general',
+    entities: 'my_entities',
+    access: 'access_codes',
+    racecore: 'access_codes',
+    fan: 'general',
   };
-  return map[param] || 'account';
+  return map[param] || 'general';
 }
 
 export default function Profile() {
@@ -188,17 +199,9 @@ export default function Profile() {
     base44.auth.logout(createPageUrl('Home'));
   };
 
-  function getRaceCoreUrl(entityType, entityId) {
-    let url = createPageUrl('RegistrationDashboard') + `?orgType=${entityType.toLowerCase()}&orgId=${entityId}`;
-    if (seasonYear) url += `&seasonYear=${seasonYear}`;
-    if (eventId) url += `&eventId=${eventId}`;
-    return url;
-  }
-
-  // Default tab: URL param (with alias), else smart default based on role
   const defaultTab = tabFromUrl
     ? resolveTab(tabFromUrl)
-    : collaborations.length === 0 ? 'fan' : 'entities';
+    : collaborations.length > 0 ? 'my_entities' : 'general';
 
   if (userLoading || !formData) {
     return (
@@ -218,13 +221,13 @@ export default function Profile() {
 
   return (
     <PageShell className="bg-gray-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-5">
 
         {/* ── Header ────────────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Account settings, fan preferences, and entity access</p>
+            <p className="text-sm text-gray-500 mt-0.5">Account settings, entity access, and fan preferences</p>
           </div>
           <button
             onClick={handleLogout}
@@ -233,6 +236,18 @@ export default function Profile() {
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Sign Out</span>
           </button>
+        </div>
+
+        {/* ── Status strip ──────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-600">
+          <span className="truncate max-w-[200px]">{user.email}</span>
+          <Badge className={user.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-600 border-gray-200'}>
+            {user.role || 'user'}
+          </Badge>
+          <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+            <Users className="w-3 h-3 mr-1 inline" />
+            {collaborations.length} {collaborations.length === 1 ? 'entity' : 'entities'}
+          </Badge>
         </div>
 
         {/* ── Save feedback ──────────────────────────────────────────────────── */}
@@ -253,13 +268,13 @@ export default function Profile() {
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue={defaultTab} className="space-y-6">
 
-            <div className="overflow-x-auto -mx-4 px-4 bg-white border-b border-gray-200">
-              <TabsList className="inline-flex w-auto gap-0 bg-transparent border-0 p-0 rounded-none shadow-none">
+            {/* Tab bar — wraps on mobile, single row on desktop */}
+            <div className="bg-white border-b border-gray-200 -mx-4 px-4 overflow-x-auto">
+              <TabsList className="inline-flex flex-wrap sm:flex-nowrap gap-0 bg-transparent border-0 p-0 rounded-none shadow-none w-auto min-w-full sm:min-w-0">
                 {[
-                  { value: 'account', label: 'Account' },
-                  { value: 'fan', label: 'Fan' },
-                  { value: 'entities', label: 'Entities' },
-                  { value: 'racecore', label: 'Race Core' },
+                  { value: 'general', label: 'Account' },
+                  { value: 'my_entities', label: 'My Entities' },
+                  { value: 'access_codes', label: 'Access & Setup' },
                   { value: 'story', label: 'Story' },
                 ].map(tab => (
                   <TabsTrigger
@@ -274,7 +289,7 @@ export default function Profile() {
             </div>
 
             {/* ── Account Tab ──────────────────────────────────────────────── */}
-            <TabsContent value="account" className="space-y-6">
+            <TabsContent value="general" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Account Details</CardTitle>
@@ -282,6 +297,23 @@ export default function Profile() {
                 </CardHeader>
                 <CardContent>
                   <GeneralTab user={user} formData={formData} setFormData={setFormData} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Fan Preferences</CardTitle>
+                  <CardDescription>Follow drivers, teams, tracks, and series.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FavoritesTab
+                    formData={formData}
+                    drivers={drivers}
+                    teams={teams}
+                    series={series}
+                    tracks={tracks}
+                    toggleFavorite={toggleFavorite}
+                  />
                 </CardContent>
               </Card>
 
@@ -314,39 +346,33 @@ export default function Profile() {
               </Button>
             </TabsContent>
 
-            {/* ── Fan Tab ──────────────────────────────────────────────────── */}
-            <TabsContent value="fan" className="space-y-6">
-              <div className="flex items-center gap-2 px-1">
-                <Heart className="w-4 h-4 text-rose-400" />
-                <p className="text-sm text-gray-600">Fans can follow drivers, teams, tracks, and series.</p>
-              </div>
+            {/* ── My Entities Tab ──────────────────────────────────────────── */}
+            <TabsContent value="my_entities" className="space-y-6">
 
-              <Card>
-                <CardContent className="pt-6">
-                  <FavoritesTab
-                    formData={formData}
-                    drivers={drivers}
-                    teams={teams}
-                    series={series}
-                    tracks={tracks}
-                    toggleFavorite={toggleFavorite}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* ── Entities Tab ─────────────────────────────────────────────── */}
-            <TabsContent value="entities" className="space-y-6">
-
-              {/* A) Entities I Manage */}
+              {/* Entities I Manage */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Entities I Manage</CardTitle>
-                  <CardDescription>Owners can invite editors, editors can update assigned profiles.</CardDescription>
+                  <CardDescription>
+                    {collaborations.length === 0
+                      ? 'No entities linked yet. Go to Access & Setup to add one.'
+                      : 'Your managed racing profiles with quick actions.'}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {collaborations.length === 0 ? (
-                    <p className="text-sm text-gray-500">No managed entities yet. Use an access code below to link one.</p>
+                    <div className="text-center py-6">
+                      <p className="text-sm text-gray-500 mb-3">You haven't linked any entities yet.</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}
+                      >
+                        <KeyRound className="w-4 h-4" /> Go to Access & Setup
+                      </Button>
+                    </div>
                   ) : (
                     collaborations.map(collab => (
                       <div key={collab.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl bg-white hover:shadow-sm transition-shadow">
@@ -370,9 +396,9 @@ export default function Profile() {
                               type="button"
                               size="sm"
                               className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                              onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id)}
+                              onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id, seasonYear, eventId)}
                             >
-                              <ExternalLink className="w-3 h-3" />
+                              <Gauge className="w-3 h-3" />
                               Race Core
                             </Button>
                           )}
@@ -383,7 +409,7 @@ export default function Profile() {
                             className="gap-1.5 text-xs"
                             onClick={() => window.location.href = getEditorUrl(collab.entity_type, collab.entity_id, collab.access_code)}
                           >
-                            Open Editor
+                            Editor
                           </Button>
                           {collab.role === 'owner' && (
                             <Button
@@ -391,10 +417,10 @@ export default function Profile() {
                               size="sm"
                               variant="outline"
                               className="gap-1.5 text-xs"
-                              onClick={() => window.location.href = createPageUrl('Profile') + '?tab=entities'}
+                              onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}
                             >
                               <Lock className="w-3 h-3" />
-                              Manage Access
+                              Manage
                             </Button>
                           )}
                         </div>
@@ -404,7 +430,7 @@ export default function Profile() {
                 </CardContent>
               </Card>
 
-              {/* B) Pending Invitations */}
+              {/* Pending Invitations */}
               {invitations.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -439,21 +465,7 @@ export default function Profile() {
                 </Card>
               )}
 
-              {/* C) Access Codes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Access Codes</CardTitle>
-                  <CardDescription>Invite editors to your entities or link a new one with a code.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <ManageTab user={user} />
-                  <div className="border-t border-gray-100 pt-6">
-                    <CodeInputTab user={user} />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* D) Recent Activity */}
+              {/* Recent Activity */}
               {operationLogs.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -492,47 +504,41 @@ export default function Profile() {
               )}
             </TabsContent>
 
-            {/* ── Race Core Tab ─────────────────────────────────────────────── */}
-            <TabsContent value="racecore" className="space-y-6">
-              <Card className="border border-gray-200 bg-blue-50">
-                <CardContent className="py-5">
-                  <p className="text-sm text-gray-700 font-semibold mb-1">Race Core</p>
-                  <p className="text-xs text-gray-600">Operate events, entries, check-in, tech inspections, results, exports, and logs.</p>
+            {/* ── Access & Setup Tab ───────────────────────────────────────── */}
+            <TabsContent value="access_codes" className="space-y-6">
+
+              {/* Section A: Manage Access */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Manage Access</CardTitle>
+                  <CardDescription>If you own an entity, invite editors and manage who has access.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ManageTab user={user} />
                 </CardContent>
               </Card>
 
-              {collaborations.some(c => c.entity_type === 'Track' || c.entity_type === 'Series') ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Quick Launch</CardTitle>
-                    <CardDescription>Open Race Core for your managed tracks and series.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {collaborations
-                      .filter(c => c.entity_type === 'Track' || c.entity_type === 'Series')
-                      .map(collab => (
-                        <Button
-                          key={collab.id}
-                          type="button"
-                          variant="outline"
-                          className="w-full justify-start gap-2 text-sm"
-                          onClick={() => window.location.href = getRaceCoreUrl(collab.entity_type, collab.entity_id)}
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          Open Race Core for {collab.entity_name}
-                        </Button>
-                      ))}
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border border-gray-200 bg-gray-50">
-                  <CardContent className="py-8 text-center">
-                    <p className="text-sm text-gray-500">Race Core access appears once you manage a track or series.</p>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Section B: Enter Access Code */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Enter Access Code</CardTitle>
+                  <CardDescription>Have a code? Link a driver, team, track, or series to your account.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CodeInputTab user={user} />
+                </CardContent>
+              </Card>
 
-              <RaceCoreAccessTab user={user} />
+              {/* Section C: Race Core Access */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Race Core Access</CardTitle>
+                  <CardDescription>Quick launch Race Core for your managed tracks and series.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RaceCoreAccessTab user={user} />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* ── Story Tab ─────────────────────────────────────────────────── */}
