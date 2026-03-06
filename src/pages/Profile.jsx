@@ -415,7 +415,7 @@ export default function Profile() {
                 <CardHeader>
                   <CardTitle className="text-base">Entities I Manage</CardTitle>
                   <CardDescription>
-                    {collaborations.length === 0
+                    {resolvedEntities.length === 0
                       ? 'No entities linked yet. Go to Access & Setup to add one.'
                       : 'Your managed racing profiles with quick actions.'}
                   </CardDescription>
