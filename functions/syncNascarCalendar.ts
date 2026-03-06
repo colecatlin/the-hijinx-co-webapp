@@ -119,9 +119,38 @@ Deno.serve(async (req) => {
       if (ev.external_uid) existingEventsByUid.set(ev.external_uid, ev);
     }
 
-    const seriesByName = new Map();
+    // Build series lookup by canonical key for safe dedup
+    const seriesByCanonKey = new Map();
     for (const s of existingSeries) {
-      seriesByName.set(s.name, s);
+      const cKey = s.canonical_key || buildCanonicalKey({ entity_type: 'series', name: s.name });
+      seriesByCanonKey.set(cKey, s);
+    }
+
+    // Helper to ensure a series exists without creating duplicates
+    async function ensureSeries(seriesName) {
+      const normN = normalizeName(seriesName);
+      const cKey  = buildCanonicalKey({ entity_type: 'series', name: seriesName });
+      if (seriesByCanonKey.has(cKey)) return seriesByCanonKey.get(cKey);
+      // Also check by normalized name
+      for (const [, s] of seriesByCanonKey) {
+        if (normalizeName(s.name) === normN) {
+          seriesByCanonKey.set(cKey, s);
+          return s;
+        }
+      }
+      // Create new series (deduped by canonical_key)
+      const created = await base44.asServiceRole.entities.Series.create({
+        name: seriesName,
+        discipline: 'Stock Car',
+        status: 'Active',
+        normalized_name: normN,
+        canonical_slug: buildEntitySlug(seriesName),
+        canonical_key: cKey,
+        data_source: 'syncNascarCalendar',
+        sync_last_seen_at: new Date().toISOString(),
+      });
+      seriesByCanonKey.set(cKey, created);
+      return created;
     }
 
     let created = 0;
@@ -132,27 +161,38 @@ Deno.serve(async (req) => {
       if (!icsEv.summary || !icsEv.dtstart) { skipped++; continue; }
 
       const seriesName = detectSeries(icsEv.summary);
-      const eventDate = extractEventDate(icsEv.dtstart);
-      const endDate = extractEventDate(icsEv.dtend);
-      const season = extractSeason(icsEv.dtstart);
-      const eventName = extractEventName(icsEv.summary, seriesName);
+      const eventDate  = extractEventDate(icsEv.dtstart);
+      const endDate    = extractEventDate(icsEv.dtend);
+      const season     = extractSeason(icsEv.dtstart);
+      const eventName  = extractEventName(icsEv.summary, seriesName);
+
+      // Ensure series exists (safe upsert)
+      const seriesRecord = await ensureSeries(seriesName).catch(() => null);
+
+      const normEvName = normalizeName(eventName);
+      const extUid     = icsEv.uid || null;
+      const cKey       = buildCanonicalKey({ entity_type: 'event', name: eventName, external_uid: extUid });
 
       const eventData = {
         name: eventName,
-        series: seriesName,
+        series_name: seriesName,
+        series_id: seriesRecord?.id || null,
         season: season,
         event_date: eventDate,
         end_date: endDate || undefined,
-        status: eventDate && new Date(eventDate) < new Date() ? 'completed' : 'upcoming',
-        external_uid: icsEv.uid,
+        status: eventDate && new Date(eventDate) < new Date() ? 'Completed' : 'Draft',
+        external_uid: extUid,
+        normalized_name: normEvName,
+        canonical_slug: buildEntitySlug(eventName),
+        canonical_key: cKey,
+        normalized_event_key: cKey,
+        data_source: 'syncNascarCalendar',
+        sync_last_seen_at: new Date().toISOString(),
       };
 
-      // Add location as a note if present
-      if (icsEv.location) {
-        eventData.location_note = icsEv.location;
-      }
+      if (icsEv.location) eventData.location_note = icsEv.location;
 
-      const existing = icsEv.uid ? existingEventsByUid.get(icsEv.uid) : null;
+      const existing = extUid ? existingEventsByUid.get(extUid) : null;
 
       if (existing) {
         await base44.asServiceRole.entities.Event.update(existing.id, eventData);
