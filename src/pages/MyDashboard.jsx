@@ -171,7 +171,7 @@ export default function MyDashboard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
   });
 
-  const isLoading = userLoading || collabLoading;
+  const isLoading = userLoading || collabLoading || resolvedLoading;
 
   const grouped = useMemo(() => {
     return collaborators.reduce((acc, collab) => {
@@ -183,32 +183,29 @@ export default function MyDashboard() {
   }, [collaborators]);
 
   const raceCoreCollabs = useMemo(
-    () => collaborators.filter(c => c.entity_type === 'Track' || c.entity_type === 'Series'),
-    [collaborators]
+    () => getRaceCoreEntities(resolvedEntities),
+    [resolvedEntities]
   );
 
-  // Resolve primary entity
-  const primaryCollab = useMemo(() => {
-    if (!user?.primary_entity_id) return null;
-    return collaborators.find(c => c.entity_id === user.primary_entity_id) || null;
-  }, [user, collaborators]);
+  const primaryEntity = useMemo(
+    () => getPrimaryManagedEntity(user, resolvedEntities),
+    [user, resolvedEntities]
+  );
 
-  // Fallback Race Core target
+  // Race Core hero target: prefer a Track/Series primary, else first race core entity
   const raceCoreTarget = useMemo(() => {
-    if (primaryCollab) return primaryCollab;
+    if (primaryEntity && (primaryEntity.entity_type === 'Track' || primaryEntity.entity_type === 'Series')) {
+      return primaryEntity;
+    }
     return raceCoreCollabs[0] || null;
-  }, [primaryCollab, raceCoreCollabs]);
+  }, [primaryEntity, raceCoreCollabs]);
 
   const handleManage = (collaborator) => {
-    if (collaborator.entity_type === 'Driver') {
-      navigate(createPageUrl('DriverEditor') + `?id=${collaborator.entity_id}`);
-    } else {
-      navigate(createPageUrl('EntityEditor') + `?id=${collaborator.access_code}`);
-    }
+    navigate(getEntityEditorUrl(collaborator));
   };
 
   const handleRaceCore = (collaborator) => {
-    navigate(createPageUrl('RegistrationDashboard') + `?orgType=${collaborator.entity_type.toLowerCase()}&orgId=${collaborator.entity_id}`);
+    navigate(getRaceCoreUrl(collaborator));
   };
 
   const handleSetPrimary = (collaborator) => {
