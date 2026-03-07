@@ -743,23 +743,32 @@ export default function RegistrationDashboard() {
   if (orgAccessDenied && organizationId && !isAdmin) {
     return (
       <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400" /> Access Denied
+                <AlertCircle className="w-5 h-5 text-red-400" /> No Access to this Race Core Context
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-300">
-                You do not have access to manage this {organizationType}. Request access using an access code or contact the owner.
+                You do not manage this {organizationType === 'track' ? 'track' : 'series'}. Use an access code to link it to your account, or return to your dashboard.
               </p>
-              <Button
-                onClick={() => navigate(createPageUrl('Profile'))}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Request Access
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => navigate(createPageUrl('MyDashboard'))}
+                  className="w-full bg-[#232323] hover:bg-black text-white"
+                >
+                  Go to My Dashboard
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(createPageUrl('Profile') + '?tab=entities')}
+                  className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
+                >
+                  Open Profile
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
