@@ -104,6 +104,10 @@ import {
     Gauge,
     Film,
     Camera,
+    Star,
+    ArrowLeft,
+    MapPin,
+    Trophy,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import {
