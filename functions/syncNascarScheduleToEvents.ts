@@ -187,35 +187,28 @@ Deno.serve(async (req) => {
           track_id: trackRecord?.id || null,
           round_number: race.race_id || null,
           external_uid: extUid,
-          normalized_name: normN,
-          canonical_slug: buildEntitySlug(raceName),
-          canonical_key: cKey,
-          normalized_event_key: cKey,
           data_source: 'syncNascarSchedule',
         };
 
         if (dry_run) {
+          const evKey = buildNormalizedEventKey({ name: raceName, event_date: raceDate, track_id: trackRecord?.id || null, series_id: dbSeries?.id || null });
           if (extUid) {
             const existing = await base44.asServiceRole.entities.Event.filter({ external_uid: extUid });
             if (existing && existing.length > 0) { log.push(`  Event exists (uid): ${raceName} (${raceDate})`); stats.events_updated++; }
-            else { log.push(`  [DRY RUN] Would create event: ${raceName} (${raceDate})`); stats.events_created++; }
+            else { log.push(`  [DRY RUN] Would create event: ${raceName} (${raceDate}) key=${evKey}`); stats.events_created++; }
           } else {
-            log.push(`  [DRY RUN] Would upsert event: ${raceName} (${raceDate})`); stats.events_created++;
+            log.push(`  [DRY RUN] Would upsert event: ${raceName} (${raceDate}) key=${evKey}`); stats.events_created++;
           }
           continue;
         }
 
-        const { action } = await upsertByFilters(
-          base44.asServiceRole.entities.Event,
-          [
-            extUid ? { external_uid: extUid } : null,
-            { canonical_key: cKey },
-          ].filter(Boolean),
-          eventPayload,
-          { track_id: trackRecord?.id, status: eventPayload.status, series_id: dbSeries?.id || null }
-        );
-
-        if (action === 'created') { stats.events_created++; log.push(`  Created event: ${raceName} (${raceDate})`); }
+        // Route through syncSourceAndEntityRecord: dedup-safe + entity-linked + relationship-synced
+        const syncEventRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+          entity_type: 'event',
+          payload: eventPayload,
+        });
+        const eventResult = syncEventRes?.data;
+        if (eventResult?.source_action === 'created') { stats.events_created++; log.push(`  Created event: ${raceName} (${raceDate})`); }
         else { stats.events_updated++; log.push(`  Updated event: ${raceName} (${raceDate})`); }
       }
     }
