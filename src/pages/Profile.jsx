@@ -405,7 +405,7 @@ export default function Profile() {
                             type="button"
                             size="sm"
                             className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                            onClick={() => window.location.href = getRaceCoreUrl(displayEntity, { seasonYear, eventId })}
+                            onClick={() => window.location.href = buildRaceCoreLaunchUrl(displayEntity, { seasonYear, eventId })}
                           >
                             <GaugeIcon className="w-3 h-3" /> Open Race Core
                           </Button>
@@ -483,7 +483,7 @@ export default function Profile() {
                                 type="button"
                                 size="sm"
                                 className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                                onClick={() => window.location.href = getRaceCoreUrl(entity, { seasonYear, eventId })}
+                                onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity, { seasonYear, eventId })}
                               >
                                 <GaugeIcon className="w-3 h-3" />
                                 Race Core
@@ -494,7 +494,7 @@ export default function Profile() {
                               size="sm"
                               variant="outline"
                               className="gap-1.5 text-xs"
-                              onClick={() => window.location.href = getEntityEditorUrl(entity)}
+                              onClick={() => window.location.href = buildEditorUrl(entity)}
                             >
                               Editor
                             </Button>
