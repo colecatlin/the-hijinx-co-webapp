@@ -109,27 +109,22 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const { record, action } = await upsertByFilters(
-          base44.asServiceRole.entities.Track,
-          [
-            extUid ? { external_uid: extUid } : null,
-            { canonical_key: cKey },
-            { normalized_name: normN },
-          ].filter(Boolean),
-          {
+        const syncTrackRes = await base44.functions.invoke('upsertSourceEntity', {
+          entity_type: 'track',
+          payload: {
             name: tName,
             status: 'Active',
             location_city: '',
             location_country: 'United States',
             external_uid: extUid,
-            normalized_name: normN,
-            canonical_slug: buildEntitySlug(tName),
-            canonical_key: cKey,
             data_source: 'syncNascarSchedule',
           },
-          {} // no forced update patch — preserve existing data
-        );
+        });
+        const trackResult = syncTrackRes?.data;
+        const record = trackResult?.record || null;
+        const action = trackResult?.action || 'skipped';
 
+        if (!record) { log.push(`  WARN: track upsert failed for ${tName}`); continue; }
         trackIdMap[r.track_id] = record;
         if (action === 'created') { stats.tracks_created++; log.push(`  Created track: ${tName}`); }
         else if (action === 'updated') { stats.tracks_updated++; log.push(`  Updated track: ${tName}`); }
