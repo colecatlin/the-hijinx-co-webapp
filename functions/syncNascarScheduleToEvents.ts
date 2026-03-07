@@ -136,36 +136,30 @@ Deno.serve(async (req) => {
         else { stats.tracks_skipped++; log.push(`  Track exists: ${tName}`); }
       }
 
-      // ---- STEP 2: Upsert Series using canonical key ----
-      const seriesNormN = normalizeName(seriesName);
-      const seriesCKey  = buildCanonicalKey({ entity_type: 'series', name: seriesName });
-
+      // ---- STEP 2: Upsert Series via syncSourceAndEntityRecord (dedup-safe + entity-linked) ----
       let dbSeries = null;
 
       if (!dry_run) {
-        const { record, action } = await upsertByFilters(
-          base44.asServiceRole.entities.Series,
-          [
-            { canonical_key: seriesCKey },
-            { normalized_name: seriesNormN },
-          ],
-          {
+        const syncSeriesRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+          entity_type: 'series',
+          payload: {
             name: seriesName,
             full_name: seriesName,
             discipline: 'Stock Car',
             sanctioning_body: 'NASCAR',
             status: 'Active',
             season_year: season_year.toString(),
-            normalized_name: seriesNormN,
-            canonical_slug: buildEntitySlug(seriesName),
-            canonical_key: seriesCKey,
             data_source: 'syncNascarSchedule',
           },
-          {} // no forced update patch
-        );
-        dbSeries = record;
-        if (action === 'created') { stats.series_created++; log.push(`  Created series: ${seriesName}`); }
-        else { stats.series_found++; log.push(`  Found series: ${seriesName} (id: ${record.id})`); }
+        });
+        const seriesResult = syncSeriesRes?.data;
+        if (seriesResult?.source_record) {
+          dbSeries = seriesResult.source_record;
+          if (seriesResult.source_action === 'created') { stats.series_created++; log.push(`  Created series: ${seriesName}`); }
+          else { stats.series_found++; log.push(`  Found series: ${seriesName} (id: ${dbSeries.id})`); }
+        } else {
+          log.push(`  WARN: series sync failed for ${seriesName}`);
+        }
       } else {
         log.push(`  [DRY RUN] Would upsert series: ${seriesName}`);
       }
