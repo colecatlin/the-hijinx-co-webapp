@@ -201,11 +201,11 @@ export default function MyDashboard() {
   }, [primaryEntity, raceCoreCollabs]);
 
   const handleManage = (collaborator) => {
-    navigate(getEntityEditorUrl(collaborator));
+    navigate(buildEditorUrl(collaborator));
   };
 
   const handleRaceCore = (collaborator) => {
-    navigate(getRaceCoreUrl(collaborator));
+    navigate(buildRaceCoreLaunchUrl(collaborator));
   };
 
   const handleSetPrimary = (collaborator) => {
