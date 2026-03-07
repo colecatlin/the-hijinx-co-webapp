@@ -107,7 +107,7 @@ export default function Profile() {
 
   const { data: resolvedEntities = [] } = useQuery({
     queryKey: ['resolvedEntities', user?.id],
-    queryFn: () => getManagedEntitiesResolved(user),
+    queryFn: () => getResolvedManagedEntities(user),
     enabled: !!user?.id,
   });
 

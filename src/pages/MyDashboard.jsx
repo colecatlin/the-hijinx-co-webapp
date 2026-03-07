@@ -159,7 +159,7 @@ export default function MyDashboard() {
 
   const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
     queryKey: ['resolvedEntities', user?.id],
-    queryFn: () => getManagedEntitiesResolved(user),
+    queryFn: () => getResolvedManagedEntities(user),
     enabled: !!user?.id,
   });
 
