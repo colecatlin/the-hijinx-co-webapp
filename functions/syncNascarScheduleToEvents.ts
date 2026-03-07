@@ -13,6 +13,10 @@ function buildCanonicalKey({ entity_type, name, external_uid, parent_context }) 
   if (parent_context) return `${type}:${norm}:${parent_context}`;
   return `${type}:${norm}`;
 }
+function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
+  const norm = normalizeName(name || '');
+  return `${norm}|${event_date || 'none'}|${track_id || 'none'}|${series_id || 'none'}`;
+}
 
 // Maps NASCAR series_id to our series names
 const SERIES_NAMES = {
