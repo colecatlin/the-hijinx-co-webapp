@@ -373,6 +373,8 @@ export default function Profile() {
                   : null;
                 const primaryStale = user.primary_entity_id && !explicitPrimary && resolvedEntities.length > 0;
                 const displayEntity = explicitPrimary;
+                const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
+                const noExplicitPrimaryButHasRaceCore = !explicitPrimary && !primaryStale && raceCoreEntities.length > 0;
                 return (
                   <Card className={displayEntity ? 'border-2 border-[#232323]' : ''}>
                     <CardHeader>
