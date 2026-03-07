@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
@@ -9,48 +9,32 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getResolvedManagedEntities,
-  getPrimaryResolvedEntity,
   getRaceCoreEntities,
   buildRaceCoreLaunchUrl,
   buildEditorUrl,
 } from '@/components/entities/entityResolver';
+import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
-  Flag, Gauge, Car, Calendar
+  Flag, Gauge, Car, Calendar, Heart
 } from 'lucide-react';
 
-const ENTITY_ICONS = {
-  Driver: User,
-  Team: Users,
-  Track: MapPin,
-  Series: Trophy,
-};
-
+const ENTITY_ICONS = { Driver: User, Team: Users, Track: MapPin, Series: Trophy };
 const ENTITY_COLORS = {
   Driver: 'bg-blue-50 border-blue-200 text-blue-700',
   Team: 'bg-purple-50 border-purple-200 text-purple-700',
   Track: 'bg-green-50 border-green-200 text-green-700',
   Series: 'bg-orange-50 border-orange-200 text-orange-700',
 };
+const SECTION_LABELS = { Driver: 'Drivers', Team: 'Teams', Track: 'Tracks', Series: 'Series' };
 
-const SECTION_LABELS = {
-  Driver: 'Drivers',
-  Team: 'Teams',
-  Track: 'Tracks',
-  Series: 'Series',
-};
-
-const PRIMARY_ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series'];
-
-function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimary }) {
+function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimary, settingPrimary }) {
   const Icon = ENTITY_ICONS[collaborator.entity_type] || User;
   const colorClass = ENTITY_COLORS[collaborator.entity_type] || 'bg-gray-50 border-gray-200 text-gray-700';
   const isOwner = collaborator.role === 'owner';
-  const canBePrimary = PRIMARY_ENTITY_TYPES.includes(collaborator.entity_type);
 
   return (
     <div className={`bg-white rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-md transition-shadow border-2 ${isPrimary ? 'border-[#232323]' : 'border-transparent border border-gray-200'}`}>
@@ -59,7 +43,7 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
           <Icon className="w-4 h-4" />
         </div>
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-gray-900 text-sm">{collaborator.entity_name}</h3>
             {isPrimary && (
               <Badge className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200">
@@ -68,43 +52,28 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
-            <Badge
-              className={`text-xs px-2 py-0.5 ${isOwner ? 'bg-[#232323] text-white' : 'bg-gray-100 text-gray-600'}`}
-            >
-              {isOwner ? (
-                <><Shield className="w-3 h-3 mr-1 inline" />Owner</>
-              ) : (
-                <><Edit className="w-3 h-3 mr-1 inline" />Editor</>
-              )}
+            <Badge className={`text-xs px-2 py-0.5 ${isOwner ? 'bg-[#232323] text-white' : 'bg-gray-100 text-gray-600'}`}>
+              {isOwner ? <><Shield className="w-3 h-3 mr-1 inline" />Owner</> : <><Edit className="w-3 h-3 mr-1 inline" />Editor</>}
             </Badge>
           </div>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-        {canBePrimary && !isPrimary && (
-          <Button
-            variant="ghost"
-            size="sm"
+        {!isPrimary && (
+          <Button variant="ghost" size="sm" disabled={settingPrimary === collaborator.entity_id}
             onClick={() => onSetPrimary(collaborator)}
-            className="gap-1.5 text-xs text-gray-400 hover:text-amber-600"
-          >
-            <Star className="w-3.5 h-3.5" /> Set Primary
+            className="gap-1.5 text-xs text-gray-400 hover:text-amber-600">
+            <Star className="w-3.5 h-3.5" />
+            {settingPrimary === collaborator.entity_id ? 'Setting...' : 'Set Primary'}
           </Button>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onRaceCore(collaborator)}
-          className="gap-1.5 text-xs"
-        >
-          <Gauge className="w-3.5 h-3.5" /> Race Core
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onManage(collaborator)}
-          className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors"
-        >
+        {collaborator.is_racecore_entity && (
+          <Button variant="outline" size="sm" onClick={() => onRaceCore(collaborator)} className="gap-1.5 text-xs">
+            <Gauge className="w-3.5 h-3.5" /> Race Core
+          </Button>
+        )}
+        <Button variant="outline" size="sm" onClick={() => onManage(collaborator)}
+          className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors">
           {collaborator.entity_type === 'Driver' ? 'Edit Profile' : 'Open Console'}
           <ChevronRight className="w-3.5 h-3.5" />
         </Button>
@@ -113,30 +82,33 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
   );
 }
 
-function EmptyState({ onEnterCode }) {
+function FanHub() {
   return (
-    <div className="text-center py-14 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-      <div className="w-14 h-14 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
-        <Star className="w-6 h-6 text-gray-400" />
-      </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-2">You are in Fan Mode</h3>
-      <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-        Follow drivers, save favorites, and explore events. If you manage a driver, team, track, or series, link it using an access code.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button
-          onClick={onEnterCode}
-          className="bg-[#232323] hover:bg-black text-white gap-2"
-        >
-          <KeyRound className="w-4 h-4" />
-          Enter Access Code
-        </Button>
-        <Link to={createPageUrl('Profile') + '?tab=fan'}>
-          <Button variant="outline" className="w-full sm:w-auto gap-2">
-            <User className="w-4 h-4" />
-            Go to Profile
-          </Button>
-        </Link>
+    <div className="space-y-4">
+      <div className="text-center py-10 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+        <div className="w-14 h-14 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
+          <Heart className="w-6 h-6 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Fan Hub</h3>
+        <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
+          Follow drivers, save favorites, and explore events. Link a racing entity if you manage one.
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link to={createPageUrl('Profile')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Profile</Button>
+          </Link>
+          <Link to={createPageUrl('DriverDirectory')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Drivers</Button>
+          </Link>
+          <Link to={createPageUrl('EventDirectory')}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Events</Button>
+          </Link>
+          <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
+            <Button size="sm" className="bg-[#232323] hover:bg-black text-white gap-1.5 text-xs">
+              <KeyRound className="w-3.5 h-3.5" /> Link Entity
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -145,16 +117,11 @@ function EmptyState({ onEnterCode }) {
 export default function MyDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [settingPrimary, setSettingPrimary] = React.useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-  });
-
-  const { data: collaborators = [], isLoading: collabLoading } = useQuery({
-    queryKey: ['entityCollaborators', user?.email],
-    queryFn: () => base44.entities.EntityCollaborator.filter({ user_email: user.email }),
-    enabled: !!user?.email,
   });
 
   const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
@@ -163,66 +130,38 @@ export default function MyDashboard() {
     enabled: !!user?.id,
   });
 
-  const setPrimaryMutation = useMutation({
-    mutationFn: async ({ entity_type, entity_id }) => {
-      await base44.auth.updateMe({ primary_entity_type: entity_type, primary_entity_id: entity_id });
-      await base44.functions.invoke('updateUserProfile', { formData: { primary_entity_type: entity_type, primary_entity_id: entity_id } });
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
-  });
+  const isLoading = userLoading || resolvedLoading;
+  const hasEntities = resolvedEntities.length > 0;
+  const isAdmin = user?.role === 'admin';
+  const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
+  const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
+  const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
 
-  const isLoading = userLoading || collabLoading || resolvedLoading;
+  // Race Core hero target: primary if Track/Series, else first Track/Series
+  const raceCoreTarget = useMemo(() => {
+    if (primaryEntity?.is_racecore_entity) return primaryEntity;
+    return raceCoreEntities[0] || null;
+  }, [primaryEntity, raceCoreEntities]);
 
   const grouped = useMemo(() => {
     return resolvedEntities.reduce((acc, entity) => {
-      const type = entity.entity_type;
-      if (!acc[type]) acc[type] = [];
-      acc[type].push(entity);
+      if (!acc[entity.entity_type]) acc[entity.entity_type] = [];
+      acc[entity.entity_type].push(entity);
       return acc;
     }, {});
   }, [resolvedEntities]);
 
-  const raceCoreCollabs = useMemo(
-    () => getRaceCoreEntities(resolvedEntities),
-    [resolvedEntities]
-  );
-
-  const primaryEntity = useMemo(
-    () => getPrimaryResolvedEntity(user, resolvedEntities),
-    [user, resolvedEntities]
-  );
-
-  // Race Core hero target: prefer a Track/Series primary, else first race core entity
-  const raceCoreTarget = useMemo(() => {
-    if (primaryEntity && (primaryEntity.entity_type === 'Track' || primaryEntity.entity_type === 'Series')) {
-      return primaryEntity;
-    }
-    return raceCoreCollabs[0] || null;
-  }, [primaryEntity, raceCoreCollabs]);
-
-  const handleManage = (collaborator) => {
-    navigate(buildEditorUrl(collaborator));
+  const handleSetPrimary = async (collaborator) => {
+    setSettingPrimary(collaborator.entity_id);
+    await setPrimaryEntityOnUser({ currentUser: user, entityType: collaborator.entity_type, entityId: collaborator.entity_id });
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    queryClient.invalidateQueries({ queryKey: ['myCollaborations', user?.id] });
+    setSettingPrimary(false);
   };
 
-  const handleRaceCore = (collaborator) => {
-    navigate(buildRaceCoreLaunchUrl(collaborator));
-  };
-
-  const handleSetPrimary = (collaborator) => {
-    setPrimaryMutation.mutate({ entity_type: collaborator.entity_type, entity_id: collaborator.entity_id });
-  };
-
-  const handleEnterCode = () => {
-    navigate(createPageUrl('Profile') + '?tab=access');
-  };
-
-  const hasCols = resolvedEntities.length > 0;
-  const isAdmin = user?.role === 'admin';
-  const hasEntities = resolvedEntities.length > 0;
-  const explicitPrimary = user?.primary_entity_id
-    ? resolvedEntities.find(e => e.entity_id === user.primary_entity_id)
-    : null;
-  const primaryEntityStale = user?.primary_entity_id && !explicitPrimary && resolvedEntities.length > 0;
+  const handleManage = (collaborator) => navigate(buildEditorUrl(collaborator));
+  const handleRaceCore = (collaborator) => navigate(buildRaceCoreLaunchUrl(collaborator));
+  const handleEnterCode = () => navigate(createPageUrl('Profile') + '?tab=access_codes');
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
@@ -234,23 +173,17 @@ export default function MyDashboard() {
   return (
     <PageShell className="bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-
-        {/* ── Dashboard Shell ─────────────────────────────────────── */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 space-y-8">
 
-          {/* ── Header ──────────────────────────────────────────────── */}
+          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Index46 Dashboard</h1>
-              {welcomeName && (
-                <p className="text-sm text-gray-500 mt-1">Welcome back, {welcomeName}</p>
-              )}
+              {welcomeName && <p className="text-sm text-gray-500 mt-1">Welcome back, {welcomeName}</p>}
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Link to={createPageUrl('Profile')}>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <User className="w-3.5 h-3.5" /> Profile
-                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Profile</Button>
               </Link>
               <Link to={createPageUrl('MotorsportsHome')}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
@@ -260,19 +193,15 @@ export default function MyDashboard() {
             </div>
           </div>
 
-          {/* ── Quick Actions row ───────────────────────────────────── */}
+          {/* Quick Actions */}
           <div className="flex flex-wrap gap-2">
             <Link to={createPageUrl('DriverDirectory')}>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <User className="w-3.5 h-3.5" /> Browse Drivers
-              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Browse Drivers</Button>
             </Link>
             <Link to={createPageUrl('EventDirectory')}>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <Calendar className="w-3.5 h-3.5" /> Browse Events
-              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Browse Events</Button>
             </Link>
-            {hasEntities && raceCoreTarget && (
+            {raceCoreTarget && (
               <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Gauge className="w-3.5 h-3.5" /> Open Race Core
@@ -290,69 +219,59 @@ export default function MyDashboard() {
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Fan Shortcuts ───────────────────────────────────────── */}
+          {/* Fan Shortcuts */}
           <div className="space-y-3">
             <h2 className="text-base font-semibold text-gray-900">Fan Shortcuts</h2>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <Link to={createPageUrl('DriverDirectory')}>
-                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-colors">
-                  <User className="w-5 h-5 text-blue-600" />
-                  <span className="text-xs font-medium text-blue-700">Drivers</span>
-                </button>
-              </Link>
-              <Link to={createPageUrl('TeamDirectory')}>
-                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition-colors">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  <span className="text-xs font-medium text-purple-700">Teams</span>
-                </button>
-              </Link>
-              <Link to={createPageUrl('TrackDirectory')}>
-                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl transition-colors">
-                  <MapPin className="w-5 h-5 text-green-600" />
-                  <span className="text-xs font-medium text-green-700">Tracks</span>
-                </button>
-              </Link>
-              <Link to={createPageUrl('SeriesHome')}>
-                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition-colors">
-                  <Trophy className="w-5 h-5 text-orange-600" />
-                  <span className="text-xs font-medium text-orange-700">Series</span>
-                </button>
-              </Link>
-              <Link to={createPageUrl('EventDirectory')}>
-                <button className="w-full flex flex-col items-center gap-1.5 py-4 px-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors">
-                  <Calendar className="w-5 h-5 text-gray-600" />
-                  <span className="text-xs font-medium text-gray-700">Events</span>
-                </button>
-              </Link>
+              {[
+                { label: 'Drivers', page: 'DriverDirectory', Icon: User, color: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700' },
+                { label: 'Teams', page: 'TeamDirectory', Icon: Users, color: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700' },
+                { label: 'Tracks', page: 'TrackDirectory', Icon: MapPin, color: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700' },
+                { label: 'Series', page: 'SeriesHome', Icon: Trophy, color: 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700' },
+                { label: 'Events', page: 'EventDirectory', Icon: Calendar, color: 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700' },
+              ].map(({ label, page, Icon, color }) => (
+                <Link key={page} to={createPageUrl(page)}>
+                  <button className={`w-full flex flex-col items-center gap-1.5 py-4 px-3 border rounded-xl transition-colors ${color}`}>
+                    <Icon className="w-5 h-5" />
+                    <span className="text-xs font-medium">{label}</span>
+                  </button>
+                </Link>
+              ))}
             </div>
           </div>
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Context Card ────────────────────────────────────────── */}
+          {/* Hero context card */}
           {!isLoading && (
             <div className={`rounded-xl border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${hasEntities ? 'bg-[#232323] text-white border-[#232323]' : 'bg-blue-50 border-blue-200'}`}>
               <div>
                 <h3 className={`font-semibold text-base ${hasEntities ? 'text-white' : 'text-blue-900'}`}>
-                  {hasEntities ? 'You manage race entities' : 'You are set up as a fan'}
+                  {hasEntities
+                    ? (primaryEntity ? `Race Core: ${primaryEntity.entity_name}` : 'You manage race entities')
+                    : 'You are set up as a fan'}
                 </h3>
                 <p className={`text-sm mt-1 ${hasEntities ? 'text-gray-300' : 'text-blue-700'}`}>
                   {hasEntities
-                    ? 'Jump into Race Core for weekend operations, or edit long term profiles in the editors.'
-                    : 'Follow drivers, teams, tracks, and series to build your feed. If you manage a racing entity, link it with an access code in Profile.'}
+                    ? 'Jump into Race Core for weekend operations, or edit long-term profiles in the editors.'
+                    : 'Follow drivers, teams, tracks, and series. Link a racing entity in Profile to unlock management tools.'}
                 </p>
+                {primaryStale && hasEntities && (
+                  <p className="text-xs text-amber-300 mt-1">Your primary entity is no longer linked. Choose a new one below.</p>
+                )}
               </div>
               <div className="flex-shrink-0">
                 {hasEntities && raceCoreTarget ? (
                   <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
                     <Button size="sm" className="gap-1.5 text-xs bg-white text-[#232323] hover:bg-gray-100 border-0">
-                      <Gauge className="w-3.5 h-3.5" /> Open Race Core
+                      <Gauge className="w-3.5 h-3.5" />
+                      {primaryEntity?.is_racecore_entity ? `Open Race Core` : 'Open Race Core'}
                     </Button>
                   </Link>
                 ) : (
-                  <Link to={createPageUrl('Profile') + '?tab=entities'}>
+                  <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
                     <Button size="sm" className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white border-0">
-                      <KeyRound className="w-3.5 h-3.5" /> Go to Profile to link an entity
+                      <KeyRound className="w-3.5 h-3.5" /> Link an Entity
                     </Button>
                   </Link>
                 )}
@@ -360,7 +279,7 @@ export default function MyDashboard() {
             </div>
           )}
 
-          {/* ── My Activity ─────────────────────────────────────────── */}
+          {/* My Activity */}
           <div className="space-y-3">
             <h2 className="text-base font-semibold text-gray-900">My Activity</h2>
             <MyEntriesSection user={user} isLoading={userLoading} />
@@ -368,15 +287,13 @@ export default function MyDashboard() {
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Managed Profiles + Race Core ────────────────────────── */}
+          {/* Managed Profiles + Race Core */}
           {isLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-20 w-full rounded-xl" />
-              ))}
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
             </div>
-          ) : !hasCols ? (
-            <EmptyState onEnterCode={handleEnterCode} />
+          ) : !hasEntities ? (
+            <FanHub />
           ) : (
             <div className="space-y-8">
 
@@ -407,8 +324,9 @@ export default function MyDashboard() {
                             collaborator={entity}
                             onManage={handleManage}
                             onRaceCore={handleRaceCore}
-                            isPrimary={entity.entity_id === user?.primary_entity_id}
+                            isPrimary={entity.entity_id === primaryEntity?.entity_id}
                             onSetPrimary={handleSetPrimary}
+                            settingPrimary={settingPrimary}
                           />
                         ))}
                       </div>
@@ -417,33 +335,31 @@ export default function MyDashboard() {
                 })}
               </div>
 
-              {/* Race Core */}
+              {/* Race Core section */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Gauge className="w-4 h-4 text-gray-500" />
                   <h2 className="text-base font-semibold text-gray-900">Race Core</h2>
                 </div>
 
-                {primaryEntityStale && (
+                {primaryStale && (
                   <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
                     Your primary entity is no longer linked. Choose a new one from the list above.
                   </div>
                 )}
 
-                {raceCoreCollabs.length === 0 ? (
+                {raceCoreEntities.length === 0 ? (
                   <div className="py-5 px-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl text-center">
                     <p className="text-sm text-gray-500">Race Core appears once you manage a track or series.</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {raceCoreCollabs.map(collab => {
-                      const isThisPrimary = collab.entity_id === user?.primary_entity_id;
+                    {raceCoreEntities.map(collab => {
+                      const isThisPrimary = collab.entity_id === primaryEntity?.entity_id;
                       return (
-                        <button
-                          key={collab.collaboration_id || collab.entity_id}
+                        <button key={collab.collaboration_id || collab.entity_id}
                           onClick={() => handleRaceCore(collab)}
-                          className={`w-full flex items-center justify-between px-4 py-3.5 text-white rounded-xl transition-colors group ${isThisPrimary ? 'bg-[#232323] ring-2 ring-amber-400/50' : 'bg-[#232323] hover:bg-black'}`}
-                        >
+                          className={`w-full flex items-center justify-between px-4 py-3.5 text-white rounded-xl transition-colors group ${isThisPrimary ? 'bg-[#232323] ring-2 ring-amber-400/50' : 'bg-[#232323] hover:bg-black'}`}>
                           <div className="flex items-center gap-3">
                             <Gauge className="w-4 h-4 text-gray-300" />
                             <div className="text-left">
