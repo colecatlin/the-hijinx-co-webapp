@@ -22,7 +22,13 @@ import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions'
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
 import { Star as StarIcon, Gauge as GaugeIcon } from 'lucide-react';
-import { getManagedEntitiesResolved, getPrimaryManagedEntity, getRaceCoreUrl, getEntityEditorUrl } from '@/components/entities/entityApi';
+import {
+  getResolvedManagedEntities,
+  getPrimaryResolvedEntity,
+  getRaceCoreEntities,
+  buildRaceCoreLaunchUrl,
+  buildEditorUrl,
+} from '@/components/entities/entityResolver';
 
 
 const ENTITY_TYPE_COLORS = {

@@ -11,12 +11,12 @@ import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getManagedEntitiesResolved,
-  getPrimaryManagedEntity,
+  getResolvedManagedEntities,
+  getPrimaryResolvedEntity,
   getRaceCoreEntities,
-  getRaceCoreUrl,
-  getEntityEditorUrl,
-} from '@/components/entities/entityApi';
+  buildRaceCoreLaunchUrl,
+  buildEditorUrl,
+} from '@/components/entities/entityResolver';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
