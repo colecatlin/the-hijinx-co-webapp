@@ -106,6 +106,11 @@ import {
     Camera,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
+import {
+  getResolvedManagedEntities,
+  getPrimaryResolvedEntity,
+  getRaceCoreEntities,
+} from '@/components/entities/entityResolver';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardQueries from '@/components/registrationdashboard/useDashboardQueries';
