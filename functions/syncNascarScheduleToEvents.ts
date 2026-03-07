@@ -25,24 +25,6 @@ const SERIES_NAMES = {
   3: 'NASCAR Craftsman Truck Series',
 };
 
-// Safe upsert helper — returns { record, action }
-async function upsertByFilters(model, matchFilters, createPayload, updatePatch) {
-  for (const filter of matchFilters) {
-    if (Object.values(filter).every(v => v)) {
-      const results = await model.filter(filter);
-      if (results && results.length > 0) {
-        const existing = results[0];
-        if (updatePatch && Object.keys(updatePatch).length > 0) {
-          const updated = await model.update(existing.id, { ...updatePatch, sync_last_seen_at: new Date().toISOString() });
-          return { record: updated, action: 'updated' };
-        }
-        return { record: existing, action: 'found' };
-      }
-    }
-  }
-  const record = await model.create({ ...createPayload, sync_last_seen_at: new Date().toISOString() });
-  return { record, action: 'created' };
-}
 
 Deno.serve(async (req) => {
   try {
