@@ -974,9 +974,13 @@ export default function RegistrationDashboard() {
                 </div>
               )}
 
-              {/* Spacer */}
+              {primaryEntity?.is_racecore_entity && (() => {
+                const isCurrent = primaryEntity.entity_type.toLowerCase() === organizationType && primaryEntity.entity_id === organizationId;
+                const extras = { ...(seasonYear ? { seasonYear } : {}), ...(eventId ? { eventId } : {}), ...(activeTab && activeTab !== 'overview' ? { tab: activeTab } : {}) };
+                if (isCurrent) return <span className="flex items-center gap-1 text-xs px-2 py-1 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded shrink-0"><Star className="w-3 h-3" /> Primary</span>;
+                return <button onClick={() => navigate(buildRaceCoreLaunchUrl(primaryEntity, extras))} className="flex items-center gap-1 text-xs px-2 py-1 text-gray-400 hover:text-amber-300 border border-gray-700 hover:border-amber-500/40 rounded transition-colors shrink-0"><Star className="w-3 h-3" /> Return to Primary</button>;
+              })()}
               <div className="flex-1" />
-
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
                 {canAction(dashboardPermissions, 'create_event') && (
