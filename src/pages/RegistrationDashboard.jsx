@@ -804,6 +804,72 @@ export default function RegistrationDashboard() {
     );
   }
 
+  // Workspace chooser: no org selected, multiple Race Core entities available, not admin
+  const urlHasOrg = !!(searchParams.get('orgType') && searchParams.get('orgId'));
+  const showWorkspaceChooser =
+    !organizationId &&
+    !urlHasOrg &&
+    resolvedEntitiesLoaded &&
+    raceCoreEntityList.length > 1;
+
+  if (showWorkspaceChooser) {
+    const extras = {
+      ...(seasonYear ? { seasonYear } : {}),
+      ...(eventId ? { eventId } : {}),
+      ...(activeTab && activeTab !== 'overview' ? { tab: activeTab } : {}),
+    };
+    return (
+      <PageShell>
+        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
+          <div className="w-full max-w-lg space-y-6">
+            <div>
+              <h1 className="text-2xl font-black text-white mb-1">Choose a Race Core Workspace</h1>
+              <p className="text-gray-400 text-sm">Select the track or series you want to manage.</p>
+            </div>
+            <div className="space-y-3">
+              {raceCoreEntityList.map(entity => {
+                const isPrimary = entity.entity_id === primaryEntity?.entity_id;
+                const Icon = entity.entity_type === 'Track' ? MapPin : Trophy;
+                return (
+                  <button
+                    key={entity.collaboration_id || entity.entity_id}
+                    onClick={() => {
+                      setOrganizationType(entity.entity_type.toLowerCase());
+                      setOrganizationId(entity.entity_id);
+                    }}
+                    className="w-full flex items-center justify-between p-4 bg-[#171717] border border-gray-700 hover:border-gray-500 rounded-xl text-left transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#262626] flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-gray-300" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-white text-sm">{entity.entity_name}</p>
+                          {isPrimary && (
+                            <span className="text-xs px-1.5 py-0.5 bg-amber-500/20 text-amber-300 rounded border border-amber-500/30">
+                              <Star className="w-3 h-3 inline mr-0.5" />Primary
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500">{entity.entity_type} · {entity.role}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500 group-hover:text-white transition-colors">Open Race Core →</span>
+                  </button>
+                );
+              })}
+            </div>
+            <Button variant="outline" onClick={() => navigate(createPageUrl('MyDashboard'))}
+              className="border-gray-700 text-gray-400 hover:bg-gray-800 gap-2 text-sm">
+              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
