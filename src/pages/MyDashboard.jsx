@@ -273,7 +273,7 @@ export default function MyDashboard() {
               </Button>
             </Link>
             {hasEntities && raceCoreTarget && (
-              <Link to={getRaceCoreUrl(raceCoreTarget)}>
+              <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Gauge className="w-3.5 h-3.5" /> Open Race Core
                 </Button>
@@ -344,7 +344,7 @@ export default function MyDashboard() {
               </div>
               <div className="flex-shrink-0">
                 {hasEntities && raceCoreTarget ? (
-                  <Link to={getRaceCoreUrl(raceCoreTarget)}>
+                  <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
                     <Button size="sm" className="gap-1.5 text-xs bg-white text-[#232323] hover:bg-gray-100 border-0">
                       <Gauge className="w-3.5 h-3.5" /> Open Race Core
                     </Button>
