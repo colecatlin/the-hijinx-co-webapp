@@ -827,7 +827,7 @@ export default function RegistrationDashboard() {
             <div className="space-y-3">
               {raceCoreEntityList.map(entity => {
                 const isPrimary = entity.entity_id === primaryEntity?.entity_id;
-                const Icon = entity.entity_type === 'Track' ? MapPin : Trophy;
+                const Icon = entity.entity_type === 'Track' ? Flag : Gauge;
                 return (
                   <button
                     key={entity.collaboration_id || entity.entity_id}
