@@ -521,7 +521,7 @@ export default function RegistrationDashboard() {
   // Auto-select org from EntityCollaborator when no orgType/orgId in URL.
   // Priority: user's primary entity > single Race Core entity > admin fallback to first in list.
   // Direct links (orgType + orgId already in URL) are never overridden.
-  const autoSelectAttemptedRef = React.useRef(false);
+  const autoSelectAttemptedRef = useRef(false);
   useEffect(() => {
     // Only run once, and only when opened without explicit org params
     if (autoSelectAttemptedRef.current) return;
