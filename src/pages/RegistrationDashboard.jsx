@@ -458,21 +458,20 @@ export default function RegistrationDashboard() {
     return tabKeys.filter(key => canTab(dashboardPermissions, key));
   }, [dashboardPermissions]);
 
-  // Check entity access for non-admins
+  // Check entity access for non-admins via EntityCollaborator
   useEffect(() => {
     async function checkOrgAccess() {
       if (!organizationId || isAdmin) {
         setOrgAccessDenied(false);
         return;
       }
-
+      if (!user?.id) return;
       const entityType = organizationType === 'track' ? 'Track' : 'Series';
-      const hasAccess = await canManageEntity(entityType, organizationId);
-      setOrgAccessDenied(!hasAccess);
+      const allowed = await hasEntityAccess({ userId: user.id, entityType, entityId: organizationId });
+      setOrgAccessDenied(!allowed);
     }
-
     checkOrgAccess();
-  }, [organizationId, organizationType, isAdmin]);
+  }, [organizationId, organizationType, isAdmin, user?.id]);
 
   // Helper bound to queryClient
   const requireAdminOverride = useMemo(() => createRequireAdminOverride(queryClient), [queryClient]);
