@@ -524,40 +524,43 @@ export default function RegistrationDashboard() {
     }
   }, [isAuthenticated, authLoading]);
 
+  // Resolved managed entities + primary entity (for header indicator and auto-select)
+  const [resolvedEntities, setResolvedEntities] = useState([]);
+  const [resolvedEntitiesLoaded, setResolvedEntitiesLoaded] = useState(false);
+  useEffect(() => {
+    if (!user?.id) return;
+    getResolvedManagedEntities(user).then(resolved => {
+      setResolvedEntities(resolved || []);
+      setResolvedEntitiesLoaded(true);
+    }).catch(() => {
+      setResolvedEntities([]);
+      setResolvedEntitiesLoaded(true);
+    });
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
+  const raceCoreEntityList = getRaceCoreEntities(resolvedEntities);
+
   // Auto-select org from EntityCollaborator when no orgType/orgId in URL.
-  // Priority: user's primary entity > single Race Core entity > admin fallback to first in list.
+  // Priority: user's primary entity > single Race Core entity.
   // Direct links (orgType + orgId already in URL) are never overridden.
   const autoSelectAttemptedRef = useRef(false);
   useEffect(() => {
-    // Only run once, and only when opened without explicit org params
     if (autoSelectAttemptedRef.current) return;
-    if (!user) return;
+    if (!resolvedEntitiesLoaded) return;
     const hasUrlOrg = !!searchParams.get('orgType') && !!searchParams.get('orgId');
     if (hasUrlOrg) { autoSelectAttemptedRef.current = true; return; }
 
     autoSelectAttemptedRef.current = true;
 
-    getResolvedManagedEntities(user).then(resolved => {
-      const raceCoreEntities = getRaceCoreEntities(resolved);
-      if (!raceCoreEntities.length) return; // no managed Track/Series – let the existing select handle it
+    const primaryRaceCore = primaryEntity?.is_racecore_entity ? primaryEntity : null;
+    const singleEntity = raceCoreEntityList.length === 1 ? raceCoreEntityList[0] : null;
+    const candidateEntity = primaryRaceCore || singleEntity || null;
+    if (!candidateEntity) return;
 
-      // 1. Explicit primary that is Track or Series
-      const primary = getPrimaryResolvedEntity(user, resolved);
-      const primaryRaceCore = primary?.is_racecore_entity ? primary : null;
-
-      // 2. Single Race Core entity (any user)
-      const singleEntity = raceCoreEntities.length === 1 ? raceCoreEntities[0] : null;
-
-      // 3. Admin with multiple entities – let them choose via selects
-      const candidateEntity = primaryRaceCore || singleEntity || null;
-      if (!candidateEntity) return;
-
-      setOrganizationType(candidateEntity.entity_type.toLowerCase());
-      setOrganizationId(candidateEntity.entity_id);
-    }).catch(() => {
-      // Resolver failed – fall through to existing manual select behavior
-    });
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+    setOrganizationType(candidateEntity.entity_type.toLowerCase());
+    setOrganizationId(candidateEntity.entity_id);
+  }, [resolvedEntitiesLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fallback: if still no orgId after resolver runs, pick first in loaded list (existing behavior)
   useEffect(() => {
