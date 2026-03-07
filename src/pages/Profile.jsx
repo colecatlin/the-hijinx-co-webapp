@@ -389,8 +389,13 @@ export default function Profile() {
                           Your primary entity is no longer linked. Choose a new one below.
                         </p>
                       )}
-                      {!displayEntity && !primaryStale && (
+                      {!displayEntity && !primaryStale && !noExplicitPrimaryButHasRaceCore && (
                         <p className="text-sm text-gray-500">Choose a primary entity below for faster Race Core access.</p>
+                      )}
+                      {noExplicitPrimaryButHasRaceCore && (
+                        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          Race Core will open using your first managed Track or Series until you set a primary entity.
+                        </p>
                       )}
                       {displayEntity && (
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
