@@ -77,12 +77,34 @@ export function areLikelySameEntity(a, b) {
   return false;
 }
 
+/**
+ * buildNormalizedEventKey
+ * Builds a stable composite key for an event to prevent duplicate creation
+ * across repeated syncs.
+ *
+ * Format: normalized_name|event_date|track_id_or_none|series_id_or_none
+ *
+ * @param {object} opts
+ * @param {string} opts.name
+ * @param {string} [opts.event_date]  - ISO date string "YYYY-MM-DD"
+ * @param {string} [opts.track_id]
+ * @param {string} [opts.series_id]
+ * @returns {string}
+ */
+export function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
+  const normalizedEventName = normalizeName(name || '');
+  const date    = event_date  || 'none';
+  const trackPart  = track_id   || 'none';
+  const seriesPart = series_id  || 'none';
+  return `${normalizedEventName}|${date}|${trackPart}|${seriesPart}`;
+}
+
 // ---- Deno.serve is required but this module is not a standalone HTTP handler.
 // We export helpers only. However Base44 requires every function file to export a Deno.serve.
 // We make a lightweight passthrough so the file deploys correctly.
 Deno.serve(async (_req) => {
   return Response.json({
     ok: true,
-    exports: ['normalizeName', 'buildEntitySlug', 'buildCanonicalKey', 'areLikelySameEntity'],
+    exports: ['normalizeName', 'buildEntitySlug', 'buildCanonicalKey', 'areLikelySameEntity', 'buildNormalizedEventKey'],
   });
 });

@@ -5,17 +5,19 @@ function normalizeName(value) {
   if (!value) return '';
   return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
-
 function buildEntitySlug(value) {
   return normalizeName(value).replace(/\s+/g, '-');
 }
-
 function buildCanonicalKey({ entity_type, name, external_uid, parent_context }) {
   const type = (entity_type || '').toLowerCase();
   if (external_uid) return `${type}:${external_uid}`;
   const norm = normalizeName(name);
   if (parent_context) return `${type}:${norm}:${parent_context}`;
   return `${type}:${norm}`;
+}
+function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
+  const norm = normalizeName(name || '');
+  return `${norm}|${event_date || 'none'}|${track_id || 'none'}|${series_id || 'none'}`;
 }
 
 // ---- entity type -> SDK model name ----
@@ -55,6 +57,167 @@ function filterNonEmpty(obj) {
   return out;
 }
 
+// ---- run entity-type-specific match attempts in priority order ----
+// Returns { record, matchMethod } or { record: null, matchMethod: null }
+async function runEntitySpecificMatching(model, entity_type, payload, normalized, slug, canonicalKey) {
+  const eu = payload.external_uid || null;
+
+  // ── Series matching ──────────────────────────────────────────────────────
+  if (entity_type === 'series') {
+    // 1. external_uid exact
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. canonical_key exact
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 3. normalized_name exact
+    if (normalized) {
+      const r = await model.filter({ normalized_name: normalized });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name' };
+    }
+    // 4. canonical_slug exact
+    if (slug) {
+      const r = await model.filter({ canonical_slug: slug });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
+  // ── Track matching ───────────────────────────────────────────────────────
+  if (entity_type === 'track') {
+    // 1. external_uid exact
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. canonical_key exact
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 3. normalized_name + optional country
+    if (normalized) {
+      const filter = { normalized_name: normalized };
+      if (payload.location_country) filter.location_country = payload.location_country;
+      const r = await model.filter(filter);
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name' };
+      // try without country if that failed
+      if (payload.location_country) {
+        const r2 = await model.filter({ normalized_name: normalized });
+        if (r2?.length) return { record: r2[0], matchMethod: 'normalized_name' };
+      }
+    }
+    // 4. canonical_slug exact
+    if (slug) {
+      const r = await model.filter({ canonical_slug: slug });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
+  // ── Team matching ────────────────────────────────────────────────────────
+  if (entity_type === 'team') {
+    // 1. external_uid exact
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. canonical_key exact
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 3. normalized_name + optional series_id
+    if (normalized) {
+      const filter = { normalized_name: normalized };
+      if (payload.series_id) filter.series_id = payload.series_id;
+      const r = await model.filter(filter);
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name' };
+      if (payload.series_id) {
+        const r2 = await model.filter({ normalized_name: normalized });
+        if (r2?.length) return { record: r2[0], matchMethod: 'normalized_name' };
+      }
+    }
+    // 4. canonical_slug exact
+    if (slug) {
+      const r = await model.filter({ canonical_slug: slug });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
+  // ── Driver matching ──────────────────────────────────────────────────────
+  if (entity_type === 'driver') {
+    // 1. external_uid exact
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. canonical_key exact
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 3. normalized_name + optional birth_date
+    if (normalized) {
+      const filter = { normalized_name: normalized };
+      if (payload.date_of_birth) filter.date_of_birth = payload.date_of_birth;
+      const r = await model.filter(filter);
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name' };
+      if (payload.date_of_birth) {
+        const r2 = await model.filter({ normalized_name: normalized });
+        if (r2?.length) return { record: r2[0], matchMethod: 'normalized_name' };
+      }
+    }
+    // 4. canonical_slug exact
+    if (slug) {
+      const r = await model.filter({ canonical_slug: slug });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
+  // ── Event matching ───────────────────────────────────────────────────────
+  if (entity_type === 'event') {
+    const normalizedEventKey = buildNormalizedEventKey({
+      name: payload.name || '',
+      event_date: payload.event_date || null,
+      track_id: payload.track_id || null,
+      series_id: payload.series_id || null,
+    });
+
+    // 1. external_uid exact
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. normalized_event_key exact
+    if (normalizedEventKey) {
+      const r = await model.filter({ normalized_event_key: normalizedEventKey });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_event_key' };
+    }
+    // 3. canonical_key exact
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 4. normalized_name + event_date + optional track_id
+    if (normalized && payload.event_date) {
+      const filter = { normalized_name: normalized, event_date: payload.event_date };
+      if (payload.track_id) filter.track_id = payload.track_id;
+      const r = await model.filter(filter);
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_date_track' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
+  return { record: null, matchMethod: null };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -65,8 +228,6 @@ Deno.serve(async (req) => {
     const {
       entity_type,
       payload = {},
-      match_fields = [],          // optional extra fields to filter on
-      allow_name_match = true,    // whether to fall back to normalized_name match
     } = body;
 
     if (!entity_type || !MODEL_MAP[entity_type]) {
@@ -88,53 +249,22 @@ Deno.serve(async (req) => {
       parent_context: parentContext,
     });
 
+    // Compute normalized_event_key for events
+    const normalizedEventKey = entity_type === 'event'
+      ? buildNormalizedEventKey({
+          name: payload.name || displayName,
+          event_date: payload.event_date || null,
+          track_id: payload.track_id || null,
+          series_id: payload.series_id || null,
+        })
+      : null;
+
     const now = new Date().toISOString();
 
-    // ---- 2. Attempt match in priority order ----
-    let existingRecord = null;
-    let matchMethod = null;
-
-    // A. exact external_uid match
-    if (payload.external_uid) {
-      const results = await model.filter({ external_uid: payload.external_uid });
-      if (results && results.length > 0) {
-        existingRecord = results[0];
-        matchMethod = 'external_uid';
-      }
-    }
-
-    // B. canonical_key match
-    if (!existingRecord && canonicalKey) {
-      const results = await model.filter({ canonical_key: canonicalKey });
-      if (results && results.length > 0) {
-        existingRecord = results[0];
-        matchMethod = 'canonical_key';
-      }
-    }
-
-    // C. canonical_slug + normalized_name match
-    if (!existingRecord && slug && normalized) {
-      const results = await model.filter({ canonical_slug: slug, normalized_name: normalized });
-      if (results && results.length > 0) {
-        existingRecord = results[0];
-        matchMethod = 'slug_and_name';
-      }
-    }
-
-    // D. normalized_name fallback (only if allow_name_match)
-    if (!existingRecord && allow_name_match && normalized) {
-      const results = await model.filter({ normalized_name: normalized });
-      if (results && results.length > 0) {
-        // For events, also verify parent context matches if available
-        if (entity_type === 'event' && parentContext) {
-          const matched = results.find(r => r.canonical_key === canonicalKey);
-          if (matched) { existingRecord = matched; matchMethod = 'normalized_name_with_context'; }
-        } else {
-          existingRecord = results[0];
-          matchMethod = 'normalized_name';
-        }
-      }
-    }
+    // ---- 2. Entity-type-specific match (strong, ordered) ----
+    const { record: existingRecord, matchMethod } = await runEntitySpecificMatching(
+      model, entity_type, payload, normalized, slug, canonicalKey
+    );
 
     let action, record;
 
@@ -146,8 +276,8 @@ Deno.serve(async (req) => {
         canonical_slug: slug,
         canonical_key: canonicalKey,
         sync_last_seen_at: now,
+        ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
       });
-      // Never blank out values that already exist if patch would set empty
       const updateData = {};
       for (const [k, v] of Object.entries(patch)) {
         if (v !== null && v !== undefined && v !== '') updateData[k] = v;
@@ -162,11 +292,8 @@ Deno.serve(async (req) => {
         canonical_slug: slug,
         canonical_key: canonicalKey,
         sync_last_seen_at: now,
+        ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
       });
-      // Ensure Event-specific normalized key
-      if (entity_type === 'event') {
-        createData.normalized_event_key = canonicalKey;
-      }
       record = await model.create(createData);
       action = 'created';
     }
@@ -184,6 +311,7 @@ Deno.serve(async (req) => {
         external_uid: payload.external_uid || null,
         match_method: matchMethod || 'none',
         display_name: displayName,
+        ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
       },
     }).catch(() => {}); // non-blocking
 
