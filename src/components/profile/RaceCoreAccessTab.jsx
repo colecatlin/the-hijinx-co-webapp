@@ -7,30 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink, CheckCircle2, Rocket, Info } from 'lucide-react';
+import {
+  getResolvedManagedEntities,
+  getRaceCoreEntities,
+  buildRaceCoreLaunchUrl,
+  buildEditorUrl,
+} from '@/components/entities/entityResolver';
 
 const ENTITY_TYPE_COLORS = {
-  Driver: 'bg-blue-50 text-blue-700 border-blue-200',
-  Team: 'bg-purple-50 text-purple-700 border-purple-200',
   Track: 'bg-teal-50 text-teal-700 border-teal-200',
   Series: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  Event: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
 const ROLE_COLORS = {
   owner: 'bg-gray-900 text-white',
   editor: 'bg-gray-100 text-gray-700',
 };
-
-function getRaceCoreUrl(collab) {
-  return createPageUrl('RegistrationDashboard') + `?orgType=${collab.entity_type.toLowerCase()}&orgId=${collab.entity_id}`;
-}
-
-function getEditorUrl(collab) {
-  if (collab.entity_type === 'Driver') {
-    return createPageUrl('DriverEditor') + `?id=${collab.entity_id}`;
-  }
-  return createPageUrl('EntityEditor') + `?id=${collab.access_code}`;
-}
 
 const CAPABILITIES = [
   'Create and manage events',
@@ -55,13 +47,14 @@ export default function RaceCoreAccessTab({ user: userProp }) {
 
   const user = userProp || fetchedUser;
 
-  const { data: collaborations = [], isLoading: collabLoading } = useQuery({
-    queryKey: ['myCollaborations', user?.id],
-    queryFn: () => base44.entities.EntityCollaborator.filter({ user_id: user.id }),
+  const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
+    queryKey: ['resolvedEntities', user?.id],
+    queryFn: () => getResolvedManagedEntities(user),
     enabled: !!user?.id,
   });
 
-  const isLoading = (!userProp && userLoading) || collabLoading;
+  const isLoading = (!userProp && userLoading) || resolvedLoading;
+  const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
 
   if (!userProp && !userLoading && !user) {
     return (
@@ -88,33 +81,35 @@ export default function RaceCoreAccessTab({ user: userProp }) {
           <CardTitle className="text-base flex items-center gap-2">
             <Rocket className="w-4 h-4" /> Quick Launch
           </CardTitle>
-          <CardDescription>Open Race Core directly for each entity you manage.</CardDescription>
+          <CardDescription>Open Race Core directly for each Track or Series you manage.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
             </div>
-          ) : collaborations.length === 0 ? (
+          ) : raceCoreEntities.length === 0 ? (
             <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-gray-200">
-              <p className="font-semibold text-gray-800 text-sm mb-1">No Race Core access yet</p>
-              <p className="text-xs text-gray-500">Link an entity using an access code to unlock Race Core tools.</p>
+              <p className="font-semibold text-gray-800 text-sm mb-1">
+                You do not manage a Track or Series yet, so Race Core is unavailable.
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Link a Track or Series using an access code to unlock Race Core tools.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {collaborations.map(collab => (
+              {raceCoreEntities.map(entity => (
                 <div
-                  key={collab.id}
+                  key={entity.collaboration_id}
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl bg-slate-50 hover:bg-white transition-colors"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{collab.entity_name}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{entity.entity_name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[collab.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                        {collab.entity_type}
+                      <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[entity.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                        {entity.entity_type}
                       </Badge>
-                      <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[collab.role] || 'bg-gray-100 text-gray-700'}`}>
-                        {collab.role}
+                      <Badge className={`text-xs px-2 py-0.5 ${ROLE_COLORS[entity.role] || 'bg-gray-100 text-gray-700'}`}>
+                        {entity.role}
                       </Badge>
                     </div>
                   </div>
@@ -123,7 +118,7 @@ export default function RaceCoreAccessTab({ user: userProp }) {
                       type="button"
                       size="sm"
                       className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                      onClick={() => window.location.href = getRaceCoreUrl(collab)}
+                      onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}
                     >
                       <ExternalLink className="w-3 h-3" />
                       Open Race Core
@@ -133,7 +128,7 @@ export default function RaceCoreAccessTab({ user: userProp }) {
                       size="sm"
                       variant="outline"
                       className="gap-1.5 text-xs"
-                      onClick={() => window.location.href = getEditorUrl(collab)}
+                      onClick={() => window.location.href = buildEditorUrl(entity)}
                     >
                       Open Editor
                     </Button>
