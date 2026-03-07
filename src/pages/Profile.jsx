@@ -367,7 +367,7 @@ export default function Profile() {
 
               {/* Primary Entity Section */}
               {resolvedEntities.length > 0 && (() => {
-                const primaryEntity = getPrimaryManagedEntity(user, resolvedEntities);
+                const primaryEntity = getPrimaryResolvedEntity(user, resolvedEntities);
                 const explicitPrimary = user.primary_entity_id
                   ? resolvedEntities.find(e => e.entity_id === user.primary_entity_id)
                   : null;

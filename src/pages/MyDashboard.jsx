@@ -188,7 +188,7 @@ export default function MyDashboard() {
   );
 
   const primaryEntity = useMemo(
-    () => getPrimaryManagedEntity(user, resolvedEntities),
+    () => getPrimaryResolvedEntity(user, resolvedEntities),
     [user, resolvedEntities]
   );
 
