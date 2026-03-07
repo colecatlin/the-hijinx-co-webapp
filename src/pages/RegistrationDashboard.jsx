@@ -108,9 +108,11 @@ import {
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import {
   getResolvedManagedEntities,
-  getPrimaryResolvedEntity,
   getRaceCoreEntities,
+  buildRaceCoreLaunchUrl,
 } from '@/components/entities/entityResolver';
+import { getValidPrimaryEntity, isPrimaryEntityStale } from '@/components/entities/entityPrimary';
+import { hasEntityAccess } from '@/components/entities/entityPermissions';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardQueries from '@/components/registrationdashboard/useDashboardQueries';
