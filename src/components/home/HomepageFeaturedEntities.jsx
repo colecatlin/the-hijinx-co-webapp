@@ -208,16 +208,52 @@ export default function HomepageFeaturedEntities({
   );
 }
 
+const TAB_BROWSE_LABELS = {
+  drivers: 'Browse Drivers',
+  tracks:  'Browse Tracks',
+  series:  'Browse Series',
+  events:  'Explore Motorsports',
+};
+
 function EmptyState({ tab, page }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 border border-dashed border-gray-200">
-      <p className="text-sm text-gray-400 mb-3">No featured {tab} yet</p>
+    <div className="flex flex-col items-center justify-center py-16 border border-dashed border-gray-200 text-center px-6">
+      <p className="text-sm text-gray-500 font-semibold mb-1">Nothing here yet</p>
+      <p className="text-xs text-gray-400 mb-4 max-w-xs leading-relaxed">
+        As activity grows, featured {tab} will appear here.
+      </p>
       <Link
         to={createPageUrl(page)}
-        className="text-xs font-bold text-[#00FFDA] hover:underline flex items-center gap-1"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#00FFDA] hover:underline uppercase tracking-wider"
       >
-        Browse all {tab} <ArrowRight className="w-3 h-3" />
+        {TAB_BROWSE_LABELS[tab] || `Browse ${tab}`} <ArrowRight className="w-3 h-3" />
       </Link>
+    </div>
+  );
+}
+
+function AllEmptyDiscovery() {
+  return (
+    <div className="border border-dashed border-gray-300 p-12 text-center">
+      <p className="text-sm font-bold text-gray-500 mb-2">The motorsports platform is growing</p>
+      <p className="text-xs text-gray-400 mb-6 max-w-sm mx-auto leading-relaxed">
+        As activity grows, trending drivers, tracks, series, and events will appear here.
+      </p>
+      <div className="flex flex-wrap justify-center gap-3">
+        {[
+          { label: 'Browse Drivers', page: 'DriverDirectory' },
+          { label: 'Browse Tracks',  page: 'TrackDirectory' },
+          { label: 'Browse Series',  page: 'SeriesHome' },
+        ].map(({ label, page }) => (
+          <Link
+            key={page}
+            to={createPageUrl(page)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 hover:border-[#00FFDA] text-xs font-bold text-gray-500 hover:text-[#008080] uppercase tracking-wider transition-all"
+          >
+            {label} <ArrowRight className="w-3 h-3" />
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
