@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Upload, ImageIcon } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
+import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
 
 const SECTIONS = [
   { key: 'apparel_bg', label: 'Apparel Section Background' },
@@ -63,9 +64,10 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="editorial">Editorial</TabsTrigger>
+            <TabsTrigger value="data">Images</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
@@ -75,6 +77,10 @@ export default function ManageHomepage() {
               <p className="text-2xl font-bold text-gray-900">{settings.length}</p>
             </div>
             <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
+          </TabsContent>
+
+          <TabsContent value="editorial" className="space-y-6">
+            <HomepageEditorialSettings />
           </TabsContent>
 
           <TabsContent value="data" className="space-y-8">
