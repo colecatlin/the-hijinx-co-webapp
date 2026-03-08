@@ -155,7 +155,7 @@ export default function RaceCoreAccessTab({ user: userProp }) {
                       </Button>
                       <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
                         onClick={() => window.location.href = buildEditorUrl(entity)}>
-                        Editor
+                        Open Editor
                       </Button>
                     </div>
                   </div>
