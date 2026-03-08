@@ -48,9 +48,9 @@ function FeedCard({ item }) {
         <h4 className="text-sm font-bold text-white/75 group-hover:text-white transition-colors leading-snug line-clamp-2">
           {item.title}
         </h4>
-        {item.desc && (
+        {(item.description || item.desc) && (
           <p className="text-white/30 text-xs mt-1.5 leading-relaxed line-clamp-2">
-            {item.desc}
+            {item.description || item.desc}
           </p>
         )}
       </div>
@@ -58,7 +58,7 @@ function FeedCard({ item }) {
       {/* Timestamp */}
       <div className="flex items-center justify-between pt-2 border-t border-white/5">
         <span className="font-mono text-[9px] text-white/20">
-          {formatDistanceToNow(item.time, { addSuffix: true })}
+          {formatDistanceToNow(time, { addSuffix: true })}
         </span>
         <div className="w-4 h-px bg-[#00FFDA]/20 group-hover:bg-[#00FFDA]/50 group-hover:w-6 transition-all" />
       </div>
