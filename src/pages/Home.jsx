@@ -15,6 +15,9 @@ import HomepageFinalCTA from '@/components/home/HomepageFinalCTA';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
 import HomepageDriverSpotlight from '@/components/homepage/HomepageDriverSpotlight';
 import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight';
+import HomepageLiveFeedRail from '@/components/homepage/HomepageLiveFeedRail';
+import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappeningNow';
+import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
 
 export default function Home() {
   // Optional: current user for future personalization
