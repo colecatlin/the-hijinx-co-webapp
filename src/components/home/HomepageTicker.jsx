@@ -13,12 +13,19 @@ const TICKER_ITEMS = [
   { label: 'RACE CORE',        page: 'Registration' },
 ];
 
-export default function HomepageTicker({ activityItems = [] }) {
-  // Map live activity feed titles into ticker items when available
-  const liveItems = activityItems.length > 0
-    ? activityItems.map(item => ({ label: item.title?.toUpperCase() || 'PLATFORM UPDATE', page: 'MotorsportsHome' }))
-    : [];
-  const baseItems = liveItems.length > 0 ? [...liveItems, ...TICKER_ITEMS] : TICKER_ITEMS;
+export default function HomepageTicker({ tickerItems = null, activityItems = [] }) {
+  // Priority: manual editorial items > activity feed titles > static fallback
+  let baseItems;
+  if (tickerItems?.length) {
+    baseItems = tickerItems.map(label => ({ label: label.toUpperCase(), page: 'MotorsportsHome' }));
+    // Pad with static items if fewer than 4
+    if (baseItems.length < 4) baseItems = [...baseItems, ...TICKER_ITEMS].slice(0, 8);
+  } else if (activityItems.length > 0) {
+    const liveItems = activityItems.map(item => ({ label: item.title?.toUpperCase() || 'PLATFORM UPDATE', page: 'MotorsportsHome' }));
+    baseItems = [...liveItems, ...TICKER_ITEMS];
+  } else {
+    baseItems = TICKER_ITEMS;
+  }
   const repeated = [...baseItems, ...baseItems, ...baseItems];
 
   return (
