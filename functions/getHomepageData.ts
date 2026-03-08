@@ -2,8 +2,13 @@
  * getHomepageData
  *
  * Returns a single structured payload for the HIJINX homepage.
- * Applies manual editorial overrides from HomepageSettings when present.
- * All buckets are safe — missing entities return empty arrays / null.
+ *
+ * Respects homepage_mode from HomepageSettings:
+ *   auto       — ignore all manual IDs, use automatic data only
+ *   editorial  — use manual IDs; fallback to auto if a manual field is empty or invalid
+ *   mixed      — use manual IDs when present; auto when not (default behavior)
+ *
+ * All buckets are safe — missing or failed entities never crash the page.
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
@@ -14,20 +19,23 @@ Deno.serve(async (req) => {
     const db = base44.asServiceRole.entities;
 
     const today = new Date().toISOString().split('T')[0];
-    const safe = (promise) => promise.catch(() => null);
+    const safe = (p) => p.catch(() => null);
     const TARGET = 6;
     const MEDIA_TARGET = 8;
 
-    // 1. Load active editorial settings (non-blocking)
+    // ── 1. Load active editorial settings ────────────────────────────────────
     let settings = null;
     try {
-      const settingsList = await db.HomepageSettings.filter({ active: true }, '-created_date', 1);
-      settings = settingsList?.[0] || null;
-    } catch (_) { /* settings stays null */ }
+      const list = await db.HomepageSettings.filter({ active: true }, '-created_date', 1);
+      settings = list?.[0] || null;
+    } catch (_) {}
 
-    const entitiesMode = settings?.featured_entities_mode || 'mixed';
+    // Top-level mode — homepage_mode wins; fall back to legacy featured_entities_mode
+    const mode = settings?.homepage_mode || settings?.featured_entities_mode || 'mixed';
+    // In auto mode we ignore all manual overrides
+    const useManual = mode !== 'auto';
 
-    // 2. Fetch all auto data in parallel
+    // ── 2. Fetch all auto data in parallel ───────────────────────────────────
     const [
       autoStories,
       autoDrivers,
@@ -50,106 +58,109 @@ Deno.serve(async (req) => {
       safe(db.Product.list('-created_date', 20)),
     ]);
 
-    // Helper: resolve IDs from a fetched pool, silently skip missing records
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Resolve manual IDs against a fetched pool; silently drop missing ones
     const resolveIds = (ids, pool) => {
       if (!ids?.length || !pool?.length) return [];
       return ids.map(id => pool.find(r => r.id === id)).filter(Boolean);
     };
 
-    // Helper: mix manual + auto fill up to limit
-    const mixBucket = (manualItems, autoPool, limit) => {
-      const usedIds = new Set(manualItems.map(r => r.id));
-      const fill = (autoPool || []).filter(r => !usedIds.has(r.id));
-      return [...manualItems, ...fill].slice(0, limit);
+    // Mix manual items first, then fill remainder from auto pool up to limit
+    const mixBucket = (manual, autoPool, limit) => {
+      const usedIds = new Set(manual.map(r => r.id));
+      return [...manual, ...(autoPool || []).filter(r => !usedIds.has(r.id))].slice(0, limit);
     };
 
-    // ── featured_story ───────────────────────────────────────────────────────
+    // Resolve a bucket respecting homepage_mode
+    const resolveBucket = (manualIds, autoPool, limit) => {
+      if (!useManual || !manualIds?.length) return (autoPool || []).slice(0, limit);
+      const manual = resolveIds(manualIds, autoPool || []);
+      if (mode === 'editorial') {
+        // editorial: manual only; fallback to auto if no valid manual items
+        return manual.length ? manual.slice(0, limit) : (autoPool || []).slice(0, limit);
+      }
+      // mixed: manual first, fill with auto
+      return mixBucket(manual, autoPool, limit);
+    };
+
+    // ── 3. Apply overrides per bucket ─────────────────────────────────────────
+
+    // featured_story
     let featuredStory = (autoStories || [])[0] || null;
-    if (settings?.featured_story_id) {
+    if (useManual && settings?.featured_story_id) {
       const override = (autoStories || []).find(s => s.id === settings.featured_story_id);
       if (override) featuredStory = override;
     }
-
-    // Build featured_stories: pinned story first, then others
     const featuredStories = featuredStory
       ? [featuredStory, ...(autoStories || []).filter(s => s.id !== featuredStory.id)].slice(0, 5)
       : (autoStories || []).slice(0, 5);
 
-    // ── featured_drivers ─────────────────────────────────────────────────────
-    let featuredDrivers;
-    if (settings?.featured_driver_ids?.length && entitiesMode !== 'auto') {
-      const manual = resolveIds(settings.featured_driver_ids, autoDrivers || []);
-      featuredDrivers = entitiesMode === 'mixed'
-        ? mixBucket(manual, autoDrivers, TARGET)
-        : manual.slice(0, TARGET);
-    } else {
-      featuredDrivers = (autoDrivers || []).slice(0, TARGET);
-    }
+    // featured_drivers / tracks / series
+    const featuredDrivers = resolveBucket(settings?.featured_driver_ids, autoDrivers, TARGET);
+    const featuredTracks  = resolveBucket(settings?.featured_track_ids,  autoTracks,  TARGET);
+    const featuredSeries  = resolveBucket(settings?.featured_series_ids, autoSeries,  TARGET);
 
-    // ── featured_tracks ──────────────────────────────────────────────────────
-    let featuredTracks;
-    if (settings?.featured_track_ids?.length && entitiesMode !== 'auto') {
-      const manual = resolveIds(settings.featured_track_ids, autoTracks || []);
-      featuredTracks = entitiesMode === 'mixed'
-        ? mixBucket(manual, autoTracks, TARGET)
-        : manual.slice(0, TARGET);
-    } else {
-      featuredTracks = (autoTracks || []).slice(0, TARGET);
-    }
-
-    // ── featured_series ──────────────────────────────────────────────────────
-    let featuredSeries;
-    if (settings?.featured_series_ids?.length && entitiesMode !== 'auto') {
-      const manual = resolveIds(settings.featured_series_ids, autoSeries || []);
-      featuredSeries = entitiesMode === 'mixed'
-        ? mixBucket(manual, autoSeries, TARGET)
-        : manual.slice(0, TARGET);
-    } else {
-      featuredSeries = (autoSeries || []).slice(0, TARGET);
-    }
-
-    // ── upcoming_events ──────────────────────────────────────────────────────
+    // upcoming_events
     const autoUpcoming = (autoEvents || []).filter(e => e.event_date >= today).slice(0, TARGET);
-    let upcomingEvents;
-    if (settings?.featured_event_ids?.length) {
-      const manual = resolveIds(settings.featured_event_ids, autoEvents || []);
-      upcomingEvents = mixBucket(manual, autoUpcoming, TARGET);
-    } else {
-      upcomingEvents = autoUpcoming;
-    }
+    const upcomingEvents = resolveBucket(settings?.featured_event_ids, autoUpcoming, TARGET);
 
-    // ── featured_media ───────────────────────────────────────────────────────
-    let featuredMedia;
-    if (settings?.featured_media_ids?.length) {
-      const manual = resolveIds(settings.featured_media_ids, autoMedia || []);
-      featuredMedia = mixBucket(manual, autoMedia, MEDIA_TARGET);
-    } else {
-      featuredMedia = (autoMedia || []).slice(0, MEDIA_TARGET);
-    }
+    // featured_media & products
+    const featuredMedia    = resolveBucket(settings?.featured_media_ids,   autoMedia,    MEDIA_TARGET);
+    const featuredProducts = resolveBucket(settings?.featured_product_ids, autoProducts, TARGET);
 
-    // ── featured_products ────────────────────────────────────────────────────
-    let featuredProducts;
-    if (settings?.featured_product_ids?.length) {
-      const manual = resolveIds(settings.featured_product_ids, autoProducts || []);
-      featuredProducts = mixBucket(manual, autoProducts, TARGET);
-    } else {
-      featuredProducts = (autoProducts || []).slice(0, TARGET);
-    }
+    // ticker_items — prefer ticker_override_items, then legacy hero_ticker_items
+    const tickerItems =
+      (useManual && settings?.ticker_override_items?.length) ? settings.ticker_override_items :
+      (useManual && settings?.hero_ticker_items?.length)     ? settings.hero_ticker_items :
+      null;
 
-    // ── ticker_items ─────────────────────────────────────────────────────────
-    const tickerItems = settings?.hero_ticker_items?.length
-      ? settings.hero_ticker_items
-      : null;
-
-    // ── spotlights ────────────────────────────────────────────────────────────
+    // ── 4. Spotlights ─────────────────────────────────────────────────────────
+    // Direct driver/event fetch if manual IDs are set (avoids an extra function hop)
     let spotlightDriver = null;
     let spotlightEvent  = null;
-    try {
-      const spotRes = await base44.functions.invoke('getHomepageSpotlights', {});
-      spotlightDriver = spotRes?.spotlight_driver || null;
-      spotlightEvent  = spotRes?.spotlight_event  || null;
-    } catch (_) { /* spotlights stay null */ }
 
+    if (useManual && settings?.spotlight_driver_id) {
+      try {
+        const drivers = await db.Driver.filter({ id: settings.spotlight_driver_id });
+        const d = drivers?.[0];
+        if (d) {
+          spotlightDriver = {
+            id:   d.id,
+            name: [d.first_name, d.last_name].filter(Boolean).join(' '),
+            subtitle: d.primary_discipline || null,
+            slug: d.slug || null,
+            image: null,
+          };
+        }
+      } catch (_) {}
+    }
+
+    if (useManual && settings?.spotlight_event_id) {
+      try {
+        const events = await db.Event.filter({ id: settings.spotlight_event_id });
+        const e = events?.[0];
+        if (e) {
+          spotlightEvent = {
+            id:          e.id,
+            name:        e.name,
+            event_date:  e.event_date,
+            status:      e.status,
+            series_name: e.series_name || null,
+          };
+        }
+      } catch (_) {}
+    }
+
+    // Fall back to auto spotlight logic if manual IDs weren't set or resolved
+    if (!spotlightDriver || !spotlightEvent) {
+      try {
+        const spotRes = await base44.functions.invoke('getHomepageSpotlights', {});
+        if (!spotlightDriver) spotlightDriver = spotRes?.spotlight_driver || null;
+        if (!spotlightEvent)  spotlightEvent  = spotRes?.spotlight_event  || null;
+      } catch (_) {}
+    }
+
+    // ── 5. Return payload ────────────────────────────────────────────────────
     return Response.json({
       featured_story:    featuredStory,
       featured_stories:  featuredStories,
@@ -165,6 +176,7 @@ Deno.serve(async (req) => {
       spotlight_driver:  spotlightDriver,
       spotlight_event:   spotlightEvent,
     });
+
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
