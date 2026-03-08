@@ -860,7 +860,7 @@ export default function RegistrationDashboard() {
             </div>
             <Button variant="outline" onClick={() => navigate(createPageUrl('MyDashboard'))}
               className="border-gray-700 text-gray-400 hover:bg-gray-800 gap-2 text-sm">
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+              <ArrowLeft className="w-4 h-4" /> Go to Dashboard
             </Button>
           </div>
         </div>
