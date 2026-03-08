@@ -757,7 +757,7 @@ export default function RegistrationDashboard() {
                   onClick={() => navigate(createPageUrl('MyDashboard'))}
                   className="w-full bg-[#232323] hover:bg-black text-white"
                 >
-                  Go to My Dashboard
+                  Go to Dashboard
                 </Button>
                 <Button
                   variant="outline"
