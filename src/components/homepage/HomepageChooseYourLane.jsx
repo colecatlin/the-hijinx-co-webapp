@@ -104,11 +104,11 @@ export default function HomepageChooseYourLane({ user, hasRaceCoreAccess = false
   const cards = getHomepageRouteCards({ user, hasRaceCoreAccess });
 
   return (
-    <section className="bg-[#EDF6F7] border-b border-[#C8E8EC] py-14">
+    <section className="bg-[#EDF6F7] border-b border-[#C8E8EC] py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="mb-10">
-          <h2 className="text-3xl font-black tracking-tight text-gray-900">Choose Your Lane</h2>
+        <div className="mb-8 md:mb-10">
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900">Choose Your Lane</h2>
           <p className="text-sm text-gray-500 mt-2">
             Start where you fit, then go deeper into the HIJINX ecosystem.
           </p>
