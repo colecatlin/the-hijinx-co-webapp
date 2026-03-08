@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       featured_story:    (stories || [])[0] || null,
+      featured_stories:  (stories || []).slice(0, 5),
       featured_drivers:  (drivers || []).slice(0, 6),
       featured_tracks:   (tracks  || []).slice(0, 6),
       featured_series:   (series  || []).slice(0, 6),
