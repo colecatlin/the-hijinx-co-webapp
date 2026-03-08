@@ -84,7 +84,7 @@ export default function Home() {
       <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
 
       {/* 2. Choose Your Lane — route cards */}
-      <HomepageChooseYourLane />
+      <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
 
       {/* 3. Featured editorial story */}
       <HomepageFeaturedStory
