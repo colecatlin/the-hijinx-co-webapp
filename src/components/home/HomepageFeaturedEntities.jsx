@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -34,7 +34,7 @@ export default function HomepageFeaturedEntities() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const programsByDriver = React.useMemo(() => {
+  const programsByDriver = useMemo(() => {
     const map = {};
     allPrograms.forEach(p => {
       if (!map[p.driver_id]) map[p.driver_id] = [];
@@ -43,7 +43,7 @@ export default function HomepageFeaturedEntities() {
     return map;
   }, [allPrograms]);
 
-  const mediaByDriver = React.useMemo(() => {
+  const mediaByDriver = useMemo(() => {
     const map = {};
     allMedia.forEach(m => { map[m.driver_id] = m; });
     return map;

@@ -57,9 +57,9 @@ export default function HomepageRaceCoreTeaser() {
 
             {/* Feature grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-10">
-              {FEATURES.map(({ Icon, label }) => (
+              {FEATURES.map(({ Icon: FeatureIcon, label }) => (
                 <div key={label} className="flex items-center gap-2.5 border border-white/5 px-3.5 py-3 hover:border-[#00FFDA]/20 transition-colors">
-                  <Icon className="w-3.5 h-3.5 text-[#00FFDA]/50 flex-shrink-0" />
+                  <FeatureIcon className="w-3.5 h-3.5 text-[#00FFDA]/50 flex-shrink-0" />
                   <span className="text-[11px] text-white/40 font-medium leading-tight">{label}</span>
                 </div>
               ))}
