@@ -38,10 +38,21 @@ const CTA_PATHS = [
 
 export default function HomepageFinalCTA() {
   return (
-    <section className="bg-[#060606] py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative py-20 md:py-28 overflow-hidden">
 
-        {/* Section header */}
+      {/* Rich teal-to-navy gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#001F1F] via-[#001233] to-[#000D20]" />
+      {/* Teal glow — top left */}
+      <div className="absolute -top-40 -left-40 w-[700px] h-[700px] bg-[#00FFDA]/8 rounded-full blur-[130px] pointer-events-none" />
+      {/* Blue glow — bottom right */}
+      <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-[#2563EB]/10 rounded-full blur-[110px] pointer-events-none" />
+      {/* Top edge accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00FFDA]/60 to-transparent" />
+      {/* Grid overlay */}
+      <div className="absolute inset-0 grid-bg opacity-[0.04]" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -50,16 +61,15 @@ export default function HomepageFinalCTA() {
           className="text-center mb-12"
         >
           <div className="flex items-center justify-center gap-4 mb-5">
-            <div className="w-10 h-px bg-[#00FFDA]/30" />
-            <span className="font-mono text-[9px] tracking-[0.45em] text-[#00FFDA] uppercase">Where to Next</span>
-            <div className="w-10 h-px bg-[#00FFDA]/30" />
+            <div className="w-10 h-px bg-[#00FFDA]/60" />
+            <span className="font-mono text-[9px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">Where to Next</span>
+            <div className="w-10 h-px bg-[#00FFDA]/60" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
             Your next move.
           </h2>
         </motion.div>
 
-        {/* Path cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {CTA_PATHS.map((path, i) => {
             const Icon = path.Icon;
@@ -73,23 +83,26 @@ export default function HomepageFinalCTA() {
               >
                 <Link
                   to={createPageUrl(path.page)}
-                  className={`group flex flex-col h-full min-h-[210px] p-7 border transition-all duration-300 ${
+                  className={`group relative flex flex-col h-full min-h-[210px] p-7 border transition-all duration-300 overflow-hidden ${
                     path.featured
-                      ? 'border-[#00FFDA]/25 bg-[#00170E] hover:border-[#00FFDA]/55'
-                      : 'border-white/5 bg-[#0C0C0C] hover:border-white/12'
+                      ? 'border-[#00FFDA]/40 bg-[#00FFDA]/8 hover:bg-[#00FFDA]/14 hover:border-[#00FFDA]/70'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#2563EB]/50'
                   }`}
                 >
-                  {/* Top accent for featured */}
                   {path.featured && (
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-[#00FFDA]/50 to-transparent" />
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 to-transparent" />
                   )}
 
-                  <Icon className={`w-5 h-5 mb-5 transition-colors ${path.featured ? 'text-[#00FFDA]' : 'text-white/18 group-hover:text-white/45'}`} />
+                  <Icon className={`w-5 h-5 mb-5 transition-colors ${
+                    path.featured ? 'text-[#00FFDA]' : 'text-white/30 group-hover:text-[#2563EB]'
+                  }`} />
                   <h3 className={`text-lg font-black tracking-tight mb-2.5 ${path.featured ? 'text-[#00FFDA]' : 'text-white'}`}>
                     {path.title}
                   </h3>
-                  <p className="text-white/28 text-sm flex-1 leading-relaxed">{path.sub}</p>
-                  <div className={`flex items-center gap-1.5 mt-5 text-xs font-bold tracking-wider uppercase transition-all ${path.featured ? 'text-[#00FFDA]' : 'text-white/18 group-hover:text-white/50'}`}>
+                  <p className="text-white/50 text-sm flex-1 leading-relaxed">{path.sub}</p>
+                  <div className={`flex items-center gap-1.5 mt-5 text-xs font-bold tracking-wider uppercase transition-all ${
+                    path.featured ? 'text-[#00FFDA]' : 'text-white/30 group-hover:text-[#2563EB]'
+                  }`}>
                     {path.cta}
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -99,15 +112,14 @@ export default function HomepageFinalCTA() {
           })}
         </div>
 
-        {/* Brand sign-off */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 1 }}
-          className="mt-20 pt-12 border-t border-white/5 text-center"
+          className="mt-20 pt-12 border-t border-white/8 text-center"
         >
-          <p className="font-mono text-[9px] tracking-[0.45em] text-white/12 uppercase">
+          <p className="font-mono text-[9px] tracking-[0.45em] text-white/25 uppercase">
             HIJINX CO · Motorsports · Culture · Movement · Identity · {new Date().getFullYear()}
           </p>
         </motion.div>
