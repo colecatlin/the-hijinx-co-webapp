@@ -95,17 +95,17 @@ function FanHub() {
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
           <Link to={createPageUrl('Profile')}>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Profile</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Go to Profile</Button>
           </Link>
           <Link to={createPageUrl('DriverDirectory')}>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Drivers</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Browse Drivers</Button>
           </Link>
           <Link to={createPageUrl('EventDirectory')}>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Events</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Browse Events</Button>
           </Link>
           <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
             <Button size="sm" className="bg-[#232323] hover:bg-black text-white gap-1.5 text-xs">
-              <KeyRound className="w-3.5 h-3.5" /> Link Entity
+              <KeyRound className="w-3.5 h-3.5" /> Link an Entity
             </Button>
           </Link>
         </div>
