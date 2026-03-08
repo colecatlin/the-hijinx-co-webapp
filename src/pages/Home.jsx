@@ -69,6 +69,9 @@ export default function Home() {
         </section>
       )}
 
+      {/* 1c. What's Happening Now — activity card grid */}
+      <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
+
       {/* 2. Choose Your Lane — route cards */}
       <HomepageChooseYourLane />
 
