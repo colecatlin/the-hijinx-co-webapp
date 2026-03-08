@@ -13,8 +13,13 @@ const TICKER_ITEMS = [
   { label: 'RACE CORE',        page: 'Registration' },
 ];
 
-export default function HomepageTicker() {
-  const repeated = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS];
+export default function HomepageTicker({ activityItems = [] }) {
+  // Map live activity feed titles into ticker items when available
+  const liveItems = activityItems.length > 0
+    ? activityItems.map(item => ({ label: item.title?.toUpperCase() || 'PLATFORM UPDATE', page: 'MotorsportsHome' }))
+    : [];
+  const baseItems = liveItems.length > 0 ? [...liveItems, ...TICKER_ITEMS] : TICKER_ITEMS;
+  const repeated = [...baseItems, ...baseItems, ...baseItems];
 
   return (
     <div className="relative bg-[#080C14] border-y border-[#00FFDA]/20 overflow-hidden py-3 select-none">
