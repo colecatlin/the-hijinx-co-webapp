@@ -37,6 +37,7 @@ export default function Home() {
 
   // Always safe — fallback to empty shapes if result not yet available
   const hp = hpResult?.data ?? FALLBACK_DATA;
+  const formattedFeed = formatActivityFeedItems(hp.activity_feed);
 
   return (
     <PageShell>
