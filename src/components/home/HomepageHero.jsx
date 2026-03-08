@@ -132,7 +132,7 @@ export default function HomepageHero() {
           </div>
 
           {/* Stats Strip */}
-          <div className="flex flex-wrap gap-8 md:gap-12 border-t border-white/12 pt-8">
+          <div className="flex flex-wrap gap-6 md:gap-12 border-t border-white/12 pt-8">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
