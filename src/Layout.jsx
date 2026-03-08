@@ -113,7 +113,7 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl('MyDashboard')}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors hidden lg:block"
                 >
-                  My Dashboard
+                  Dashboard
                 </Link>
                 <Link
                   to={createPageUrl('Profile')}
