@@ -53,7 +53,7 @@ export default function Home() {
       {/* 3. Featured editorial story */}
       <HomepageFeaturedStory
         featuredStory={hp.featured_story}
-        supportingStories={[]}
+        supportingStories={(hp.featured_stories || []).slice(1, 4)}
       />
 
       {/* 4. Featured motorsports — tabbed discovery */}
