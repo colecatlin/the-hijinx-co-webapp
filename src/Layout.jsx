@@ -225,7 +225,7 @@ export default function Layout({ children, currentPageName }) {
                     to={createPageUrl('MyDashboard')}
                     className="block py-3 px-4 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    My Dashboard
+                    Dashboard
                   </Link>
                 </div>
               )}
