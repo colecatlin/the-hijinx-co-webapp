@@ -55,6 +55,18 @@ Deno.serve(async (req) => {
       }
     });
 
+    // Fire-and-forget: create ActivityFeed item for published event
+    base44.functions.invoke('createActivityFeedItemSafe', {
+      activity_type: 'event_created',
+      title: `${updatedEvent.name} is now published`,
+      description: updatedEvent.series_name || 'Motorsports event',
+      entity_type: 'event',
+      entity_id: event_id,
+      related_event_id: event_id,
+      related_series_id: updatedEvent.series_id || null,
+      visibility: 'public',
+    }).catch(() => {});
+
     return Response.json({ event: updatedEvent, success: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

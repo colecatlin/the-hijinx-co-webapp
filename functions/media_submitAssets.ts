@@ -85,6 +85,22 @@ Deno.serve(async (req) => {
       submission_id = submission.id;
     }
 
+    // Fire-and-forget: create ActivityFeed item for media upload
+    // Visibility = entity (not yet reviewed/approved)
+    if (asset_ids.length > 0) {
+      const firstAsset = assets[0];
+      base44.functions.invoke('createActivityFeedItemSafe', {
+        activity_type: 'media_uploaded',
+        title: `New media uploaded`,
+        description: firstAsset?.title || firstAsset?.file_name || `${asset_ids.length} asset(s) submitted`,
+        entity_type: event_id ? 'event' : null,
+        entity_id: event_id || null,
+        related_event_id: event_id || null,
+        thumbnail: null,
+        visibility: 'entity',
+      }).catch(() => {});
+    }
+
     // Write operation log
     await base44.entities.OperationLog.create({
       operation_type: 'media_submit_assets',

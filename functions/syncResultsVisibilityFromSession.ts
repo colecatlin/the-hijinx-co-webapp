@@ -43,6 +43,20 @@ Deno.serve(async (req) => {
       },
     }).catch(() => {});
 
+    // Fire-and-forget: create ActivityFeed item when results become official/public
+    if (shouldBePublic && results.length > 0) {
+      const eventId = session.event_id;
+      base44.functions.invoke('createActivityFeedItemSafe', {
+        activity_type: 'results_posted',
+        title: `Official results posted`,
+        description: `Results are now available for this event.`,
+        entity_type: 'event',
+        entity_id: eventId || null,
+        related_event_id: eventId || null,
+        visibility: 'public',
+      }).catch(() => {});
+    }
+
     return Response.json({
       session_id,
       shouldBePublic,
