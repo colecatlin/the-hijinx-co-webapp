@@ -37,13 +37,13 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
             <div className="relative p-8 md:p-12">
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase mb-4 block">The Outlet</span>
               <h3 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-3">
-                Stories from the world of motorsports.
+                The HIJINX story is just getting started.
               </h3>
               <p className="text-white/55 text-base leading-relaxed mb-6 max-w-lg">
-                Editorial coverage, driver features, race recaps, and culture from every corner of the sport.
+                Stories, insight, and motorsports culture will appear here.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00FFDA] tracking-wide uppercase group-hover:gap-3 transition-all">
-                Read the latest <ArrowRight className="w-4 h-4" />
+                Explore Motorsports <ArrowRight className="w-4 h-4" />
               </span>
             </div>
           </Link>
@@ -116,13 +116,13 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                   </p>
                 )}
                 <div className="flex items-center gap-4">
-                  {featured.published_date && (
+                  {featured.published_date && !isNaN(new Date(featured.published_date)) && (
                     <span className="font-mono text-[9px] text-white/40">
                       {format(new Date(featured.published_date), 'MMM d, yyyy')}
                     </span>
                   )}
                   <span className="flex items-center gap-1.5 text-xs font-bold text-[#00FFDA] tracking-wide uppercase group-hover:gap-2.5 transition-all">
-                    Read story <ArrowRight className="w-3.5 h-3.5" />
+                    Explore Stories <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                     <h4 className="text-sm font-bold text-[#222] group-hover:text-[#008080] transition-colors tracking-tight leading-snug line-clamp-2">
                       {story.title}
                     </h4>
-                    {story.published_date && (
+                    {story.published_date && !isNaN(new Date(story.published_date)) && (
                       <span className="font-mono text-[9px] text-gray-400 mt-2">
                         {format(new Date(story.published_date), 'MMM d, yyyy')}
                       </span>
