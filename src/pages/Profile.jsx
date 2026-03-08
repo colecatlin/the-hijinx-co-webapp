@@ -324,12 +324,12 @@ export default function Profile() {
                           {primaryEntity.is_racecore_entity && (
                             <Button type="button" size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
                               onClick={() => window.location.href = buildRaceCoreLaunchUrl(primaryEntity)}>
-                              <Gauge className="w-3 h-3" /> Race Core
+                              <Gauge className="w-3 h-3" /> Open Race Core
                             </Button>
                           )}
                           <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
                             onClick={() => window.location.href = buildEditorUrl(primaryEntity)}>
-                            <ExternalLink className="w-3 h-3" /> Editor
+                            <ExternalLink className="w-3 h-3" /> Open Editor
                           </Button>
                         </div>
                       </div>
