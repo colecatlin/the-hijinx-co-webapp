@@ -1,21 +1,13 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import { ArrowRight, Newspaper } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function HomepageFeaturedStory() {
-  const { data: stories = [] } = useQuery({
-    queryKey: ['homepageFeaturedStories'],
-    queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 5),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const featured = stories[0];
-  const supporting = stories.slice(1, 4);
+export default function HomepageFeaturedStory({ featuredStory, supportingStories = [] }) {
+  const featured = featuredStory;
+  const supporting = supportingStories;
 
   if (!featured) return null;
 
