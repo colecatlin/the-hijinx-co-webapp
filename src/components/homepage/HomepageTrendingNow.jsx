@@ -17,10 +17,10 @@ const TABS = [
 ];
 
 const EMPTY_MSG = {
-  drivers: 'As the platform grows, active drivers will appear here.',
-  tracks:  'As the platform grows, active tracks will appear here.',
-  series:  'As the platform grows, active series will appear here.',
-  events:  'Upcoming events will appear here.',
+  drivers: 'As activity grows, trending drivers will appear here.',
+  tracks:  'As activity grows, trending tracks will appear here.',
+  series:  'As activity grows, trending series will appear here.',
+  events:  'Upcoming events will appear here as the schedule fills in.',
 };
 
 function RowShell({ href, index, children }) {
