@@ -72,15 +72,15 @@ export default function Home() {
 
       {/* ── 3. Spotlights — Driver + Event ──────────────────────────────────── */}
       {hasSpotlight && (
-        <section className="bg-[#060A10] py-10 border-b border-gray-900/60">
+        <section className="bg-white border-b border-gray-100 py-12">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-px bg-[#00FFDA]" />
-              <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA]/70 uppercase font-bold">Spotlight</span>
+              <div className="w-8 h-px bg-[#1DA1A1]" />
+              <span className="font-mono text-[9px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">Spotlight</span>
             </div>
-            <div className={`grid gap-4 ${hp.spotlight_driver && hp.spotlight_event ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
-              {hp.spotlight_driver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
-              {hp.spotlight_event  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
+            <div className={`grid gap-4 ${hasDriver && hasEvent ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 max-w-2xl mx-auto'}`}>
+              {hasDriver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
+              {hasEvent  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
             </div>
           </div>
         </section>
