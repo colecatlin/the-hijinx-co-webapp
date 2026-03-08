@@ -382,17 +382,17 @@ export default function Profile() {
                             {entity.is_racecore_entity && (
                               <Button type="button" size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
                                 onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}>
-                                <Gauge className="w-3 h-3" /> Race Core
+                                <Gauge className="w-3 h-3" /> Open Race Core
                               </Button>
                             )}
                             <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
                               onClick={() => window.location.href = buildEditorUrl(entity)}>
-                              Editor
+                              Open Editor
                             </Button>
                             {entity.role === 'owner' && (
                               <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
                                 onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
-                                <Lock className="w-3 h-3" /> Manage
+                                <Lock className="w-3 h-3" /> Manage Access
                               </Button>
                             )}
                           </div>
