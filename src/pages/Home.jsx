@@ -19,12 +19,24 @@ import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappen
 import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
 
 export default function Home() {
-  // Optional: current user for future personalization
+  // Current user for personalization + Race Core access check
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false,
   });
+
+  const { data: collaboratorEntities } = useQuery({
+    queryKey: ['hp_collaborators', user?.id],
+    queryFn: () => base44.entities.EntityCollaborator.filter({ user_id: user.id }),
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const hasRaceCoreAccess = (collaboratorEntities || []).some(
+    (c) => c.entity_type === 'track' || c.entity_type === 'series'
+  );
 
   // Single centralized homepage data query — all sections read from here
   const { data: hpResult, isLoading } = useQuery({
