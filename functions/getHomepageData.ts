@@ -137,10 +137,18 @@ Deno.serve(async (req) => {
     }
 
     // ── ticker_items ─────────────────────────────────────────────────────────
-    // Manual editorial items take priority; null means ticker falls back to auto
     const tickerItems = settings?.hero_ticker_items?.length
       ? settings.hero_ticker_items
       : null;
+
+    // ── spotlights ────────────────────────────────────────────────────────────
+    let spotlightDriver = null;
+    let spotlightEvent  = null;
+    try {
+      const spotRes = await base44.functions.invoke('getHomepageSpotlights', {});
+      spotlightDriver = spotRes?.spotlight_driver || null;
+      spotlightEvent  = spotRes?.spotlight_event  || null;
+    } catch (_) { /* spotlights stay null */ }
 
     return Response.json({
       featured_story:    featuredStory,
@@ -154,6 +162,8 @@ Deno.serve(async (req) => {
       featured_media:    featuredMedia,
       featured_products: featuredProducts,
       ticker_items:      tickerItems,
+      spotlight_driver:  spotlightDriver,
+      spotlight_event:   spotlightEvent,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

@@ -26,6 +26,9 @@ export const FALLBACK_DATA = {
   activity_feed:     [],
   featured_media:    [],
   featured_products: [],
+  ticker_items:      null,
+  spotlight_driver:  null,
+  spotlight_event:   null,
 };
 
 /**

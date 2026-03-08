@@ -13,6 +13,8 @@ import HomepageApparel from '@/components/home/HomepageApparel';
 import HomepageMovement from '@/components/home/HomepageMovement';
 import HomepageFinalCTA from '@/components/home/HomepageFinalCTA';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
+import HomepageDriverSpotlight from '@/components/homepage/HomepageDriverSpotlight';
+import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight';
 
 export default function Home() {
   // Optional: current user for future personalization
@@ -49,6 +51,22 @@ export default function Home() {
         items={hp.activity_feed}
         isLoading={isLoading}
       />
+
+      {/* 1b. Spotlights — Driver + Event, shown when at least one exists */}
+      {(hp.spotlight_driver || hp.spotlight_event) && (
+        <section className="bg-[#060A10] py-10 border-b border-gray-900">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-px bg-[#00FFDA]" />
+              <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA]/70 uppercase font-bold">Spotlight</span>
+            </div>
+            <div className={`grid gap-4 ${hp.spotlight_driver && hp.spotlight_event ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
+              <HomepageDriverSpotlight driver={hp.spotlight_driver} />
+              <HomepageEventSpotlight  event={hp.spotlight_event} />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 2. Choose Your Lane — route cards */}
       <HomepageChooseYourLane />
