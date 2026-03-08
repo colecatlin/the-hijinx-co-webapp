@@ -109,7 +109,8 @@ export default function HomepageFeaturedEntities({
         {allEmpty && <AllEmptyDiscovery />}
 
         {/* Tab content */}
-        {!allEmpty && <AnimatePresence mode="wait">
+        {!allEmpty && (
+          <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 12 }}
