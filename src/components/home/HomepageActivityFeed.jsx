@@ -15,17 +15,11 @@ const TYPE_CONFIG = {
   media_uploaded:    { Icon: Camera,    color: 'text-purple-400', bg: 'bg-purple-400/8', label: 'Media' },
 };
 
-// ── Placeholder seed items (replaced with real data when API is ready) ─────
-const PLACEHOLDER_ITEMS = [
-  { id: 'p1', type: 'driver_registered', title: 'Driver registered for Pro 4',       desc: 'At Bark River International Raceway',   time: new Date(Date.now() - 2 * 3600000),  page: 'DriverDirectory' },
-  { id: 'p2', type: 'results_posted',    title: 'Results posted',                    desc: 'Round 3 — Lucas Oil Off Road Racing',   time: new Date(Date.now() - 5 * 3600000),  page: 'EventDirectory' },
-  { id: 'p3', type: 'story_published',   title: 'New story published',               desc: 'Behind the build — Greaves Motorsports', time: new Date(Date.now() - 8 * 3600000),  page: 'OutletHome' },
-  { id: 'p4', type: 'track_added',       title: 'Track added to database',           desc: 'Crandon International Off-Road Raceway', time: new Date(Date.now() - 11 * 3600000), page: 'TrackDirectory' },
-  { id: 'p5', type: 'series_updated',    title: 'Series schedule updated',           desc: 'Pro Snowmobile Racing — 2025 Season',   time: new Date(Date.now() - 14 * 3600000), page: 'SeriesHome' },
-  { id: 'p6', type: 'media_uploaded',    title: 'Media package uploaded',            desc: 'Event photography — Round 5',           time: new Date(Date.now() - 18 * 3600000), page: 'MediaPortal' },
-  { id: 'p7', type: 'driver_registered', title: 'Driver profile activated',          desc: 'Pro 2 Open class — Western Series',     time: new Date(Date.now() - 22 * 3600000), page: 'DriverDirectory' },
-  { id: 'p8', type: 'results_posted',    title: 'Standings recalculated',            desc: 'Championship points updated — Round 7', time: new Date(Date.now() - 26 * 3600000), page: 'EventDirectory' },
-];
+// page routing by entity type
+const ENTITY_PAGE = {
+  driver: 'DriverDirectory', track: 'TrackDirectory', series: 'SeriesHome',
+  event: 'EventDirectory', story: 'OutletHome', results: 'EventDirectory', media: 'MediaPortal',
+};
 
 function FeedCard({ item }) {
   const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.story_published;
