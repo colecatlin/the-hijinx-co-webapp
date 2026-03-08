@@ -122,6 +122,7 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import UserDashboard from './pages/UserDashboard';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -201,6 +202,7 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "UserDashboard": UserDashboard,
+    "Home": Home,
 }
 
 export const pagesConfig = {
