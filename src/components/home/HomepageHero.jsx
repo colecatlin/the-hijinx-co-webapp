@@ -101,7 +101,7 @@ export default function HomepageHero() {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-16">
+          <div className="flex flex-col xs:flex-row flex-wrap gap-3 mb-16">
             {/* Primary — solid teal, high contrast */}
             <Link
               to={createPageUrl(cta_primary.page)}
