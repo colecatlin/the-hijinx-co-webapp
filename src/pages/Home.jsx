@@ -49,9 +49,11 @@ export default function Home() {
 
   // Always safe — fallback to empty shapes if result not yet available
   const hp = hpResult?.data ?? FALLBACK_DATA;
-  const formattedFeed = formatActivityFeedItems(hp.activity_feed);
+  const formattedFeed = formatActivityFeedItems(Array.isArray(hp.activity_feed) ? hp.activity_feed : []);
 
-  const hasSpotlight = !!(hp.spotlight_driver || hp.spotlight_event);
+  const hasDriver  = !!hp.spotlight_driver;
+  const hasEvent   = !!hp.spotlight_event;
+  const hasSpotlight = hasDriver || hasEvent;
 
   return (
     <PageShell>
