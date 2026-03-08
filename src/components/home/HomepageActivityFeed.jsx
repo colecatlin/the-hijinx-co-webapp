@@ -22,12 +22,15 @@ const ENTITY_PAGE = {
 };
 
 function FeedCard({ item }) {
-  const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.story_published;
+  const type = item.activity_type || item.type;
+  const cfg = TYPE_CONFIG[type] || TYPE_CONFIG.story_published;
   const Icon = cfg.Icon;
+  const page = item.page || ENTITY_PAGE[item.entity_type] || 'MotorsportsHome';
+  const time = item.created_at ? new Date(item.created_at) : (item.time || new Date());
 
   return (
     <Link
-      to={createPageUrl(item.page)}
+      to={createPageUrl(page)}
       className="group flex-shrink-0 w-64 sm:w-72 border border-white/5 hover:border-[#00FFDA]/20 bg-[#0C0C0C] hover:bg-[#0F0F0F] transition-all duration-200 p-5 flex flex-col gap-3"
     >
       {/* Icon + label */}
