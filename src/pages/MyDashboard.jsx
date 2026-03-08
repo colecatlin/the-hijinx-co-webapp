@@ -74,7 +74,7 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
         )}
         <Button variant="outline" size="sm" onClick={() => onManage(collaborator)}
           className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors">
-          {collaborator.entity_type === 'Driver' ? 'Edit Profile' : 'Open Console'}
+          Open Editor
           <ChevronRight className="w-3.5 h-3.5" />
         </Button>
       </div>
