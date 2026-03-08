@@ -56,6 +56,7 @@ export default function HomepageFeaturedEntities({
   allSeries = [], programsByDriver = {}, mediaByDriver = {},
   isLoading = false,
 }) {
+  const allEmpty = !isLoading && !drivers.length && !tracks.length && !series.length && !events.length;
   const [activeTab, setActiveTab] = useState('drivers');
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
