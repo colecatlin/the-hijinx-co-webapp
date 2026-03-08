@@ -20,9 +20,9 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
   return (
     <Link
       to={href}
-      className="group border border-white/5 hover:border-[#00FFDA]/25 bg-[#0C0C0C] hover:bg-[#0F0F0F] transition-all duration-200 overflow-hidden flex flex-col"
+      className="group bg-white border border-gray-200 hover:border-[#00FFDA] hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
     >
-      <div className="aspect-[16/9] overflow-hidden bg-[#161616]">
+      <div className="aspect-[16/9] overflow-hidden bg-gray-100">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -32,18 +32,18 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-white/5" />
+            <div className="w-8 h-8 rounded-full bg-gray-200" />
           </div>
         )}
       </div>
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <h4 className="text-sm font-bold text-white/70 group-hover:text-white transition-colors tracking-tight leading-snug line-clamp-2">
+        <h4 className="text-sm font-bold text-[#222] group-hover:text-[#008080] transition-colors tracking-tight leading-snug line-clamp-2">
           {name}
         </h4>
         {sub && (
-          <p className="font-mono text-[9px] tracking-[0.2em] text-white/25 uppercase line-clamp-1">{sub}</p>
+          <p className="font-mono text-[9px] tracking-[0.2em] text-gray-400 uppercase line-clamp-1">{sub}</p>
         )}
-        <div className="flex items-center gap-1 mt-auto pt-2 text-[10px] font-bold text-[#00FFDA]/30 group-hover:text-[#00FFDA]/70 uppercase tracking-wider transition-colors">
+        <div className="flex items-center gap-1 mt-auto pt-2 text-[10px] font-bold text-gray-300 group-hover:text-[#008080] uppercase tracking-wider transition-colors">
           View <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
@@ -60,7 +60,7 @@ export default function HomepageFeaturedEntities({
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
   return (
-    <section className="bg-white py-20 md:py-28 border-b border-gray-100">
+    <section className="bg-[#EEF2F7] py-20 md:py-28 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
@@ -68,15 +68,15 @@ export default function HomepageFeaturedEntities({
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-px bg-[#232323]" />
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#232323]/35 uppercase">Discovery</span>
+              <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">Discovery</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-[#232323] tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">
               Featured Motorsports
             </h2>
           </div>
           <Link
             to={createPageUrl(activeTabConfig?.page || 'MotorsportsHome')}
-            className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-[#232323]/30 hover:text-[#00FFDA] transition-colors uppercase self-end"
+            className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase self-end"
           >
             View All <ArrowRight className="w-3 h-3" />
           </Link>
@@ -93,8 +93,8 @@ export default function HomepageFeaturedEntities({
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap border ${
                   active
-                    ? 'bg-[#232323] text-white border-[#232323]'
-                    : 'border-gray-200 text-[#232323]/40 hover:border-[#232323]/30 hover:text-[#232323]/70'
+                    ? 'bg-[#111] text-white border-[#111] shadow-sm'
+                    : 'border-gray-300 bg-white text-gray-400 hover:border-[#00FFDA] hover:text-[#008080]'
                 }`}
               >
                 <TabIcon className="w-3.5 h-3.5" />
@@ -197,7 +197,7 @@ export default function HomepageFeaturedEntities({
         <div className="mt-8 sm:hidden">
           <Link
             to={createPageUrl(activeTabConfig?.page || 'MotorsportsHome')}
-            className="flex items-center justify-center gap-2 border border-[#232323]/10 hover:border-[#00FFDA] py-3.5 text-xs font-bold tracking-wider uppercase text-[#232323]/40 hover:text-[#00FFDA] transition-all"
+            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] py-3.5 text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-[#008080] transition-all"
           >
             View All {activeTabConfig?.label}
             <ArrowRight className="w-3.5 h-3.5" />
