@@ -196,7 +196,8 @@ export default function HomepageFeaturedEntities({
               )
             ) : null}
           </motion.div>
-        </AnimatePresence>}
+        </AnimatePresence>
+        )}
 
         {/* Mobile view-all */}
         <div className="mt-8 sm:hidden">
