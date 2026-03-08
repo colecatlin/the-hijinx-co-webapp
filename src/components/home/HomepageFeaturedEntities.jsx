@@ -169,6 +169,7 @@ export default function HomepageFeaturedEntities({
                 </div>
               ) : (
                 <EmptyState tab="series" page="SeriesHome" />
+
               )
             ) : activeTab === 'events' ? (
               events.length > 0 ? (
