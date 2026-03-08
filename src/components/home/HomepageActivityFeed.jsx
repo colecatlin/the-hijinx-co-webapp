@@ -113,7 +113,7 @@ export default function HomepageActivityFeed({ items = [], isLoading }) {
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide"
         >
-          {liveItems.map((item, i) => (
+          {items.map((item, i) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
