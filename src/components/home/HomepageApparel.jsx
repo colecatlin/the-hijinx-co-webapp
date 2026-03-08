@@ -10,7 +10,7 @@ const COLLECTION_CARDS = [
   { label: "Builder's Edit",      sub: 'For the ones who make it happen.',   tag: 'Essentials' },
 ];
 
-export default function HomepageApparel() {
+export default function HomepageApparel({ products = [] }) {
   return (
     <section className="bg-white py-20 md:py-28 border-b border-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">

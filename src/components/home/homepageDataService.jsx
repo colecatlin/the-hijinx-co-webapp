@@ -14,6 +14,29 @@ import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 
+// ── Fallback shape — used when query hasn't resolved yet ─────────────────────
+export const FALLBACK_DATA = {
+  featured_story:    null,
+  featured_stories:  [],
+  featured_drivers:  [],
+  featured_tracks:   [],
+  featured_series:   [],
+  upcoming_events:   [],
+  recent_results:    [],
+  activity_feed:     [],
+  featured_media:    [],
+  featured_products: [],
+};
+
+/**
+ * getHomepageData — callable by React Query in Home.jsx
+ * Invokes the getHomepageData backend function and returns the axios response.
+ * Consumer reads: const hp = hpResult?.data ?? FALLBACK_DATA
+ */
+export async function getHomepageData() {
+  return await base44.functions.invoke('getHomepageData', {});
+}
+
 const S5  = 5  * 60 * 1000;
 const S10 = 10 * 60 * 1000;
 const S2  = 2  * 60 * 1000;
