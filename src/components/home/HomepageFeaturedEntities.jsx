@@ -153,9 +153,9 @@ export default function HomepageFeaturedEntities({
                 <EmptyState tab="tracks" page="TrackDirectory" />
               )
             ) : activeTab === 'series' ? (
-              allSeries.length > 0 ? (
+              series.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {allSeries.map((s, i) => (
+                  {series.map((s, i) => (
                     <motion.div key={s.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                       <EntityCard
                         name={s.name}
