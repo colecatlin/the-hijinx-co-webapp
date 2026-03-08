@@ -1,15 +1,17 @@
 /**
- * components/homepage/homepageDataService.js
+ * homepageDataService
  *
- * Frontend service that calls the getHomepageData backend function.
- * Returns { ok: true, data } on success, { ok: false, error } on failure.
+ * Thin frontend wrapper around the getHomepageData backend function.
+ * Called via a single React Query in pages/Home.jsx.
  *
- * All buckets are guaranteed to exist (empty array or null) — never undefined.
+ * Returns:
+ *   { ok: true,  data: HomepageData }
+ *   { ok: false, error: string, data: fallbackEmptyData }
  */
 
 import { base44 } from '@/api/base44Client';
 
-const EMPTY = {
+export const FALLBACK_DATA = {
   featured_story:    null,
   featured_drivers:  [],
   featured_tracks:   [],
@@ -21,31 +23,26 @@ const EMPTY = {
   featured_products: [],
 };
 
-/**
- * getHomepageData()
- * @returns {Promise<{ ok: boolean, data: object, error?: string }>}
- */
 export async function getHomepageData() {
-  try {
-    const response = await base44.functions.invoke('getHomepageData', {});
-    const raw = response.data || {};
+  const response = await base44.functions.invoke('getHomepageData', {});
+  const payload = response?.data;
 
-    // Normalise — ensure every bucket is always present
-    const data = {
-      featured_story:    raw.featured_story    ?? null,
-      featured_drivers:  raw.featured_drivers  ?? [],
-      featured_tracks:   raw.featured_tracks   ?? [],
-      featured_series:   raw.featured_series   ?? [],
-      upcoming_events:   raw.upcoming_events   ?? [],
-      recent_results:    raw.recent_results    ?? [],
-      activity_feed:     raw.activity_feed     ?? [],
-      featured_media:    raw.featured_media    ?? [],
-      featured_products: raw.featured_products ?? [],
-    };
-
-    return { ok: true, data };
-  } catch (error) {
-    console.error('[homepageDataService] getHomepageData failed:', error);
-    return { ok: false, error: error?.message || 'Unknown error', data: EMPTY };
+  if (!payload || payload.error) {
+    return { ok: false, error: payload?.error || 'No data returned', data: FALLBACK_DATA };
   }
+
+  return {
+    ok: true,
+    data: {
+      featured_story:    payload.featured_story    ?? null,
+      featured_drivers:  payload.featured_drivers  ?? [],
+      featured_tracks:   payload.featured_tracks   ?? [],
+      featured_series:   payload.featured_series   ?? [],
+      upcoming_events:   payload.upcoming_events   ?? [],
+      recent_results:    payload.recent_results    ?? [],
+      activity_feed:     payload.activity_feed     ?? [],
+      featured_media:    payload.featured_media    ?? [],
+      featured_products: payload.featured_products ?? [],
+    },
+  };
 }

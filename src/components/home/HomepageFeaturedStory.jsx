@@ -9,7 +9,48 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
   const featured = featuredStory;
   const supporting = supportingStories;
 
-  if (!featured) return null;
+  if (!featured) {
+    return (
+      <section className="bg-white py-20 md:py-28 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-end justify-between mb-10 md:mb-12">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-px bg-[#00FFDA]" />
+                <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">The Outlet</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">Latest Stories</h2>
+            </div>
+            <Link
+              to={createPageUrl('OutletHome')}
+              className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase"
+            >
+              All Stories <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <Link
+            to={createPageUrl('OutletHome')}
+            className="group relative flex flex-col justify-end min-h-[360px] overflow-hidden border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 bg-gradient-to-br from-[#001F1F] to-[#000D20]"
+          >
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/40 to-transparent" />
+            <div className="absolute inset-0 bg-[#00FFDA]/3 group-hover:bg-[#00FFDA]/6 transition-all" />
+            <div className="relative p-8 md:p-12">
+              <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase mb-4 block">The Outlet</span>
+              <h3 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-3">
+                Stories from the world of motorsports.
+              </h3>
+              <p className="text-white/55 text-base leading-relaxed mb-6 max-w-lg">
+                Editorial coverage, driver features, race recaps, and culture from every corner of the sport.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00FFDA] tracking-wide uppercase group-hover:gap-3 transition-all">
+                Read the latest <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-white py-20 md:py-28 border-b border-gray-100">
