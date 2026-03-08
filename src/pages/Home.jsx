@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import HomepageHero from '@/components/home/HomepageHero';
 import HomepageTicker from '@/components/home/HomepageTicker';
-import HomepageActivityFeed from '@/components/home/HomepageActivityFeed';
 import HomepageChooseYourLane from '@/components/home/HomepageChooseYourLane';
 import HomepageFeaturedStory from '@/components/home/HomepageFeaturedStory';
 import HomepageFeaturedEntities from '@/components/home/HomepageFeaturedEntities';
