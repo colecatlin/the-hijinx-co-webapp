@@ -1,6 +1,4 @@
-import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { ArrowRight, Users, MapPin, Trophy, Calendar } from 'lucide-react';
