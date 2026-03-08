@@ -51,69 +51,13 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
   );
 }
 
-export default function HomepageFeaturedEntities() {
+export default function HomepageFeaturedEntities({
+  drivers = [], tracks = [], series = [], events = [],
+  allSeries = [], programsByDriver = {}, mediaByDriver = {},
+  isLoading = false,
+}) {
   const [activeTab, setActiveTab] = useState('drivers');
-
-  // Drivers
-  const { data: drivers = [], isLoading: loadingDrivers } = useQuery({
-    queryKey: ['featuredDriversHome'],
-    queryFn: () => base44.entities.Driver.filter({ featured: true, profile_status: 'live' }),
-    staleTime: 5 * 60 * 1000,
-    select: (d) => d.slice(0, 4),
-  });
-  const { data: allPrograms = [] } = useQuery({
-    queryKey: ['driverPrograms'],
-    queryFn: () => base44.entities.DriverProgram.list(),
-    staleTime: 10 * 60 * 1000,
-  });
-  const { data: allSeries = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-    staleTime: 10 * 60 * 1000,
-    select: (d) => d.slice(0, 8),
-  });
-  const { data: allMedia = [] } = useQuery({
-    queryKey: ['driverMedia'],
-    queryFn: () => base44.entities.DriverMedia.list(),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Tracks
-  const { data: tracks = [], isLoading: loadingTracks } = useQuery({
-    queryKey: ['featuredTracksHome'],
-    queryFn: () => base44.entities.Track.filter({ status: 'Active' }, '-created_date', 8),
-    staleTime: 10 * 60 * 1000,
-    select: (d) => d.slice(0, 8),
-  });
-
-  // Events
-  const { data: events = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ['featuredEventsHome'],
-    queryFn: () => base44.entities.Event.filter({ status: 'Published' }, '-event_date', 8),
-    staleTime: 5 * 60 * 1000,
-    select: (d) => d.slice(0, 8),
-  });
-
-  const programsByDriver = useMemo(() => {
-    const map = {};
-    allPrograms.forEach(p => {
-      if (!map[p.driver_id]) map[p.driver_id] = [];
-      map[p.driver_id].push(p);
-    });
-    return map;
-  }, [allPrograms]);
-
-  const mediaByDriver = useMemo(() => {
-    const map = {};
-    allMedia.forEach(m => { map[m.driver_id] = m; });
-    return map;
-  }, [allMedia]);
-
   const activeTabConfig = TABS.find(t => t.id === activeTab);
-  const isLoading = activeTab === 'drivers' ? loadingDrivers
-    : activeTab === 'tracks' ? loadingTracks
-    : activeTab === 'events' ? loadingEvents
-    : false;
 
   return (
     <section className="bg-white py-20 md:py-28 border-b border-gray-100">
