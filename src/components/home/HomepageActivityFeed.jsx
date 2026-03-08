@@ -66,42 +66,8 @@ function FeedCard({ item }) {
   );
 }
 
-export default function HomepageActivityFeed() {
+export default function HomepageActivityFeed({ items = [], isLoading }) {
   const scrollRef = useRef(null);
-
-  // Real data hooks — stories and events are live; drivers can be wired later
-  const { data: stories = [] } = useQuery({
-    queryKey: ['activityFeedStories'],
-    queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 4),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: recentEvents = [] } = useQuery({
-    queryKey: ['activityFeedEvents'],
-    queryFn: () => base44.entities.Event.list('-created_date', 4),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Merge real data with placeholders
-  const liveItems = [
-    ...stories.map(s => ({
-      id: `story-${s.id}`,
-      type: 'story_published',
-      title: s.title || 'Story published',
-      desc: s.category || 'The Outlet',
-      time: s.published_date ? new Date(s.published_date) : new Date(s.created_date),
-      page: 'OutletHome',
-    })),
-    ...recentEvents.map(e => ({
-      id: `event-${e.id}`,
-      type: 'results_posted',
-      title: e.name || 'Event added',
-      desc: e.series_name || 'Motorsports event',
-      time: new Date(e.created_date),
-      page: 'EventDirectory',
-    })),
-    ...PLACEHOLDER_ITEMS,
-  ].sort((a, b) => b.time - a.time).slice(0, 12);
 
   const scroll = (dir) => {
     if (!scrollRef.current) return;
