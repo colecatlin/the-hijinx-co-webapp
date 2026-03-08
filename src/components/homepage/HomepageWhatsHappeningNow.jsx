@@ -86,13 +86,13 @@ function ActivityCard({ item, index }) {
 
 function EmptyState() {
   return (
-    <div className="col-span-full border border-dashed border-gray-200 rounded p-10 text-center">
-      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+    <div className="col-span-full border border-dashed border-gray-200 p-12 text-center">
+      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
         <Zap className="w-5 h-5 text-gray-300" />
       </div>
-      <h4 className="text-sm font-semibold text-gray-500">What's happening now</h4>
-      <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
-        New updates from drivers, events, media, and results will appear here.
+      <h4 className="text-sm font-bold text-gray-500 mb-1">The platform is coming alive</h4>
+      <p className="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+        Fresh updates from drivers, events, media, and results will appear here.
       </p>
     </div>
   );

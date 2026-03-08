@@ -60,7 +60,7 @@ export default function HomepageLiveFeedRail({ items = [] }) {
 
           {/* Scrollable rail */}
           {items.length === 0 ? (
-            <p className="text-xs text-gray-400 italic">Live updates will appear here.</p>
+            <p className="text-xs text-gray-400 italic">Live updates will appear here as the platform comes alive.</p>
           ) : (
             <div className="flex-1 min-w-0 relative">
               <div

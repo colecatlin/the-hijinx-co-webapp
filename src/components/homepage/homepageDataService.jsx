@@ -6,13 +6,14 @@
  *
  * Returns:
  *   { ok: true,  data: HomepageData }
- *   { ok: false, error: string, data: fallbackEmptyData }
+ *   { ok: false, error: string, data: FALLBACK_DATA }
  */
 
 import { base44 } from '@/api/base44Client';
 
 export const FALLBACK_DATA = {
   featured_story:    null,
+  featured_stories:  [],
   featured_drivers:  [],
   featured_tracks:   [],
   featured_series:   [],
@@ -21,6 +22,9 @@ export const FALLBACK_DATA = {
   activity_feed:     [],
   featured_media:    [],
   featured_products: [],
+  ticker_items:      null,
+  spotlight_driver:  null,
+  spotlight_event:   null,
 };
 
 export async function getHomepageData() {
@@ -35,14 +39,18 @@ export async function getHomepageData() {
     ok: true,
     data: {
       featured_story:    payload.featured_story    ?? null,
-      featured_drivers:  payload.featured_drivers  ?? [],
-      featured_tracks:   payload.featured_tracks   ?? [],
-      featured_series:   payload.featured_series   ?? [],
-      upcoming_events:   payload.upcoming_events   ?? [],
-      recent_results:    payload.recent_results    ?? [],
-      activity_feed:     payload.activity_feed     ?? [],
-      featured_media:    payload.featured_media    ?? [],
-      featured_products: payload.featured_products ?? [],
+      featured_stories:  Array.isArray(payload.featured_stories)  ? payload.featured_stories  : [],
+      featured_drivers:  Array.isArray(payload.featured_drivers)  ? payload.featured_drivers  : [],
+      featured_tracks:   Array.isArray(payload.featured_tracks)   ? payload.featured_tracks   : [],
+      featured_series:   Array.isArray(payload.featured_series)   ? payload.featured_series   : [],
+      upcoming_events:   Array.isArray(payload.upcoming_events)   ? payload.upcoming_events   : [],
+      recent_results:    Array.isArray(payload.recent_results)    ? payload.recent_results    : [],
+      activity_feed:     Array.isArray(payload.activity_feed)     ? payload.activity_feed     : [],
+      featured_media:    Array.isArray(payload.featured_media)    ? payload.featured_media    : [],
+      featured_products: Array.isArray(payload.featured_products) ? payload.featured_products : [],
+      ticker_items:      payload.ticker_items      ?? null,
+      spotlight_driver:  payload.spotlight_driver  ?? null,
+      spotlight_event:   payload.spotlight_event   ?? null,
     },
   };
 }

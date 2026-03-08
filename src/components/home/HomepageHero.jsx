@@ -9,9 +9,9 @@ const HERO_CONFIG = {
   headline_line1: 'Built for the ones',
   headline_line2: 'chasing more.',
   subtext: 'Motorsports, culture, data, apparel, and the people driving it forward.',
-  cta_primary:   { label: 'Enter Race Core',              page: 'Registration',    Icon: Gauge },
-  cta_secondary: { label: 'Shop HIJINX Apparel',          page: 'ApparelHome',     Icon: ShoppingBag },
-  cta_tertiary:  { label: 'Explore the world of HIJINX',  page: 'MotorsportsHome', Icon: Globe },
+  cta_primary:   { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
+  cta_secondary: { label: 'Shop HIJINX Apparel', page: 'ApparelHome',     Icon: ShoppingBag },
+  cta_tertiary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
   stats: [
     { value: 'LIVE',  label: 'Platform' },
     { value: '46+',   label: 'Series Tracked' },
