@@ -17,6 +17,7 @@ import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight
 import HomepageLiveFeedRail from '@/components/homepage/HomepageLiveFeedRail';
 import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappeningNow';
 import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
+import HomepageTrendingNow from '@/components/homepage/HomepageTrendingNow';
 
 export default function Home() {
   // Current user for personalization + Race Core access check
@@ -50,49 +51,61 @@ export default function Home() {
   const hp = hpResult?.data ?? FALLBACK_DATA;
   const formattedFeed = formatActivityFeedItems(hp.activity_feed);
 
+  const hasSpotlight = !!(hp.spotlight_driver || hp.spotlight_event);
+
   return (
     <PageShell>
-      {/* Hero — full screen cinematic entry */}
+
+      {/* ── 1. Hero ─────────────────────────────────────────────────────────── */}
       <HomepageHero />
 
-      {/* Live ticker — prefers manual ticker_items, falls back to activity feed, then static */}
+      {/* ── Ticker ──────────────────────────────────────────────────────────── */}
       <HomepageTicker
         tickerItems={hp.ticker_items}
         activityItems={hp.activity_feed?.slice(0, 6)}
       />
 
-      {/* 1. Live feed rail — compact horizontal strip */}
-      <HomepageLiveFeedRail items={formattedFeed.slice(0, 8)} />
+      {/* ── 2. Live Feed Rail — compact horizontal strip, white bg ──────────── */}
+      <HomepageLiveFeedRail items={formattedFeed.slice(0, 10)} />
 
-      {/* 1b. Spotlights — Driver + Event, shown when at least one exists */}
-      {(hp.spotlight_driver || hp.spotlight_event) && (
-        <section className="bg-[#060A10] py-10 border-b border-gray-900">
+      {/* ── 3. Spotlights — Driver + Event ──────────────────────────────────── */}
+      {hasSpotlight && (
+        <section className="bg-[#060A10] py-10 border-b border-gray-900/60">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-px bg-[#00FFDA]" />
               <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA]/70 uppercase font-bold">Spotlight</span>
             </div>
             <div className={`grid gap-4 ${hp.spotlight_driver && hp.spotlight_event ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
-              <HomepageDriverSpotlight driver={hp.spotlight_driver} />
-              <HomepageEventSpotlight  event={hp.spotlight_event} />
+              {hp.spotlight_driver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
+              {hp.spotlight_event  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
             </div>
           </div>
         </section>
       )}
 
-      {/* 1c. What's Happening Now — activity card grid */}
-      <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
-
-      {/* 2. Choose Your Lane — route cards */}
+      {/* ── 4. Choose Your Lane — ecosystem routing ─────────────────────────── */}
       <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
 
-      {/* 3. Featured editorial story */}
+      {/* ── 5. Trending Now — tabbed entity discovery ───────────────────────── */}
+      <HomepageTrendingNow
+        drivers={hp.featured_drivers}
+        tracks={hp.featured_tracks}
+        series={hp.featured_series}
+        events={hp.upcoming_events}
+        isLoading={isLoading}
+      />
+
+      {/* ── 6. Featured Story — editorial ───────────────────────────────────── */}
       <HomepageFeaturedStory
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 4)}
       />
 
-      {/* 4. Featured motorsports — tabbed discovery */}
+      {/* ── 7. What's Happening Now — activity card grid ────────────────────── */}
+      <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
+
+      {/* ── 8. Featured Motorsports — deeper entity browse ──────────────────── */}
       <HomepageFeaturedEntities
         drivers={hp.featured_drivers}
         tracks={hp.featured_tracks}
@@ -104,17 +117,18 @@ export default function Home() {
         isLoading={isLoading}
       />
 
-      {/* 5. Race Core system feature */}
+      {/* ── 9. Race Core system feature ─────────────────────────────────────── */}
       <HomepageRaceCoreTeaser />
 
-      {/* 6. Apparel feature */}
+      {/* ── 10. Apparel feature ─────────────────────────────────────────────── */}
       <HomepageApparel products={hp.featured_products} />
 
-      {/* 7. Movement / culture */}
+      {/* ── 11. Movement / culture ──────────────────────────────────────────── */}
       <HomepageMovement />
 
-      {/* 8. Final CTA paths */}
+      {/* ── 12. Final CTA ───────────────────────────────────────────────────── */}
       <HomepageFinalCTA />
+
     </PageShell>
   );
 }

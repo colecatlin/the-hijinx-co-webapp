@@ -104,7 +104,7 @@ export default function HomepageChooseYourLane({ user, hasRaceCoreAccess = false
   const cards = getHomepageRouteCards({ user, hasRaceCoreAccess });
 
   return (
-    <section className="bg-gray-50 border-b border-gray-100 py-14">
+    <section className="bg-[#EDF6F7] border-b border-[#C8E8EC] py-14">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="mb-10">
