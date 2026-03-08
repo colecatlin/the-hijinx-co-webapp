@@ -69,7 +69,7 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
         )}
         {collaborator.is_racecore_entity && (
           <Button variant="outline" size="sm" onClick={() => onRaceCore(collaborator)} className="gap-1.5 text-xs">
-            <Gauge className="w-3.5 h-3.5" /> Race Core
+            <Gauge className="w-3.5 h-3.5" /> Open Race Core
           </Button>
         )}
         <Button variant="outline" size="sm" onClick={() => onManage(collaborator)}
