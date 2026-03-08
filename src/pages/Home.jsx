@@ -50,11 +50,8 @@ export default function Home() {
         activityItems={hp.activity_feed?.slice(0, 6)}
       />
 
-      {/* 1. Live activity feed */}
-      <HomepageActivityFeed
-        items={hp.activity_feed}
-        isLoading={isLoading}
-      />
+      {/* 1. Live feed rail — compact horizontal strip */}
+      <HomepageLiveFeedRail items={formattedFeed.slice(0, 8)} />
 
       {/* 1b. Spotlights — Driver + Event, shown when at least one exists */}
       {(hp.spotlight_driver || hp.spotlight_event) && (
