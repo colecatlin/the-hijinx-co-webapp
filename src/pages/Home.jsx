@@ -38,8 +38,8 @@ export default function Home() {
       {/* Hero — full screen cinematic entry */}
       <HomepageHero />
 
-      {/* Live ticker */}
-      <HomepageTicker />
+      {/* Live ticker — passes up to 6 live activity titles */}
+      <HomepageTicker activityItems={hp.activity_feed?.slice(0, 6)} />
 
       {/* 1. Live activity feed */}
       <HomepageActivityFeed
