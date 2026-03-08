@@ -67,7 +67,6 @@ import EventDirectory from './pages/EventDirectory';
 import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
-import Home from './pages/Home';
 import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
 import ManageAccess from './pages/ManageAccess';
@@ -147,7 +146,6 @@ export const PAGES = {
     "EventProfile": EventProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
-    "Home": Home,
     "Hospitality": Hospitality,
     "Learning": Learning,
     "ManageAccess": ManageAccess,
