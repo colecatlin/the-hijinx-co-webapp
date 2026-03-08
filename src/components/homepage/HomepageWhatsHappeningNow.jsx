@@ -100,7 +100,7 @@ function EmptyState() {
 
 export default function HomepageWhatsHappeningNow({ items = [] }) {
   return (
-    <section className="bg-gray-50 border-b border-gray-100 py-12">
+    <section className="bg-[#F5F9FA] border-b border-[#E0EDEF] py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-7">
