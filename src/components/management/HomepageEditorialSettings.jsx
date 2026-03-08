@@ -88,6 +88,9 @@ export default function HomepageEditorialSettings() {
     hero_ticker_items: [],
     activity_feed_mode: 'auto',
     featured_entities_mode: 'mixed',
+    spotlight_driver_id: '',
+    spotlight_event_id: '',
+    spotlight_mode: 'mixed',
   };
 
   const [form, setForm] = useState(EMPTY);
@@ -106,6 +109,9 @@ export default function HomepageEditorialSettings() {
         hero_ticker_items:    existing.hero_ticker_items     || [],
         activity_feed_mode:   existing.activity_feed_mode   || 'auto',
         featured_entities_mode: existing.featured_entities_mode || 'mixed',
+        spotlight_driver_id:    existing.spotlight_driver_id    || '',
+        spotlight_event_id:     existing.spotlight_event_id     || '',
+        spotlight_mode:         existing.spotlight_mode         || 'mixed',
       });
     }
   }, [existing?.id]);
@@ -222,6 +228,39 @@ export default function HomepageEditorialSettings() {
 
         <FieldRow label="Featured Product IDs">
           <TagInput value={form.featured_product_ids} onChange={v => set('featured_product_ids', v)} placeholder="Paste a Product ID…" />
+        </FieldRow>
+      </div>
+
+      {/* Spotlights */}
+      <div className="space-y-5 p-4 bg-white border border-gray-200 rounded-lg">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Spotlight Overrides</h4>
+        </div>
+        <FieldRow label="Spotlight Mode" hint="auto = automatic selection · manual = use IDs below only · mixed = prefer IDs, fall back to auto">
+          <Select value={form.spotlight_mode} onValueChange={v => set('spotlight_mode', v)}>
+            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto</SelectItem>
+              <SelectItem value="manual">Manual</SelectItem>
+              <SelectItem value="mixed">Mixed</SelectItem>
+            </SelectContent>
+          </Select>
+        </FieldRow>
+        <FieldRow label="Spotlight Driver ID" hint="Paste a Driver ID to pin a specific driver in the homepage spotlight">
+          <Input
+            value={form.spotlight_driver_id}
+            onChange={e => set('spotlight_driver_id', e.target.value.trim())}
+            placeholder="e.g. abc123"
+            className="text-sm h-8 font-mono"
+          />
+        </FieldRow>
+        <FieldRow label="Spotlight Event ID" hint="Paste an Event ID to pin a specific event in the homepage spotlight">
+          <Input
+            value={form.spotlight_event_id}
+            onChange={e => set('spotlight_event_id', e.target.value.trim())}
+            placeholder="e.g. def456"
+            className="text-sm h-8 font-mono"
+          />
         </FieldRow>
       </div>
 
