@@ -103,21 +103,35 @@ export default function HomepageActivityFeed({ items = [], isLoading }) {
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide"
-        >
-          {items.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.35 }}
-            >
-              <FeedCard item={item} />
-            </motion.div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex gap-3 -mx-6 px-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-64 sm:w-72 h-[152px] bg-gray-100 animate-pulse" />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex items-center justify-center py-12 border border-dashed border-gray-200">
+            <p className="text-sm text-gray-400 text-center">
+              New activity will appear here as the platform comes alive.
+            </p>
+          </div>
+        ) : (
+          <div
+            ref={scrollRef}
+            className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide"
+          >
+            {items.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.35 }}
+              >
+                <FeedCard item={item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
