@@ -335,7 +335,7 @@ Deno.serve(async (req) => {
     } else {
       // ---- 4. Create new record ----
       const createData = filterNonEmpty({
-        ...payload,
+        ...payloadClean,
         normalized_name: normalized,
         canonical_slug: slug,
         canonical_key: canonicalKey,
