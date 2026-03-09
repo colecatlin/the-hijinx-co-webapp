@@ -183,7 +183,7 @@ export default function HomepageFeaturedEntities({
                     <motion.div key={ev.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                       <EntityCard
                         name={ev.name}
-                        sub={ev.series_name || ev.event_date}
+                        sub={ev.series_name || (ev.event_date && !isNaN(new Date(ev.event_date)) ? new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null)}
                         imageUrl={null}
                         linkPage="EventDirectory"
                         linkId={ev.id}
