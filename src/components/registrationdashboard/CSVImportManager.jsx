@@ -376,24 +376,24 @@ export default function CSVImportManager({
     };
     setImportSummary(summary);
 
-    // Log unresolved warnings
-    if (summary.unresolved.length > 0) {
-      console.warn('CSVImportManager: unresolved drivers', summary.unresolved);
-    }
-
-    // Log operation
+    // Log operation (standardized)
     try {
       await base44.asServiceRole.entities.OperationLog.create({
-        operation_type: 'csv_import',
+        operation_type: 'csv_import_completed',
         source_type: 'manual',
-        entity_name: importType,
+        entity_name: importType.charAt(0).toUpperCase() + importType.slice(1),
         status: 'success',
         metadata: {
+          importer_name: 'registration_dashboard_csv',
           event_id: eventId,
           import_type: importType,
-          rows_processed: summary.processed,
-          rows_skipped: summary.skipped,
-          rows_created: summary.created,
+          imported_count: summary.created,
+          updated_count: summary.updated,
+          skipped_count: summary.skipped,
+          unresolved_count: summary.unresolved.length,
+          warning_count: 0,
+          error_count: 0,
+          total_rows: summary.processed,
         },
       });
     } catch { /* OperationLog may not exist */ }
