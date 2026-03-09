@@ -35,11 +35,17 @@ export default function TrackForm({ track, onClose }) {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => {
-      if (track) {
-        return base44.entities.Track.update(track.id, data);
-      }
-      return base44.entities.Track.create(data);
+    mutationFn: async (data) => {
+      const payload = { ...data, ...(track && { id: track.id }) };
+
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'track',
+        payload,
+        triggered_from: 'track_form',
+      });
+
+      if (result?.data?.source_record) return result.data.source_record;
+      throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tracks'] });
