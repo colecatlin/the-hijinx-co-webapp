@@ -384,6 +384,64 @@ export default function Diagnostics() {
           </Card>
         )}
 
+        {/* ── V1 Integration Verification ─────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FlaskConical className="w-4 h-4 text-indigo-600" /> V1 Integration Verification
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runV1Verification}
+                disabled={v1Running}
+                variant="outline"
+                className="border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              >
+                {v1Running
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running V1 Verification…</>
+                  : <><Play className="w-4 h-4 mr-2" />Run V1 Verification</>}
+              </Button>
+              {v1Report && (
+                <span className="text-xs text-gray-400">
+                  Last run: {new Date(v1Report.generated_at).toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {v1Running && (
+              <div className="py-6 text-center text-sm text-gray-500">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-400" />
+                Sampling records and verifying platform flows…
+              </div>
+            )}
+
+            {v1Report && !v1Running && (() => {
+              const s = v1Report.summary || {};
+              return (
+                <div className="space-y-4">
+                  {/* Summary cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <SummaryCard label="Total Checks" count={s.total_checks} severity="ok"     icon={CheckCircle} />
+                    <SummaryCard label="Passed"       count={s.passed}       severity="ok"     icon={CheckCircle} />
+                    <SummaryCard label="Warnings"     count={s.warnings}     severity="medium" icon={AlertTriangle} />
+                    <SummaryCard label="Failures"     count={s.failures}     severity="high"   icon={XCircle} />
+                  </div>
+                  {/* Per-section expandable panels */}
+                  <div className="space-y-2">
+                    {Object.keys(V1_SECTION_LABELS).map(key => (
+                      v1Report[key] && (
+                        <V1SectionPanel key={key} sectionKey={key} section={v1Report[key]} />
+                      )
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* ── Fallback and Cache Hardening ────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
