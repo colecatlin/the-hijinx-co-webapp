@@ -27,7 +27,7 @@ export default function HomepageApparel({ products = [] }) {
             to={createPageUrl('ApparelHome')}
             className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase"
           >
-            Shop All <ArrowRight className="w-3 h-3" />
+            Shop HIJINX Apparel <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
@@ -69,7 +69,7 @@ export default function HomepageApparel({ products = [] }) {
                 </p>
                 <div className="inline-flex items-center gap-2.5 px-6 py-3 bg-[#00FFDA] text-[#080808] text-xs font-black tracking-wider uppercase group-hover:bg-white transition-all duration-300">
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  Shop Collection
+                  Shop HIJINX Apparel
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>
