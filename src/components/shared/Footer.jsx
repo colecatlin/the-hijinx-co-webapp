@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import NewsletterSignup from './NewsletterSignup';
+import ReportIssueModal from '@/components/system/reportIssueModal';
 
 const footerLinks = [
   {
@@ -34,6 +35,7 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const [reportOpen, setReportOpen] = useState(false);
   return (
     <footer className="bg-[#232323] text-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
@@ -75,11 +77,20 @@ export default function Footer() {
           <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
             © {new Date().getFullYear()} The Hijinx Co LLC. All rights reserved.
           </p>
-          <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
-            Built on purpose.
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setReportOpen(true)}
+              className="font-mono text-xs text-[#FFF8F5] opacity-50 hover:opacity-100 transition-opacity underline underline-offset-2"
+            >
+              Report an Issue
+            </button>
+            <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
+              Built on purpose.
+            </p>
+          </div>
         </div>
       </div>
+      <ReportIssueModal open={reportOpen} onClose={() => setReportOpen(false)} />
     </footer>
   );
 }
