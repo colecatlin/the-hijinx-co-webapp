@@ -11,9 +11,9 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
 
   if (!featured) {
     return (
-      <section className="bg-white py-20 md:py-28 border-b border-gray-100">
+      <section className="bg-white py-16 md:py-24 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-end justify-between mb-10 md:mb-12">
+          <div className="flex items-end justify-between mb-8 md:mb-12">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-px bg-[#00FFDA]" />
@@ -30,7 +30,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
           </div>
           <Link
             to={createPageUrl('OutletHome')}
-            className="group relative flex flex-col justify-end min-h-[360px] overflow-hidden border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 bg-gradient-to-br from-[#001F1F] to-[#000D20]"
+            className="group relative flex flex-col justify-end min-h-[320px] md:min-h-[360px] overflow-hidden border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 bg-gradient-to-br from-[#001F1F] to-[#000D20]"
           >
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/40 to-transparent" />
             <div className="absolute inset-0 bg-[#00FFDA]/3 group-hover:bg-[#00FFDA]/6 transition-all" />
