@@ -38,7 +38,7 @@ const CTA_PATHS = [
 
 export default function HomepageFinalCTA() {
   return (
-    <section className="relative py-20 md:py-28 overflow-hidden">
+    <section className="relative py-16 md:py-24 overflow-hidden">
 
       {/* Rich teal-to-navy gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#001F1F] via-[#001233] to-[#000D20]" />
