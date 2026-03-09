@@ -356,7 +356,7 @@ Deno.serve(async (req) => {
         entity_type,
         record_id: record.id,
         canonical_key: canonicalKey,
-        external_uid: payload.external_uid || null,
+        external_uid: payloadClean.external_uid || null,
         match_method: matchMethod || 'none',
         display_name: displayName,
         ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
