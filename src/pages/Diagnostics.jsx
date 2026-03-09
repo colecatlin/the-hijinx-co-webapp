@@ -135,6 +135,10 @@ export default function Diagnostics() {
   const [repairResult, setRepairResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  // ── Data routing verification ──────────────────────────────────────────────
+  const [routeReport, setRouteReport] = useState(null);
+  const [routeRunning, setRouteRunning] = useState(false);
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -175,6 +179,20 @@ export default function Diagnostics() {
     navigator.clipboard.writeText(JSON.stringify(report, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const runRouteVerification = async () => {
+    setRouteRunning(true);
+    setRouteReport(null);
+    try {
+      const res = await base44.functions.invoke('runDataRoutingVerification', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setRouteReport(res.data);
+      toast.success('Data routing verification complete');
+    } catch (err) {
+      toast.error(`Verification failed: ${err.message}`);
+    }
+    setRouteRunning(false);
   };
 
   if (user?.role !== 'admin') {
@@ -276,6 +294,104 @@ export default function Diagnostics() {
             </CardContent>
           </Card>
         )}
+
+        {/* ── Data and Routing Verification ───────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" /> Data and Routing Verification
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runRouteVerification}
+                disabled={routeRunning}
+                variant="outline"
+                className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                {routeRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Run Data Verification</>}
+              </Button>
+              {routeReport && (
+                <span className="text-xs text-gray-400">
+                  Last run: {new Date(routeReport.summary?.generated_at).toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {routeRunning && (
+              <div className="py-6 text-center text-sm text-gray-500">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+                Sampling records and verifying routes…
+              </div>
+            )}
+
+            {routeReport && !routeRunning && (() => {
+              const sum = routeReport.summary || {};
+              const hp  = routeReport.homepage || {};
+              const pr  = routeReport.public_routes  || {};
+              const mr  = routeReport.managed_routes || {};
+              const lr  = routeReport.linked_records || {};
+              return (
+                <div className="space-y-5">
+                  {/* Summary cards */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <SummaryCard label="Total Checked" count={sum.total_checked} severity="ok"    icon={CheckCircle} />
+                    <SummaryCard label="Failures"      count={sum.failures}      severity="high"   icon={XCircle} />
+                    <SummaryCard label="Warnings"      count={sum.warnings}      severity="medium" icon={AlertTriangle} />
+                  </div>
+
+                  {/* Homepage Payload */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-gray-700">Homepage Payload</h4>
+                      {hp.ok
+                        ? <span className="flex items-center gap-1 text-xs text-green-600"><CheckCircle className="w-3.5 h-3.5" />OK</span>
+                        : <span className="flex items-center gap-1 text-xs text-red-600"><XCircle className="w-3.5 h-3.5" />Failed</span>}
+                    </div>
+                    {hp.error && <p className="text-xs text-red-600">Error: {hp.error}</p>}
+                    <ExpandableList title="Missing fields" items={hp.missing || []} severity="high" renderItem={i => i} />
+                    <ExpandableList title="Warnings"       items={hp.warnings || []} severity="medium" renderItem={i => i} />
+                  </div>
+
+                  {/* Public Routes */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Public Routes
+                      <span className="ml-2 text-xs text-gray-400 font-normal">({pr.checked || 0} checked)</span>
+                    </h4>
+                    <ExpandableList title="Route failures" items={pr.failures || []} severity="high"
+                      renderItem={r => `[${r.entityType}] id=${r.id || '?'} — ${r.reason}`} />
+                    <ExpandableList title="Route warnings (slug fallback)" items={pr.warnings || []} severity="medium"
+                      renderItem={r => `[${r.entityType}] id=${r.id} — ${r.warn}`} />
+                  </div>
+
+                  {/* Managed Routes */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Managed Routes (EntityCollaborator)
+                      <span className="ml-2 text-xs text-gray-400 font-normal">({mr.checked || 0} checked)</span>
+                    </h4>
+                    <ExpandableList title="Route failures" items={mr.failures || []} severity="high"
+                      renderItem={r => `[${r.entityType}:${r.entityId}] ${r.check} — ${r.reason}`} />
+                  </div>
+
+                  {/* Linked Records */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Source Linkage
+                      <span className="ml-2 text-xs text-gray-400 font-normal">({lr.checked || 0} checked)</span>
+                    </h4>
+                    <ExpandableList title="Broken links" items={lr.failures || []} severity="high"
+                      renderItem={r => `[${r.entityType}:${r.id}] ${r.field}=${r.value} — ${r.reason}`} />
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
 
         {/* ── Report ──────────────────────────────────────────────────────── */}
         {report && !running && (
