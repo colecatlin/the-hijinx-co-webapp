@@ -71,7 +71,7 @@ export default function HomepageDriverSpotlight({ driver }) {
               <Zap className="w-3.5 h-3.5 text-[#00FFDA] mt-0.5 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-white/70 text-xs leading-relaxed line-clamp-1">{driver.latest_activity_title}</p>
-                {driver.latest_activity_date && (
+                {driver.latest_activity_date && !isNaN(new Date(driver.latest_activity_date)) && (
                   <p className="font-mono text-[9px] text-white/30 mt-0.5">
                     {formatDistanceToNow(new Date(driver.latest_activity_date), { addSuffix: true })}
                   </p>
