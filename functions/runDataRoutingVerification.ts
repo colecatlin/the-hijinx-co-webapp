@@ -51,11 +51,12 @@ function buildEditorRoute(entityType, entityId) {
 // ── Payload verifier (server-side) ────────────────────────────────────────────
 
 function verifyHomepageShape(data) {
-  const REQUIRED = ['featured_story', 'featured_drivers', 'featured_events', 'featured_series', 'featured_tracks'];
+  // Keys used by getHomepageData — use upcoming_events not featured_events
+  const REQUIRED = ['featured_story', 'featured_drivers', 'upcoming_events', 'featured_series', 'featured_tracks'];
   const missing = REQUIRED.filter(k => !(k in data));
   const warnings = [];
 
-  ['featured_drivers','featured_events','featured_series','featured_tracks'].forEach(k => {
+  ['featured_drivers','upcoming_events','featured_series','featured_tracks'].forEach(k => {
     if (k in data && data[k] !== null && !Array.isArray(data[k])) warnings.push(`${k} is not array or null`);
     if (Array.isArray(data[k]) && data[k].length === 0) warnings.push(`${k} is empty`);
   });
@@ -84,7 +85,8 @@ Deno.serve(async (req) => {
 
     // ── 1. Homepage payload ──────────────────────────────────────────────────
     try {
-      const hpRes = await base44.functions.invoke('getHomepageData', {});
+      // Use service role so this works regardless of caller's auth state
+      const hpRes = await base44.asServiceRole.functions.invoke('getHomepageData', {});
       const hpData = hpRes?.data || hpRes || {};
       const hpVerify = verifyHomepageShape(hpData);
       results.homepage = { ...hpVerify, error: null };

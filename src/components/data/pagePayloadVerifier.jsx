@@ -124,8 +124,9 @@ export function verifyEventProfilePayload(payload) {
 
 // ── Homepage ──────────────────────────────────────────────────────────────────
 
-const HOMEPAGE_REQUIRED_KEYS = ['featured_story', 'featured_drivers', 'featured_events', 'featured_series', 'featured_tracks'];
-const HOMEPAGE_ARRAY_KEYS    = ['featured_drivers', 'featured_events', 'featured_series', 'featured_tracks'];
+// Keys must match what getHomepageData actually returns (upcoming_events, not featured_events)
+const HOMEPAGE_REQUIRED_KEYS = ['featured_story', 'featured_drivers', 'upcoming_events', 'featured_series', 'featured_tracks'];
+const HOMEPAGE_ARRAY_KEYS    = ['featured_drivers', 'upcoming_events', 'featured_series', 'featured_tracks'];
 
 export function verifyHomepagePayload(payload) {
   const missing = [];
