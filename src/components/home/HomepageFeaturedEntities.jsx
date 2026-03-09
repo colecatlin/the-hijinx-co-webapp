@@ -20,7 +20,7 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
   return (
     <Link
       to={href}
-      className="group bg-white border border-gray-200 hover:border-[#00FFDA] hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
+      className="group bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
     >
       <div className="aspect-[16/9] overflow-hidden bg-gray-100">
         {imageUrl ? (
@@ -37,13 +37,13 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
         )}
       </div>
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <h4 className="text-sm font-bold text-[#222] group-hover:text-[#008080] transition-colors tracking-tight leading-snug line-clamp-2">
+        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-[#1DA1A1] transition-colors tracking-tight leading-snug line-clamp-2">
           {name}
         </h4>
         {sub && (
           <p className="font-mono text-[9px] tracking-[0.2em] text-gray-400 uppercase line-clamp-1">{sub}</p>
         )}
-        <div className="flex items-center gap-1 mt-auto pt-2 text-[10px] font-bold text-gray-300 group-hover:text-[#008080] uppercase tracking-wider transition-colors">
+        <div className="flex items-center gap-1 mt-auto pt-2 text-[10px] font-bold text-gray-400 group-hover:text-[#1DA1A1] uppercase tracking-wider transition-colors">
           View <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function HomepageFeaturedEntities({
           </div>
           <Link
             to={createPageUrl(activeTabConfig?.page || 'MotorsportsHome')}
-            className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase self-end"
+            className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-500 hover:text-[#1DA1A1] transition-colors uppercase self-end font-bold"
           >
             Explore Motorsports <ArrowRight className="w-3 h-3" />
           </Link>
@@ -94,8 +94,8 @@ export default function HomepageFeaturedEntities({
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap border ${
                   active
-                    ? 'bg-[#111] text-white border-[#111] shadow-sm'
-                    : 'border-gray-300 bg-white text-gray-400 hover:border-[#00FFDA] hover:text-[#008080]'
+                    ? 'bg-[#1DA1A1] text-white border-[#1DA1A1] shadow-sm'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#1DA1A1] hover:text-[#1DA1A1] hover:bg-[#F0FAFA]'
                 }`}
               >
                 <TabIcon className="w-3.5 h-3.5" />
@@ -203,7 +203,7 @@ export default function HomepageFeaturedEntities({
         <div className="mt-8 sm:hidden">
           <Link
             to={createPageUrl(activeTabConfig?.page || 'MotorsportsHome')}
-            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] py-3.5 text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-[#008080] transition-all"
+            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] py-3.5 text-xs font-bold tracking-wider uppercase text-gray-500 hover:text-[#1DA1A1] transition-all"
           >
             {TAB_BROWSE_LABELS[activeTab] || 'Explore Motorsports'}
             <ArrowRight className="w-3.5 h-3.5" />
