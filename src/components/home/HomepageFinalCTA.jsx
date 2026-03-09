@@ -83,10 +83,10 @@ export default function HomepageFinalCTA() {
               >
                 <Link
                   to={createPageUrl(path.page)}
-                  className={`group relative flex flex-col h-full min-h-[210px] p-7 border transition-all duration-300 overflow-hidden ${
+                  className={`group relative flex flex-col h-full min-h-[210px] p-7 border transition-all duration-200 overflow-hidden hover:-translate-y-0.5 ${
                     path.featured
-                      ? 'border-[#00FFDA]/40 bg-[#00FFDA]/8 hover:bg-[#00FFDA]/14 hover:border-[#00FFDA]/70'
-                      : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#2563EB]/50'
+                      ? 'border-[#00FFDA]/45 bg-[#00FFDA]/8 hover:bg-[#00FFDA]/14 hover:border-[#00FFDA]/80 hover:shadow-[0_8px_32px_rgba(0,255,218,0.1)]'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 hover:shadow-[0_8px_32px_rgba(255,255,255,0.05)]'
                   }`}
                 >
                   {path.featured && (
@@ -94,14 +94,14 @@ export default function HomepageFinalCTA() {
                   )}
 
                   <Icon className={`w-5 h-5 mb-5 transition-colors ${
-                    path.featured ? 'text-[#00FFDA]' : 'text-white/30 group-hover:text-[#2563EB]'
+                    path.featured ? 'text-[#00FFDA]' : 'text-white/40 group-hover:text-white'
                   }`} />
                   <h3 className={`text-lg font-black tracking-tight mb-2.5 ${path.featured ? 'text-[#00FFDA]' : 'text-white'}`}>
                     {path.title}
                   </h3>
-                  <p className="text-white/50 text-sm flex-1 leading-relaxed">{path.sub}</p>
-                  <div className={`flex items-center gap-1.5 mt-5 text-xs font-bold tracking-wider uppercase transition-all ${
-                    path.featured ? 'text-[#00FFDA]' : 'text-white/30 group-hover:text-[#2563EB]'
+                  <p className="text-white/60 text-sm flex-1 leading-relaxed">{path.sub}</p>
+                  <div className={`flex items-center gap-1.5 mt-5 text-xs font-bold tracking-wider uppercase transition-all group-hover:gap-2.5 ${
+                    path.featured ? 'text-[#00FFDA]' : 'text-white/40 group-hover:text-white'
                   }`}>
                     {path.cta}
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
