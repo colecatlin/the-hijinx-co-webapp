@@ -13,7 +13,7 @@ const TABS = [
   { key: 'drivers', label: 'Drivers', icon: User,     href: createPageUrl('DriverDirectory'), cta: 'Browse Drivers' },
   { key: 'tracks',  label: 'Tracks',  icon: MapPin,   href: createPageUrl('TrackDirectory'),  cta: 'Browse Tracks'  },
   { key: 'series',  label: 'Series',  icon: Trophy,   href: createPageUrl('SeriesHome'),      cta: 'Browse Series'  },
-  { key: 'events',  label: 'Events',  icon: Calendar, href: createPageUrl('EventDirectory'),  cta: 'Browse Events'  },
+  { key: 'events',  label: 'Events',  icon: Calendar, href: createPageUrl('EventDirectory'),  cta: 'Explore Motorsports' },
 ];
 
 const EMPTY_MSG = {
