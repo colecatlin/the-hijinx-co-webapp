@@ -53,10 +53,10 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
   }
 
   return (
-    <section className="bg-white py-20 md:py-28 border-b border-gray-100">
+    <section className="bg-white py-16 md:py-24 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
 
-        <div className="flex items-end justify-between mb-10 md:mb-12">
+        <div className="flex items-end justify-between mb-8 md:mb-12">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-px bg-[#00FFDA]" />
