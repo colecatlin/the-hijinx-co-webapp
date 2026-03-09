@@ -285,6 +285,86 @@ export default function Diagnostics() {
     setRouteRunning(false);
   };
 
+  // ── Launch Readiness ─────────────────────────────────────────────────────────
+  function computeLaunchReadiness() {
+    const items = [];
+
+    // Homepage
+    const hpChecks = v1Report?.homepage?.checks || [];
+    const hpFails = hpChecks.filter(c => c.status === 'fail').length;
+    const hpWarns = hpChecks.filter(c => c.status === 'warn').length;
+    items.push({
+      label: 'Homepage payload valid',
+      status: hpFails > 0 ? 'fail' : hpWarns > 0 ? 'warn' : v1Report ? 'pass' : 'unknown',
+    });
+
+    // Public routes
+    const prChecks = v1Report?.public_pages?.checks || [];
+    const prFails = prChecks.filter(c => c.status === 'fail').length;
+    const prWarns = prChecks.filter(c => c.status === 'warn').length;
+    items.push({
+      label: 'Public routes valid',
+      status: prFails > 0 ? 'fail' : prWarns > 1 ? 'warn' : v1Report ? 'pass' : 'unknown',
+    });
+
+    // Core entity pages
+    items.push({
+      label: 'Core entity pages load safely',
+      status: routeReport
+        ? (routeReport.public_routes?.failures?.length > 0 ? 'fail' :
+           routeReport.public_routes?.warnings?.length > 5 ? 'warn' : 'pass')
+        : 'unknown',
+    });
+
+    // Profile & dashboard
+    const pdChecks = v1Report?.profile_dashboard?.checks || [];
+    const pdFails = pdChecks.filter(c => c.status === 'fail').length;
+    items.push({
+      label: 'Profile & dashboard access healthy',
+      status: pdFails > 0 ? 'fail' : v1Report ? 'pass' : 'unknown',
+    });
+
+    // Race Core
+    const rcChecks = v1Report?.racecore?.checks || [];
+    const rcFails = rcChecks.filter(c => c.status === 'fail').length;
+    items.push({
+      label: 'Race Core workspace resolution healthy',
+      status: rcFails > 0 ? 'fail' : v1Report ? 'pass' : 'unknown',
+    });
+
+    // Source sync
+    const ssChecks = v1Report?.source_sync?.checks || [];
+    const ssFails = ssChecks.filter(c => c.status === 'fail').length;
+    items.push({
+      label: 'Source sync pipeline healthy',
+      status: ssFails > 0 ? 'fail' : v1Report ? 'pass' : 'unknown',
+    });
+
+    // Duplicate risk
+    const dupHigh = report?.source_audit?.summary?.duplicate_count || 0;
+    items.push({
+      label: 'Duplicate risk low',
+      status: report ? (dupHigh > 0 ? 'warn' : 'pass') : 'unknown',
+    });
+
+    // Diagnostics clean
+    const totalHigh = report?.summary?.high_priority_issues || 0;
+    items.push({
+      label: 'Diagnostics clean or acceptable',
+      status: report ? (totalHigh > 5 ? 'fail' : totalHigh > 0 ? 'warn' : 'pass') : 'unknown',
+    });
+
+    const known = items.filter(i => i.status !== 'unknown');
+    const anyFail = known.some(i => i.status === 'fail');
+    const anyWarn = known.some(i => i.status === 'warn');
+    const overallReady = known.length < 4 ? null : anyFail ? false : anyWarn ? null : true;
+
+    return { items, overallReady };
+  }
+
+  const { items: launchItems, overallReady } = computeLaunchReadiness();
+  const hasAnyData = !!(v1Report || routeReport || report);
+
   if (user?.role !== 'admin') {
     return (
       <ManagementLayout currentPage="Diagnostics">
