@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   CheckCircle, AlertTriangle, XCircle, RefreshCw, Loader2,
   ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck, FlaskConical,
-  Rocket, ShieldCheck, Activity, Flag,
+  Rocket, ShieldCheck, Activity, Flag, AlertCircle,
 } from 'lucide-react';
 import { ALL_FALLBACKS, verifyFallbackShape } from '@/components/data/fallbackContracts';
 import { INVALIDATION_GROUPS } from '@/components/data/invalidationContract';
