@@ -21,7 +21,7 @@ export default function HomepageApparel({ products = [] }) {
               <div className="w-8 h-px bg-[#00FFDA]" />
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">HIJINX CO.</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">Lifestyle Apparel</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Lifestyle Apparel</h2>
           </div>
           <Link
             to={createPageUrl('ApparelHome')}
@@ -43,7 +43,7 @@ export default function HomepageApparel({ products = [] }) {
           >
             <Link
               to={createPageUrl('ApparelHome')}
-              className="group relative flex flex-col justify-end min-h-[400px] overflow-hidden border border-gray-300 hover:border-[#00FFDA] transition-all duration-300"
+              className="group relative flex flex-col justify-end min-h-[400px] overflow-hidden border border-gray-300 hover:border-[#1DA1A1] hover:shadow-[0_8px_40px_rgba(0,0,0,0.15)] transition-all duration-300"
             >
               <img
                 src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&q=80"
@@ -89,14 +89,14 @@ export default function HomepageApparel({ products = [] }) {
               >
                 <Link
                   to={createPageUrl('ApparelHome')}
-                  className="group flex flex-col justify-between h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#00FFDA] hover:shadow-sm p-5 transition-all duration-200"
+                  className="group flex flex-col justify-between h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 p-5 transition-all duration-200"
                 >
                   <div>
                     <span className="font-mono text-[9px] tracking-[0.3em] text-[#008080] uppercase font-bold">{card.tag}</span>
-                    <h4 className="text-sm font-black text-[#111] mt-2 group-hover:text-[#008080] transition-colors">{card.label}</h4>
-                    <p className="text-gray-500 text-xs mt-1 leading-relaxed">{card.sub}</p>
+                    <h4 className="text-sm font-bold text-gray-900 mt-2 group-hover:text-[#1DA1A1] transition-colors">{card.label}</h4>
+                    <p className="text-gray-600 text-xs mt-1 leading-relaxed">{card.sub}</p>
                   </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#00FFDA] group-hover:translate-x-1 transition-all mt-3" />
+                  <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#1DA1A1] group-hover:translate-x-1 transition-all mt-3" />
                 </Link>
               </motion.div>
             ))}
@@ -106,7 +106,7 @@ export default function HomepageApparel({ products = [] }) {
         <div className="mt-6 md:hidden">
           <Link
             to={createPageUrl('ApparelHome')}
-            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#008080] transition-all uppercase"
+            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#1DA1A1] transition-all uppercase"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             Shop HIJINX Apparel
