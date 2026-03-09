@@ -127,6 +127,8 @@ export default function HomepageEditorialSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['homepageEditorialSettings'] });
+      // Also bust the homepage data cache so live homepage reflects new settings immediately
+      queryClient.invalidateQueries({ queryKey: ['homepageData'] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     },

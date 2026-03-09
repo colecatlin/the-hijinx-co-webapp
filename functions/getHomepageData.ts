@@ -154,7 +154,8 @@ Deno.serve(async (req) => {
     // Fall back to auto spotlight logic if manual IDs weren't set or resolved
     if (!spotlightDriver || !spotlightEvent) {
       try {
-        const spotRes = await base44.functions.invoke('getHomepageSpotlights', {});
+        // Use service role so this works with and without a user session (public homepage)
+        const spotRes = await base44.asServiceRole.functions.invoke('getHomepageSpotlights', {});
         if (!spotlightDriver) spotlightDriver = spotRes?.spotlight_driver || null;
         if (!spotlightEvent)  spotlightEvent  = spotRes?.spotlight_event  || null;
       } catch (_) {}

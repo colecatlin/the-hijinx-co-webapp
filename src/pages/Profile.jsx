@@ -114,8 +114,14 @@ export default function Profile() {
         state: data.state,
         country: data.country,
         newsletter_subscriber: data.newsletter_subscriber,
+        // Include favorites so they persist
+        favorite_drivers: data.favorite_drivers || [],
+        favorite_teams: data.favorite_teams || [],
+        favorite_series: data.favorite_series || [],
+        favorite_tracks: data.favorite_tracks || [],
       });
-      await base44.functions.invoke('updateUserProfile', { formData: data });
+      // Non-critical secondary update — soft-fail so it never blocks a profile save
+      base44.functions.invoke('updateUserProfile', { formData: data }).catch(() => {});
     },
     onSuccess: () => invalidateDataGroups(queryClient, ['profile']),
   });
@@ -420,9 +426,10 @@ export default function Profile() {
                             <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[inv.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                               {inv.entity_type}
                             </Badge>
-                            {inv.expiration_date && (
-                              <span className="text-xs text-gray-500">Expires {format(new Date(inv.expiration_date), 'MMM d')}</span>
-                            )}
+                            {inv.expiration_date && (() => {
+                              try { return <span className="text-xs text-gray-500">Expires {format(new Date(inv.expiration_date), 'MMM d')}</span>; }
+                              catch { return <span className="text-xs text-gray-500">Expires soon</span>; }
+                            })()}
                           </div>
                         </div>
                         <Button type="button" size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
@@ -461,7 +468,7 @@ export default function Profile() {
                           <div className="flex-1">
                             <p className="font-medium text-gray-900 text-xs">{log.operation_type}</p>
                             <p className="text-xs text-gray-500 mt-0.5">{log.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">{format(new Date(log.created_date), 'MMM d, HH:mm')}</p>
+                            <p className="text-xs text-gray-400 mt-1">{(() => { try { return format(new Date(log.created_date), 'MMM d, HH:mm'); } catch { return '—'; } })()}</p>
                           </div>
                           <Badge variant="outline" className="text-xs ml-3 flex-shrink-0">{log.status || 'completed'}</Badge>
                         </div>

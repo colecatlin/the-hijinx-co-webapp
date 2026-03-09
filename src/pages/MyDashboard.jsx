@@ -16,6 +16,7 @@ import {
   buildEditorUrl,
 } from '@/components/entities/entityResolver';
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
@@ -154,8 +155,7 @@ export default function MyDashboard() {
   const handleSetPrimary = async (collaborator) => {
     setSettingPrimary(collaborator.entity_id);
     await setPrimaryEntityOnUser({ currentUser: user, entityType: collaborator.entity_type, entityId: collaborator.entity_id });
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user?.id] });
+    invalidateDataGroups(queryClient, ['profile', 'collaborators']);
     setSettingPrimary(false);
   };
 
