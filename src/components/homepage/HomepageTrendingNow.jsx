@@ -8,6 +8,7 @@ import { createPageUrl } from '@/components/utils';
 import { TrendingUp, User, MapPin, Trophy, Calendar, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TABS = [
   { key: 'drivers', label: 'Drivers', icon: User,     href: createPageUrl('DriverDirectory'), cta: 'Browse Drivers' },
