@@ -77,7 +77,7 @@ export default function HomepageRaceCoreTeaser() {
               className="group inline-flex items-center gap-2.5 px-7 py-4 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
             >
               <Gauge className="w-4 h-4" />
-              Enter Race Core
+              Open Race Core
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
