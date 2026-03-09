@@ -245,6 +245,45 @@ Deno.serve(async (req) => {
     const modelName = MODEL_MAP[entity_type];
     const model = base44.asServiceRole.entities[modelName];
 
+    // ---- 0. If payload contains id, use it directly as the existing record ----
+    // This is the fast path for manual form updates that already know the record id.
+    if (payload.id) {
+      const directRecord = await model.get(payload.id).catch(() => null);
+      if (directRecord) {
+        // Strip id from the patch to avoid schema errors
+        const { id: _id, ...patchWithoutId } = payload;
+        const displayName = resolveDisplayName(entity_type, patchWithoutId);
+        const normalized  = normalizeName(displayName);
+        const slug        = buildEntitySlug(displayName);
+        const parentContext = entity_type === 'event' ? buildEventParentContext(patchWithoutId) : null;
+        const canonicalKey  = buildCanonicalKey({ entity_type, name: displayName, external_uid: patchWithoutId.external_uid || null, parent_context: parentContext });
+        const normalizedEventKey = entity_type === 'event'
+          ? buildNormalizedEventKey({ name: patchWithoutId.name || displayName, event_date: patchWithoutId.event_date || null, track_id: patchWithoutId.track_id || null, series_id: patchWithoutId.series_id || null })
+          : null;
+        const now2 = new Date().toISOString();
+        const updateData = filterNonEmpty({
+          ...patchWithoutId,
+          normalized_name: normalized,
+          canonical_slug: slug,
+          canonical_key: canonicalKey,
+          sync_last_seen_at: now2,
+          ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
+        });
+        const updated = await model.update(directRecord.id, updateData);
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'source_entity_updated',
+          entity_name: modelName,
+          entity_id: updated.id,
+          status: 'success',
+          metadata: { entity_type, record_id: updated.id, canonical_key: canonicalKey, match_method: 'id_direct', display_name: displayName },
+        }).catch(() => {});
+        return Response.json({ action: 'updated', record: updated, match_method: 'id_direct' });
+      }
+      // id was provided but record not found — fall through to normal match flow with id stripped
+      const { id: _stripped, ...payloadWithoutId } = payload;
+      Object.assign(payload, payloadWithoutId);
+    }
+
     // ---- 1. Derive normalization fields ----
     const displayName   = resolveDisplayName(entity_type, payload);
     const normalized    = normalizeName(displayName);
