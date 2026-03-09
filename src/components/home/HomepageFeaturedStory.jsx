@@ -25,7 +25,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
               to={createPageUrl('OutletHome')}
               className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase"
             >
-              All Stories <ArrowRight className="w-3 h-3" />
+              Explore Stories <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           <Link

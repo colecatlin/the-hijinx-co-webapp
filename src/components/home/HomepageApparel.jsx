@@ -109,7 +109,7 @@ export default function HomepageApparel({ products = [] }) {
             className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#008080] transition-all uppercase"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
-            Shop All Apparel
+            Shop HIJINX Apparel
           </Link>
         </div>
       </div>
