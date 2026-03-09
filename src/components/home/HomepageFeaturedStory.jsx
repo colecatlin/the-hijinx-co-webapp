@@ -23,7 +23,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
             </div>
             <Link
               to={createPageUrl('OutletHome')}
-              className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase"
+              className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-500 hover:text-[#1DA1A1] transition-colors uppercase font-bold"
             >
               Explore Stories <ArrowRight className="w-3 h-3" />
             </Link>

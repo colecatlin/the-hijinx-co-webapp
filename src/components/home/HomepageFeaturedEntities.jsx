@@ -71,7 +71,7 @@ export default function HomepageFeaturedEntities({
               <div className="w-8 h-px bg-[#232323]" />
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">Discovery</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
               Featured Motorsports
             </h2>
           </div>

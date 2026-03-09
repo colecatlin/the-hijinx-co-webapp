@@ -19,13 +19,13 @@ export default function HomepageApparel({ products = [] }) {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-px bg-[#00FFDA]" />
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">HIJINX CO.</span>
+              <span className="font-mono text-[10px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">HIJINX CO.</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Lifestyle Apparel</h2>
           </div>
           <Link
             to={createPageUrl('ApparelHome')}
-            className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-400 hover:text-[#008080] transition-colors uppercase"
+            className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-500 hover:text-[#1DA1A1] transition-colors uppercase font-bold"
           >
             Shop HIJINX Apparel <ArrowRight className="w-3 h-3" />
           </Link>

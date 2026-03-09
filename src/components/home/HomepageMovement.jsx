@@ -34,7 +34,7 @@ export default function HomepageMovement() {
         >
           <div className="flex items-center justify-center gap-4 mb-10">
             <div className="w-16 h-px bg-[#00FFDA]" />
-            <span className="font-mono text-[9px] tracking-[0.4em] text-[#008080] uppercase font-bold">A Movement</span>
+            <span className="font-mono text-[9px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">A Movement</span>
             <div className="w-16 h-px bg-[#00FFDA]" />
           </div>
 
