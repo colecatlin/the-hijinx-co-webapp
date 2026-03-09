@@ -161,8 +161,17 @@ export default function HomepageTrendingNow({ drivers = [], tracks = [], series 
           {/* Content panel */}
           <div className="lg:col-span-2 border border-gray-100 bg-white">
             {isLoading ? (
-              <div className="p-8 text-center">
-                <div className="w-5 h-5 border-2 border-[#1DA1A1] border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="divide-y divide-gray-50">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2.5 px-3">
+                    <Skeleton className="w-5 h-3 rounded" />
+                    <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                    <div className="flex-1">
+                      <Skeleton className="h-3 w-3/4 mb-1.5" />
+                      <Skeleton className="h-2 w-1/2" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <AnimatePresence mode="wait">
