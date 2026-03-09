@@ -18,7 +18,7 @@ export default function HomepageDriverSpotlight({ driver }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.55 }}
-      className="relative overflow-hidden bg-[#080C14] border border-[#00FFDA]/20 hover:border-[#00FFDA]/50 transition-all duration-300 group"
+      className="relative overflow-hidden bg-[#080C14] border border-[#00FFDA]/25 hover:border-[#00FFDA]/70 hover:shadow-[0_8px_40px_rgba(0,255,218,0.1)] transition-all duration-300 group hover:-translate-y-0.5"
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA] via-[#00FFDA]/40 to-transparent" />
@@ -61,7 +61,7 @@ export default function HomepageDriverSpotlight({ driver }) {
           </h3>
 
           {driver.subtitle && (
-            <p className="font-mono text-[10px] tracking-[0.25em] text-white/45 uppercase mt-2">
+            <p className="font-mono text-[10px] tracking-[0.25em] text-white/55 uppercase mt-2">
               {driver.subtitle}
             </p>
           )}

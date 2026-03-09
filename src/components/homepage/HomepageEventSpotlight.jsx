@@ -33,7 +33,7 @@ export default function HomepageEventSpotlight({ event }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.55, delay: 0.1 }}
-      className="relative overflow-hidden bg-[#0D0A0A] border border-[#EF4444]/20 hover:border-[#EF4444]/50 transition-all duration-300 group"
+      className="relative overflow-hidden bg-[#0D0A0A] border border-[#EF4444]/25 hover:border-[#EF4444]/70 hover:shadow-[0_8px_40px_rgba(239,68,68,0.1)] transition-all duration-300 group hover:-translate-y-0.5"
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#EF4444] via-[#EF4444]/40 to-transparent" />
@@ -73,7 +73,7 @@ export default function HomepageEventSpotlight({ event }) {
           </h3>
 
           {event.subtitle && (
-            <p className="font-mono text-[10px] tracking-[0.25em] text-white/45 uppercase mt-2">
+            <p className="font-mono text-[10px] tracking-[0.25em] text-white/55 uppercase mt-2">
               {event.subtitle}
             </p>
           )}
