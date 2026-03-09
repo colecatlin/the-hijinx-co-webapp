@@ -8,7 +8,8 @@ import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Newspaper } from 'lucide-react';
+import { Newspaper, ArrowRight, PenLine } from 'lucide-react';
+import { OUTLET_LAUNCH_COPY } from '@/components/content/fallbackContent';
 
 const CATEGORY_MAP = {
   Racing: ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],

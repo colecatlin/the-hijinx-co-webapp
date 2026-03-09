@@ -94,8 +94,8 @@ export default function RegistrationLanding() {
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3">
-            <h1 className="text-4xl font-black text-gray-900">Index46 Race Core</h1>
-            <p className="text-lg text-gray-600">Event Operations & Entity Management Console</p>
+            <h1 className="text-4xl font-black text-gray-900">Race Core</h1>
+            <p className="text-lg text-gray-600">Manage events, entries, tech inspection, and results — all in one operational system built for competition.</p>
           </motion.div>
 
           {/* Admin Section */}
@@ -192,22 +192,31 @@ export default function RegistrationLanding() {
           {/* No Access Section */}
           {!isAdmin && Object.keys(collaborationsByType).length === 0 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="border-yellow-200 bg-yellow-50">
+              <Card className="border-gray-200 bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-yellow-900">
-                    <AlertCircle className="w-5 h-5" /> No Access Yet
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <AlertCircle className="w-5 h-5 text-amber-500" /> Race Core Access Required
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    You don't have access to any entities yet. Request access using an access code or contact an owner.
+                    Race Core is available to track and series operators. To gain access, enter the access code provided by your entity owner — or request one through your Profile.
                   </p>
-                  <Button
-                    onClick={() => window.location.href = createPageUrl('Profile')}
-                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
-                  >
-                    Go to Profile → Request Access
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}
+                      className="flex-1 bg-[#232323] hover:bg-black text-white"
+                    >
+                      Enter Access Code
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => window.location.href = createPageUrl('MyDashboard')}
+                      className="flex-1"
+                    >
+                      Go to My Dashboard
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -215,7 +224,7 @@ export default function RegistrationLanding() {
 
           {/* Footer Help */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-center text-sm text-gray-500 border-t border-gray-200 pt-8">
-            <p>Need help? Check your Profile for access codes and pending invitations.</p>
+            <p>Need help accessing Race Core? Go to your <a href={createPageUrl('Profile') + '?tab=access_codes'} className="underline underline-offset-2 hover:text-gray-700">Profile → Access & Setup</a> to enter a code or review pending invitations.</p>
           </motion.div>
         </div>
       </div>

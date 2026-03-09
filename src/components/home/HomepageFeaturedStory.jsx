@@ -40,10 +40,10 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                 The HIJINX story is just getting started.
               </h3>
               <p className="text-white/55 text-base leading-relaxed mb-6 max-w-lg">
-                Stories, insight, and motorsports culture will appear here.
+                Editorial coverage, race reports, and motorsports culture — all live through The Outlet.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00FFDA] tracking-wide uppercase group-hover:gap-3 transition-all">
-                Explore Motorsports <ArrowRight className="w-4 h-4" />
+                Explore The Outlet <ArrowRight className="w-4 h-4" />
               </span>
             </div>
           </Link>

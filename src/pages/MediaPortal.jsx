@@ -47,8 +47,8 @@ export default function MediaPortal() {
         <div className="max-w-4xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <Badge className="bg-blue-900/60 text-blue-300 mb-4">Media Credentialing</Badge>
-            <h1 className="text-4xl font-black text-white mb-4">Hijinx Media Portal</h1>
-            <p className="text-gray-400 max-w-xl mx-auto">The official credentialing platform for motorsports media professionals. Create your profile, apply for access, and manage your credentials.</p>
+            <h1 className="text-4xl font-black text-white mb-4">HIJINX Media Portal</h1>
+            <p className="text-gray-400 max-w-xl mx-auto">Professional credentialing, asset management, and coverage coordination for motorsports media. Apply for event access, manage credentials, and submit deliverables — all in one place.</p>
           </div>
 
           <Card className="bg-[#171717] border-gray-800 max-w-md mx-auto">
@@ -65,10 +65,10 @@ export default function MediaPortal() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
             {[
-              { title: 'Create Profile', desc: 'Set up your media professional identity' },
-              { title: 'Apply for Access', desc: 'Request credentials to events, tracks, and series' },
-              { title: 'Review Policies', desc: 'Accept or request changes to media policies' },
-              { title: 'Manage Credentials', desc: 'View your issued credentials and status' },
+              { title: 'Build Your Profile', desc: 'Establish your professional identity — name, portfolio, organization, and coverage history.' },
+              { title: 'Apply for Event Access', desc: 'Request credentials to events, tracks, and series through the official workflow.' },
+              { title: 'Review Media Policies', desc: 'Accept usage rights agreements and policy terms before your coverage begins.' },
+              { title: 'Manage Credentials', desc: 'View issued credentials, submission history, and compliance standing.' },
             ].map(f => (
               <div key={f.title} className="bg-[#171717] border border-gray-800 rounded-lg p-4">
                 <Camera className="w-6 h-6 text-blue-400 mb-2" />

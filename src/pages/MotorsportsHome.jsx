@@ -76,20 +76,20 @@ export default function MotorsportsHome() {
                 <h1 className="text-5xl sm:text-6xl font-black tracking-tight mt-3 leading-tight text-gray-900">Index46</h1>
               </div>
               <p className="text-lg text-gray-700 leading-relaxed">
-                The motorsports portfolio, registration, results, and operations engine.
+                The home of competitive motorsports on HIJINX. Drivers, teams, tracks, and series — all in one place.
               </p>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start gap-3">
                   <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
-                  <span>Drivers build a portfolio and compete across series</span>
+                  <span>Drivers build a portfolio and compete across series at every level</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
-                  <span>Tracks and series run events through Race Core</span>
+                  <span>Tracks and series operate events through Race Core — entries, results, standings</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
-                  <span>Public pages show published and verified truth</span>
+                  <span>All published data is verified and auditable — the sport's source of truth</span>
                 </div>
               </div>
 
@@ -238,9 +238,9 @@ export default function MotorsportsHome() {
       {/* Footer CTA */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <Card className="bg-gradient-to-r from-blue-100 to-purple-100 border-gray-300">
-          <CardContent className="pt-8 space-y-4">
-            <h3 className="text-2xl font-bold text-gray-900">Ready to Get on the Grid</h3>
-            <p className="text-gray-700 text-sm">Start building your racing portfolio or managing your events today.</p>
+        <CardContent className="pt-8 space-y-4">
+          <h3 className="text-2xl font-bold text-gray-900">The platform is live. Get on the grid.</h3>
+          <p className="text-gray-700 text-sm">Whether you race, run events, or just follow the sport — Index46 is your hub. Drivers are building. Tracks are going live. The season is underway.</p>
             <div className="flex flex-wrap gap-3 pt-4">
               {!isAuthenticated ? (
                 <Button
