@@ -11,6 +11,8 @@ import {
   CheckCircle, AlertTriangle, XCircle, RefreshCw, Loader2,
   ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck,
 } from 'lucide-react';
+import { ALL_FALLBACKS, verifyFallbackShape } from '@/components/data/fallbackContracts';
+import { INVALIDATION_GROUPS } from '@/components/data/invalidationContract';
 import { toast } from 'sonner';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -294,6 +296,48 @@ export default function Diagnostics() {
             </CardContent>
           </Card>
         )}
+
+        {/* ── Fallback and Cache Hardening ────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" /> Fallback and Cache Hardening
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Fallback contracts */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Fallback Contracts</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {Object.entries(ALL_FALLBACKS).map(([name, fb]) => {
+                  const { ok, undefinedKeys } = verifyFallbackShape(fb);
+                  return (
+                    <div key={name} className={`rounded-lg border px-3 py-2 text-xs ${ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        {ok ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        <span className="font-medium">{name}</span>
+                      </div>
+                      {!ok && <div className="text-red-500">undefined: {undefinedKeys.join(', ')}</div>}
+                      {ok && <div className="text-green-600">{Object.keys(fb).length} fields ✓</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Invalidation groups */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Invalidation Groups ({Object.keys(INVALIDATION_GROUPS).length} registered)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.entries(INVALIDATION_GROUPS).map(([group, keys]) => (
+                  <span key={group} className="px-2 py-0.5 text-xs rounded border bg-blue-50 border-blue-200 text-blue-700">
+                    {group} ({keys.length})
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* ── Data and Routing Verification ───────────────────────────────── */}
         <Card className="mb-6">
