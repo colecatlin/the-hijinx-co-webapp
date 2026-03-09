@@ -190,13 +190,13 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       series_id: payload.series_id || null,
     });
 
-    // 1. external_uid exact
+    // 1. external_uid exact (strongest)
     if (eu) {
       const r = await model.filter({ external_uid: eu });
       if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
     }
-    // 2. normalized_event_key exact
-    if (normalizedEventKey) {
+    // 2. normalized_event_key exact (composite: name+date+track+series)
+    if (normalizedEventKey && normalizedEventKey !== '|none|none|none') {
       const r = await model.filter({ normalized_event_key: normalizedEventKey });
       if (r?.length) return { record: r[0], matchMethod: 'normalized_event_key' };
     }
@@ -205,12 +205,20 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       const r = await model.filter({ canonical_key: canonicalKey });
       if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
     }
-    // 4. normalized_name + event_date + optional track_id
-    if (normalized && payload.event_date) {
-      const filter = { normalized_name: normalized, event_date: payload.event_date };
-      if (payload.track_id) filter.track_id = payload.track_id;
-      const r = await model.filter(filter);
+    // 4. normalized_name + event_date + track_id (strongest positional match)
+    if (normalized && payload.event_date && payload.track_id) {
+      const r = await model.filter({ normalized_name: normalized, event_date: payload.event_date, track_id: payload.track_id });
       if (r?.length) return { record: r[0], matchMethod: 'normalized_name_date_track' };
+    }
+    // 5. normalized_name + event_date + series_id (fallback when track not set)
+    if (normalized && payload.event_date && payload.series_id) {
+      const r = await model.filter({ normalized_name: normalized, event_date: payload.event_date, series_id: payload.series_id });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_date_series' };
+    }
+    // 6. normalized_name + event_date (last resort — may match wrong year if name is generic)
+    if (normalized && payload.event_date) {
+      const r = await model.filter({ normalized_name: normalized, event_date: payload.event_date });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_date' };
     }
     return { record: null, matchMethod: null };
   }
