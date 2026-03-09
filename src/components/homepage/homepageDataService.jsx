@@ -13,32 +13,20 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { homepageFallbackData } from '@/components/data/fallbackContracts';
 
 /** Stable query key for the homepage data fetch. */
 export const HOMEPAGE_QUERY_KEY = ['homepageData'];
 
-export const FALLBACK_DATA = {
-  featured_story:    null,
-  featured_stories:  [],
-  featured_drivers:  [],
-  featured_tracks:   [],
-  featured_series:   [],
-  upcoming_events:   [],
-  recent_results:    [],
-  activity_feed:     [],
-  featured_media:    [],
-  featured_products: [],
-  ticker_items:      null,
-  spotlight_driver:  null,
-  spotlight_event:   null,
-};
+/** @deprecated use homepageFallbackData from fallbackContracts instead */
+export const FALLBACK_DATA = homepageFallbackData;
 
 export async function getHomepageData() {
   const response = await base44.functions.invoke('getHomepageData', {});
   const payload = response?.data;
 
   if (!payload || payload.error) {
-    return { ok: false, error: payload?.error || 'No data returned', data: FALLBACK_DATA };
+    return { ok: false, error: payload?.error || 'No data returned', data: homepageFallbackData };
   }
 
   return {
