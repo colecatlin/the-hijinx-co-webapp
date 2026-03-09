@@ -289,21 +289,21 @@ Deno.serve(async (req) => {
     const displayName   = resolveDisplayName(entity_type, payloadClean);
     const normalized    = normalizeName(displayName);
     const slug          = buildEntitySlug(displayName);
-    const parentContext = entity_type === 'event' ? buildEventParentContext(payload) : null;
+    const parentContext = entity_type === 'event' ? buildEventParentContext(payloadClean) : null;
     const canonicalKey  = buildCanonicalKey({
       entity_type,
       name: displayName,
-      external_uid: payload.external_uid || null,
+      external_uid: payloadClean.external_uid || null,
       parent_context: parentContext,
     });
 
     // Compute normalized_event_key for events
     const normalizedEventKey = entity_type === 'event'
       ? buildNormalizedEventKey({
-          name: payload.name || displayName,
-          event_date: payload.event_date || null,
-          track_id: payload.track_id || null,
-          series_id: payload.series_id || null,
+          name: payloadClean.name || displayName,
+          event_date: payloadClean.event_date || null,
+          track_id: payloadClean.track_id || null,
+          series_id: payloadClean.series_id || null,
         })
       : null;
 
@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
 
     // ---- 2. Entity-type-specific match (strong, ordered) ----
     const { record: existingRecord, matchMethod } = await runEntitySpecificMatching(
-      model, entity_type, payload, normalized, slug, canonicalKey
+      model, entity_type, payloadClean, normalized, slug, canonicalKey
     );
 
     let action, record;
@@ -319,7 +319,7 @@ Deno.serve(async (req) => {
     if (existingRecord) {
       // ---- 3. Update existing record ----
       const patch = filterNonEmpty({
-        ...payload,
+        ...payloadClean,
         normalized_name: normalized,
         canonical_slug: slug,
         canonical_key: canonicalKey,
