@@ -1,93 +1,106 @@
 /**
- * runSourceIntegrityAudit.js
- * Admin-only diagnostic endpoint.
- * Scans all five source entity types for duplicates and returns a summary.
+ * runSourceIntegrityAudit.js  (admin only)
+ *
+ * Audits all five source entity types for:
+ *  1. duplicate_groups   — by external_uid, canonical_key, normalized_name
+ *  2. missing_normalization — records missing normalized_name / canonical_slug / canonical_key
+ *  3. broken_routing     — records missing slug (Driver, Team, Track, Series)
+ *  4. broken_required_links — Driver→team_id/series_id, Event→track_id/series_id referencing
+ *                             IDs that don't exist in the DB
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// inline normalizeName
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+function normalizeName(v) {
+  if (!v) return '';
+  return v.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
-
-const MODEL_MAP = {
-  driver: 'Driver',
-  team:   'Team',
-  track:  'Track',
-  series: 'Series',
-  event:  'Event',
-};
-
-function resolveDisplayName(entity_type, record) {
-  if (entity_type === 'driver') return `${record.first_name || ''} ${record.last_name || ''}`.trim();
-  return record.name || record.full_name || record.title || '';
+function displayName(et, r) {
+  if (et === 'driver') return `${r.first_name || ''} ${r.last_name || ''}`.trim();
+  return r.name || r.full_name || r.title || '';
 }
+function mini(r) { return { id: r.id, name: r.name || `${r.first_name || ''} ${r.last_name || ''}`.trim() }; }
 
-async function scanEntity(base44, entity_type) {
-  const modelName = MODEL_MAP[entity_type];
-  const records = await base44.asServiceRole.entities[modelName].list('-created_date', 2000);
+async function scanEntity(sr, entity_type, allIds = {}) {
+  const MODEL = { driver: 'Driver', team: 'Team', track: 'Track', series: 'Series', event: 'Event' };
+  const modelName = MODEL[entity_type];
+  const records = await sr.entities[modelName].list('-created_date', 2000);
 
-  const byExternalUid  = new Map();
-  const byCanonicalKey = new Map();
-  const byNormName     = new Map();
-
+  // ── 1. Duplicates ──────────────────────────────────────────────────────────
+  const byUID = new Map(), byKey = new Map(), byNorm = new Map();
   for (const r of records) {
-    if (r.external_uid) {
-      const arr = byExternalUid.get(r.external_uid) || []; arr.push(r); byExternalUid.set(r.external_uid, arr);
-    }
-    if (r.canonical_key) {
-      const arr = byCanonicalKey.get(r.canonical_key) || []; arr.push(r); byCanonicalKey.set(r.canonical_key, arr);
-    }
-    const dn = r.normalized_name || normalizeName(resolveDisplayName(entity_type, r));
-    if (dn) {
-      const arr = byNormName.get(dn) || []; arr.push(r); byNormName.set(dn, arr);
-    }
+    if (r.external_uid) { const a = byUID.get(r.external_uid) || []; a.push(r); byUID.set(r.external_uid, a); }
+    if (r.canonical_key) { const a = byKey.get(r.canonical_key) || []; a.push(r); byKey.set(r.canonical_key, a); }
+    const dn = r.normalized_name || normalizeName(displayName(entity_type, r));
+    if (dn) { const a = byNorm.get(dn) || []; a.push(r); byNorm.set(dn, a); }
   }
 
-  let dupGroupCount = 0;
+  const duplicate_groups = [];
   const seen = new Set();
-  const sampleDuplicates = [];
-
-  for (const [key, group] of byExternalUid) {
-    if (group.length > 1) {
-      dupGroupCount++;
-      group.forEach(r => seen.add(r.id));
-      if (sampleDuplicates.length < 5) sampleDuplicates.push({ match_type: 'external_uid', key, count: group.length });
-    }
+  for (const [key, g] of byUID) {
+    if (g.length > 1) { duplicate_groups.push({ match_type: 'external_uid', key, count: g.length, records: g.slice(0,3).map(mini) }); g.forEach(r => seen.add(r.id)); }
   }
-  for (const [key, group] of byCanonicalKey) {
-    if (group.length > 1 && group.some(r => !seen.has(r.id))) {
-      dupGroupCount++;
-      group.forEach(r => seen.add(r.id));
-      if (sampleDuplicates.length < 5) sampleDuplicates.push({ match_type: 'canonical_key', key, count: group.length });
-    }
+  for (const [key, g] of byKey) {
+    if (g.length > 1 && g.some(r => !seen.has(r.id))) { duplicate_groups.push({ match_type: 'canonical_key', key, count: g.length, records: g.slice(0,3).map(mini) }); g.forEach(r => seen.add(r.id)); }
   }
-  for (const [key, group] of byNormName) {
-    if (group.length > 1 && group.filter(r => !seen.has(r.id)).length > 1) {
-      dupGroupCount++;
-      group.forEach(r => seen.add(r.id));
-      if (sampleDuplicates.length < 5) sampleDuplicates.push({ match_type: 'normalized_name', key, count: group.length });
-    }
+  for (const [key, g] of byNorm) {
+    if (g.length > 1 && g.filter(r => !seen.has(r.id)).length > 1) { duplicate_groups.push({ match_type: 'normalized_name', key, count: g.length, records: g.slice(0,3).map(mini) }); g.forEach(r => seen.add(r.id)); }
   }
 
-  // Normalization coverage
-  const withNormName    = records.filter(r => r.normalized_name).length;
-  const withCanonKey    = records.filter(r => r.canonical_key).length;
-  const withExternalUid = records.filter(r => r.external_uid).length;
+  // ── 2. Missing normalization ───────────────────────────────────────────────
+  const missing_normalization = records
+    .filter(r => !r.normalized_name || !r.canonical_key)
+    .slice(0, 50)
+    .map(r => ({
+      id: r.id,
+      name: displayName(entity_type, r),
+      missing: [
+        !r.normalized_name  && 'normalized_name',
+        !r.canonical_key    && 'canonical_key',
+        !r.canonical_slug   && 'canonical_slug',
+      ].filter(Boolean),
+    }));
+
+  // ── 3. Broken routing (missing slug) ──────────────────────────────────────
+  const broken_routing = entity_type !== 'event'
+    ? records.filter(r => !r.slug).slice(0, 50).map(r => ({ id: r.id, name: displayName(entity_type, r) }))
+    : [];
+
+  // ── 4. Broken required links ───────────────────────────────────────────────
+  const broken_required_links = [];
+  if (entity_type === 'driver') {
+    const teamIds  = allIds.teams  || new Set();
+    const seriesIds = allIds.series || new Set();
+    for (const r of records) {
+      const issues = [];
+      if (r.team_id         && !teamIds.has(r.team_id))         issues.push(`team_id not found: ${r.team_id}`);
+      if (r.primary_series_id && !seriesIds.has(r.primary_series_id)) issues.push(`primary_series_id not found: ${r.primary_series_id}`);
+      if (issues.length) broken_required_links.push({ id: r.id, name: displayName(entity_type, r), issues });
+    }
+  }
+  if (entity_type === 'event') {
+    const trackIds  = allIds.tracks  || new Set();
+    const seriesIds = allIds.series  || new Set();
+    for (const r of records) {
+      const issues = [];
+      if (r.track_id  && !trackIds.has(r.track_id))   issues.push(`track_id not found: ${r.track_id}`);
+      if (r.series_id && !seriesIds.has(r.series_id)) issues.push(`series_id not found: ${r.series_id}`);
+      if (issues.length) broken_required_links.push({ id: r.id, name: displayName(entity_type, r), issues });
+    }
+  }
 
   return {
+    entity_type,
     total_records: records.length,
-    duplicate_groups: dupGroupCount,
-    records_in_duplicate_groups: seen.size,
-    normalization_coverage: {
-      normalized_name: withNormName,
-      canonical_key: withCanonKey,
-      external_uid: withExternalUid,
-      pct_normalized: records.length ? Math.round((withNormName / records.length) * 100) : 0,
+    duplicate_groups,
+    missing_normalization,
+    broken_routing,
+    broken_required_links,
+    counts: {
+      duplicates: duplicate_groups.length,
+      missing_normalization: missing_normalization.length,
+      broken_routing: broken_routing.length,
+      broken_required_links: broken_required_links.length,
     },
-    sample_duplicates: sampleDuplicates,
-    status: dupGroupCount === 0 ? 'clean' : 'duplicates_found',
   };
 }
 
@@ -96,46 +109,46 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    // Run all five scans in parallel
-    const [drivers, teams, tracks, series, events] = await Promise.all([
-      scanEntity(base44, 'driver'),
-      scanEntity(base44, 'team'),
-      scanEntity(base44, 'track'),
-      scanEntity(base44, 'series'),
-      scanEntity(base44, 'event'),
+    const sr = base44.asServiceRole;
+
+    // Pre-load ID sets for cross-entity link validation
+    const [allTeams, allTracks, allSeries] = await Promise.all([
+      sr.entities.Team.list('-created_date', 2000),
+      sr.entities.Track.list('-created_date', 2000),
+      sr.entities.Series.list('-created_date', 2000),
     ]);
-
-    const totalDupGroups = drivers.duplicate_groups + teams.duplicate_groups +
-      tracks.duplicate_groups + series.duplicate_groups + events.duplicate_groups;
-
-    const summary = {
-      audited_at: new Date().toISOString(),
-      overall_status: totalDupGroups === 0 ? 'clean' : 'action_required',
-      total_duplicate_groups: totalDupGroups,
-      drivers,
-      teams,
-      tracks,
-      series,
-      events,
+    const allIds = {
+      teams:  new Set(allTeams.map(t => t.id)),
+      tracks: new Set(allTracks.map(t => t.id)),
+      series: new Set(allSeries.map(s => s.id)),
     };
 
-    // Log the audit run
-    await base44.asServiceRole.entities.OperationLog.create({
-      operation_type: 'source_integrity_audit',
-      entity_name: 'System',
+    const [drivers, teams, tracks, series, events] = await Promise.all([
+      scanEntity(sr, 'driver', allIds),
+      scanEntity(sr, 'team', allIds),
+      scanEntity(sr, 'track', allIds),
+      scanEntity(sr, 'series', allIds),
+      scanEntity(sr, 'event', allIds),
+    ]);
+
+    const summary = {
+      duplicate_count:            [drivers,teams,tracks,series,events].reduce((s,e) => s + e.counts.duplicates, 0),
+      missing_normalization_count:[drivers,teams,tracks,series,events].reduce((s,e) => s + e.counts.missing_normalization, 0),
+      broken_link_count:          [drivers,teams,tracks,series,events].reduce((s,e) => s + e.counts.broken_required_links, 0),
+      broken_routing_count:       [drivers,teams,tracks,series,events].reduce((s,e) => s + e.counts.broken_routing, 0),
+    };
+
+    await sr.entities.OperationLog.create({
+      operation_type: 'diagnostics_run',
+      entity_name: 'Diagnostics',
       status: 'success',
-      metadata: {
-        total_duplicate_groups: totalDupGroups,
-        overall_status: summary.overall_status,
-        audited_by: user.email,
-      },
+      metadata: { audit: 'source_integrity', ...summary, audited_by: user.email },
     }).catch(() => {});
 
-    return Response.json(summary);
-
+    return Response.json({ drivers, teams, tracks, series, events, summary });
   } catch (error) {
-    return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
