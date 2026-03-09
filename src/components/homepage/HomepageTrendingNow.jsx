@@ -132,7 +132,7 @@ export default function HomepageTrendingNow({ drivers = [], tracks = [], series 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tab buttons */}
           <div className="lg:col-span-1">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide lg:hidden mb-4">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide lg:hidden mb-4 pb-1">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const active = activeTab === tab.key;
