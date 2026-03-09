@@ -284,7 +284,9 @@ Deno.serve(async (req) => {
     }
 
     // ---- 1. Derive normalization fields ----
-    const displayName   = resolveDisplayName(entity_type, payload);
+    // Strip id from payload to prevent schema errors in create/update calls below
+    const { id: _payloadId, ...payloadClean } = payload;
+    const displayName   = resolveDisplayName(entity_type, payloadClean);
     const normalized    = normalizeName(displayName);
     const slug          = buildEntitySlug(displayName);
     const parentContext = entity_type === 'event' ? buildEventParentContext(payload) : null;
