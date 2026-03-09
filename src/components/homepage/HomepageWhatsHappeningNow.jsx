@@ -85,16 +85,36 @@ function ActivityCard({ item, index }) {
 }
 
 function EmptyState() {
+  const placeholders = [
+    { badge: 'Event', title: 'Events are being scheduled for the season ahead.', icon: '📅' },
+    { badge: 'Registration', title: 'Drivers are setting up their profiles on Index46.', icon: '🏎' },
+    { badge: 'Story', title: 'Editorial coverage arrives through The Outlet.', icon: '📰' },
+    { badge: 'Track', title: 'Tracks and circuits are coming online.', icon: '🛣' },
+    { badge: 'Series', title: 'Series operators are configuring their seasons.', icon: '🏆' },
+    { badge: 'Update', title: 'Live race results will appear here as they drop.', icon: '⚡' },
+  ];
+  const BADGE_COLORS_PH = {
+    Registration: 'bg-blue-100 text-blue-800',
+    Story: 'bg-purple-100 text-purple-800',
+    Event: 'bg-green-100 text-green-800',
+    Track: 'bg-teal-100 text-teal-800',
+    Series: 'bg-indigo-100 text-indigo-800',
+    Update: 'bg-gray-100 text-gray-700',
+  };
   return (
-    <div className="col-span-full border border-dashed border-gray-200 p-12 text-center">
-      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Zap className="w-5 h-5 text-gray-300" />
-      </div>
-      <h4 className="text-sm font-bold text-gray-500 mb-1">The platform is coming alive</h4>
-      <p className="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
-        Fresh updates from drivers, events, media, and results will appear here.
-      </p>
-    </div>
+    <>
+      {placeholders.map((p, i) => (
+        <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06, duration: 0.4 }} className="h-full">
+          <div className="bg-white border border-gray-200 p-5 flex flex-col gap-3 h-full opacity-70">
+            <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded text-xl">{p.icon}</div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${BADGE_COLORS_PH[p.badge] || 'bg-gray-100 text-gray-700'}`}>{p.badge}</span>
+            </div>
+            <p className="text-sm font-semibold text-gray-700 leading-snug">{p.title}</p>
+          </div>
+        </motion.div>
+      ))}
+    </>
   );
 }
 

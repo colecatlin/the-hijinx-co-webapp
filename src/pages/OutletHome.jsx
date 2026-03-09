@@ -110,11 +110,29 @@ export default function OutletHome() {
             message="Something went wrong. Please try again later."
           />
         ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={Newspaper}
-            title="No stories yet"
-            message={activePrimary !== 'All' ? `No ${activePrimary} stories published yet.` : 'Check back soon for new stories.'}
-          />
+          <div className="space-y-8">
+            {/* Editorial fallback block */}
+            <div className="relative bg-[#0A0A0A] border border-gray-800 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/40 to-transparent" />
+              <div className="p-8 md:p-12">
+                <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase mb-4 block">The Outlet · HIJINX CO</span>
+                <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-4">
+                  {activePrimary !== 'All' ? `${activePrimary} coverage is on the way.` : 'Editorial coverage is coming.'}
+                </h2>
+                <p className="text-white/55 text-base leading-relaxed mb-6 max-w-2xl">
+                  The Outlet covers motorsports journalism, culture, business, and technology — stories from the people who make the sport move. Coverage drops regularly as our editorial network grows.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link to={createPageUrl('OutletSubmit')} className="inline-flex items-center gap-2 px-5 py-3 bg-[#00FFDA] text-[#0A0A0A] text-sm font-bold hover:bg-white transition-colors">
+                    <PenLine className="w-4 h-4" /> Submit a Story
+                  </Link>
+                  <Link to={createPageUrl('OutletHome')} onClick={() => handlePrimaryClick('All')} className="inline-flex items-center gap-2 px-5 py-3 border border-white/20 text-white text-sm font-bold hover:border-[#00FFDA] hover:text-[#00FFDA] transition-colors">
+                    All Categories <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {filtered.map((story) => (

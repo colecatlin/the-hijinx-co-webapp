@@ -60,7 +60,14 @@ export default function HomepageLiveFeedRail({ items = [] }) {
 
           {/* Scrollable rail */}
           {items.length === 0 ? (
-            <p className="text-xs text-gray-400 italic">Live updates will appear here as the platform comes alive.</p>
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+              {['Platform live','Results tracking active','Drivers registering','Events being scheduled','Stories publishing'].map((label, i) => (
+                <div key={i} className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-100 min-w-[160px]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#1DA1A1] opacity-50" />
+                  <span className="text-[11px] text-gray-400 font-medium">{label}</span>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="flex-1 min-w-0 relative">
               <div
