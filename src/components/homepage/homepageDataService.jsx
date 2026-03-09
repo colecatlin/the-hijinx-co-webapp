@@ -4,12 +4,18 @@
  * Thin frontend wrapper around the getHomepageData backend function.
  * Called via a single React Query in pages/Home.jsx.
  *
+ * The canonical React Query cache key for this function is:
+ *   QueryKeys.homepageData()  →  ['homepageData']
+ *
  * Returns:
  *   { ok: true,  data: HomepageData }
  *   { ok: false, error: string, data: FALLBACK_DATA }
  */
 
 import { base44 } from '@/api/base44Client';
+
+/** Stable query key for the homepage data fetch. */
+export const HOMEPAGE_QUERY_KEY = ['homepageData'];
 
 export const FALLBACK_DATA = {
   featured_story:    null,

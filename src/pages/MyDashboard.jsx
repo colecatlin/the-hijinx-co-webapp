@@ -125,7 +125,7 @@ export default function MyDashboard() {
   });
 
   const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
-    queryKey: ['resolvedEntities', user?.id],
+    queryKey: ['resolvedEntities', user?.id],   // matches QueryKeys.managedCollaborations.byUser(user?.id)
     queryFn: () => getResolvedManagedEntities(user),
     enabled: !!user?.id,
   });
@@ -155,7 +155,7 @@ export default function MyDashboard() {
     setSettingPrimary(collaborator.entity_id);
     await setPrimaryEntityOnUser({ currentUser: user, entityType: collaborator.entity_type, entityId: collaborator.entity_id });
     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    queryClient.invalidateQueries({ queryKey: ['myCollaborations', user?.id] });
+    queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user?.id] });
     setSettingPrimary(false);
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryKeys } from '@/components/utils/queryKeys';
 import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
