@@ -184,15 +184,16 @@ export default function MotorsportsHome() {
 
       {/* How It Works Section */}
       <div className="max-w-7xl mx-auto px-6 py-16 border-b border-gray-200">
-        <h2 className="text-2xl font-black tracking-tight mb-8 text-gray-900">How It Works</h2>
+        <h2 className="text-2xl font-black tracking-tight mb-2 text-gray-900">How It Works</h2>
+        <p className="text-gray-500 text-sm mb-8">Index46 connects every part of motorsports — driver, operator, and fan — in one verified system.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-3">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
-              <h3 className="font-bold text-lg text-gray-900">Create</h3>
-              <p className="text-sm text-gray-700">Build your profile and establish your racing programs</p>
+              <h3 className="font-bold text-lg text-gray-900">Build</h3>
+              <p className="text-sm text-gray-700">Drivers, teams, tracks, and series build their official profiles. Your data. Your story.</p>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -200,8 +201,8 @@ export default function MotorsportsHome() {
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
                 <Gauge className="w-5 h-5 text-purple-600" />
               </div>
-              <h3 className="font-bold text-lg text-gray-900">Operate</h3>
-              <p className="text-sm text-gray-700">Run events in Race Core with full operational control</p>
+              <h3 className="font-bold text-lg text-gray-900">Compete</h3>
+              <p className="text-sm text-gray-700">Events run through Race Core — entries, tech inspection, live results, and standings all in one system.</p>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -210,7 +211,7 @@ export default function MotorsportsHome() {
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
               </div>
               <h3 className="font-bold text-lg text-gray-900">Publish</h3>
-              <p className="text-sm text-gray-700">The public site displays verified published results</p>
+              <p className="text-sm text-gray-700">Verified results and profiles go live publicly — auditable, trusted, and permanent.</p>
             </div>
           </motion.div>
         </div>
@@ -225,9 +226,9 @@ export default function MotorsportsHome() {
                 <Shield className="w-6 h-6 text-green-600" />
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900">Verified Results & Integrity</h3>
+                <h3 className="text-xl font-bold text-gray-900">Verified Results & Real Integrity</h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  Results are the source of truth. Every result comes from track or series operations. Discrepancies are flagged for review. Your competition data is verified, auditable, and trusted.
+                  Results are the source of truth on Index46. Every finish comes directly from track or series operators. Discrepancies are flagged, reviewed, and resolved. Your competition history is verified, auditable, and permanent.
                 </p>
               </div>
             </div>
