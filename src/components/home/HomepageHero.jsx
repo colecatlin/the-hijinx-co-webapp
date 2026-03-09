@@ -36,12 +36,12 @@ export default function HomepageHero() {
           src={bg_image}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-40"
           loading="eager"
         />
         {/* Lighter overlay — lets image breathe */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080C14]/55 via-[#080C14]/20 to-[#080C14]/90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#080C14]/80 via-transparent to-[#080C14]/35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#080C14]/60 via-[#080C14]/25 to-[#080C14]/92" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#080C14]/85 via-transparent to-[#080C14]/30" />
       </div>
 
       {/* ── Ambient Glow Layer ── */}
@@ -96,7 +96,7 @@ export default function HomepageHero() {
           </h1>
 
           {/* Subtext — brighter */}
-          <p className="text-white/70 text-base md:text-lg max-w-lg leading-relaxed mb-12 font-light">
+          <p className="text-white/80 text-base md:text-lg max-w-lg leading-relaxed mb-12 font-light">
             {subtext}
           </p>
 
@@ -132,7 +132,7 @@ export default function HomepageHero() {
           </div>
 
           {/* Stats Strip */}
-          <div className="flex flex-wrap gap-6 md:gap-12 border-t border-white/12 pt-8">
+          <div className="flex flex-wrap gap-6 md:gap-12 border-t border-white/15 pt-8">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
@@ -141,7 +141,7 @@ export default function HomepageHero() {
                 transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
               >
                 <div className="text-2xl md:text-3xl font-black text-white tracking-tight">{stat.value}</div>
-                <div className="text-[9px] font-mono tracking-[0.25em] text-white/45 uppercase mt-1">{stat.label}</div>
+                <div className="text-[9px] font-mono tracking-[0.25em] text-white/55 uppercase mt-1">{stat.label}</div>
               </motion.div>
             ))}
           </div>
