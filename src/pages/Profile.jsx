@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
@@ -116,14 +117,13 @@ export default function Profile() {
       });
       await base44.functions.invoke('updateUserProfile', { formData: data });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.auth.me() }),
+    onSuccess: () => invalidateDataGroups(queryClient, ['profile']),
   });
 
   const handleSetPrimary = async (entity) => {
     setSettingPrimary(entity.entity_id);
     await setPrimaryEntityOnUser({ currentUser: user, entityType: entity.entity_type, entityId: entity.entity_id });
-    queryClient.invalidateQueries({ queryKey: QueryKeys.auth.me() });
-    queryClient.invalidateQueries({ queryKey: QueryKeys.managedCollaborations.byUser(user?.id) });
+    invalidateDataGroups(queryClient, ['profile', 'collaborators']);
     setSettingPrimary(false);
   };
 
