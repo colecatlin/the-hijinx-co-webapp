@@ -9,6 +9,7 @@ import { getDriverProfileData } from '@/components/entities/publicPageDataApi';
 
 const DQ = applyDefaultQueryOptions();
 import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,9 +42,9 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlug = urlParams.get('slug') || urlParams.get('id');
-  const firstName = urlParams.get('first');
-  const lastName = urlParams.get('last');
+  const driverSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
+  const firstName  = (urlParams.get('first') || '').trim() || null;
+  const lastName   = (urlParams.get('last')  || '').trim() || null;
 
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
@@ -133,17 +134,11 @@ export default function DriverProfile() {
     );
   }
 
-  if (!driver) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Driver not found</p>
-          <Link to={createPageUrl('DriverDirectory')}>
-            <Button>Back to Drivers</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
+  if (!driver) return <EntityNotFound entityType="Driver" />;
+
+  // Unpublished drivers are visible to admin only
+  if (driver.profile_status === 'draft' && user?.role !== 'admin') {
+    return <EntityUnavailable entityType="Driver" />;
   }
 
   const getSeriesName = (seriesId) => allSeries.find(s => s.id === seriesId)?.name || 'N/A';
