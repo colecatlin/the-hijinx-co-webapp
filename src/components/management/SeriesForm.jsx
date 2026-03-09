@@ -24,10 +24,16 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      if (series) {
-        return base44.entities.Series.update(series.id, data);
-      }
-      return base44.entities.Series.create(data);
+      const payload = { ...data, ...(series && { id: series.id }) };
+
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'series',
+        payload,
+        triggered_from: 'series_form',
+      });
+
+      if (result?.data?.source_record) return result.data.source_record;
+      throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['series'] });
