@@ -455,20 +455,25 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   };
 
   const handleDuplicate = () => {
+    const selectedSeries = activeSeries.find(s => s.id === formData.series_id);
+    const locationNoteWithTz = formData.location_note
+      ? `TZ:${formData.timezone}|${formData.location_note}`
+      : `TZ:${formData.timezone}`;
     const duplicatedData = {
       track_id: formData.track_id,
       series_id: formData.series_id || null,
-      series_name:
-        activeSeries.find(s => s.id === formData.series_id)?.name || null,
+      series_name: selectedSeries?.name || null,
       season: formData.season,
       name: `${formData.name} Copy`,
       slug: `${formData.slug}-copy`,
       event_date: null,
       end_date: null,
-      status: 'upcoming',
+      status: 'Draft',
       round_number: formData.round_number ? parseInt(formData.round_number) + 1 : null,
-      external_uid: null,
-      location_note: formData.location_note,
+      external_uid: null, // must be null — new event, new UID
+      location_note: locationNoteWithTz,
+      track_acceptance_status: 'Pending',
+      series_acceptance_status: 'Pending',
     };
     createMutation.mutate(duplicatedData);
   };
