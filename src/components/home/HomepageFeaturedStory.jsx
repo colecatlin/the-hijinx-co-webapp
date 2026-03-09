@@ -19,7 +19,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                 <div className="w-8 h-px bg-[#00FFDA]" />
                 <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">The Outlet</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">Latest Stories</h2>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Latest Stories</h2>
             </div>
             <Link
               to={createPageUrl('OutletHome')}
@@ -62,7 +62,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
               <div className="w-8 h-px bg-[#00FFDA]" />
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">The Outlet</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-[#111] tracking-tight">Latest Stories</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Latest Stories</h2>
           </div>
           <Link
             to={createPageUrl('OutletHome')}
@@ -107,7 +107,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                     {featured.category}
                   </span>
                 )}
-                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight mb-3 group-hover:text-[#00FFDA] transition-colors duration-300">
+                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight mb-3 group-hover:text-[#00FFDA] transition-colors duration-200">
                   {featured.title}
                 </h3>
                 {featured.excerpt && (
