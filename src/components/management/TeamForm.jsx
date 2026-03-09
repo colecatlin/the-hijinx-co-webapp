@@ -34,11 +34,18 @@ export default function TeamForm({ team, onClose }) {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => {
-      if (team) {
-        return base44.entities.Team.update(team.id, data);
-      }
-      return base44.entities.Team.create(data);
+    mutationFn: async (data) => {
+      const slug = generateUniqueSlug(data.name);
+      const payload = { ...data, slug, ...(team && { id: team.id }) };
+
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'team',
+        payload,
+        triggered_from: 'team_form',
+      });
+
+      if (result?.data?.source_record) return result.data.source_record;
+      throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
