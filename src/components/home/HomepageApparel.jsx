@@ -12,7 +12,7 @@ const COLLECTION_CARDS = [
 
 export default function HomepageApparel({ products = [] }) {
   return (
-    <section className="bg-white py-20 md:py-28 border-b border-gray-100 overflow-hidden">
+    <section className="bg-white py-16 md:py-24 border-b border-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-center justify-between mb-10">
