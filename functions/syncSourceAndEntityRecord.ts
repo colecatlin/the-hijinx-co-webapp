@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
         source_record_id: source_record.id,
         entity_record_id: entity_record.id,
         source_action,
+        triggered_from: triggered_from || null,
       },
     }).catch(() => {});
 
