@@ -47,8 +47,8 @@ export default function HomepageLiveFeedRail({ items = [] }) {
 
   return (
     <div className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 py-3">
-        <div className="flex items-center gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+      <div className="flex items-center gap-3 sm:gap-4">
           {/* Label */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Radio className="w-3.5 h-3.5 text-red-500" />
