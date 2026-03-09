@@ -24,8 +24,14 @@ export default function ApparelHome() {
     return null;
   };
 
+  useEffect(() => { Analytics.pageView('ApparelHome'); }, []);
+
   return (
     <PageShell>
+      <SeoMeta
+        title="Apparel | Wear the Culture"
+        description="HIJINX apparel and essentials. Wear the culture. New collection dropping soon."
+      />
       {/* Hero */}
       <div className="bg-[#0A0A0A] text-white">
         <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">

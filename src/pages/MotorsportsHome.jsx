@@ -63,8 +63,14 @@ export default function MotorsportsHome() {
     staleTime: 10 * 60 * 1000,
   });
 
+  useEffect(() => { Analytics.pageView('MotorsportsHome'); }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 text-gray-900">
+      <SeoMeta
+        title="Index46 | Motorsports"
+        description="The home of competitive motorsports on HIJINX. Drivers, teams, tracks, series, and verified results — all in one place."
+      />
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-gray-200">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,_#f3f4f6_0%,_#ffffff_70%)]" />

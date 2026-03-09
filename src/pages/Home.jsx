@@ -57,8 +57,15 @@ export default function Home() {
   const hasEvent   = !!hp.spotlight_event;
   const hasSpotlight = hasDriver || hasEvent;
 
+  useEffect(() => { Analytics.pageView('Home'); }, []);
+
   return (
     <PageShell>
+      <SeoMeta
+        title="Motorsports, Culture, and Competition"
+        description="HIJINX — the platform where motorsports, media, and culture collide. Discover drivers, teams, tracks, series, events, and verified results."
+        noSuffix={false}
+      />
 
       {/* ── 1. Hero ─────────────────────────────────────────────────────────── */}
       <HomepageHero />
