@@ -279,9 +279,8 @@ Deno.serve(async (req) => {
         }).catch(() => {});
         return Response.json({ action: 'updated', record: updated, match_method: 'id_direct' });
       }
-      // id was provided but record not found — fall through to normal match flow with id stripped
-      const { id: _stripped, ...payloadWithoutId } = payload;
-      Object.assign(payload, payloadWithoutId);
+      // id was provided but record not found — fall through to normal match flow
+      // (id field will be ignored by the regular matching path below)
     }
 
     // ---- 1. Derive normalization fields ----
