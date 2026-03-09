@@ -45,15 +45,29 @@ export default function DriverForm({ driver, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      if (driver) {
-        return base44.entities.Driver.update(driver.id, data);
+      // For new drivers, pre-generate numeric_id + slug so we can pass them to syncSourceAndEntityRecord
+      let payload = { ...data };
+      if (!driver) {
+        const numericId = await generateUniqueNumericId();
+        const slug = generateSlugFromData(data.first_name, data.last_name, numericId);
+        payload = { ...payload, numeric_id: numericId, slug };
+      } else {
+        // For updates, carry the existing id so upsertSourceEntity matches it
+        payload = { ...payload, id: driver.id };
       }
-      const numericId = await generateUniqueNumericId();
-      const slug = generateSlugFromData(data.first_name, data.last_name, numericId);
-      return base44.entities.Driver.create({ ...data, numeric_id: numericId, slug });
+
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'driver',
+        payload,
+        triggered_from: 'driver_form',
+      });
+
+      if (result?.data?.source_record) return result.data.source_record;
+      throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['drivers-all'] });
       onClose();
     },
   });
