@@ -241,6 +241,9 @@ export default function CSVImportManager({
     results: [],
   }), [eventId, selectedSeries?.id, drivers]);
 
+  // Safety: This importer only creates Entry, Results, and Standings records.
+  // It MUST NOT create new Driver, Team, Track, Series, or Event source entities.
+  // Driver resolution uses resolveDriverId which looks up existing records only.
   async function runEntriesImport(rows) {
     let created = 0, skipped = 0;
     const unresolved = [];
