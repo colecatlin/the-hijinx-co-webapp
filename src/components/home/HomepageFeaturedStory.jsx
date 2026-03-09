@@ -30,7 +30,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
           </div>
           <Link
             to={createPageUrl('OutletHome')}
-            className="group relative flex flex-col justify-end min-h-[320px] md:min-h-[360px] overflow-hidden border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 bg-gradient-to-br from-[#001F1F] to-[#000D20]"
+            className="group relative flex flex-col justify-end min-h-[320px] md:min-h-[360px] overflow-hidden border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300 bg-gradient-to-br from-[#001F1F] to-[#000D20]"
           >
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/40 to-transparent" />
             <div className="absolute inset-0 bg-[#00FFDA]/3 group-hover:bg-[#00FFDA]/6 transition-all" />
@@ -84,7 +84,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
           >
             <Link
               to={createPageUrl('OutletStoryPage') + `?id=${featured.id}`}
-              className="group relative flex flex-col justify-end min-h-[420px] md:min-h-[500px] overflow-hidden border border-gray-200 hover:border-[#00FFDA] transition-all duration-300"
+              className="group relative flex flex-col justify-end min-h-[420px] md:min-h-[500px] overflow-hidden border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_8px_40px_rgba(0,0,0,0.14)] transition-all duration-300"
             >
               {featured.cover_image ? (
                 <img
@@ -142,7 +142,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
               >
                 <Link
                   to={createPageUrl('OutletStoryPage') + `?id=${story.id}`}
-                  className="group flex gap-4 h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#00FFDA] hover:shadow-sm p-4 transition-all duration-200 overflow-hidden"
+                  className="group flex gap-4 h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-px p-4 transition-all duration-200 overflow-hidden"
                 >
                   {story.cover_image && (
                     <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
@@ -160,7 +160,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                         {story.category}
                       </span>
                     )}
-                    <h4 className="text-sm font-bold text-[#222] group-hover:text-[#008080] transition-colors tracking-tight leading-snug line-clamp-2">
+                    <h4 className="text-sm font-bold text-[#222] group-hover:text-[#1DA1A1] transition-colors tracking-tight leading-snug line-clamp-2">
                       {story.title}
                     </h4>
                     {story.published_date && !isNaN(new Date(story.published_date)) && (
@@ -175,7 +175,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
 
             <Link
               to={createPageUrl('OutletHome')}
-              className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] hover:bg-teal-50 py-4 font-mono text-[10px] tracking-[0.25em] text-gray-400 hover:text-[#008080] transition-all uppercase"
+              className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#1DA1A1] transition-all uppercase"
             >
               <Newspaper className="w-3.5 h-3.5" />
               Explore Stories
