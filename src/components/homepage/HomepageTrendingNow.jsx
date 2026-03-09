@@ -27,7 +27,7 @@ const EMPTY_MSG = {
 function RowShell({ href, index, children }) {
   return (
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}>
-      <Link to={href} className="flex items-center gap-3 py-2.5 px-3 hover:bg-gray-50 transition-colors group border-b border-gray-50 last:border-0">
+      <Link to={href} className="flex items-center gap-3 py-3 px-3 hover:bg-[#F0FAFA] transition-colors group border-b border-gray-100 last:border-0">
         <span className="font-mono text-[10px] text-gray-300 w-5 text-right flex-shrink-0">{index + 1}</span>
         {children}
         <ArrowRight className="w-3 h-3 text-gray-300 group-hover:text-[#1DA1A1] transition-colors flex-shrink-0" />
@@ -47,8 +47,8 @@ function Avatar({ src, alt, Icon }) {
 function ItemMeta({ name, meta }) {
   return (
     <div className="flex-1 min-w-0">
-      <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-[#1DA1A1] transition-colors line-clamp-1">{name}</p>
-      {meta && <p className="text-[10px] text-gray-400 mt-0.5">{meta}</p>}
+      <p className="text-sm font-semibold text-gray-900 leading-none group-hover:text-[#1DA1A1] transition-colors line-clamp-1">{name}</p>
+      {meta && <p className="text-[10px] text-gray-500 mt-0.5">{meta}</p>}
     </div>
   );
 }
@@ -115,12 +115,12 @@ export default function HomepageTrendingNow({ drivers = [], tracks = [], series 
   const activeConfig = TABS.find((t) => t.key === activeTab);
 
   return (
-    <section className="bg-white border-b border-gray-100 py-12">
+    <section className="bg-white border-b border-gray-200 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">
             <TrendingUp className="w-4 h-4 text-[#1DA1A1]" />
-            <h2 className="text-base font-black tracking-tight text-gray-900 uppercase">Trending Now</h2>
+            <h2 className="text-lg font-black tracking-tight text-gray-900">Trending Now</h2>
           </div>
           {activeConfig && (
             <Link to={activeConfig.href} className="flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-[#1DA1A1] hover:text-[#158888] transition-colors">
@@ -150,7 +150,7 @@ export default function HomepageTrendingNow({ drivers = [], tracks = [], series 
                 const active = activeTab === tab.key;
                 return (
                   <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                    className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-left border transition-all ${active ? 'bg-[#1DA1A1] text-white border-[#1DA1A1]' : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50 hover:border-gray-200'}`}>
+                    className={`flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-left border transition-all ${active ? 'bg-[#1DA1A1] text-white border-[#1DA1A1] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-[#F0FAFA] hover:border-[#1DA1A1]/50 hover:text-[#1DA1A1]'}`}>
                     <Icon className="w-4 h-4" />{tab.label}
                   </button>
                 );
@@ -159,7 +159,7 @@ export default function HomepageTrendingNow({ drivers = [], tracks = [], series 
           </div>
 
           {/* Content panel */}
-          <div className="lg:col-span-2 border border-gray-100 bg-white">
+          <div className="lg:col-span-2 border border-gray-200 bg-white shadow-sm">
             {isLoading ? (
               <div className="divide-y divide-gray-50">
                 {[...Array(5)].map((_, i) => (
