@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getEventProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,8 +46,8 @@ function safeDaysUntil(dateStr) {
 
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const eventId   = urlParams.get('id');
-  const eventSlug = urlParams.get('slug');
+  const eventId   = (urlParams.get('id')   || '').trim() || null;
+  const eventSlug = (urlParams.get('slug') || '').trim() || null;
   const [activeSection, setActiveSection] = useState('overview');
   const [selectedClassName, setSelectedClassName] = useState('');
   const [selectedSessionType, setSelectedSessionType] = useState('all');
@@ -91,31 +92,8 @@ export default function EventProfile() {
     );
   }
 
-  if (!event) {
-    return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Event not found</p>
-          <Link to={createPageUrl('EventDirectory')}>
-            <Button>Back to Events</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-  if (!isPublicEvent && !canViewDraft) {
-    return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Event not available</p>
-          <Link to={createPageUrl('EventDirectory')}>
-            <Button>Back to Events</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
+  if (!event) return <EntityNotFound entityType="Event" />;
+  if (!isPublicEvent && !canViewDraft) return <EntityUnavailable entityType="Event" />;
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getSeriesDetailData } from '@/components/entities/publicPageDataApi';
 import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +38,7 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 
 export default function SeriesDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const seriesSlug = searchParams.get('slug') || searchParams.get('id');
+  const seriesSlug = (searchParams.get('slug') || searchParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedClassName, setSelectedClassName] = useState('');
 
@@ -68,19 +69,7 @@ export default function SeriesDetail() {
     );
   }
 
-  if (!series) {
-    return (
-      <PageShell>
-        <div className="bg-white min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-black mb-2">Series Not Found</h1>
-            <p className="text-gray-600">The series you're looking for doesn't exist.</p>
-            <Link to={createPageUrl('SeriesHome')} className="text-sm text-blue-600 underline mt-4 inline-block">Back to Series</Link>
-          </div>
-        </div>
-      </PageShell>
-    );
-  }
+  if (!series) return <EntityNotFound entityType="Series" />;
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: MapPin },

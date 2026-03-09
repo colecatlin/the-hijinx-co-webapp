@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getTrackProfileData } from '@/components/entities/publicPageDataApi';
 import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,7 +17,7 @@ import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const trackSlug = urlParams.get('slug') || urlParams.get('id');
+  const trackSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
   const [activeSection, setActiveSection] = useState('overview');
 
   const { data: profileData, isLoading } = useQuery({
@@ -49,18 +50,7 @@ export default function TrackProfile() {
     );
   }
 
-  if (!track) {
-    return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Track not found</p>
-          <Link to={createPageUrl('TrackDirectory')}>
-            <Button>Back to Tracks</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
+  if (!track) return <EntityNotFound entityType="Track" />;
 
   const signatureEvents = events.filter(e => e.is_signature).slice(0, 3);
   const topSeries = series.slice(0, 4);

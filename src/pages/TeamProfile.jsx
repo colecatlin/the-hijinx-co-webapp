@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getTeamProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,7 +27,7 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const teamSlug = urlParams.get('slug') || urlParams.get('id');
+  const teamSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
 
   const [activeSection, setActiveSection] = useState('overview');
 
@@ -60,18 +61,7 @@ export default function TeamProfile() {
     );
   }
 
-  if (!team) {
-    return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-600 mb-4">Team not found</p>
-          <Link to={createPageUrl('TeamDirectory')}>
-            <Button>Back to Teams</Button>
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
+  if (!team) return <EntityNotFound entityType="Team" />;
 
   const uniqueSeriesPrograms = [...new Map(
     driverPrograms
