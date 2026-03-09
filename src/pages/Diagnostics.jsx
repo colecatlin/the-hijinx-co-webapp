@@ -10,11 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   CheckCircle, AlertTriangle, XCircle, RefreshCw, Loader2,
   ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck, FlaskConical,
-  Rocket, ShieldCheck,
+  Rocket, ShieldCheck, Activity, Flag,
 } from 'lucide-react';
 import { ALL_FALLBACKS, verifyFallbackShape } from '@/components/data/fallbackContracts';
 import { INVALIDATION_GROUPS } from '@/components/data/invalidationContract';
 import { toast } from 'sonner';
+import {
+  canRunOperation, markOperationRun, resetOperationCooldown, OPERATION_KEYS,
+} from '@/components/system/operationGuard';
+import ReportIssueModal from '@/components/system/reportIssueModal';
+import { getLaunchModeConfig, CURRENT_LAUNCH_MODE } from '@/components/system/launchConfig';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -205,6 +210,7 @@ export default function Diagnostics() {
   const [repairing, setRepairing] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [reportIssueOpen, setReportIssueOpen] = useState(false);
 
   // ── V1 Integration Verification ────────────────────────────────────────────
   const [v1Report, setV1Report] = useState(null);
@@ -214,19 +220,34 @@ export default function Diagnostics() {
   const [routeReport, setRouteReport] = useState(null);
   const [routeRunning, setRouteRunning] = useState(false);
 
+  // ── Last run timestamps ─────────────────────────────────────────────────────
+  const [lastDiagRun, setLastDiagRun] = useState(null);
+  const [lastV1Run, setLastV1Run] = useState(null);
+  const [lastRouteRun, setLastRouteRun] = useState(null);
+
+  const launchMode = getLaunchModeConfig();
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const runDiagnostics = async () => {
+  const runDiagnostics = async (force = false) => {
+    const { allowed, remainingSeconds } = canRunOperation(OPERATION_KEYS.DIAGNOSTICS);
+    if (!allowed && !force) {
+      toast.error(`Please wait ${remainingSeconds}s before re-running diagnostics.`);
+      return;
+    }
+    markOperationRun(OPERATION_KEYS.DIAGNOSTICS);
     setRunning(true);
     setReport(null);
     setRepairResult(null);
+    const now = new Date();
     try {
       const res = await base44.functions.invoke('runFullPlatformDiagnostics', {});
       if (res.data?.error) throw new Error(res.data.error);
       setReport(res.data);
+      setLastDiagRun(now);
       toast.success('Diagnostics complete');
     } catch (err) {
       toast.error(`Diagnostics failed: ${err.message}`);
@@ -235,6 +256,12 @@ export default function Diagnostics() {
   };
 
   const runRepairs = async () => {
+    const { allowed, remainingSeconds } = canRunOperation(OPERATION_KEYS.SAFE_REPAIRS);
+    if (!allowed) {
+      toast.error(`Please wait ${remainingSeconds}s before running repairs again.`);
+      return;
+    }
+    markOperationRun(OPERATION_KEYS.SAFE_REPAIRS);
     setRepairing(true);
     setRepairResult(null);
     try {
@@ -242,7 +269,7 @@ export default function Diagnostics() {
       if (res.data?.error) throw new Error(res.data.error);
       setRepairResult(res.data);
       toast.success('Safe repairs completed — re-running diagnostics…');
-      await runDiagnostics();
+      await runDiagnostics(true);
     } catch (err) {
       toast.error(`Repairs failed: ${err.message}`);
       setRepairing(false);
@@ -257,12 +284,17 @@ export default function Diagnostics() {
   };
 
   const runV1Verification = async () => {
+    const { allowed, remainingSeconds } = canRunOperation(OPERATION_KEYS.V1_VERIFICATION);
+    if (!allowed) { toast.error(`Please wait ${remainingSeconds}s before re-running.`); return; }
+    markOperationRun(OPERATION_KEYS.V1_VERIFICATION);
     setV1Running(true);
     setV1Report(null);
+    const now = new Date();
     try {
       const res = await base44.functions.invoke('runV1IntegrationVerification', {});
       if (res.data?.error) throw new Error(res.data.error);
       setV1Report(res.data);
+      setLastV1Run(now);
       const s = res.data?.summary || {};
       toast.success(`V1 Verification complete — ${s.passed} passed, ${s.warnings} warnings, ${s.failures} failures`);
     } catch (err) {
@@ -272,12 +304,17 @@ export default function Diagnostics() {
   };
 
   const runRouteVerification = async () => {
+    const { allowed, remainingSeconds } = canRunOperation(OPERATION_KEYS.ROUTE_VERIFICATION);
+    if (!allowed) { toast.error(`Please wait ${remainingSeconds}s before re-running.`); return; }
+    markOperationRun(OPERATION_KEYS.ROUTE_VERIFICATION);
     setRouteRunning(true);
     setRouteReport(null);
+    const now = new Date();
     try {
       const res = await base44.functions.invoke('runDataRoutingVerification', {});
       if (res.data?.error) throw new Error(res.data.error);
       setRouteReport(res.data);
+      setLastRouteRun(now);
       toast.success('Data routing verification complete');
     } catch (err) {
       toast.error(`Verification failed: ${err.message}`);
