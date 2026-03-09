@@ -44,7 +44,7 @@ function buildSummary(sections) {
 async function verifyHomepage(base44) {
   const checks = [];
   try {
-    const res = await base44.asServiceRole.functions.invoke('getHomepageData', {});
+    const res = await base44.functions.invoke('getHomepageData', {});
     const data = res?.data || res || {};
 
     const requiredKeys = [
