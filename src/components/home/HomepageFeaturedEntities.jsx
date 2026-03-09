@@ -205,7 +205,7 @@ export default function HomepageFeaturedEntities({
             to={createPageUrl(activeTabConfig?.page || 'MotorsportsHome')}
             className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] py-3.5 text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-[#008080] transition-all"
           >
-            View All {activeTabConfig?.label}
+            {TAB_BROWSE_LABELS[activeTab] || 'Explore Motorsports'}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
