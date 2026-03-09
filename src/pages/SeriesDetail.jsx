@@ -1,13 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { QueryKeys } from '@/components/utils/queryKeys';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { getSeriesDetailData } from '@/components/entities/publicPageDataApi';
 import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
 
-const DQ = applyDefaultQueryOptions();
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -19,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin, TrendingUp, Share2, Flag, BarChart3, AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
@@ -28,75 +25,37 @@ import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 import SeriesNameHistory from '@/components/series/SeriesNameHistory';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
+function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
+  if (!dateStr) return 'TBA';
+  try {
+    const d = parseISO(dateStr);
+    return isValid(d) ? format(d, fmt) : 'TBA';
+  } catch {
+    return 'TBA';
+  }
+}
+
 export default function SeriesDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const seriesSlug = searchParams.get('slug') || searchParams.get('id');
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedClassName, setSelectedClassName] = useState('');
 
-  const { data: series, isLoading } = useQuery({
-    queryKey: QueryKeys.series.byId(seriesSlug),
-    queryFn: async () => {
-      const all = await base44.entities.Series.list();
-      return all.find(s => s.slug === seriesSlug || s.id === seriesSlug);
-    },
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['seriesDetailData', seriesSlug],
+    queryFn: () => getSeriesDetailData({ id: seriesSlug, slug: seriesSlug }),
     enabled: !!seriesSlug,
-    ...DQ,
   });
 
-  const { data: events = [] } = useQuery({
-    queryKey: ['seriesEvents', series?.id],
-    queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('event_date', 500);
-      const names = [series.name, series.full_name].filter(Boolean).map(n => n.toLowerCase().trim());
-      return allEvents.filter(e => {
-        if (!e.series) return false;
-        const evSeries = e.series.toLowerCase().trim();
-        return names.some(n => n === evSeries || n.includes(evSeries) || evSeries.includes(n));
-      });
-    },
-    enabled: !!series?.id,
-    ...DQ,
-  });
+  const series    = profileData?.series    ?? null;
+  const classes   = profileData?.classes   ?? [];
+  const allEvents = profileData?.events    ?? [];
+  const allTracks = profileData?.tracks    ?? [];
+  const sessions  = profileData?.sessions  ?? [];
+  const results   = profileData?.results   ?? [];
+  const standings = profileData?.standings ?? [];
 
   const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
-  
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: QueryKeys.series.classes(series?.id),
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: series.id }),
-    enabled: !!series?.id,
-    ...DQ,
-  });
-
-  const { data: allEvents = [] } = useQuery({
-    queryKey: QueryKeys.events.list(),
-    queryFn: () => base44.entities.Event.list(),
-    ...DQ,
-  });
-
-  const { data: allTracks = [] } = useQuery({
-    queryKey: QueryKeys.tracks.list(),
-    queryFn: () => base44.entities.Track.list(),
-    ...DQ,
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: QueryKeys.sessions.listByEvent(undefined),
-    queryFn: () => base44.entities.Session.list(),
-    ...DQ,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: QueryKeys.results.listByEvent(undefined),
-    queryFn: () => base44.entities.Results.list(),
-    ...DQ,
-  });
-
-  const { data: standings = [] } = useQuery({
-    queryKey: QueryKeys.standings.bySeriesSeason(series?.id, seasonYear),
-    queryFn: () => base44.entities.Standings.list(),
-    ...DQ,
-  });
 
   if (isLoading) {
     return (
@@ -132,30 +91,27 @@ export default function SeriesDetail() {
 
   const displayLevel = series.override_competition_level || series.derived_competition_level;
   const isOverride = !!series.override_competition_level;
-  const activeClasses = seriesClasses.filter(c => c.active !== false);
+  const activeClasses = classes.filter(c => c.active !== false);
 
-  // Filter to public-visible events only
-  const publicEvents = events.filter(e => isPublicVisible('Event', e));
-  const upcomingEvents = publicEvents.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
-  const pastEvents = publicEvents.filter(e => e.status === 'completed' || e.status === 'cancelled');
+  // Public-visible events
+  const publicEvents = allEvents.filter(e => isPublicVisible('Event', e));
 
-  // Season-filtered events (public visible only)
+  // Season-filtered events
   const seasonEvents = useMemo(() => {
-    return allEvents.filter(e => 
-      e.series_id === series?.id && 
-      e.season === seasonYear && 
-      isPublicVisible('Event', e)
-    ).sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
-  }, [allEvents, series?.id, seasonYear]);
+    return allEvents
+      .filter(e => e.season === seasonYear && isPublicVisible('Event', e))
+      .sort((a, b) => (a.event_date || '').localeCompare(b.event_date || ''));
+  }, [allEvents, seasonYear]);
 
   const tracksMap = useMemo(() => {
     const map = {};
-    allTracks.forEach(t => { map[t.id] = t; });
+    allTracks.forEach(t => { if (t?.id) map[t.id] = t; });
     return map;
   }, [allTracks]);
 
   const seasonSessions = useMemo(() => {
-    return sessions.filter(s => seasonEvents.some(e => e.id === s.event_id));
+    const seasonEventIds = new Set(seasonEvents.map(e => e.id));
+    return sessions.filter(s => seasonEventIds.has(s.event_id));
   }, [sessions, seasonEvents]);
 
   const officialSessions = useMemo(() => {
@@ -163,17 +119,21 @@ export default function SeriesDetail() {
   }, [seasonSessions]);
 
   const seasonResults = useMemo(() => {
-    return results.filter(r => seasonEvents.some(e => e.id === r.event_id));
+    const seasonEventIds = new Set(seasonEvents.map(e => e.id));
+    return results.filter(r => seasonEventIds.has(r.event_id));
   }, [results, seasonEvents]);
 
   const activeClassName = selectedClassName || (activeClasses[0]?.class_name || '');
 
   const seasonStandings = useMemo(() => {
-    return standings.filter(s => 
-      s.series_id === series?.id && 
-      s.season_year === seasonYear && 
-      s.class_name === activeClassName
-    ).sort((a, b) => a.position - b.position).slice(0, 10);
+    return standings
+      .filter(s =>
+        s.series_id === series?.id &&
+        s.season_year === seasonYear &&
+        s.class_name === activeClassName
+      )
+      .sort((a, b) => (a.position || 999) - (b.position || 999))
+      .slice(0, 10);
   }, [standings, series?.id, seasonYear, activeClassName]);
 
   return (
@@ -198,7 +158,7 @@ export default function SeriesDetail() {
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-4xl font-black text-[#232323] leading-none">{series.name}</h1>
             </div>
-            {/* Competition classification strip */}
+
             {(displayLevel || series.geographic_scope) && (
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 {displayLevel && <CompetitionLevelBadge level={displayLevel} isOverride={isOverride} size="md" />}
@@ -208,6 +168,7 @@ export default function SeriesDetail() {
                 )}
               </div>
             )}
+
             {series.title_sponsor_name && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs text-gray-400 uppercase tracking-widest font-medium">Presented by</span>
@@ -260,7 +221,6 @@ export default function SeriesDetail() {
               })}
             </div>
 
-            {/* Socials row */}
             <div className="flex items-center gap-3 mb-3">
               {series.website_url && (
                 <a href={series.website_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#232323] transition-colors">
@@ -328,7 +288,7 @@ export default function SeriesDetail() {
                   )}
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Events</div>
-                    <div className="text-lg font-semibold text-[#232323]">{events.length}</div>
+                    <div className="text-lg font-semibold text-[#232323]">{publicEvents.length}</div>
                   </div>
                 </div>
               </div>
@@ -345,7 +305,7 @@ export default function SeriesDetail() {
 
           <div className="space-y-6 relative -mt-1">
             <div className="absolute -top-12 right-0 z-10">
-              <SocialShareButtons 
+              <SocialShareButtons
                 url={window.location.href}
                 title={`${series.name} - Series`}
                 description={series.description}
@@ -359,7 +319,7 @@ export default function SeriesDetail() {
               ) : (
                 <div className="w-full bg-gray-50 border border-gray-200 flex items-center justify-center" style={{minHeight: 240}}>
                   <div className="text-center text-gray-400">
-                    <div className="text-4xl font-black mb-2">{series.name.substring(0, 3).toUpperCase()}</div>
+                    <div className="text-4xl font-black mb-2">{(series.name || '').substring(0, 3).toUpperCase()}</div>
                     <div className="text-xs">No logo uploaded</div>
                   </div>
                 </div>
@@ -368,7 +328,7 @@ export default function SeriesDetail() {
           </div>
         </div>
 
-        {/* Season Selector Bar */}
+        {/* Season Selector */}
         <div className="bg-white border-b border-gray-200 p-6 mb-6 sticky top-0 z-30">
           <div className="flex flex-col md:flex-row items-center gap-4">
             <span className="text-sm font-medium text-gray-600">Season:</span>
@@ -391,12 +351,10 @@ export default function SeriesDetail() {
           </div>
         </div>
 
-        {/* History section */}
         <div id="section-history" className="space-y-4 mb-4">
           <SeriesNameHistory series={series} />
         </div>
 
-        {/* Classes section */}
         <div id="section-classes" className="space-y-4">
           <section className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Racing Classes</h2>
@@ -404,43 +362,38 @@ export default function SeriesDetail() {
               <p className="text-gray-500 text-sm">No classes defined for this series yet.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeClasses.map(cls => {
-                  const scoreTotal = ['media_score','attendance_score','purse_score','manufacturer_score','geographic_diversity_score','team_budget_score']
-                    .reduce((sum, k) => sum + (Number(cls[k]) || 0), 0);
-                  return (
-                    <div key={cls.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
-                      <div className="mb-3">
-                        <div className="font-semibold text-[#232323] mb-2">{cls.class_name}</div>
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          {cls.competition_level && <CompetitionLevelBadge level={cls.competition_level} size="sm" />}
-                          {cls.geographic_scope && <GeographicScopeTag scope={cls.geographic_scope} size="sm" />}
-                        </div>
-                        {cls.vehicle_type && <p className="text-xs text-gray-500">Vehicle: {cls.vehicle_type}</p>}
+                {activeClasses.map(cls => (
+                  <div key={cls.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
+                    <div className="mb-3">
+                      <div className="font-semibold text-[#232323] mb-2">{cls.class_name}</div>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {cls.competition_level && <CompetitionLevelBadge level={cls.competition_level} size="sm" />}
+                        {cls.geographic_scope && <GeographicScopeTag scope={cls.geographic_scope} size="sm" />}
                       </div>
-                      {cls.description_summary && <p className="text-sm text-gray-600 mb-3">{cls.description_summary}</p>}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs"
-                        onClick={() => {
-                          setSelectedClassName(cls.class_name);
-                          const element = document.getElementById('section-standings');
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }}
-                      >
-                        View Standings
-                      </Button>
+                      {cls.vehicle_type && <p className="text-xs text-gray-500">Vehicle: {cls.vehicle_type}</p>}
                     </div>
-                  );
-                })}
+                    {cls.description_summary && <p className="text-sm text-gray-600 mb-3">{cls.description_summary}</p>}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => {
+                        setSelectedClassName(cls.class_name);
+                        const element = document.getElementById('section-standings');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
+                    >
+                      View Standings
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
           </section>
         </div>
 
-        {/* Event Schedule Section */}
         <div id="section-schedule" className="space-y-4 mb-6">
           <section className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Event Schedule - {seasonYear}</h2>
@@ -467,8 +420,8 @@ export default function SeriesDetail() {
                             </Badge>
                           </div>
                           <div className="text-sm text-gray-600">
-                            {track?.name || 'N/A'} • {format(parseISO(event.event_date), 'MMM d, yyyy')}
-                            {event.end_date && event.end_date !== event.event_date && ` - ${format(parseISO(event.end_date), 'MMM d, yyyy')}`}
+                            {track?.name || 'N/A'} • {safeDateFormat(event.event_date)}
+                            {event.end_date && event.end_date !== event.event_date && ` - ${safeDateFormat(event.end_date)}`}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -488,23 +441,24 @@ export default function SeriesDetail() {
           </section>
         </div>
 
-        {/* Standings Preview Section */}
         <div id="section-standings" className="space-y-4 mb-6">
           <section className="bg-white border border-gray-200 p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-[#232323]">Standings Preview</h2>
-              <Select value={activeClassName} onValueChange={setSelectedClassName}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeClasses.map(cls => (
-                    <SelectItem key={cls.id} value={cls.class_name}>
-                      {cls.class_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {activeClasses.length > 0 && (
+                <Select value={activeClassName} onValueChange={setSelectedClassName}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeClasses.map(cls => (
+                      <SelectItem key={cls.id} value={cls.class_name}>
+                        {cls.class_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {seasonStandings.length === 0 ? (
@@ -554,7 +508,6 @@ export default function SeriesDetail() {
           </section>
         </div>
 
-        {/* Published Media Gallery */}
         <div className="mb-6">
           <section className="bg-white border border-gray-200 p-8">
             <PublicMediaGallery
@@ -565,7 +518,6 @@ export default function SeriesDetail() {
           </section>
         </div>
 
-        {/* Season Data Health Row */}
         <div className="mb-6">
           <section className="bg-white border border-gray-200 p-8">
             <h3 className="text-lg font-bold text-[#232323] mb-4">Season Data Health</h3>

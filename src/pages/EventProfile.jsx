@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
+import { getEventProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { MapPin, Calendar, Trophy, Flag, Share2, AlertCircle, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+import { format, differenceInCalendarDays, parseISO, isValid } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
@@ -24,9 +24,29 @@ import EventResultsSubmissionForm from '@/components/EventResultsSubmissionForm'
 import { isEventPublic } from '@/components/system/publishHelpers';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
+function safeDateFormat(dateStr, fmt = 'MMMM d, yyyy') {
+  if (!dateStr) return 'TBA';
+  try {
+    const d = parseISO(dateStr);
+    return isValid(d) ? format(d, fmt) : 'TBA';
+  } catch {
+    return 'TBA';
+  }
+}
+
+function safeDaysUntil(dateStr) {
+  if (!dateStr) return null;
+  try {
+    return differenceInCalendarDays(parseISO(dateStr), new Date());
+  } catch {
+    return null;
+  }
+}
+
 export default function EventProfile() {
   const urlParams = new URLSearchParams(window.location.search);
-  const eventId = urlParams.get('id');
+  const eventId   = urlParams.get('id');
+  const eventSlug = urlParams.get('slug');
   const [activeSection, setActiveSection] = useState('overview');
   const [selectedClassName, setSelectedClassName] = useState('');
   const [selectedSessionType, setSelectedSessionType] = useState('all');
@@ -43,39 +63,22 @@ export default function EventProfile() {
     retry: false,
   });
 
-  const { event, track, isLoading, error } = useMotorsportsContext({ eventId });
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['eventProfileData', eventId, eventSlug],
+    queryFn: () => getEventProfileData({ id: eventId, slug: eventSlug }),
+    enabled: !!(eventId || eventSlug),
+  });
+
+  const event    = profileData?.event    ?? null;
+  const track    = profileData?.track    ?? null;
+  const series   = profileData?.series   ?? null;  // single object, not array
+  const sessions = profileData?.sessions ?? [];
+  const classes  = profileData?.classes  ?? [];
+  const allResults= profileData?.results  ?? [];
+  const standings= profileData?.standings ?? [];
 
   const isPublicEvent = event && isEventPublic(event);
-  const canViewDraft = user?.role === 'admin' && event && event.status === 'Draft';
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['eventSessions', eventId],
-    queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
-    enabled: !!eventId,
-  });
-
-  const { data: series } = useQuery({
-    queryKey: ['series', event?.series_id],
-    queryFn: () => base44.entities.Series.filter({ id: event.series_id }),
-    enabled: !!event?.series_id,
-  });
-
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['seriesClasses', event?.series_id],
-    queryFn: () => base44.entities.SeriesClass.filter({ series_id: event.series_id, active: true }),
-    enabled: !!event?.series_id,
-  });
-
-  const { data: allResults = [] } = useQuery({
-    queryKey: ['eventResults', eventId],
-    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
-    enabled: !!eventId,
-  });
-
-  const { data: standings = [] } = useQuery({
-    queryKey: ['standings'],
-    queryFn: () => base44.entities.Standings.list(),
-  });
+  const canViewDraft  = user?.role === 'admin' && event?.status === 'Draft';
 
   if (isLoading) {
     return (
@@ -120,10 +123,9 @@ export default function EventProfile() {
     { id: 'results', label: 'Results', icon: Trophy },
   ];
 
-  // Compute data
-  const orgType = event?.series_id ? 'series' : 'track';
-  const orgId = event?.series_id || event?.track_id;
-  const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${orgType}&orgId=${orgId}&seasonYear=${event?.season}&eventId=${eventId}`;
+  const orgType  = event?.series_id ? 'series' : 'track';
+  const orgId    = event?.series_id || event?.track_id;
+  const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${orgType}&orgId=${orgId}&seasonYear=${event?.season}&eventId=${event?.id}`;
 
   const activeClassSessions = useMemo(() => {
     if (!selectedClassName || selectedClassName === 'all') return sessions;
@@ -131,12 +133,11 @@ export default function EventProfile() {
   }, [sessions, selectedClassName]);
 
   const filteredSessions = useMemo(() => {
-    return activeClassSessions.filter(s => 
+    return activeClassSessions.filter(s =>
       selectedSessionType === 'all' || s.session_type === selectedSessionType
     );
   }, [activeClassSessions, selectedSessionType]);
 
-  // Filter to only Official or Locked sessions (Race Core)
   const officialSessions = useMemo(() => {
     return sessions.filter(s => ['Official', 'Locked'].includes(s.status));
   }, [sessions]);
@@ -144,38 +145,29 @@ export default function EventProfile() {
   const eventStandings = useMemo(() => {
     return standings
       .filter(s => s.series_id === event?.series_id && s.season_year === event?.season)
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => (a.position || 999) - (b.position || 999))
       .slice(0, 10);
   }, [standings, event?.series_id, event?.season]);
 
   const sessionTypes = useMemo(() => {
-    const types = [...new Set(sessions.map(s => s.session_type).filter(Boolean))];
-    return types.sort();
+    return [...new Set(sessions.map(s => s.session_type).filter(Boolean))].sort();
   }, [sessions]);
 
-  // Sort sessions according to spec
   const SESSION_TYPE_ORDER = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
   const sortedSessions = useMemo(() => {
     return [...sessions].sort((a, b) => {
-      // 1. By session_type order
-      const aTypeIndex = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
-      const bTypeIndex = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
-      if (aTypeIndex !== bTypeIndex) {
-        return (aTypeIndex >= 0 ? aTypeIndex : SESSION_TYPE_ORDER.length) - (bTypeIndex >= 0 ? bTypeIndex : SESSION_TYPE_ORDER.length);
+      const aIdx = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
+      const bIdx = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
+      if (aIdx !== bIdx) {
+        return (aIdx >= 0 ? aIdx : SESSION_TYPE_ORDER.length) - (bIdx >= 0 ? bIdx : SESSION_TYPE_ORDER.length);
       }
-      // 2. By scheduled_time ascending
-      if (a.scheduled_time && b.scheduled_time) {
-        return new Date(a.scheduled_time) - new Date(b.scheduled_time);
-      }
+      if (a.scheduled_time && b.scheduled_time) return new Date(a.scheduled_time) - new Date(b.scheduled_time);
       if (a.scheduled_time) return -1;
       if (b.scheduled_time) return 1;
-      // 3. By name ascending as fallback
-      if (a.name && b.name) return a.name.localeCompare(b.name);
-      return 0;
+      return (a.name || '').localeCompare(b.name || '');
     });
   }, [sessions]);
 
-  // Quick stats for sessions
   const sessionStats = useMemo(() => {
     const statuses = {};
     sessions.forEach(s => {
@@ -185,25 +177,26 @@ export default function EventProfile() {
     return statuses;
   }, [sessions]);
 
+  const daysUntil = safeDaysUntil(event.event_date);
+
   return (
     <PageShell className="bg-white">
-      {/* Event Command Header Bar */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-gray-600 truncate">
-              {event.name} • {track?.name || 'N/A'} • {event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'TBA'}
+              {event.name} • {track?.name || 'N/A'} • {safeDateFormat(event.event_date, 'MMM d, yyyy')}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to={`${createPageUrl('EventResults')}?eventId=${eventId}`}>
+            <Link to={`${createPageUrl('EventResults')}?eventId=${event?.id}`}>
               <Button variant="outline" size="sm" className="text-xs">View Results</Button>
             </Link>
             {isAuthenticated && (
               <Link to={racedayUrl}>
-                <Button 
-                  variant={user?.role === 'admin' ? 'default' : 'outline'} 
-                  size="sm" 
+                <Button
+                  variant={user?.role === 'admin' ? 'default' : 'outline'}
+                  size="sm"
                   className="text-xs"
                 >
                   {user?.role === 'admin' ? 'Manage RaceDay' : 'Staff Dashboard'}
@@ -287,18 +280,17 @@ export default function EventProfile() {
                     Event Date
                   </div>
                   <div className="text-lg font-semibold text-[#232323] mb-1">
-                    {event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBA'}
+                    {safeDateFormat(event.event_date)}
                     {event.end_date && event.end_date !== event.event_date && (
-                      <span className="text-gray-500"> – {format(new Date(event.end_date), 'MMMM d, yyyy')}</span>
+                      <span className="text-gray-500"> – {safeDateFormat(event.end_date)}</span>
                     )}
                   </div>
                   {(() => {
                     if (!event.event_date || event.status === 'completed' || event.status === 'cancelled') return null;
                     if (event.status === 'in_progress') return <div className="text-sm font-bold text-green-600 mb-4">In Progress</div>;
-                    const days = differenceInCalendarDays(parseISO(event.event_date), new Date());
-                    if (days < 0) return null;
-                    if (days === 0) return <div className="text-sm font-bold text-green-600 mb-4">Today</div>;
-                    return <div className="text-sm font-bold text-orange-500 mb-4">In {days} day{days !== 1 ? 's' : ''}</div>;
+                    if (daysUntil === null || daysUntil < 0) return null;
+                    if (daysUntil === 0) return <div className="text-sm font-bold text-green-600 mb-4">Today</div>;
+                    return <div className="text-sm font-bold text-orange-500 mb-4">In {daysUntil} day{daysUntil !== 1 ? 's' : ''}</div>;
                   })()}
                   {track && (
                     <div>
@@ -326,7 +318,7 @@ export default function EventProfile() {
 
           <div className="space-y-6 relative -mt-1">
             <div className="absolute -top-12 right-0 z-10">
-              <SocialShareButtons 
+              <SocialShareButtons
                 url={window.location.href}
                 title={`${event.name} - Event`}
                 description=""
@@ -337,7 +329,6 @@ export default function EventProfile() {
 
         {/* Linked Entities Panel */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {/* Track Card */}
           {track && (
             <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
               <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Venue</div>
@@ -356,12 +347,11 @@ export default function EventProfile() {
             </div>
           )}
 
-          {/* Series Card */}
-          {event.series_id && series?.length > 0 && (
+          {series && (
             <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
               <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Series</div>
-              <Link to={`${createPageUrl('SeriesDetail')}?id=${event.series_id}`} className="group">
-                <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series[0]?.name || event.series_id}</div>
+              <Link to={`${createPageUrl('SeriesDetail')}?id=${series.id}`} className="group">
+                <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series.name}</div>
                 {event.season && (
                   <div className="text-sm text-gray-600">Season {event.season}</div>
                 )}
@@ -369,7 +359,6 @@ export default function EventProfile() {
             </div>
           )}
 
-          {/* Status Card */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Status</div>
             <div className="flex items-center gap-2 mb-2">
@@ -382,14 +371,9 @@ export default function EventProfile() {
                 {event.status}
               </Badge>
             </div>
-            {event.event_date && event.status !== 'completed' && (
+            {event.event_date && event.status !== 'completed' && daysUntil !== null && (
               <div className="text-sm text-gray-600">
-                {(() => {
-                  const days = differenceInCalendarDays(parseISO(event.event_date), new Date());
-                  if (days < 0) return 'Event passed';
-                  if (days === 0) return 'Today';
-                  return `In ${days} day${days !== 1 ? 's' : ''}`;
-                })()}
+                {daysUntil < 0 ? 'Event passed' : daysUntil === 0 ? 'Today' : `In ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`}
               </div>
             )}
           </div>
@@ -401,7 +385,7 @@ export default function EventProfile() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-[#232323]">Sessions</h2>
               {sortedSessions.length > 12 && (
-                <Link to={`${createPageUrl('EventResults')}?id=${eventId}`} className="text-sm text-[#00FFDA] hover:underline font-medium">
+                <Link to={`${createPageUrl('EventResults')}?id=${event?.id}`} className="text-sm text-[#00FFDA] hover:underline font-medium">
                   View all sessions
                 </Link>
               )}
@@ -413,9 +397,9 @@ export default function EventProfile() {
                   <div key={session.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-[#232323] mb-1">
-                        {session.name || `${session.session_type}${session.session_number ? ` #${session.session_number}` : ''}`}
+                        {session.name || `${session.session_type || ''}${session.session_number ? ` #${session.session_number}` : ''}`}
                       </div>
-                      {session.scheduled_time && (
+                      {session.scheduled_time && isValid(parseISO(session.scheduled_time)) && (
                         <div className="text-xs text-gray-500">
                           {format(parseISO(session.scheduled_time), 'MMM d, HH:mm')}
                         </div>
@@ -469,11 +453,11 @@ export default function EventProfile() {
           <div className="mb-6">
             <section className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Racing Classes</h2>
-              {seriesClasses.length === 0 ? (
+              {classes.length === 0 ? (
                 <p className="text-gray-500 text-sm">No classes defined for this series yet.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {seriesClasses.map(cls => (
+                  {classes.map(cls => (
                     <div key={cls.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
                       <div className="mb-3">
                         <div className="font-semibold text-[#232323] mb-2">{cls.class_name}</div>
@@ -486,9 +470,7 @@ export default function EventProfile() {
                         onClick={() => {
                           setSelectedClassName(cls.class_name);
                           const element = document.getElementById('section-sessions');
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
+                          if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }}
                       >
                         Jump to Sessions
@@ -511,19 +493,19 @@ export default function EventProfile() {
         <div className="space-y-4 mb-6">
           <section id="section-sessions" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Sessions Schedule</h2>
-            
+
             {sessions.length > 0 && (
               <div className="flex flex-col md:flex-row gap-4 mb-6">
-                {seriesClasses.length > 0 && (
+                {classes.length > 0 && (
                   <div className="flex-1">
                     <label className="text-xs text-gray-600 font-medium mb-2 block">Filter by Class</label>
-                    <Select value={selectedClassName} onValueChange={setSelectedClassName}>
+                    <Select value={selectedClassName || ''} onValueChange={setSelectedClassName}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="All sessions" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={null}>All sessions</SelectItem>
-                        {seriesClasses.map(cls => (
+                        {classes.map(cls => (
                           <SelectItem key={cls.id} value={cls.class_name}>
                             {cls.class_name}
                           </SelectItem>
@@ -564,36 +546,39 @@ export default function EventProfile() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSessions.map(session => (
-                      <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-2 text-xs">
-                          {session.scheduled_time ? format(parseISO(session.scheduled_time), 'HH:mm') : 'TBA'}
-                        </td>
-                        <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
-                        <td className="py-3 px-2">{session.name}</td>
-                        <td className="py-3 px-2">
-                          <Badge className={`${
-                            session.status === 'Official' || session.status === 'Locked' ? 'bg-green-100 text-green-700' :
-                            session.status === 'completed' ? 'bg-gray-100 text-gray-700' :
-                            'bg-blue-100 text-blue-700'
-                          }`}>
-                            {session.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-2 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
-                              <Button variant="ghost" size="sm" className="text-xs h-7">View</Button>
-                            </Link>
-                            {isAuthenticated && (
-                              <Link to={`${racedayUrl}&tab=results`}>
-                                <Button variant="ghost" size="sm" className="text-xs h-7">Manage</Button>
+                    {filteredSessions.map(session => {
+                      const hasValidTime = session.scheduled_time && isValid(parseISO(session.scheduled_time));
+                      return (
+                        <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-2 text-xs">
+                            {hasValidTime ? format(parseISO(session.scheduled_time), 'HH:mm') : 'TBA'}
+                          </td>
+                          <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
+                          <td className="py-3 px-2">{session.name}</td>
+                          <td className="py-3 px-2">
+                            <Badge className={`${
+                              session.status === 'Official' || session.status === 'Locked' ? 'bg-green-100 text-green-700' :
+                              session.status === 'completed' ? 'bg-gray-100 text-gray-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {session.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-2 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
+                                <Button variant="ghost" size="sm" className="text-xs h-7">View</Button>
                               </Link>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {isAuthenticated && (
+                                <Link to={`${racedayUrl}&tab=results`}>
+                                  <Button variant="ghost" size="sm" className="text-xs h-7">Manage</Button>
+                                </Link>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -635,7 +620,7 @@ export default function EventProfile() {
           </section>
         </div>
 
-        {/* Standings Preview Section */}
+        {/* Standings Preview */}
         {event.series_id && (
           <div className="mb-6">
             <section className="bg-white border border-gray-200 p-8">
@@ -688,7 +673,7 @@ export default function EventProfile() {
           <section className="bg-white border border-gray-200 p-8">
             <PublicMediaGallery
               targetType="event_recap"
-              targetEntityId={eventId}
+              targetEntityId={event?.id}
               title="Media"
             />
           </section>
@@ -701,7 +686,7 @@ export default function EventProfile() {
           </section>
           <div className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Official Results & Standings</h2>
-            <ResultsPanel eventId={eventId} seriesName={event.series} />
+            <ResultsPanel eventId={event?.id} seriesName={event.series} />
           </div>
         </div>
       </div>

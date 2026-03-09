@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { isPublicVisible } from '@/components/core/publishModel';
 import { useNavigate } from 'react-router-dom';
+import { getDriverProfileData } from '@/components/entities/publicPageDataApi';
 
 const DQ = applyDefaultQueryOptions();
 import PageShell from '@/components/shared/PageShell';
@@ -18,12 +19,11 @@ import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadg
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 import StatsSection from '@/components/drivers/StatsSection';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
-import { buildProfileUrl } from '@/components/utils/routingContract';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
@@ -33,6 +33,11 @@ import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 import { AlertCircle, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
+function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
+  if (!dateStr) return 'TBA';
+  const d = new Date(dateStr);
+  return isValid(d) ? format(d, fmt) : 'TBA';
+}
 
 export default function DriverProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -44,9 +49,6 @@ export default function DriverProfile() {
   const [activeSection, setActiveSection] = useState('overview');
   const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [compareDriverId, setCompareDriverId] = useState('');
-  
-  // For backwards compatibility with old first/last name URLs
-  const shouldFallbackLookup = !driverSlug && firstName && lastName;
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -66,89 +68,35 @@ export default function DriverProfile() {
     ...DQ,
   });
 
-  const { data: drivers = [], isLoading } = useQuery({
+  // Single consolidated data loader
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['driverProfileData', driverSlug, firstName, lastName],
+    queryFn: () => getDriverProfileData({
+      id: driverSlug,
+      slug: driverSlug,
+      first: firstName,
+      last: lastName,
+    }),
+    enabled: !!(driverSlug || (firstName && lastName)),
+    ...DQ,
+  });
+
+  // Separate driver list query for the compare dialog only
+  const { data: allDrivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
     ...DQ,
   });
 
-  const driver = drivers.find(d => 
-    d.slug === driverSlug || 
-    d.id === driverSlug ||
-    (firstName && lastName && 
-      d.first_name?.toLowerCase() === firstName.toLowerCase() && 
-      d.last_name?.toLowerCase() === lastName.toLowerCase())
-  );
-
-  const { data: media } = useQuery({
-    queryKey: ['driverMedia', driver?.id],
-    queryFn: async () => {
-      const results = await base44.entities.DriverMedia.filter({ driver_id: driver.id });
-      return results[0] || null;
-    },
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: programs = [] } = useQuery({
-    queryKey: QueryKeys.driverPrograms.list({ driverId: driver?.id }),
-    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: allSeries = [] } = useQuery({
-    queryKey: QueryKeys.series.list(),
-    queryFn: () => base44.entities.Series.list(),
-    ...DQ,
-  });
-
-  const { data: allClasses = [] } = useQuery({
-    queryKey: ['allSeriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list(),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    ...DQ,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: QueryKeys.results.listByDriver(driver?.id),
-    queryFn: () => base44.entities.Results.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: QueryKeys.sessions.listByEvent(undefined),
-    queryFn: () => base44.entities.Session.list(),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: QueryKeys.events.list(),
-    queryFn: () => base44.entities.Event.list(),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: entries = [] } = useQuery({
-    queryKey: ['driverEntries', driver?.id],
-    queryFn: () => base44.entities.Entry.filter({ driver_id: driver.id }),
-    enabled: !!driver?.id,
-    ...DQ,
-  });
-
-  const { data: tracks = [] } = useQuery({
-    queryKey: QueryKeys.tracks.list(),
-    queryFn: () => base44.entities.Track.list(),
-    ...DQ,
-  });
+  const driver   = profileData?.driver   ?? null;
+  const media    = profileData?.media    ?? null;
+  const programs = profileData?.programs ?? [];
+  const entries  = profileData?.entries  ?? [];
+  const results  = profileData?.results  ?? [];
+  const sessions = profileData?.sessions ?? [];
+  const allSeries= profileData?.series   ?? [];
+  const allClasses= profileData?.classes ?? [];
+  const driverTeam= profileData?.team    ?? null;
 
   React.useEffect(() => {
     if (driver && media) {
@@ -163,14 +111,14 @@ export default function DriverProfile() {
         tag.setAttribute('content', content);
       };
       updateMetaTag('og:title', `${driver.first_name} ${driver.last_name}`);
-      updateMetaTag('og:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver. ${driver.hometown_city ? `From ${driver.hometown_city}, ${driver.hometown_country}` : ''}`);
-      updateMetaTag('og:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+      updateMetaTag('og:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline || ''} driver. ${driver.hometown_city ? `From ${driver.hometown_city}, ${driver.hometown_country}` : ''}`);
+      updateMetaTag('og:image', media?.headshot_url || media?.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
       updateMetaTag('og:url', window.location.href);
       updateMetaTag('og:type', 'profile');
       updateMetaTag('twitter:card', 'summary_large_image');
       updateMetaTag('twitter:title', `${driver.first_name} ${driver.last_name}`);
-      updateMetaTag('twitter:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline} driver`);
-      updateMetaTag('twitter:image', media.headshot_url || media.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+      updateMetaTag('twitter:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline || ''} driver`);
+      updateMetaTag('twitter:image', media?.headshot_url || media?.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
     }
   }, [driver, media]);
 
@@ -198,19 +146,13 @@ export default function DriverProfile() {
     );
   }
 
-
-
-  const getSeriesName = (seriesId) => {
-    return allSeries.find(s => s.id === seriesId)?.name || 'N/A';
-  };
+  const getSeriesName = (seriesId) => allSeries.find(s => s.id === seriesId)?.name || 'N/A';
 
   const driverSeriesList = programs
     .map(p => allSeries.find(s => s.id === p.series_id))
     .filter(Boolean)
     .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
     .sort((a, b) => (a.popularity_rank ?? 9999) - (b.popularity_rank ?? 9999));
-
-  const driverTeam = teams.find(t => t.id === driver?.team_id);
 
   const sections = [
     { id: 'overview', label: 'Event Participation', icon: Calendar },
@@ -227,8 +169,6 @@ export default function DriverProfile() {
     });
   };
 
-
-
   const searchDriverPhotos = async () => {
     try {
       const response = await base44.functions.invoke('searchDriverPhotos', {
@@ -236,40 +176,60 @@ export default function DriverProfile() {
         lastName: driver.last_name
       });
       return response.data?.images || [];
-    } catch (error) {
-      console.error('Failed to search photos:', error);
+    } catch {
       return [];
     }
   };
 
-  // Filter results to only those from Official or Locked sessions (Race Core)
+  // Official results: sessions with Official or Locked status
   const officialResults = useMemo(() => {
-    const officialSessions = sessions.filter(s => ['Official', 'Locked'].includes(s.status));
-    return results.filter(r => officialSessions.some(s => s.id === r.session_id)).slice(0, 10);
+    const officialSessionIds = new Set(
+      sessions.filter(s => ['Official', 'Locked'].includes(s.status)).map(s => s.id)
+    );
+    return results.filter(r => officialSessionIds.has(r.session_id)).slice(0, 10);
   }, [results, sessions]);
 
-  // Split entries into upcoming and past events (public visible only)
+  // Events for entry display
+  const allEvents = useMemo(() => {
+    const eventIds = [...new Set(entries.map(e => e.event_id).filter(Boolean))];
+    return eventIds; // events are loaded via profile data
+  }, [entries]);
+
+  // We need events + tracks for entry display — load them separately since
+  // getDriverProfileData doesn't load all events/tracks (avoids over-fetching)
+  const { data: eventsForEntries = [] } = useQuery({
+    queryKey: ['eventsForDriverEntries', driver?.id],
+    queryFn: () => base44.entities.Event.list(),
+    enabled: entries.length > 0,
+    ...DQ,
+  });
+  const { data: tracksForEntries = [] } = useQuery({
+    queryKey: ['tracksForDriverEntries', driver?.id],
+    queryFn: () => base44.entities.Track.list(),
+    enabled: entries.length > 0,
+    ...DQ,
+  });
+
   const upcomingEntries = entries
     .filter(entry => {
-      const event = events.find(e => e.id === entry.event_id);
+      const event = eventsForEntries.find(e => e.id === entry.event_id);
       return event && isPublicVisible('Event', event);
     })
     .map(entry => {
-      const event = events.find(e => e.id === entry.event_id);
-      const track = tracks.find(t => t.id === event?.track_id);
+      const event = eventsForEntries.find(e => e.id === entry.event_id);
+      const track = tracksForEntries.find(t => t.id === event?.track_id);
       return { entry, event, track };
     });
 
   const pastEntries = entries
     .filter(entry => {
-      const event = events.find(e => e.id === entry.event_id);
+      const event = eventsForEntries.find(e => e.id === entry.event_id);
       return event && event.status === 'completed' && isPublicVisible('Event', event);
     })
     .map(entry => {
-      const event = events.find(e => e.id === entry.event_id);
-      const track = tracks.find(t => t.id === event?.track_id);
-      // Find official result for this entry
-      const officialSession = sessions.find(s => s.event_id === event.id && ['Official', 'Locked'].includes(s.status));
+      const event = eventsForEntries.find(e => e.id === entry.event_id);
+      const track = tracksForEntries.find(t => t.id === event?.track_id);
+      const officialSession = sessions.find(s => s.event_id === event?.id && ['Official', 'Locked'].includes(s.status));
       const resultData = officialSession ? results.find(r => r.session_id === officialSession.id && r.driver_id === driver.id) : null;
       return { entry, event, track, resultData };
     });
@@ -285,9 +245,9 @@ export default function DriverProfile() {
       {media?.hero_image_url && (
         <div className="max-w-7xl mx-auto px-6 mt-3">
           <div className="h-[400px] relative overflow-hidden rounded-lg">
-            <img 
-              src={media.hero_image_url} 
-              alt={driver.display_name}
+            <img
+              src={media.hero_image_url}
+              alt={`${driver.first_name} ${driver.last_name}`}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -296,7 +256,6 @@ export default function DriverProfile() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-2">
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
             <Separator className="mb-3" />
@@ -350,7 +309,6 @@ export default function DriverProfile() {
 
             <Separator className="mb-3" />
 
-            {/* Team / Manufacturer strip */}
             {(driverTeam || driver.manufacturer) && (
               <div className="flex flex-wrap gap-6 mb-4 px-1">
                 {driverTeam && (
@@ -376,62 +334,64 @@ export default function DriverProfile() {
             <Separator className="mb-3" />
             <div className="bg-white p-8 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Age</div>
-                    <div className="text-lg font-semibold text-[#232323] mb-4">
-                      {driver.date_of_birth ? new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear() : 'N/A'}
-                    </div>
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Age</div>
+                  <div className="text-lg font-semibold text-[#232323] mb-4">
+                    {driver.date_of_birth ? new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear() : 'N/A'}
+                  </div>
 
-                    {driverSeriesList.length > 0 && (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Series</div>
-                        <div className="flex flex-col gap-1">
-                          {driverSeriesList.map(s => (
-                            <div key={s.id} className="text-lg font-semibold text-[#232323] leading-tight">
-                              {s.name}
-                            </div>
-                          ))}
+                  {driverSeriesList.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Series</div>
+                      <div className="flex flex-col gap-1">
+                        {driverSeriesList.map(s => (
+                          <div key={s.id} className="text-lg font-semibold text-[#232323] leading-tight">
+                            {s.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(() => {
+                    const activeProgram = programs.find(p => p.status === 'active') || programs[0];
+                    const primaryClass = (driver.primary_class_id
+                      ? allClasses.find(c => c.id === driver.primary_class_id)
+                      : null) || (activeProgram?.series_class_id
+                      ? allClasses.find(c => c.id === activeProgram.series_class_id)
+                      : null);
+                    const className = primaryClass?.class_name || activeProgram?.class_name;
+                    const isRookie = activeProgram?.is_rookie;
+                    if (!className && !isRookie) return null;
+                    return (
+                      <div className="mt-3">
+                        <div className="text-sm text-gray-600 mb-1">Class</div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {className && <span className="text-sm font-semibold text-[#232323]">{className}</span>}
+                          {isRookie && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
+                          )}
+                          {primaryClass?.competition_level && <CompetitionLevelBadge level={primaryClass.competition_level} size="sm" />}
+                          {primaryClass?.geographic_scope && <GeographicScopeTag scope={primaryClass.geographic_scope} size="sm" />}
                         </div>
                       </div>
-                    )}
-                    {/* Primary class competition level */}
-                    {(() => {
-                      // Prefer driver.primary_class_id, fall back to active program's class
-                      const activeProgram = programs.find(p => p.status === 'active') || programs[0];
-                      const primaryClass = (driver.primary_class_id
-                        ? allClasses.find(c => c.id === driver.primary_class_id)
-                        : null) || (activeProgram?.series_class_id
-                        ? allClasses.find(c => c.id === activeProgram.series_class_id)
-                        : null);
-                      const className = primaryClass?.class_name || activeProgram?.class_name;
-                      const isRookie = activeProgram?.is_rookie;
-                      if (!className && !isRookie) return null;
-                      return (
-                        <div className="mt-3">
-                          <div className="text-sm text-gray-600 mb-1">Class</div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {className && <span className="text-sm font-semibold text-[#232323]">{className}</span>}
-                            {isRookie && (
-                              <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-yellow-400 text-black font-black text-xs leading-none">R</span>
-                            )}
-                            {primaryClass?.competition_level && <CompetitionLevelBadge level={primaryClass.competition_level} size="sm" />}
-                            {primaryClass?.geographic_scope && <GeographicScopeTag scope={primaryClass.geographic_scope} size="sm" />}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
+                    );
+                  })()}
+                </div>
                 <div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                    <Home className="w-4 h-4" />
-                    Hometown
-                  </div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <CountryFlag country={driver.hometown_country} />
-                    <div className="text-lg font-semibold text-[#232323]">
-                      {driver.hometown_city}{driver.hometown_state ? `, ${driver.hometown_state}` : ''}, {driver.hometown_country}
-                    </div>
-                  </div>
+                  {(driver.hometown_city || driver.hometown_country) && (
+                    <>
+                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                        <Home className="w-4 h-4" />
+                        Hometown
+                      </div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <CountryFlag country={driver.hometown_country} />
+                        <div className="text-lg font-semibold text-[#232323]">
+                          {[driver.hometown_city, driver.hometown_state, driver.hometown_country].filter(Boolean).join(', ')}
+                        </div>
+                      </div>
+                    </>
+                  )}
                   {(driver.racing_base_city || driver.racing_base_state || driver.racing_base_country) && (
                     <div>
                       <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
@@ -439,13 +399,12 @@ export default function DriverProfile() {
                         Racing Base
                       </div>
                       <div className="text-lg font-semibold text-[#232323]">
-                        {driver.racing_base_city}{driver.racing_base_state ? `, ${driver.racing_base_state}` : ''}{driver.racing_base_country ? `, ${driver.racing_base_country}` : ''}
+                        {[driver.racing_base_city, driver.racing_base_state, driver.racing_base_country].filter(Boolean).join(', ')}
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -460,7 +419,7 @@ export default function DriverProfile() {
                 <GitCompare className="w-4 h-4 mr-2" />
                 Compare Driver
               </Button>
-              <SocialShareButtons 
+              <SocialShareButtons
                 url={window.location.href}
                 title={`${driver.first_name} ${driver.last_name} - Driver Profile`}
                 description=""
@@ -485,10 +444,6 @@ export default function DriverProfile() {
                 </Button>
               </div>
             )}
-
-
-
-
           </div>
         </div>
 
@@ -508,9 +463,9 @@ export default function DriverProfile() {
                   <div>
                     <h3 className="text-lg font-semibold text-[#232323] mb-4">Upcoming Events</h3>
                     <div className="space-y-3">
-                      {upcomingEntries.map(({ entry, event, track }) => (
-                        <Link 
-                          key={entry.id} 
+                      {upcomingEntries.map(({ entry, event, track }) => event && (
+                        <Link
+                          key={entry.id}
                           to={`${createPageUrl('EventProfile')}?id=${event.id}`}
                           className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
                         >
@@ -523,7 +478,7 @@ export default function DriverProfile() {
                                 )}
                               </div>
                               <p className="text-sm text-gray-600">
-                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                                {track?.name || 'N/A'} • {safeDateFormat(event.event_date)}
                               </p>
                             </div>
                             <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -560,9 +515,9 @@ export default function DriverProfile() {
                   <div>
                     <h3 className="text-lg font-semibold text-[#232323] mb-4">Past Events</h3>
                     <div className="space-y-3">
-                      {pastEntries.map(({ entry, event, track, resultData }) => (
-                        <Link 
-                          key={entry.id} 
+                      {pastEntries.map(({ entry, event, track, resultData }) => event && (
+                        <Link
+                          key={entry.id}
                           to={`${createPageUrl('EventResults')}?eventId=${event.id}`}
                           className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all"
                         >
@@ -570,7 +525,7 @@ export default function DriverProfile() {
                             <div className="flex-1">
                               <h4 className="font-semibold text-[#232323]">{event.name}</h4>
                               <p className="text-sm text-gray-600">
-                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                                {track?.name || 'N/A'} • {safeDateFormat(event.event_date)}
                               </p>
                             </div>
                             <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -594,17 +549,17 @@ export default function DriverProfile() {
           <section id="section-programs" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Racing Programs</h2>
-            <ProgramsTimeline programs={programs} teams={teams} allSeries={allSeries} allClasses={allClasses} />
+            <ProgramsTimeline programs={programs} teams={driverTeam ? [driverTeam] : []} allSeries={allSeries} allClasses={allClasses} />
           </section>
 
           <section id="section-stats" className="bg-white p-8">
             <Separator className="mb-3" />
             <h2 className="text-2xl font-bold text-[#232323] mb-6 mt-3">Stats</h2>
-            <StatsSection 
+            <StatsSection
               driver={driver}
               results={results}
               sessions={sessions}
-              events={events}
+              events={eventsForEntries}
             />
           </section>
 
@@ -630,7 +585,7 @@ export default function DriverProfile() {
                   <tbody>
                     {officialResults.map((result) => {
                       const session = sessions.find(s => s.id === result.session_id);
-                      const event = events.find(e => e.id === session?.event_id);
+                      const event = eventsForEntries.find(e => e.id === session?.event_id);
                       return (
                         <tr key={result.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-2">
@@ -641,7 +596,7 @@ export default function DriverProfile() {
                             ) : '—'}
                           </td>
                           <td className="py-3 px-2 text-gray-600">{session?.name || '—'}</td>
-                          <td className="py-3 px-2 font-semibold">P{result.position || '—'}</td>
+                          <td className="py-3 px-2 font-semibold">{result.position ? `P${result.position}` : '—'}</td>
                           <td className="py-3 px-2 text-right font-semibold">{result.points ?? '—'}</td>
                         </tr>
                       );
@@ -696,7 +651,6 @@ export default function DriverProfile() {
               <p className="text-gray-500">No social media information available.</p>
             )}
           </section>
-
         </div>
       </div>
 
@@ -714,7 +668,7 @@ export default function DriverProfile() {
                 <SelectValue placeholder="Select a driver to compare" />
               </SelectTrigger>
               <SelectContent>
-                {drivers.filter(d => d.id !== driver.id).map(d => (
+                {allDrivers.filter(d => d.id !== driver.id).map(d => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.first_name} {d.last_name}
                   </SelectItem>

@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { QueryKeys } from '@/components/utils/queryKeys';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { getTrackProfileData } from '@/components/entities/publicPageDataApi';
 import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
-
-const DQ = applyDefaultQueryOptions();
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,77 +19,24 @@ export default function TrackProfile() {
   const trackSlug = urlParams.get('slug') || urlParams.get('id');
   const [activeSection, setActiveSection] = useState('overview');
 
-  const { data: tracks = [], isLoading } = useQuery({
-    queryKey: QueryKeys.tracks.list(),
-    queryFn: () => base44.entities.Track.list(),
-    ...DQ,
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['trackProfileData', trackSlug],
+    queryFn: () => getTrackProfileData({ id: trackSlug, slug: trackSlug }),
+    enabled: !!trackSlug,
   });
 
-  const track = tracks.find(t => t.slug === trackSlug || t.id === trackSlug);
+  const track       = profileData?.track        ?? null;
+  const allEvents   = profileData?.events        ?? [];
+  const disciplines = profileData?.disciplines   ?? [];
+  const events      = profileData?.track_events  ?? [];
+  const series      = profileData?.series_links  ?? [];
+  const media       = profileData?.media         ?? null;
+  const performance = profileData?.performance   ?? null;
+  const operations  = profileData?.operations    ?? null;
+  const community   = profileData?.community     ?? null;
 
-  const { data: allEvents = [] } = useQuery({
-    queryKey: QueryKeys.events.list(),
-    queryFn: () => base44.entities.Event.list(),
-    enabled: !!track?.id,
-    ...DQ,
-  });
-
-  // Events at this track
+  // Events at this track from core Event entity
   const trackEventIds = allEvents.filter(e => e.track_id === track?.id).map(e => e.id);
-
-  const { data: disciplines = [] } = useQuery({
-    queryKey: ['trackDisciplines', track?.id],
-    queryFn: () => base44.entities.TrackToDiscipline.filter({ track_id: track.id }),
-    enabled: !!track?.id,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['trackEvents', track?.id],
-    queryFn: () => base44.entities.TrackEvent.filter({ track_id: track.id }),
-    enabled: !!track?.id,
-  });
-
-  const { data: series = [] } = useQuery({
-    queryKey: ['trackSeries', track?.id],
-    queryFn: () => base44.entities.TrackSeries.filter({ track_id: track.id }),
-    enabled: !!track?.id,
-  });
-
-  const { data: performance } = useQuery({
-    queryKey: ['trackPerformance', track?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TrackPerformance.filter({ track_id: track.id });
-      return results[0];
-    },
-    enabled: !!track?.id,
-  });
-
-  const { data: media } = useQuery({
-    queryKey: ['trackMedia', track?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TrackMedia.filter({ track_id: track.id });
-      return results[0];
-    },
-    enabled: !!track?.id,
-  });
-
-  const { data: operations } = useQuery({
-    queryKey: ['trackOperations', track?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TrackOperations.filter({ track_id: track.id });
-      return results[0];
-    },
-    enabled: !!track?.id,
-  });
-
-  const { data: community } = useQuery({
-    queryKey: ['trackCommunity', track?.id],
-    queryFn: async () => {
-      const results = await base44.entities.TrackCommunity.filter({ track_id: track.id });
-      return results[0];
-    },
-    enabled: !!track?.id,
-  });
 
   if (isLoading) {
     return (
@@ -139,6 +83,12 @@ export default function TrackProfile() {
     });
   };
 
+  // First public event for ResultsPanel
+  const firstPublicEventId = trackEventIds.find(id => {
+    const event = allEvents.find(e => e.id === id);
+    return event && isPublicVisible('Event', event);
+  });
+
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 pt-4">
@@ -147,11 +97,10 @@ export default function TrackProfile() {
         </Link>
       </div>
 
-      {/* Header Image */}
       {media?.hero_image_url && (
         <div className="w-full h-[400px] relative overflow-hidden mt-3">
-          <img 
-            src={media.hero_image_url} 
+          <img
+            src={media.hero_image_url}
             alt={track.name}
             className="w-full h-full object-cover"
           />
@@ -160,7 +109,6 @@ export default function TrackProfile() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
           <div className="lg:col-span-2">
             <div className="border-b border-gray-200 mb-3" />
@@ -207,7 +155,7 @@ export default function TrackProfile() {
                     Location
                   </div>
                   <div className="text-lg font-semibold text-[#232323] mb-4">
-                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ')}
+                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ') || 'N/A'}
                   </div>
                   {track.track_type && (
                     <div className="mb-4">
@@ -247,9 +195,9 @@ export default function TrackProfile() {
                 {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
                   <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
                 )}
-                {track.atmosphere?.map((atm, idx) => (
-                  atm !== 'Unknown' && <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge>
-                ))}
+                {Array.isArray(track.atmosphere) && track.atmosphere.map((atm, idx) =>
+                  atm && atm !== 'Unknown' ? <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge> : null
+                )}
               </div>
             </div>
           </div>
@@ -306,9 +254,7 @@ export default function TrackProfile() {
           </div>
         </div>
 
-        {/* Below Fold Sections */}
         <div className="space-y-8">
-          {/* Overview */}
           <section id="section-overview" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -351,10 +297,9 @@ export default function TrackProfile() {
             )}
           </section>
 
-          {/* Events */}
           <section id="section-events" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Events and Involvement</h2>
-            
+
             {signatureEvents.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-[#232323] mb-3">Signature Events</h3>
@@ -402,23 +347,15 @@ export default function TrackProfile() {
             )}
           </section>
 
-          {/* Results */}
           <section id="section-results" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Results & Standings</h2>
-            {trackEventIds.filter(id => {
-              const event = allEvents.find(e => e.id === id);
-              return event && isPublicVisible('Event', event);
-            }).length > 0 ? (
-              <ResultsPanel eventId={trackEventIds.filter(id => {
-                const event = allEvents.find(e => e.id === id);
-                return event && isPublicVisible('Event', event);
-              })[0]} />
+            {firstPublicEventId ? (
+              <ResultsPanel eventId={firstPublicEventId} />
             ) : (
               <p className="text-gray-500 text-sm">No events with results found for this track yet.</p>
             )}
           </section>
 
-          {/* Schedule */}
           <section id="section-schedule" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Race Schedule</h2>
             <ScheduleSection
@@ -431,17 +368,16 @@ export default function TrackProfile() {
             />
           </section>
 
-          {/* Performance */}
           {performance && (
             <section id="section-performance" className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
-              
+
               {performance.lap_record_driver && (
                 <div className="mb-6 p-4 bg-[#FFF8F5] border border-gray-200">
                   <div className="text-sm text-gray-600 mb-1">Lap Record</div>
                   <div className="text-xl font-bold text-[#232323]">{performance.lap_record_time}</div>
                   <div className="text-sm text-gray-700">
-                    {performance.lap_record_driver} ({performance.lap_record_year})
+                    {performance.lap_record_driver}{performance.lap_record_year ? ` (${performance.lap_record_year})` : ''}
                   </div>
                 </div>
               )}
@@ -461,7 +397,7 @@ export default function TrackProfile() {
                 )}
               </div>
 
-              {performance.trends_mech_stress && performance.trends_mech_stress.length > 0 && (
+              {Array.isArray(performance.trends_mech_stress) && performance.trends_mech_stress.length > 0 && (
                 <div className="mt-6">
                   <div className="text-sm text-gray-600 mb-2">Mechanical Stress Points</div>
                   <div className="flex flex-wrap gap-2">
@@ -483,7 +419,6 @@ export default function TrackProfile() {
             </section>
           )}
 
-          {/* Fan Experience */}
           <section id="section-fan" className="bg-white border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-[#232323] mb-6">Fan Experience</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -508,11 +443,10 @@ export default function TrackProfile() {
             )}
           </section>
 
-          {/* Media */}
           {media && (
             <section id="section-media" className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {media.hero_image_url && (
                   <div>
@@ -528,7 +462,7 @@ export default function TrackProfile() {
                 )}
               </div>
 
-              {media.gallery_urls && media.gallery_urls.length > 0 && (
+              {Array.isArray(media.gallery_urls) && media.gallery_urls.length > 0 && (
                 <div className="mt-6">
                   <div className="text-sm text-gray-600 mb-2">Gallery</div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -554,11 +488,10 @@ export default function TrackProfile() {
             </section>
           )}
 
-          {/* Operations */}
           {operations && (
             <section id="section-operations" className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {track.ownership_type && (
                   <div>
@@ -580,7 +513,7 @@ export default function TrackProfile() {
                 )}
               </div>
 
-              {track.sanctioning && track.sanctioning.length > 0 && (
+              {Array.isArray(track.sanctioning) && track.sanctioning.length > 0 && (
                 <div className="mt-6">
                   <div className="text-sm text-gray-600 mb-2">Sanctioning Bodies</div>
                   <div className="flex flex-wrap gap-2">
@@ -598,17 +531,16 @@ export default function TrackProfile() {
                 </div>
               )}
 
-              {operations.contact_email && (
+              {(operations.contact_email || operations.contact_phone) && (
                 <div className="mt-6">
                   <div className="text-sm text-gray-600 mb-2">Contact</div>
-                  <div className="text-[#232323]">{operations.contact_email}</div>
+                  {operations.contact_email && <div className="text-[#232323]">{operations.contact_email}</div>}
                   {operations.contact_phone && <div className="text-[#232323]">{operations.contact_phone}</div>}
                 </div>
               )}
             </section>
           )}
 
-          {/* Published Media Gallery */}
           <section className="bg-white border border-gray-200 p-8">
             <PublicMediaGallery
               targetType="track_gallery"
@@ -617,11 +549,10 @@ export default function TrackProfile() {
             />
           </section>
 
-          {/* Community */}
           {community && (
             <section id="section-community" className="bg-white border border-gray-200 p-8">
               <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
-              
+
               {community.youth_programs && (
                 <div className="mb-6">
                   <div className="text-sm text-gray-600 mb-2">Youth Programs</div>

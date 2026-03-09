@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { getTeamProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, Calendar, Flag, Users, TrendingUp, Trophy, AlertCircle, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { Link } from 'react-router-dom';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CountryFlag from '@/components/shared/CountryFlag';
@@ -17,66 +18,31 @@ import TeamScheduleResults from '@/components/teams/TeamScheduleResults';
 import TeamDriversSection from '@/components/teams/TeamDriversSection';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 
+function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
+  if (!dateStr) return 'TBA';
+  const d = new Date(dateStr);
+  return isValid(d) ? format(d, fmt) : 'TBA';
+}
+
 export default function TeamProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const teamSlug = urlParams.get('slug') || urlParams.get('id');
 
   const [activeSection, setActiveSection] = useState('overview');
 
-  const { data: teams = [], isLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['teamProfileData', teamSlug],
+    queryFn: () => getTeamProfileData({ id: teamSlug, slug: teamSlug }),
+    enabled: !!teamSlug,
   });
 
-  const team = teams.find(t => t.slug === teamSlug || t.id === teamSlug);
-
-  const { data: driverPrograms = [] } = useQuery({
-    queryKey: ['teamDriverPrograms', team?.id],
-    queryFn: () => base44.entities.DriverProgram.filter({ team_id: team.id }),
-    enabled: !!team?.id,
-  });
-
-  const { data: allDrivers = [] } = useQuery({
-    queryKey: ['driversForTeam', team?.id],
-    queryFn: async () => {
-      const driverIdsFromPrograms = [...new Set(driverPrograms.map(dp => dp.driver_id).filter(Boolean))];
-      const directDrivers = await base44.entities.Driver.filter({ team_id: team.id });
-      const directIds = new Set(directDrivers.map(d => d.id));
-      const missingIds = driverIdsFromPrograms.filter(id => !directIds.has(id));
-      const programDrivers = missingIds.length > 0
-        ? await Promise.all(missingIds.map(id => base44.entities.Driver.filter({ id })))
-        : [];
-      return [...directDrivers, ...programDrivers.flat()];
-    },
-    enabled: !!team?.id && driverPrograms.length > 0,
-  });
-
-  const { data: entries = [] } = useQuery({
-    queryKey: ['teamEntries', team?.id],
-    queryFn: () => base44.entities.Entry.filter({ team_id: team.id }),
-    enabled: !!team?.id,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: ['teamResults', team?.id],
-    queryFn: () => base44.entities.Results.filter({ team_id: team.id }),
-    enabled: !!team?.id,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list(),
-  });
-
-  const { data: tracks = [] } = useQuery({
-    queryKey: ['tracks'],
-    queryFn: () => base44.entities.Track.list(),
-  });
-
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-  });
+  const team           = profileData?.team           ?? null;
+  const rosterDrivers  = profileData?.roster_drivers ?? [];
+  const driverPrograms = profileData?.programs       ?? [];
+  const entries        = profileData?.entries        ?? [];
+  const results        = profileData?.results        ?? [];
+  const allEvents      = profileData?.events         ?? [];
+  const allTracks      = profileData?.tracks         ?? [];
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -113,27 +79,25 @@ export default function TeamProfile() {
       .map(dp => [dp.series_name, dp])
   ).values()];
 
-  // Derive active drivers from entries in active events
   const activeDriverIds = new Set(
     entries
       .filter(entry => {
-        const event = events.find(e => e.id === entry.event_id);
+        const event = allEvents.find(e => e.id === entry.event_id);
         return event && ['Draft', 'Published', 'Live'].includes(event.status);
       })
       .map(entry => entry.driver_id)
   );
 
-  const activeDrivers = drivers.filter(d => activeDriverIds.has(d.id));
+  const activeDrivers = rosterDrivers.filter(d => activeDriverIds.has(d.id));
 
-  // Split entries into upcoming and completed events
   const upcomingEntries = entries
     .filter(entry => {
-      const event = events.find(e => e.id === entry.event_id);
+      const event = allEvents.find(e => e.id === entry.event_id);
       return event && ['Draft', 'Published', 'Live'].includes(event.status);
     })
     .map(entry => {
-      const event = events.find(e => e.id === entry.event_id);
-      const track = tracks.find(t => t.id === event?.track_id);
+      const event = allEvents.find(e => e.id === entry.event_id);
+      const track = allTracks.find(t => t.id === event?.track_id);
       const count = entries.filter(e => e.event_id === event?.id).length;
       return { entry, event, track, count };
     })
@@ -141,21 +105,20 @@ export default function TeamProfile() {
 
   const completedEntries = entries
     .filter(entry => {
-      const event = events.find(e => e.id === entry.event_id);
+      const event = allEvents.find(e => e.id === entry.event_id);
       return event && event.status === 'completed';
     })
     .map(entry => {
-      const event = events.find(e => e.id === entry.event_id);
-      const track = tracks.find(t => t.id === event?.track_id);
+      const event = allEvents.find(e => e.id === entry.event_id);
+      const track = allTracks.find(t => t.id === event?.track_id);
       const eventResults = results.filter(r => r.event_id === event?.id);
       const bestPosition = eventResults.length > 0
         ? Math.min(...eventResults.map(r => r.position || 999))
         : null;
-      return { entry, event, track, bestPosition };
+      return { entry, event, track, bestPosition: bestPosition === 999 ? null : bestPosition };
     })
     .filter((item, idx, arr) => arr.findIndex(x => x.event?.id === item.event?.id) === idx);
 
-  // Calculate season performance summary
   const seasonStats = {
     podiums: results.filter(r => r.position && r.position <= 3).length,
     wins: results.filter(r => r.position === 1).length,
@@ -171,20 +134,18 @@ export default function TeamProfile() {
 
   return (
     <PageShell className="bg-gray-50">
-      {/* Hero Section */}
       <div className="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Link to={createPageUrl('TeamDirectory')} className="text-xs font-medium text-gray-600 hover:text-[#232323] transition-colors mb-6 inline-block">
             ← Back to Teams
           </Link>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Logo & Title */}
             <div className="lg:col-span-2">
               {team.logo_url && (
                 <div className="mb-6 bg-white rounded-lg p-6 border border-gray-200 w-fit">
-                  <img 
-                    src={team.logo_url} 
+                  <img
+                    src={team.logo_url}
                     alt={`${team.name} logo`}
                     className="h-24 object-contain"
                   />
@@ -201,9 +162,8 @@ export default function TeamProfile() {
               )}
             </div>
 
-            {/* Share Button */}
             <div className="flex justify-end">
-              <SocialShareButtons 
+              <SocialShareButtons
                 url={window.location.href}
                 title={`${team.name} - Team Profile`}
                 description={team.description_summary}
@@ -213,7 +173,6 @@ export default function TeamProfile() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-8 overflow-x-auto">
@@ -244,9 +203,7 @@ export default function TeamProfile() {
         </div>
       </div>
 
-      {/* Content Sections */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Overview Section */}
         <div id="section-overview" className="mb-16">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -287,11 +244,10 @@ export default function TeamProfile() {
           </div>
         </div>
 
-        {/* Event Participation Section */}
         <div id="section-overview-events" className="mb-16">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Event Participation</h2>
-            
+
             {entries.length === 0 ? (
               <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -299,7 +255,6 @@ export default function TeamProfile() {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Active Drivers */}
                 {activeDrivers.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#232323] mb-3">Active Drivers</h3>
@@ -317,12 +272,11 @@ export default function TeamProfile() {
                   </div>
                 )}
 
-                {/* Upcoming Events */}
                 {upcomingEntries.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#232323] mb-3">Upcoming Events</h3>
                     <div className="space-y-3">
-                      {upcomingEntries.map(({ event, track, count }) => (
+                      {upcomingEntries.map(({ event, track, count }) => event && (
                         <Link
                           key={event.id}
                           to={`${createPageUrl('EventProfile')}?id=${event.id}`}
@@ -337,7 +291,7 @@ export default function TeamProfile() {
                                 )}
                               </div>
                               <p className="text-sm text-gray-600">
-                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                                {track?.name || 'N/A'} • {safeDateFormat(event.event_date)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -351,12 +305,11 @@ export default function TeamProfile() {
                   </div>
                 )}
 
-                {/* Completed Events */}
                 {completedEntries.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#232323] mb-3">Completed Events</h3>
                     <div className="space-y-3">
-                      {completedEntries.map(({ event, track, bestPosition }) => (
+                      {completedEntries.map(({ event, track, bestPosition }) => event && (
                         <Link
                           key={event.id}
                           to={`${createPageUrl('EventResults')}?eventId=${event.id}`}
@@ -366,7 +319,7 @@ export default function TeamProfile() {
                             <div className="flex-1">
                               <h4 className="font-semibold text-[#232323]">{event.name}</h4>
                               <p className="text-sm text-gray-600">
-                                {track?.name || 'N/A'} • {format(new Date(event.event_date), 'MMM d, yyyy')}
+                                {track?.name || 'N/A'} • {safeDateFormat(event.event_date)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -384,7 +337,6 @@ export default function TeamProfile() {
                   </div>
                 )}
 
-                {/* Season Performance */}
                 {results.length > 0 && (
                   <div className="pt-4 border-t border-gray-200">
                     <h3 className="text-lg font-semibold text-[#232323] mb-3">Season Performance</h3>
@@ -409,19 +361,17 @@ export default function TeamProfile() {
           </div>
         </div>
 
-        {/* Drivers Section */}
         <div id="section-drivers" className="mb-16">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Drivers</h2>
-            <TeamDriversSection 
-              teamId={team.id} 
+            <TeamDriversSection
+              teamId={team.id}
               driverPrograms={driverPrograms}
-              allDrivers={allDrivers}
+              allDrivers={rosterDrivers}
             />
           </div>
         </div>
 
-        {/* Programs Section */}
         <div id="section-programs" className="mb-16">
           {uniqueSeriesPrograms.length > 0 ? (
             <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -434,10 +384,10 @@ export default function TeamProfile() {
                       <div className="font-bold text-[#232323] text-lg mb-1">{prog.series_name}</div>
                       {prog.class_name && <div className="text-sm text-gray-600 mb-3">{prog.class_name}</div>}
                       <div className="text-xs text-gray-500 mb-3">
-                        {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''} · 2026
+                        {driversInSeries.length} driver{driversInSeries.length !== 1 ? 's' : ''}
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {driversInSeries.map(dp => (
+                        {driversInSeries.map(dp => dp.car_number && (
                           <Badge key={dp.id} className="bg-[#00FFDA] text-[#232323] text-xs font-medium">#{dp.car_number}</Badge>
                         ))}
                       </div>
@@ -453,12 +403,10 @@ export default function TeamProfile() {
           )}
         </div>
 
-        {/* Schedule & Results Section */}
         <div id="section-schedule">
           <TeamScheduleResults teamId={team.id} />
         </div>
 
-        {/* Published Media Gallery */}
         <div className="bg-white rounded-lg border border-gray-200 p-8 mt-16">
           <PublicMediaGallery
             targetType="team_gallery"
