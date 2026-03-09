@@ -17,12 +17,12 @@ const BADGE_COLORS = {
 function RailItem({ item }) {
   const badge = BADGE_COLORS[item.badge_label] || BADGE_COLORS.Update;
   const inner = (
-    <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer min-w-[220px] max-w-[280px]">
+    <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-sm hover:-translate-y-px transition-all duration-200 cursor-pointer min-w-[220px] max-w-[280px]">
       <span className={`inline-block text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border flex-shrink-0 ${badge}`}>
         {item.badge_label}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-gray-900 leading-snug line-clamp-1">{item.title}</p>
+        <p className="text-xs font-semibold text-gray-800 leading-snug line-clamp-1">{item.title}</p>
         {item.timestamp && (
           <p className="text-[10px] text-gray-400 mt-0.5">{item.timestamp}</p>
         )}
