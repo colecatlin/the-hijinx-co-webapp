@@ -5,7 +5,7 @@ const IDENTITIES = ['RACERS', 'BUILDERS', 'CREATORS', 'DREAMERS', 'FANS'];
 
 export default function HomepageMovement() {
   return (
-    <section className="relative bg-[#F7F9FA] py-20 md:py-32 overflow-hidden border-b border-gray-200">
+    <section className="relative bg-[#F5F8FA] py-20 md:py-32 overflow-hidden border-b border-gray-200">
 
       {/* Background photo with higher contrast */}
       <div className="absolute inset-0 z-0">
@@ -46,7 +46,7 @@ export default function HomepageMovement() {
             </span>
           </h2>
 
-          <p className="text-gray-500 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10 md:mb-16 font-light">
+          <p className="text-gray-600 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10 md:mb-16 font-light">
             HIJINX is not just a platform. It is a culture built at the intersection of speed, creativity, and identity. We exist because the sport deserves more.
           </p>
         </motion.div>
@@ -60,9 +60,9 @@ export default function HomepageMovement() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.09, duration: 0.45 }}
-              className="group px-6 py-3 border border-gray-300 hover:border-[#00FFDA] hover:bg-teal-50 bg-white shadow-sm transition-all duration-300 cursor-default"
+              className="group px-6 py-3 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default"
             >
-              <span className="font-black text-sm tracking-[0.25em] text-gray-400 group-hover:text-[#008080] transition-colors">
+              <span className="font-black text-sm tracking-[0.25em] text-gray-500 group-hover:text-[#1DA1A1] transition-colors">
                 {word}
               </span>
             </motion.div>
