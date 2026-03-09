@@ -115,22 +115,27 @@ export default function SmartCSVImport({ onImportComplete }) {
       const executionTime = Date.now() - startTime;
       setResult(res.data);
       
-      // Log the operation
+      // Log the operation (standardized)
       await base44.functions.invoke('logOperation', {
-        operation_type: 'import',
+        operation_type: res.data?.error ? 'csv_import_failed' : 'csv_import_completed',
         source_type: 'csv_upload',
         entity_name: overrideEntity || detection?.entity,
         function_name: 'smartCSVImport',
         status: res.data?.error ? 'failed' : 'completed',
         total_records: csvRows.length,
-        created_records: res.data?.created_records || [],
-        updated_records: res.data?.updated_records || [],
-        skipped_count: res.data?.skipped_duplicates || 0,
-        failed_count: res.data?.skipped_invalid || 0,
         error_details: res.data?.errors || [],
         file_name: fileName,
-        metadata: { column_mapping: columnMapping },
-        execution_time_ms: executionTime,
+        metadata: {
+          importer_name: 'smart_csv_import',
+          entity_type: overrideEntity || detection?.entity,
+          is_source_entity: res.data?.isSourceEntity || false,
+          imported_count: res.data?.created ?? 0,
+          updated_count: res.data?.updated ?? 0,
+          skipped_count: res.data?.failed ?? 0,
+          duplicate_detected_count: res.data?.skipped_duplicates ?? 0,
+          error_count: res.data?.errors?.length ?? 0,
+          execution_time_ms: executionTime,
+        },
       });
       
       setStep('done');
@@ -388,7 +393,7 @@ export default function SmartCSVImport({ onImportComplete }) {
             {[
               { label: 'Created', val: result?.created ?? 0 },
               { label: 'Updated', val: result?.updated ?? 0 },
-              { label: 'Failed', val: result?.failed ?? 0 },
+              { label: 'Skipped', val: result?.failed ?? 0 },
             ].map(item => (
               <div key={item.label} className="bg-gray-50 rounded-lg p-3">
                 <p className="text-2xl font-bold">{item.val}</p>
@@ -400,12 +405,12 @@ export default function SmartCSVImport({ onImportComplete }) {
 
         {success && result?.skipped_duplicates > 0 && (
           <p className="text-sm text-amber-600 text-center">
-            {result.skipped_duplicates} row(s) skipped — duplicates already exist
+            {result.skipped_duplicates} duplicate(s) detected and skipped
           </p>
         )}
-        {success && result?.skipped_invalid > 0 && (
-          <p className="text-sm text-amber-600 text-center">
-            {result.skipped_invalid} row(s) skipped — missing required fields
+        {success && result?.isSourceEntity && (
+          <p className="text-xs text-blue-600 text-center">
+            Source entity import — routed through safe sync pipeline
           </p>
         )}
         {result?.errors?.length > 0 && (
