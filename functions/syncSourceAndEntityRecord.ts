@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { entity_type, payload = {}, user_id } = body;
+    const { entity_type, payload = {}, user_id, triggered_from } = body;
 
     if (!entity_type || !payload) {
       return Response.json({ error: 'entity_type and payload are required' }, { status: 400 });
