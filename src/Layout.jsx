@@ -7,8 +7,10 @@ import SearchBar from '@/components/shared/SearchBar';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
+import ErrorBoundary from '@/components/system/errorBoundary';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { getLaunchModeConfig } from '@/components/system/launchConfig';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
@@ -71,6 +73,8 @@ export default function Layout({ children, currentPageName }) {
 
   const isActive = (page) => currentPageName === page;
 
+  const launchMode = getLaunchModeConfig();
+
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen">
@@ -100,12 +104,18 @@ export default function Layout({ children, currentPageName }) {
               <Search className="w-4 h-4" />
             </button>
             {user?.role === 'admin' && (
-              <Link
-                to={createPageUrl('Management')}
-                className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors hidden lg:block"
-              >
-                Management
-              </Link>
+              <>
+                <span className={`px-2 py-1 text-[10px] font-bold border rounded hidden lg:inline-flex items-center gap-1.5 ${launchMode.color}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${launchMode.dotColor}`} />
+                  {launchMode.label}
+                </span>
+                <Link
+                  to={createPageUrl('Management')}
+                  className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors hidden lg:block"
+                >
+                  Management
+                </Link>
+              </>
             )}
             {isAuthenticated ? (
               <>
@@ -276,8 +286,10 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Page content */}
-            <main className="flex-1">
-        {children}
+      <main className="flex-1">
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </main>
 
         <Footer />
