@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   CheckCircle, AlertTriangle, XCircle, RefreshCw, Loader2,
-  ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck,
+  ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck, FlaskConical,
 } from 'lucide-react';
 import { ALL_FALLBACKS, verifyFallbackShape } from '@/components/data/fallbackContracts';
 import { INVALIDATION_GROUPS } from '@/components/data/invalidationContract';
@@ -130,12 +130,84 @@ function EntityAuditSection({ label, data }) {
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
+// ── V1 Verification section helpers ──────────────────────────────────────────
+
+const V1_SECTION_LABELS = {
+  homepage:          'Homepage',
+  public_pages:      'Public Pages',
+  profile_dashboard: 'Profile & Dashboard',
+  racecore:          'Race Core',
+  access_flows:      'Access Flows',
+  source_sync:       'Source Sync',
+  diagnostics:       'Diagnostics System',
+};
+
+function CheckRow({ check }) {
+  const icons = {
+    pass: <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />,
+    warn: <AlertTriangle className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0 mt-0.5" />,
+    fail: <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />,
+  };
+  const textColor = { pass: 'text-gray-700', warn: 'text-yellow-700', fail: 'text-red-700' };
+  return (
+    <div className="flex items-start gap-2 py-1 text-xs">
+      {icons[check.status] || icons.warn}
+      <div>
+        <span className={textColor[check.status] || 'text-gray-600'}>{check.label}</span>
+        {check.detail && <span className="ml-2 text-gray-400 font-mono">{check.detail}</span>}
+      </div>
+    </div>
+  );
+}
+
+function V1SectionPanel({ sectionKey, section }) {
+  const [open, setOpen] = useState(false);
+  const checks = section?.checks || [];
+  const passes   = checks.filter(c => c.status === 'pass').length;
+  const warnings = checks.filter(c => c.status === 'warn').length;
+  const failures = checks.filter(c => c.status === 'fail').length;
+  const overallColor = failures > 0 ? 'border-red-200 bg-red-50' :
+                       warnings > 0 ? 'border-yellow-200 bg-yellow-50' :
+                                      'border-green-200 bg-green-50';
+  const label = V1_SECTION_LABELS[sectionKey] || sectionKey;
+
+  return (
+    <div className={`border rounded-lg overflow-hidden ${overallColor}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium bg-white/60 hover:bg-white/80"
+      >
+        <div className="flex items-center gap-2">
+          {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          <span>{label}</span>
+          <span className="text-xs text-gray-400">({checks.length} checks)</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          {passes > 0   && <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-3 h-3" />{passes}</span>}
+          {warnings > 0 && <span className="flex items-center gap-1 text-yellow-600"><AlertTriangle className="w-3 h-3" />{warnings}</span>}
+          {failures > 0 && <span className="flex items-center gap-1 text-red-600"><XCircle className="w-3 h-3" />{failures}</span>}
+        </div>
+      </button>
+      {open && (
+        <div className="px-4 pb-3 pt-1 divide-y divide-gray-100 bg-white/40">
+          {checks.map((c, i) => <CheckRow key={i} check={c} />)}
+          {checks.length === 0 && <p className="text-xs text-gray-400 py-2">No checks recorded.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Diagnostics() {
   const [report, setReport] = useState(null);
   const [running, setRunning] = useState(false);
   const [repairing, setRepairing] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // ── V1 Integration Verification ────────────────────────────────────────────
+  const [v1Report, setV1Report] = useState(null);
+  const [v1Running, setV1Running] = useState(false);
 
   // ── Data routing verification ──────────────────────────────────────────────
   const [routeReport, setRouteReport] = useState(null);
@@ -181,6 +253,21 @@ export default function Diagnostics() {
     navigator.clipboard.writeText(JSON.stringify(report, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const runV1Verification = async () => {
+    setV1Running(true);
+    setV1Report(null);
+    try {
+      const res = await base44.functions.invoke('runV1IntegrationVerification', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setV1Report(res.data);
+      const s = res.data?.summary || {};
+      toast.success(`V1 Verification complete — ${s.passed} passed, ${s.warnings} warnings, ${s.failures} failures`);
+    } catch (err) {
+      toast.error(`V1 Verification failed: ${err.message}`);
+    }
+    setV1Running(false);
   };
 
   const runRouteVerification = async () => {
