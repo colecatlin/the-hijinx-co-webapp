@@ -465,6 +465,63 @@ export default function Diagnostics() {
           </Card>
         )}
 
+        {/* ── Launch Readiness ─────────────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Rocket className="w-4 h-4 text-purple-600" /> Launch Readiness
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!hasAnyData && (
+              <p className="text-sm text-gray-400">Run V1 Verification, Data Verification, and Diagnostics above to populate this checklist.</p>
+            )}
+
+            {/* Combined indicator */}
+            {hasAnyData && (
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${
+                overallReady === true  ? 'bg-green-50 border-green-300 text-green-800' :
+                overallReady === false ? 'bg-red-50 border-red-300 text-red-800' :
+                                        'bg-yellow-50 border-yellow-300 text-yellow-800'
+              }`}>
+                {overallReady === true  && <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" />}
+                {overallReady === false && <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                {overallReady === null  && <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />}
+                <span>
+                  {overallReady === true  ? 'Ready — all checks passed' :
+                   overallReady === false ? 'Needs Attention — one or more failures detected' :
+                                           'Needs Attention — warnings present or insufficient data'}
+                </span>
+              </div>
+            )}
+
+            {/* Checklist */}
+            <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+              {launchItems.map((item, i) => {
+                const iconMap = {
+                  pass: <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />,
+                  warn: <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0" />,
+                  fail: <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />,
+                  unknown: <RefreshCw className="w-4 h-4 text-gray-300 flex-shrink-0" />,
+                };
+                const bgMap = {
+                  pass: 'bg-white',
+                  warn: 'bg-yellow-50',
+                  fail: 'bg-red-50',
+                  unknown: 'bg-gray-50',
+                };
+                return (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 text-sm ${bgMap[item.status]}`}>
+                    {iconMap[item.status]}
+                    <span className={item.status === 'unknown' ? 'text-gray-400' : 'text-gray-800'}>{item.label}</span>
+                    {item.status === 'unknown' && <span className="text-xs text-gray-300 ml-auto">not yet run</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── V1 Integration Verification ─────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
