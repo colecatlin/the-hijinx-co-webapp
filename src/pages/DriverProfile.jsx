@@ -70,7 +70,7 @@ export default function DriverProfile() {
 
   // Single consolidated data loader
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['driverProfileData', driverSlug, firstName, lastName],
+    queryKey: QueryKeys.profiles.driver(driverSlug, firstName, lastName),
     queryFn: () => getDriverProfileData({
       id: driverSlug,
       slug: driverSlug,
@@ -83,7 +83,7 @@ export default function DriverProfile() {
 
   // Separate driver list query for the compare dialog only
   const { data: allDrivers = [] } = useQuery({
-    queryKey: ['drivers'],
+    queryKey: QueryKeys.drivers.list(),
     queryFn: () => base44.entities.Driver.list(),
     ...DQ,
   });
@@ -198,13 +198,13 @@ export default function DriverProfile() {
   // We need events + tracks for entry display — load them separately since
   // getDriverProfileData doesn't load all events/tracks (avoids over-fetching)
   const { data: eventsForEntries = [] } = useQuery({
-    queryKey: ['eventsForDriverEntries', driver?.id],
+    queryKey: QueryKeys.events.list({ _driver: driver?.id }),
     queryFn: () => base44.entities.Event.list(),
     enabled: entries.length > 0,
     ...DQ,
   });
   const { data: tracksForEntries = [] } = useQuery({
-    queryKey: ['tracksForDriverEntries', driver?.id],
+    queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
     enabled: entries.length > 0,
     ...DQ,

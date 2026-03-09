@@ -31,7 +31,7 @@ export default function TeamProfile() {
   const [activeSection, setActiveSection] = useState('overview');
 
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['teamProfileData', teamSlug],
+    queryKey: ['teamProfileData', teamSlug],   // stable — matches QueryKeys.profiles.team(teamSlug)
     queryFn: () => getTeamProfileData({ id: teamSlug, slug: teamSlug }),
     enabled: !!teamSlug,
   });

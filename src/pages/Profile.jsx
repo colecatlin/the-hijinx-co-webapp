@@ -53,29 +53,29 @@ export default function Profile() {
   const tabFromUrl = urlParams.get('tab');
 
   const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: QueryKeys.auth.me(),
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: drivers = [] } = useQuery({ queryKey: ['drivers'], queryFn: () => base44.entities.Driver.list() });
-  const { data: teams = [] } = useQuery({ queryKey: ['teams'], queryFn: () => base44.entities.Team.list() });
-  const { data: series = [] } = useQuery({ queryKey: ['series'], queryFn: () => base44.entities.Series.list() });
-  const { data: tracks = [] } = useQuery({ queryKey: ['tracks'], queryFn: () => base44.entities.Track.list() });
+  const { data: drivers = [] } = useQuery({ queryKey: QueryKeys.drivers.list(), queryFn: () => base44.entities.Driver.list() });
+  const { data: teams = [] } = useQuery({ queryKey: QueryKeys.teams.list(), queryFn: () => base44.entities.Team.list() });
+  const { data: series = [] } = useQuery({ queryKey: QueryKeys.series.list(), queryFn: () => base44.entities.Series.list() });
+  const { data: tracks = [] } = useQuery({ queryKey: QueryKeys.tracks.list(), queryFn: () => base44.entities.Track.list() });
 
   const { data: resolvedEntities = [] } = useQuery({
-    queryKey: ['resolvedEntities', user?.id],
+    queryKey: QueryKeys.managedCollaborations.byUser(user?.id),
     queryFn: () => getResolvedManagedEntities(user),
     enabled: !!user?.id,
   });
 
   const { data: invitations = [] } = useQuery({
-    queryKey: ['myInvitations', user?.email],
+    queryKey: QueryKeys.profile.invitations(user?.email),
     queryFn: () => base44.entities.Invitation.filter({ email: user.email, status: 'pending' }),
     enabled: !!user?.email,
   });
 
   const { data: operationLogs = [] } = useQuery({
-    queryKey: ['myOperationLogs', user?.email],
+    queryKey: QueryKeys.profile.operationLogs(user?.email),
     queryFn: () => base44.entities.OperationLog.filter({ user_email: user.email }, '-created_date', 20),
     enabled: !!user?.email,
   });
@@ -115,14 +115,14 @@ export default function Profile() {
       });
       await base44.functions.invoke('updateUserProfile', { formData: data });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QueryKeys.auth.me() }),
   });
 
   const handleSetPrimary = async (entity) => {
     setSettingPrimary(entity.entity_id);
     await setPrimaryEntityOnUser({ currentUser: user, entityType: entity.entity_type, entityId: entity.entity_id });
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    queryClient.invalidateQueries({ queryKey: ['myCollaborations', user?.id] });
+    queryClient.invalidateQueries({ queryKey: QueryKeys.auth.me() });
+    queryClient.invalidateQueries({ queryKey: QueryKeys.managedCollaborations.byUser(user?.id) });
     setSettingPrimary(false);
   };
 

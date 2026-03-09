@@ -42,7 +42,7 @@ export default function SeriesDetail() {
   const [selectedClassName, setSelectedClassName] = useState('');
 
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['seriesDetailData', seriesSlug],
+    queryKey: ['seriesDetailData', seriesSlug],   // stable — matches QueryKeys.profiles.series(seriesSlug)
     queryFn: () => getSeriesDetailData({ id: seriesSlug, slug: seriesSlug }),
     enabled: !!seriesSlug,
   });
