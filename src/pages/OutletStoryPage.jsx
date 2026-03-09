@@ -46,6 +46,10 @@ export default function OutletStoryPage() {
     );
   }
 
+  useEffect(() => {
+    if (story) Analytics.outletStoryView(story.id, story.title, story.category);
+  }, [story?.id]);
+
   if (!story) {
     return (
       <PageShell>
@@ -59,8 +63,17 @@ export default function OutletStoryPage() {
     );
   }
 
+  const storyDesc = story.subtitle || (story.body || '').replace(/<[^>]*>/g, '').substring(0, 160);
+  const storyImg  = story.cover_image || SITE_FALLBACK_IMAGE;
+
   return (
       <PageShell>
+        <SeoMeta
+          title={story.title}
+          description={storyDesc}
+          image={storyImg}
+          type="article"
+        />
         <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
           {ads?.length > 0 && (
             <aside className="hidden lg:block space-y-8 flex-shrink-0 w-[12%]">
