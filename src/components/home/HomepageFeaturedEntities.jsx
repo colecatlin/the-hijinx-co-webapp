@@ -61,7 +61,7 @@ export default function HomepageFeaturedEntities({
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
   return (
-    <section className="bg-[#EEF2F7] py-20 md:py-28 border-b border-gray-200">
+    <section className="bg-[#F5F9FA] py-20 md:py-28 border-b border-[#E0EDEF]">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
