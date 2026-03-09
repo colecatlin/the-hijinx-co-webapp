@@ -252,14 +252,24 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   };
 
   const createMutation = useMutation({
-    mutationFn: data => base44.entities.Event.create(data),
+    mutationFn: async (data) => {
+      // Route through syncSourceAndEntityRecord to prevent duplicates
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'event',
+        payload: data,
+        triggered_from: 'event_builder',
+      });
+      if (!result?.data?.source_record) {
+        throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
+      }
+      return result.data.source_record;
+    },
     onSuccess: async (newEvent) => {
       // Auto-setup EntityCollaborator links (owner + track/series owners)
       await setupEventCollaborators(newEvent, currentUser?.id);
       // Create EventCollaboration record
       await createCollaboration(newEvent.id, newEvent.track_id, newEvent.series_id);
-      // Ensure unified Entity records and confirmation
-      await triggerEntityLinks(newEvent.id);
+      // ensureEventEntityLinks already called inside syncSourceAndEntityRecord, but invalidate caches
       invalidateAfterOperation('event_created', { eventId: newEvent.id });
       invalidateAfterOperation('event_collaboration_updated', { eventId: newEvent.id });
       toast.success('Event created successfully');
@@ -273,12 +283,21 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Event.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      // Route updates through syncSourceAndEntityRecord too
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'event',
+        payload: { ...data, id },
+        triggered_from: 'event_builder',
+      });
+      if (!result?.data?.source_record) {
+        throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
+      }
+      return { id, source_record: result.data.source_record };
+    },
     onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event', selectedEventId] });
-      // Re-sync entity links (track/series may have changed)
-      await triggerEntityLinks(variables.id || selectedEventId);
       invalidateAfterOperation('event_updated', { eventId: variables.id || selectedEventId });
       toast.success('Event updated successfully');
     },
