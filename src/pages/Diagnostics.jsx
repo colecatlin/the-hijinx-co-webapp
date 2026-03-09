@@ -436,6 +436,104 @@ export default function Diagnostics() {
         title="Platform Diagnostics"
         subtitle="Admin-only integrity audit and safe repair tooling"
       >
+        {/* ── System Health ────────────────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="w-4 h-4 text-blue-600" /> System Health
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              {/* Launch mode */}
+              <div className={`rounded-lg border px-3 py-2.5 ${launchMode.color}`}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70 mb-1">Launch Mode</p>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${launchMode.dotColor}`} />
+                  <span className="font-bold text-sm">{launchMode.label}</span>
+                </div>
+              </div>
+
+              {/* Last diagnostics */}
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Last Diagnostics</p>
+                <p className="text-sm font-semibold text-gray-700">
+                  {lastDiagRun ? lastDiagRun.toLocaleTimeString() : '—'}
+                </p>
+              </div>
+
+              {/* Last V1 verification */}
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Last V1 Check</p>
+                <p className="text-sm font-semibold text-gray-700">
+                  {lastV1Run ? lastV1Run.toLocaleTimeString() : '—'}
+                </p>
+              </div>
+
+              {/* Last route verification */}
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Last Route Check</p>
+                <p className="text-sm font-semibold text-gray-700">
+                  {lastRouteRun ? lastRouteRun.toLocaleTimeString() : '—'}
+                </p>
+              </div>
+            </div>
+
+            {/* Derived status rows */}
+            <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden text-xs">
+              {[
+                {
+                  label: 'Entity integrity',
+                  status: report
+                    ? ((report.summary?.high_priority_issues || 0) > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: report ? `${report.summary?.high_priority_issues || 0} high-priority issues` : 'Run diagnostics',
+                },
+                {
+                  label: 'Access integrity',
+                  status: report
+                    ? ((report.access_audit?.summary?.collaborator_missing_source_count || 0) > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: report ? `${report.access_audit?.summary?.collaborator_missing_source_count || 0} broken collaborator links` : 'Run diagnostics',
+                },
+                {
+                  label: 'Public route health',
+                  status: routeReport
+                    ? ((routeReport.public_routes?.failures?.length || 0) > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: routeReport ? `${routeReport.public_routes?.failures?.length || 0} failures, ${routeReport.public_routes?.warnings?.length || 0} warnings` : 'Run route verification',
+                },
+                {
+                  label: 'Homepage payload',
+                  status: routeReport ? (routeReport.homepage?.ok ? 'ok' : 'warn') : 'unknown',
+                  detail: routeReport ? (routeReport.homepage?.ok ? 'Healthy' : (routeReport.homepage?.error || 'Check failed')) : 'Run route verification',
+                },
+                {
+                  label: 'V1 integration',
+                  status: v1Report
+                    ? ((v1Report.summary?.failures || 0) > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: v1Report ? `${v1Report.summary?.passed || 0} passed, ${v1Report.summary?.failures || 0} failures` : 'Run V1 verification',
+                },
+              ].map((row, i) => {
+                const iconMap = {
+                  ok: <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />,
+                  warn: <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />,
+                  unknown: <RefreshCw className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />,
+                };
+                const bgMap = { ok: 'bg-white', warn: 'bg-amber-50', unknown: 'bg-gray-50' };
+                return (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${bgMap[row.status]}`}>
+                    {iconMap[row.status]}
+                    <span className="font-medium text-gray-800 w-36 flex-shrink-0">{row.label}</span>
+                    <span className="text-gray-500">{row.detail}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── Action bar ──────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <Button
@@ -462,6 +560,9 @@ export default function Diagnostics() {
               </Button>
             </>
           )}
+          <Button variant="outline" onClick={() => setReportIssueOpen(true)} className="border-gray-200 text-gray-500 ml-auto">
+            <Flag className="w-4 h-4 mr-2" /> Report Issue
+          </Button>
         </div>
 
         {/* ── Repair result banner ─────────────────────────────────────────── */}
@@ -956,6 +1057,7 @@ export default function Diagnostics() {
           </Tabs>
         )}
       </ManagementShell>
+      <ReportIssueModal open={reportIssueOpen} onClose={() => setReportIssueOpen(false)} />
     </ManagementLayout>
   );
 }
