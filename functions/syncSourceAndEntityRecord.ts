@@ -46,15 +46,20 @@ Deno.serve(async (req) => {
     const source_record = upsertRes.data.record;
     const source_action = upsertRes.data.action; // 'created' | 'updated'
 
-    // Log source operation if newly created
-    if (source_action === 'created') {
+    // Log source operation
+    if (source_action === 'created' || source_action === 'updated') {
       await sr.entities.OperationLog.create({
-        operation_type: 'source_entity_created',
+        operation_type: source_action === 'created' ? 'source_entity_created' : 'source_entity_updated',
         entity_name: entity_type,
         entity_id: source_record.id,
         user_email: user?.email || null,
         status: 'success',
-        metadata: { entity_type, record_id: source_record.id },
+        metadata: {
+          entity_type,
+          record_id: source_record.id,
+          source_action,
+          triggered_from: triggered_from || null,
+        },
       }).catch(() => {});
     }
 
