@@ -178,7 +178,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
               className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#00FFDA] hover:bg-teal-50 py-4 font-mono text-[10px] tracking-[0.25em] text-gray-400 hover:text-[#008080] transition-all uppercase"
             >
               <Newspaper className="w-3.5 h-3.5" />
-              All Stories
+              Explore Stories
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
