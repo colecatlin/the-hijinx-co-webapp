@@ -46,7 +46,7 @@ export default function HomepageMovement() {
             </span>
           </h2>
 
-          <p className="text-gray-500 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-16 font-light">
+          <p className="text-gray-500 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10 md:mb-16 font-light">
             HIJINX is not just a platform. It is a culture built at the intersection of speed, creativity, and identity. We exist because the sport deserves more.
           </p>
         </motion.div>
