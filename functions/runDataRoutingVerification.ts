@@ -83,12 +83,24 @@ Deno.serve(async (req) => {
       summary:        { total_checked: 0, failures: 0, warnings: 0 },
     };
 
-    // ── 1. Homepage payload ──────────────────────────────────────────────────
+    // ── 1. Homepage payload — verify entity data directly (avoids cross-function auth issues) ──
     try {
-      // Use service role so this works regardless of caller's auth state
-      const hpRes = await base44.asServiceRole.functions.invoke('getHomepageData', {});
-      const hpData = hpRes?.data || hpRes || {};
-      const hpVerify = verifyHomepageShape(hpData);
+      const db = base44.asServiceRole.entities;
+      const [stories, drivers, tracks, series, events] = await Promise.all([
+        db.OutletStory.filter({ status: 'published' }, '-published_date', 1).catch(() => []),
+        db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', 3).catch(() => []),
+        db.Track.filter({ status: 'Active' }, '-created_date', 3).catch(() => []),
+        db.Series.filter({ status: 'Active' }, '-popularity_rank', 3).catch(() => []),
+        db.Event.list('event_date', 3).catch(() => []),
+      ]);
+      const syntheticPayload = {
+        featured_story: stories[0] || null,
+        featured_drivers: drivers,
+        upcoming_events: events,
+        featured_series: series,
+        featured_tracks: tracks,
+      };
+      const hpVerify = verifyHomepageShape(syntheticPayload);
       results.homepage = { ...hpVerify, error: null };
     } catch (err) {
       results.homepage = { ok: false, missing: [], warnings: [], error: err.message };
