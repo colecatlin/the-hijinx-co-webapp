@@ -52,6 +52,10 @@ export default function TeamProfile() {
     setActiveSection('overview');
   }, [teamSlug]);
 
+  useEffect(() => {
+    if (team) Analytics.profileViewTeam(team.id, team.name);
+  }, [team?.id]);
+
   if (isLoading) {
     return (
       <PageShell className="bg-white">
@@ -124,8 +128,20 @@ export default function TeamProfile() {
     { id: 'schedule', label: 'Schedule & Results', icon: Calendar },
   ];
 
+  const teamImg = team.logo_url || SITE_FALLBACK_IMAGE;
+  const teamDesc = [
+    team.primary_discipline || '',
+    team.team_level ? `${team.team_level} level team` : '',
+    team.headquarters_city ? `Based in ${[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ')}` : '',
+  ].filter(Boolean).join(' · ') || `${team.name} racing team profile on HIJINX.`;
+
   return (
     <PageShell className="bg-gray-50">
+      <SeoMeta
+        title={buildEntityTitle(team.name, 'Team Profile')}
+        description={team.description_summary || teamDesc}
+        image={teamImg}
+      />
       <div className="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Link to={createPageUrl('TeamDirectory')} className="text-xs font-medium text-gray-600 hover:text-[#232323] transition-colors mb-6 inline-block">

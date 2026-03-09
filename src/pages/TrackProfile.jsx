@@ -52,6 +52,10 @@ export default function TrackProfile() {
     );
   }
 
+  useEffect(() => {
+    if (track) Analytics.profileViewTrack(track.id, track.name, track.location_state);
+  }, [track?.id]);
+
   if (!track) return <EntityNotFound entityType="Track" />;
 
   const signatureEvents = events.filter(e => e.is_signature).slice(0, 3);
@@ -81,8 +85,20 @@ export default function TrackProfile() {
     return event && isPublicVisible('Event', event);
   });
 
+  const trackImg = media?.hero_image_url || track.image_url || track.logo_url || SITE_FALLBACK_IMAGE;
+  const trackDesc = [
+    track.track_type || '',
+    track.surface_type ? `${track.surface_type} surface` : '',
+    [track.location_city, track.location_state, track.location_country].filter(Boolean).join(', '),
+  ].filter(Boolean).join(' · ') || `${track.name} track profile on HIJINX.`;
+
   return (
     <PageShell className="bg-white">
+      <SeoMeta
+        title={buildEntityTitle(track.name, 'Track Profile')}
+        description={track.description || trackDesc}
+        image={trackImg}
+      />
       <div className="max-w-7xl mx-auto px-6 pt-4">
         <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
           ← Back to Tracks

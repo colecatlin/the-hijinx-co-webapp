@@ -71,6 +71,10 @@ export default function SeriesDetail() {
     );
   }
 
+  useEffect(() => {
+    if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
+  }, [series?.id]);
+
   if (!series) return <EntityNotFound entityType="Series" />;
 
   const sections = [
@@ -127,8 +131,20 @@ export default function SeriesDetail() {
       .slice(0, 10);
   }, [standings, series?.id, seasonYear, activeClassName]);
 
+  const seriesImg = series.banner_url || series.logo_url || SITE_FALLBACK_IMAGE;
+  const seriesDesc = [
+    series.discipline || '',
+    series.geographic_scope || '',
+    series.sanctioning_body ? `Sanctioned by ${series.sanctioning_body}` : '',
+  ].filter(Boolean).join(' · ') || `${series.name} racing series on HIJINX.`;
+
   return (
     <PageShell className="bg-white">
+      <SeoMeta
+        title={buildEntityTitle(series.name, 'Series')}
+        description={series.description || seriesDesc}
+        image={seriesImg}
+      />
       {series.banner_url && (
         <div className="w-full h-[400px] relative overflow-hidden">
           <img src={series.banner_url} alt={series.name} className="w-full h-full object-cover" />

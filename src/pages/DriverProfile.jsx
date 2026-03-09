@@ -101,29 +101,12 @@ export default function DriverProfile() {
   const allClasses= profileData?.classes ?? [];
   const driverTeam= profileData?.team    ?? null;
 
-  React.useEffect(() => {
-    if (driver && media) {
-      document.title = `${driver.first_name} ${driver.last_name} - Driver Profile | HIJINX`;
-      const updateMetaTag = (name, content) => {
-        let tag = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
-        if (!tag) {
-          tag = document.createElement('meta');
-          tag.setAttribute(name.startsWith('og:') ? 'property' : 'name', name);
-          document.head.appendChild(tag);
-        }
-        tag.setAttribute('content', content);
-      };
-      updateMetaTag('og:title', `${driver.first_name} ${driver.last_name}`);
-      updateMetaTag('og:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline || ''} driver. ${driver.hometown_city ? `From ${driver.hometown_city}, ${driver.hometown_country}` : ''}`);
-      updateMetaTag('og:image', media?.headshot_url || media?.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
-      updateMetaTag('og:url', window.location.href);
-      updateMetaTag('og:type', 'profile');
-      updateMetaTag('twitter:card', 'summary_large_image');
-      updateMetaTag('twitter:title', `${driver.first_name} ${driver.last_name}`);
-      updateMetaTag('twitter:description', `${driver.career_status || 'Professional'} ${driver.primary_discipline || ''} driver`);
-      updateMetaTag('twitter:image', media?.headshot_url || media?.hero_image_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png');
+  // Track analytics on load
+  useEffect(() => {
+    if (driver) {
+      Analytics.profileViewDriver(driver.id, `${driver.first_name} ${driver.last_name}`, driver.primary_discipline);
     }
-  }, [driver, media]);
+  }, [driver?.id]);
 
   if (isLoading) {
     return (
@@ -231,8 +214,21 @@ export default function DriverProfile() {
       return { entry, event, track, resultData };
     });
 
+  const driverImg = media?.headshot_url || media?.hero_image_url || SITE_FALLBACK_IMAGE;
+  const driverDesc = [
+    driver.career_status ? `${driver.career_status} driver` : 'Racing driver',
+    driver.primary_discipline || '',
+    driver.hometown_city ? `from ${driver.hometown_city}, ${driver.hometown_country || ''}` : '',
+  ].filter(Boolean).join(' · ');
+
   return (
     <PageShell className="bg-white">
+      <SeoMeta
+        title={buildEntityTitle(`${driver.first_name} ${driver.last_name}`, 'Driver Profile')}
+        description={driverDesc}
+        image={driverImg}
+        type="profile"
+      />
       <div className="max-w-7xl mx-auto px-6 pt-4">
         <Link to={createPageUrl('DriverDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
           ← Back to Drivers

@@ -94,6 +94,10 @@ export default function EventProfile() {
     );
   }
 
+  useEffect(() => {
+    if (event) Analytics.profileViewEvent(event.id, event.name, event.status);
+  }, [event?.id]);
+
   if (!event) return <EntityNotFound entityType="Event" />;
   if (!isPublicEvent && !canViewDraft) return <EntityUnavailable entityType="Event" />;
 
@@ -159,8 +163,19 @@ export default function EventProfile() {
 
   const daysUntil = safeDaysUntil(event.event_date);
 
+  const eventTitle = event.season ? `${event.season} ${event.name}` : event.name;
+  const eventDesc = [
+    track?.name ? `At ${track.name}` : '',
+    event.event_date ? `on ${safeDateFormat(event.event_date)}` : '',
+    series?.name ? `— ${series.name}` : '',
+  ].filter(Boolean).join(' ') || `${event.name} event details on HIJINX.`;
+
   return (
     <PageShell className="bg-white">
+      <SeoMeta
+        title={buildEntityTitle(eventTitle, 'Event')}
+        description={eventDesc}
+      />
       <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
