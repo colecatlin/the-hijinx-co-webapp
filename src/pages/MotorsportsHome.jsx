@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import SeoMeta from '@/components/system/seoMeta';
+import Analytics from '@/components/system/analyticsTracker';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';

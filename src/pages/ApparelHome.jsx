@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import SeoMeta from '@/components/system/seoMeta';
+import Analytics from '@/components/system/analyticsTracker';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
