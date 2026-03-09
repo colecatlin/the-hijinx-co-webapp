@@ -1,124 +1,181 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, AlertTriangle, XCircle, RefreshCw, Link as LinkIcon, AlertCircle } from 'lucide-react';
-import { buildProfileUrl, generateSlug, validateSlug } from '@/components/utils/routingContract';
+import {
+  CheckCircle, AlertTriangle, XCircle, RefreshCw, Loader2,
+  ChevronDown, ChevronRight, Wrench, Play, Copy, CheckCheck,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function Diagnostics() {
-  const [generatingSlug, setGeneratingSlug] = useState(null);
-  const queryClient = useQueryClient();
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-  // Check if user is admin
+function SeverityBadge({ level }) {
+  const map = {
+    high:   'bg-red-100 text-red-700 border-red-200',
+    medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    low:    'bg-blue-100 text-blue-700 border-blue-200',
+    ok:     'bg-green-100 text-green-700 border-green-200',
+  };
+  return <span className={`px-2 py-0.5 text-xs rounded border font-medium ${map[level] || map.ok}`}>{level}</span>;
+}
+
+function IssueCount({ count, severity }) {
+  if (count === 0) return <span className="text-green-600 font-semibold">0 ✓</span>;
+  const colors = { high: 'text-red-600', medium: 'text-yellow-600', low: 'text-blue-600' };
+  return <span className={`font-bold ${colors[severity] || 'text-gray-700'}`}>{count}</span>;
+}
+
+function ExpandableList({ title, items = [], severity = 'medium', renderItem }) {
+  const [open, setOpen] = useState(false);
+  if (items.length === 0) return (
+    <div className="flex items-center gap-2 py-1.5 text-sm text-green-600">
+      <CheckCircle className="w-3.5 h-3.5" /> {title} — clean
+    </div>
+  );
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-sm font-medium"
+      >
+        <div className="flex items-center gap-2">
+          {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          <span>{title}</span>
+          <IssueCount count={items.length} severity={severity} />
+        </div>
+        <SeverityBadge level={severity} />
+      </button>
+      {open && (
+        <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+          {items.slice(0, 50).map((item, i) => (
+            <div key={i} className="px-4 py-2 text-xs text-gray-700">
+              {renderItem ? renderItem(item) : JSON.stringify(item)}
+            </div>
+          ))}
+          {items.length > 50 && (
+            <div className="px-4 py-2 text-xs text-gray-500">… and {items.length - 50} more</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SummaryCard({ label, count, severity, icon: Icon }) {
+  const bg = {
+    high:   'bg-red-50 border-red-200',
+    medium: 'bg-yellow-50 border-yellow-200',
+    low:    'bg-blue-50 border-blue-200',
+    ok:     'bg-green-50 border-green-200',
+  };
+  const text = {
+    high: 'text-red-700', medium: 'text-yellow-700', low: 'text-blue-700', ok: 'text-green-700',
+  };
+  const eff = count === 0 ? 'ok' : severity;
+  return (
+    <div className={`rounded-xl border p-4 flex flex-col gap-1 ${bg[eff]}`}>
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className={`w-4 h-4 ${text[eff]}`} />}
+        <span className={`text-xs font-medium ${text[eff]}`}>{label}</span>
+      </div>
+      <p className={`text-3xl font-bold ${text[eff]}`}>{count ?? '—'}</p>
+    </div>
+  );
+}
+
+function EntityAuditSection({ label, data }) {
+  if (!data) return null;
+  const c = data.counts || {};
+  return (
+    <div className="space-y-2">
+      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        {label}
+        <span className="text-xs text-gray-400 font-normal">({data.total_records ?? 0} records)</span>
+      </h4>
+      <ExpandableList
+        title="Duplicate groups"
+        items={data.duplicate_groups || []}
+        severity="high"
+        renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${(g.records || []).map(r => r.name).join(', ')}`}
+      />
+      <ExpandableList
+        title="Missing normalization"
+        items={data.missing_normalization || []}
+        severity="medium"
+        renderItem={r => `${r.name || r.id} — missing: ${(r.missing || []).join(', ')}`}
+      />
+      <ExpandableList
+        title="Missing slug (routing)"
+        items={data.broken_routing || []}
+        severity="low"
+        renderItem={r => r.name || r.id}
+      />
+      <ExpandableList
+        title="Broken required links"
+        items={data.broken_required_links || []}
+        severity="high"
+        renderItem={r => `${r.name || r.id}: ${(r.issues || []).join('; ')}`}
+      />
+    </div>
+  );
+}
+
+// ── Main page ────────────────────────────────────────────────────────────────
+
+export default function Diagnostics() {
+  const [report, setReport] = useState(null);
+  const [running, setRunning] = useState(false);
+  const [repairing, setRepairing] = useState(false);
+  const [repairResult, setRepairResult] = useState(null);
+  const [copied, setCopied] = useState(false);
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  // Fetch entity data
-  const { data: tracks = [], isLoading: tracksLoading } = useQuery({
-    queryKey: ['tracks-diag'],
-    queryFn: () => base44.entities.Track.list('-updated_date', 10),
-  });
+  const runDiagnostics = async () => {
+    setRunning(true);
+    setReport(null);
+    setRepairResult(null);
+    try {
+      const res = await base44.functions.invoke('runFullPlatformDiagnostics', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setReport(res.data);
+      toast.success('Diagnostics complete');
+    } catch (err) {
+      toast.error(`Diagnostics failed: ${err.message}`);
+    }
+    setRunning(false);
+  };
 
-  const { data: series = [], isLoading: seriesLoading } = useQuery({
-    queryKey: ['series-diag'],
-    queryFn: () => base44.entities.Series.list('-updated_date', 10),
-  });
+  const runRepairs = async () => {
+    setRepairing(true);
+    setRepairResult(null);
+    try {
+      const res = await base44.functions.invoke('runBasicIntegrityRepairs', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setRepairResult(res.data);
+      toast.success('Safe repairs completed — re-running diagnostics…');
+      await runDiagnostics();
+    } catch (err) {
+      toast.error(`Repairs failed: ${err.message}`);
+      setRepairing(false);
+    }
+  };
 
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ['teams-diag'],
-    queryFn: () => base44.entities.Team.list('-updated_date', 10),
-  });
-
-  const { data: drivers = [], isLoading: driversLoading } = useQuery({
-    queryKey: ['drivers-diag'],
-    queryFn: () => base44.entities.Driver.list('-updated_date', 10),
-  });
-
-  const { data: events = [], isLoading: eventsLoading } = useQuery({
-    queryKey: ['events-diag'],
-    queryFn: () => base44.entities.Event.list('-updated_date', 10),
-  });
-
-  // Relation health queries
-  const { data: allEvents = [] } = useQuery({
-    queryKey: ['all-events-diag'],
-    queryFn: () => base44.entities.Event.list('-updated_date', 50),
-  });
-
-  // Race Core system health queries
-  const { data: allSessions = [] } = useQuery({
-    queryKey: ['sessions-diag'],
-    queryFn: () => base44.entities.Session.list(),
-  });
-
-  const { data: allEntries = [] } = useQuery({
-    queryKey: ['entries-diag'],
-    queryFn: () => base44.entities.Entry.list(),
-  });
-
-  const { data: allStandings = [] } = useQuery({
-    queryKey: ['standings-diag'],
-    queryFn: () => base44.entities.Standings.list(),
-  });
-
-  const { data: allTracks = [] } = useQuery({
-    queryKey: ['all-tracks-diag'],
-    queryFn: () => base44.entities.Track.list(),
-  });
-
-  const { data: allSeries = [] } = useQuery({
-    queryKey: ['all-series-diag'],
-    queryFn: () => base44.entities.Series.list(),
-  });
-
-  // Mutation to generate slug
-  const generateSlugMutation = useMutation({
-    mutationFn: async ({ entityType, record }) => {
-      const slug = generateSlug(record.name, record.city || record.date);
-      const allRecords = entityType === 'Track' ? allTracks :
-                        entityType === 'Series' ? allSeries :
-                        entityType === 'Team' ? teams :
-                        entityType === 'Driver' ? drivers : allEvents;
-      
-      const existingSlugs = allRecords.map(r => r.slug).filter(Boolean);
-      const { isUnique, suggestion } = validateSlug(slug, existingSlugs);
-      
-      const finalSlug = isUnique ? slug : suggestion;
-      
-      if (entityType === 'Track') {
-        await base44.entities.Track.update(record.id, { slug: finalSlug });
-      } else if (entityType === 'Series') {
-        await base44.entities.Series.update(record.id, { slug: finalSlug });
-      } else if (entityType === 'Team') {
-        await base44.entities.Team.update(record.id, { slug: finalSlug });
-      } else if (entityType === 'Driver') {
-        await base44.entities.Driver.update(record.id, { slug: finalSlug });
-      } else if (entityType === 'Event') {
-        await base44.entities.Event.update(record.id, { slug: finalSlug });
-      }
-      
-      return { finalSlug, wasUnique: isUnique };
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [`${variables.entityType.toLowerCase()}s-diag`] });
-      queryClient.invalidateQueries({ queryKey: [`all-${variables.entityType.toLowerCase()}s-diag`] });
-      toast.success(`Slug generated: ${data.finalSlug}${data.wasUnique ? '' : ' (made unique)'}`);
-      setGeneratingSlug(null);
-    },
-    onError: (error) => {
-      toast.error(`Failed to generate slug: ${error.message}`);
-      setGeneratingSlug(null);
-    },
-  });
+  const copyReport = () => {
+    if (!report) return;
+    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (user?.role !== 'admin') {
     return (
@@ -132,478 +189,282 @@ export default function Diagnostics() {
     );
   }
 
-  const isLoading = tracksLoading || seriesLoading || teamsLoading || driversLoading || eventsLoading;
-
-  if (isLoading) {
-    return (
-      <ManagementLayout currentPage="Diagnostics">
-        <ManagementShell title="Diagnostics" subtitle="">
-          <Skeleton className="h-12 w-64 mb-8" />
-          <Skeleton className="h-96" />
-        </ManagementShell>
-      </ManagementLayout>
-    );
-  }
-
-  // Helper functions
-  const getSlugStatus = (record) => {
-    if (!record.slug) return { icon: XCircle, color: 'text-red-500', label: 'Missing' };
-    return { icon: CheckCircle, color: 'text-green-500', label: 'OK' };
-  };
-
-  const getRelationStatus = (hasRelation) => {
-    return hasRelation 
-      ? { icon: CheckCircle, color: 'text-green-500', label: 'Yes' }
-      : { icon: XCircle, color: 'text-red-500', label: 'No' };
-  };
-
-  // Check for broken links
-  const getBrokenRecords = () => {
-    const broken = [];
-    
-    // Check all entity types
-    [...tracks, ...series, ...teams, ...drivers].forEach(record => {
-      const entityType = record.name && tracks.includes(record) ? 'Track' :
-                        record.name && series.includes(record) ? 'Series' :
-                        record.name && teams.includes(record) ? 'Team' : 'Driver';
-      
-      if (!record.slug) {
-        broken.push({
-          entityType,
-          record,
-          issue: 'Missing slug',
-        });
-      }
-    });
-    
-    events.forEach(event => {
-      if (!event.slug) {
-        broken.push({ entityType: 'Event', record: event, issue: 'Missing slug' });
-      }
-      if (!event.track_id || !event.series_id) {
-        broken.push({ 
-          entityType: 'Event', 
-          record: event, 
-          issue: event.status === 'draft' ? 'Draft (missing relations)' : 'Missing required relation',
-        });
-      }
-    });
-    
-    return broken;
-  };
-
-  const brokenRecords = getBrokenRecords();
-
-  const handleGenerateSlug = (entityType, record) => {
-    setGeneratingSlug(record.id);
-    generateSlugMutation.mutate({ entityType, record });
-  };
-
-  // Render entity table
-  const renderEntityTable = (entityType, records) => {
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="border-b border-gray-200">
-            <tr>
-              <th className="text-left py-3 px-4 text-sm font-semibold">Name</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold">Slug</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold">Profile URL</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold">Status</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.map(record => {
-              const slugStatus = getSlugStatus(record);
-              const StatusIcon = slugStatus.icon;
-              const profileUrl = record.slug ? buildProfileUrl(entityType, record.slug) : '#';
-              
-              return (
-                <tr key={record.id} className="border-b border-gray-100">
-                  <td className="py-3 px-4 text-sm font-medium">{record.name}</td>
-                  <td className="py-3 px-4 text-sm font-mono text-gray-600">{record.slug || '—'}</td>
-                  <td className="py-3 px-4 text-xs text-gray-500 max-w-xs truncate">
-                    {profileUrl !== '#' ? profileUrl : '—'}
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <StatusIcon className={`w-4 h-4 ${slugStatus.color}`} />
-                      <span className="text-sm">{slugStatus.label}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    {!record.slug && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleGenerateSlug(entityType, record)}
-                        disabled={generatingSlug === record.id}
-                      >
-                        {generatingSlug === record.id ? (
-                          <>
-                            <RefreshCw className="w-3 h-3 animate-spin mr-1" />
-                            Generating...
-                          </>
-                        ) : (
-                          'Generate Slug'
-                        )}
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  // Race Core Health Calculations
-  const unpublishedEvents = useMemo(() => {
-    return allEvents.filter(e => e.publish_ready === false || e.status === 'Draft');
-  }, [allEvents]);
-
-  const sessionsNotOfficial = useMemo(() => {
-    return allSessions.filter(s => !['Official', 'Locked'].includes(s.status));
-  }, [allSessions]);
-
-  const entriesMissingData = useMemo(() => {
-    return allEntries.filter(e => 
-      e.waiver_status === 'Missing' || 
-      e.tech_status === 'Not Inspected' || 
-      e.payment_status === 'Unpaid'
-    );
-  }, [allEntries]);
-
-  const standingsNotPublished = useMemo(() => {
-    return allStandings.filter(s => s.published !== true);
-  }, [allStandings]);
+  const sum = report?.summary || {};
+  const src = report?.source_audit || {};
+  const ent = report?.entity_audit || {};
+  const acc = report?.access_audit || {};
+  const rte = report?.route_audit  || {};
 
   return (
     <ManagementLayout currentPage="Diagnostics">
-      <ManagementShell title="Diagnostics" subtitle="Admin-only health check for entity routes and relationships">
-        <Tabs defaultValue="data-health" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="data-health">Data Health</TabsTrigger>
-            <TabsTrigger value="race-core">Race Core Status</TabsTrigger>
-          </TabsList>
+      <ManagementShell
+        title="Platform Diagnostics"
+        subtitle="Admin-only integrity audit and safe repair tooling"
+      >
+        {/* ── Action bar ──────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <Button
+            onClick={runDiagnostics}
+            disabled={running || repairing}
+            className="bg-gray-900 text-white"
+          >
+            {running ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Run Diagnostics</>}
+          </Button>
 
-          <TabsContent value="data-health" className="space-y-6">
-        {/* Broken Links Summary */}
-        {brokenRecords.length > 0 && (
-          <Card className="mb-8 border-red-200 bg-red-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-700">
-                <AlertTriangle className="w-5 h-5" />
-                {brokenRecords.length} Issue{brokenRecords.length !== 1 ? 's' : ''} Found
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {brokenRecords.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-white border border-red-200 p-3 rounded">
-                    <div>
-                      <span className="font-semibold text-sm">{item.entityType}:</span>{' '}
-                      <span className="text-sm">{item.record.name}</span>
-                      <Badge variant="outline" className="ml-2 text-xs border-red-300 text-red-700">
-                        {item.issue}
-                      </Badge>
-                    </div>
-                    {item.issue === 'Missing slug' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleGenerateSlug(item.entityType, item.record)}
-                        disabled={generatingSlug === item.record.id}
-                      >
-                        Fix
-                      </Button>
-                    )}
+          {report && (
+            <>
+              <Button
+                onClick={runRepairs}
+                disabled={running || repairing}
+                variant="outline"
+                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+              >
+                {repairing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Repairing…</> : <><Wrench className="w-4 h-4 mr-2" />Run Safe Repairs</>}
+              </Button>
+
+              <Button variant="outline" onClick={copyReport} className="ml-auto">
+                {copied ? <><CheckCheck className="w-4 h-4 mr-2 text-green-600" />Copied</> : <><Copy className="w-4 h-4 mr-2" />Copy Report JSON</>}
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* ── Repair result banner ─────────────────────────────────────────── */}
+        {repairResult && (
+          <Card className="mb-6 border-green-200 bg-green-50">
+            <CardContent className="pt-4">
+              <p className="text-sm font-semibold text-green-800 mb-2 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" /> Safe Repairs Complete
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-xs">
+                {[
+                  { label: 'Normalization filled', v: repairResult.normalization_filled },
+                  { label: 'Entities created',     v: repairResult.entities_created },
+                  { label: 'Event links created',  v: repairResult.event_links_created },
+                  { label: 'Invitations expired',  v: repairResult.invitations_expired },
+                  { label: 'Owner codes created',  v: repairResult.owner_codes_created },
+                ].map(({ label, v }) => (
+                  <div key={label} className="bg-white rounded border border-green-100 p-2">
+                    <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                    <p className="text-gray-500">{label}</p>
                   </div>
                 ))}
               </div>
+              {repairResult.skipped_count > 0 && (
+                <p className="text-xs text-yellow-700 mt-2">{repairResult.skipped_count} items skipped (see raw JSON for details)</p>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {/* Route Health */}
-        <div className="space-y-6">
+        {/* ── No report yet ────────────────────────────────────────────────── */}
+        {!report && !running && (
           <Card>
-            <CardHeader>
-              <CardTitle>A. Route Health</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <div>
-                <h3 className="font-bold mb-4">Tracks</h3>
-                {renderEntityTable('Track', tracks)}
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Series</h3>
-                {renderEntityTable('Series', series)}
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Teams</h3>
-                {renderEntityTable('Team', teams)}
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Drivers</h3>
-                {renderEntityTable('Driver', drivers)}
-              </div>
-              <div>
-                <h3 className="font-bold mb-4">Events</h3>
-                {renderEntityTable('Event', events)}
-              </div>
+            <CardContent className="py-20 text-center">
+              <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No diagnostics report yet.</p>
+              <p className="text-gray-400 text-sm mt-1">Click "Run Diagnostics" to scan the platform.</p>
             </CardContent>
           </Card>
+        )}
 
-          {/* Relation Health */}
+        {running && (
           <Card>
-            <CardHeader>
-              <CardTitle>B. Relation Health</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <div>
-                <h3 className="font-bold mb-4">Events (Sample)</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-gray-200">
-                      <tr>
-                        <th className="text-left py-3 px-4 text-sm font-semibold">Name</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold">Track Relation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold">Series Relation</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold">Links</th>
+            <CardContent className="py-20 text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500">Running full platform audit — this may take 10–30 seconds…</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ── Report ──────────────────────────────────────────────────────── */}
+        {report && !running && (
+          <Tabs defaultValue="summary" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="summary">Summary</TabsTrigger>
+              <TabsTrigger value="source">Source</TabsTrigger>
+              <TabsTrigger value="entity">Entity Layer</TabsTrigger>
+              <TabsTrigger value="access">Access</TabsTrigger>
+              <TabsTrigger value="routes">Routes</TabsTrigger>
+            </TabsList>
+
+            {/* ── Summary tab ─────────────────────────────────────────────── */}
+            <TabsContent value="summary" className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <SummaryCard label="Total Issues"    count={sum.total_issues}            severity="high"   icon={AlertTriangle} />
+                <SummaryCard label="High Priority"   count={sum.high_priority_issues}    severity="high"   icon={XCircle} />
+                <SummaryCard label="Medium Priority" count={sum.medium_priority_issues}  severity="medium" icon={AlertTriangle} />
+                <SummaryCard label="Low Priority"    count={sum.low_priority_issues}     severity="low"    icon={RefreshCw} />
+              </div>
+
+              <div className="text-xs text-gray-400">
+                Generated at {new Date(report.generated_at).toLocaleString()}
+              </div>
+
+              {/* Issue breakdown table */}
+              <Card>
+                <CardHeader><CardTitle className="text-sm">Issue Breakdown</CardTitle></CardHeader>
+                <CardContent>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-gray-500 uppercase">
+                        <th className="pb-2 pr-4">Category</th>
+                        <th className="pb-2 pr-4">Check</th>
+                        <th className="pb-2 pr-4">Count</th>
+                        <th className="pb-2">Severity</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {events.slice(0, 10).map(event => {
-                        const trackStatus = getRelationStatus(event.track_id);
-                        const seriesStatus = getRelationStatus(event.series_id);
-                        const TrackIcon = trackStatus.icon;
-                        const SeriesIcon = seriesStatus.icon;
-                        
-                        return (
-                          <tr key={event.id} className="border-b border-gray-100">
-                            <td className="py-3 px-4 text-sm font-medium">{event.name}</td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <TrackIcon className={`w-4 h-4 ${trackStatus.color}`} />
-                                <span className="text-sm">{trackStatus.label}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <SeriesIcon className={`w-4 h-4 ${seriesStatus.color}`} />
-                                <span className="text-sm">{seriesStatus.label}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-xs">
-                              {event.track_name && <div className="text-gray-600">→ {event.track_name}</div>}
-                              {event.series_name && <div className="text-gray-600">→ {event.series_name}</div>}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                    <tbody className="divide-y divide-gray-100 text-xs">
+                      {[
+                        { cat: 'Source',       check: 'Duplicate groups',             count: src.summary?.duplicate_count,             sev: 'high' },
+                        { cat: 'Source',       check: 'Broken required links',         count: src.summary?.broken_link_count,           sev: 'high' },
+                        { cat: 'Source',       check: 'Missing normalization',         count: src.summary?.missing_normalization_count, sev: 'medium' },
+                        { cat: 'Source',       check: 'Missing slug / routing',        count: src.summary?.broken_routing_count,        sev: 'low' },
+                        { cat: 'Entity Layer', check: 'Source without Entity row',     count: ent.summary?.source_without_entity_count, sev: 'high' },
+                        { cat: 'Entity Layer', check: 'Entity with dangling source',   count: ent.summary?.entity_without_source_count, sev: 'high' },
+                        { cat: 'Entity Layer', check: 'Broken event relationships',    count: ent.summary?.broken_event_relationships_count, sev: 'high' },
+                        { cat: 'Entity Layer', check: 'Broken confirmations',          count: ent.summary?.broken_confirmations_count,  sev: 'medium' },
+                        { cat: 'Access',       check: 'Collaborator missing source',   count: acc.summary?.collaborator_missing_source_count, sev: 'high' },
+                        { cat: 'Access',       check: 'Duplicate collaborators',       count: acc.summary?.duplicate_collaborators_count,    sev: 'low' },
+                        { cat: 'Access',       check: 'Owner missing access code',     count: acc.summary?.owner_missing_access_code_count,  sev: 'medium' },
+                        { cat: 'Access',       check: 'Expired pending invitations',   count: acc.summary?.expired_pending_invitations_count, sev: 'medium' },
+                        { cat: 'Access',       check: 'Invitation entity missing',     count: acc.summary?.invitation_entity_missing_count,  sev: 'medium' },
+                        { cat: 'Routes',       check: 'Missing slug',                  count: rte.summary?.missing_slug_count,          sev: 'low' },
+                        { cat: 'Routes',       check: 'Duplicate slug',                count: rte.summary?.duplicate_slug_count,        sev: 'low' },
+                        { cat: 'Routes',       check: 'Invisible public records',      count: rte.summary?.invisible_public_count,      sev: 'low' },
+                        { cat: 'Routes',       check: 'Missing display name',          count: rte.summary?.missing_display_count,       sev: 'low' },
+                      ].map((row, i) => (
+                        <tr key={i} className={row.count > 0 ? '' : 'opacity-40'}>
+                          <td className="py-1.5 pr-4 text-gray-500">{row.cat}</td>
+                          <td className="py-1.5 pr-4">{row.check}</td>
+                          <td className="py-1.5 pr-4 font-semibold">{row.count ?? 0}</td>
+                          <td className="py-1.5"><SeverityBadge level={row.count > 0 ? row.sev : 'ok'} /></td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-bold mb-4">Tracks (Relation Counts)</h3>
-                <div className="space-y-2">
-                  {tracks.slice(0, 10).map(track => {
-                    const eventsCount = allEvents.filter(e => e.track_id === track.id).length;
-                    
-                    return (
-                      <div key={track.id} className="flex items-center justify-between border border-gray-200 p-3 rounded">
-                        <span className="font-medium">{track.name}</span>
-                        <div className="flex gap-4 text-sm">
-                          <span className="text-gray-600">{eventsCount} event{eventsCount !== 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-bold mb-4">Series (Relation Counts)</h3>
-                <div className="space-y-2">
-                  {series.slice(0, 10).map(s => {
-                    const eventsCount = allEvents.filter(e => e.series_id === s.id).length;
-                    
-                    return (
-                      <div key={s.id} className="flex items-center justify-between border border-gray-200 p-3 rounded">
-                        <span className="font-medium">{s.name}</span>
-                        <div className="flex gap-4 text-sm">
-                          <span className="text-gray-600">{eventsCount} event{eventsCount !== 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-          </TabsContent>
-
-          <TabsContent value="race-core" className="space-y-6">
-            {/* A. Unpublished Events */}
-            <Card className={unpublishedEvents.length > 0 ? 'border-orange-200 bg-orange-50' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {unpublishedEvents.length > 0 ? (
-                    <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  )}
-                  A. Unpublished Events
-                  <Badge variant="outline">{unpublishedEvents.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              {unpublishedEvents.length > 0 && (
-                <CardContent>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {unpublishedEvents.map(e => (
-                      <div key={e.id} className="flex items-center justify-between p-2 border border-orange-200 rounded text-sm bg-white">
-                        <div>
-                          <p className="font-medium">{e.name}</p>
-                          <p className="text-xs text-gray-600">{e.status} • publish_ready={e.publish_ready ? 'true' : 'false'}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </CardContent>
-              )}
-            </Card>
+              </Card>
+            </TabsContent>
 
-            {/* B. Sessions Not Official */}
-            <Card className={sessionsNotOfficial.length > 0 ? 'border-amber-200 bg-amber-50' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {sessionsNotOfficial.length > 0 ? (
-                    <AlertTriangle className="w-5 h-5 text-amber-600" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  )}
-                  B. Sessions Not Official/Locked
-                  <Badge variant="outline">{sessionsNotOfficial.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              {sessionsNotOfficial.length > 0 && (
-                <CardContent>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {sessionsNotOfficial.slice(0, 20).map(s => (
-                      <div key={s.id} className="flex items-center justify-between p-2 border border-amber-200 rounded text-sm bg-white">
-                        <div>
-                          <p className="font-medium">{s.name || s.session_type}</p>
-                          <p className="text-xs text-gray-600">Status: {s.status}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {sessionsNotOfficial.length > 20 && (
-                      <p className="text-xs text-gray-500 pt-2">... and {sessionsNotOfficial.length - 20} more</p>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+            {/* ── Source tab ──────────────────────────────────────────────── */}
+            <TabsContent value="source" className="space-y-8">
+              {['drivers','teams','tracks','series','events'].map(key => (
+                <Card key={key}>
+                  <CardHeader>
+                    <CardTitle className="text-sm capitalize">{key}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <EntityAuditSection label={key} data={src[key]} />
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
 
-            {/* C. Entries Missing Data */}
-            <Card className={entriesMissingData.length > 0 ? 'border-red-200 bg-red-50' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {entriesMissingData.length > 0 ? (
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  )}
-                  C. Entries Missing Compliance
-                  <Badge variant="outline">{entriesMissingData.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              {entriesMissingData.length > 0 && (
-                <CardContent>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {entriesMissingData.slice(0, 20).map(e => (
-                      <div key={e.id} className="flex items-center justify-between p-2 border border-red-200 rounded text-sm bg-white">
-                        <div>
-                          <p className="font-medium">Entry #{e.car_number || e.id.slice(0, 8)}</p>
-                          <p className="text-xs text-gray-600">
-                            Waiver: {e.waiver_status} • Tech: {e.tech_status} • Payment: {e.payment_status}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {entriesMissingData.length > 20 && (
-                      <p className="text-xs text-gray-500 pt-2">... and {entriesMissingData.length - 20} more</p>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+            {/* ── Entity Layer tab ─────────────────────────────────────────── */}
+            <TabsContent value="entity" className="space-y-4">
+              <ExpandableList
+                title="Source records missing Entity row"
+                items={ent.source_without_entity || []}
+                severity="high"
+                renderItem={r => `[${r.entity_type}] ${r.name || r.source_id}`}
+              />
+              <ExpandableList
+                title="Entity rows with dangling source_entity_id"
+                items={ent.entity_without_source || []}
+                severity="high"
+                renderItem={r => `[${r.entity_type}] ${r.name} → source ${r.source_entity_id} missing`}
+              />
+              <ExpandableList
+                title="Events missing EntityRelationship (track/series)"
+                items={ent.broken_event_relationships || []}
+                severity="high"
+                renderItem={r => `${r.name || r.event_entity_id}: missing ${(r.missing || []).join(', ')}`}
+              />
+              <ExpandableList
+                title="Events missing EntityConfirmation"
+                items={ent.broken_confirmations || []}
+                severity="medium"
+                renderItem={r => `${r.name || r.event_entity_id}: ${r.issue}`}
+              />
+            </TabsContent>
 
-            {/* D. Standings Not Published */}
-            <Card className={standingsNotPublished.length > 0 ? 'border-blue-200 bg-blue-50' : ''}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {standingsNotPublished.length > 0 ? (
-                    <AlertCircle className="w-5 h-5 text-blue-600" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  )}
-                  D. Standings Not Published
-                  <Badge variant="outline">{standingsNotPublished.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              {standingsNotPublished.length > 0 && (
-                <CardContent>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {standingsNotPublished.slice(0, 20).map(s => (
-                      <div key={s.id} className="flex items-center justify-between p-2 border border-blue-200 rounded text-sm bg-white">
-                        <div>
-                          <p className="font-medium">{s.series_name}</p>
-                          <p className="text-xs text-gray-600">Position {s.position} • Season {s.season_year}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {standingsNotPublished.length > 20 && (
-                      <p className="text-xs text-gray-500 pt-2">... and {standingsNotPublished.length - 20} more</p>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+            {/* ── Access tab ──────────────────────────────────────────────── */}
+            <TabsContent value="access" className="space-y-4">
+              <ExpandableList
+                title="Collaborator records pointing to missing source entity"
+                items={acc.collaborator_missing_source || []}
+                severity="high"
+                renderItem={r => `[${r.entity_type}:${r.entity_id}] user: ${r.user_id}`}
+              />
+              <ExpandableList
+                title="Duplicate collaborator records"
+                items={acc.duplicate_collaborators || []}
+                severity="low"
+                renderItem={r => `${r.key} — ${r.count} records`}
+              />
+              <ExpandableList
+                title="Owner missing access code"
+                items={acc.owner_missing_access_code || []}
+                severity="medium"
+                renderItem={r => `[${r.entity_type}:${r.entity_id}] user: ${r.user_id}`}
+              />
+              <ExpandableList
+                title="Expired pending invitations"
+                items={acc.expired_pending_invitations || []}
+                severity="medium"
+                renderItem={r => `${r.email} → [${r.entity_type}:${r.entity_id}] expired ${r.expires_at}`}
+              />
+              <ExpandableList
+                title="Invitations referencing missing entity"
+                items={acc.invitation_entity_missing || []}
+                severity="medium"
+                renderItem={r => `${r.email} → [${r.entity_type}:${r.entity_id}]`}
+              />
+            </TabsContent>
 
-            {/* Summary */}
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle>System Health Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-white rounded border border-blue-100">
-                  <p className="text-2xl font-bold text-blue-600">{unpublishedEvents.length}</p>
-                  <p className="text-xs text-gray-600 mt-1">Unpublished Events</p>
-                </div>
-                <div className="text-center p-3 bg-white rounded border border-amber-100">
-                  <p className="text-2xl font-bold text-amber-600">{sessionsNotOfficial.length}</p>
-                  <p className="text-xs text-gray-600 mt-1">Draft/Provisional Sessions</p>
-                </div>
-                <div className="text-center p-3 bg-white rounded border border-red-100">
-                  <p className="text-2xl font-bold text-red-600">{entriesMissingData.length}</p>
-                  <p className="text-xs text-gray-600 mt-1">Entries Missing Data</p>
-                </div>
-                <div className="text-center p-3 bg-white rounded border border-blue-100">
-                  <p className="text-2xl font-bold text-blue-600">{standingsNotPublished.length}</p>
-                  <p className="text-xs text-gray-600 mt-1">Unpublished Standings</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            {/* ── Routes tab ──────────────────────────────────────────────── */}
+            <TabsContent value="routes" className="space-y-6">
+              {['drivers','teams','tracks','series','events'].map(key => {
+                const d = rte[key];
+                if (!d) return null;
+                return (
+                  <Card key={key}>
+                    <CardHeader>
+                      <CardTitle className="text-sm capitalize">{key} ({d.total} records)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <ExpandableList
+                        title="Missing slug"
+                        items={d.missing_slug || []}
+                        severity="low"
+                        renderItem={r => r.name || r.id}
+                      />
+                      <ExpandableList
+                        title="Duplicate slug"
+                        items={d.duplicate_slug || []}
+                        severity="low"
+                        renderItem={r => `"${r.slug}" — ${r.count} records: ${(r.records || []).map(x => x.name).join(', ')}`}
+                      />
+                      <ExpandableList
+                        title="Invisible on public pages (slug exists but status hidden)"
+                        items={d.invisible_public || []}
+                        severity="low"
+                        renderItem={r => `${r.name} — status: ${r.status || r.profile_status || r.public_status}`}
+                      />
+                      <ExpandableList
+                        title="Missing display name"
+                        items={d.missing_display || []}
+                        severity="low"
+                        renderItem={r => r.id}
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </TabsContent>
+          </Tabs>
+        )}
       </ManagementShell>
     </ManagementLayout>
   );
