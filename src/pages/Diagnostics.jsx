@@ -255,6 +255,11 @@ export default function Diagnostics() {
   const [trackDupRunning, setTrackDupRunning] = useState(false);
   const [trackDupResult, setTrackDupResult] = useState(null);
 
+  // ── Driver Duplicate Cleanup ──────────────────────────────────────────────
+  const [driverDupReport, setDriverDupReport] = useState(null);
+  const [driverDupRunning, setDriverDupRunning] = useState(false);
+  const [driverDupResult, setDriverDupResult] = useState(null);
+
   // ── Dedup Verification ────────────────────────────────────────────────────
   const [verifyReport, setVerifyReport] = useState(null);
   const [verifyRunning, setVerifyRunning] = useState(false);
@@ -409,6 +414,48 @@ export default function Diagnostics() {
       setTrackDupRunning(false);
     }
     setTrackDupRunning(false);
+  };
+
+  const runDriverDupScan = async () => {
+    setDriverDupRunning(true);
+    setDriverDupReport(null);
+    setDriverDupResult(null);
+    try {
+      const res = await base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'driver' });
+      if (res.data?.error) throw new Error(res.data.error);
+      setDriverDupReport(res.data);
+      toast.success(`Driver scan complete — ${res.data.duplicate_count} duplicate group(s) found`);
+    } catch (err) {
+      toast.error(`Driver scan failed: ${err.message}`);
+    }
+    setDriverDupRunning(false);
+  };
+
+  const runDriverCleanup = async () => {
+    if (!window.confirm('This will mark duplicate Drivers as Inactive and repair linked references (Results, Entries, Standings, Programs, Media). Proceed?')) return;
+    setDriverDupRunning(true);
+    try {
+      const repairRes = await base44.functions.invoke('repairDuplicateDriverRecords', { dry_run: false });
+      if (repairRes.data?.error) throw new Error(repairRes.data.error);
+      const repairData = repairRes.data;
+
+      let refReport = null;
+      if (repairData.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairDriverReferences', {
+          repairs: repairData.repairs,
+          dry_run: false,
+        });
+        refReport = refRes.data || null;
+      }
+
+      setDriverDupResult({ repair: repairData, references: refReport });
+      toast.success(`Driver cleanup complete — ${repairData.duplicates_marked_inactive?.length || 0} duplicates marked inactive`);
+      await runDriverDupScan();
+    } catch (err) {
+      toast.error(`Driver cleanup failed: ${err.message}`);
+      setDriverDupRunning(false);
+    }
+    setDriverDupRunning(false);
   };
 
   const runVerification = async () => {
@@ -1405,6 +1452,112 @@ export default function Diagnostics() {
                 {trackDupResult.repair?.warnings?.length > 0 && (
                   <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
                     {trackDupResult.repair.warnings.length} warning(s): {trackDupResult.repair.warnings.slice(0, 3).join('; ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ── Driver Duplicate Cleanup ────────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-purple-600" /> Driver Duplicate Cleanup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">
+              Detect and consolidate duplicate Driver records. Uses name + DOB + primary number matching.
+              Ambiguous same-name drivers with different DOBs are skipped to protect distinct real-world people.
+              Duplicates are marked Inactive — no data is deleted.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runDriverDupScan}
+                disabled={driverDupRunning}
+                variant="outline"
+                className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              >
+                {driverDupRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Scan for Driver Duplicates</>}
+              </Button>
+
+              {driverDupReport && driverDupReport.duplicate_count > 0 && (
+                <Button
+                  onClick={runDriverCleanup}
+                  disabled={driverDupRunning}
+                  variant="outline"
+                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                >
+                  {driverDupRunning
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running cleanup…</>
+                    : <><Wrench className="w-4 h-4 mr-2" />Run Driver Cleanup</>}
+                </Button>
+              )}
+            </div>
+
+            {driverDupReport && !driverDupRunning && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <SummaryCard label="Total Drivers"   count={driverDupReport.total_records}  severity="ok"  icon={CheckCircle} />
+                  <SummaryCard label="Duplicate Groups" count={driverDupReport.duplicate_count} severity={driverDupReport.duplicate_count > 0 ? 'high' : 'ok'} icon={AlertTriangle} />
+                  <SummaryCard label="Affected Records" count={driverDupReport.duplicate_groups?.reduce((a, g) => a + g.count, 0) || 0} severity={driverDupReport.duplicate_count > 0 ? 'medium' : 'ok'} icon={XCircle} />
+                </div>
+                {driverDupReport.duplicate_groups?.length > 0 ? (
+                  <ExpandableList
+                    title="Duplicate driver groups"
+                    items={driverDupReport.duplicate_groups}
+                    severity="high"
+                    renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.records?.map(r => `${r.name} (${r.status || 'Active'})`).join(', ')}`}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                    <CheckCircle className="w-4 h-4" /> No duplicate Driver groups detected.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {driverDupResult && !driverDupRunning && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-green-800 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" /> Driver Cleanup Complete
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                  {[
+                    { label: 'Groups processed',   v: driverDupResult.repair?.groups_processed },
+                    { label: 'Survivors confirmed', v: driverDupResult.repair?.survivors?.length },
+                    { label: 'Marked inactive',    v: driverDupResult.repair?.duplicates_marked_inactive?.length },
+                    { label: 'Skipped (ambiguous)', v: driverDupResult.repair?.skipped_groups?.length },
+                  ].map(({ label, v }) => (
+                    <div key={label} className="bg-white rounded border border-green-100 p-2">
+                      <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                      <p className="text-gray-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                {driverDupResult.references && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-xs pt-1">
+                    {[
+                      { label: 'Results updated',   v: driverDupResult.references.updated_results },
+                      { label: 'Entries updated',   v: driverDupResult.references.updated_entries },
+                      { label: 'Standings updated', v: driverDupResult.references.updated_standings },
+                      { label: 'Programs updated',  v: driverDupResult.references.updated_driver_programs },
+                      { label: 'Media updated',     v: driverDupResult.references.updated_driver_media },
+                    ].map(({ label, v }) => (
+                      <div key={label} className="bg-white rounded border border-green-100 p-2">
+                        <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                        <p className="text-gray-500">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {driverDupResult.repair?.warnings?.length > 0 && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                    {driverDupResult.repair.warnings.length} warning(s): {driverDupResult.repair.warnings.slice(0, 3).join('; ')}
                   </div>
                 )}
               </div>
