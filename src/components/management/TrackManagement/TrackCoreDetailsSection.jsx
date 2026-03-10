@@ -15,6 +15,11 @@ export default function TrackCoreDetailsSection({ trackId }) {
   const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: track } = useQuery({
     queryKey: ['track', trackId],
     queryFn: () => base44.entities.Track.filter({ id: trackId }),
@@ -27,7 +32,24 @@ export default function TrackCoreDetailsSection({ trackId }) {
   }, [track]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Track.update(trackId, data),
+    mutationFn: async (data) => {
+      // Route through syncSourceAndEntityRecord so name edits refresh
+      // normalized_name, canonical_slug, and canonical_key automatically.
+      const prepareRes = await base44.functions.invoke('prepareSourcePayloadForSync', {
+        entity_type: 'track',
+        payload: { ...data, id: trackId },
+      });
+      const preparedPayload = prepareRes?.data?.payload ?? { ...data, id: trackId };
+
+      const syncRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'track',
+        payload: preparedPayload,
+        user_id: currentUser?.id,
+        triggered_from: 'management_ui',
+      });
+      if (syncRes?.data?.error) throw new Error(syncRes.data.error);
+      return syncRes?.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['track', trackId] });
       setIsSaved(true);
