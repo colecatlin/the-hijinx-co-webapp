@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Upload, Download, ArrowLeft, ExternalLink, AlertTriangle, X } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import SeriesForm from '@/components/management/SeriesForm';
