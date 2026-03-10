@@ -26,12 +26,32 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
     }
   }, [seriesRecord]);
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const updateMutation = useMutation({
     mutationFn: async (data) => {
+      // Route through syncSourceAndEntityRecord so name edits refresh
+      // normalized_name, canonical_slug, and canonical_key automatically.
+      const prepareRes = await base44.functions.invoke('prepareSourcePayloadForSync', {
+        entity_type: 'series',
+        payload: { ...data, id: seriesId },
+      });
+      const preparedPayload = prepareRes?.data?.payload ?? { ...data, id: seriesId };
+
+      const syncRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'series',
+        payload: preparedPayload,
+        user_id: currentUser?.id,
+        triggered_from: 'management_ui',
+      });
+      if (syncRes?.data?.error) throw new Error(syncRes.data.error);
+
+      // If name changed, cascade update event.series text field for display consistency
       const oldName = seriesRecord?.name;
       const newName = data.name;
-      await base44.entities.Series.update(seriesId, data);
-      // If name changed, cascade update all events linked to old name
       if (oldName && newName && oldName !== newName) {
         const allEvents = await base44.entities.Event.list('event_date', 500);
         const linkedEvents = allEvents.filter(e => e.series && e.series.trim() === oldName.trim());
@@ -40,6 +60,7 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
           toast.info(`Updated ${linkedEvents.length} linked event(s) to new series name.`);
         }
       }
+      return syncRes?.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['series', seriesId] });
