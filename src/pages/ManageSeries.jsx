@@ -268,6 +268,21 @@ export default function ManageSeries() {
 
   return (
     <ManagementLayout currentPage="ManageSeries">
+      {duplicateWarning && (
+        <div className="mx-6 mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800">Potential duplicate series records detected.</p>
+            <p className="text-xs text-amber-700 mt-0.5">Review diagnostics before creating new records.</p>
+          </div>
+          <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold text-amber-800 underline whitespace-nowrap">
+            Open Diagnostics
+          </Link>
+          <button onClick={() => setDuplicateWarning(false)} className="text-amber-500 hover:text-amber-700 ml-1">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       <ManagementShell
         title="Series"
         subtitle={`${series.length} total series`}
