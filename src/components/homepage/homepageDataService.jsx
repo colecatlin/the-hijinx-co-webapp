@@ -42,7 +42,7 @@ export async function getHomepageData() {
       activity_feed:     Array.isArray(payload.activity_feed)     ? payload.activity_feed     : [],
       featured_media:    Array.isArray(payload.featured_media)    ? payload.featured_media    : [],
       featured_products: Array.isArray(payload.featured_products) ? payload.featured_products : [],
-      ticker_items:      payload.ticker_items      ?? null,
+      ticker_items:      Array.isArray(payload.ticker_items) && payload.ticker_items.length ? payload.ticker_items : null,
       spotlight_driver:  payload.spotlight_driver  ?? null,
       spotlight_event:   payload.spotlight_event   ?? null,
       hero_stats:        payload.hero_stats         ?? null,
