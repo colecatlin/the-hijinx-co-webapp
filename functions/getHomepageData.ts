@@ -118,11 +118,57 @@ Deno.serve(async (req) => {
     const featuredMedia    = resolveBucket(settings?.featured_media_ids,   autoMedia,    MEDIA_TARGET);
     const featuredProducts = resolveBucket(settings?.featured_product_ids, autoProducts, TARGET);
 
-    // ticker_items — prefer ticker_override_items, then legacy hero_ticker_items
-    const tickerItems =
+    // ticker_items — Priority 1: editorial override
+    let tickerItems =
       (useManual && settings?.ticker_override_items?.length) ? settings.ticker_override_items :
       (useManual && settings?.hero_ticker_items?.length)     ? settings.hero_ticker_items :
       null;
+
+    // Priority 2: build dynamically from real platform data when no editorial override
+    if (!tickerItems) {
+      const rawItems = [];
+
+      // Recent activity feed titles (most useful — real activity)
+      for (const item of (activityFeed || []).slice(0, 4)) {
+        const t = (item.title || '').trim();
+        if (t && t.length <= 55) rawItems.push(t);
+      }
+
+      // Featured story headline
+      if (featuredStory?.title) {
+        const t = featuredStory.title.trim();
+        if (t.length <= 50) rawItems.push(`New story: ${t}`);
+      }
+
+      // Nearest upcoming event
+      const nextEvent = (autoEvents || []).filter(e => e.event_date >= today)[0];
+      if (nextEvent?.name) rawItems.push(`Upcoming: ${nextEvent.name}`);
+
+      // Featured series names
+      for (const s of (featuredSeries || []).slice(0, 2)) {
+        if (s.name) rawItems.push(s.name);
+      }
+
+      // Featured driver names
+      for (const d of (featuredDrivers || []).slice(0, 2)) {
+        const name = [d.first_name, d.last_name].filter(Boolean).join(' ');
+        if (name) rawItems.push(name);
+      }
+
+      // Deduplicate and cap
+      const seen = new Set();
+      const deduped = [];
+      for (const item of rawItems) {
+        const key = item.toLowerCase().trim();
+        if (!seen.has(key) && item.trim()) {
+          seen.add(key);
+          deduped.push(item.trim());
+        }
+        if (deduped.length >= 8) break;
+      }
+
+      tickerItems = deduped.length > 0 ? deduped : null;
+    }
 
     // ── 4. Spotlights ─────────────────────────────────────────────────────────
     // Direct driver/event fetch if manual IDs are set (avoids an extra function hop)
