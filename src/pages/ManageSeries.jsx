@@ -42,6 +42,16 @@ export default function ManageSeries() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  // Check for duplicate series on load (lightweight — fires once)
+  useEffect(() => {
+    if (!isAdmin) return;
+    base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'series' })
+      .then(res => {
+        if (res?.data?.duplicate_count > 0) setDuplicateWarning(true);
+      })
+      .catch(() => {});
+  }, [isAdmin]);
   const navigate = useNavigate();
 
   const handleNavigateToDriver = (driver) => {
