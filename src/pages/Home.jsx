@@ -68,7 +68,7 @@ export default function Home() {
       />
 
       {/* ── 1. Hero ─────────────────────────────────────────────────────────── */}
-      <HomepageHero />
+      <HomepageHero stats={hp.hero_stats} />
 
       {/* ── Ticker ──────────────────────────────────────────────────────────── */}
       <HomepageTicker
