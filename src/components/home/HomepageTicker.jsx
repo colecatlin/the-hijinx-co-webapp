@@ -1,32 +1,46 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { formatHomepageTickerItems, TICKER_FALLBACK } from '@/components/homepage/formatHomepageTickerItems';
 
-const TICKER_ITEMS = [
-  { label: 'DRIVER PROFILES',  page: 'DriverDirectory' },
-  { label: 'TRACK DATABASE',   page: 'TrackDirectory' },
-  { label: 'RESULTS',          page: 'EventDirectory' },
-  { label: 'STORIES',          page: 'OutletHome' },
-  { label: 'APPAREL',          page: 'ApparelHome' },
-  { label: 'MEDIA PORTAL',     page: 'MediaPortal' },
-  { label: 'SERIES',           page: 'SeriesHome' },
-  { label: 'RACE CORE',        page: 'Registration' },
-];
+/**
+ * Destination page for ticker items that don't map to a specific entity.
+ * Activity feed / story items link to OutletHome; generic items go to MotorsportsHome.
+ */
+function resolveTickerPage(label) {
+  const l = label.toLowerCase();
+  if (l.includes('story') || l.includes('stories')) return 'OutletHome';
+  if (l.includes('apparel') || l.includes('shop'))   return 'ApparelHome';
+  if (l.includes('race core'))                        return 'Registration';
+  if (l.includes('media'))                            return 'MediaPortal';
+  if (l.includes('driver'))                           return 'DriverDirectory';
+  if (l.includes('track'))                            return 'TrackDirectory';
+  if (l.includes('series'))                           return 'SeriesHome';
+  if (l.includes('event') || l.includes('upcoming'))  return 'EventDirectory';
+  return 'MotorsportsHome';
+}
 
 export default function HomepageTicker({ tickerItems = null, activityItems = [] }) {
-  // Priority: manual editorial items > activity feed titles > static fallback
-  let baseItems;
+  // Priority 1 — editorial / backend-built ticker_items
+  // Priority 2 — activity feed titles formatted inline
+  // Priority 3 — branded fallback
+  let formattedLabels;
+
   if (tickerItems?.length) {
-    baseItems = tickerItems.map(label => ({ label: label.toUpperCase(), page: 'MotorsportsHome' }));
-    // Pad with static items if fewer than 4
-    if (baseItems.length < 4) baseItems = [...baseItems, ...TICKER_ITEMS].slice(0, 8);
-  } else if (activityItems.length > 0) {
-    const liveItems = activityItems.map(item => ({ label: item.title?.toUpperCase() || 'PLATFORM UPDATE', page: 'MotorsportsHome' }));
-    baseItems = [...liveItems, ...TICKER_ITEMS];
-  } else {
-    baseItems = TICKER_ITEMS;
+    formattedLabels = formatHomepageTickerItems(tickerItems);
+  } else if (activityItems?.length) {
+    const activityTitles = activityItems.map(i => i?.title).filter(Boolean);
+    formattedLabels = formatHomepageTickerItems(activityTitles);
   }
-  const repeated = [...baseItems, ...baseItems, ...baseItems];
+
+  if (!formattedLabels?.length) {
+    formattedLabels = TICKER_FALLBACK;
+  }
+
+  const items = formattedLabels.map(label => ({ label, page: resolveTickerPage(label) }));
+
+  // Repeat 3× so the seamless loop looks full at any viewport width
+  const repeated = [...items, ...items, ...items];
 
   return (
     <div className="relative bg-[#080C14] border-y border-[#00FFDA]/20 overflow-hidden py-3 select-none">
@@ -34,7 +48,7 @@ export default function HomepageTicker({ tickerItems = null, activityItems = [] 
       <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#080C14] to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#080C14] to-transparent z-10 pointer-events-none" />
 
-      {/* Live indicator — red for urgency */}
+      {/* Live indicator */}
       <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 hidden sm:flex items-center gap-2">
         <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse" />
         <span className="font-mono text-[9px] tracking-[0.3em] text-[#EF4444] uppercase font-bold">Live</span>
