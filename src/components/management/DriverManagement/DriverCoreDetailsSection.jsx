@@ -113,26 +113,52 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
     }
   }, [mediaRecords]);
 
+  const generateUniqueNumericId = async () => {
+    let numericId;
+    let isUnique = false;
+    while (!isUnique) {
+      numericId = String(Math.floor(Math.random() * 90000000) + 10000000);
+      const existing = await base44.entities.Driver.filter({ numeric_id: numericId });
+      isUnique = existing.length === 0;
+    }
+    return numericId;
+  };
+
   const updateMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
+      let payload = { ...data };
+
       if (driverId === 'new') {
-        return base44.entities.Driver.create(data);
+        // Pre-generate numeric_id + slug so the record is routable immediately
+        const numericId = await generateUniqueNumericId();
+        const slugBase = `${data.first_name} ${data.last_name}`
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        payload = { ...payload, numeric_id: numericId, slug: `${slugBase}-${numericId}` };
+      } else {
+        // Pass id so upsertSourceEntity fast-paths directly to the existing record
+        payload = { ...payload, id: driverId };
       }
-      return base44.functions.invoke('updateEntitySafely', {
-        entity_type: 'Driver',
-        entity_id: driverId,
-        data
+
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'driver',
+        payload,
+        triggered_from: 'management_ui',
       });
+
+      if (result?.data?.error) throw new Error(result.data.error);
+      const record = result?.data?.record;
+      if (!record) throw new Error('syncSourceAndEntityRecord returned no record');
+      return record;
     },
-    onSuccess: (data) => {
-      const idToInvalidate = driverId === 'new' ? data.id : driverId;
+    onSuccess: (record) => {
+      const idToInvalidate = driverId === 'new' ? record.id : driverId;
       queryClient.invalidateQueries({ queryKey: ['driver', idToInvalidate] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       toast.success('Driver details saved');
       if (driverId === 'new' && onSaveSuccess) {
-        onSaveSuccess(data.id);
+        onSaveSuccess(record.id);
       } else if (onSaveSuccess) {
         onSaveSuccess();
       }

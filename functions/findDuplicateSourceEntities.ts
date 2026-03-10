@@ -44,6 +44,8 @@ Deno.serve(async (req) => {
     const byExternalUid  = new Map(); // external_uid -> records[]
     const byCanonicalKey = new Map(); // canonical_key -> records[]
     const byNormName     = new Map(); // normalized_name -> records[]
+    const byNormDob      = new Map(); // driver: normalized_name:dob -> records[]
+    const byNormNum      = new Map(); // driver: normalized_name:number -> records[]
 
     for (const r of records) {
       // external_uid
@@ -61,11 +63,10 @@ Deno.serve(async (req) => {
       }
 
       // normalized_name (derived on-the-fly if not stored)
-      // For tracks, include location context to avoid false-positive grouping of
-      // same-name facilities at different locations
       const displayName = r.normalized_name || normalizeName(resolveDisplayName(entity_type, r));
       if (displayName) {
         let normKey = displayName;
+        // Tracks: include location to avoid false-positives
         if (entity_type === 'track' && (r.location_state || r.location_country)) {
           const locCtx = normalizeName(r.location_state || r.location_country || '');
           if (locCtx) normKey = `${displayName}:${locCtx}`;
@@ -73,6 +74,18 @@ Deno.serve(async (req) => {
         const arr = byNormName.get(normKey) || [];
         arr.push(r);
         byNormName.set(normKey, arr);
+
+        // Drivers: also group by name+DOB and name+primary_number for higher precision
+        if (entity_type === 'driver') {
+          if (r.date_of_birth) {
+            const dobKey = `${displayName}:dob:${r.date_of_birth}`;
+            const da = byNormDob.get(dobKey) || []; da.push(r); byNormDob.set(dobKey, da);
+          }
+          if (r.primary_number) {
+            const numKey = `${displayName}:num:${r.primary_number}`;
+            const na = byNormNum.get(numKey) || []; na.push(r); byNormNum.set(numKey, na);
+          }
+        }
       }
     }
 
@@ -122,6 +135,28 @@ Deno.serve(async (req) => {
         if (unflagged.length > 1) {
           duplicate_groups.push(buildGroup('normalized_name', key, group));
           group.forEach(r => flaggedIds.add(r.id));
+        }
+      }
+    }
+
+    // Driver-specific: normalized_name + DOB and normalized_name + primary_number
+    if (entity_type === 'driver') {
+      for (const [key, group] of byNormDob) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('normalized_name_dob', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+      for (const [key, group] of byNormNum) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('normalized_name_number', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
         }
       }
     }
