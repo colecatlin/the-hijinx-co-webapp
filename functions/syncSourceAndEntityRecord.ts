@@ -58,6 +58,9 @@ Deno.serve(async (req) => {
           entity_type,
           record_id: source_record.id,
           source_action,
+          source_path: triggered_from || null,
+          match_method: upsertRes.data.match_method || null,
+          canonical_key: source_record.canonical_key || null,
           triggered_from: triggered_from || null,
         },
       }).catch(() => {});
