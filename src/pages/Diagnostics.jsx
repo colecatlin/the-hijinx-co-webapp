@@ -1001,6 +1001,113 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Series Duplicate Cleanup ────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600" /> Series Duplicate Cleanup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">Detect and consolidate duplicate Series records. Duplicates are marked Inactive — no data is deleted.</p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runSeriesDupScan}
+                disabled={seriesDupRunning}
+                variant="outline"
+                className="border-amber-300 text-amber-700 hover:bg-amber-50"
+              >
+                {seriesDupRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Scan for Duplicates</>}
+              </Button>
+
+              {seriesDupReport && seriesDupReport.duplicate_count > 0 && (
+                <Button
+                  onClick={runSeriesCleanup}
+                  disabled={seriesDupRunning}
+                  variant="outline"
+                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                >
+                  {seriesDupRunning
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running cleanup…</>
+                    : <><Wrench className="w-4 h-4 mr-2" />Run Series Cleanup</>}
+                </Button>
+              )}
+            </div>
+
+            {/* Scan results */}
+            {seriesDupReport && !seriesDupRunning && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <SummaryCard label="Total Series" count={seriesDupReport.total_records} severity="ok" icon={CheckCircle} />
+                  <SummaryCard label="Duplicate Groups" count={seriesDupReport.duplicate_count} severity={seriesDupReport.duplicate_count > 0 ? 'high' : 'ok'} icon={AlertTriangle} />
+                  <SummaryCard label="Affected Records" count={seriesDupReport.duplicate_groups?.reduce((a, g) => a + g.count, 0) || 0} severity={seriesDupReport.duplicate_count > 0 ? 'medium' : 'ok'} icon={XCircle} />
+                </div>
+
+                {seriesDupReport.duplicate_groups?.length > 0 ? (
+                  <ExpandableList
+                    title="Duplicate groups"
+                    items={seriesDupReport.duplicate_groups}
+                    severity="high"
+                    renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.records?.map(r => `${r.name} (${r.status || 'Active'})`).join(', ')}`}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                    <CheckCircle className="w-4 h-4" /> No duplicate Series groups detected.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Cleanup results */}
+            {seriesDupResult && !seriesDupRunning && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-green-800 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" /> Series Cleanup Complete
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                  {[
+                    { label: 'Groups processed', v: seriesDupResult.repair?.groups_processed },
+                    { label: 'Survivors confirmed', v: seriesDupResult.repair?.survivors?.length },
+                    { label: 'Marked inactive', v: seriesDupResult.repair?.duplicates_marked_inactive?.length },
+                    { label: 'Skipped groups', v: seriesDupResult.repair?.skipped_groups?.length },
+                  ].map(({ label, v }) => (
+                    <div key={label} className="bg-white rounded border border-green-100 p-2">
+                      <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                      <p className="text-gray-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {seriesDupResult.references && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-xs pt-1">
+                    {[
+                      { label: 'Events updated', v: seriesDupResult.references.updated_events },
+                      { label: 'Drivers updated', v: seriesDupResult.references.updated_drivers },
+                      { label: 'Classes updated', v: seriesDupResult.references.updated_series_classes },
+                      { label: 'Programs updated', v: seriesDupResult.references.updated_driver_programs },
+                      { label: 'Standings updated', v: seriesDupResult.references.updated_standings },
+                    ].map(({ label, v }) => (
+                      <div key={label} className="bg-white rounded border border-green-100 p-2">
+                        <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                        <p className="text-gray-500">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {seriesDupResult.repair?.warnings?.length > 0 && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                    {seriesDupResult.repair.warnings.length} warning(s): {seriesDupResult.repair.warnings.slice(0, 3).join('; ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* ── Report ──────────────────────────────────────────────────────── */}
         {report && !running && (
           <Tabs defaultValue="summary" className="space-y-6">
