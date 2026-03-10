@@ -11,13 +11,21 @@ export default function GooglePlacesLocationPicker({
   const [apiLoaded, setApiLoaded] = useState(false);
 
   useEffect(() => {
-    // Load Google Places script
-    if (window.google && window.google.maps && window.google.maps.places) {
-      setApiLoaded(true);
-      initAutocomplete();
-    } else {
-      console.warn('Google Places API not loaded. Add API key to environment variables.');
-    }
+    let attempts = 0;
+    const maxAttempts = 25; // ~5 seconds
+
+    const check = setInterval(() => {
+      attempts++;
+      if (window.google?.maps?.places) {
+        clearInterval(check);
+        setApiLoaded(true);
+        initAutocomplete();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(check);
+      }
+    }, 200);
+
+    return () => clearInterval(check);
   }, []);
 
   const initAutocomplete = () => {
