@@ -45,6 +45,7 @@ export async function getHomepageData() {
       ticker_items:      payload.ticker_items      ?? null,
       spotlight_driver:  payload.spotlight_driver  ?? null,
       spotlight_event:   payload.spotlight_event   ?? null,
+      hero_stats:        payload.hero_stats         ?? null,
     },
   };
 }
