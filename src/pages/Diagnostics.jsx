@@ -212,6 +212,39 @@ export default function Diagnostics() {
   const [copied, setCopied] = useState(false);
   const [reportIssueOpen, setReportIssueOpen] = useState(false);
 
+  // ── Normalization Backfill ────────────────────────────────────────────────
+  const [backfillResult, setBackfillResult] = useState(null);
+  const [backfillRunning, setBackfillRunning] = useState(false);
+
+  const runBackfillDryRun = async () => {
+    setBackfillRunning(true);
+    setBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillTrackAndSeriesNormalization', { dry_run: true });
+      if (res.data?.error) throw new Error(res.data.error);
+      setBackfillResult({ ...res.data, mode: 'dry_run' });
+      toast.success('Backfill preview complete');
+    } catch (err) {
+      toast.error(`Backfill preview failed: ${err.message}`);
+    }
+    setBackfillRunning(false);
+  };
+
+  const runBackfill = async () => {
+    if (!window.confirm('This will populate missing normalization fields on all Track and Series records. Proceed?')) return;
+    setBackfillRunning(true);
+    setBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillTrackAndSeriesNormalization', { dry_run: false });
+      if (res.data?.error) throw new Error(res.data.error);
+      setBackfillResult({ ...res.data, mode: 'live' });
+      toast.success(`Backfill complete — ${res.data.series_backfilled} series, ${res.data.tracks_backfilled} tracks updated`);
+    } catch (err) {
+      toast.error(`Backfill failed: ${err.message}`);
+    }
+    setBackfillRunning(false);
+  };
+
   // ── Series Duplicate Cleanup ──────────────────────────────────────────────
   const [seriesDupReport, setSeriesDupReport] = useState(null);
   const [seriesDupRunning, setSeriesDupRunning] = useState(false);
