@@ -217,6 +217,11 @@ export default function Diagnostics() {
   const [seriesDupRunning, setSeriesDupRunning] = useState(false);
   const [seriesDupResult, setSeriesDupResult] = useState(null);
 
+  // ── Track Duplicate Cleanup ───────────────────────────────────────────────
+  const [trackDupReport, setTrackDupReport] = useState(null);
+  const [trackDupRunning, setTrackDupRunning] = useState(false);
+  const [trackDupResult, setTrackDupResult] = useState(null);
+
   // ── V1 Integration Verification ────────────────────────────────────────────
   const [v1Report, setV1Report] = useState(null);
   const [v1Running, setV1Running] = useState(false);
@@ -325,6 +330,48 @@ export default function Diagnostics() {
       setSeriesDupRunning(false);
     }
     setSeriesDupRunning(false);
+  };
+
+  const runTrackDupScan = async () => {
+    setTrackDupRunning(true);
+    setTrackDupReport(null);
+    setTrackDupResult(null);
+    try {
+      const res = await base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'track' });
+      if (res.data?.error) throw new Error(res.data.error);
+      setTrackDupReport(res.data);
+      toast.success(`Track scan complete — ${res.data.duplicate_count} duplicate group(s) found`);
+    } catch (err) {
+      toast.error(`Track scan failed: ${err.message}`);
+    }
+    setTrackDupRunning(false);
+  };
+
+  const runTrackCleanup = async () => {
+    if (!window.confirm('This will mark duplicate Tracks as Inactive and repair linked references. Proceed?')) return;
+    setTrackDupRunning(true);
+    try {
+      const repairRes = await base44.functions.invoke('repairDuplicateTrackRecords', { dry_run: false });
+      if (repairRes.data?.error) throw new Error(repairRes.data.error);
+      const repairData = repairRes.data;
+
+      let refReport = null;
+      if (repairData.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairTrackReferences', {
+          repairs: repairData.repairs,
+          dry_run: false,
+        });
+        refReport = refRes.data?.report || null;
+      }
+
+      setTrackDupResult({ repair: repairData, references: refReport });
+      toast.success(`Cleanup complete — ${repairData.duplicates_marked_inactive?.length || 0} duplicates marked inactive`);
+      await runTrackDupScan();
+    } catch (err) {
+      toast.error(`Cleanup failed: ${err.message}`);
+      setTrackDupRunning(false);
+    }
+    setTrackDupRunning(false);
   };
 
   const copyReport = () => {
@@ -1101,6 +1148,108 @@ export default function Diagnostics() {
                 {seriesDupResult.repair?.warnings?.length > 0 && (
                   <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
                     {seriesDupResult.repair.warnings.length} warning(s): {seriesDupResult.repair.warnings.slice(0, 3).join('; ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ── Track Duplicate Cleanup ─────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-blue-600" /> Track Duplicate Cleanup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">Detect and consolidate duplicate Track records. Duplicates are marked Inactive — no data is deleted.</p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runTrackDupScan}
+                disabled={trackDupRunning}
+                variant="outline"
+                className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                {trackDupRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Scan for Duplicates</>}
+              </Button>
+
+              {trackDupReport && trackDupReport.duplicate_count > 0 && (
+                <Button
+                  onClick={runTrackCleanup}
+                  disabled={trackDupRunning}
+                  variant="outline"
+                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                >
+                  {trackDupRunning
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running cleanup…</>
+                    : <><Wrench className="w-4 h-4 mr-2" />Run Track Cleanup</>}
+                </Button>
+              )}
+            </div>
+
+            {trackDupReport && !trackDupRunning && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <SummaryCard label="Total Tracks" count={trackDupReport.total_records} severity="ok" icon={CheckCircle} />
+                  <SummaryCard label="Duplicate Groups" count={trackDupReport.duplicate_count} severity={trackDupReport.duplicate_count > 0 ? 'high' : 'ok'} icon={AlertTriangle} />
+                  <SummaryCard label="Affected Records" count={trackDupReport.duplicate_groups?.reduce((a, g) => a + g.count, 0) || 0} severity={trackDupReport.duplicate_count > 0 ? 'medium' : 'ok'} icon={XCircle} />
+                </div>
+
+                {trackDupReport.duplicate_groups?.length > 0 ? (
+                  <ExpandableList
+                    title="Duplicate groups"
+                    items={trackDupReport.duplicate_groups}
+                    severity="high"
+                    renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.records?.map(r => `${r.name} (${r.status || 'Active'})`).join(', ')}`}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                    <CheckCircle className="w-4 h-4" /> No duplicate Track groups detected.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {trackDupResult && !trackDupRunning && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-green-800 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" /> Track Cleanup Complete
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                  {[
+                    { label: 'Groups processed', v: trackDupResult.repair?.groups_processed },
+                    { label: 'Survivors confirmed', v: trackDupResult.repair?.survivors?.length },
+                    { label: 'Marked inactive', v: trackDupResult.repair?.duplicates_marked_inactive?.length },
+                    { label: 'Skipped groups', v: trackDupResult.repair?.skipped_groups?.length },
+                  ].map(({ label, v }) => (
+                    <div key={label} className="bg-white rounded border border-green-100 p-2">
+                      <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                      <p className="text-gray-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {trackDupResult.references && (
+                  <div className="grid grid-cols-2 gap-3 text-center text-xs pt-1">
+                    {[
+                      { label: 'Events updated', v: trackDupResult.references.updated_events },
+                      { label: 'Collaborations updated', v: trackDupResult.references.updated_event_collaborations },
+                    ].map(({ label, v }) => (
+                      <div key={label} className="bg-white rounded border border-green-100 p-2">
+                        <p className="text-xl font-bold text-green-700">{v ?? 0}</p>
+                        <p className="text-gray-500">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {trackDupResult.repair?.warnings?.length > 0 && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                    {trackDupResult.repair.warnings.length} warning(s): {trackDupResult.repair.warnings.slice(0, 3).join('; ')}
                   </div>
                 )}
               </div>
