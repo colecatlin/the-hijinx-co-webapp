@@ -31,8 +31,15 @@ export default function CreateSeriesForm({ onClose, onSeriesCreated }) {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const slugValue = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      return base44.entities.Series.create({ ...data, slug: slugValue });
+      // Route through sync pipeline — handles normalization + dedup
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'series',
+        payload: data,
+        triggered_from: 'create_series_form',
+      });
+      const record = result?.data?.source_record;
+      if (!record) throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
+      return record;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['series'] });
