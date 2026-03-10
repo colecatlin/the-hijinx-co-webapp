@@ -212,6 +212,11 @@ export default function Diagnostics() {
   const [copied, setCopied] = useState(false);
   const [reportIssueOpen, setReportIssueOpen] = useState(false);
 
+  // ── Series Duplicate Cleanup ──────────────────────────────────────────────
+  const [seriesDupReport, setSeriesDupReport] = useState(null);
+  const [seriesDupRunning, setSeriesDupRunning] = useState(false);
+  const [seriesDupResult, setSeriesDupResult] = useState(null);
+
   // ── V1 Integration Verification ────────────────────────────────────────────
   const [v1Report, setV1Report] = useState(null);
   const [v1Running, setV1Running] = useState(false);
@@ -274,6 +279,52 @@ export default function Diagnostics() {
       toast.error(`Repairs failed: ${err.message}`);
       setRepairing(false);
     }
+  };
+
+  const runSeriesDupScan = async () => {
+    setSeriesDupRunning(true);
+    setSeriesDupReport(null);
+    setSeriesDupResult(null);
+    try {
+      const res = await base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'series' });
+      if (res.data?.error) throw new Error(res.data.error);
+      setSeriesDupReport(res.data);
+      toast.success(`Series scan complete — ${res.data.duplicate_count} duplicate group(s) found`);
+    } catch (err) {
+      toast.error(`Series scan failed: ${err.message}`);
+    }
+    setSeriesDupRunning(false);
+  };
+
+  const runSeriesCleanup = async () => {
+    if (!window.confirm('This will mark duplicate Series as Inactive and repair linked references. Proceed?')) return;
+    setSeriesDupRunning(true);
+    try {
+      // Step 1: repair records
+      const repairRes = await base44.functions.invoke('repairDuplicateSeriesRecords', { dry_run: false });
+      if (repairRes.data?.error) throw new Error(repairRes.data.error);
+      const repairData = repairRes.data;
+
+      // Step 2: repair references using the repairs map from step 1
+      let refReport = null;
+      if (repairData.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairSeriesReferences', {
+          repairs: repairData.repairs,
+          dry_run: false,
+        });
+        refReport = refRes.data?.report || null;
+      }
+
+      setSeriesDupResult({ repair: repairData, references: refReport });
+      toast.success(`Cleanup complete — ${repairData.duplicates_marked_inactive?.length || 0} duplicates marked inactive`);
+
+      // Refresh duplicate scan
+      await runSeriesDupScan();
+    } catch (err) {
+      toast.error(`Cleanup failed: ${err.message}`);
+      setSeriesDupRunning(false);
+    }
+    setSeriesDupRunning(false);
   };
 
   const copyReport = () => {
