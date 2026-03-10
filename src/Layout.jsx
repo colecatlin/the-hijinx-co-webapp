@@ -75,6 +75,11 @@ export default function Layout({ children, currentPageName }) {
 
   const launchMode = getLaunchModeConfig();
 
+  // Root path redirect — always send / to the public homepage
+  if (location.pathname === '/' || location.pathname === '') {
+    return <Navigate to="/Home" replace />;
+  }
+
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen">
