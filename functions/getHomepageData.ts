@@ -46,6 +46,11 @@ Deno.serve(async (req) => {
       activityFeed,
       autoMedia,
       autoProducts,
+      // hero stats counts
+      allActiveSeries,
+      allLiveDrivers,
+      allActiveTracks,
+      allPublishedEvents,
     ] = await Promise.all([
       safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 50)),
       safe(db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', 20)),
@@ -56,6 +61,11 @@ Deno.serve(async (req) => {
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
       safe(db.MediaAsset.list('-created_date', 20)),
       safe(db.Product.list('-created_date', 20)),
+      // counts for hero stats (large limits to get real totals)
+      safe(db.Series.filter({ status: 'Active' }, '-created_date', 9999)),
+      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 9999)),
+      safe(db.Track.filter({ status: 'Active' }, '-created_date', 9999)),
+      safe(db.Event.filter({ status: 'Published' }, 'event_date', 9999)),
     ]);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
