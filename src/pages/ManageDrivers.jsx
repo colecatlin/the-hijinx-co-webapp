@@ -44,6 +44,14 @@ export default function ManageDrivers() {
   const [sortField, setSortField] = useState('updated_date');
   const [sortDir, setSortDir] = useState('desc');
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
+  const [driverDupCount, setDriverDupCount] = useState(null);
+
+  // Lightweight background duplicate check on first load
+  React.useEffect(() => {
+    base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'driver' })
+      .then(res => { if (res?.data?.duplicate_count > 0) setDriverDupCount(res.data.duplicate_count); })
+      .catch(() => {});
+  }, []);
   const [backfillingIds, setBackfillingIds] = useState(false);
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkProfileStatus, setBulkProfileStatus] = useState('');
@@ -290,10 +298,18 @@ export default function ManageDrivers() {
       try {
         const importedData = JSON.parse(event.target.result);
         const dataArray = Array.isArray(importedData) ? importedData : [importedData];
-        
-        await base44.entities.Driver.bulkCreate(dataArray.map(({ id, created_date, updated_date, created_by, ...rest }) => rest));
+        let created = 0, updated = 0;
+        for (const { id: _id, created_date, updated_date, created_by, ...rest } of dataArray) {
+          const res = await base44.functions.invoke('syncSourceAndEntityRecord', {
+            entity_type: 'driver',
+            payload: rest,
+            triggered_from: 'driver_json_import',
+          });
+          if (res?.data?.action === 'created') created++;
+          else updated++;
+        }
         queryClient.invalidateQueries({ queryKey: ['drivers'] });
-        alert(`Successfully imported ${dataArray.length} driver(s)`);
+        alert(`Import complete: ${created} created, ${updated} updated`);
       } catch (error) {
         alert('Error importing data: ' + error.message);
       }
@@ -408,6 +424,16 @@ export default function ManageDrivers() {
           </TabsContent>
 
           <TabsContent value="data" className="space-y-6">
+
+        {driverDupCount > 0 && (
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Potential duplicate driver records detected ({driverDupCount} group{driverDupCount > 1 ? 's' : ''}). Review before creating new records.</span>
+            </div>
+            <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold underline whitespace-nowrap">Open Diagnostics</Link>
+          </div>
+        )}
 
         {importResult && (
           <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
