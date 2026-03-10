@@ -12,12 +12,6 @@ const HERO_CONFIG = {
   cta_primary:   { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
   cta_secondary: { label: 'Shop HIJINX Apparel', page: 'ApparelHome',     Icon: ShoppingBag },
   cta_tertiary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
-  stats: [
-    { value: 'LIVE',  label: 'Platform' },
-    { value: '46+',   label: 'Series Tracked' },
-    { value: '200+',  label: 'Driver Profiles' },
-    { value: '50+',   label: 'Tracks' },
-  ],
   bg_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
 };
 
