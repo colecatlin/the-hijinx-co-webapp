@@ -172,6 +172,13 @@ Deno.serve(async (req) => {
     }
 
     // ── 5. Return payload ────────────────────────────────────────────────────
+    const hero_stats = {
+      series_count: (allActiveSeries || []).filter(s => !s.is_sample).length,
+      driver_count: (allLiveDrivers  || []).length,
+      track_count:  (allActiveTracks || []).length,
+      event_count:  (allPublishedEvents || []).length,
+    };
+
     return Response.json({
       featured_story:    featuredStory,
       featured_stories:  featuredStories,
@@ -186,6 +193,7 @@ Deno.serve(async (req) => {
       ticker_items:      tickerItems,
       spotlight_driver:  spotlightDriver,
       spotlight_event:   spotlightEvent,
+      hero_stats,
     });
 
   } catch (error) {
