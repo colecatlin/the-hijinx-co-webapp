@@ -15,11 +15,19 @@ const HERO_CONFIG = {
   bg_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
 };
 
-export default function HomepageHero() {
+export default function HomepageHero({ stats: liveStats }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  const { eyebrow, headline_line1, headline_line2, subtext, cta_primary, cta_secondary, cta_tertiary, stats, bg_image } = HERO_CONFIG;
+  const { eyebrow, headline_line1, headline_line2, subtext, cta_primary, cta_secondary, cta_tertiary, bg_image } = HERO_CONFIG;
+
+  // Build stats array from live data; only include slots with real values
+  const stats = liveStats ? [
+    liveStats.series_count > 0 ? { value: String(liveStats.series_count), label: 'Series Tracked' } : null,
+    liveStats.driver_count > 0 ? { value: String(liveStats.driver_count), label: 'Driver Profiles' } : null,
+    liveStats.track_count  > 0 ? { value: String(liveStats.track_count),  label: 'Tracks' }          : null,
+    liveStats.event_count  > 0 ? { value: String(liveStats.event_count),  label: 'Events' }          : null,
+  ].filter(Boolean) : [];
 
   return (
     <section className="relative w-full min-h-screen flex flex-col overflow-hidden bg-[#080C14]">
