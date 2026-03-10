@@ -50,15 +50,28 @@ function parseICS(icsText) {
   return events;
 }
 
+// Canonical series names — must match syncNascarScheduleToEvents exactly
+const CANONICAL_SERIES = {
+  CUP:   'NASCAR Cup Series',
+  XFINITY: 'NASCAR Xfinity Series',
+  TRUCK: 'NASCAR Craftsman Truck Series',
+  ARCA_EAST: 'ARCA Menards Series East',
+  ARCA_WEST: 'ARCA Menards Series West',
+  ARCA:  'ARCA Menards Series',
+  EURO:  'NASCAR Whelen Euro Series',
+};
+
 function detectSeries(summary) {
   const s = summary?.toLowerCase() || '';
-  if (s.includes('cup series') || s.includes('nascar cup')) return 'NASCAR Cup Series';
-  if (s.includes('xfinity')) return 'NASCAR Xfinity Series';
-  if (s.includes('craftsman truck') || s.includes('truck series')) return 'NASCAR Craftsman Truck Series';
-  if (s.includes('arca menards') && s.includes('east')) return 'ARCA Menards Series East';
-  if (s.includes('arca menards') && s.includes('west')) return 'ARCA Menards Series West';
-  if (s.includes('arca menards')) return 'ARCA Menards Series';
-  if (s.includes('euro series') || s.includes('european')) return 'NASCAR Whelen Euro Series';
+  if (s.includes('cup series') || s.includes('nascar cup')) return CANONICAL_SERIES.CUP;
+  if (s.includes('xfinity')) return CANONICAL_SERIES.XFINITY;
+  if (s.includes('craftsman truck') || s.includes('truck series')) return CANONICAL_SERIES.TRUCK;
+  if (s.includes('arca menards') && s.includes('east')) return CANONICAL_SERIES.ARCA_EAST;
+  if (s.includes('arca menards') && s.includes('west')) return CANONICAL_SERIES.ARCA_WEST;
+  if (s.includes('arca menards')) return CANONICAL_SERIES.ARCA;
+  if (s.includes('euro series') || s.includes('european')) return CANONICAL_SERIES.EURO;
+  // Generic fallback — log a warning; do not silently create a broad "NASCAR" series
+  console.warn(`[syncNascarCalendar] detectSeries fallback triggered for: "${summary}" — mapped to generic NASCAR`);
   return 'NASCAR';
 }
 
