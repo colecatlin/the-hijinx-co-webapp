@@ -71,14 +71,28 @@ Deno.serve(async (req) => {
 
     const duplicate_groups = [];
 
+    function buildGroup(match_type, key, group) {
+      return {
+        match_type,
+        key,
+        count: group.length,
+        record_ids: group.map(r => r.id),
+        names: group.map(r => resolveDisplayName(entity_type, r)),
+        records: group.map(r => ({
+          id: r.id,
+          name: resolveDisplayName(entity_type, r),
+          status: r.status || null,
+          external_uid: r.external_uid || null,
+          canonical_key: r.canonical_key || null,
+          normalized_name: r.normalized_name || null,
+          created_date: r.created_date || null,
+        })),
+      };
+    }
+
     for (const [key, group] of byExternalUid) {
       if (group.length > 1) {
-        duplicate_groups.push({
-          match_type: 'external_uid',
-          key,
-          record_ids: group.map(r => r.id),
-          names: group.map(r => resolveDisplayName(entity_type, r)),
-        });
+        duplicate_groups.push(buildGroup('external_uid', key, group));
       }
     }
 
@@ -89,12 +103,7 @@ Deno.serve(async (req) => {
       if (group.length > 1) {
         const newIds = group.map(r => r.id).filter(id => !flaggedIds.has(id));
         if (newIds.length > 1 || (newIds.length > 0 && group.length > newIds.length)) {
-          duplicate_groups.push({
-            match_type: 'canonical_key',
-            key,
-            record_ids: group.map(r => r.id),
-            names: group.map(r => resolveDisplayName(entity_type, r)),
-          });
+          duplicate_groups.push(buildGroup('canonical_key', key, group));
           group.forEach(r => flaggedIds.add(r.id));
         }
       }
@@ -104,12 +113,7 @@ Deno.serve(async (req) => {
       if (group.length > 1) {
         const unflagged = group.filter(r => !flaggedIds.has(r.id));
         if (unflagged.length > 1) {
-          duplicate_groups.push({
-            match_type: 'normalized_name',
-            key,
-            record_ids: group.map(r => r.id),
-            names: group.map(r => resolveDisplayName(entity_type, r)),
-          });
+          duplicate_groups.push(buildGroup('normalized_name', key, group));
           group.forEach(r => flaggedIds.add(r.id));
         }
       }
