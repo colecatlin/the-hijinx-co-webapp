@@ -42,11 +42,6 @@ const navItems = [
 ];
 
 export default function Layout({ children, currentPageName }) {
-  // Root path redirect — always send / to the public homepage
-  const location = useLocation();
-  if (location.pathname === '/' || location.pathname === '') {
-    return <Navigate to="/Home" replace />;
-  }
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
