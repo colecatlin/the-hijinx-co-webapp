@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronDown, Gauge, ShoppingBag, Globe } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+
+const FALLBACK_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg';
 
 const HERO_CONFIG = {
   eyebrow: 'THE HIJINX CO',
@@ -12,14 +16,19 @@ const HERO_CONFIG = {
   cta_primary:   { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
   cta_secondary: { label: 'Shop HIJINX Apparel', page: 'ApparelHome',     Icon: ShoppingBag },
   cta_tertiary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
-  bg_image: 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg',
 };
 
 export default function HomepageHero({ stats: liveStats }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  const { eyebrow, headline_line1, headline_line2, subtext, cta_primary, cta_secondary, cta_tertiary, bg_image } = HERO_CONFIG;
+  const { data: heroSettings } = useQuery({
+    queryKey: ['homepageSettings', 'hero_bg'],
+    queryFn: () => base44.entities.HomepageSettings.filter({ key: 'hero_bg' }),
+  });
+
+  const bg_image = heroSettings?.[0]?.image_url || FALLBACK_BG;
+  const { eyebrow, headline_line1, headline_line2, subtext, cta_primary, cta_secondary, cta_tertiary } = HERO_CONFIG;
 
   // Build stats array from live data; only include slots with real values
   const stats = liveStats ? [

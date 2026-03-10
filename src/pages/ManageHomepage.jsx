@@ -12,6 +12,7 @@ import ActivityTab from '@/components/management/ActivityTab';
 import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
 
 const SECTIONS = [
+  { key: 'hero_bg', label: 'Homepage Hero Background' },
   { key: 'apparel_bg', label: 'Apparel Section Background' },
 ];
 
