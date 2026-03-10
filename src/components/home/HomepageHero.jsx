@@ -133,20 +133,22 @@ export default function HomepageHero({ stats: liveStats }) {
             </Link>
           </div>
 
-          {/* Stats Strip */}
-          <div className="flex flex-wrap gap-6 md:gap-12 border-t border-white/15 pt-8">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: mounted ? 1 : 0, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
-              >
-                <div className="text-2xl md:text-3xl font-black text-white tracking-tight">{stat.value}</div>
-                <div className="text-[9px] font-mono tracking-[0.25em] text-white/55 uppercase mt-1">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Stats Strip — only rendered when live data is available */}
+          {stats.length > 0 && (
+            <div className="flex flex-wrap gap-6 md:gap-12 border-t border-white/15 pt-8">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: mounted ? 1 : 0, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
+                >
+                  <div className="text-2xl md:text-3xl font-black text-white tracking-tight">{stat.value}</div>
+                  <div className="text-[9px] font-mono tracking-[0.25em] text-white/55 uppercase mt-1">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
       </div>
 
