@@ -166,8 +166,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const survivor = pickSurvivor(records, eventCountsById);
-      const duplicates = records.filter(r => r.id !== survivor.id);
+      const survivor = pickSurvivor(active, eventCountsById);
+      const duplicates = active.filter(r => r.id !== survivor.id);
 
       report.groups_processed++;
 
