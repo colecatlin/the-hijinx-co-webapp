@@ -1412,6 +1412,182 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Track & Series Duplicate Verification ───────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-green-600" /> Track & Series Duplicate Verification
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">
+              Verifies normalization coverage, active duplicate groups, management save path safety,
+              survivor re-indexing, and sync recreation risk. Run after backfill and cleanup.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runVerification}
+                disabled={verifyRunning}
+                variant="outline"
+                className="border-green-300 text-green-700 hover:bg-green-50"
+              >
+                {verifyRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running Verification…</>
+                  : <><Play className="w-4 h-4 mr-2" />Run Track & Series Verification</>}
+              </Button>
+              {verifyReport && (
+                <span className="text-xs text-gray-400">Last run: {new Date(verifyReport.generated_at).toLocaleString()}</span>
+              )}
+            </div>
+
+            {verifyRunning && (
+              <div className="py-6 text-center text-sm text-gray-500">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-green-400" />
+                Auditing normalization, duplicate groups, and sync logs…
+              </div>
+            )}
+
+            {verifyReport && !verifyRunning && (() => {
+              const v  = verifyReport.overall_verdict;
+              const nc = verifyReport.normalization_coverage || {};
+              const dr = verifyReport.duplicates_remaining || {};
+              const ms = verifyReport.management_safety || {};
+              const sv = verifyReport.survivor_verification || {};
+              const rr = verifyReport.recreation_risk || {};
+              return (
+                <div className="space-y-4">
+                  {/* Overall verdict */}
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${
+                    v === 'passed'  ? 'bg-green-50 border-green-300 text-green-800' :
+                    v === 'warning' ? 'bg-yellow-50 border-yellow-300 text-yellow-800' :
+                                     'bg-red-50 border-red-300 text-red-800'
+                  }`}>
+                    {v === 'passed'  && <ShieldCheck    className="w-5 h-5 text-green-600 flex-shrink-0" />}
+                    {v === 'warning' && <AlertTriangle  className="w-5 h-5 text-yellow-600 flex-shrink-0" />}
+                    {v === 'failed'  && <XCircle        className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                    <span>
+                      {v === 'passed'  ? 'Passed — Track and Series dedupe is healthy' :
+                       v === 'warning' ? 'Warning — sync creations detected, review recreation risk section' :
+                                        'Failed — normalization gaps or active duplicates detected'}
+                    </span>
+                  </div>
+
+                  {/* Normalization coverage */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Normalization Coverage</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <SummaryCard label="Series Missing Norm" count={nc.series?.missing_normalized_name ?? 0} severity={nc.series?.missing_normalized_name > 0 ? 'high' : 'ok'} icon={nc.series?.missing_normalized_name > 0 ? XCircle : CheckCircle} />
+                      <SummaryCard label="Series Missing Key"  count={nc.series?.missing_canonical_key ?? 0}   severity={nc.series?.missing_canonical_key > 0 ? 'high' : 'ok'}  icon={nc.series?.missing_canonical_key > 0 ? XCircle : CheckCircle} />
+                      <SummaryCard label="Tracks Missing Norm" count={nc.tracks?.missing_normalized_name ?? 0} severity={nc.tracks?.missing_normalized_name > 0 ? 'high' : 'ok'} icon={nc.tracks?.missing_normalized_name > 0 ? XCircle : CheckCircle} />
+                      <SummaryCard label="Tracks Missing Key"  count={nc.tracks?.missing_canonical_key ?? 0}   severity={nc.tracks?.missing_canonical_key > 0 ? 'high' : 'ok'}  icon={nc.tracks?.missing_canonical_key > 0 ? XCircle : CheckCircle} />
+                    </div>
+                    {nc.series?.sample_missing?.length > 0 && (
+                      <p className="text-xs text-red-600">Sample series missing normalization: {nc.series.sample_missing.map(s => s.name).join(', ')}</p>
+                    )}
+                    {nc.tracks?.sample_missing?.length > 0 && (
+                      <p className="text-xs text-red-600">Sample tracks missing normalization: {nc.tracks.sample_missing.map(t => t.name).join(', ')}</p>
+                    )}
+                  </div>
+
+                  {/* Duplicate groups remaining */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Active Duplicate Groups Remaining</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <SummaryCard label="Series Dup Groups" count={dr.series_duplicate_groups_remaining ?? 0} severity={dr.series_duplicate_groups_remaining > 0 ? 'high' : 'ok'} icon={dr.series_duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
+                      <SummaryCard label="Track Dup Groups"  count={dr.track_duplicate_groups_remaining ?? 0}  severity={dr.track_duplicate_groups_remaining > 0 ? 'high' : 'ok'}  icon={dr.track_duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
+                    </div>
+                    {dr.series_groups?.length > 0 && (
+                      <ExpandableList title="Active series duplicate groups" items={dr.series_groups} severity="high"
+                        renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${(g.names || []).join(', ')}`} />
+                    )}
+                    {dr.track_groups?.length > 0 && (
+                      <ExpandableList title="Active track duplicate groups" items={dr.track_groups} severity="high"
+                        renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${(g.names || []).join(', ')}`} />
+                    )}
+                    {dr.series_duplicate_groups_remaining === 0 && dr.track_duplicate_groups_remaining === 0 && (
+                      <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                        <CheckCircle className="w-4 h-4" /> No active duplicate groups detected.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Management save path safety */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Management Save Path Safety</h4>
+                    <div className="divide-y divide-gray-100 text-xs">
+                      {[
+                        { label: 'TrackCoreDetailsSection routes through sync pipeline', ok: ms.track_management_safe },
+                        { label: 'SeriesCoreDetailsSection routes through sync pipeline', ok: ms.series_management_safe },
+                      ].map((row, i) => (
+                        <div key={i} className="flex items-center gap-2 py-1.5">
+                          {row.ok
+                            ? <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                            : <XCircle    className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
+                          <span className={row.ok ? 'text-gray-700' : 'text-red-700'}>{row.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {ms.note && <p className="text-xs text-gray-400 mt-1">{ms.note}</p>}
+                  </div>
+
+                  {/* Survivor re-indexing */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Survivor Re-index Verification</h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      <SummaryCard label="Repair Logs Found"   count={sv.repair_logs_checked ?? 0}                 severity="ok" icon={CheckCircle} />
+                      <SummaryCard label="Series Survivors OK" count={sv.repaired_series_survivors_verified ?? 0}  severity="ok" icon={CheckCircle} />
+                      <SummaryCard label="Track Survivors OK"  count={sv.repaired_track_survivors_verified ?? 0}   severity="ok" icon={CheckCircle} />
+                    </div>
+                    {sv.failed_survivor_ids?.length > 0 && (
+                      <ExpandableList
+                        title={`${sv.failed_survivor_ids.length} survivor(s) missing canonical fields`}
+                        items={sv.failed_survivor_ids}
+                        severity="high"
+                        renderItem={r => `[${r.entity}] id=${r.id} — missing: ${(r.missing || []).join(', ')}`}
+                      />
+                    )}
+                    {sv.repair_logs_checked === 0 && (
+                      <p className="text-xs text-gray-400">No repair logs found — run Series or Track cleanup first to generate survivors.</p>
+                    )}
+                  </div>
+
+                  {/* Recreation risk */}
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-2">
+                      Sync Recreation Risk
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                        rr.verdict === 'safe' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>{rr.verdict === 'safe' ? 'Safe' : 'Review'}</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <SummaryCard label="Track Creations from Sync"  count={rr.track_creations_from_sync ?? 0}  severity={rr.track_creations_from_sync > 0 ? 'medium' : 'ok'}  icon={rr.track_creations_from_sync > 0 ? AlertTriangle : CheckCircle} />
+                      <SummaryCard label="Series Creations from Sync" count={rr.series_creations_from_sync ?? 0} severity={rr.series_creations_from_sync > 0 ? 'medium' : 'ok'} icon={rr.series_creations_from_sync > 0 ? AlertTriangle : CheckCircle} />
+                    </div>
+                    {rr.suspicious_series_creations?.length > 0 && (
+                      <ExpandableList
+                        title="Series created by sync (review for unintended recreations)"
+                        items={rr.suspicious_series_creations}
+                        severity="medium"
+                        renderItem={r => `${r.name || r.id} — from: ${r.triggered_from} on ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`}
+                      />
+                    )}
+                    {rr.suspicious_track_creations?.length > 0 && (
+                      <ExpandableList
+                        title="Tracks created by sync (review for unintended recreations)"
+                        items={rr.suspicious_track_creations}
+                        severity="medium"
+                        renderItem={r => `${r.name || r.id} — from: ${r.triggered_from} on ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`}
+                      />
+                    )}
+                    {rr.note && <p className="text-xs text-gray-400">{rr.note}</p>}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* ── Report ──────────────────────────────────────────────────────── */}
         {report && !running && (
           <Tabs defaultValue="summary" className="space-y-6">
