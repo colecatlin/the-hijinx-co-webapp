@@ -1081,6 +1081,107 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Normalization Backfill ──────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-teal-600" /> Track & Series Normalization Backfill
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">
+              Populates missing <code className="bg-gray-100 px-1 rounded">normalized_name</code>,{' '}
+              <code className="bg-gray-100 px-1 rounded">canonical_slug</code>, and{' '}
+              <code className="bg-gray-100 px-1 rounded">canonical_key</code> on all existing Track and Series records.
+              Run this before duplicate cleanup so the sync pipeline can match all records.
+              Only fills missing fields — never overwrites existing values.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={runBackfillDryRun}
+                disabled={backfillRunning}
+                variant="outline"
+                className="border-teal-300 text-teal-700 hover:bg-teal-50"
+              >
+                {backfillRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Preview Backfill (dry run)</>}
+              </Button>
+
+              <Button
+                onClick={runBackfill}
+                disabled={backfillRunning}
+                variant="outline"
+                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+              >
+                {backfillRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Wrench className="w-4 h-4 mr-2" />Run Normalization Backfill</>}
+              </Button>
+            </div>
+
+            {backfillResult && !backfillRunning && (
+              <div className={`rounded-lg border p-4 space-y-3 ${backfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
+                <p className={`text-sm font-semibold flex items-center gap-2 ${backfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
+                  {backfillResult.mode === 'dry_run' ? <><AlertTriangle className="w-4 h-4" /> Dry Run Preview</> : <><CheckCircle className="w-4 h-4" /> Backfill Complete</>}
+                </p>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                  {backfillResult.mode === 'dry_run' ? [
+                    { label: 'Series to backfill',    v: backfillResult.series_to_backfill },
+                    { label: 'Tracks to backfill',    v: backfillResult.tracks_to_backfill },
+                    { label: 'Series already complete', v: backfillResult.series_already_complete },
+                    { label: 'Tracks already complete', v: backfillResult.tracks_already_complete },
+                  ] : [
+                    { label: 'Series backfilled',     v: backfillResult.series_backfilled },
+                    { label: 'Tracks backfilled',     v: backfillResult.tracks_backfilled },
+                    { label: 'Series already complete', v: backfillResult.series_already_complete },
+                    { label: 'Tracks already complete', v: backfillResult.tracks_already_complete },
+                  ]}.map(({ label, v }) => (
+                    <div key={label} className={`bg-white rounded border p-2 ${backfillResult.mode === 'dry_run' ? 'border-teal-100' : 'border-green-100'}`}>
+                      <p className={`text-xl font-bold ${backfillResult.mode === 'dry_run' ? 'text-teal-700' : 'text-green-700'}`}>{v ?? 0}</p>
+                      <p className="text-gray-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {backfillResult.mode === 'dry_run' && backfillResult.preview_series?.length > 0 && (
+                  <ExpandableList
+                    title="Sample series that would be updated"
+                    items={backfillResult.preview_series}
+                    severity="low"
+                    renderItem={r => `${r.name} — will add: ${r.will_add?.join(', ')}`}
+                  />
+                )}
+                {backfillResult.mode === 'dry_run' && backfillResult.preview_tracks?.length > 0 && (
+                  <ExpandableList
+                    title="Sample tracks that would be updated"
+                    items={backfillResult.preview_tracks}
+                    severity="low"
+                    renderItem={r => `${r.name} — will add: ${r.will_add?.join(', ')}`}
+                  />
+                )}
+
+                {backfillResult.warnings?.length > 0 && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                    {backfillResult.warnings.length} warning(s): {backfillResult.warnings.slice(0, 3).join('; ')}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="text-xs text-gray-400 border-t pt-3 mt-2">
+              <strong>Recommended sequence:</strong>{' '}
+              1. Run Normalization Backfill →{' '}
+              2. Scan for Duplicates (Series & Track) →{' '}
+              3. Run Series Cleanup →{' '}
+              4. Run Track Cleanup →{' '}
+              5. Re-run Diagnostics
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── Series Duplicate Cleanup ────────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
