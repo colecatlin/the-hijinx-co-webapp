@@ -12,7 +12,7 @@ const HERO_CONFIG = {
   cta_primary:   { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
   cta_secondary: { label: 'Shop HIJINX Apparel', page: 'ApparelHome',     Icon: ShoppingBag },
   cta_tertiary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
-  bg_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
+  bg_image: 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg',
 };
 
 export default function HomepageHero({ stats: liveStats }) {
