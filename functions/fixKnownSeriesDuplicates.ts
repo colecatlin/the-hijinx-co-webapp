@@ -1,13 +1,23 @@
 /**
  * fixKnownSeriesDuplicates.js
- * One-time cleanup helper for known duplicate series like "NASCAR" / "Nascar" / "NASCAR Cup Series".
- * Admin must trigger manually — not auto-run.
+ *
+ * Finds and safely marks duplicate Series as inactive.
+ * Groups by: external_uid → canonical_key → normalized_name.
+ * Does NOT hard-delete or merge foreign keys.
+ * Admin must trigger manually. Defaults to dry_run=true for safety.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 function normalizeName(value) {
   if (!value) return '';
   return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function resolveKey(series) {
+  return (
+    series.canonical_key ||
+    `series:${normalizeName(series.name || series.full_name || '')}`
+  );
 }
 
 Deno.serve(async (req) => {
@@ -18,73 +28,96 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
-    const dry_run = body.dry_run !== false; // default dry_run = true for safety
+    const dry_run = body.dry_run !== false; // default true
 
-    // Load all Series
-    const allSeries = await base44.asServiceRole.entities.Series.list('-created_date', 2000);
+    const allSeries = await base44.asServiceRole.entities.Series.list('-created_date', 3000);
 
-    // ---- Group NASCAR variants ----
-    // We look for normalized_name === "nascar" OR name contains "nascar" in any casing
-    const nascarPattern = /nascar/i;
-    const nascarGroups = new Map(); // normalized_name -> records[]
+    // --- Build duplicate groups ---
+    // Priority: external_uid > canonical_key > normalized_name
+    const byExternalUid  = new Map();
+    const byCanonicalKey = new Map();
+    const byNormName     = new Map();
 
     for (const s of allSeries) {
-      const norm = normalizeName(s.name || s.full_name || '');
-      if (nascarPattern.test(s.name || '')) {
-        const arr = nascarGroups.get(norm) || [];
+      if (s.external_uid) {
+        const arr = byExternalUid.get(s.external_uid) || [];
         arr.push(s);
-        nascarGroups.set(norm, arr);
+        byExternalUid.set(s.external_uid, arr);
       }
-    }
 
-    // Also check for bare "nascar" key
-    const allNascar = allSeries.filter(s => nascarPattern.test(s.name || ''));
-    // Group by their normalized name
-    const groupedByNorm = new Map();
-    for (const s of allNascar) {
-      const norm = normalizeName(s.name || '');
-      const arr = groupedByNorm.get(norm) || [];
-      arr.push(s);
-      groupedByNorm.set(norm, arr);
+      const ck = resolveKey(s);
+      if (ck) {
+        const arr = byCanonicalKey.get(ck) || [];
+        arr.push(s);
+        byCanonicalKey.set(ck, arr);
+      }
+
+      const norm = normalizeName(s.name || s.full_name || '');
+      if (norm) {
+        const arr = byNormName.get(norm) || [];
+        arr.push(s);
+        byNormName.set(norm, arr);
+      }
     }
 
     const report = {
       dry_run,
+      total_series: allSeries.length,
       groups_found: 0,
       survivors: [],
       marked_duplicate: [],
       already_unique: [],
     };
 
-    for (const [normKey, group] of groupedByNorm) {
-      if (group.length === 1) {
-        report.already_unique.push({ norm_key: normKey, id: group[0].id, name: group[0].name });
-        continue;
-      }
+    const processedIds = new Set();
 
+    async function processGroup(group, matchType) {
+      // Filter out already-processed and already-inactive duplicates
+      const active = group.filter(s => !processedIds.has(s.id));
+      if (active.length < 2) return;
+
+      // Safety: only merge series whose normalized names are very similar
+      // (within the same group key — already guaranteed by grouping)
       report.groups_found++;
 
-      // Choose survivor: prefer record with external_uid, else oldest created_date
-      let survivor = group.find(s => s.external_uid);
+      // Pick survivor: prefer has external_uid → oldest created_date
+      let survivor = active.find(s => s.external_uid);
       if (!survivor) {
-        survivor = group.slice().sort((a, b) => new Date(a.created_date) - new Date(b.created_date))[0];
+        survivor = active.slice().sort((a, b) =>
+          new Date(a.created_date || 0) - new Date(b.created_date || 0)
+        )[0];
+      }
+
+      // Ensure survivor has normalized fields
+      if (!dry_run) {
+        const norm = normalizeName(survivor.name || '');
+        const slug = norm.replace(/\s+/g, '-');
+        await base44.asServiceRole.entities.Series.update(survivor.id, {
+          normalized_name: norm,
+          canonical_slug: slug,
+          canonical_key: `series:${norm}`,
+          sync_last_seen_at: new Date().toISOString(),
+        });
       }
 
       report.survivors.push({
         id: survivor.id,
         name: survivor.name,
-        norm_key: normKey,
+        match_type: matchType,
         external_uid: survivor.external_uid || null,
-        duplicate_count: group.length - 1,
+        duplicate_count: active.length - 1,
       });
 
-      const duplicates = group.filter(s => s.id !== survivor.id);
+      const duplicates = active.filter(s => s.id !== survivor.id);
       for (const dup of duplicates) {
+        processedIds.add(dup.id);
         const dupNote = `DUPLICATE_OF:${survivor.id}`;
         const existingNotes = dup.notes || '';
         const patch = {
           status: 'Inactive',
-          notes: existingNotes.includes(dupNote) ? existingNotes : (existingNotes ? `${existingNotes} | ${dupNote}` : dupNote),
+          notes: existingNotes.includes(dupNote)
+            ? existingNotes
+            : (existingNotes ? `${existingNotes} | ${dupNote}` : dupNote),
           canonical_key: `series:DUPLICATE_OF:${survivor.id}`,
         };
 
@@ -96,21 +129,24 @@ Deno.serve(async (req) => {
           id: dup.id,
           name: dup.name,
           survivor_id: survivor.id,
+          survivor_name: survivor.name,
+          match_type: matchType,
           action: dry_run ? 'would_mark_inactive' : 'marked_inactive',
         });
       }
 
-      // Ensure survivor has normalized fields set
-      if (!dry_run) {
-        const norm = normalizeName(survivor.name || '');
-        const slug = norm.replace(/\s+/g, '-');
-        await base44.asServiceRole.entities.Series.update(survivor.id, {
-          normalized_name: norm,
-          canonical_slug: slug,
-          canonical_key: `series:${norm}`,
-          sync_last_seen_at: new Date().toISOString(),
-        });
-      }
+      processedIds.add(survivor.id);
+    }
+
+    // Process in priority order
+    for (const [, group] of byExternalUid) {
+      if (group.length > 1) await processGroup(group, 'external_uid');
+    }
+    for (const [, group] of byCanonicalKey) {
+      if (group.length > 1) await processGroup(group, 'canonical_key');
+    }
+    for (const [, group] of byNormName) {
+      if (group.length > 1) await processGroup(group, 'normalized_name');
     }
 
     if (!dry_run && report.marked_duplicate.length > 0) {
@@ -120,9 +156,10 @@ Deno.serve(async (req) => {
         status: 'success',
         metadata: {
           entity_type: 'series',
-          repair_type: 'nascar_known_duplicates',
+          source_path: 'fix_known_series_duplicates',
           groups_processed: report.groups_found,
           marked_count: report.marked_duplicate.length,
+          survivor_ids: report.survivors.map(s => s.id),
         },
       }).catch(() => {});
     }
