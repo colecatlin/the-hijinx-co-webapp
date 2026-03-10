@@ -150,10 +150,18 @@ export default function ManageSeries() {
       try {
         const importedData = JSON.parse(event.target.result);
         const dataArray = Array.isArray(importedData) ? importedData : [importedData];
-        
-        await base44.entities.Series.bulkCreate(dataArray.map(({ id, created_date, updated_date, created_by, ...rest }) => rest));
+        // Route each through sync pipeline to prevent duplicates on import
+        let imported = 0;
+        for (const { id: _id, created_date: _cd, updated_date: _ud, created_by: _cb, ...rest } of dataArray) {
+          await base44.functions.invoke('syncSourceAndEntityRecord', {
+            entity_type: 'series',
+            payload: rest,
+            triggered_from: 'series_json_import',
+          }).catch(() => {});
+          imported++;
+        }
         queryClient.invalidateQueries({ queryKey: ['series'] });
-        alert(`Successfully imported ${dataArray.length} series`);
+        alert(`Successfully imported ${imported} series`);
       } catch (error) {
         alert('Error importing data: ' + error.message);
       }
