@@ -255,6 +255,10 @@ export default function Diagnostics() {
   const [trackDupRunning, setTrackDupRunning] = useState(false);
   const [trackDupResult, setTrackDupResult] = useState(null);
 
+  // ── Dedup Verification ────────────────────────────────────────────────────
+  const [verifyReport, setVerifyReport] = useState(null);
+  const [verifyRunning, setVerifyRunning] = useState(false);
+
   // ── V1 Integration Verification ────────────────────────────────────────────
   const [v1Report, setV1Report] = useState(null);
   const [v1Running, setV1Running] = useState(false);
@@ -405,6 +409,23 @@ export default function Diagnostics() {
       setTrackDupRunning(false);
     }
     setTrackDupRunning(false);
+  };
+
+  const runVerification = async () => {
+    setVerifyRunning(true);
+    setVerifyReport(null);
+    try {
+      const res = await base44.functions.invoke('verifyTrackAndSeriesNormalization', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setVerifyReport(res.data);
+      const v = res.data?.overall_verdict;
+      if (v === 'passed') toast.success('Verification passed — Track and Series dedupe is healthy');
+      else if (v === 'warning') toast.success('Verification complete — sync creations detected, review below');
+      else toast.error('Verification failed — normalization gaps or active duplicates detected');
+    } catch (err) {
+      toast.error(`Verification failed: ${err.message}`);
+    }
+    setVerifyRunning(false);
   };
 
   const copyReport = () => {
