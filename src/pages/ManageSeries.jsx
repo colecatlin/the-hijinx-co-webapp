@@ -36,6 +36,7 @@ export default function ManageSeries() {
   const [selectedSeriesForEdit, setSelectedSeriesForEdit] = useState(null);
   const [selectedSeries, setSelectedSeries] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [duplicateWarning, setDuplicateWarning] = useState(false);
 
   const queryClient = useQueryClient();
 
