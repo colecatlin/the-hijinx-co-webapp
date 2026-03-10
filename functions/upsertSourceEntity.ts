@@ -84,7 +84,12 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       const r = await model.filter({ canonical_slug: slug });
       if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
     }
-    // 5. full_name normalized match (catches "NASCAR Cup Series" vs "Nascar Cup Series")
+    // 5. slug field exact — bridge for older records that only have slug populated
+    if (slug) {
+      const r = await model.filter({ slug });
+      if (r?.length) return { record: r[0], matchMethod: 'slug_field_legacy' };
+    }
+    // 6. full_name normalized match (catches "NASCAR Cup Series" vs "Nascar Cup Series")
     if (payload.full_name) {
       const normFull = normalizeName(payload.full_name);
       if (normFull && normFull !== normalized) {
