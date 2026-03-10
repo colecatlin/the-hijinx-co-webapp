@@ -102,27 +102,38 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       const r = await model.filter({ external_uid: eu });
       if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
     }
-    // 2. canonical_key exact
+    // 2. canonical_key exact (location-aware key for records created after this update)
     if (canonicalKey) {
       const r = await model.filter({ canonical_key: canonicalKey });
       if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
     }
-    // 3. normalized_name + optional country
+    // 2b. legacy canonical_key without location (backward compat for older records)
     if (normalized) {
-      const filter = { normalized_name: normalized };
-      if (payload.location_country) filter.location_country = payload.location_country;
-      const r = await model.filter(filter);
-      if (r?.length) return { record: r[0], matchMethod: 'normalized_name' };
-      // try without country if that failed
-      if (payload.location_country) {
-        const r2 = await model.filter({ normalized_name: normalized });
-        if (r2?.length) return { record: r2[0], matchMethod: 'normalized_name' };
+      const legacyKey = `track:${normalized}`;
+      if (legacyKey !== canonicalKey) {
+        const r = await model.filter({ canonical_key: legacyKey });
+        if (r?.length) return { record: r[0], matchMethod: 'canonical_key_legacy' };
       }
     }
-    // 4. canonical_slug exact
+    // 3. normalized_name + location_state (most specific location match)
+    if (normalized && payload.location_state) {
+      const r = await model.filter({ normalized_name: normalized, location_state: payload.location_state });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_state' };
+    }
+    // 4. normalized_name + location_country
+    if (normalized && payload.location_country) {
+      const r = await model.filter({ normalized_name: normalized, location_country: payload.location_country });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_country' };
+    }
+    // 5. canonical_slug exact
     if (slug) {
       const r = await model.filter({ canonical_slug: slug });
       if (r?.length) return { record: r[0], matchMethod: 'canonical_slug' };
+    }
+    // 6. normalized_name only (last resort — only when location fields are missing)
+    if (normalized && !payload.location_state && !payload.location_country) {
+      const r = await model.filter({ normalized_name: normalized });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_name_only' };
     }
     return { record: null, matchMethod: null };
   }
@@ -264,7 +275,11 @@ Deno.serve(async (req) => {
         const normalized  = normalizeName(displayName);
         const slug        = buildEntitySlug(displayName);
         const parentContext = entity_type === 'event' ? buildEventParentContext(patchWithoutId) : null;
-        const canonicalKey  = buildCanonicalKey({ entity_type, name: displayName, external_uid: patchWithoutId.external_uid || null, parent_context: parentContext });
+        let canonicalKey  = buildCanonicalKey({ entity_type, name: displayName, external_uid: patchWithoutId.external_uid || null, parent_context: parentContext });
+        if (entity_type === 'track' && !patchWithoutId.external_uid) {
+          const _locCtx = normalizeName(patchWithoutId.location_state || patchWithoutId.location_country || '');
+          if (_locCtx) canonicalKey = `track:${normalizeName(displayName)}:${_locCtx}`;
+        }
         const normalizedEventKey = entity_type === 'event'
           ? buildNormalizedEventKey({ name: patchWithoutId.name || displayName, event_date: patchWithoutId.event_date || null, track_id: patchWithoutId.track_id || null, series_id: patchWithoutId.series_id || null })
           : null;
@@ -298,12 +313,18 @@ Deno.serve(async (req) => {
     const normalized    = normalizeName(displayName);
     const slug          = buildEntitySlug(displayName);
     const parentContext = entity_type === 'event' ? buildEventParentContext(payloadClean) : null;
-    const canonicalKey  = buildCanonicalKey({
+    let canonicalKey  = buildCanonicalKey({
       entity_type,
       name: displayName,
       external_uid: payloadClean.external_uid || null,
       parent_context: parentContext,
     });
+    // For tracks without external_uid, include location context in canonical_key so that
+    // same-name tracks at different locations don't collapse to the same key
+    if (entity_type === 'track' && !payloadClean.external_uid) {
+      const _locCtx = normalizeName(payloadClean.location_state || payloadClean.location_country || '');
+      if (_locCtx) canonicalKey = `track:${normalized}:${_locCtx}`;
+    }
 
     // Compute normalized_event_key for events
     const normalizedEventKey = entity_type === 'event'

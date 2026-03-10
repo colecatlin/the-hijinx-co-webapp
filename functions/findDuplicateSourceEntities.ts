@@ -61,11 +61,18 @@ Deno.serve(async (req) => {
       }
 
       // normalized_name (derived on-the-fly if not stored)
+      // For tracks, include location context to avoid false-positive grouping of
+      // same-name facilities at different locations
       const displayName = r.normalized_name || normalizeName(resolveDisplayName(entity_type, r));
       if (displayName) {
-        const arr = byNormName.get(displayName) || [];
+        let normKey = displayName;
+        if (entity_type === 'track' && (r.location_state || r.location_country)) {
+          const locCtx = normalizeName(r.location_state || r.location_country || '');
+          if (locCtx) normKey = `${displayName}:${locCtx}`;
+        }
+        const arr = byNormName.get(normKey) || [];
         arr.push(r);
-        byNormName.set(displayName, arr);
+        byNormName.set(normKey, arr);
       }
     }
 

@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const syncTrackRes = await base44.functions.invoke('upsertSourceEntity', {
+        const syncTrackRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
           entity_type: 'track',
           payload: {
             name: tName,
@@ -101,10 +101,11 @@ Deno.serve(async (req) => {
             external_uid: extUid,
             data_source: 'syncNascarSchedule',
           },
+          triggered_from: 'nascar_schedule_sync',
         });
         const trackResult = syncTrackRes?.data;
-        const record = trackResult?.record || null;
-        const action = trackResult?.action || 'skipped';
+        const record = trackResult?.source_record || null;
+        const action = trackResult?.source_action || 'skipped';
 
         if (!record) { log.push(`  WARN: track upsert failed for ${tName}`); continue; }
         trackIdMap[r.track_id] = record;

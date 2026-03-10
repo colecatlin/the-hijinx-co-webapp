@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink, AlertTriangle, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
@@ -26,10 +26,18 @@ export default function ManageTracks() {
   const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
   const [selectedTracks, setSelectedTracks] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [duplicateWarning, setDuplicateWarning] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'track' })
+      .then(res => { if (res?.data?.duplicate_count > 0) setDuplicateWarning(true); })
+      .catch(() => {});
+  }, [isAdmin]);
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
@@ -123,6 +131,21 @@ export default function ManageTracks() {
 
   return (
     <ManagementLayout currentPage="ManageTracks">
+      {duplicateWarning && (
+        <div className="mx-6 mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800">Potential duplicate track records detected.</p>
+            <p className="text-xs text-amber-700 mt-0.5">Review diagnostics before creating new records.</p>
+          </div>
+          <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold text-amber-800 underline whitespace-nowrap">
+            Open Diagnostics
+          </Link>
+          <button onClick={() => setDuplicateWarning(false)} className="text-amber-500 hover:text-amber-700 ml-1">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       <ManagementShell
         title="Tracks"
         subtitle={`${tracks.length} total tracks`}
