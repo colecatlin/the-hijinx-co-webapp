@@ -245,7 +245,7 @@ export default function CSVImportManager({
   // It MUST NOT create new Driver, Team, Track, Series, or Event source entities.
   // Driver resolution uses resolveDriverId which looks up existing records only.
   async function runEntriesImport(rows) {
-    let created = 0, skipped = 0;
+    let created = 0, updated = 0, skipped = 0;
     const unresolved = [];
     for (const row of rows) {
       const driverId = await resolveDriverId({
@@ -265,18 +265,22 @@ export default function CSVImportManager({
 
       const team = row.team_name ? teamMap[(row.team_name || '').toLowerCase().trim()] : null;
 
-      await base44.entities.Entry.create({
-        event_id: eventId,
-        driver_id: driverId,
-        event_class_id: eventClass.id,
-        team_id: team?.id || null,
-        car_number: row.car_number || '',
-        transponder_id: row.transponder_id || '',
-        entry_status: row.entry_status || 'Registered',
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: {
+          event_id: eventId,
+          driver_id: driverId,
+          event_class_id: eventClass.id,
+          team_id: team?.id || null,
+          car_number: row.car_number || '',
+          transponder_id: row.transponder_id || '',
+          entry_status: row.entry_status || 'Registered',
+        },
+        source_path: 'registration_dashboard_csv',
       });
-      created++;
+      if (res?.data?.action === 'updated') updated++;
+      else created++;
     }
-    return { created, skipped, unresolved };
+    return { created, updated, skipped, unresolved };
   }
 
   async function runResultsImport(rows) {
