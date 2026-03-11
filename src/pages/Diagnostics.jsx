@@ -20,6 +20,7 @@ import {
 import ReportIssueModal from '@/components/system/reportIssueModal';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import DiagnosticsDupCleanup from '@/components/management/DiagnosticsDupCleanup';
+import DiagnosticsOperationalIntegrity from '@/components/management/DiagnosticsOperationalIntegrity';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -694,7 +695,10 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
-        {/* ── Duplicate Cleanup (Event, Driver, Track, Series) ─────────── */}
+        {/* ── Results and Standings Operational Integrity ──────────────── */}
+        <DiagnosticsOperationalIntegrity />
+
+        {/* ── Duplicate Cleanup (Event, Driver, Track, Series, Session) ── */}
         <DiagnosticsDupCleanup />
 
         {/* ── Track & Series Duplicate Verification ───────────────────── */}
