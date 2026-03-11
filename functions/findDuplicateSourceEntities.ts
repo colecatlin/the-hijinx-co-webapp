@@ -41,11 +41,16 @@ Deno.serve(async (req) => {
     const records = await base44.asServiceRole.entities[modelName].list('-created_date', 2000);
 
     // ---- Group by three dimensions in priority order ----
-    const byExternalUid  = new Map(); // external_uid -> records[]
-    const byCanonicalKey = new Map(); // canonical_key -> records[]
-    const byNormName     = new Map(); // normalized_name -> records[]
-    const byNormDob      = new Map(); // driver: normalized_name:dob -> records[]
-    const byNormNum      = new Map(); // driver: normalized_name:number -> records[]
+    const byExternalUid    = new Map(); // external_uid -> records[]
+    const byCanonicalKey   = new Map(); // canonical_key -> records[]
+    const byNormName       = new Map(); // normalized_name -> records[]
+    const byNormDob        = new Map(); // driver: normalized_name:dob -> records[]
+    const byNormNum        = new Map(); // driver: normalized_name:number -> records[]
+    // event-specific
+    const byNormEventKey   = new Map(); // normalized_event_key (stored composite)
+    const byNormDateTrack  = new Map(); // name|date|track_id
+    const byNormDateSeries = new Map(); // name|date|series_id
+    const byNormDate       = new Map(); // name|date fallback
 
     for (const r of records) {
       // external_uid
@@ -65,15 +70,18 @@ Deno.serve(async (req) => {
       // normalized_name (derived on-the-fly if not stored)
       const displayName = r.normalized_name || normalizeName(resolveDisplayName(entity_type, r));
       if (displayName) {
-        let normKey = displayName;
-        // Tracks: include location to avoid false-positives
-        if (entity_type === 'track' && (r.location_state || r.location_country)) {
-          const locCtx = normalizeName(r.location_state || r.location_country || '');
-          if (locCtx) normKey = `${displayName}:${locCtx}`;
+        // Events: skip plain name match (too broad across years) — use composite keys instead
+        if (entity_type !== 'event') {
+          let normKey = displayName;
+          // Tracks: include location to avoid false-positives
+          if (entity_type === 'track' && (r.location_state || r.location_country)) {
+            const locCtx = normalizeName(r.location_state || r.location_country || '');
+            if (locCtx) normKey = `${displayName}:${locCtx}`;
+          }
+          const arr = byNormName.get(normKey) || [];
+          arr.push(r);
+          byNormName.set(normKey, arr);
         }
-        const arr = byNormName.get(normKey) || [];
-        arr.push(r);
-        byNormName.set(normKey, arr);
 
         // Drivers: also group by name+DOB and name+primary_number for higher precision
         if (entity_type === 'driver') {
@@ -84,6 +92,25 @@ Deno.serve(async (req) => {
           if (r.primary_number) {
             const numKey = `${displayName}:num:${r.primary_number}`;
             const na = byNormNum.get(numKey) || []; na.push(r); byNormNum.set(numKey, na);
+          }
+        }
+
+        // Events: use composite keys for accurate duplicate detection
+        if (entity_type === 'event') {
+          if (r.normalized_event_key) {
+            const a = byNormEventKey.get(r.normalized_event_key) || []; a.push(r); byNormEventKey.set(r.normalized_event_key, a);
+          }
+          if (r.event_date) {
+            if (r.track_id) {
+              const k = `${displayName}|${r.event_date}|${r.track_id}`;
+              const a = byNormDateTrack.get(k) || []; a.push(r); byNormDateTrack.set(k, a);
+            }
+            if (r.series_id) {
+              const k = `${displayName}|${r.event_date}|${r.series_id}`;
+              const a = byNormDateSeries.get(k) || []; a.push(r); byNormDateSeries.set(k, a);
+            }
+            const k = `${displayName}|${r.event_date}`;
+            const a = byNormDate.get(k) || []; a.push(r); byNormDate.set(k, a);
           }
         }
       }
@@ -155,6 +182,46 @@ Deno.serve(async (req) => {
           const unflagged = group.filter(r => !flaggedIds.has(r.id));
           if (unflagged.length > 1) {
             duplicate_groups.push(buildGroup('normalized_name_number', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+    }
+
+    // Event-specific: composite key groupings
+    if (entity_type === 'event') {
+      for (const [key, group] of byNormEventKey) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('normalized_event_key', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+      for (const [key, group] of byNormDateTrack) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('name_date_track', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+      for (const [key, group] of byNormDateSeries) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('name_date_series', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+      for (const [key, group] of byNormDate) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('name_date', key, group));
             group.forEach(r => flaggedIds.add(r.id));
           }
         }
