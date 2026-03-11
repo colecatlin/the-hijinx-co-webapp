@@ -67,7 +67,7 @@ export default function LinkEntityFlow({ user }) {
             <p className="text-xs text-gray-400 mt-1">Role: <span className="capitalize font-medium">{result.role}</span></p>
           )}
         </div>
-        <Button onClick={() => navigate(createPageUrl('MyDashboard'))} className="bg-[#232323] hover:bg-black text-white">
+        <Button onClick={() => navigate(createPageUrl('MyDashboard') + '?access_updated=1')} className="bg-[#232323] hover:bg-black text-white">
           Go to Dashboard
         </Button>
       </div>
