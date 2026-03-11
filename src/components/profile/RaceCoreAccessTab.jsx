@@ -119,9 +119,16 @@ export default function RaceCoreAccessTab({ user: userProp }) {
               {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
             </div>
           ) : raceCoreEntities.length === 0 ? (
-            <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-gray-200">
-              <p className="font-semibold text-gray-800 text-sm mb-1">You do not manage a Track or Series yet.</p>
-              <p className="text-xs text-gray-500 mt-1">Link a Track or Series using an access code to unlock Race Core tools.</p>
+            <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-gray-200 space-y-2">
+              <Gauge className="w-8 h-8 text-gray-300 mx-auto" />
+              <p className="font-semibold text-gray-700 text-sm">Race Core is not available yet.</p>
+              <p className="text-xs text-gray-500 max-w-xs mx-auto">Race Core becomes available when you manage a track or series. Link one using an access code or register a new one.</p>
+              <div className="pt-1">
+                <Button size="sm" variant="outline" className="text-xs gap-1.5"
+                  onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
+                  <Info className="w-3.5 h-3.5" /> Enter Access Code
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
