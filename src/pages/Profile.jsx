@@ -23,10 +23,12 @@ import StorySubmissionForm from '@/components/profile/StorySubmissionForm';
 import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions';
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
+import AccountStatusCard from '@/components/profile/AccountStatusCard';
 import {
   getResolvedManagedEntities,
   buildRaceCoreLaunchUrl,
   buildEditorUrl,
+  getRaceCoreEntities,
 } from '@/components/entities/entityResolver';
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
 
