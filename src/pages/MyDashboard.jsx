@@ -90,32 +90,36 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
   );
 }
 
-function FanHub() {
+function FanHub({ mode }) {
+  const isEditor = mode === 'entity_editor';
   return (
     <div className="space-y-4">
-      <div className="text-center py-10 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+      <div className="text-center py-8 px-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
         <div className="w-14 h-14 bg-white rounded-2xl border border-gray-200 flex items-center justify-center mx-auto mb-4">
-          <Heart className="w-6 h-6 text-gray-400" />
+          {isEditor ? <Edit2 className="w-6 h-6 text-blue-400" /> : <Heart className="w-6 h-6 text-gray-400" />}
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Fan Hub</h3>
-        <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-          Follow drivers, save favorites, and explore events. Link a racing entity if you manage one.
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
+          {isEditor ? 'You are set up as an Editor' : 'Fan Hub'}
+        </h3>
+        <p className="text-gray-500 text-sm max-w-sm mx-auto mb-5">
+          {isEditor
+            ? 'You have editor access. Open the editor to update profiles, or launch Race Core if your track/series is linked.'
+            : 'Follow drivers, save favorites, and explore events. Link a racing entity if you manage one.'}
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
-          <Link to={createPageUrl('Profile')}>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Go to Profile</Button>
-          </Link>
           <Link to={createPageUrl('DriverDirectory')}>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Browse Drivers</Button>
           </Link>
           <Link to={createPageUrl('EventDirectory')}>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Browse Events</Button>
           </Link>
-          <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
-            <Button size="sm" className="bg-[#232323] hover:bg-black text-white gap-1.5 text-xs">
-              <KeyRound className="w-3.5 h-3.5" /> Link an Entity
-            </Button>
-          </Link>
+          {!isEditor && (
+            <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
+              <Button size="sm" className="bg-[#232323] hover:bg-black text-white gap-1.5 text-xs">
+                <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>
