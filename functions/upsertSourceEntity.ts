@@ -19,14 +19,18 @@ function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
   const norm = normalizeName(name || '');
   return `${norm}|${event_date || 'none'}|${track_id || 'none'}|${series_id || 'none'}`;
 }
+function buildNormalizedSessionKey(event_id, name) {
+  return `session:${event_id || 'none'}:${normalizeName(name || '')}`;
+}
 
 // ---- entity type -> SDK model name ----
 const MODEL_MAP = {
-  driver: 'Driver',
-  team:   'Team',
-  track:  'Track',
-  series: 'Series',
-  event:  'Event',
+  driver:  'Driver',
+  team:    'Team',
+  track:   'Track',
+  series:  'Series',
+  event:   'Event',
+  session: 'Session',
 };
 
 // ---- resolve display name from payload depending on entity type ----
@@ -251,6 +255,37 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
     return { record: null, matchMethod: null };
   }
 
+  // ── Session matching ─────────────────────────────────────────────────────
+  if (entity_type === 'session') {
+    const normSKey = buildNormalizedSessionKey(payload.event_id, normalized ? payload.name || normalized : '');
+    // 1. external_uid
+    if (eu) {
+      const r = await model.filter({ external_uid: eu });
+      if (r?.length) return { record: r[0], matchMethod: 'external_uid' };
+    }
+    // 2. canonical_key
+    if (canonicalKey) {
+      const r = await model.filter({ canonical_key: canonicalKey });
+      if (r?.length) return { record: r[0], matchMethod: 'canonical_key' };
+    }
+    // 3. normalized_session_key (stored field)
+    if (normSKey && payload.event_id) {
+      const r = await model.filter({ normalized_session_key: normSKey });
+      if (r?.length) return { record: r[0], matchMethod: 'normalized_session_key' };
+    }
+    // 4. event_id + normalized_name
+    if (payload.event_id && normalized) {
+      const r = await model.filter({ event_id: payload.event_id, normalized_name: normalized });
+      if (r?.length) return { record: r[0], matchMethod: 'event_id_normalized_name' };
+    }
+    // 5. event_id + session_type + round_number
+    if (payload.event_id && payload.session_type && payload.round_number) {
+      const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type, round_number: payload.round_number });
+      if (r?.length) return { record: r[0], matchMethod: 'event_id_type_round' };
+    }
+    return { record: null, matchMethod: null };
+  }
+
   return { record: null, matchMethod: null };
 }
 
@@ -295,6 +330,12 @@ Deno.serve(async (req) => {
           if (_dob) canonicalKey = `driver:${normalizeName(displayName)}:${_dob}`;
           else if (_num) canonicalKey = `driver:${normalizeName(displayName)}:${_num}`;
         }
+        if (entity_type === 'session' && !patchWithoutId.external_uid) {
+          canonicalKey = buildNormalizedSessionKey(patchWithoutId.event_id || directRecord.event_id, displayName);
+        }
+        const normalizedSessionKey = entity_type === 'session'
+          ? buildNormalizedSessionKey(patchWithoutId.event_id || directRecord.event_id, displayName)
+          : null;
         const normalizedEventKey = entity_type === 'event'
           ? buildNormalizedEventKey({ name: patchWithoutId.name || displayName, event_date: patchWithoutId.event_date || null, track_id: patchWithoutId.track_id || null, series_id: patchWithoutId.series_id || null })
           : null;
@@ -306,6 +347,7 @@ Deno.serve(async (req) => {
           canonical_key: canonicalKey,
           sync_last_seen_at: now2,
           ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
+          ...(normalizedSessionKey && { normalized_session_key: normalizedSessionKey }),
         });
         const updated = await model.update(directRecord.id, updateData);
         await base44.asServiceRole.entities.OperationLog.create({
@@ -347,6 +389,15 @@ Deno.serve(async (req) => {
       if (_dob) canonicalKey = `driver:${normalized}:${_dob}`;
       else if (_num) canonicalKey = `driver:${normalized}:${_num}`;
     }
+    // For sessions, canonical_key includes event_id for uniqueness within event
+    if (entity_type === 'session' && !payloadClean.external_uid) {
+      canonicalKey = buildNormalizedSessionKey(payloadClean.event_id, displayName);
+    }
+
+    // Compute normalized_session_key for sessions
+    const normalizedSessionKey = entity_type === 'session'
+      ? buildNormalizedSessionKey(payloadClean.event_id, displayName)
+      : null;
 
     // Compute normalized_event_key for events
     const normalizedEventKey = entity_type === 'event'
@@ -376,6 +427,7 @@ Deno.serve(async (req) => {
         canonical_key: canonicalKey,
         sync_last_seen_at: now,
         ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
+        ...(normalizedSessionKey && { normalized_session_key: normalizedSessionKey }),
       });
       const updateData = {};
       for (const [k, v] of Object.entries(patch)) {
@@ -392,6 +444,7 @@ Deno.serve(async (req) => {
         canonical_key: canonicalKey,
         sync_last_seen_at: now,
         ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
+        ...(normalizedSessionKey && { normalized_session_key: normalizedSessionKey }),
       });
       record = await model.create(createData);
       action = 'created';
@@ -411,6 +464,7 @@ Deno.serve(async (req) => {
         match_method: matchMethod || 'none',
         display_name: displayName,
         ...(normalizedEventKey && { normalized_event_key: normalizedEventKey }),
+        ...(normalizedSessionKey && { normalized_session_key: normalizedSessionKey }),
       },
     }).catch(() => {}); // non-blocking
 
