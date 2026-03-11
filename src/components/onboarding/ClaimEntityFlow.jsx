@@ -104,6 +104,22 @@ export default function ClaimEntityFlow({ user }) {
       justification: justification.trim() || null,
     });
 
+    // Log the submission
+    base44.entities.OperationLog.create({
+      operation_type: 'entity_claim_submitted',
+      entity_name: entityType,
+      entity_id: selected.id,
+      status: 'success',
+      message: `Claim submitted for ${name} (${entityType}) by ${user.email}`,
+      initiated_by: user.email,
+      metadata: {
+        entity_type: entityType,
+        entity_id: selected.id,
+        target_user_email: user.email,
+        acted_by_user_id: user.id,
+      },
+    }).catch(() => {});
+
     setSubmitting(false);
     setDone(true);
   };
