@@ -280,7 +280,7 @@ export default function CSVImportManager({
   }
 
   async function runResultsImport(rows) {
-    let created = 0, skipped = 0;
+    let created = 0, updated = 0, skipped = 0;
     const unresolved = [];
     for (const row of rows) {
       const session = row.session_name ? sessionMap[(row.session_name || '').toLowerCase().trim()] : null;
@@ -298,25 +298,33 @@ export default function CSVImportManager({
         continue;
       }
 
-      await base44.entities.Results.create({
-        event_id: eventId,
-        session_id: session.id,
-        driver_id: driverId,
-        car_number: row.car_number || '',
-        position: row.position ? parseInt(row.position) : null,
-        status: row.status || '',
-        laps_completed: row.laps_completed ? parseInt(row.laps_completed) : null,
-        best_lap_time_ms: row.best_lap_time_ms ? parseInt(row.best_lap_time_ms) : null,
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload: {
+          event_id: eventId,
+          session_id: session.id,
+          driver_id: driverId,
+          car_number: row.car_number || '',
+          position: row.position ? parseInt(row.position) : null,
+          status: row.status || '',
+          laps_completed: row.laps_completed ? parseInt(row.laps_completed) : null,
+          best_lap_time_ms: row.best_lap_time_ms ? parseInt(row.best_lap_time_ms) : null,
+        },
+        source_path: 'registration_dashboard_csv',
       });
-      created++;
+      if (res?.data?.action === 'updated') updated++;
+      else created++;
     }
-    return { created, skipped, unresolved };
+    return { created, updated, skipped, unresolved };
   }
 
   async function runStandingsImport(rows) {
-    let created = 0, skipped = 0;
+    let created = 0, updated = 0, skipped = 0;
     const unresolved = [];
-    const season = dashboardContext?.season || new Date().getFullYear().toString();
+    const season_year = dashboardContext?.season || new Date().getFullYear().toString();
+    if (!selectedSeries?.id) {
+      toast.error('A series must be selected to import standings.');
+      return { created: 0, updated: 0, skipped: rows.length, unresolved: [] };
+    }
     for (const row of rows) {
       const driverId = await resolveDriverId({
         firstName: row.driver_first_name || '',
@@ -332,19 +340,23 @@ export default function CSVImportManager({
 
       const seriesClass = row.class_name ? seriesClassMap[(row.class_name || '').toLowerCase().trim()] : null;
 
-      await base44.entities.Standings.create({
-        driver_id: driverId,
-        series_class_id: seriesClass?.id || null,
-        season: season,
-        rank: row.rank ? parseInt(row.rank) : null,
-        points_total: row.points_total ? parseFloat(row.points_total) : null,
-        wins: row.wins ? parseInt(row.wins) : 0,
-        podiums: row.podiums ? parseInt(row.podiums) : 0,
-        series_id: selectedSeries?.id || null,
+      const res = await base44.functions.invoke('upsertOperationalStanding', {
+        payload: {
+          driver_id: driverId,
+          series_class_id: seriesClass?.id || null,
+          season_year,
+          rank: row.rank ? parseInt(row.rank) : null,
+          points_total: row.points_total ? parseFloat(row.points_total) : null,
+          wins: row.wins ? parseInt(row.wins) : 0,
+          podiums: row.podiums ? parseInt(row.podiums) : 0,
+          series_id: selectedSeries.id,
+        },
+        source_path: 'registration_dashboard_csv',
       });
-      created++;
+      if (res?.data?.action === 'updated') updated++;
+      else created++;
     }
-    return { created, skipped, unresolved };
+    return { created, updated, skipped, unresolved };
   }
 
   async function handleImport() {
@@ -371,7 +383,7 @@ export default function CSVImportManager({
       processed: rows.length,
       skipped: result.skipped,
       created: result.created,
-      updated: 0,
+      updated: result.updated || 0,
       unresolved: result.unresolved || [],
     };
     setImportSummary(summary);
@@ -553,6 +565,7 @@ export default function CSVImportManager({
             <SummaryRow label="Rows processed" value={importSummary.processed} />
             <Separator className="border-gray-800" />
             <SummaryRow label="Created" value={importSummary.created} color="text-green-400" />
+            {importSummary.updated > 0 && <SummaryRow label="Updated" value={importSummary.updated} color="text-blue-400" />}
             <SummaryRow label="Skipped" value={importSummary.skipped} color={importSummary.skipped > 0 ? 'text-yellow-400' : 'text-gray-400'} />
             {importSummary.unresolved?.length > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-800">
