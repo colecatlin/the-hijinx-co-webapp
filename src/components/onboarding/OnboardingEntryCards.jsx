@@ -46,7 +46,7 @@ export default function OnboardingEntryCards() {
       {CARDS.map(({ mode, title, description, cta, Icon, bg, iconBg, iconColor, btnClass }) => (
         <div key={mode} className={`border-2 rounded-xl p-5 flex flex-col gap-3 ${bg}`}>
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
-            <Icon className={`w-5 h-5 ${iconColor}`} />
+            {React.createElement(Icon, { className: `w-5 h-5 ${iconColor}` })}
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
