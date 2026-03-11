@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import MyEntriesSection from '@/components/mydashboard/MyEntriesSection';
+import DashboardModeBanner from '@/components/mydashboard/DashboardModeBanner';
+import MediaPortalCard from '@/components/mydashboard/MediaPortalCard';
 import {
   getResolvedManagedEntities,
   getRaceCoreEntities,
@@ -21,10 +22,12 @@ import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
 import PendingClaimsNotice from '@/components/onboarding/PendingClaimsNotice';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
+import { getUserMode } from '@/components/system/userModeResolver';
+import { getUserQuickActions } from '@/components/system/userQuickActions';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
-  Shield, Edit, Plus, KeyRound, ExternalLink, Star,
-  Flag, Gauge, Car, Calendar, Heart
+  Shield, Edit, Edit2, Plus, KeyRound, ExternalLink, Star,
+  Flag, Gauge, Calendar, Heart, Camera, Lock
 } from 'lucide-react';
 
 const ENTITY_ICONS = { Driver: User, Team: Users, Track: MapPin, Series: Trophy };

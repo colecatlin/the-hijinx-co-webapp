@@ -63,6 +63,7 @@ import DriverProfile from './pages/DriverProfile';
 import DriverProgramProfile from './pages/DriverProgramProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
+import EntityOnboarding from './pages/EntityOnboarding';
 import EventDirectory from './pages/EventDirectory';
 import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
@@ -82,6 +83,7 @@ import ManageDriverPartnership from './pages/ManageDriverPartnership';
 import ManageDriverPerformance from './pages/ManageDriverPerformance';
 import ManageDriverPrograms from './pages/ManageDriverPrograms';
 import ManageDrivers from './pages/ManageDrivers';
+import ManageEntityClaims from './pages/ManageEntityClaims';
 import ManageEvents from './pages/ManageEvents';
 import ManageFoodBeverage from './pages/ManageFoodBeverage';
 import ManageHomepage from './pages/ManageHomepage';
@@ -123,8 +125,6 @@ import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import UserDashboard from './pages/UserDashboard';
-import EntityOnboarding from './pages/EntityOnboarding';
-import ManageEntityClaims from './pages/ManageEntityClaims';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +145,7 @@ export const PAGES = {
     "DriverProgramProfile": DriverProgramProfile,
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
+    "EntityOnboarding": EntityOnboarding,
     "EventDirectory": EventDirectory,
     "EventProfile": EventProfile,
     "EventResults": EventResults,
@@ -164,6 +165,7 @@ export const PAGES = {
     "ManageDriverPerformance": ManageDriverPerformance,
     "ManageDriverPrograms": ManageDriverPrograms,
     "ManageDrivers": ManageDrivers,
+    "ManageEntityClaims": ManageEntityClaims,
     "ManageEvents": ManageEvents,
     "ManageFoodBeverage": ManageFoodBeverage,
     "ManageHomepage": ManageHomepage,
@@ -205,8 +207,6 @@ export const PAGES = {
     "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "UserDashboard": UserDashboard,
-    "EntityOnboarding": EntityOnboarding,
-    "ManageEntityClaims": ManageEntityClaims,
 }
 
 export const pagesConfig = {
