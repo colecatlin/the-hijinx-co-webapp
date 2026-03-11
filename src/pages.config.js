@@ -121,8 +121,10 @@ import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
 import TrackDirectory from './pages/TrackDirectory';
-import UserDashboard from './pages/UserDashboard';
 import TrackProfile from './pages/TrackProfile';
+import UserDashboard from './pages/UserDashboard';
+import EntityOnboarding from './pages/EntityOnboarding';
+import ManageEntityClaims from './pages/ManageEntityClaims';
 import __Layout from './Layout.jsx';
 
 
@@ -201,8 +203,10 @@ export const PAGES = {
     "TeamProfile": TeamProfile,
     "TechHome": TechHome,
     "TrackDirectory": TrackDirectory,
-    "UserDashboard": UserDashboard,
     "TrackProfile": TrackProfile,
+    "UserDashboard": UserDashboard,
+    "EntityOnboarding": EntityOnboarding,
+    "ManageEntityClaims": ManageEntityClaims,
 }
 
 export const pagesConfig = {
