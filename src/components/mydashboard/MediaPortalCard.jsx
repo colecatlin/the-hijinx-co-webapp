@@ -34,7 +34,9 @@ export default function MediaPortalCard({ mediaProfile }) {
   }
 
   const statusKey = mediaProfile.status || 'pending';
-  const { label, color, Icon } = STATUS_CONFIG[statusKey] || STATUS_CONFIG.pending;
+  const statusCfg = STATUS_CONFIG[statusKey] || STATUS_CONFIG.pending;
+  const { label, color } = statusCfg;
+  const StatusIcon = statusCfg.Icon;
 
   return (
     <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl">
