@@ -243,6 +243,20 @@ export default function MyDashboard() {
 
           <div className="border-t border-gray-100" />
 
+          {/* Onboarding section — shown only when user has zero managed entities */}
+          {!isLoading && !hasEntities && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Get Started</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Choose how you want to enter the HIJINX ecosystem.</p>
+              </div>
+              <OnboardingEntryCards />
+              <PendingClaimsNotice userId={user?.id} />
+            </div>
+          )}
+
+          {!isLoading && !hasEntities && <div className="border-t border-gray-100" />}
+
           {/* Hero context card */}
           {!isLoading && (
             <div className={`rounded-xl border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${hasEntities ? 'bg-[#232323] text-white border-[#232323]' : 'bg-blue-50 border-blue-200'}`}>

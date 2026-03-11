@@ -36,6 +36,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
       { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries' },
       { name: 'Access Management', page: 'ManageAccess', icon: Handshake, description: 'Manage user access to entities' },
+      { name: 'Entity Claims', page: 'ManageEntityClaims', icon: ClipboardCheck, description: 'Review entity ownership claim requests' },
     ]
   },
   {
