@@ -48,7 +48,7 @@ export default function MediaPortalCard({ mediaProfile }) {
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-gray-900">Media Portal</p>
             <Badge className={`text-xs px-2 py-0.5 border ${color}`}>
-              <Icon className="w-3 h-3 mr-1 inline" />{label}
+              <StatusIcon className="w-3 h-3 mr-1 inline" />{label}
             </Badge>
           </div>
           <p className="text-xs text-gray-500 mt-0.5">{mediaProfile.full_name || mediaProfile.organization_id || 'Media User'}</p>
