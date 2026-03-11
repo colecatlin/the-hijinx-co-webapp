@@ -147,6 +147,8 @@ export default function Profile() {
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
   const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
   const hasCollaborations = resolvedEntities.length > 0;
+  const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
+  const raceCoreTarget = (primaryEntity?.is_racecore_entity ? primaryEntity : null) || raceCoreEntities[0] || null;
 
   const defaultTab = tabFromUrl ? resolveTab(tabFromUrl) : (hasCollaborations ? 'my_entities' : 'general');
 
