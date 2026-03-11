@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import SeoMeta, { buildEntityTitle } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getTrackProfileData } from '@/components/entities/publicPageDataApi';
-import { isPublicVisible } from '@/components/core/publishModel';
 import PageShell from '@/components/shared/PageShell';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, ExternalLink, Calendar, Users, TrendingUp, Camera, Settings, Heart } from 'lucide-react';
+import {
+  MapPin, ExternalLink, Mail, Phone, Calendar,
+  Trophy, Camera, ChevronRight,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { buildProfileUrl } from '@/components/utils/routingContract';
+import { format, parseISO } from 'date-fns';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
-import ResultsPanel from '@/components/results/ResultsPanel';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
+import ResultsPanel from '@/components/results/ResultsPanel';
+import TrackEventsPanel from '@/components/tracks/TrackEventsPanel';
+
+const TABS = [
+  { id: 'overview', label: 'Overview', icon: MapPin },
+  { id: 'events',   label: 'Events',   icon: Calendar },
+  { id: 'results',  label: 'Results',  icon: Trophy },
+  { id: 'schedule', label: 'Schedule', icon: Calendar },
+  { id: 'media',    label: 'Media',    icon: Camera },
+];
 
 export default function TrackProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const trackSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeTab, setActiveTab] = useState('overview');
 
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['trackProfileData', trackSlug],
@@ -28,568 +40,458 @@ export default function TrackProfile() {
     enabled: !!trackSlug,
   });
 
-  const track       = profileData?.track        ?? null;
-  const allEvents   = profileData?.events        ?? [];
-  const disciplines = profileData?.disciplines   ?? [];
-  const events      = profileData?.track_events  ?? [];
-  const series      = profileData?.series_links  ?? [];
-  const media       = profileData?.media         ?? null;
-  const performance = profileData?.performance   ?? null;
-  const operations  = profileData?.operations    ?? null;
-  const community   = profileData?.community     ?? null;
+  const track   = profileData?.track  ?? null;
+  const events  = profileData?.events  ?? [];
+  const series  = profileData?.series  ?? [];
 
-  // Events at this track from core Event entity
-  const trackEventIds = allEvents.filter(e => e.track_id === track?.id).map(e => e.id);
+  useEffect(() => {
+    if (track) Analytics.profileViewTrack?.(track.id, track.name, track.location_state);
+  }, [track?.id]);
+
+  const handleCalendarCreated = async (calendarId) => {
+    await base44.functions.invoke('saveEntityCalendarId', {
+      entityType: 'Track', entityId: track.id, calendarId,
+    });
+  };
 
   if (isLoading) {
     return (
-      <PageShell className="bg-[#FFF8F5]">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <Skeleton className="h-12 w-64 mb-4" />
-          <Skeleton className="h-96" />
+      <PageShell className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 space-y-6">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-80 w-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-10 w-80" />
+              <Skeleton className="h-40" />
+              <Skeleton className="h-40" />
+            </div>
+            <Skeleton className="h-64" />
+          </div>
         </div>
       </PageShell>
     );
   }
 
-  useEffect(() => {
-    if (track) Analytics.profileViewTrack(track.id, track.name, track.location_state);
-  }, [track?.id]);
-
   if (!track) return <EntityNotFound entityType="Track" />;
 
-  const signatureEvents = events.filter(e => e.is_signature).slice(0, 3);
-  const topSeries = series.slice(0, 4);
+  const location = [track.location_city, track.location_state, track.location_country]
+    .filter(Boolean).join(', ');
 
-  const sections = [
-    { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'events', label: 'Events', icon: Calendar },
-    { id: 'results', label: 'Results', icon: TrendingUp },
-    { id: 'schedule', label: 'Schedule', icon: Calendar },
-    { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'fan', label: 'Fan Experience', icon: Users },
-    { id: 'media', label: 'Media', icon: Camera },
-    { id: 'operations', label: 'Operations', icon: Settings },
-    { id: 'community', label: 'Community', icon: Heart },
-  ];
+  const upcomingEvents = events
+    .filter(e => new Date(e.event_date) >= new Date())
+    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
-  const handleTrackCalendarCreated = async (calendarId) => {
-    await base44.functions.invoke('saveEntityCalendarId', {
-      entityType: 'Track', entityId: track.id, calendarId
-    });
-  };
+  const pastEvents = events
+    .filter(e => new Date(e.event_date) < new Date())
+    .sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
 
-  // First public event for ResultsPanel
-  const firstPublicEventId = trackEventIds.find(id => {
-    const event = allEvents.find(e => e.id === id);
-    return event && isPublicVisible('Event', event);
-  });
+  const firstPublicEventId = events.find(
+    e => e.published_flag || ['Published', 'Completed', 'Live'].includes(e.status)
+  )?.id;
 
-  const trackImg = media?.hero_image_url || track.image_url || track.logo_url || SITE_FALLBACK_IMAGE;
-  const trackDesc = [
-    track.track_type || '',
-    track.surface_type ? `${track.surface_type} surface` : '',
-    [track.location_city, track.location_state, track.location_country].filter(Boolean).join(', '),
-  ].filter(Boolean).join(' · ') || `${track.name} track profile on HIJINX.`;
+  const heroImage = track.image_url || track.logo_url;
 
   return (
     <PageShell className="bg-white">
       <SeoMeta
         title={buildEntityTitle(track.name, 'Track Profile')}
-        description={track.description || trackDesc}
-        image={trackImg}
+        description={track.description || `${track.name} — ${location}`}
+        image={heroImage}
       />
+
+      {/* Back nav */}
       <div className="max-w-7xl mx-auto px-6 pt-4">
-        <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-600 hover:text-[#00FFDA]">
-          ← Back to Tracks
+        <Link
+          to={createPageUrl('TrackDirectory')}
+          className="text-sm text-gray-500 hover:text-[#232323] transition-colors"
+        >
+          ← Tracks
         </Link>
       </div>
 
-      {media?.hero_image_url && (
-        <div className="w-full h-[400px] relative overflow-hidden mt-3">
-          <img
-            src={media.hero_image_url}
-            alt={track.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      {/* Hero */}
+      {heroImage ? (
+        <div className="w-full h-72 md:h-[380px] relative overflow-hidden mt-3">
+          <img src={heroImage} alt={track.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-4xl md:text-5xl font-black text-white leading-none mb-3">
+                {track.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                {location && (
+                  <span className="flex items-center gap-1 text-white/80 text-sm">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {location}
+                  </span>
+                )}
+                {track.track_type && (
+                  <Badge className="bg-white/20 text-white border border-white/30 text-xs">
+                    {track.track_type}
+                  </Badge>
+                )}
+                {track.surface_type && (
+                  <Badge className="bg-white/20 text-white border border-white/30 text-xs">
+                    {track.surface_type}
+                  </Badge>
+                )}
+                {track.status && (
+                  <Badge
+                    className={
+                      track.status === 'Active'
+                        ? 'bg-[#00FFDA] text-[#232323] text-xs'
+                        : 'bg-white/20 text-white border border-white/30 text-xs'
+                    }
+                  >
+                    {track.status}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
+          <h1 className="text-4xl font-black text-[#232323] mb-2">{track.name}</h1>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {location && (
+              <span className="flex items-center gap-1 text-gray-600 text-sm">
+                <MapPin className="w-3.5 h-3.5" />
+                {location}
+              </span>
+            )}
+            {track.track_type && <Badge variant="outline" className="text-xs">{track.track_type}</Badge>}
+            {track.surface_type && <Badge variant="outline" className="text-xs">{track.surface_type}</Badge>}
+            {track.status && (
+              <Badge
+                variant="outline"
+                className={`text-xs ${track.status === 'Active' ? 'border-green-500 text-green-600' : ''}`}
+              >
+                {track.status}
+              </Badge>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-start">
-          <div className="lg:col-span-2">
-            <div className="border-b border-gray-200 mb-3" />
-            <h1 className="text-4xl font-black text-[#232323] leading-none mb-2">{track.name}</h1>
-
-            <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mb-3">
-              {sections.map(section => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSection(section.id);
-                      if (section.id === 'overview') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else {
-                        const element = document.getElementById(`section-${section.id}`);
-                        if (element) {
-                          const offset = element.getBoundingClientRect().top + window.pageYOffset - 120;
-                          window.scrollTo({ top: offset, behavior: 'smooth' });
-                        }
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeSection === section.id
-                        ? 'text-[#232323] border-b-2 border-[#00FFDA]'
-                        : 'text-gray-600 hover:text-[#232323]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="border-b border-gray-200 mb-3" />
-
-            <div className="bg-white p-8 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </div>
-                  <div className="text-lg font-semibold text-[#232323] mb-4">
-                    {[track.location_city, track.location_state, track.location_country].filter(Boolean).join(', ') || 'N/A'}
-                  </div>
-                  {track.track_type && (
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600 mb-1">Type</div>
-                      <div className="text-lg font-semibold text-[#232323]">{track.track_type}</div>
-                    </div>
-                  )}
-                  {track.surface_type && (
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Surface</div>
-                      <div className="text-lg font-semibold text-[#232323]">{track.surface_type}</div>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  {track.length && (
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600 mb-1">Length</div>
-                      <div className="text-lg font-semibold text-[#232323]">{track.length} miles</div>
-                    </div>
-                  )}
-                  {track.status && (
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600 mb-1">Status</div>
-                      <div className="text-lg font-semibold text-[#232323]">{track.status}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {track.description && (
-                <p className="text-gray-700 leading-relaxed mt-4">{track.description}</p>
-              )}
-              <div className="flex flex-wrap gap-2 mt-6">
-                {track.elevation_profile && track.elevation_profile !== 'Unknown' && (
-                  <Badge className="bg-[#1A3249] text-white">{track.elevation_profile} Elevation</Badge>
-                )}
-                {track.viewing_quality && track.viewing_quality !== 'Unknown' && (
-                  <Badge className="bg-[#1A3249] text-white">{track.viewing_quality} Views</Badge>
-                )}
-                {Array.isArray(track.atmosphere) && track.atmosphere.map((atm, idx) =>
-                  atm && atm !== 'Unknown' ? <Badge key={idx} className="bg-[#D33F49] text-white">{atm}</Badge> : null
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6 relative -mt-1">
-            <div className="bg-white border border-gray-200 p-6">
-              {disciplines.length > 0 && (
-                <div className="mb-4">
-                  <div className="text-xs text-gray-600 mb-2">Disciplines</div>
-                  <div className="flex flex-wrap gap-2">
-                    {disciplines.map(disc => (
-                      <Badge key={disc.id} className="bg-[#232323] text-white">
-                        {disc.discipline_name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {signatureEvents.length > 0 && (
-                <div className="mb-4">
-                  <div className="text-xs text-gray-600 mb-2">Signature Events</div>
-                  {signatureEvents.map(event => (
-                    <div key={event.id} className="text-sm text-[#232323] font-medium mb-1">
-                      {event.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {topSeries.length > 0 && (
-                <div className="mb-4">
-                  <div className="text-xs text-gray-600 mb-2">Series Hosted</div>
-                  {topSeries.map(s => (
-                    <div key={s.id} className="text-sm text-[#232323] mb-1">
-                      {s.series_name}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {operations?.ticketing_url && (
-                <a
-                  href={operations.ticketing_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-[#00FFDA] hover:text-[#1A3249] transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Get Tickets
-                </a>
-              )}
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Tab nav */}
+        <div className="flex gap-0 border-b border-gray-200 mb-8 overflow-x-auto scrollbar-hide">
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-xs font-semibold tracking-wide uppercase whitespace-nowrap transition-colors ${
+                  activeTab === tab.id
+                    ? 'text-[#232323] border-b-2 border-[#232323] -mb-px'
+                    : 'text-gray-400 hover:text-[#232323]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="space-y-8">
-          <section id="section-overview" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {track.founded_year && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Founded</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.founded_year}</div>
-                </div>
-              )}
-              {track.capacity_est && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Capacity</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.capacity_est.toLocaleString()}</div>
-                </div>
-              )}
-              {track.pit_access && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Pit Access</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.pit_access}</div>
-                </div>
-              )}
-              {track.viewing_quality && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Viewing Quality</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.viewing_quality}</div>
-                </div>
-              )}
-              {track.camping && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Camping</div>
-                  <div className="text-lg font-semibold text-[#232323]">{track.camping}</div>
-                </div>
-              )}
-            </div>
-            {track.accessibility_notes && (
-              <div className="mt-6">
-                <div className="text-sm text-gray-600 mb-2">Accessibility</div>
-                <p className="text-gray-700">{track.accessibility_notes}</p>
-              </div>
-            )}
-          </section>
+        {/* Content + Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content */}
+          <div className="lg:col-span-2">
 
-          <section id="section-events" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Events and Involvement</h2>
+            {/* OVERVIEW */}
+            {activeTab === 'overview' && (
+              <div className="space-y-8">
+                {/* Specs grid */}
+                <div>
+                  <h2 className="text-xl font-bold text-[#232323] mb-4">Track Details</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {track.track_type && (
+                      <div className="border border-gray-200 p-4">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Type</div>
+                        <div className="font-semibold text-[#232323]">{track.track_type}</div>
+                      </div>
+                    )}
+                    {track.surface_type && (
+                      <div className="border border-gray-200 p-4">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Surface</div>
+                        <div className="font-semibold text-[#232323]">{track.surface_type}</div>
+                      </div>
+                    )}
+                    {track.length && (
+                      <div className="border border-gray-200 p-4">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Length</div>
+                        <div className="font-semibold text-[#232323]">{track.length} mi</div>
+                      </div>
+                    )}
+                    {track.banking && (
+                      <div className="border border-gray-200 p-4">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Banking</div>
+                        <div className="font-semibold text-[#232323]">{track.banking}</div>
+                      </div>
+                    )}
+                    {track.status && (
+                      <div className="border border-gray-200 p-4">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Status</div>
+                        <div className="font-semibold text-[#232323]">{track.status}</div>
+                      </div>
+                    )}
+                    {location && (
+                      <div className="border border-gray-200 p-4 col-span-2 md:col-span-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Location</div>
+                        <div className="font-semibold text-[#232323] text-sm">{location}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            {signatureEvents.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-[#232323] mb-3">Signature Events</h3>
-                <div className="space-y-3">
-                  {signatureEvents.map(event => (
-                    <div key={event.id} className="border-l-4 border-[#00FFDA] pl-4">
-                      <div className="font-semibold text-[#232323]">{event.name}</div>
-                      {event.typical_months && <div className="text-sm text-gray-600">{event.typical_months}</div>}
-                      {event.series && <div className="text-sm text-gray-600">{event.series}</div>}
+                {/* Description */}
+                {track.description && (
+                  <div>
+                    <h2 className="text-xl font-bold text-[#232323] mb-3">About</h2>
+                    <p className="text-gray-700 leading-relaxed">{track.description}</p>
+                  </div>
+                )}
+
+                {/* Contact */}
+                {(track.contact_email || track.phone || track.website_url) && (
+                  <div>
+                    <h2 className="text-xl font-bold text-[#232323] mb-4">Contact</h2>
+                    <div className="space-y-3">
+                      {track.website_url && (
+                        <a
+                          href={track.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-[#232323] hover:text-[#1A3249] transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                          {track.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        </a>
+                      )}
+                      {track.contact_email && (
+                        <a
+                          href={`mailto:${track.contact_email}`}
+                          className="flex items-center gap-2 text-sm text-[#232323] hover:text-[#1A3249] transition-colors"
+                        >
+                          <Mail className="w-4 h-4 text-gray-400" />
+                          {track.contact_email}
+                        </a>
+                      )}
+                      {track.phone && (
+                        <a
+                          href={`tel:${track.phone}`}
+                          className="flex items-center gap-2 text-sm text-[#232323] hover:text-[#1A3249] transition-colors"
+                        >
+                          <Phone className="w-4 h-4 text-gray-400" />
+                          {track.phone}
+                        </a>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {events.filter(e => !e.is_signature).length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-[#232323] mb-3">Other Events</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {events.filter(e => !e.is_signature).map(event => (
-                    <div key={event.id} className="text-sm">
-                      <div className="font-medium text-[#232323]">{event.name}</div>
-                      {event.event_type && <div className="text-gray-600">{event.event_type}</div>}
+                {/* Series at this track */}
+                {series.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-bold text-[#232323] mb-4">Series Hosted</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {series.map(s => (
+                        <Link
+                          key={s.id}
+                          to={buildProfileUrl('Series', s.slug || s.id)}
+                          className="flex items-center justify-between border border-gray-200 p-4 hover:border-[#232323] transition-colors group"
+                        >
+                          <div>
+                            <div className="font-medium text-[#232323] group-hover:text-[#1A3249] transition-colors">
+                              {s.name}
+                            </div>
+                            {s.discipline && (
+                              <div className="text-xs text-gray-500 mt-0.5">{s.discipline}</div>
+                            )}
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#232323] transition-colors" />
+                        </Link>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {series.length > 0 && (
+            {/* EVENTS */}
+            {activeTab === 'events' && (
+              <TrackEventsPanel upcomingEvents={upcomingEvents} pastEvents={pastEvents} />
+            )}
+
+            {/* RESULTS */}
+            {activeTab === 'results' && (
               <div>
-                <h3 className="text-lg font-semibold text-[#232323] mb-3">Series Hosted</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {series.map(s => (
-                    <div key={s.id} className="flex items-start gap-2">
-                      <Badge className="bg-[#1A3249] text-white text-xs">{s.level}</Badge>
-                      <div>
-                        <div className="font-medium text-[#232323]">{s.series_name}</div>
-                        {s.primary_discipline && <div className="text-sm text-gray-600">{s.primary_discipline}</div>}
+                <h2 className="text-xl font-bold text-[#232323] mb-4">Results</h2>
+                {firstPublicEventId ? (
+                  <ResultsPanel eventId={firstPublicEventId} />
+                ) : (
+                  <div className="text-center py-12 border-2 border-dashed border-gray-200">
+                    <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm text-gray-500">No published results yet.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SCHEDULE */}
+            {activeTab === 'schedule' && (
+              <div>
+                <h2 className="text-xl font-bold text-[#232323] mb-4">Race Schedule</h2>
+                <ScheduleSection
+                  entityType="Track"
+                  entityId={track.id}
+                  entityName={track.name}
+                  calendarId={track.calendar_id}
+                  onCalendarCreated={handleCalendarCreated}
+                  isOwner={false}
+                />
+              </div>
+            )}
+
+            {/* MEDIA */}
+            {activeTab === 'media' && (
+              <PublicMediaGallery
+                targetType="track_gallery"
+                targetEntityId={track.id}
+                title="Media Gallery"
+              />
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick links */}
+            {(track.website_url || track.contact_email || track.phone) && (
+              <div className="border border-gray-200 p-5">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-4">Quick Links</h3>
+                <div className="space-y-3">
+                  {track.website_url && (
+                    <a
+                      href={track.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm font-medium text-[#232323] hover:text-[#1A3249] transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                      Official Website
+                    </a>
+                  )}
+                  {track.contact_email && (
+                    <a
+                      href={`mailto:${track.contact_email}`}
+                      className="flex items-center gap-2 text-sm text-[#232323] hover:text-[#1A3249] transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      {track.contact_email}
+                    </a>
+                  )}
+                  {track.phone && (
+                    <a
+                      href={`tel:${track.phone}`}
+                      className="flex items-center gap-2 text-sm text-[#232323] hover:text-[#1A3249] transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                      {track.phone}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Upcoming events quick list */}
+            {upcomingEvents.length > 0 && (
+              <div className="border border-gray-200 p-5">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-4">
+                  Upcoming Events
+                </h3>
+                <div className="space-y-3">
+                  {upcomingEvents.slice(0, 3).map(event => (
+                    <div key={event.id} className="flex items-start gap-3">
+                      <div className="min-w-[40px] text-center bg-[#232323] text-white p-1.5 flex-shrink-0">
+                        <div className="text-[9px] font-mono uppercase leading-none">
+                          {format(parseISO(event.event_date), 'MMM')}
+                        </div>
+                        <div className="text-lg font-black leading-none">
+                          {format(parseISO(event.event_date), 'd')}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[#232323] truncate">{event.name}</div>
+                        {event.series_name && (
+                          <div className="text-xs text-gray-400 truncate">{event.series_name}</div>
+                        )}
                       </div>
                     </div>
                   ))}
+                  {upcomingEvents.length > 3 && (
+                    <button
+                      onClick={() => setActiveTab('events')}
+                      className="text-xs text-gray-400 hover:text-[#232323] transition-colors"
+                    >
+                      +{upcomingEvents.length - 3} more →
+                    </button>
+                  )}
                 </div>
               </div>
             )}
-          </section>
 
-          <section id="section-results" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Results & Standings</h2>
-            {firstPublicEventId ? (
-              <ResultsPanel eventId={firstPublicEventId} />
-            ) : (
-              <p className="text-gray-500 text-sm">No events with results found for this track yet.</p>
-            )}
-          </section>
-
-          <section id="section-schedule" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Race Schedule</h2>
-            <ScheduleSection
-              entityType="Track"
-              entityId={track.id}
-              entityName={track.name}
-              calendarId={track.calendar_id}
-              onCalendarCreated={handleTrackCalendarCreated}
-              isOwner={true}
-            />
-          </section>
-
-          {performance && (
-            <section id="section-performance" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Performance Snapshot</h2>
-
-              {performance.lap_record_driver && (
-                <div className="mb-6 p-4 bg-[#FFF8F5] border border-gray-200">
-                  <div className="text-sm text-gray-600 mb-1">Lap Record</div>
-                  <div className="text-xl font-bold text-[#232323]">{performance.lap_record_time}</div>
-                  <div className="text-sm text-gray-700">
-                    {performance.lap_record_driver}{performance.lap_record_year ? ` (${performance.lap_record_year})` : ''}
-                  </div>
+            {/* Series sidebar */}
+            {series.length > 0 && (
+              <div className="border border-gray-200 p-5">
+                <h3 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-4">
+                  Series Here
+                </h3>
+                <div className="space-y-3">
+                  {series.slice(0, 6).map(s => (
+                    <Link
+                      key={s.id}
+                      to={buildProfileUrl('Series', s.slug || s.id)}
+                      className="flex items-center justify-between group"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[#232323] group-hover:text-[#1A3249] transition-colors truncate">
+                          {s.name}
+                        </div>
+                        {s.discipline && (
+                          <div className="text-xs text-gray-400">{s.discipline}</div>
+                        )}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#1A3249] flex-shrink-0 transition-colors" />
+                    </Link>
+                  ))}
                 </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {performance.championship_impact && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Championship Impact</div>
-                    <div className="font-semibold text-[#232323]">{performance.championship_impact}</div>
-                  </div>
-                )}
-                {performance.trends_home_advantage && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Home Advantage</div>
-                    <div className="font-semibold text-[#232323]">{performance.trends_home_advantage}</div>
-                  </div>
-                )}
               </div>
+            )}
 
-              {Array.isArray(performance.trends_mech_stress) && performance.trends_mech_stress.length > 0 && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Mechanical Stress Points</div>
-                  <div className="flex flex-wrap gap-2">
-                    {performance.trends_mech_stress.map((stress, idx) => (
-                      <Badge key={idx} variant="outline" className="border-[#D33F49] text-[#D33F49]">
-                        {stress}
-                      </Badge>
-                    ))}
-                  </div>
+            {/* Stats summary */}
+            <div className="border border-gray-200 p-5">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-4">At a Glance</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Total Events</span>
+                  <span className="font-bold text-[#232323]">{events.length}</span>
                 </div>
-              )}
-
-              {performance.trends_winning_style && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Winning Style</div>
-                  <p className="text-gray-700">{performance.trends_winning_style}</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Upcoming</span>
+                  <span className="font-bold text-[#232323]">{upcomingEvents.length}</span>
                 </div>
-              )}
-            </section>
-          )}
-
-          <section id="section-fan" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Fan Experience</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {track.viewing_quality && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Viewing Quality</div>
-                  <div className="font-semibold text-[#232323]">{track.viewing_quality}</div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Series</span>
+                  <span className="font-bold text-[#232323]">{series.length}</span>
                 </div>
-              )}
-              {track.pit_access && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Pit Access</div>
-                  <div className="font-semibold text-[#232323]">{track.pit_access}</div>
-                </div>
-              )}
+              </div>
             </div>
-            {operations?.parking_notes && (
-              <div className="mt-6">
-                <div className="text-sm text-gray-600 mb-2">Parking</div>
-                <p className="text-gray-700">{operations.parking_notes}</p>
-              </div>
-            )}
-          </section>
-
-          {media && (
-            <section id="section-media" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Media</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {media.hero_image_url && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-2">Hero Image</div>
-                    <img src={media.hero_image_url} alt="Track hero" className="w-full border border-gray-200" />
-                  </div>
-                )}
-                {media.track_map_url && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-2">Track Map</div>
-                    <img src={media.track_map_url} alt="Track map" className="w-full border border-gray-200" />
-                  </div>
-                )}
-              </div>
-
-              {Array.isArray(media.gallery_urls) && media.gallery_urls.length > 0 && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Gallery</div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {media.gallery_urls.map((url, idx) => (
-                      <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full border border-gray-200" />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {media.highlight_video_url && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Highlight Video</div>
-                  <div className="aspect-video">
-                    <iframe
-                      src={media.highlight_video_url}
-                      className="w-full h-full border border-gray-200"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-
-          {operations && (
-            <section id="section-operations" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Operations</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {track.ownership_type && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Ownership</div>
-                    <div className="font-semibold text-[#232323]">{track.ownership_type}</div>
-                  </div>
-                )}
-                {operations.operator_name && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Operator</div>
-                    <div className="font-semibold text-[#232323]">{operations.operator_name}</div>
-                  </div>
-                )}
-                {track.reliability && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Reliability</div>
-                    <div className="font-semibold text-[#232323]">{track.reliability}</div>
-                  </div>
-                )}
-              </div>
-
-              {Array.isArray(track.sanctioning) && track.sanctioning.length > 0 && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Sanctioning Bodies</div>
-                  <div className="flex flex-wrap gap-2">
-                    {track.sanctioning.map((sanct, idx) => (
-                      <Badge key={idx} className="bg-[#232323] text-white">{sanct}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {operations.safety_notes && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Safety Notes</div>
-                  <p className="text-gray-700">{operations.safety_notes}</p>
-                </div>
-              )}
-
-              {(operations.contact_email || operations.contact_phone) && (
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600 mb-2">Contact</div>
-                  {operations.contact_email && <div className="text-[#232323]">{operations.contact_email}</div>}
-                  {operations.contact_phone && <div className="text-[#232323]">{operations.contact_phone}</div>}
-                </div>
-              )}
-            </section>
-          )}
-
-          <section className="bg-white border border-gray-200 p-8">
-            <PublicMediaGallery
-              targetType="track_gallery"
-              targetEntityId={track?.id}
-              title="Media"
-            />
-          </section>
-
-          {community && (
-            <section id="section-community" className="bg-white border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Community</h2>
-
-              {community.youth_programs && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Youth Programs</div>
-                  <p className="text-gray-700">{community.youth_programs}</p>
-                </div>
-              )}
-
-              {community.volunteer_info && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Volunteer Opportunities</div>
-                  <p className="text-gray-700">{community.volunteer_info}</p>
-                </div>
-              )}
-
-              {community.local_impact && (
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-2">Local Impact</div>
-                  <p className="text-gray-700">{community.local_impact}</p>
-                </div>
-              )}
-
-              {community.legacy_notes && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-2">Legacy</div>
-                  <p className="text-gray-700">{community.legacy_notes}</p>
-                </div>
-              )}
-            </section>
-          )}
+          </div>
         </div>
       </div>
     </PageShell>
