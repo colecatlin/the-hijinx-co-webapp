@@ -17,6 +17,7 @@ import {
 } from '@/components/entities/entityResolver';
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
+import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Plus, KeyRound, ExternalLink, Star,
