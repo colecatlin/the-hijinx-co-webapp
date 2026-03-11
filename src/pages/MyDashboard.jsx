@@ -221,29 +221,22 @@ export default function MyDashboard() {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex flex-wrap gap-2">
-            <Link to={createPageUrl('DriverDirectory')}>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Browse Drivers</Button>
-            </Link>
-            <Link to={createPageUrl('EventDirectory')}>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" /> Browse Events</Button>
-            </Link>
-            {raceCoreTarget && (
-              <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
-                <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
-                  <Gauge className="w-3.5 h-3.5" /> Open Race Core
-                </Button>
-              </Link>
-            )}
-            {isAdmin && (
-              <Link to={createPageUrl('Management')}>
-                <Button size="sm" className="gap-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white">
-                  <Shield className="w-3.5 h-3.5" /> Management
-                </Button>
-              </Link>
-            )}
-          </div>
+          {/* Quick Actions — mode-aware */}
+          {!isLoading && (
+            <div className="flex flex-wrap gap-2">
+              {quickActions.map(action => (
+                <Link key={action.label} to={action.to}>
+                  <Button
+                    size="sm"
+                    variant={action.isPrimary ? 'default' : 'outline'}
+                    className={`gap-1.5 text-xs ${action.isPrimary ? 'bg-[#232323] hover:bg-black text-white' : ''} ${action.isAdmin ? 'bg-purple-600 hover:bg-purple-700 text-white' : ''}`}
+                  >
+                    {action.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="border-t border-gray-100" />
 
