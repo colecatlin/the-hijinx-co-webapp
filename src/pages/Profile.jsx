@@ -181,7 +181,18 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Status strip */}
+        {/* Account Status Card */}
+        <AccountStatusCard
+          user={user}
+          collaborators={resolvedEntities}
+          mediaProfile={null}
+          primaryEntity={primaryEntity}
+          raceCoreTarget={raceCoreTarget}
+          buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
+          buildEditorUrl={buildEditorUrl}
+        />
+
+        {/* Email/role status strip */}
         <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-600">
           <span className="truncate max-w-[200px]">{user.email}</span>
           <Badge className={user.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-600 border-gray-200'}>
