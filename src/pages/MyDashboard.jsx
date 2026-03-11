@@ -318,7 +318,7 @@ export default function MyDashboard() {
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
             </div>
           ) : !hasEntities ? (
-            <FanHub />
+            <FanHub mode={mode} />
           ) : (
             <div className="space-y-8">
 
