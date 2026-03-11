@@ -62,35 +62,26 @@ export default function EntryCreateDrawer({
 
     setSaving(true);
     try {
-      const entry = await base44.entities.Entry.create({
-        event_id: selectedEvent.id,
-        driver_id: formData.driver_id,
-        car_number: formData.car_number,
-        series_id: selectedEvent.series_id || undefined,
-        series_class_id: formData.series_class_id || undefined,
-        team_id: formData.team_id || undefined,
-        transponder_id: formData.transponder_id || undefined,
-        entry_status: formData.entry_status,
-        payment_status: formData.payment_status,
-        tech_status: formData.tech_status,
-      });
-
-      // Log operation
-      await base44.entities.OperationLog.create({
-        operation_type: 'entry_created',
-        status: 'success',
-        entity_name: 'Entry',
-        event_id: selectedEvent.id,
-        message: `Created entry: #${formData.car_number} - ${drivers.find((d) => d.id === formData.driver_id)?.first_name}`,
-        metadata: {
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: {
           event_id: selectedEvent.id,
-          entry_id: entry.id,
           driver_id: formData.driver_id,
           car_number: formData.car_number,
+          series_id: selectedEvent.series_id || undefined,
+          series_class_id: formData.series_class_id || undefined,
+          team_id: formData.team_id || undefined,
+          transponder_id: formData.transponder_id || undefined,
+          entry_status: formData.entry_status,
+          payment_status: formData.payment_status,
+          tech_status: formData.tech_status,
         },
-      }).catch(() => {});
+        source_path: 'registration_dashboard',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      const entry = res.data?.record;
+      const action = res.data?.action;
 
-      toast.success('Entry created');
+      toast.success(action === 'updated' ? 'Entry updated (existing registration found)' : 'Entry created');
       handleReset();
       handleOpenChange(false);
       if (onCreated) onCreated();

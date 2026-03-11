@@ -296,13 +296,16 @@ export default function ImportEntriesModal({
         }
         if (finalNotes) entryData.notes = finalNotes;
 
-        // Upsert
-        if (existing) {
-          await base44.entities.Entry.update(existing.id, entryData);
-          results.updated.push(existing.id);
+        // Upsert via deterministic function — prevents duplicate entries
+        const upsertRes = await base44.functions.invoke('upsertOperationalEntry', {
+          payload: entryData,
+          source_path: 'registration_dashboard_csv',
+        });
+        if (upsertRes?.data?.error) throw new Error(upsertRes.data.error);
+        if (upsertRes?.data?.action === 'updated') {
+          results.updated.push(upsertRes.data.record?.id || (existing?.id));
         } else {
-          const created = await base44.entities.Entry.create(entryData);
-          results.created.push(created.id);
+          results.created.push(upsertRes.data.record?.id);
         }
       } catch (err) {
         results.errors.push({

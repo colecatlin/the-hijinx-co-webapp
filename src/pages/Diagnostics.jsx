@@ -21,6 +21,7 @@ import ReportIssueModal from '@/components/system/reportIssueModal';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import DiagnosticsDupCleanup from '@/components/management/DiagnosticsDupCleanup';
 import DiagnosticsOperationalIntegrity from '@/components/management/DiagnosticsOperationalIntegrity';
+import DiagnosticsEntryClassIntegrity from '@/components/management/DiagnosticsEntryClassIntegrity';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -694,6 +695,9 @@ export default function Diagnostics() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Entry and Class Integrity ─────────────────────────────────── */}
+        <DiagnosticsEntryClassIntegrity />
 
         {/* ── Results and Standings Operational Integrity ──────────────── */}
         <DiagnosticsOperationalIntegrity />
