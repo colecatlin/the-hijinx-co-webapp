@@ -121,20 +121,9 @@ export default function Layout({ children, currentPageName }) {
                   </>
                 )}
                 {isAuthenticated ? (
-                  <>
-                    <Link
-                      to={createPageUrl('MyDashboard')}
-                      className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors hidden lg:block"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to={createPageUrl('Profile')}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
-                    >
-                      <User className="w-4 h-4" />
-                    </Link>
-                  </>
+                  <div className="hidden lg:flex items-center gap-1">
+                    <UserMenu user={user} />
+                  </div>
                 ) : (
                   <button
                     onClick={() => base44.auth.redirectToLogin()}
