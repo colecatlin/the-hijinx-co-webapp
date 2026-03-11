@@ -177,44 +177,37 @@ export async function getTrackProfileData({ id, slug }) {
   const track = await resolveEntityByRouteParam({ entityType: 'Track', id, slug });
   if (!track) return { track: null };
 
-  const [
-    allEventsResult,
-    disciplinesResult,
-    trackEventsResult,
-    seriesLinksResult,
-    mediaResult,
-    performanceResult,
-    operationsResult,
-    communityResult,
-  ] = await Promise.allSettled([
-    safe(base44.entities.Event.list(), []),
-    safe(base44.entities.TrackToDiscipline.filter({ track_id: track.id }), []),
-    safe(base44.entities.TrackEvent.filter({ track_id: track.id }), []),
-    safe(base44.entities.TrackSeries.filter({ track_id: track.id }), []),
-    base44.entities.TrackMedia.filter({ track_id: track.id })
-      .then(r => (Array.isArray(r) && r.length > 0 ? r[0] : null))
-      .catch(() => null),
-    base44.entities.TrackPerformance.filter({ track_id: track.id })
-      .then(r => (Array.isArray(r) && r.length > 0 ? r[0] : null))
-      .catch(() => null),
-    base44.entities.TrackOperations.filter({ track_id: track.id })
-      .then(r => (Array.isArray(r) && r.length > 0 ? r[0] : null))
-      .catch(() => null),
-    base44.entities.TrackCommunity.filter({ track_id: track.id })
-      .then(r => (Array.isArray(r) && r.length > 0 ? r[0] : null))
-      .catch(() => null),
+  const [trackEventsResult, allSeriesResult] = await Promise.allSettled([
+    safe(base44.entities.Event.filter({ track_id: track.id }), []),
+    safe(base44.entities.Series.list(), []),
   ]);
+
+  const trackEvents = trackEventsResult.status === 'fulfilled' ? trackEventsResult.value : [];
+  const allSeries   = allSeriesResult.status   === 'fulfilled' ? allSeriesResult.value   : [];
+
+  // Derive unique series referenced by events at this track
+  const seriesIdSet = new Set(trackEvents.map(e => e.series_id).filter(Boolean));
+  const series = allSeries.filter(s => seriesIdSet.has(s.id));
+
+  // Attach series_name to each event for convenience
+  const seriesMap = new Map(allSeries.map(s => [s.id, s.name]));
+  const events = trackEvents.map(e => ({
+    ...e,
+    series_name: e.series_name || (e.series_id ? seriesMap.get(e.series_id) : null),
+  }));
 
   return {
     track,
-    events:       allEventsResult.status   === 'fulfilled' ? allEventsResult.value   : [],
-    disciplines:  disciplinesResult.status  === 'fulfilled' ? disciplinesResult.value  : [],
-    track_events: trackEventsResult.status  === 'fulfilled' ? trackEventsResult.value  : [],
-    series_links: seriesLinksResult.status  === 'fulfilled' ? seriesLinksResult.value  : [],
-    media:        mediaResult.status        === 'fulfilled' ? mediaResult.value        : null,
-    performance:  performanceResult.status  === 'fulfilled' ? performanceResult.value  : null,
-    operations:   operationsResult.status   === 'fulfilled' ? operationsResult.value   : null,
-    community:    communityResult.status    === 'fulfilled' ? communityResult.value    : null,
+    events,
+    series,
+    // Legacy keys kept for backwards compatibility (now empty)
+    disciplines:  [],
+    track_events: [],
+    series_links: [],
+    media:        null,
+    performance:  null,
+    operations:   null,
+    community:    null,
   };
 }
 
