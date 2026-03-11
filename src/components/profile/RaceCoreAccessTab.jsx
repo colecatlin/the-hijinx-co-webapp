@@ -155,7 +155,7 @@ export default function RaceCoreAccessTab({ user: userProp }) {
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
+                    <div className="flex gap-2 flex-shrink-0 flex-wrap">
                       <Button type="button" size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
                         onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}>
                         <ExternalLink className="w-3 h-3" /> Open Race Core
@@ -164,6 +164,12 @@ export default function RaceCoreAccessTab({ user: userProp }) {
                         onClick={() => window.location.href = buildEditorUrl(entity)}>
                         Open Editor
                       </Button>
+                      {entity.role === 'owner' && (
+                        <Button type="button" size="sm" variant="ghost" className="gap-1.5 text-xs text-gray-500"
+                          onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
+                          Manage Access
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
