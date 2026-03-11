@@ -71,7 +71,7 @@ export default function AcceptInvitation() {
         toast.success('Invitation accepted successfully!');
         setStep('success');
         setTimeout(() => {
-          navigate(createPageUrl('Management'));
+          navigate(createPageUrl('MyDashboard') + '?access_updated=1');
         }, 2000);
       }
     } catch (error) {
