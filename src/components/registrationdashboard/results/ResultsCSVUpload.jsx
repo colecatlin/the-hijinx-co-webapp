@@ -150,16 +150,22 @@ export default function ResultsCSVUpload({ session, drivers, driverPrograms }) {
   const importMutation = useMutation({
     mutationFn: async ({ resolved, unresolvedRows }) => {
       const errorRows = [];
+      let updatedCount = 0;
 
       for (const result of resolved) {
         try {
-          await base44.entities.Results.create(result);
+          const res = await base44.functions.invoke('upsertOperationalResult', {
+            payload: result,
+            source_path: 'results_csv_upload',
+          });
+          if (res?.data?.error) throw new Error(res.data.error);
+          if (res?.data?.action === 'updated') updatedCount++;
         } catch (err) {
           errorRows.push({ driver_id: result.driver_id, error: err.message });
         }
       }
 
-      const importedCount = resolved.length - errorRows.length;
+      const importedCount = resolved.length - errorRows.length - updatedCount;
 
       // Standardized operation log
       await base44.functions.invoke('logOperation', {
@@ -170,7 +176,7 @@ export default function ResultsCSVUpload({ session, drivers, driverPrograms }) {
         metadata: {
           importer_name: 'results_csv_upload',
           imported_count: importedCount,
-          updated_count: 0,
+          updated_count: updatedCount,
           skipped_count: 0,
           unresolved_count: unresolvedRows.length,
           warning_count: 0,
@@ -182,14 +188,15 @@ export default function ResultsCSVUpload({ session, drivers, driverPrograms }) {
 
       await base44.entities.Session.update(session.id, { status: 'Draft' });
 
-      return { importedCount, unresolvedRows, errorRows, totalRows: previewData.length };
+      return { importedCount, updatedCount, unresolvedRows, errorRows, totalRows: previewData.length };
     },
-    onSuccess: ({ importedCount, unresolvedRows, errorRows, totalRows }) => {
+    onSuccess: ({ importedCount, updatedCount, unresolvedRows, errorRows, totalRows }) => {
       queryClient.invalidateQueries({ queryKey: ['results'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      setImportResult({ importedCount, unresolvedRows, errorRows, totalRows });
+      setImportResult({ importedCount, updatedCount, unresolvedRows, errorRows, totalRows });
       setStep('done');
-      toast.success(`Imported ${importedCount} of ${totalRows} results`);
+      const msg = updatedCount > 0 ? `${importedCount} created, ${updatedCount} updated` : `${importedCount} imported`;
+      toast.success(`${msg} of ${totalRows} results`);
     },
     onError: (error) => {
       toast.error(`Import failed: ${error.message}`);
@@ -371,10 +378,16 @@ export default function ResultsCSVUpload({ session, drivers, driverPrograms }) {
             <span className="text-white font-semibold">Import Complete</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 text-center">
               <p className="text-2xl font-bold text-green-400">{importResult.importedCount}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Imported</p>
+              <p className="text-xs text-gray-500 mt-0.5">Created</p>
+            </div>
+            <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 text-center">
+              <p className={`text-2xl font-bold ${importResult.updatedCount > 0 ? 'text-blue-400' : 'text-gray-400'}`}>
+                {importResult.updatedCount ?? 0}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Updated</p>
             </div>
             <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 text-center">
               <p className={`text-2xl font-bold ${importResult.unresolvedRows.length > 0 ? 'text-yellow-400' : 'text-gray-400'}`}>
