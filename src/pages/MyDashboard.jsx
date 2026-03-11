@@ -277,41 +277,22 @@ export default function MyDashboard() {
 
           {!isLoading && !hasEntities && <div className="border-t border-gray-100" />}
 
-          {/* Hero context card */}
+          {/* Mode-aware dashboard banner */}
           {!isLoading && (
-            <div className={`rounded-xl border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${hasEntities ? 'bg-[#232323] text-white border-[#232323]' : 'bg-blue-50 border-blue-200'}`}>
-              <div>
-                <h3 className={`font-semibold text-base ${hasEntities ? 'text-white' : 'text-blue-900'}`}>
-                  {hasEntities
-                    ? (primaryEntity ? `Race Core: ${primaryEntity.entity_name}` : 'You manage race entities')
-                    : 'You are set up as a fan'}
-                </h3>
-                <p className={`text-sm mt-1 ${hasEntities ? 'text-gray-300' : 'text-blue-700'}`}>
-                  {hasEntities
-                    ? 'Jump into Race Core for weekend operations, or edit long-term profiles in the editors.'
-                    : 'Follow drivers, teams, tracks, and series. Link a racing entity in Profile to unlock management tools.'}
-                </p>
-                {primaryStale && hasEntities && (
-                  <p className="text-xs text-amber-300 mt-1">Your primary entity is no longer linked. Choose a new one below.</p>
-                )}
-              </div>
-              <div className="flex-shrink-0">
-                {hasEntities && raceCoreTarget ? (
-                  <Link to={buildRaceCoreLaunchUrl(raceCoreTarget)}>
-                    <Button size="sm" className="gap-1.5 text-xs bg-white text-[#232323] hover:bg-gray-100 border-0">
-                      <Gauge className="w-3.5 h-3.5" />
-                      {primaryEntity?.is_racecore_entity ? `Open Race Core` : 'Open Race Core'}
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
-                    <Button size="sm" className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white border-0">
-                      <KeyRound className="w-3.5 h-3.5" /> Link an Entity
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
+            <DashboardModeBanner
+              user={user}
+              collaborators={resolvedEntities}
+              mediaProfile={mediaProfile}
+              raceCoreTarget={raceCoreTarget}
+              primaryEntity={primaryEntity}
+              buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
+              buildEditorUrl={buildEditorUrl}
+            />
+          )}
+
+          {/* Media Portal card — shown for all modes with soft CTA if no profile */}
+          {!isLoading && (mode === 'media_user' || mode === 'fan') && (
+            <MediaPortalCard mediaProfile={mediaProfile} />
           )}
 
           {/* My Activity */}
