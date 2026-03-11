@@ -179,6 +179,12 @@ export default function MyDashboard() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 space-y-8">
 
+          {/* Access updated success banner */}
+          <AccessSuccessBanner />
+
+          {/* Pending claims + invitations — shown for all users, fan or entity */}
+          {user && !isLoading && <PendingAccessSection user={user} />}
+
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
