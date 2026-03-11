@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink, CheckCircle2, Info, Star, Gauge } from 'lucide-react';
+import { ExternalLink, CheckCircle2, Info, Star, Gauge, Lock } from 'lucide-react';
 import {
   getResolvedManagedEntities,
   getRaceCoreEntities,
