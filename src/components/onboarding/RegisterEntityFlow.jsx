@@ -250,7 +250,7 @@ export default function RegisterEntityFlow({ user }) {
             Track and Series entries are pending admin review before appearing publicly.
           </p>
         )}
-        <Button onClick={() => navigate(createPageUrl('MyDashboard'))} className="bg-[#232323] hover:bg-black text-white">
+        <Button onClick={() => navigate(createPageUrl('MyDashboard') + '?access_updated=1')} className="bg-[#232323] hover:bg-black text-white">
           Go to Dashboard
         </Button>
       </div>
