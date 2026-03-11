@@ -138,18 +138,33 @@ export default function MyDashboard() {
     enabled: !!user?.id,
   });
 
+  const { data: mediaProfile } = useQuery({
+    queryKey: ['mediaProfile', user?.id],
+    queryFn: () => base44.entities.MediaUser.filter({ user_id: user.id }, '-created_date', 1).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+
   const isLoading = userLoading || resolvedLoading;
   const hasEntities = resolvedEntities.length > 0;
   const isAdmin = user?.role === 'admin';
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
   const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
   const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
+  const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile });
 
   // Race Core hero target: primary if Track/Series, else first Track/Series
   const raceCoreTarget = useMemo(() => {
     if (primaryEntity?.is_racecore_entity) return primaryEntity;
     return raceCoreEntities[0] || null;
   }, [primaryEntity, raceCoreEntities]);
+
+  const quickActions = useMemo(() => getUserQuickActions({
+    mode,
+    raceCoreTarget,
+    primaryEntity,
+    buildRaceCoreLaunchUrl,
+    buildEditorUrl,
+  }), [mode, raceCoreTarget, primaryEntity]);
 
   const grouped = useMemo(() => {
     return resolvedEntities.reduce((acc, entity) => {
