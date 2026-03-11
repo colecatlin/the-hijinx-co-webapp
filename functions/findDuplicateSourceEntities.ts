@@ -7,11 +7,12 @@ function normalizeName(value) {
 }
 
 const MODEL_MAP = {
-  driver: 'Driver',
-  team:   'Team',
-  track:  'Track',
-  series: 'Series',
-  event:  'Event',
+  driver:  'Driver',
+  team:    'Team',
+  track:   'Track',
+  series:  'Series',
+  event:   'Event',
+  session: 'Session',
 };
 
 function resolveDisplayName(entity_type, record) {
@@ -19,6 +20,10 @@ function resolveDisplayName(entity_type, record) {
     return `${record.first_name || ''} ${record.last_name || ''}`.trim();
   }
   return record.name || record.full_name || record.title || '';
+}
+function normalizeName2(value) {
+  if (!value) return '';
+  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 Deno.serve(async (req) => {
@@ -51,6 +56,9 @@ Deno.serve(async (req) => {
     const byNormDateTrack  = new Map(); // name|date|track_id
     const byNormDateSeries = new Map(); // name|date|series_id
     const byNormDate       = new Map(); // name|date fallback
+    // session-specific
+    const byNormSessionKey    = new Map(); // normalized_session_key (stored)
+    const byEventNormName     = new Map(); // event_id:normalized_name
 
     for (const r of records) {
       // external_uid
@@ -92,6 +100,20 @@ Deno.serve(async (req) => {
           if (r.primary_number) {
             const numKey = `${displayName}:num:${r.primary_number}`;
             const na = byNormNum.get(numKey) || []; na.push(r); byNormNum.set(numKey, na);
+          }
+        }
+
+        // Sessions: use event_id + name composite keys
+        if (entity_type === 'session') {
+          if (r.normalized_session_key) {
+            const a = byNormSessionKey.get(r.normalized_session_key) || []; a.push(r); byNormSessionKey.set(r.normalized_session_key, a);
+          }
+          if (r.event_id) {
+            const normN = r.normalized_name || normalizeName2(r.name || '');
+            if (normN) {
+              const k = `${r.event_id}:${normN}`;
+              const a = byEventNormName.get(k) || []; a.push(r); byEventNormName.set(k, a);
+            }
           }
         }
 
@@ -222,6 +244,28 @@ Deno.serve(async (req) => {
           const unflagged = group.filter(r => !flaggedIds.has(r.id));
           if (unflagged.length > 1) {
             duplicate_groups.push(buildGroup('name_date', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+    }
+
+    // Session-specific groupings
+    if (entity_type === 'session') {
+      for (const [key, group] of byNormSessionKey) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('normalized_session_key', key, group));
+            group.forEach(r => flaggedIds.add(r.id));
+          }
+        }
+      }
+      for (const [key, group] of byEventNormName) {
+        if (group.length > 1) {
+          const unflagged = group.filter(r => !flaggedIds.has(r.id));
+          if (unflagged.length > 1) {
+            duplicate_groups.push(buildGroup('event_id_normalized_name', key, group));
             group.forEach(r => flaggedIds.add(r.id));
           }
         }

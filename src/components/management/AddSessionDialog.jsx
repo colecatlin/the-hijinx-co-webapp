@@ -50,7 +50,17 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
     .map(s => s.name.toLowerCase());
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Session.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'session',
+        payload: data,
+        triggered_from: 'add_session_dialog',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      const record = res?.data?.source_record;
+      if (!record) throw new Error('syncSourceAndEntityRecord returned no record');
+      return record;
+    },
     onSuccess: (newSession) => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSessionCreated(newSession.id);
@@ -60,7 +70,17 @@ export default function AddSessionDialog({ open, onClose, onSessionCreated, even
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Session.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const res = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'session',
+        payload: { ...data, id },
+        triggered_from: 'add_session_dialog',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      const record = res?.data?.source_record;
+      if (!record) throw new Error('syncSourceAndEntityRecord returned no record');
+      return record;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSessionCreated(initialSession.id);

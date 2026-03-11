@@ -270,6 +270,20 @@ export default function DiagnosticsDupCleanup() {
           { label: 'Standings updated',key: 'updated_standings' },
         ]}
       />
+
+      <DupCleanupSection
+        title="Session"
+        accentColor="text-sky-600"
+        description="Detect and consolidate duplicate Session records using event_id + normalized_name composite keys. Duplicates are marked Locked — no data is deleted. Results, Standings, and Entries are updated to point to the survivor."
+        entityType="session"
+        repairFn="repairDuplicateSessionRecords"
+        refRepairFn="repairSessionReferences"
+        refFieldConfig={[
+          { label: 'Results updated',   key: 'updated_results' },
+          { label: 'Standings updated', key: 'updated_standings' },
+          { label: 'Entries updated',   key: 'updated_entries' },
+        ]}
+      />
     </div>
   );
 }
