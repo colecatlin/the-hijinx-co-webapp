@@ -8,6 +8,7 @@ import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
 import ErrorBoundary from '@/components/system/errorBoundary';
+import UserMenu from '@/components/layout/UserMenu';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';

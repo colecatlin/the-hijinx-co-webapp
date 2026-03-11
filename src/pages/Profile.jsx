@@ -172,13 +172,21 @@ export default function Profile() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Account settings, entity access, and preferences</p>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">Profile</p>
+            <h1 className="text-2xl font-bold text-gray-900">Account & Access</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Settings, entity access, and preferences</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors flex-shrink-0">
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link to={createPageUrl('MyDashboard')}>
+              <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <ChevronRight className="w-3 h-3 rotate-180" /> Dashboard
+              </button>
+            </Link>
+            <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
         </div>
 
         {/* Account Status Card */}
