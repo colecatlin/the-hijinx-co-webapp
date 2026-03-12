@@ -24,7 +24,20 @@ export default function PendingAccessSection({ user }) {
 
   const { data: pendingInvitations = [] } = useQuery({
     queryKey: ['pendingInvitations', user?.email],
-    queryFn: () => base44.entities.Invitation.filter({ email: user.email, status: 'pending' }),
+    queryFn: async () => {
+      // Match both exact and lowercase email (invitations stored normalized)
+      const norm = (user.email || '').toLowerCase();
+      const [exact, normalized] = await Promise.all([
+        base44.entities.Invitation.filter({ email: user.email, status: 'pending' }),
+        norm !== user.email ? base44.entities.Invitation.filter({ email: norm, status: 'pending' }) : Promise.resolve([]),
+      ]);
+      const seen = new Set();
+      return [...exact, ...normalized].filter(inv => {
+        if (seen.has(inv.id)) return false;
+        seen.add(inv.id);
+        return true;
+      });
+    },
     enabled: !!user?.email,
     staleTime: 30_000,
   });
