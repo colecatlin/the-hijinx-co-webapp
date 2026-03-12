@@ -83,19 +83,65 @@ Deno.serve(async (req) => {
       failures.push(`${details.total_event_classes - details.event_classes_with_key} EventClasses missing normalized_event_class_key`);
     }
 
-    // ── Check for duplicates ──
-    const dupEntriesRes = await base44.asServiceRole.functions.invoke('findDuplicateEntries', {});
-    const dupEntries = dupEntriesRes?.data?.duplicate_groups || [];
+    // ── Check for duplicates (inline instead of calling other functions) ──
+    let dupEntries = [];
+    const entryKeyMap = {};
+    offset = 0;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.Entry.list('-updated_date', limit, offset);
+      if (!batch || batch.length === 0) break;
+      offset += batch.length;
+
+      for (const entry of batch) {
+        const key = entry.normalized_entry_key;
+        if (!key) continue;
+        if (!entryKeyMap[key]) entryKeyMap[key] = [];
+        entryKeyMap[key].push(entry.id);
+      }
+    }
+    dupEntries = Object.values(entryKeyMap).filter(ids => ids.length > 1);
     if (dupEntries.length > 0) {
       failures.push(`${dupEntries.length} duplicate Entry groups detected`);
     }
 
-    const dupClassesRes = await base44.asServiceRole.functions.invoke('findDuplicateClasses', {});
-    const dupClasses = dupClassesRes?.data || {};
-    const dupSeriesClasses = (dupClasses.series_class_duplicate_groups || []).length;
-    const dupEventClasses = (dupClasses.event_class_duplicate_groups || []).length;
-    if (dupSeriesClasses > 0) failures.push(`${dupSeriesClasses} duplicate SeriesClass groups detected`);
-    if (dupEventClasses > 0) failures.push(`${dupEventClasses} duplicate EventClass groups detected`);
+    let dupSeriesClasses = [], dupEventClasses = [];
+    const seriesKeyMap = {};
+    offset = 0;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.SeriesClass.list('-updated_date', limit, offset);
+      if (!batch || batch.length === 0) break;
+      offset += batch.length;
+
+      for (const cls of batch) {
+        const key = cls.normalized_series_class_key;
+        if (!key) continue;
+        if (!seriesKeyMap[key]) seriesKeyMap[key] = [];
+        seriesKeyMap[key].push(cls.id);
+      }
+    }
+    dupSeriesClasses = Object.values(seriesKeyMap).filter(ids => ids.length > 1);
+    if (dupSeriesClasses.length > 0) {
+      failures.push(`${dupSeriesClasses.length} duplicate SeriesClass groups detected`);
+    }
+
+    const eventKeyMap = {};
+    offset = 0;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.EventClass.list('-updated_date', limit, offset);
+      if (!batch || batch.length === 0) break;
+      offset += batch.length;
+
+      for (const cls of batch) {
+        const key = cls.normalized_event_class_key;
+        if (!key) continue;
+        if (!eventKeyMap[key]) eventKeyMap[key] = [];
+        eventKeyMap[key].push(cls.id);
+      }
+    }
+    dupEventClasses = Object.values(eventKeyMap).filter(ids => ids.length > 1);
+    if (dupEventClasses.length > 0) {
+      failures.push(`${dupEventClasses.length} duplicate EventClass groups detected`);
+    }
 
     return Response.json({
       success: true,
@@ -103,8 +149,8 @@ Deno.serve(async (req) => {
       series_class_normalization_ok: details.series_classes_with_key === details.total_series_classes,
       event_class_normalization_ok: details.event_classes_with_key === details.total_event_classes,
       duplicate_entries_remaining: dupEntries.length,
-      duplicate_series_classes_remaining: dupSeriesClasses,
-      duplicate_event_classes_remaining: dupEventClasses,
+      duplicate_series_classes_remaining: dupSeriesClasses.length,
+      duplicate_event_classes_remaining: dupEventClasses.length,
       import_idempotence_ok: dupEntries.length === 0,
       builder_class_reuse_ok: dupSeriesClasses === 0 && dupEventClasses === 0,
       failures: failures,
