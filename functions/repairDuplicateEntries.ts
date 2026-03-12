@@ -1,123 +1,92 @@
 /**
  * repairDuplicateEntries.js
- *
- * Detects duplicate Entry groups and safely consolidates them:
- * - picks one canonical survivor per group
- * - marks non-survivors as Withdrawn and annotates notes
- * - re-indexes survivor with entry_identity_key
- * - does NOT hard-delete records
- *
- * Input:  { dry_run?: boolean }
- * Admin only.
+ * Marks duplicate entries inactive and appends DUPLICATE_OF marker.
+ * 
+ * For each duplicate group:
+ * 1. Choose canonical row (oldest, most complete)
+ * 2. Mark others inactive
+ * 3. Append DUPLICATE_OF:{survivor_id} to notes
+ * 
+ * Returns count of groups processed and duplicates marked.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-
-function buildKey(event_id, driver_id, class_id) {
-  return `entry:${event_id || 'none'}:${driver_id || 'none'}:${class_id || 'none'}`;
-}
-
-function scoreEntry(r) {
-  let s = 0;
-  if (r.entry_identity_key) s += 4;
-  if (r.entry_status === 'Teched')     s += 3;
-  if (r.entry_status === 'Checked In') s += 2;
-  if (r.entry_status === 'Registered') s += 1;
-  if (r.transponder_id) s += 1;
-  if (r.car_number)     s += 1;
-  if (r.event_class_id) s += 1;
-  return s;
-}
-
-function pickSurvivor(group) {
-  return group.slice().sort((a, b) => {
-    const ds = scoreEntry(b) - scoreEntry(a);
-    if (ds !== 0) return ds;
-    return new Date(a.created_date || 0) - new Date(b.created_date || 0);
-  })[0];
-}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const body = await req.json().catch(() => ({}));
-    const dry_run = body.dry_run === true;
+    const body = await req.json();
+    const { keys = [] } = body;
 
-    const all = await base44.asServiceRole.entities.Entry.list('-created_date', 10000);
+    let groupsProcessed = 0, duplicatesMarked = 0;
+    const warnings = [];
 
-    const byKey       = new Map();
-    const byComposite = new Map();
+    if (keys.length === 0) {
+      // Auto-detect duplicates if no keys provided
+      const duplicateRes = await base44.asServiceRole.functions.invoke('findDuplicateEntries', {});
+      const duplicates = duplicateRes?.data?.duplicate_groups || [];
+      keys.push(...duplicates.map(g => g.key));
+    }
 
-    for (const e of all) {
-      if (e.notes?.includes('DUPLICATE_OF:') || e.entry_status === 'Withdrawn') continue;
-      if (e.entry_identity_key) {
-        const a = byKey.get(e.entry_identity_key) || []; a.push(e); byKey.set(e.entry_identity_key, a);
-      } else if (e.event_id && e.driver_id) {
-        const k = buildKey(e.event_id, e.driver_id, e.event_class_id || e.series_class_id || null);
-        const a = byComposite.get(k) || []; a.push(e); byComposite.set(k, a);
+    for (const key of keys) {
+      const entries = await base44.asServiceRole.entities.Entry.filter({
+        normalized_entry_key: key,
+      }).catch(() => []);
+
+      if (entries.length < 2) continue;
+      groupsProcessed++;
+
+      // Choose canonical: oldest record, then most complete (most fields set)
+      const canonical = entries.sort((a, b) => {
+        const aScore = (a.notes ? 1 : 0) + (a.payment_status && a.payment_status !== 'Unpaid' ? 1 : 0);
+        const bScore = (b.notes ? 1 : 0) + (b.payment_status && b.payment_status !== 'Unpaid' ? 1 : 0);
+        if (aScore !== bScore) return bScore - aScore;
+        return new Date(a.created_date) - new Date(b.created_date);
+      })[0];
+
+      // Mark duplicates
+      for (const entry of entries) {
+        if (entry.id === canonical.id) continue;
+
+        const dupeNote = `DUPLICATE_OF:${canonical.id}`;
+        const updatedNotes = (entry.notes || '')
+          .split('\n')
+          .filter(line => !line.includes('DUPLICATE_OF:'))
+          .join('\n')
+          .trim();
+        const finalNote = updatedNotes ? `${updatedNotes}\n${dupeNote}` : dupeNote;
+
+        await base44.asServiceRole.entities.Entry.update(entry.id, {
+          entry_status: 'Withdrawn',
+          notes: finalNote,
+        }).catch((err) => {
+          warnings.push(`Entry ${entry.id}: mark failed — ${err.message}`);
+        });
+        duplicatesMarked++;
       }
-    }
 
-    const processedIds = new Set();
-    const groups = [];
-    for (const [key, g] of byKey)       if (g.length > 1) { groups.push({ key, type: 'identity_key', records: g }); g.forEach(r => processedIds.add(r.id)); }
-    for (const [key, g] of byComposite) if (g.length > 1) {
-      const uniq = g.filter(r => !processedIds.has(r.id));
-      if (uniq.length > 1) { groups.push({ key, type: 'composite', records: uniq }); uniq.forEach(r => processedIds.add(r.id)); }
-    }
-
-    if (!groups.length) {
-      return Response.json({ success: true, dry_run, groups_processed: 0, survivors: [], duplicates_marked: [], skipped: [], warnings: [], repairs: [], message: 'No duplicate Entry groups detected.' });
-    }
-
-    const report = { dry_run, total_entries: all.length, groups_detected: groups.length, groups_processed: 0, survivors: [], duplicates_marked: [], skipped: [], warnings: [], repairs: [] };
-
-    for (const { key, type, records } of groups) {
-      const active = records.filter(r => !r.notes?.includes('DUPLICATE_OF:') && r.entry_status !== 'Withdrawn');
-      if (active.length <= 1) { report.skipped.push({ key, reason: 'already_marked' }); continue; }
-
-      const survivor = pickSurvivor(active);
-      const dups     = active.filter(r => r.id !== survivor.id);
-      report.groups_processed++;
-
-      const identityKey = survivor.entry_identity_key || buildKey(survivor.event_id, survivor.driver_id, survivor.event_class_id || survivor.series_class_id || null);
-      if (!dry_run) {
-        await base44.asServiceRole.entities.Entry.update(survivor.id, { entry_identity_key: identityKey }).catch(e => report.warnings.push(`survivor_update:${survivor.id}:${e.message}`));
-      }
-
-      report.survivors.push({ id: survivor.id, event_id: survivor.event_id, driver_id: survivor.driver_id, match_type: type, action: dry_run ? 'would_be_survivor' : 'confirmed_survivor' });
-
-      const dupIds = [];
-      for (const dup of dups) {
-        const marker = `DUPLICATE_OF:${survivor.id}`;
-        const newNotes = (dup.notes || '').includes(marker) ? dup.notes : ((dup.notes || '') ? `${dup.notes} | ${marker}` : marker);
-        if (!dry_run) {
-          await base44.asServiceRole.entities.Entry.update(dup.id, {
-            entry_status: 'Withdrawn',
-            notes: newNotes,
-            entry_identity_key: `entry:DUPLICATE_OF:${survivor.id}`,
-          }).catch(e => report.warnings.push(`dup_update:${dup.id}:${e.message}`));
-        }
-        report.duplicates_marked.push({ id: dup.id, survivor_id: survivor.id, action: dry_run ? 'would_withdraw' : 'withdrawn' });
-        dupIds.push(dup.id);
-      }
-      if (dupIds.length) report.repairs.push({ survivor_id: survivor.id, duplicate_ids: dupIds });
-    }
-
-    if (!dry_run && report.duplicates_marked.length) {
+      // Log repair
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'operational_duplicate_repaired',
         entity_name: 'Entry',
         status: 'success',
-        metadata: { entity_type: 'entry', groups_processed: report.groups_processed, marked_count: report.duplicates_marked.length, survivor_ids: report.survivors.map(s => s.id) },
+        metadata: {
+          normalized_entry_key: key,
+          canonical_id: canonical.id,
+          duplicate_count: entries.length - 1,
+        },
       }).catch(() => {});
     }
 
-    return Response.json({ success: true, ...report });
-
+    return Response.json({
+      success: true,
+      groups_processed: groupsProcessed,
+      duplicates_marked_inactive: duplicatesMarked,
+      warnings: warnings,
+      generated_at: new Date().toISOString(),
+    });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
   }
