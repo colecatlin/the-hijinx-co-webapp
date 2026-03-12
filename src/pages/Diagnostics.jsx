@@ -900,6 +900,50 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Access System Health Scan ───────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Activity className="w-4 h-4 text-blue-600" /> Access System Health Scan</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">Scans for duplicate collaborators, orphaned records, accepted invitations without a collaborator, owners missing access codes, and expired pending invitations.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={runAccessSystemHealthCheck} disabled={healthRunning} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                {healthRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Scanning…</> : <><Play className="w-4 h-4 mr-2" />Run Access System Health Scan</>}
+              </Button>
+              {healthReport && <span className="text-xs text-gray-400">Last run: {new Date(healthReport.generated_at).toLocaleString()}</span>}
+            </div>
+            {healthRunning && <div className="py-6 text-center text-sm text-gray-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-400" />Scanning access records for integrity issues…</div>}
+            {healthReport && !healthRunning && (() => {
+              const s = healthReport.summary || {};
+              const total = Object.values(s).reduce((a, b) => a + b, 0);
+              return (
+                <div className="space-y-3">
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${total === 0 ? 'bg-green-50 border-green-300 text-green-800' : 'bg-yellow-50 border-yellow-300 text-yellow-800'}`}>
+                    {total === 0 ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />}
+                    <span>{total === 0 ? 'All clean — no access integrity issues found' : `${total} issue(s) detected across access system`}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <SummaryCard label="Duplicate Collaborators"    count={s.duplicate_collaborators}    severity={s.duplicate_collaborators > 0 ? 'high' : 'ok'}    icon={s.duplicate_collaborators > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Orphan Collaborators"       count={s.orphan_collaborators}       severity={s.orphan_collaborators > 0 ? 'high' : 'ok'}       icon={s.orphan_collaborators > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Invalid Invitations"        count={s.invalid_invitations}        severity={s.invalid_invitations > 0 ? 'medium' : 'ok'}       icon={s.invalid_invitations > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Missing Access Codes"       count={s.missing_access_codes}       severity={s.missing_access_codes > 0 ? 'medium' : 'ok'}      icon={s.missing_access_codes > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Expired Pending Invitations" count={s.expired_pending_invitations} severity={s.expired_pending_invitations > 0 ? 'low' : 'ok'} icon={s.expired_pending_invitations > 0 ? AlertCircle : CheckCircle} />
+                  </div>
+                  <ExpandableList title="Duplicate collaborators" items={healthReport.duplicate_collaborators || []} severity="high"
+                    renderItem={r => r.error ? r.error : `${r.user_id} → [${r.entity_type}:${r.entity_id}] — ${r.count} records`} />
+                  <ExpandableList title="Orphan collaborators (entity missing)" items={healthReport.orphan_collaborators || []} severity="high"
+                    renderItem={r => r.error ? r.error : `${r.user_email || r.user_id} → [${r.entity_type}:${r.entity_id}]`} />
+                  <ExpandableList title="Accepted invitations with no collaborator" items={healthReport.invalid_invitations || []} severity="medium"
+                    renderItem={r => r.error ? r.error : `${r.email} → ${r.entity_name || r.entity_id} [${r.entity_type}]`} />
+                  <ExpandableList title="Owner collaborators missing access code" items={healthReport.missing_access_codes || []} severity="medium"
+                    renderItem={r => r.error ? r.error : `${r.user_email || r.user_id} → ${r.entity_name || r.entity_id} [${r.entity_type}]`} />
+                  <ExpandableList title="Expired invitations still pending" items={healthReport.expired_pending_invitations || []} severity="low"
+                    renderItem={r => r.error ? r.error : `${r.email} → ${r.entity_name || r.entity_id} (expired ${new Date(r.expiration_date).toLocaleDateString()})`} />
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* ── Full Diagnostics Report ──────────────────────────────────── */}
         {report && !running && (
           <Tabs defaultValue="summary" className="space-y-6">
