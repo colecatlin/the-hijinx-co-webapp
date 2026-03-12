@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ManageEntityClaims from './pages/ManageEntityClaims';
+import PostCleanupVerification from './pages/PostCleanupVerification';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/ManageEntityClaims" element={<LayoutWrapper currentPageName="ManageEntityClaims"><ManageEntityClaims /></LayoutWrapper>} />
+      <Route path="/PostCleanupVerification" element={<LayoutWrapper currentPageName="PostCleanupVerification"><PostCleanupVerification /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
