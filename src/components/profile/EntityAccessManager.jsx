@@ -168,6 +168,16 @@ export default function EntityAccessManager({ collaborator, user }) {
     staleTime: 30_000,
   });
 
+  const [revoking, setRevoking] = useState(null);
+  const handleRevoke = async (inv) => {
+    if (!window.confirm(`Revoke invitation for ${inv.email}?`)) return;
+    setRevoking(inv.id);
+    await base44.functions.invoke('revokeEntityInvitation', { invitation_id: inv.id });
+    refetchInvitations();
+    queryClient.invalidateQueries({ queryKey: ['allInvitations'] });
+    setRevoking(null);
+  };
+
   const handleRemove = async (collab) => {
     // Safety: prevent removing the last owner
     const ownerCount = allCollaborators.filter(c => c.role === 'owner').length;
@@ -275,13 +285,26 @@ export default function EntityAccessManager({ collaborator, user }) {
               </div>
               <div className="space-y-1.5">
                 {pendingInvitations.map(inv => (
-                  <div key={inv.id} className="flex items-center justify-between px-3 py-2 bg-amber-50 rounded-lg border border-amber-100">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Mail className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                      <span className="text-xs text-gray-700 truncate">{inv.email}</span>
-                    </div>
-                    <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200 flex-shrink-0 ml-2">Pending</Badge>
+                <div key={inv.id} className="flex items-center justify-between px-3 py-2 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mail className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                    <span className="text-xs text-gray-700 truncate">{inv.email}</span>
                   </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                    <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200">Pending</Badge>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={revoking === inv.id}
+                      onClick={() => handleRevoke(inv)}
+                      className="h-6 w-6 p-0 text-red-400 hover:text-red-600 hover:bg-red-50"
+                      title="Revoke invitation"
+                    >
+                      {revoking === inv.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                    </Button>
+                  </div>
+                </div>
                 ))}
               </div>
             </div>
