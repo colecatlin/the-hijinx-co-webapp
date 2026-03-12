@@ -98,8 +98,12 @@ export default function MediaPortal() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-black text-white">Media Portal</h1>
+          <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-0.5">Media Portal</p>
+                <h1 className="text-2xl font-black text-white">Media Portal</h1>
+              </div>
             {mediaUser?.status && (
               <Badge className={{
                 pending: 'bg-yellow-900/60 text-yellow-300',
