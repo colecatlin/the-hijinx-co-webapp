@@ -458,6 +458,92 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Access System Status ──────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" /> Access System Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden text-xs">
+              {[
+                {
+                  label: 'Onboarding flow',
+                  status: v1Report
+                    ? (v1Report.access_flows?.checks?.filter(c => c.status === 'fail').length > 0 ? 'warn' : 'ok')
+                    : (healthReport ? 'ok' : 'unknown'),
+                  detail: 'Fan → entity onboarding entry points',
+                },
+                {
+                  label: 'Invitation flow',
+                  status: accessFlowReport
+                    ? (accessFlowReport.valid_invitation_ok && accessFlowReport.wrong_email_ok && accessFlowReport.invitation_burn_protection_ok ? 'ok' : 'warn')
+                    : 'unknown',
+                  detail: accessFlowReport
+                    ? (accessFlowReport.valid_invitation_ok ? '✓ Accepted invitations have collaborators' : '⚠ Accepted invitations missing collaborators')
+                    : 'Run Access Flow Verification',
+                },
+                {
+                  label: 'Claim flow',
+                  status: accessFlowReport
+                    ? (accessFlowReport.failures?.length === 0 ? 'ok' : 'warn')
+                    : 'unknown',
+                  detail: accessFlowReport
+                    ? `${accessFlowReport.failures?.length === 0 ? 'All checks passed' : accessFlowReport.failures?.length + ' failure(s)'}`
+                    : 'Run Access Flow Verification',
+                },
+                {
+                  label: 'Collaborator integrity',
+                  status: healthReport
+                    ? (healthReport.summary?.duplicate_collaborators > 0 || healthReport.summary?.orphan_collaborators > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: healthReport
+                    ? `${healthReport.summary?.duplicate_collaborators ?? '?'} duplicates, ${healthReport.summary?.orphan_collaborators ?? '?'} orphans`
+                    : 'Run Access System Health Scan',
+                },
+                {
+                  label: 'Owner access code health',
+                  status: healthReport
+                    ? (healthReport.summary?.missing_access_codes > 0 ? 'warn' : 'ok')
+                    : 'unknown',
+                  detail: healthReport
+                    ? (healthReport.summary?.missing_access_codes === 0 ? 'All owners have access codes' : `${healthReport.summary?.missing_access_codes} owner(s) missing codes`)
+                    : 'Run Access System Health Scan',
+                },
+                {
+                  label: 'Primary entity health',
+                  status: accessFlowReport
+                    ? (accessFlowReport.duplicate_prevention_ok && accessFlowReport.valid_owner_code_ok ? 'ok' : 'warn')
+                    : 'unknown',
+                  detail: accessFlowReport
+                    ? (accessFlowReport.valid_owner_code_ok ? '✓ Owner codes valid' : '⚠ Owner code issues detected')
+                    : 'Run Access Flow Verification',
+                },
+              ].map((row, i) => {
+                const iconMap = {
+                  ok:      <CheckCircle  className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />,
+                  warn:    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />,
+                  unknown: <RefreshCw    className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />,
+                };
+                const bgMap = { ok: 'bg-white', warn: 'bg-amber-50', unknown: 'bg-gray-50' };
+                const statusLabel = { ok: 'Healthy', warn: 'Warning', unknown: '—' };
+                return (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${bgMap[row.status]}`}>
+                    {iconMap[row.status]}
+                    <span className="font-medium text-gray-800 w-44 flex-shrink-0">{row.label}</span>
+                    <span className={`w-16 flex-shrink-0 font-semibold ${row.status === 'ok' ? 'text-green-600' : row.status === 'warn' ? 'text-amber-600' : 'text-gray-400'}`}>
+                      {statusLabel[row.status]}
+                    </span>
+                    <span className="text-gray-400 truncate">{row.detail}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-2">Run "Access Flow Verification" and "Access System Health Scan" below to populate this panel.</p>
+          </CardContent>
+        </Card>
+
         {/* ── Action bar ───────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <Button onClick={runDiagnostics} disabled={running || repairing} className="bg-gray-900 text-white">
