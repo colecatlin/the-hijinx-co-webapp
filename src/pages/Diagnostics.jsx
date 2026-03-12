@@ -21,7 +21,7 @@ import ReportIssueModal from '@/components/system/reportIssueModal';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import DiagnosticsDupCleanup from '@/components/management/DiagnosticsDupCleanup';
 import DiagnosticsOperationalIntegrity from '@/components/management/DiagnosticsOperationalIntegrity';
-import DiagnosticsEntryClassIntegrity from '@/components/management/DiagnosticsEntryClassIntegrity';
+import DiagnosticsEntryAndClassIntegrity from '@/components/management/DiagnosticsEntryAndClassIntegrity';
 import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventIntegrity';
 import DiagnosticsSessionIntegrity from '@/components/management/DiagnosticsSessionIntegrity';
 import DiagnosticsResultsAndStandingsIntegrity from '@/components/management/DiagnosticsResultsAndStandingsIntegrity';
@@ -1134,7 +1134,7 @@ export default function Diagnostics() {
         </Card>
 
         {/* ── Entry and Class Integrity ─────────────────────────────────── */}
-        <DiagnosticsEntryClassIntegrity />
+        <DiagnosticsEntryAndClassIntegrity />
 
         {/* ── Results and Standings Operational Integrity ──────────────── */}
         <DiagnosticsOperationalIntegrity />
