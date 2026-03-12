@@ -95,7 +95,7 @@ export default function CodeInputTab({ user }) {
         <div className="flex gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
           <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-green-700">
-            <p className="font-medium">{success.message || 'Access granted!'}</p>
+            <p className="font-medium">Access granted successfully.</p>
             <p>{success.entity_name} linked as <span className="font-semibold">{success.role}</span></p>
           </div>
         </div>

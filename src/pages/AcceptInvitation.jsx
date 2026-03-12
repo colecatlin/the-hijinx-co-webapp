@@ -78,7 +78,7 @@ export default function AcceptInvitation() {
       queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
       queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
       queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
-      toast.success('Invitation accepted successfully!');
+      toast.success('Access granted successfully.');
       setStep('success');
       setTimeout(() => {
         navigate(createPageUrl('MyDashboard') + '?access_updated=1');
