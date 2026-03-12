@@ -268,6 +268,62 @@ export default function Diagnostics() {
     setWriteAuditRunning(false);
   };
 
+  // ── Track Integrity ───────────────────────────────────────────────
+  const [trackBackfillResult, setTrackBackfillResult]   = useState(null);
+  const [trackBackfillRunning, setTrackBackfillRunning] = useState(false);
+  const [trackCleanupResult, setTrackCleanupResult]     = useState(null);
+  const [trackCleanupRunning, setTrackCleanupRunning]   = useState(false);
+  const [trackVerifyResult, setTrackVerifyResult]       = useState(null);
+  const [trackVerifyRunning, setTrackVerifyRunning]     = useState(false);
+
+  const runTrackBackfill = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will populate missing normalization fields on all Track records. Proceed?')) return;
+    setTrackBackfillRunning(true); setTrackBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillTrackNormalization', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setTrackBackfillResult({ ...res.data, mode: dry_run ? 'dry_run' : 'live' });
+      const total = (res.data.backfilled_normalized_name || 0) + (res.data.backfilled_canonical_slug || 0) + (res.data.backfilled_canonical_key || 0);
+      toast.success(dry_run ? 'Track backfill preview complete' : `Track backfill complete — ${total} fields filled`);
+    } catch (err) { toast.error(`Track backfill failed: ${err.message}`); }
+    setTrackBackfillRunning(false);
+  };
+
+  const runTrackCleanup = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will mark duplicate Track records inactive and repair references. Proceed?')) return;
+    setTrackCleanupRunning(true); setTrackCleanupResult(null);
+    try {
+      const res = await base44.functions.invoke('repairDuplicateTrackRecords', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setTrackCleanupResult({ ...res.data, dry_run });
+      if (!dry_run && res.data?.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairTrackReferences', { repairs: res.data.repairs, dry_run: false });
+        const ref = refRes.data?.report || {};
+        toast.success(`Track cleanup done — ${res.data.duplicates_marked_inactive?.length || 0} inactive, events repaired: ${ref.updated_events || 0}`);
+      } else {
+        const count = res.data?.duplicates_marked_inactive?.length || 0;
+        if (count === 0) toast.success('No duplicate Track groups detected.');
+        else toast.success(`Track cleanup ${dry_run ? 'preview' : 'done'} — ${count} ${dry_run ? 'would be' : ''} marked inactive`);
+      }
+    } catch (err) { toast.error(`Track cleanup failed: ${err.message}`); }
+    setTrackCleanupRunning(false);
+  };
+
+  const runTrackVerification = async () => {
+    setTrackVerifyRunning(true); setTrackVerifyResult(null);
+    try {
+      const res = await base44.functions.invoke('verifyTrackIntegrity', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setTrackVerifyResult(res.data);
+      const f = res.data?.failures?.length || 0;
+      const w = res.data?.warnings?.length || 0;
+      if (f === 0 && w === 0) toast.success('Track integrity verified — all checks passed');
+      else if (f === 0) toast.success(`Track integrity: ${w} warning(s) — review below`);
+      else toast.error(`Track integrity: ${f} failure(s) detected`);
+    } catch (err) { toast.error(`Track verification failed: ${err.message}`); }
+    setTrackVerifyRunning(false);
+  };
+
   // ── Series Integrity ──────────────────────────────────────────────
   const [seriesBackfillResult, setSeriesBackfillResult]   = useState(null);
   const [seriesBackfillRunning, setSeriesBackfillRunning] = useState(false);
