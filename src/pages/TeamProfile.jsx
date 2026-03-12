@@ -14,6 +14,7 @@ import { MapPin, Calendar, Flag, Users, TrendingUp, Trophy, AlertCircle, Externa
 import { format, isValid } from 'date-fns';
 import { Link } from 'react-router-dom';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { createPageUrl } from '@/components/utils';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
@@ -170,7 +171,8 @@ export default function TeamProfile() {
               )}
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end items-start gap-3">
+              <ClaimEntityButton entityType="Team" entityId={team?.id} entityName={team.name} />
               <SocialShareButtons
                 url={window.location.href}
                 title={`${team.name} - Team Profile`}

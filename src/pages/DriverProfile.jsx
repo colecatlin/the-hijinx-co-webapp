@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
+import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
@@ -404,6 +405,7 @@ export default function DriverProfile() {
           <div className="space-y-6">
             <div className="flex items-center gap-2 flex-wrap mb-2">
               <FollowDriverButton driverId={driver?.id} />
+              <ClaimEntityButton entityType="Driver" entityId={driver?.id} entityName={`${driver.first_name} ${driver.last_name}`} />
               <Button
                 variant="outline"
                 size="sm"
