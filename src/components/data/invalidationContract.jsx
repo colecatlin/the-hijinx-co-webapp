@@ -63,11 +63,37 @@ export const INVALIDATION_GROUPS = {
     ['userEventCollaborators'],
     ['trackCollaborators'],
     ['seriesCollaborators'],
+    ['entityCollaborators'],
+    ['entityCollaboratorsAll'],
+    ['allCollaborators'],
   ],
 
   profile: [
     ['currentUser'],
     ['myInvitations'],
+    ['myOperationLogs'],
+  ],
+
+  /**
+   * access: all access lifecycle queries.
+   * Use after claim submit/approve, invitation create/revoke/accept, code redemption.
+   */
+  access: [
+    ['currentUser'],
+    ['resolvedEntities'],
+    ['myCollaborations'],
+    ['entityCollaborators'],
+    ['entityCollaboratorsAll'],
+    ['allCollaborators'],
+    ['pendingInvitations'],
+    ['myInvitations'],
+    ['entityPendingInvitations'],
+    ['allInvitations'],
+    ['allClaims'],
+    ['claimRequests'],
+    ['claimCheck_collabs'],
+    ['claimCheck_claims'],
+    ['entityClaimRequests'],
     ['myOperationLogs'],
   ],
 
