@@ -238,6 +238,20 @@ export default function Diagnostics() {
   const [healthReport, setHealthReport] = useState(null);
   const [healthRunning, setHealthRunning] = useState(false);
 
+  const runAccessSystemHealthCheck = async () => {
+    setHealthRunning(true); setHealthReport(null);
+    try {
+      const res = await base44.functions.invoke('accessSystemHealthCheck', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setHealthReport(res.data);
+      const s = res.data?.summary || {};
+      const total = Object.values(s).reduce((a, b) => a + b, 0);
+      if (total === 0) toast.success('Access system health scan: all clean');
+      else toast.error(`Access health: ${total} issue(s) found`);
+    } catch (err) { toast.error(`Health scan failed: ${err.message}`); }
+    setHealthRunning(false);
+  };
+
   const runAccessFlowVerification = async () => {
     setAccessFlowRunning(true); setAccessFlowReport(null);
     try {
