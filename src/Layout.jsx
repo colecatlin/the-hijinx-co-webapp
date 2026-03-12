@@ -220,13 +220,25 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <nav className="px-6 py-6">
                   {isAuthenticated && (
-                    <div className="mb-4">
+                    <div className="mb-4 space-y-2">
                       <Link
                         to={createPageUrl('MyDashboard')}
                         className="block py-3 px-4 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         Dashboard
                       </Link>
+                      <Link
+                        to={createPageUrl('Profile')}
+                        className="block py-3 px-4 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        onClick={() => base44.auth.logout(createPageUrl('Home'))}
+                        className="w-full text-left py-3 px-4 text-sm font-semibold text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        Sign Out
+                      </button>
                     </div>
                   )}
                   {user?.role === 'admin' && (
