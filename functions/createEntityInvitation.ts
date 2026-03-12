@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
     entity_type,
     entity_id,
     entity_name,
+    role: role || 'editor',
     status: 'pending',
     expiration_date: expirationDate,
     invited_by: user.email,
