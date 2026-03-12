@@ -1317,6 +1317,9 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Event Integrity ──────────────────────────────────────────── */}
+        <DiagnosticsEventIntegrity />
+
         {/* ── Driver Integrity ─────────────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
