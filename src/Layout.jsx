@@ -235,7 +235,6 @@ export default function Layout({ children, currentPageName }) {
                       </Link>
                       <button
                         onClick={() => base44.auth.logout(createPageUrl('Home'))}
-
                         className="w-full text-left py-3 px-4 text-sm font-semibold text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
                       >
                         Sign Out
