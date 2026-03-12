@@ -1093,6 +1093,68 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Unsafe Write Path Audit ──────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-orange-600" /> Unsafe Write Path Audit
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">
+              Verifies that all source entity writes (Driver, Team, Track, Series, Event) go through the approved
+              sync pipeline. Detects raw creates/updates that bypass normalization and deduplication.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={runWritePathAudit} disabled={writeAuditRunning} variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                {writeAuditRunning
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
+                  : <><Play className="w-4 h-4 mr-2" />Run Unsafe Write Path Audit</>}
+              </Button>
+              {writeAuditReport && <span className="text-xs text-gray-400">Last run: {new Date(writeAuditReport.generated_at).toLocaleString()}</span>}
+            </div>
+            {writeAuditRunning && <div className="py-6 text-center text-sm text-gray-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-orange-400" />Auditing source entity write paths…</div>}
+            {writeAuditReport && !writeAuditRunning && (() => {
+              const s = writeAuditReport.summary || {};
+              const allSafe = s.unsafe_count === 0 && s.recent_logs_without_source_path === 0;
+              return (
+                <div className="space-y-3">
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allSafe ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
+                    {allSafe ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                    <span>{allSafe ? `All ${s.total_paths_checked} registered write paths are safe` : `${s.unsafe_count} unsafe path(s) — review below`}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <SummaryCard label="Total Paths"    count={s.total_paths_checked}                severity="ok"     icon={CheckCircle} />
+                    <SummaryCard label="Safe Paths"     count={s.safe_count}                         severity="ok"     icon={CheckCircle} />
+                    <SummaryCard label="Unsafe Paths"   count={s.unsafe_count}                       severity={s.unsafe_count > 0 ? 'high' : 'ok'} icon={s.unsafe_count > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Logs No Path"   count={s.recent_logs_without_source_path}    severity={s.recent_logs_without_source_path > 0 ? 'medium' : 'ok'} icon={s.recent_logs_without_source_path > 0 ? AlertTriangle : CheckCircle} />
+                  </div>
+                  {writeAuditReport.high_risk_paths?.length > 0 && (
+                    <ExpandableList title={`High-risk paths (${writeAuditReport.high_risk_paths.length})`} items={writeAuditReport.high_risk_paths} severity="high"
+                      renderItem={p => `[${p.source_path}] ${p.file} — ${p.entity_types?.join(', ')} — ${p.note}`} />
+                  )}
+                  {writeAuditReport.medium_risk_paths?.length > 0 && (
+                    <ExpandableList title={`Medium-risk paths (${writeAuditReport.medium_risk_paths.length})`} items={writeAuditReport.medium_risk_paths} severity="medium"
+                      renderItem={p => `[${p.source_path}] ${p.file} — ${p.entity_types?.join(', ')} — ${p.note}`} />
+                  )}
+                  {writeAuditReport.safe_paths?.length > 0 && (
+                    <ExpandableList title={`Safe paths (${writeAuditReport.safe_paths.length})`} items={writeAuditReport.safe_paths} severity="ok"
+                      renderItem={p => `[${p.source_path}] ${p.entity_types?.join(', ')} — ${p.sync_mode}`} />
+                  )}
+                  {writeAuditReport.logs_without_source_path?.length > 0 && (
+                    <ExpandableList title={`Recent OperationLog entries missing source_path (${writeAuditReport.logs_without_source_path.length})`} items={writeAuditReport.logs_without_source_path} severity="medium"
+                      renderItem={r => `${r.entity_name || r.entity_type || '?'} id=${r.entity_id || '?'} — created ${r.created_date ? new Date(r.created_date).toLocaleDateString() : '?'}`} />
+                  )}
+                  {writeAuditReport.unknown_source_paths?.length > 0 && (
+                    <ExpandableList title={`Unregistered source_path values in logs (${writeAuditReport.unknown_source_paths.length})`} items={writeAuditReport.unknown_source_paths} severity="medium"
+                      renderItem={r => `[${r.entity_type}] source_path="${r.source_path}" — ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`} />
+                  )}
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* ── Access System Health Scan ───────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Activity className="w-4 h-4 text-blue-600" /> Access System Health Scan</CardTitle></CardHeader>
