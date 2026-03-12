@@ -268,6 +268,62 @@ export default function Diagnostics() {
     setWriteAuditRunning(false);
   };
 
+  // ── Series Integrity ──────────────────────────────────────────────
+  const [seriesBackfillResult, setSeriesBackfillResult]   = useState(null);
+  const [seriesBackfillRunning, setSeriesBackfillRunning] = useState(false);
+  const [seriesCleanupResult, setSeriesCleanupResult]     = useState(null);
+  const [seriesCleanupRunning, setSeriesCleanupRunning]   = useState(false);
+  const [seriesVerifyResult, setSeriesVerifyResult]       = useState(null);
+  const [seriesVerifyRunning, setSeriesVerifyRunning]     = useState(false);
+
+  const runSeriesBackfill = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will populate missing normalization fields on all Series records. Proceed?')) return;
+    setSeriesBackfillRunning(true); setSeriesBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillSeriesNormalization', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setSeriesBackfillResult({ ...res.data, mode: dry_run ? 'dry_run' : 'live' });
+      toast.success(dry_run ? 'Series backfill preview complete' : `Series backfill complete — ${res.data.backfilled_normalized_name + res.data.backfilled_canonical_slug + res.data.backfilled_canonical_key} fields filled`);
+    } catch (err) { toast.error(`Series backfill failed: ${err.message}`); }
+    setSeriesBackfillRunning(false);
+  };
+
+  const runSeriesCleanup = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will mark duplicate Series records inactive. Proceed?')) return;
+    setSeriesCleanupRunning(true); setSeriesCleanupResult(null);
+    try {
+      const res = await base44.functions.invoke('repairDuplicateSeriesRecords', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setSeriesCleanupResult({ ...res.data, dry_run });
+      // Also run reference repair automatically if not dry_run and repairs exist
+      if (!dry_run && res.data?.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairSeriesReferences', { repairs: res.data.repairs, dry_run: false });
+        const refReport = refRes.data?.report || {};
+        toast.success(`Series cleanup done — ${res.data.duplicates_marked_inactive?.length || 0} marked inactive, refs repaired: events=${refReport.updated_events || 0} drivers=${refReport.updated_drivers || 0} classes=${refReport.updated_series_classes || 0}`);
+      } else {
+        const count = res.data?.duplicates_marked_inactive?.length || 0;
+        if (count === 0) toast.success('No duplicate Series groups detected.');
+        else toast.success(`Series cleanup ${dry_run ? 'preview' : 'done'} — ${count} duplicate(s) ${dry_run ? 'would be' : ''} marked inactive`);
+      }
+    } catch (err) { toast.error(`Series cleanup failed: ${err.message}`); }
+    setSeriesCleanupRunning(false);
+  };
+
+  const runSeriesVerification = async () => {
+    setSeriesVerifyRunning(true); setSeriesVerifyResult(null);
+    try {
+      const res = await base44.functions.invoke('verifySeriesIntegrity', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setSeriesVerifyResult(res.data);
+      const f = res.data?.failures?.length || 0;
+      const w = res.data?.warnings?.length || 0;
+      if (f === 0 && w === 0) toast.success('Series integrity verified — all checks passed');
+      else if (f === 0) toast.success(`Series integrity: ${w} warning(s) — review below`);
+      else toast.error(`Series integrity: ${f} failure(s) detected`);
+    } catch (err) { toast.error(`Series verification failed: ${err.message}`); }
+    setSeriesVerifyRunning(false);
+  };
+
   // ── Access System Health Scan ─────────────────────────────────────
   const [healthReport, setHealthReport] = useState(null);
   const [healthRunning, setHealthRunning] = useState(false);
