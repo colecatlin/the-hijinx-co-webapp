@@ -300,6 +300,66 @@ export default function ManageAccess() {
           </div>
         )}
 
+        {/* Claims Section */}
+        {activeSection === 'claims' && (
+          <div className="space-y-4">
+            {loadingClaims ? (
+              <div className="flex items-center justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+            ) : allClaims.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm">No claim requests found.</div>
+            ) : (
+              <div className="space-y-3">
+                {['pending', 'approved', 'rejected'].map(status => {
+                  const group = allClaims.filter(c => c.status === status);
+                  if (group.length === 0) return null;
+                  const statusColor = { pending: 'bg-amber-100 text-amber-700', approved: 'bg-green-100 text-green-700', rejected: 'bg-red-100 text-red-600' }[status];
+                  return (
+                    <div key={status} className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">{status} ({group.length})</p>
+                      {group.map(claim => (
+                        <div key={claim.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-200 rounded-xl bg-white hover:shadow-sm transition-shadow">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="font-semibold text-gray-900 text-sm">{claim.entity_name}</span>
+                              <Badge className="text-xs border px-1.5 py-0 bg-gray-50 text-gray-700 border-gray-200">{claim.entity_type}</Badge>
+                              <Badge className={`text-xs border px-1.5 py-0 ${statusColor}`}>{status}</Badge>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <UserIcon className="w-3 h-3" />
+                              <span>{claim.user_email}</span>
+                              {claim.created_date && <span className="text-gray-400">· {new Date(claim.created_date).toLocaleDateString()}</span>}
+                            </div>
+                            {claim.justification && (
+                              <p className="text-xs text-gray-500 mt-1.5 italic bg-gray-50 rounded px-2 py-1">"{claim.justification}"</p>
+                            )}
+                          </div>
+                          {claim.status === 'pending' && (
+                            <div className="flex gap-2 flex-shrink-0">
+                              <Button size="sm" className="text-xs bg-green-600 hover:bg-green-700 text-white gap-1 h-8"
+                                disabled={claimProcessing === claim.id}
+                                onClick={() => handleClaimAction(claim, 'approve')}>
+                                {claimProcessing === claim.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />} Approve
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs text-red-600 border-red-200 hover:bg-red-50 gap-1 h-8"
+                                disabled={claimProcessing === claim.id}
+                                onClick={() => handleClaimAction(claim, 'reject')}>
+                                <XCircle className="w-3 h-3" /> Reject
+                              </Button>
+                            </div>
+                          )}
+                          {claim.status === 'approved' && claim.granted_role && (
+                            <Badge className="text-xs bg-green-50 text-green-700 border border-green-200 flex-shrink-0">Granted as {claim.granted_role}</Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Collaborators Section */}
         {activeSection === 'collaborators' && (
           <>
