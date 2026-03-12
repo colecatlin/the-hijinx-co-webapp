@@ -93,10 +93,7 @@ export default function ClaimEntityButton({ entityType, entityId, entityName }) 
       setSubmitting(false);
       return;
     }
-    // Invalidate claim queries
-    queryClient.invalidateQueries({ queryKey: ['claimCheck_claims', entityType, entityId, user?.id] });
-    queryClient.invalidateQueries({ queryKey: ['allClaims', user?.id] });
-    queryClient.invalidateQueries({ queryKey: ['claimRequests', user?.id] });
+    invalidateDataGroups(queryClient, ['access']);
     setSubmitted(true);
     setSubmitting(false);
     setTimeout(() => {

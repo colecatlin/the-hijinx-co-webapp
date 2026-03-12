@@ -76,6 +76,12 @@ export default function ManageEntityClaims() {
     queryFn: () => base44.auth.me(),
   });
 
+  const { data: claims = [], isLoading } = useQuery({
+    queryKey: ['entityClaimRequests'],
+    queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),
+    enabled: user?.role === 'admin',
+  });
+
   if (user && user.role !== 'admin') {
     return (
       <ManagementLayout currentPage="ManageEntityClaims">
@@ -85,11 +91,6 @@ export default function ManageEntityClaims() {
       </ManagementLayout>
     );
   }
-
-  const { data: claims = [], isLoading } = useQuery({
-    queryKey: ['entityClaimRequests'],
-    queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),
-  });
 
   const pending = claims.filter(c => c.status === 'pending');
   const approved = claims.filter(c => c.status === 'approved');
@@ -112,7 +113,7 @@ export default function ManageEntityClaims() {
     const data = res?.data;
     if (data?.success) {
       toast.success(actionType === 'approve' ? 'Claim approved — access granted.' : 'Claim rejected.');
-      queryClient.invalidateQueries({ queryKey: ['entityClaimRequests'] });
+      invalidateDataGroups(queryClient, ['access', 'collaborators', 'profile']);
     } else {
       toast.error(data?.error || 'Action failed.');
     }
