@@ -86,6 +86,13 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
           Open Editor
           <ChevronRight className="w-3.5 h-3.5" />
         </Button>
+        {isOwner && (
+          <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
+            <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-gray-400 hover:text-gray-700">
+              <Lock className="w-3.5 h-3.5" /> Manage Access
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

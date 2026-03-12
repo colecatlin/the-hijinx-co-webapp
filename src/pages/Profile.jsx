@@ -160,6 +160,11 @@ export default function Profile() {
 
   const defaultTab = tabFromUrl ? resolveTab(tabFromUrl) : (hasCollaborations ? 'my_entities' : 'general');
 
+  if (!userLoading && !user) {
+    base44.auth.redirectToLogin(createPageUrl('Profile'));
+    return null;
+  }
+
   if (userLoading || !formData) {
     return (
       <PageShell className="bg-gray-50 min-h-screen">
