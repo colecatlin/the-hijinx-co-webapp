@@ -139,15 +139,16 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
         payload = { ...payload, id: driverId };
       }
 
+      // source_path: manage_driver — routes through syncSourceAndEntityRecord (safe sync pipeline)
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
         entity_type: 'driver',
         payload,
-        triggered_from: 'management_ui',
+        triggered_from: 'manage_driver',
       });
 
       if (result?.data?.error) throw new Error(result.data.error);
-      const record = result?.data?.record;
-      if (!record) throw new Error('syncSourceAndEntityRecord returned no record');
+      const record = result?.data?.source_record;
+      if (!record) throw new Error('syncSourceAndEntityRecord returned no source_record');
       return record;
     },
     onSuccess: (record) => {
