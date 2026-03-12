@@ -215,18 +215,23 @@ export default function MyDashboard() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Index46 Dashboard</h1>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">Dashboard</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Index46</h1>
               {welcomeName && <p className="text-sm text-gray-500 mt-1">Welcome back, {welcomeName}</p>}
             </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Link to={createPageUrl('Profile')}>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs"><User className="w-3.5 h-3.5" /> Profile</Button>
-              </Link>
+            <div className="flex gap-2 flex-shrink-0 flex-wrap">
               <Link to={createPageUrl('MotorsportsHome')}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Flag className="w-3.5 h-3.5" /> Browse Motorsports
                 </Button>
               </Link>
+              {isAdmin && (
+                <Link to={createPageUrl('Management')}>
+                  <Button size="sm" variant="outline" className="gap-1.5 text-xs border-purple-200 text-purple-700 hover:bg-purple-50">
+                    <Shield className="w-3.5 h-3.5" /> Management
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
 
