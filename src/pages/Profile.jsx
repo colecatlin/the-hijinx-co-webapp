@@ -73,6 +73,13 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
+  const { data: claimRequests = [] } = useQuery({
+    queryKey: ['claimRequests', user?.id],
+    queryFn: () => base44.entities.EntityClaimRequest.filter({ user_id: user.id }, '-created_date', 20),
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
+
   const { data: invitations = [] } = useQuery({
     queryKey: QueryKeys.profile.invitations(user?.email),
     queryFn: () => base44.entities.Invitation.filter({ email: user.email, status: 'pending' }),
