@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/components/utils';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 
 export default function AcceptInvitation() {
   const navigate = useNavigate();
@@ -71,13 +72,7 @@ export default function AcceptInvitation() {
     const data = result?.data;
 
     if (data?.ok) {
-      // Invalidate all collaborator and profile queries before navigating
-      queryClient.invalidateQueries({ queryKey: ['myCollaborations', user.id] });
-      queryClient.invalidateQueries({ queryKey: ['myInvitations', user.email] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
-      queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
-      queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
+      invalidateDataGroups(queryClient, ['access', 'profile', 'collaborators']);
       toast.success('Access granted successfully.');
       setStep('success');
       setTimeout(() => {
