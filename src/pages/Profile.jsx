@@ -385,15 +385,17 @@ export default function Profile() {
                 </Card>
               )}
 
-              {/* All collaborations */}
-              {hasCollaborations && (
+              {/* Entities I Own */}
+              {resolvedEntities.filter(e => e.role === 'owner').length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Entities I Manage</CardTitle>
-                    <CardDescription>Your managed racing profiles with quick actions.</CardDescription>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-gray-700" /> Entities I Own
+                    </CardTitle>
+                    <CardDescription>Full control — manage collaborators, access codes, and settings.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {resolvedEntities.map(entity => {
+                    {resolvedEntities.filter(e => e.role === 'owner').map(entity => {
                       const isThisPrimary = entity.entity_id === primaryEntity?.entity_id;
                       return (
                         <div key={entity.collaboration_id}
@@ -401,29 +403,18 @@ export default function Profile() {
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-semibold text-gray-900 text-sm">{entity.entity_name}</p>
-                              {isThisPrimary && (
-                                <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200">
-                                  <Star className="w-3 h-3 mr-1 inline" />Primary
-                                </Badge>
-                              )}
+                              {isThisPrimary && <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200"><Star className="w-3 h-3 mr-1 inline" />Primary</Badge>}
                             </div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[entity.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                {entity.entity_type}
-                              </Badge>
-                              <Badge className={`text-xs px-2 py-0.5 ${entity.role === 'owner' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                                {entity.role}
-                              </Badge>
+                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[entity.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>{entity.entity_type}</Badge>
+                              <Badge className="text-xs px-2 py-0.5 bg-gray-900 text-white"><Shield className="w-2.5 h-2.5 mr-1 inline" />Owner</Badge>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2 flex-shrink-0">
                             {!isThisPrimary && (
-                              <Button type="button" size="sm" variant="ghost"
-                                disabled={settingPrimary === entity.entity_id}
-                                className="gap-1.5 text-xs text-gray-400 hover:text-amber-600"
-                                onClick={() => handleSetPrimary(entity)}>
-                                <Star className="w-3 h-3" />
-                                {settingPrimary === entity.entity_id ? 'Setting...' : 'Set Primary'}
+                              <Button type="button" size="sm" variant="ghost" disabled={settingPrimary === entity.entity_id}
+                                className="gap-1.5 text-xs text-gray-400 hover:text-amber-600" onClick={() => handleSetPrimary(entity)}>
+                                <Star className="w-3 h-3" />{settingPrimary === entity.entity_id ? 'Setting...' : 'Set Primary'}
                               </Button>
                             )}
                             {entity.is_racecore_entity && (
@@ -436,13 +427,94 @@ export default function Profile() {
                               onClick={() => window.location.href = buildEditorUrl(entity)}>
                               Open Editor
                             </Button>
-                            {entity.role === 'owner' && (
-                              <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
-                                onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
-                                <Lock className="w-3 h-3" /> Manage Access
+                            <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs border-gray-300"
+                              onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
+                              <Lock className="w-3 h-3" /> Manage Access
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Entities I Edit */}
+              {resolvedEntities.filter(e => e.role !== 'owner').length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Edit className="w-4 h-4 text-blue-600" /> Entities I Edit
+                    </CardTitle>
+                    <CardDescription>Editor access — update profiles and content.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {resolvedEntities.filter(e => e.role !== 'owner').map(entity => {
+                      const isThisPrimary = entity.entity_id === primaryEntity?.entity_id;
+                      return (
+                        <div key={entity.collaboration_id}
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border-2 transition-shadow hover:shadow-sm ${isThisPrimary ? 'border-[#232323] bg-gray-50' : 'border-gray-100 bg-white'}`}>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-gray-900 text-sm">{entity.entity_name}</p>
+                              {isThisPrimary && <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200"><Star className="w-3 h-3 mr-1 inline" />Primary</Badge>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <Badge className={`text-xs border px-2 py-0.5 ${ENTITY_TYPE_COLORS[entity.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>{entity.entity_type}</Badge>
+                              <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border border-blue-200"><Edit className="w-2.5 h-2.5 mr-1 inline" />Editor</Badge>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2 flex-shrink-0">
+                            {!isThisPrimary && (
+                              <Button type="button" size="sm" variant="ghost" disabled={settingPrimary === entity.entity_id}
+                                className="gap-1.5 text-xs text-gray-400 hover:text-amber-600" onClick={() => handleSetPrimary(entity)}>
+                                <Star className="w-3 h-3" />{settingPrimary === entity.entity_id ? 'Setting...' : 'Set Primary'}
                               </Button>
                             )}
+                            {entity.is_racecore_entity && (
+                              <Button type="button" size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
+                                onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}>
+                                <Gauge className="w-3 h-3" /> Open Race Core
+                              </Button>
+                            )}
+                            <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs"
+                              onClick={() => window.location.href = buildEditorUrl(entity)}>
+                              Open Editor
+                            </Button>
                           </div>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Claim Requests */}
+              {claimRequests.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Claim Requests</CardTitle>
+                    <CardDescription>Status of your entity ownership claims.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {claimRequests.map(claim => {
+                      const statusConfig = {
+                        pending: { bg: 'bg-amber-50 border-amber-200', badge: 'bg-amber-100 text-amber-700 border-amber-200', Icon: Clock, text: 'Pending review' },
+                        approved: { bg: 'bg-green-50 border-green-200', badge: 'bg-green-100 text-green-700 border-green-200', Icon: CheckCircle2, text: 'Approved' },
+                        rejected: { bg: 'bg-red-50 border-red-200', badge: 'bg-red-100 text-red-600 border-red-200', Icon: XCircle, text: 'Not approved' },
+                      }[claim.status] || { bg: 'bg-gray-50 border-gray-200', badge: 'bg-gray-100 text-gray-600', Icon: Clock, text: claim.status };
+                      const { Icon: StatusIcon } = statusConfig;
+                      return (
+                        <div key={claim.id} className={`flex items-center gap-3 p-3 border rounded-xl ${statusConfig.bg}`}>
+                          <StatusIcon className="w-4 h-4 flex-shrink-0 opacity-70" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">{claim.entity_name}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <Badge className={`text-xs border px-1.5 py-0 ${ENTITY_TYPE_COLORS[claim.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>{claim.entity_type}</Badge>
+                              {claim.created_date && (() => { try { return <span className="text-xs text-gray-500">Submitted {format(new Date(claim.created_date), 'MMM d, yyyy')}</span>; } catch { return null; } })()}
+                            </div>
+                          </div>
+                          <Badge className={`text-xs border flex-shrink-0 ${statusConfig.badge}`}>{statusConfig.text}</Badge>
                         </div>
                       );
                     })}
