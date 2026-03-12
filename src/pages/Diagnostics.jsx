@@ -23,7 +23,7 @@ import DiagnosticsDupCleanup from '@/components/management/DiagnosticsDupCleanup
 import DiagnosticsOperationalIntegrity from '@/components/management/DiagnosticsOperationalIntegrity';
 import DiagnosticsEntryClassIntegrity from '@/components/management/DiagnosticsEntryClassIntegrity';
 import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventIntegrity';
-import { Calendar } from 'lucide-react';
+import DiagnosticsSessionIntegrity from '@/components/management/DiagnosticsSessionIntegrity';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1318,6 +1318,9 @@ export default function Diagnostics() {
             })()}
           </CardContent>
         </Card>
+
+        {/* ── Session Integrity ─────────────────────────────────────────── */}
+        <DiagnosticsSessionIntegrity />
 
         {/* ── Event Integrity ──────────────────────────────────────────── */}
         <DiagnosticsEventIntegrity />
