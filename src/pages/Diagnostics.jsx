@@ -22,6 +22,8 @@ import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import DiagnosticsDupCleanup from '@/components/management/DiagnosticsDupCleanup';
 import DiagnosticsOperationalIntegrity from '@/components/management/DiagnosticsOperationalIntegrity';
 import DiagnosticsEntryClassIntegrity from '@/components/management/DiagnosticsEntryClassIntegrity';
+import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventIntegrity';
+import { Calendar } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
