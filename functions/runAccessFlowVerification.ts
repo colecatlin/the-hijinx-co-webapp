@@ -91,11 +91,12 @@ Deno.serve(async (req) => {
     } else {
       let orphaned = 0;
       for (const inv of accepted.slice(0, 10)) {
-        const collab = await base44.asServiceRole.entities.EntityCollaborator.filter({
+        const allCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
           entity_id: inv.entity_id,
-          user_email: inv.email.toLowerCase(),
         });
-        if (collab.length === 0) orphaned++;
+        const invEmail = (inv.email || '').toLowerCase();
+        const matched = allCollabs.filter(c => (c.user_email || '').toLowerCase() === invEmail);
+        if (matched.length === 0) orphaned++;
       }
       if (orphaned === 0) {
         checks.valid_invitation_ok = true;
