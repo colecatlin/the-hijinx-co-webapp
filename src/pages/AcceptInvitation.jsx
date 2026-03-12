@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { createPageUrl } from '@/components/utils';
 export default function AcceptInvitation() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [code, setCode] = useState('');
   const [invitationCode, setInvitationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -61,25 +62,33 @@ export default function AcceptInvitation() {
     setIsVerifying(true);
     setVerificationError('');
 
-    try {
-      const result = await base44.functions.invoke('verifyInvitationCode', {
-        code: codeToVerify,
-        email: user.email,
-      });
+    const result = await base44.functions.invoke('redeemEntityAccessCode', {
+      user_id: user.id,
+      user_email: user.email,
+      code: codeToVerify,
+    });
 
-      if (result.data.success) {
-        toast.success('Invitation accepted successfully!');
-        setStep('success');
-        setTimeout(() => {
-          navigate(createPageUrl('MyDashboard') + '?access_updated=1');
-        }, 2000);
-      }
-    } catch (error) {
-      setVerificationError(error.response?.data?.error || 'Failed to verify code. Please try again.');
+    const data = result?.data;
+
+    if (data?.ok) {
+      // Invalidate all collaborator and profile queries before navigating
+      queryClient.invalidateQueries({ queryKey: ['myCollaborations', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['myInvitations', user.email] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
+      queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
+      toast.success('Invitation accepted successfully!');
+      setStep('success');
+      setTimeout(() => {
+        navigate(createPageUrl('MyDashboard') + '?access_updated=1');
+      }, 2000);
+    } else {
+      setVerificationError(data?.error || 'Failed to verify code. Please try again.');
       toast.error('Verification failed');
-    } finally {
-      setIsVerifying(false);
     }
+
+    setIsVerifying(false);
   };
 
   if (step === 'login') {

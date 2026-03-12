@@ -38,7 +38,7 @@ export default function CodeInputTab({ user }) {
 
     const data = result?.data;
 
-    if (result?.status >= 400 || data?.error) {
+    if (!data?.ok) {
       setError(data?.error || 'Invalid or expired access code');
       setIsVerifying(false);
       return;
@@ -59,6 +59,7 @@ export default function CodeInputTab({ user }) {
     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
     queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
+    queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
 
     setIsVerifying(false);
     setTimeout(() => setSuccess(null), 8000);
