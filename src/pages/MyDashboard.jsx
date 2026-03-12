@@ -349,33 +349,46 @@ export default function MyDashboard() {
                   </Button>
                 </div>
 
-                {Object.entries(grouped).map(([entityType, items]) => {
-                  const Icon = ENTITY_ICONS[entityType] || User;
-                  return (
-                    <div key={entityType}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          {SECTION_LABELS[entityType] || entityType + 's'}
-                        </span>
-                        <span className="text-xs text-gray-300">({items.length})</span>
-                      </div>
-                      <div className="space-y-2">
-                        {items.map(entity => (
-                          <EntityCard
-                            key={entity.collaboration_id}
-                            collaborator={entity}
-                            onManage={handleManage}
-                            onRaceCore={handleRaceCore}
-                            isPrimary={entity.entity_id === primaryEntity?.entity_id}
-                            onSetPrimary={handleSetPrimary}
-                            settingPrimary={settingPrimary}
-                          />
-                        ))}
-                      </div>
+                {/* Entities I Own */}
+                {resolvedEntities.filter(e => e.role === 'owner').length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-gray-500" />
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entities I Own</span>
                     </div>
-                  );
-                })}
+                    {resolvedEntities.filter(e => e.role === 'owner').map(entity => (
+                      <EntityCard
+                        key={entity.collaboration_id}
+                        collaborator={entity}
+                        onManage={handleManage}
+                        onRaceCore={handleRaceCore}
+                        isPrimary={entity.entity_id === primaryEntity?.entity_id}
+                        onSetPrimary={handleSetPrimary}
+                        settingPrimary={settingPrimary}
+                      />
+                    ))}
+                  </div>
+                )}
+                {/* Entities I Edit */}
+                {resolvedEntities.filter(e => e.role !== 'owner').length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <Edit2 className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entities I Edit</span>
+                    </div>
+                    {resolvedEntities.filter(e => e.role !== 'owner').map(entity => (
+                      <EntityCard
+                        key={entity.collaboration_id}
+                        collaborator={entity}
+                        onManage={handleManage}
+                        onRaceCore={handleRaceCore}
+                        isPrimary={entity.entity_id === primaryEntity?.entity_id}
+                        onSetPrimary={handleSetPrimary}
+                        settingPrimary={settingPrimary}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Race Core section */}
