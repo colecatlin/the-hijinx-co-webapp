@@ -22,6 +22,7 @@ import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
 import PendingClaimsNotice from '@/components/onboarding/PendingClaimsNotice';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
+import PrimaryEntityPrompt from '@/components/mydashboard/PrimaryEntityPrompt';
 import { getUserMode } from '@/components/system/userModeResolver';
 import { getUserQuickActions } from '@/components/system/userQuickActions';
 import {
@@ -211,6 +212,11 @@ export default function MyDashboard() {
 
           {/* Pending claims + invitations — shown for all users, fan or entity */}
           {user && !isLoading && <PendingAccessSection user={user} />}
+
+          {/* Primary entity prompt — shown when user has entities but no primary set */}
+          {!isLoading && hasEntities && !primaryEntity && !primaryStale && (
+            <PrimaryEntityPrompt user={user} entities={resolvedEntities} />
+          )}
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
