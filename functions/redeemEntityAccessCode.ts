@@ -71,7 +71,11 @@ async function grantEntityAccess(base44, { user_id, user_email, entity_type, ent
       operation_type: 'entity_access_linked',
       entity_name: 'EntityCollaborator',
       status: 'success',
-      metadata: { user_id, user_email, entity_type, entity_id, role, action, source: source || 'redeemEntityAccessCode' },
+      metadata: {
+        user_id, user_email, entity_type, entity_id, role, action,
+        source: source || 'redeemEntityAccessCode',
+        ...(access_code ? { access_code } : {}),
+      },
     });
 
     return { ok: true, action, collaborator };

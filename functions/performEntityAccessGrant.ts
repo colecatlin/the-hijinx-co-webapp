@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
       operation_type: 'entity_access_linked',
       entity_name: 'EntityCollaborator',
       status: 'success',
-      metadata: { user_id, user_email, entity_type, entity_id, role, action, source: source || 'performEntityAccessGrant' },
+      metadata: {
+        user_id, user_email, entity_type, entity_id, role, action,
+        source: source || 'performEntityAccessGrant',
+        ...(access_code ? { access_code } : {}),
+      },
     });
 
     return Response.json({ ok: true, action, collaborator });
