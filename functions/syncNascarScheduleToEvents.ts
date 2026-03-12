@@ -18,10 +18,10 @@ function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
   return `${norm}|${event_date || 'none'}|${track_id || 'none'}|${series_id || 'none'}`;
 }
 
-// Maps NASCAR series_id to our series names
+// Canonical series names — must match syncNascarCalendar CANONICAL_SERIES exactly
 const SERIES_NAMES = {
   1: 'NASCAR Cup Series',
-  2: "NASCAR O'Reilly Auto Parts Series",
+  2: 'NASCAR Xfinity Series',
   3: 'NASCAR Craftsman Truck Series',
 };
 
