@@ -278,10 +278,15 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       const r = await model.filter({ event_id: payload.event_id, normalized_name: normalized });
       if (r?.length) return { record: r[0], matchMethod: 'event_id_normalized_name' };
     }
-    // 5. event_id + session_type + round_number
-    if (payload.event_id && payload.session_type && payload.round_number) {
+    // 5. event_id + session_type + round_number (positional context)
+    if (payload.event_id && payload.session_type && payload.round_number !== undefined && payload.round_number !== null) {
       const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type, round_number: payload.round_number });
       if (r?.length) return { record: r[0], matchMethod: 'event_id_type_round' };
+    }
+    // 6. event_id + session_type (fallback when round_number absent)
+    if (payload.event_id && payload.session_type) {
+      const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type });
+      if (r?.length) return { record: r[0], matchMethod: 'event_id_type' };
     }
     return { record: null, matchMethod: null };
   }
