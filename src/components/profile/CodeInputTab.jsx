@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -56,15 +57,7 @@ export default function CodeInputTab({ user }) {
 
     setCode('');
 
-    // Invalidate affected queries so Profile and Dashboard reflect the new access
-    queryClient.invalidateQueries({ queryKey: ['myCollaborations', user.id] });
-    queryClient.invalidateQueries({ queryKey: ['myInvitations', user.email] });
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
-    queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
-    queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
-    queryClient.invalidateQueries({ queryKey: ['allClaims', user.id] });
-    queryClient.invalidateQueries({ queryKey: ['claimRequests', user.id] });
+    invalidateDataGroups(queryClient, ['access', 'profile', 'collaborators']);
 
     try { base44.analytics.track({ eventName: 'access_code_redeemed', properties: { entity_type: data.entity_type } }); } catch {}
 
