@@ -129,6 +129,18 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Auto-set primary entity for claimant if they have none yet
+    try {
+      const claimants = await base44.asServiceRole.entities.User.filter({ id: claim.user_id });
+      const claimant = claimants[0];
+      if (claimant && !claimant.primary_entity_id) {
+        await base44.asServiceRole.entities.User.update(claimant.id, {
+          primary_entity_type: claim.entity_type,
+          primary_entity_id: claim.entity_id,
+        });
+      }
+    } catch (_) { /* non-critical */ }
+
     return Response.json({ success: true, action: 'approved', role });
   }
 

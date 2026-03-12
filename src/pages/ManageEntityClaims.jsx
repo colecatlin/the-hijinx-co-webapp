@@ -75,6 +75,16 @@ export default function ManageEntityClaims() {
     queryFn: () => base44.auth.me(),
   });
 
+  if (user && user.role !== 'admin') {
+    return (
+      <ManagementLayout currentPage="ManageEntityClaims">
+        <ManagementShell title="Access Denied" subtitle="">
+          <div className="py-20 text-center text-gray-500">This page is for administrators only.</div>
+        </ManagementShell>
+      </ManagementLayout>
+    );
+  }
+
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['entityClaimRequests'],
     queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),

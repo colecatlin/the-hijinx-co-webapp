@@ -164,6 +164,20 @@ Deno.serve(async (req) => {
         },
       });
 
+      // Auto-set primary entity if user has none
+      if (grantResult.action !== 'unchanged') {
+        try {
+          const uList = await base44.asServiceRole.entities.User.filter({ id: user_id });
+          const u = uList[0];
+          if (u && !u.primary_entity_id) {
+            await base44.asServiceRole.entities.User.update(u.id, {
+              primary_entity_type: invitation.entity_type,
+              primary_entity_id: invitation.entity_id,
+            });
+          }
+        } catch (_) { /* non-critical */ }
+      }
+
       return Response.json({
         ok: true,
         action: grantResult.action,
@@ -218,6 +232,20 @@ Deno.serve(async (req) => {
           role: 'editor',
         },
       });
+
+      // Auto-set primary entity if user has none
+      if (grantResult.action !== 'unchanged') {
+        try {
+          const uList = await base44.asServiceRole.entities.User.filter({ id: user_id });
+          const u = uList[0];
+          if (u && !u.primary_entity_id) {
+            await base44.asServiceRole.entities.User.update(u.id, {
+              primary_entity_type: ownerRecord.entity_type,
+              primary_entity_id: ownerRecord.entity_id,
+            });
+          }
+        } catch (_) { /* non-critical */ }
+      }
 
       return Response.json({
         ok: true,
