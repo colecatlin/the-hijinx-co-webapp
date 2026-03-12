@@ -268,6 +268,62 @@ export default function Diagnostics() {
     setWriteAuditRunning(false);
   };
 
+  // ── Driver Integrity ──────────────────────────────────────────────
+  const [driverBackfillResult, setDriverBackfillResult]   = useState(null);
+  const [driverBackfillRunning, setDriverBackfillRunning] = useState(false);
+  const [driverCleanupResult, setDriverCleanupResult]     = useState(null);
+  const [driverCleanupRunning, setDriverCleanupRunning]   = useState(false);
+  const [driverVerifyResult, setDriverVerifyResult]       = useState(null);
+  const [driverVerifyRunning, setDriverVerifyRunning]     = useState(false);
+
+  const runDriverBackfill = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will populate missing normalization fields on all Driver records. Proceed?')) return;
+    setDriverBackfillRunning(true); setDriverBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillDriverNormalization', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setDriverBackfillResult({ ...res.data, mode: dry_run ? 'dry_run' : 'live' });
+      const total = (res.data.backfilled_normalized_name || 0) + (res.data.backfilled_canonical_slug || 0) + (res.data.backfilled_canonical_key || 0);
+      toast.success(dry_run ? 'Driver backfill preview complete' : `Driver backfill complete — ${total} fields filled`);
+    } catch (err) { toast.error(`Driver backfill failed: ${err.message}`); }
+    setDriverBackfillRunning(false);
+  };
+
+  const runDriverCleanup = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will mark duplicate Driver records inactive and repair references. Proceed?')) return;
+    setDriverCleanupRunning(true); setDriverCleanupResult(null);
+    try {
+      const res = await base44.functions.invoke('repairDuplicateDriverRecords', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setDriverCleanupResult({ ...res.data, dry_run });
+      if (!dry_run && res.data?.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairDriverReferences', { repairs: res.data.repairs, dry_run: false });
+        const ref = refRes.data || {};
+        toast.success(`Driver cleanup done — ${res.data.duplicates_marked_inactive?.length || 0} inactive, results repaired: ${ref.updated_results || 0}`);
+      } else {
+        const count = res.data?.duplicates_marked_inactive?.length || 0;
+        if (count === 0) toast.success('No duplicate Driver groups detected.');
+        else toast.success(`Driver cleanup ${dry_run ? 'preview' : 'done'} — ${count} ${dry_run ? 'would be' : ''} marked inactive`);
+      }
+    } catch (err) { toast.error(`Driver cleanup failed: ${err.message}`); }
+    setDriverCleanupRunning(false);
+  };
+
+  const runDriverVerification = async () => {
+    setDriverVerifyRunning(true); setDriverVerifyResult(null);
+    try {
+      const res = await base44.functions.invoke('verifyDriverIntegrity', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setDriverVerifyResult(res.data);
+      const f = res.data?.failures?.length || 0;
+      const w = res.data?.warnings?.length || 0;
+      if (f === 0 && w === 0) toast.success('Driver integrity verified — all checks passed');
+      else if (f === 0) toast.success(`Driver integrity: ${w} warning(s) — review below`);
+      else toast.error(`Driver integrity: ${f} failure(s) detected`);
+    } catch (err) { toast.error(`Driver verification failed: ${err.message}`); }
+    setDriverVerifyRunning(false);
+  };
+
   // ── Track Integrity ───────────────────────────────────────────────
   const [trackBackfillResult, setTrackBackfillResult]   = useState(null);
   const [trackBackfillRunning, setTrackBackfillRunning] = useState(false);
