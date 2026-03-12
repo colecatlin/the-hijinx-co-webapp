@@ -194,7 +194,17 @@ export default function ManageAccess() {
                 : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-900'
             }`}
           >
-            Pending Invitations ({allInvitations.filter(i => i.status === 'pending').length})
+            Invitations ({allInvitations.filter(i => i.status === 'pending').length} pending)
+          </button>
+          <button
+            onClick={() => setActiveSection('claims')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              activeSection === 'claims'
+                ? 'bg-gray-900 text-white'
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-900'
+            }`}
+          >
+            Claim Requests ({allClaims.filter(c => c.status === 'pending').length} pending)
           </button>
         </div>
 
