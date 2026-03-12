@@ -4,7 +4,7 @@
  * Bug Burn-Down section for the Diagnostics page.
  * Displays critical/high/medium/low bug counts and launch readiness.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +65,7 @@ export default function DiagnosticsBugBurndown() {
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (verificationResult) {
       fetchBurndownReport();
     }
