@@ -302,16 +302,17 @@ export default function Profile() {
                       Favorites, stories, and motorsports browsing are ready now. Link an entity if you manage a driver, team, track, or series.
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">
+                      <Link to={createPageUrl('MyDashboard')}>
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">Go to Dashboard</Button>
+                      </Link>
                       <Link to={createPageUrl('DriverDirectory')}>
                         <Button variant="outline" size="sm" className="gap-1.5 text-xs">Browse Drivers</Button>
                       </Link>
-                      <Link to={createPageUrl('EventDirectory')}>
-                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">Browse Events</Button>
+                      <Link to={createPageUrl('Profile') + '?tab=access_codes'}>
+                        <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs">
+                          <KeyRound className="w-3.5 h-3.5" /> Link an Entity
+                        </Button>
                       </Link>
-                      <Button size="sm" className="bg-[#232323] text-white hover:bg-black gap-1.5 text-xs"
-                      onClick={() => window.location.href = createPageUrl('Profile') + '?tab=access_codes'}>
-                      <KeyRound className="w-3.5 h-3.5" /> Link an Entity
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
