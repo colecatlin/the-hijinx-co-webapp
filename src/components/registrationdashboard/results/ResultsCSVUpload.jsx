@@ -167,20 +167,30 @@ export default function ResultsCSVUpload({ session, drivers, driverPrograms }) {
 
       const importedCount = resolved.length - errorRows.length - updatedCount;
 
-      // Standardized operation log
-      await base44.functions.invoke('logOperation', {
-        operation_type: 'csv_import_completed',
-        source_type: 'csv',
+      // Structured unresolved breakdown by reason
+      const unresolvedBreakdown = {};
+      unresolvedRows.forEach(r => {
+        const field = r.reason?.includes('ambiguous') ? 'driver_id_ambiguous' : 'driver_id';
+        unresolvedBreakdown[field] = (unresolvedBreakdown[field] || 0) + 1;
+      });
+
+      // Standardized operational import log
+      await base44.entities.OperationLog.create({
+        operation_type: 'operational_import_completed',
+        source_type: 'csv_upload',
         entity_name: 'Results',
-        status: 'completed',
+        event_id: session?.event_id,
+        status: errorRows.length === 0 ? 'success' : 'completed',
+        message: `Results import: ${importedCount + updatedCount} written, ${unresolvedRows.length} unresolved`,
         metadata: {
-          importer_name: 'results_csv_upload',
-          imported_count: importedCount,
+          row_type: 'result',
+          source_path: 'results_csv_upload',
+          created_count: importedCount,
           updated_count: updatedCount,
-          skipped_count: 0,
           unresolved_count: unresolvedRows.length,
           warning_count: 0,
           error_count: errorRows.length,
+          unresolved_breakdown: unresolvedBreakdown,
           session_id: session?.id,
           event_id: session?.event_id,
         },
