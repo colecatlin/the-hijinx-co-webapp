@@ -304,8 +304,8 @@ export default function MyDashboard() {
             />
           )}
 
-          {/* Media Portal card — shown for all modes with soft CTA if no profile */}
-          {!isLoading && (mode === 'media_user' || mode === 'fan') && (
+          {/* Media Portal card — shown for fans and media users */}
+          {!isLoading && (mode === 'media_user' || mode === 'fan' || mode === 'entity_owner' || mode === 'entity_editor') && (
             <MediaPortalCard mediaProfile={mediaProfile} />
           )}
 
