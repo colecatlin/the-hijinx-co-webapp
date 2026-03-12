@@ -24,6 +24,7 @@ import DiagnosticsOperationalIntegrity from '@/components/management/Diagnostics
 import DiagnosticsEntryClassIntegrity from '@/components/management/DiagnosticsEntryClassIntegrity';
 import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventIntegrity';
 import DiagnosticsSessionIntegrity from '@/components/management/DiagnosticsSessionIntegrity';
+import DiagnosticsResultsAndStandingsIntegrity from '@/components/management/DiagnosticsResultsAndStandingsIntegrity';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1318,6 +1319,9 @@ export default function Diagnostics() {
             })()}
           </CardContent>
         </Card>
+
+        {/* ── Results & Standings Integrity ─────────────────────────────── */}
+        <DiagnosticsResultsAndStandingsIntegrity />
 
         {/* ── Session Integrity ─────────────────────────────────────────── */}
         <DiagnosticsSessionIntegrity />
