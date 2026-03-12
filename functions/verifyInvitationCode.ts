@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
   // Check expiration
   if (invitation.expiration_date && new Date(invitation.expiration_date) < new Date()) {
     await base44.asServiceRole.entities.Invitation.update(invitation.id, { status: 'expired' });
-    return Response.json({ ok: false, error: 'This invitation has expired.' }, { status: 410 });
+    return Response.json({ ok: false, error: 'This invitation has expired.' }, { status: 404 });
   }
 
   // Return invitation details only — no side effects
