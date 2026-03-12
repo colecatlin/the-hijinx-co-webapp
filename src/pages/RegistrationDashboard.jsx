@@ -517,7 +517,7 @@ export default function RegistrationDashboard() {
 
   useEffect(() => {
     if (authLoading === false && !isAuthenticated) {
-      base44.auth.redirectToLogin();
+      base44.auth.redirectToLogin(window.location.href);
     }
   }, [isAuthenticated, authLoading]);
 

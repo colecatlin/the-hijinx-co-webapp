@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import ManagementSearch from '@/components/management/ManagementSearch';
@@ -9,10 +11,39 @@ import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
 import { MANAGEMENT_SECTIONS } from '@/components/management/managementConfig';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { ShieldOff } from 'lucide-react';
 
 export default function Management() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(MANAGEMENT_SECTIONS[0].title);
+
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  if (userLoading) return null;
+
+  if (!user) {
+    base44.auth.redirectToLogin(createPageUrl('Management'));
+    return null;
+  }
+
+  if (user.role !== 'admin') {
+    return (
+      <ManagementLayout currentPage="Management">
+        <ManagementShell title="Access Denied" subtitle="">
+          <div className="py-24 flex flex-col items-center gap-4 text-center">
+            <ShieldOff className="w-10 h-10 text-gray-300" />
+            <p className="text-gray-600 font-medium">Access denied</p>
+            <p className="text-gray-400 text-sm max-w-sm">You do not currently have permission to access this area.</p>
+            <Button size="sm" onClick={() => navigate(createPageUrl('MyDashboard'))}>Go to My Dashboard</Button>
+          </div>
+        </ManagementShell>
+      </ManagementLayout>
+    );
+  }
 
   return (
     <>
