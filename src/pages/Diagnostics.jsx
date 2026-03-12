@@ -25,6 +25,7 @@ import DiagnosticsEntryAndClassIntegrity from '@/components/management/Diagnosti
 import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventIntegrity';
 import DiagnosticsSessionIntegrity from '@/components/management/DiagnosticsSessionIntegrity';
 import DiagnosticsResultsAndStandingsIntegrity from '@/components/management/DiagnosticsResultsAndStandingsIntegrity';
+import DiagnosticsArchitectureHealth from '@/components/management/DiagnosticsArchitectureHealth';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
