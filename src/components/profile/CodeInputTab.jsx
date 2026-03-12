@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { createPageUrl } from '@/components/utils';
 
 export default function CodeInputTab({ user }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
@@ -60,9 +63,14 @@ export default function CodeInputTab({ user }) {
     queryClient.invalidateQueries({ queryKey: ['resolvedEntities', user.id] });
     queryClient.invalidateQueries({ queryKey: ['entityCollaborators', user.email] });
     queryClient.invalidateQueries({ queryKey: ['myOperationLogs', user.email] });
+    queryClient.invalidateQueries({ queryKey: ['allClaims', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['claimRequests', user.id] });
+
+    try { base44.analytics.track({ eventName: 'access_code_redeemed', properties: { entity_type: data.entity_type } }); } catch {}
 
     setIsVerifying(false);
-    setTimeout(() => setSuccess(null), 8000);
+    // Navigate to dashboard with success banner
+    navigate(createPageUrl('MyDashboard') + '?access_updated=1');
   };
 
   return (
