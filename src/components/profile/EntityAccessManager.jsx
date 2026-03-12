@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Copy, RefreshCw, CheckCircle2, AlertCircle, Loader2,
-  UserPlus, Trash2, ChevronDown, ChevronUp, KeyRound, Users
+  UserPlus, Trash2, ChevronDown, ChevronUp, KeyRound, Users, Mail, Clock
 } from 'lucide-react';
 
 function AccessCodePanel({ collaborator }) {
@@ -265,8 +265,30 @@ export default function EntityAccessManager({ collaborator, user }) {
             )}
           </div>
 
+          {/* Pending Invitations */}
+          {pendingInvitations.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-xs font-semibold text-gray-700">Pending Invitations</span>
+                <span className="text-xs text-gray-400">({pendingInvitations.length})</span>
+              </div>
+              <div className="space-y-1.5">
+                {pendingInvitations.map(inv => (
+                  <div key={inv.id} className="flex items-center justify-between px-3 py-2 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Mail className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                      <span className="text-xs text-gray-700 truncate">{inv.email}</span>
+                    </div>
+                    <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200 flex-shrink-0 ml-2">Pending</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Invite Form */}
-          <InviteForm collaborator={collaborator} onSuccess={() => refetch()} />
+          <InviteForm collaborator={collaborator} onSuccess={() => { refetch(); refetchInvitations(); }} />
         </div>
       )}
     </div>
