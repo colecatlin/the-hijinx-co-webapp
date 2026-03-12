@@ -114,6 +114,8 @@ export default function MediaPortal() {
               </Badge>
             )}
           </div>
+            </div>
+          </div>
           {currentUser && (
             <p className="text-gray-500 text-sm">{currentUser.full_name || currentUser.email}</p>
           )}
