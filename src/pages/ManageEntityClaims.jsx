@@ -1,177 +1,218 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, Clock, User, Users, MapPin, Trophy, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CheckCircle2, XCircle, Clock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
-const STATUS_CONFIG = {
-  pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700 border-amber-200', Icon: Clock },
-  approved: { label: 'Approved', color: 'bg-green-100 text-green-700 border-green-200', Icon: CheckCircle2 },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 border-red-200', Icon: XCircle },
+const ENTITY_COLORS = {
+  Driver: 'bg-blue-50 text-blue-700 border-blue-200',
+  Team: 'bg-purple-50 text-purple-700 border-purple-200',
+  Track: 'bg-green-50 text-green-700 border-green-200',
+  Series: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
-const TYPE_ICONS = { Driver: User, Team: Users, Track: MapPin, Series: Trophy };
-const FILTERS = ['pending', 'all', 'approved', 'rejected'];
+function ClaimCard({ claim, onAction }) {
+  const safeDate = (d) => { try { return format(new Date(d), 'MMM d, yyyy'); } catch { return '—'; } };
+
+  return (
+    <Card className="hover:shadow-sm transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="font-semibold text-gray-900 text-sm">{claim.entity_name}</span>
+              <Badge className={`text-xs border px-1.5 py-0 ${ENTITY_COLORS[claim.entity_type] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                {claim.entity_type}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+              <User className="w-3 h-3" />
+              <span>{claim.user_email}</span>
+            </div>
+            {claim.justification && (
+              <p className="text-xs text-gray-600 mt-2 bg-gray-50 border border-gray-100 rounded p-2 italic">
+                "{claim.justification}"
+              </p>
+            )}
+            <p className="text-xs text-gray-400 mt-2">Submitted {safeDate(claim.created_date)}</p>
+          </div>
+          {claim.status === 'pending' && (
+            <div className="flex gap-2 flex-shrink-0">
+              <Button size="sm" className="text-xs bg-green-600 hover:bg-green-700 text-white gap-1"
+                onClick={() => onAction(claim, 'approve')}>
+                <CheckCircle2 className="w-3 h-3" /> Approve
+              </Button>
+              <Button size="sm" variant="outline" className="text-xs text-red-600 border-red-200 hover:bg-red-50 gap-1"
+                onClick={() => onAction(claim, 'reject')}>
+                <XCircle className="w-3 h-3" /> Reject
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ManageEntityClaims() {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState('pending');
-  const [actionLoading, setActionLoading] = useState(null);
-  // grant role override per claim
-  const [roleOverrides, setRoleOverrides] = useState({});
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [actionType, setActionType] = useState(null);
+  const [grantRole, setGrantRole] = useState('owner');
+  const [processing, setProcessing] = useState(false);
 
-  const { data: claims = [], isLoading } = useQuery({
-    queryKey: ['entityClaimRequests', filter],
-    queryFn: () =>
-      filter === 'all'
-        ? base44.entities.EntityClaimRequest.list('-created_date', 100)
-        : base44.entities.EntityClaimRequest.filter({ status: filter }, '-created_date', 100),
-    staleTime: 30_000,
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
-  const pendingCount = claims.filter(c => c.status === 'pending').length;
+  const { data: claims = [], isLoading } = useQuery({
+    queryKey: ['entityClaimRequests'],
+    queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),
+  });
 
-  const handleAction = async (claimId, action) => {
-    const role = roleOverrides[claimId] || 'owner';
-    setActionLoading(claimId + action);
-    const res = await base44.functions.invoke('approveEntityClaim', { claim_id: claimId, action, role }).catch(() => null);
-    setActionLoading(null);
-    if (res?.data?.success) {
+  const pending = claims.filter(c => c.status === 'pending');
+  const approved = claims.filter(c => c.status === 'approved');
+  const rejected = claims.filter(c => c.status === 'rejected');
+
+  const handleAction = (claim, action) => {
+    setSelectedClaim(claim);
+    setActionType(action);
+    setGrantRole('owner');
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedClaim || !actionType) return;
+    setProcessing(true);
+    const res = await base44.functions.invoke('approveEntityClaim', {
+      claim_id: selectedClaim.id,
+      action: actionType,
+      role: grantRole,
+    });
+    const data = res?.data;
+    if (data?.success) {
+      toast.success(actionType === 'approve' ? 'Claim approved — access granted.' : 'Claim rejected.');
       queryClient.invalidateQueries({ queryKey: ['entityClaimRequests'] });
+    } else {
+      toast.error(data?.error || 'Action failed.');
     }
+    setProcessing(false);
+    setSelectedClaim(null);
+    setActionType(null);
   };
 
   return (
     <ManagementLayout currentPage="ManageEntityClaims">
-      <ManagementShell
-        title="Entity Claims"
-        subtitle="Review ownership and access claim requests submitted by users."
-        maxWidth="max-w-4xl"
-      >
-        {/* Filter tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
-          {FILTERS.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-all ${
-                filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {f}
-              {f === 'pending' && pendingCount > 0 && filter !== 'pending' && (
-                <span className="ml-1.5 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  {pendingCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
+      <ManagementShell title="Entity Claim Requests" subtitle="Review ownership claims for Drivers, Teams, Tracks, and Series">
         {isLoading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
-          </div>
-        ) : claims.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <Clock className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm">No {filter !== 'all' ? filter : ''} claims found.</p>
+            {[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />)}
           </div>
         ) : (
-          <div className="space-y-3">
-            {claims.map(claim => {
-              const { label, color, Icon: StatusIcon } = STATUS_CONFIG[claim.status] || STATUS_CONFIG.pending;
-              const TypeIcon = TYPE_ICONS[claim.entity_type] || User;
-              const isPending = claim.status === 'pending';
-              const currentRole = roleOverrides[claim.id] || 'owner';
+          <Tabs defaultValue="pending" className="space-y-5">
+            <TabsList>
+              <TabsTrigger value="pending" className="gap-1.5">
+                <Clock className="w-3.5 h-3.5" /> Pending ({pending.length})
+              </TabsTrigger>
+              <TabsTrigger value="approved" className="gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Approved ({approved.length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="gap-1.5">
+                <XCircle className="w-3.5 h-3.5" /> Rejected ({rejected.length})
+              </TabsTrigger>
+            </TabsList>
 
-              return (
-                <div key={claim.id} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <TypeIcon className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-sm text-gray-900">{claim.entity_name}</span>
-                          <Badge className={`text-[10px] px-2 py-0.5 border ${color}`}>
-                            <StatusIcon className="w-3 h-3 mr-1 inline" />{label}
-                          </Badge>
-                          <Badge variant="outline" className="text-[10px]">{claim.entity_type}</Badge>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Requested by <strong>{claim.user_email}</strong>
-                          {claim.created_date && ` · ${format(new Date(claim.created_date), 'MMM d, yyyy')}`}
-                        </p>
-                        {claim.justification && (
-                          <p className="text-xs text-gray-600 mt-2 italic bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
-                            "{claim.justification}"
-                          </p>
-                        )}
-                        {!isPending && claim.reviewed_at && (
-                          <p className="text-xs text-gray-400 mt-1">
-                            Reviewed {format(new Date(claim.reviewed_at), 'MMM d, yyyy')}
-                            {claim.granted_role && ` · Granted: ${claim.granted_role}`}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+            <TabsContent value="pending" className="space-y-3">
+              {pending.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-gray-500 text-sm">No pending claims</CardContent></Card>
+              ) : pending.map(c => <ClaimCard key={c.id} claim={c} onAction={handleAction} />)}
+            </TabsContent>
 
-                    {isPending && (
-                      <div className="flex flex-col gap-2 flex-shrink-0">
-                        {/* Role selector for this claim */}
-                        <div className="flex gap-1 bg-gray-100 p-0.5 rounded-md">
-                          {['owner', 'editor'].map(r => (
-                            <button
-                              key={r}
-                              onClick={() => setRoleOverrides(prev => ({ ...prev, [claim.id]: r }))}
-                              className={`px-2.5 py-1 text-xs rounded transition-all ${
-                                currentRole === r ? 'bg-white text-gray-900 shadow-sm font-medium' : 'text-gray-500'
-                              }`}
-                            >
-                              Grant as {r}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={!!actionLoading}
-                            onClick={() => handleAction(claim.id, 'reject')}
-                            className="text-xs gap-1.5 text-red-600 border-red-200 hover:bg-red-50 flex-1"
-                          >
-                            {actionLoading === claim.id + 'reject'
-                              ? <Loader2 className="w-3 h-3 animate-spin" />
-                              : <XCircle className="w-3.5 h-3.5" />}
-                            Reject
-                          </Button>
-                          <Button
-                            size="sm"
-                            disabled={!!actionLoading}
-                            onClick={() => handleAction(claim.id, 'approve')}
-                            className="text-xs gap-1.5 bg-green-600 hover:bg-green-700 text-white flex-1"
-                          >
-                            {actionLoading === claim.id + 'approve'
-                              ? <Loader2 className="w-3 h-3 animate-spin" />
-                              : <CheckCircle2 className="w-3.5 h-3.5" />}
-                            Approve
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+            <TabsContent value="approved" className="space-y-3">
+              {approved.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-gray-500 text-sm">No approved claims</CardContent></Card>
+              ) : approved.map(c => (
+                <Card key={c.id}><CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-sm text-gray-900">{c.entity_name} <Badge className={`text-xs ml-1 ${ENTITY_COLORS[c.entity_type] || ''}`}>{c.entity_type}</Badge></p>
+                    <p className="text-xs text-gray-500">{c.user_email} · Approved as {c.granted_role}</p>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                  <Badge className="text-xs bg-green-100 text-green-700 border border-green-200">Approved</Badge>
+                </CardContent></Card>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="rejected" className="space-y-3">
+              {rejected.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-gray-500 text-sm">No rejected claims</CardContent></Card>
+              ) : rejected.map(c => (
+                <Card key={c.id}><CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-sm text-gray-900">{c.entity_name} <Badge className={`text-xs ml-1 ${ENTITY_COLORS[c.entity_type] || ''}`}>{c.entity_type}</Badge></p>
+                    <p className="text-xs text-gray-500">{c.user_email}</p>
+                  </div>
+                  <Badge className="text-xs bg-red-100 text-red-600 border border-red-200">Rejected</Badge>
+                </CardContent></Card>
+              ))}
+            </TabsContent>
+          </Tabs>
         )}
+
+        <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {actionType === 'approve' ? 'Approve Claim' : 'Reject Claim'}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedClaim && (
+              <div className="space-y-4">
+                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                  <p><span className="text-gray-500">Entity:</span> <strong>{selectedClaim.entity_name}</strong> ({selectedClaim.entity_type})</p>
+                  <p><span className="text-gray-500">Claimant:</span> {selectedClaim.user_email}</p>
+                  {selectedClaim.justification && <p className="mt-2 italic text-gray-600">"{selectedClaim.justification}"</p>}
+                </div>
+                {actionType === 'approve' && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1.5">Grant Role</label>
+                    <Select value={grantRole} onValueChange={setGrantRole}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="owner">Owner</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {actionType === 'reject' && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    This will mark the claim as rejected. The user will see this status on their dashboard.
+                  </div>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setSelectedClaim(null)}>Cancel</Button>
+              <Button size="sm" disabled={processing}
+                className={actionType === 'approve' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}
+                onClick={handleConfirm}>
+                {processing ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> Processing...</> : (actionType === 'approve' ? 'Approve & Grant Access' : 'Confirm Rejection')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </ManagementShell>
     </ManagementLayout>
   );
