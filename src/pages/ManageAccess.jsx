@@ -5,9 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap } from 'lucide-react';
+import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap, CheckCircle2, XCircle, Clock, User as UserIcon, MailX } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import { toast } from 'sonner';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 
 const ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series', 'Event'];
 
@@ -23,6 +25,7 @@ export default function ManageAccess() {
   const [activeSection, setActiveSection] = useState('collaborators'); // 'collaborators' or 'invitations'
   const [filterEntityType, setFilterEntityType] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
+  const [claimProcessing, setClaimProcessing] = useState(null);
 
   // Fetch all collaborators and invitations
   const { data: allCollaborators = [], isLoading: loadingCollaborators } = useQuery({
@@ -30,10 +33,42 @@ export default function ManageAccess() {
     queryFn: () => base44.entities.EntityCollaborator.list(),
   });
 
-  const { data: allInvitations = [], isLoading: loadingInvitations } = useQuery({
+  const { data: allInvitations = [], isLoading: loadingInvitations, refetch: refetchInvitations } = useQuery({
     queryKey: ['allInvitations'],
-    queryFn: () => base44.entities.Invitation.list(),
+    queryFn: () => base44.entities.Invitation.list('-created_date', 300),
   });
+
+  const { data: allClaims = [], isLoading: loadingClaims, refetch: refetchClaims } = useQuery({
+    queryKey: ['entityClaimRequests'],
+    queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),
+  });
+
+  const handleClaimAction = async (claim, action) => {
+    if (!window.confirm(`${action === 'approve' ? 'Approve' : 'Reject'} claim for ${claim.entity_name} by ${claim.user_email}?`)) return;
+    setClaimProcessing(claim.id);
+    const res = await base44.functions.invoke('approveEntityClaim', { claim_id: claim.id, action, role: 'owner' });
+    const data = res?.data;
+    if (data?.success) {
+      toast.success(action === 'approve' ? 'Claim approved — access granted.' : 'Claim rejected.');
+      invalidateDataGroups(queryClient, ['access', 'collaborators']);
+      refetchClaims();
+    } else {
+      toast.error(data?.error || 'Action failed.');
+    }
+    setClaimProcessing(null);
+  };
+
+  const handleRevokeInvitation = async (inv) => {
+    if (!window.confirm(`Revoke invitation for ${inv.email}?`)) return;
+    const res = await base44.functions.invoke('revokeEntityInvitation', { invitation_id: inv.id });
+    if (res?.data?.success) {
+      toast.success('Invitation revoked.');
+      refetchInvitations();
+      queryClient.invalidateQueries({ queryKey: ['allInvitations'] });
+    } else {
+      toast.error(res?.data?.error || 'Revoke failed.');
+    }
+  };
 
   // Fetch entities for active type
   const { data: entities = [], isLoading: loadingEntities } = useQuery({
