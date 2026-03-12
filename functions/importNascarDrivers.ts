@@ -195,11 +195,10 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
         if (existing && existing.length > 0) { driverRecord = existing[0]; stats.drivers_found++; }
         else { driverRecord = { id: `dry-run-${normN}` }; stats.drivers_created++; log.push(`[DRY RUN] Would create driver: ${fullName}`); }
       } else {
-        const { record, action } = await upsertEntity(
-          base44.asServiceRole.entities.Driver,
-          'driver',
-          [{ canonical_key: driverKey }, { normalized_name: normN }],
-          {
+        // source_path: nascar_driver_import — routes through syncSourceAndEntityRecord (safe sync pipeline)
+        const driverSyncRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+          entity_type: 'driver',
+          payload: {
             first_name: first,
             last_name: last,
             primary_number: car_number,
@@ -207,22 +206,24 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
             primary_discipline: 'Stock Car',
             status: 'Active',
             hometown_country: 'United States',
-            slug: buildEntitySlug(fullName),
-            normalized_name: normN,
-            canonical_slug: buildEntitySlug(fullName),
-            canonical_key: driverKey,
             team_id: teamRecord?.id || null,
             data_source: 'importNascarDrivers',
             sync_last_seen_at: new Date().toISOString(),
-          }
-        );
-        driverRecord = record;
-        if (action === 'created') { stats.drivers_created++; log.push(`Created driver: ${fullName} (${seriesName})`); }
+          },
+          triggered_from: 'nascar_driver_import',
+        });
+        driverRecord = driverSyncRes?.data?.source_record || null;
+        const driverAction = driverSyncRes?.data?.source_action || 'skipped';
+        if (driverAction === 'created') { stats.drivers_created++; log.push(`Created driver: ${fullName} (${seriesName})`); }
         else {
           stats.drivers_found++;
-          // Update team_id if not set
-          if (teamRecord?.id && !record.team_id) {
-            await base44.asServiceRole.entities.Driver.update(record.id, { team_id: teamRecord.id, sync_last_seen_at: new Date().toISOString() });
+          // If team_id newly resolved, patch it through safe update path via syncSourceAndEntityRecord
+          if (teamRecord?.id && driverRecord && !driverRecord.team_id) {
+            await base44.functions.invoke('syncSourceAndEntityRecord', {
+              entity_type: 'driver',
+              payload: { id: driverRecord.id, team_id: teamRecord.id, sync_last_seen_at: new Date().toISOString() },
+              triggered_from: 'nascar_driver_import',
+            });
             log.push(`  Updated team on driver: ${fullName} → ${team_name}`);
           }
         }
