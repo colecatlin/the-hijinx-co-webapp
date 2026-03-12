@@ -9,12 +9,14 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function normalizeClassName(name) {
-  return (name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+function normalizeName(name) {
+  if (!name) return '';
+  return name.toLowerCase().replace(/[^\w\s]/g, '').trim();
 }
 
-function buildEventClassKey(event_id, class_name) {
-  return `event_class:${event_id || 'none'}:${normalizeClassName(class_name)}`;
+function buildNormalizedEventClassKey(event_id, class_name) {
+  if (!event_id || !class_name) return null;
+  return `event_class:${event_id}:${normalizeName(class_name)}`;
 }
 
 Deno.serve(async (req) => {
@@ -30,34 +32,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'payload.event_id and payload.class_name are required' }, { status: 400 });
     }
 
-    const identityKey = buildEventClassKey(payload.event_id, payload.class_name);
+    const normalizedKey = buildNormalizedEventClassKey(payload.event_id, payload.class_name);
 
-    // 1. By stored identity key
+    // 1. Check by normalized_event_class_key (strongest)
     let existing = null;
     let matchMethod = 'none';
 
-    const byKey = await base44.asServiceRole.entities.EventClass.filter({ event_class_identity_key: identityKey }).catch(() => []);
-    if (byKey?.length) {
-      existing = byKey[0];
-      matchMethod = 'identity_key';
+    if (normalizedKey) {
+      const byNormalizedKey = await base44.asServiceRole.entities.EventClass.filter({ normalized_event_class_key: normalizedKey }).catch(() => []);
+      if (byNormalizedKey?.length) {
+        existing = byNormalizedKey[0];
+        matchMethod = 'normalized_event_class_key';
+      }
     }
 
     // 2. Fallback: event_id + normalized name match
     if (!existing) {
       const all = await base44.asServiceRole.entities.EventClass.filter({ event_id: payload.event_id }).catch(() => []);
-      const normTarget = normalizeClassName(payload.class_name);
-      const matches = all.filter(c => normalizeClassName(c.class_name) === normTarget && c.class_status !== 'Closed');
+      const normTarget = normalizeName(payload.class_name);
+      const matches = all.filter(c => normalizeName(c.class_name) === normTarget && c.class_status !== 'Closed');
       if (matches.length === 1) {
         existing = matches[0];
-        matchMethod = 'fallback_normalized_name';
+        matchMethod = 'event_id_normalized_name';
       } else if (matches.length > 1) {
         existing = matches[0];
-        matchMethod = 'fallback_ambiguous_first';
+        matchMethod = 'event_id_normalized_name_ambiguous';
       }
     }
 
     const { id: _id, ...cleanPayload } = payload;
-    const dataWithKey = { ...cleanPayload, event_class_identity_key: identityKey };
+    const dataWithKey = { ...cleanPayload, normalized_event_class_key: normalizedKey };
     let record, action;
 
     if (existing) {
@@ -73,10 +77,10 @@ Deno.serve(async (req) => {
       entity_name: 'EventClass',
       entity_id: record.id,
       status: 'success',
-      metadata: { entity_type: 'event_class', source_path, event_class_identity_key: identityKey, matched_by: matchMethod },
+      metadata: { entity_type: 'event_class', source_path, normalized_event_class_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
 
-    return Response.json({ action, record, identity_key: identityKey, match_method: matchMethod });
+    return Response.json({ action, record, normalized_key: normalizedKey, match_method: matchMethod });
 
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
