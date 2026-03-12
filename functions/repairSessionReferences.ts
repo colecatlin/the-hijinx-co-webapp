@@ -6,14 +6,16 @@
  *
  * Repaired entities:
  *   - Results.session_id
- *   - Standings.session_id (if field exists)
- *   - Entry.session_id (if field exists)
+ *   - Entry.session_id
+ *   - Standings.session_id (if applicable)
  *
  * Input:
  *   {
  *     repairs: [{ survivor_id: string, duplicate_ids: string[] }],
  *     dry_run?: boolean
  *   }
+ *
+ * Output: repair counts per entity type
  *
  * Admin only. Does not hard-delete anything.
  */
@@ -45,38 +47,53 @@ Deno.serve(async (req) => {
     const { repairs = [], dry_run = false } = body;
 
     if (!repairs.length) {
-      return Response.json({ success: true, message: 'No repairs to process.' });
+      return Response.json({ success: true, message: 'No repairs to process.', report: {} });
     }
 
     const report = {
       dry_run,
       repairs_processed: repairs.length,
-      updated_results:   0,
+      updated_results: 0,
+      updated_entries: 0,
       updated_standings: 0,
-      updated_entries:   0,
       warnings: [],
+    };
+
+    const models = {
+      Results:   base44.asServiceRole.entities.Results,
+      Entry:     base44.asServiceRole.entities.Entry,
+      Standings: base44.asServiceRole.entities.Standings,
     };
 
     for (const { survivor_id, duplicate_ids = [] } of repairs) {
       if (!survivor_id || !duplicate_ids.length) continue;
+
       for (const dupId of duplicate_ids) {
-        const [res, std, ent] = await Promise.all([
-          repairField(base44.asServiceRole.entities.Results,   'session_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(base44.asServiceRole.entities.Standings, 'session_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(base44.asServiceRole.entities.Entry,     'session_id', dupId, survivor_id, dry_run, report.warnings),
+        const [res, ent, sta] = await Promise.all([
+          repairField(models.Results,   'session_id', dupId, survivor_id, dry_run, report.warnings),
+          repairField(models.Entry,     'session_id', dupId, survivor_id, dry_run, report.warnings),
+          repairField(models.Standings, 'session_id', dupId, survivor_id, dry_run, report.warnings),
         ]);
+
         report.updated_results   += res;
-        report.updated_standings += std;
         report.updated_entries   += ent;
+        report.updated_standings += sta;
       }
     }
 
+    // ── OperationLog ─────────────────────────────────────────────────────
     if (!dry_run) {
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'session_references_repaired',
         entity_name: 'Session',
         status: 'success',
-        metadata: { source_path: 'repair_session_references', repairs_processed: report.repairs_processed, updated_results: report.updated_results, updated_standings: report.updated_standings, updated_entries: report.updated_entries },
+        metadata: {
+          source_path: 'repair_session_references',
+          repairs_processed: report.repairs_processed,
+          updated_results: report.updated_results,
+          updated_entries: report.updated_entries,
+          updated_standings: report.updated_standings,
+        },
       }).catch(() => {});
     }
 
