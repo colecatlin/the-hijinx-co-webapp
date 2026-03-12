@@ -989,6 +989,25 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Auth and Routing Verification Button ─────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600" /> Authentication and Routing Verification
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-gray-500">Verifies root route, logout destination, auth guards on protected pages, admin guards on admin pages, and post-login routing defaults.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={runAuthRouteVerification} disabled={authRouteRunning} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                {authRouteRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Run Auth Verification</>}
+              </Button>
+              {authRouteReport && <span className="text-xs text-gray-400">Last run: {new Date(authRouteReport.generated_at).toLocaleString()}</span>}
+            </div>
+            {authRouteRunning && <div className="py-4 text-center text-sm text-gray-500"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-blue-400" />Verifying auth and routing rules…</div>}
+          </CardContent>
+        </Card>
+
         {/* ── Access Code and Invitation Verification ─────────────────── */}
         <Card className="mb-6">
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-600" /> Access Code and Invitation Verification</CardTitle></CardHeader>
