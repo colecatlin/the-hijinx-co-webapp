@@ -9,12 +9,14 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function normalizeClassName(name) {
-  return (name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+function normalizeName(name) {
+  if (!name) return '';
+  return name.toLowerCase().replace(/[^\w\s]/g, '').trim();
 }
 
-function buildSeriesClassKey(series_id, class_name) {
-  return `series_class:${series_id || 'none'}:${normalizeClassName(class_name)}`;
+function buildNormalizedSeriesClassKey(series_id, class_name) {
+  if (!series_id || !class_name) return null;
+  return `series_class:${series_id}:${normalizeName(class_name)}`;
 }
 
 Deno.serve(async (req) => {
@@ -30,34 +32,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'payload.series_id and payload.class_name are required' }, { status: 400 });
     }
 
-    const identityKey = buildSeriesClassKey(payload.series_id, payload.class_name);
+    const normalizedKey = buildNormalizedSeriesClassKey(payload.series_id, payload.class_name);
 
-    // 1. By stored identity key
+    // 1. Check by normalized_series_class_key (strongest)
     let existing = null;
     let matchMethod = 'none';
 
-    const byKey = await base44.asServiceRole.entities.SeriesClass.filter({ series_class_identity_key: identityKey }).catch(() => []);
-    if (byKey?.length) {
-      existing = byKey[0];
-      matchMethod = 'identity_key';
+    if (normalizedKey) {
+      const byNormalizedKey = await base44.asServiceRole.entities.SeriesClass.filter({ normalized_series_class_key: normalizedKey }).catch(() => []);
+      if (byNormalizedKey?.length) {
+        existing = byNormalizedKey[0];
+        matchMethod = 'normalized_series_class_key';
+      }
     }
 
     // 2. Fallback: series_id + normalized name match
     if (!existing) {
       const all = await base44.asServiceRole.entities.SeriesClass.filter({ series_id: payload.series_id }).catch(() => []);
-      const normTarget = normalizeClassName(payload.class_name);
-      const matches = all.filter(c => normalizeClassName(c.class_name) === normTarget && c.active !== false);
+      const normTarget = normalizeName(payload.class_name);
+      const matches = all.filter(c => normalizeName(c.class_name) === normTarget && c.active !== false);
       if (matches.length === 1) {
         existing = matches[0];
-        matchMethod = 'fallback_normalized_name';
+        matchMethod = 'series_id_normalized_name';
       } else if (matches.length > 1) {
         existing = matches[0]; // oldest
-        matchMethod = 'fallback_ambiguous_first';
+        matchMethod = 'series_id_normalized_name_ambiguous';
       }
     }
 
     const { id: _id, ...cleanPayload } = payload;
-    const dataWithKey = { ...cleanPayload, series_class_identity_key: identityKey };
+    const dataWithKey = { ...cleanPayload, normalized_series_class_key: normalizedKey };
     let record, action;
 
     if (existing) {
@@ -73,10 +77,10 @@ Deno.serve(async (req) => {
       entity_name: 'SeriesClass',
       entity_id: record.id,
       status: 'success',
-      metadata: { entity_type: 'series_class', source_path, series_class_identity_key: identityKey, matched_by: matchMethod },
+      metadata: { entity_type: 'series_class', source_path, normalized_series_class_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
 
-    return Response.json({ action, record, identity_key: identityKey, match_method: matchMethod });
+    return Response.json({ action, record, normalized_key: normalizedKey, match_method: matchMethod });
 
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
