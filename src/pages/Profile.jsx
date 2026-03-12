@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Save, LogOut, Lock, ChevronRight, CheckCircle2, AlertCircle, KeyRound, Users, Gauge, Star, ExternalLink } from 'lucide-react';
+import { Save, LogOut, Lock, ChevronRight, CheckCircle2, AlertCircle, KeyRound, Users, Gauge, Star, ExternalLink, Shield, Edit, Clock, XCircle } from 'lucide-react';
+import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import GeneralTab from '@/components/profile/GeneralTab';
@@ -188,6 +189,14 @@ export default function Profile() {
             </button>
           </div>
         </div>
+
+        {/* Access state banners */}
+        <AccessSuccessBanner
+          raceCoreTarget={raceCoreTarget}
+          primaryEntity={primaryEntity}
+          buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
+          buildEditorUrl={buildEditorUrl}
+        />
 
         {/* Account Status Card */}
         <AccountStatusCard
