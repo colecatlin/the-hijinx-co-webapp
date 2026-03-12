@@ -19,13 +19,12 @@ Deno.serve(async (req) => {
   let entityName = '';
   try {
     const entityMap = {
-      Driver: 'Driver',
-      Team: 'Team',
-      Track: 'Track',
-      Series: 'Series',
+      Driver: base44.asServiceRole.entities.Driver,
+      Team: base44.asServiceRole.entities.Team,
+      Track: base44.asServiceRole.entities.Track,
+      Series: base44.asServiceRole.entities.Series,
     };
-    const records = await base44.asServiceRole.entities[entityMap[entity_type]].list('-created_date', 500);
-    const found = records.find(r => r.id === entity_id);
+    const found = await entityMap[entity_type].get(entity_id).catch(() => null);
     if (!found) return Response.json({ error: 'Entity not found' }, { status: 404 });
     entityName = found.first_name
       ? `${found.first_name} ${found.last_name}`

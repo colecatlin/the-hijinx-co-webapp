@@ -129,6 +129,27 @@ Deno.serve(async (req) => {
       }
     } catch (_) { /* non-critical */ }
 
+    // Auto-set primary entity for claimant if they have none yet
+    try {
+      const claimants = await base44.asServiceRole.entities.User.filter({ id: claim.user_id });
+      const claimant = claimants[0];
+      if (claimant && !claimant.primary_entity_id) {
+        await base44.asServiceRole.entities.User.update(claimant.id, {
+          primary_entity_type: claim.entity_type,
+          primary_entity_id: claim.entity_id,
+        });
+        await base44.asServiceRole.entities.OperationLog.create({
+          operation_type: 'primary_entity_set',
+          entity_name: 'User',
+          entity_id: claimant.id,
+          status: 'success',
+          message: `Primary entity auto-set to ${claim.entity_name} (${claim.entity_type}) after claim approval`,
+          initiated_by: user.email,
+          metadata: { entity_type: claim.entity_type, entity_id: claim.entity_id, target_user_email: claim.user_email, source: 'claim_approval' },
+        });
+      }
+    } catch (_) { /* non-critical */ }
+
     return Response.json({ success: true, action: 'approved', role });
   }
 
