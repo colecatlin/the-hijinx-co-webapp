@@ -256,23 +256,25 @@ export default function ManageAccess() {
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Role</th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Status</th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Expires</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredInvitations.map((inv) => (
+                      <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Actions</th>
+                      </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                      {filteredInvitations.map((inv) => (
                       <tr key={inv.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm">{inv.email}</td>
                         <td className="px-4 py-3 text-sm">{inv.entity_type}</td>
                         <td className="px-4 py-3 text-sm">{inv.entity_name}</td>
                         <td className="px-4 py-3 text-sm">
                           <Badge variant={inv.role === 'owner' ? 'default' : 'secondary'}>
-                            {inv.role}
+                            {inv.role || 'editor'}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
                             inv.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             inv.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                            inv.status === 'revoked' ? 'bg-red-100 text-red-700' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {inv.status}
@@ -281,8 +283,16 @@ export default function ManageAccess() {
                         <td className="px-4 py-3 text-sm text-gray-600">
                           {inv.expiration_date ? new Date(inv.expiration_date).toLocaleDateString() : 'N/A'}
                         </td>
+                        <td className="px-4 py-3 text-sm">
+                          {inv.status === 'pending' && (
+                            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs gap-1"
+                              onClick={() => handleRevokeInvitation(inv)}>
+                              <MailX className="w-3 h-3" /> Revoke
+                            </Button>
+                          )}
+                        </td>
                       </tr>
-                    ))}
+                      ))}
                   </tbody>
                 </table>
               </div>
