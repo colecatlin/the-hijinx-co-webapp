@@ -30,6 +30,10 @@ export default function OutletStoryPage() {
     initialData: [],
   });
 
+  useEffect(() => {
+    if (story) Analytics.outletStoryView(story.id, story.title, story.category);
+  }, [story?.id]);
+
   if (isLoading) {
     return (
       <PageShell>
@@ -45,10 +49,6 @@ export default function OutletStoryPage() {
       </PageShell>
     );
   }
-
-  useEffect(() => {
-    if (story) Analytics.outletStoryView(story.id, story.title, story.category);
-  }, [story?.id]);
 
   if (!story) {
     return (
