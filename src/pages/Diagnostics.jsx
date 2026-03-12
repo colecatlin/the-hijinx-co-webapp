@@ -1149,6 +1149,159 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Series Integrity ─────────────────────────────────────────── */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="w-4 h-4 text-purple-600" /> Series Integrity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-gray-500">
+              Backfill normalization fields, detect and clean duplicate Series groups, repair linked references, and verify sync sources converge on canonical names.
+              <br /><span className="text-gray-400">Recommended sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
+            </p>
+
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => runSeriesBackfill(true)} disabled={seriesBackfillRunning || seriesCleanupRunning} variant="outline" className="border-teal-300 text-teal-700 hover:bg-teal-50">
+                {seriesBackfillRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Preview Backfill</>}
+              </Button>
+              <Button onClick={() => runSeriesBackfill(false)} disabled={seriesBackfillRunning || seriesCleanupRunning} variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                {seriesBackfillRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Wrench className="w-4 h-4 mr-2" />Run Series Normalization Backfill</>}
+              </Button>
+              <Button onClick={() => runSeriesCleanup(true)} disabled={seriesCleanupRunning || seriesBackfillRunning} variant="outline" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
+                {seriesCleanupRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Preview Series Cleanup</>}
+              </Button>
+              <Button onClick={() => runSeriesCleanup(false)} disabled={seriesCleanupRunning || seriesBackfillRunning} variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                {seriesCleanupRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Wrench className="w-4 h-4 mr-2" />Run Series Cleanup</>}
+              </Button>
+              <Button onClick={runSeriesVerification} disabled={seriesVerifyRunning} variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+                {seriesVerifyRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : <><Play className="w-4 h-4 mr-2" />Run Series Verification</>}
+              </Button>
+            </div>
+
+            {/* Backfill result */}
+            {seriesBackfillResult && !seriesBackfillRunning && (
+              <div className={`rounded-lg border p-4 space-y-3 ${seriesBackfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
+                <p className={`text-sm font-semibold flex items-center gap-2 ${seriesBackfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
+                  {seriesBackfillResult.mode === 'dry_run' ? <><AlertTriangle className="w-4 h-4" /> Backfill Preview</> : <><CheckCircle className="w-4 h-4" /> Backfill Complete</>}
+                  <span className="font-normal text-xs ml-2">{seriesBackfillResult.total_series} total Series</span>
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                  {[
+                    { label: 'Already Complete',      v: seriesBackfillResult.already_complete },
+                    { label: 'Filled: normalized_name', v: seriesBackfillResult.backfilled_normalized_name },
+                    { label: 'Filled: canonical_slug',  v: seriesBackfillResult.backfilled_canonical_slug },
+                    { label: 'Filled: canonical_key',   v: seriesBackfillResult.backfilled_canonical_key },
+                  ].map(({ label, v }) => (
+                    <div key={label} className="bg-white rounded border p-2">
+                      <p className={`text-xl font-bold ${seriesBackfillResult.mode === 'dry_run' ? 'text-teal-700' : 'text-green-700'}`}>{v ?? 0}</p>
+                      <p className="text-gray-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                {seriesBackfillResult.warnings?.length > 0 && (
+                  <ExpandableList title={`Warnings (${seriesBackfillResult.warnings.length})`} items={seriesBackfillResult.warnings} severity="medium" renderItem={w => w} />
+                )}
+              </div>
+            )}
+
+            {/* Cleanup result */}
+            {seriesCleanupResult && !seriesCleanupRunning && (() => {
+              const r = seriesCleanupResult;
+              const isDry = r.dry_run;
+              return (
+                <div className={`rounded-lg border p-4 space-y-3 ${isDry ? 'border-yellow-200 bg-yellow-50' : r.groups_processed === 0 ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
+                  <p className={`text-sm font-semibold flex items-center gap-2 ${isDry ? 'text-yellow-800' : r.groups_processed === 0 ? 'text-green-800' : 'text-orange-800'}`}>
+                    {r.groups_processed === 0 ? <><CheckCircle className="w-4 h-4" /> No duplicates found</> : isDry ? <><AlertTriangle className="w-4 h-4" /> Cleanup Preview</> : <><CheckCircle className="w-4 h-4" /> Cleanup Complete</>}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                    {[
+                      { label: 'Groups Detected',        v: r.groups_detected ?? 0 },
+                      { label: 'Groups Processed',       v: r.groups_processed ?? 0 },
+                      { label: 'Survivors Confirmed',    v: r.survivors?.length ?? 0 },
+                      { label: 'Marked Inactive',        v: r.duplicates_marked_inactive?.length ?? 0 },
+                    ].map(({ label, v }) => (
+                      <div key={label} className="bg-white rounded border p-2">
+                        <p className="text-xl font-bold text-gray-700">{v}</p>
+                        <p className="text-gray-500">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {r.survivors?.length > 0 && (
+                    <ExpandableList title={`Survivors (${r.survivors.length})`} items={r.survivors} severity="ok"
+                      renderItem={s => `${s.name} [${s.match_type}] events=${s.event_count} dup_count=${s.duplicate_count}`} />
+                  )}
+                  {r.duplicates_marked_inactive?.length > 0 && (
+                    <ExpandableList title={`Marked inactive (${r.duplicates_marked_inactive.length})`} items={r.duplicates_marked_inactive} severity="medium"
+                      renderItem={d => `${d.name} → survivor: ${d.survivor_name}`} />
+                  )}
+                  {r.skipped_groups?.length > 0 && (
+                    <ExpandableList title={`Skipped groups (${r.skipped_groups.length})`} items={r.skipped_groups} severity="low"
+                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.reason}`} />
+                  )}
+                  {r.warnings?.length > 0 && (
+                    <ExpandableList title={`Warnings (${r.warnings.length})`} items={r.warnings} severity="medium" renderItem={w => w} />
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Verification result */}
+            {seriesVerifyResult && !seriesVerifyRunning && (() => {
+              const v = seriesVerifyResult;
+              const allOk = v.failures?.length === 0;
+              const d = v.details || {};
+              return (
+                <div className="space-y-3">
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allOk ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
+                    {allOk ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                    <span>{allOk ? 'Series integrity verified — all checks passed' : `${v.failures.length} failure(s) detected`}</span>
+                    <span className="text-xs font-normal ml-2 opacity-70">{v.generated_at ? new Date(v.generated_at).toLocaleString() : ''}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <SummaryCard label="Normalization OK"         count={d.normalization_coverage?.missing_normalized_name?.length ?? 0} severity={v.normalization_ok ? 'ok' : 'high'} icon={v.normalization_ok ? CheckCircle : XCircle} />
+                    <SummaryCard label="Active Dup Groups"        count={v.duplicate_groups_remaining}  severity={v.duplicate_groups_remaining > 0 ? 'high' : 'ok'}   icon={v.duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
+                    <SummaryCard label="Sync Name Alignment"      count={d.sync_name_check?.non_canonical_creates?.length ?? 0} severity={v.sync_name_alignment_ok ? 'ok' : 'medium'} icon={v.sync_name_alignment_ok ? CheckCircle : AlertTriangle} />
+                    <SummaryCard label="Suspicious New Creates"   count={v.suspicious_new_creates?.length ?? 0} severity={v.suspicious_new_creates?.length > 0 ? 'medium' : 'ok'} icon={v.suspicious_new_creates?.length > 0 ? AlertTriangle : CheckCircle} />
+                  </div>
+                  {d.active_duplicate_groups?.length > 0 && (
+                    <ExpandableList title={`Active duplicate groups (${d.active_duplicate_groups.length})`} items={d.active_duplicate_groups} severity="high"
+                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.names?.join(', ')}`} />
+                  )}
+                  {d.normalization_coverage?.missing_normalized_name?.length > 0 && (
+                    <ExpandableList title={`Missing normalized_name (${d.normalization_coverage.missing_normalized_name.length})`} items={d.normalization_coverage.missing_normalized_name} severity="high"
+                      renderItem={s => `${s.name || s.id}`} />
+                  )}
+                  {d.sync_name_check?.non_canonical_creates?.length > 0 && (
+                    <ExpandableList title="Non-canonical names created by sync" items={d.sync_name_check.non_canonical_creates} severity="medium"
+                      renderItem={c => `"${c.name}" — source: ${c.source_path}`} />
+                  )}
+                  {v.suspicious_new_creates?.length > 0 && (
+                    <ExpandableList title="Suspicious new creates (match_method=none)" items={v.suspicious_new_creates} severity="medium"
+                      renderItem={c => `"${c.name}" — source: ${c.source_path} on ${c.created_at ? new Date(c.created_at).toLocaleDateString() : '?'}`} />
+                  )}
+                  {d.survivors_missing_normalization?.length > 0 && (
+                    <ExpandableList title={`Repaired survivors missing normalization (${d.survivors_missing_normalization.length})`} items={d.survivors_missing_normalization} severity="high"
+                      renderItem={s => `${s.name || s.id} — missing: ${s.missing?.join(', ')}`} />
+                  )}
+                  {v.failures?.length > 0 && v.failures.map((f, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                      <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{f}
+                    </div>
+                  ))}
+                  {v.warnings?.length > 0 && v.warnings.map((w, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* ── Unsafe Write Path Audit ──────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
