@@ -268,6 +268,62 @@ export default function Diagnostics() {
     setWriteAuditRunning(false);
   };
 
+  // ── Event Integrity ───────────────────────────────────────────────
+  const [eventBackfillResult, setEventBackfillResult]     = useState(null);
+  const [eventBackfillRunning, setEventBackfillRunning]   = useState(false);
+  const [eventCleanupResult, setEventCleanupResult]       = useState(null);
+  const [eventCleanupRunning, setEventCleanupRunning]     = useState(false);
+  const [eventVerifyResult, setEventVerifyResult]         = useState(null);
+  const [eventVerifyRunning, setEventVerifyRunning]       = useState(false);
+
+  const runEventBackfill = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will populate missing normalization fields on all Event records. Proceed?')) return;
+    setEventBackfillRunning(true); setEventBackfillResult(null);
+    try {
+      const res = await base44.functions.invoke('backfillEventNormalization', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setEventBackfillResult({ ...res.data, mode: dry_run ? 'dry_run' : 'live' });
+      const total = (res.data.backfilled_normalized_name || 0) + (res.data.backfilled_slug || 0) + (res.data.backfilled_normalized_event_key || 0) + (res.data.backfilled_canonical_key || 0);
+      toast.success(dry_run ? 'Event backfill preview complete' : `Event backfill complete — ${total} fields filled`);
+    } catch (err) { toast.error(`Event backfill failed: ${err.message}`); }
+    setEventBackfillRunning(false);
+  };
+
+  const runEventCleanup = async (dry_run = false) => {
+    if (!dry_run && !window.confirm('This will mark duplicate Event records inactive and repair references. Proceed?')) return;
+    setEventCleanupRunning(true); setEventCleanupResult(null);
+    try {
+      const res = await base44.functions.invoke('repairDuplicateEventRecords', { dry_run });
+      if (res.data?.error) throw new Error(res.data.error);
+      setEventCleanupResult({ ...res.data, dry_run });
+      if (!dry_run && res.data?.repairs?.length > 0) {
+        const refRes = await base44.functions.invoke('repairEventReferences', { repairs: res.data.repairs, dry_run: false });
+        const ref = refRes.data || {};
+        toast.success(`Event cleanup done — ${res.data.duplicates_marked_inactive?.length || 0} inactive, sessions repaired: ${ref.updated_sessions || 0}`);
+      } else {
+        const count = res.data?.duplicates_marked_inactive?.length || 0;
+        if (count === 0) toast.success('No duplicate Event groups detected.');
+        else toast.success(`Event cleanup ${dry_run ? 'preview' : 'done'} — ${count} ${dry_run ? 'would be' : ''} marked inactive`);
+      }
+    } catch (err) { toast.error(`Event cleanup failed: ${err.message}`); }
+    setEventCleanupRunning(false);
+  };
+
+  const runEventVerification = async () => {
+    setEventVerifyRunning(true); setEventVerifyResult(null);
+    try {
+      const res = await base44.functions.invoke('verifyEventIntegrity', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setEventVerifyResult(res.data);
+      const f = res.data?.failures?.length || 0;
+      const w = res.data?.warnings?.length || 0;
+      if (f === 0 && w === 0) toast.success('Event integrity verified — all checks passed');
+      else if (f === 0) toast.success(`Event integrity: ${w} warning(s) — review below`);
+      else toast.error(`Event integrity: ${f} failure(s) detected`);
+    } catch (err) { toast.error(`Event verification failed: ${err.message}`); }
+    setEventVerifyRunning(false);
+  };
+
   // ── Driver Integrity ──────────────────────────────────────────────
   const [driverBackfillResult, setDriverBackfillResult]   = useState(null);
   const [driverBackfillRunning, setDriverBackfillRunning] = useState(false);
