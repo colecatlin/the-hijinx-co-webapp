@@ -160,28 +160,25 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
           if (existing && existing.length > 0) { teamRecord = existing[0]; stats.teams_found++; }
           else { teamRecord = { id: `dry-run-team-${teamNorm}` }; stats.teams_created++; log.push(`[DRY RUN] Would create team: ${team_name}`); }
         } else {
-          const { record, action } = await upsertEntity(
-            base44.asServiceRole.entities.Team,
-            'team',
-            [{ canonical_key: teamKey }, { normalized_name: teamNorm }],
-            {
+          // source_path: nascar_driver_import — routes through syncSourceAndEntityRecord (safe sync pipeline)
+          const teamSyncRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+            entity_type: 'team',
+            payload: {
               name: team_name,
               slug: buildEntitySlug(team_name),
-              normalized_name: teamNorm,
-              canonical_slug: buildEntitySlug(team_name),
-              canonical_key: teamKey,
               primary_discipline: 'Stock Car',
-              team_level: 'National',
               status: 'Active',
               country: 'United States',
               headquarters_state: 'NC',
               headquarters_city: 'Concord',
               data_source: 'importNascarDrivers',
               sync_last_seen_at: new Date().toISOString(),
-            }
-          );
-          teamRecord = record;
-          if (action === 'created') { stats.teams_created++; log.push(`Created team: ${team_name}`); }
+            },
+            triggered_from: 'nascar_driver_import',
+          });
+          teamRecord = teamSyncRes?.data?.source_record || null;
+          const teamAction = teamSyncRes?.data?.source_action || 'skipped';
+          if (teamAction === 'created') { stats.teams_created++; log.push(`Created team: ${team_name}`); }
           else { stats.teams_found++; }
         }
       }
