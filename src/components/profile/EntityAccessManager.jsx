@@ -162,6 +162,12 @@ export default function EntityAccessManager({ collaborator, user }) {
   });
 
   const handleRemove = async (collab) => {
+    // Safety: prevent removing the last owner
+    const ownerCount = allCollaborators.filter(c => c.role === 'owner').length;
+    if (collab.role === 'owner' && ownerCount <= 1) {
+      alert('Cannot remove the last owner of this entity.');
+      return;
+    }
     if (!window.confirm(`Remove ${collab.user_email} from ${collaborator.entity_name}?`)) return;
     setRemoving(collab.id);
     await base44.functions.invoke('removeEntityAccess', {
@@ -172,6 +178,7 @@ export default function EntityAccessManager({ collaborator, user }) {
     });
     refetch();
     queryClient.invalidateQueries({ queryKey: ['resolvedEntities'] });
+    queryClient.invalidateQueries({ queryKey: ['entityCollaborators'] });
     setRemoving(null);
   };
 
