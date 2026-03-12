@@ -10,8 +10,16 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function buildStandingIdentityKey(series_id, season_year, series_class_id, driver_id) {
-  return `standing:${series_id || 'none'}:${season_year || 'none'}:${series_class_id || 'none'}:${driver_id || 'none'}`;
+function normalizeName(name) {
+  if (!name) return '';
+  return name.toLowerCase().replace(/[^\w\s]/g, '').trim();
+}
+
+function buildNormalizedStandingKey(series_id, season_year, driver_id, driver_name) {
+  if (!series_id || !season_year) return null;
+  if (driver_id) return `standing:${series_id}:${season_year}:${driver_id}`;
+  if (driver_name) return `standing:${series_id}:${season_year}:${normalizeName(driver_name)}`;
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -33,56 +41,74 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'payload.driver_id, payload.series_id, and payload.season_year are required' }, { status: 400 });
     }
 
-    const identityKey = buildStandingIdentityKey(
+    const normalizedKey = buildNormalizedStandingKey(
       payload.series_id,
       payload.season_year,
-      payload.series_class_id || null,
-      payload.driver_id
+      payload.driver_id,
+      payload.driver_name
     );
 
-    // 1. Check by stored identity key
+    // 1. Check by normalized_standing_key (strongest key)
     let existing = null;
     let matchMethod = 'none';
 
-    const byKey = await base44.asServiceRole.entities.Standings.filter({ standing_identity_key: identityKey }).catch(() => []);
-    if (byKey?.length) {
-      existing = byKey[0];
-      matchMethod = 'identity_key';
-      if (byKey.length > 1) {
-        await base44.asServiceRole.entities.OperationLog.create({
-          operation_type: 'operational_duplicate_detected',
-          entity_name: 'Standings',
-          status: 'success',
-          metadata: { entity_type: 'standings', source_path, standing_identity_key: identityKey, count: byKey.length },
-        }).catch(() => {});
+    if (normalizedKey) {
+      const byNormalizedKey = await base44.asServiceRole.entities.Standings.filter({ normalized_standing_key: normalizedKey }).catch(() => []);
+      if (byNormalizedKey?.length) {
+        existing = byNormalizedKey[0];
+        matchMethod = 'normalized_standing_key';
+        if (byNormalizedKey.length > 1) {
+          await base44.asServiceRole.entities.OperationLog.create({
+            operation_type: 'operational_duplicate_detected',
+            entity_name: 'Standings',
+            status: 'success',
+            metadata: { entity_type: 'standings', source_path, normalized_standing_key: normalizedKey, count: byNormalizedKey.length },
+          }).catch(() => {});
+        }
       }
     }
 
-    // 2. Fallback: composite lookup
-    if (!existing) {
+    // 2. Fallback: series_id + season_year + driver_id
+    if (!existing && payload.driver_id) {
       const filters = { series_id: payload.series_id, season_year: payload.season_year, driver_id: payload.driver_id };
       if (payload.series_class_id) filters.series_class_id = payload.series_class_id;
-      const fallback = await base44.asServiceRole.entities.Standings.filter(filters).catch(() => []);
-      if (fallback?.length === 1) {
-        existing = fallback[0];
-        matchMethod = 'fallback_composite';
-      } else if (fallback?.length > 1) {
+      const byComposite = await base44.asServiceRole.entities.Standings.filter(filters).catch(() => []);
+      if (byComposite?.length === 1) {
+        existing = byComposite[0];
+        matchMethod = 'series_season_driver_id';
+      } else if (byComposite?.length > 1) {
         await base44.asServiceRole.entities.OperationLog.create({
           operation_type: 'operational_duplicate_detected',
           entity_name: 'Standings',
           status: 'success',
-          metadata: { entity_type: 'standings', source_path, count: fallback.length, match: 'composite_ambiguous' },
+          metadata: { entity_type: 'standings', source_path, series_id: payload.series_id, season_year: payload.season_year, driver_id: payload.driver_id, count: byComposite.length },
         }).catch(() => {});
-        existing = fallback.sort((a, b) => {
-          const score = r => (r.standing_identity_key ? 2 : 0) + (r.points_total != null ? 1 : 0) + (r.rank != null ? 1 : 0);
+        existing = byComposite.sort((a, b) => {
+          const score = r => (r.normalized_standing_key ? 2 : 0) + (r.points_total != null ? 1 : 0) + (r.rank != null ? 1 : 0);
           return score(b) - score(a);
         })[0];
-        matchMethod = 'fallback_ambiguous_best';
+        matchMethod = 'series_season_driver_ambiguous';
+      }
+    }
+
+    // 3. Fallback: series_id + season_year + normalized_driver_name
+    if (!existing && payload.driver_name) {
+      const normDriverName = normalizeName(payload.driver_name);
+      if (normDriverName) {
+        const byName = await base44.asServiceRole.entities.Standings.filter({
+          series_id: payload.series_id,
+          season_year: payload.season_year,
+          driver_name: payload.driver_name,
+        }).catch(() => []);
+        if (byName?.length === 1) {
+          existing = byName[0];
+          matchMethod = 'series_season_driver_name';
+        }
       }
     }
 
     const { id: _id, ...cleanPayload } = payload;
-    const dataWithKey = { ...cleanPayload, standing_identity_key: identityKey };
+    const dataWithKey = { ...cleanPayload, normalized_standing_key: normalizedKey };
     let record, action;
 
     if (existing) {
@@ -98,10 +124,10 @@ Deno.serve(async (req) => {
       entity_name: 'Standings',
       entity_id: record.id,
       status: 'success',
-      metadata: { entity_type: 'standings', source_path, standing_identity_key: identityKey, matched_by: matchMethod },
+      metadata: { entity_type: 'standings', source_path, normalized_standing_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
 
-    return Response.json({ action, record, identity_key: identityKey, match_method: matchMethod });
+    return Response.json({ action, record, normalized_key: normalizedKey, match_method: matchMethod });
 
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
