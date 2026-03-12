@@ -48,11 +48,12 @@ export default function AcceptInvitation() {
       }, 1500);
     } else {
       setStep('verify');
-      if (urlCode && user && !isVerifying) {
+      // Only auto-verify when user is fully loaded and we have both code and user
+      if (urlCode && user?.id && user?.email && !isVerifying) {
         handleVerifyCode(urlCode);
       }
     }
-  }, [isAuthenticated, userLoading, location, user, isVerifying]);
+  }, [isAuthenticated, userLoading, user?.id]);
 
   const handleVerifyCode = async (codeToVerify = code) => {
     if (!codeToVerify || codeToVerify.length !== 8) {
