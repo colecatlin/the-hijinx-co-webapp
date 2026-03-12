@@ -119,30 +119,25 @@ Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
         continue;
       }
 
-      const { record, action } = await upsertEntity(
-        base44.asServiceRole.entities.Series,
-        'series',
-        [
-          { canonical_key: cKey },
-          { canonical_slug: config.slug },
-          { normalized_name: normN },
-        ],
-        {
+      // source_path: nascar_driver_import — routes through syncSourceAndEntityRecord (safe sync pipeline)
+      const seriesSyncRes = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'series',
+        payload: {
           name: config.name,
           slug: config.slug,
-          normalized_name: normN,
-          canonical_slug: config.slug,
-          canonical_key: cKey,
           discipline: 'Stock Car',
           status: 'Active',
           season_year: '2026',
           sanctioning_body: 'NASCAR',
           data_source: 'importNascarDrivers',
           sync_last_seen_at: new Date().toISOString(),
-        }
-      );
+        },
+        triggered_from: 'nascar_driver_import',
+      });
+      const record = seriesSyncRes?.data?.source_record || null;
+      const action = seriesSyncRes?.data?.source_action || 'skipped';
 
-      seriesMap.set(config.name, record);
+      if (record) seriesMap.set(config.name, record);
       if (action === 'created') { stats.series_created++; log.push(`Created series: ${config.name}`); }
       else { stats.series_found++; log.push(`Found existing series: ${config.name}`); }
     }
