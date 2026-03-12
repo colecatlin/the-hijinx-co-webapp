@@ -251,6 +251,23 @@ export default function Diagnostics() {
     setAuthRouteRunning(false);
   };
 
+  // ── Unsafe Write Path Audit ───────────────────────────────────────
+  const [writeAuditReport, setWriteAuditReport] = useState(null);
+  const [writeAuditRunning, setWriteAuditRunning] = useState(false);
+
+  const runWritePathAudit = async () => {
+    setWriteAuditRunning(true); setWriteAuditReport(null);
+    try {
+      const res = await base44.functions.invoke('runUnsafeWritePathAudit', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setWriteAuditReport(res.data);
+      const s = res.data?.summary || {};
+      if (s.unsafe_count === 0) toast.success(`Write path audit: all ${s.total_paths_checked} paths are safe`);
+      else toast.error(`Write path audit: ${s.unsafe_count} unsafe path(s) found`);
+    } catch (err) { toast.error(`Write path audit failed: ${err.message}`); }
+    setWriteAuditRunning(false);
+  };
+
   // ── Access System Health Scan ─────────────────────────────────────
   const [healthReport, setHealthReport] = useState(null);
   const [healthRunning, setHealthRunning] = useState(false);
