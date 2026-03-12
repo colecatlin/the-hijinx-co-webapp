@@ -46,10 +46,13 @@ Deno.serve(async (req) => {
   try {
     const accepted = await base44.asServiceRole.entities.Invitation.filter({ status: 'accepted' }, '-accepted_date', 200);
     for (const inv of accepted) {
-      const collab = await base44.asServiceRole.entities.EntityCollaborator.filter({
+      const collabByEmail = await base44.asServiceRole.entities.EntityCollaborator.filter({
         entity_id: inv.entity_id,
-        user_email: (inv.email || '').toLowerCase(),
       });
+      const invEmail = (inv.email || '').toLowerCase();
+      const collab = collabByEmail.filter(c =>
+        (c.user_email || '').toLowerCase() === invEmail
+      );
       if (collab.length === 0) {
         results.invalid_invitations.push({
           invitation_id: inv.id,
