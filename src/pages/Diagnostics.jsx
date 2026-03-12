@@ -230,6 +230,24 @@ export default function Diagnostics() {
   const [routeReport, setRouteReport] = useState(null);
   const [routeRunning, setRouteRunning] = useState(false);
 
+  // ── Access Flow Verification ─────────────────────────────────────
+  const [accessFlowReport, setAccessFlowReport] = useState(null);
+  const [accessFlowRunning, setAccessFlowRunning] = useState(false);
+
+  const runAccessFlowVerification = async () => {
+    setAccessFlowRunning(true); setAccessFlowReport(null);
+    try {
+      const res = await base44.functions.invoke('runAccessFlowVerification', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setAccessFlowReport(res.data);
+      const d = res.data;
+      const allPassed = Object.values({ ...d }).every((v, _, arr) => typeof v !== 'boolean' || v);
+      if (d.failures?.length === 0) toast.success('Access flow verification passed');
+      else toast.error(`Access flow: ${d.failures.length} failure(s) detected`);
+    } catch (err) { toast.error(`Access flow verification failed: ${err.message}`); }
+    setAccessFlowRunning(false);
+  };
+
   // ── Timestamps ───────────────────────────────────────────────────────────
   const [lastDiagRun, setLastDiagRun] = useState(null);
   const [lastV1Run, setLastV1Run] = useState(null);
