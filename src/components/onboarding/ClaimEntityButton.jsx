@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 
 /**
  * Shows a "Claim this profile" button on entity public pages.

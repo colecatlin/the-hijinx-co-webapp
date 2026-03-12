@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle2, XCircle, Clock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { invalidateDataGroups } from '@/components/data/invalidationContract';
 
 const ENTITY_COLORS = {
   Driver: 'bg-blue-50 text-blue-700 border-blue-200',
