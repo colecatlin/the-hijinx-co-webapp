@@ -21,18 +21,8 @@ function normalizeManufacturer(mfr) {
   return 'Other';
 }
 
-// Safe upsert for a source entity: returns existing or creates new record
-async function upsertEntity(model, entity_type, matchFilters, createPayload) {
-  // Try filters in order
-  for (const filter of matchFilters) {
-    if (Object.values(filter).every(v => v)) {
-      const results = await model.filter(filter);
-      if (results && results.length > 0) return { record: results[0], action: 'found' };
-    }
-  }
-  const record = await model.create(createPayload);
-  return { record, action: 'created' };
-}
+// NOTE: upsertEntity raw helper removed — all source entity writes now route through
+// syncSourceAndEntityRecord (safe sync pipeline) or direct filter+match only for dry_run checks.
 
 const SERIES_CONFIGS = [
   { id: 1, name: 'NASCAR Cup Series',                      slug: 'nascar-cup-series' },
