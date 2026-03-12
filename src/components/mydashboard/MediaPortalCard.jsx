@@ -20,13 +20,13 @@ export default function MediaPortalCard({ mediaProfile }) {
             <Camera className="w-4 h-4 text-gray-400" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-700">Media Access</p>
-            <p className="text-xs text-gray-400">Apply for media credentials and access.</p>
+            <p className="text-sm font-semibold text-gray-700">Media Portal</p>
+            <p className="text-xs text-gray-400">Apply for media credentials and event access.</p>
           </div>
         </div>
-        <Link to={createPageUrl('MediaApply')}>
+        <Link to={createPageUrl('MediaPortal')}>
           <Button size="sm" variant="outline" className="text-xs gap-1.5 flex-shrink-0">
-            Apply <ExternalLink className="w-3 h-3" />
+            Apply for Media Access <ExternalLink className="w-3 h-3" />
           </Button>
         </Link>
       </div>
