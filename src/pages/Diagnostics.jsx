@@ -234,6 +234,10 @@ export default function Diagnostics() {
   const [accessFlowReport, setAccessFlowReport] = useState(null);
   const [accessFlowRunning, setAccessFlowRunning] = useState(false);
 
+  // ── Access System Health Scan ─────────────────────────────────────
+  const [healthReport, setHealthReport] = useState(null);
+  const [healthRunning, setHealthRunning] = useState(false);
+
   const runAccessFlowVerification = async () => {
     setAccessFlowRunning(true); setAccessFlowReport(null);
     try {
