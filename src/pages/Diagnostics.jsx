@@ -234,6 +234,23 @@ export default function Diagnostics() {
   const [accessFlowReport, setAccessFlowReport] = useState(null);
   const [accessFlowRunning, setAccessFlowRunning] = useState(false);
 
+  // ── Auth and Routing Verification ────────────────────────────────
+  const [authRouteReport, setAuthRouteReport] = useState(null);
+  const [authRouteRunning, setAuthRouteRunning] = useState(false);
+
+  const runAuthRouteVerification = async () => {
+    setAuthRouteRunning(true); setAuthRouteReport(null);
+    try {
+      const res = await base44.functions.invoke('runAuthRoutingVerification', {});
+      if (res.data?.error) throw new Error(res.data.error);
+      setAuthRouteReport(res.data);
+      const failCount = res.data?.failures?.length || 0;
+      if (failCount === 0) toast.success('Auth routing verification passed');
+      else toast.error(`Auth routing: ${failCount} failure(s) detected`);
+    } catch (err) { toast.error(`Auth verification failed: ${err.message}`); }
+    setAuthRouteRunning(false);
+  };
+
   // ── Access System Health Scan ─────────────────────────────────────
   const [healthReport, setHealthReport] = useState(null);
   const [healthRunning, setHealthRunning] = useState(false);
