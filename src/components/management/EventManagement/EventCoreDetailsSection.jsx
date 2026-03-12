@@ -62,32 +62,59 @@ export default function EventCoreDetailsSection({ event, isDraftOnly = false }) 
     select: (data) => data[0],
   });
 
+  // source_path: event_core_details — routes through syncSourceAndEntityRecord (safe sync pipeline)
   const updateMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       const submitData = { ...data };
       if (!submitData.track_id) delete submitData.track_id;
       if (!submitData.end_date) delete submitData.end_date;
       if (!submitData.round_number) delete submitData.round_number;
-      return base44.entities.Event.update(event.id, submitData);
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'event',
+        payload: { ...submitData, id: event.id },
+        triggered_from: 'event_core_details',
+      });
+      if (result?.data?.error) throw new Error(result.data.error);
+      if (!result?.data?.source_record) throw new Error('syncSourceAndEntityRecord returned no record');
+      return result.data.source_record;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event', event.id] });
       setIsEditing(false);
     },
   });
 
+  // source_path: event_core_quick_create_series — routes through sync pipeline (safe sync pipeline)
   const createSeriesMutation = useMutation({
-   mutationFn: (data) => base44.entities.Series.create(data),
-   onSuccess: (newSeries) => {
-     queryClient.invalidateQueries({ queryKey: ['series'] });
-     setFormData({ ...formData, series_id: newSeries.id, series_name: newSeries.name });
-     setShowSeriesModal(false);
-     setNewSeriesName('');
-   },
+    mutationFn: async (data) => {
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'series',
+        payload: data,
+        triggered_from: 'event_core_quick_create_series',
+      });
+      if (!result?.data?.source_record) throw new Error(result?.data?.error || 'Failed to create series');
+      return result.data.source_record;
+    },
+    onSuccess: (newSeries) => {
+      queryClient.invalidateQueries({ queryKey: ['series'] });
+      setFormData({ ...formData, series_id: newSeries.id, series_name: newSeries.name });
+      setShowSeriesModal(false);
+      setNewSeriesName('');
+    },
   });
 
+  // source_path: event_core_quick_create_track — routes through sync pipeline (safe sync pipeline)
   const createTrackMutation = useMutation({
-    mutationFn: (data) => base44.entities.Track.create(data),
+    mutationFn: async (data) => {
+      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
+        entity_type: 'track',
+        payload: data,
+        triggered_from: 'event_core_quick_create_track',
+      });
+      if (!result?.data?.source_record) throw new Error(result?.data?.error || 'Failed to create track');
+      return result.data.source_record;
+    },
     onSuccess: (newTrack) => {
       queryClient.invalidateQueries({ queryKey: ['tracks'] });
       setFormData({ ...formData, track_id: newTrack.id });
