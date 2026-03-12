@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Provide at least 2 event_records to compare' }, { status: 400 });
     }
 
-    // 1. Has external_uid
+    // 1. Has external_uid (strongest external authority)
     const withUid = event_records.find(e => e.external_uid && !e.canonical_key?.includes('DUPLICATE'));
     if (withUid) {
       return Response.json({

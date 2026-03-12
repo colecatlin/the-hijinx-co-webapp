@@ -3,8 +3,9 @@
  *
  * Detects duplicate Event groups and safely consolidates them:
  *   - picks one canonical survivor per group
- *   - marks non-survivors status='Cancelled' and notes DUPLICATE_OF:{survivor_id}
- *   - re-indexes survivor with normalized_name, canonical_slug, canonical_key, normalized_event_key
+ *   - marks non-survivors Inactive
+ *   - appends DUPLICATE_OF:{survivor_id} to notes
+ *   - re-indexes survivor with normalized_event_key + canonical_key
  *   - writes OperationLog
  *   - does NOT hard-delete any records
  *
@@ -15,20 +16,12 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-function buildEntitySlug(value) { return normalizeName(value).replace(/\s+/g, '-'); }
 function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
-  const norm = normalizeName(name || '');
-  return `${norm}|${event_date || 'none'}|${track_id || 'none'}|${series_id || 'none'}`;
-}
-function buildCanonicalKey({ name, external_uid, event_date, track_id, series_id }) {
-  if (external_uid) return `event:${external_uid}`;
-  const norm = normalizeName(name || '');
-  const parts = [event_date, track_id, series_id].filter(Boolean);
-  return parts.length ? `event:${norm}:${parts.join(':')}` : `event:${norm}`;
+  const norm = (name || '').trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const date = event_date || 'none';
+  const track = track_id || 'none';
+  const series = series_id || 'none';
+  return `event:${series}:${track}:${date}`;
 }
 
 function pickSurvivor(group, sessionCountsById, resultCountsById) {
@@ -36,7 +29,7 @@ function pickSurvivor(group, sessionCountsById, resultCountsById) {
   const withUid = group.find(e => e.external_uid && !e.canonical_key?.includes('DUPLICATE'));
   if (withUid) return withUid;
 
-  // 2. Most Sessions
+  // 2. Most linked Sessions
   if (sessionCountsById) {
     let max = -1, best = null;
     for (const e of group) {
@@ -46,7 +39,7 @@ function pickSurvivor(group, sessionCountsById, resultCountsById) {
     if (max > 0) return best;
   }
 
-  // 3. Most Results
+  // 3. Most linked Results
   if (resultCountsById) {
     let max = -1, best = null;
     for (const e of group) {
@@ -72,62 +65,57 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const dry_run = body.dry_run === true;
 
-    // ── 1. Fetch all events ──────────────────────────────────────────────────
+    // ── 1. Fetch all events ─────────────────────────────────────────────
     const allEvents = await base44.asServiceRole.entities.Event.list('-created_date', 5000);
 
-    // ── 2. Group by dimensions ───────────────────────────────────────────────
-    const byExternalUid    = new Map();
-    const byCanonicalKey   = new Map();
-    const byNormEventKey   = new Map();
-    const byNormDateTrack  = new Map();
-    const byNormDateSeries = new Map();
-    const byNormDate       = new Map();
+    // ── 2. Group by dimensions (skip already-marked duplicates) ──────────
+    const byNormalizedEventKey = new Map();
+    const byExternalUid = new Map();
+    const byPositional = new Map();
 
     for (const e of allEvents) {
       if (e.canonical_key?.includes('DUPLICATE_OF')) continue;
 
-      if (e.external_uid) {
-        const a = byExternalUid.get(e.external_uid) || []; a.push(e); byExternalUid.set(e.external_uid, a);
-      }
-      if (e.canonical_key && !e.canonical_key.includes('DUPLICATE')) {
-        const a = byCanonicalKey.get(e.canonical_key) || []; a.push(e); byCanonicalKey.set(e.canonical_key, a);
-      }
       if (e.normalized_event_key) {
-        const a = byNormEventKey.get(e.normalized_event_key) || []; a.push(e); byNormEventKey.set(e.normalized_event_key, a);
+        const a = byNormalizedEventKey.get(e.normalized_event_key) || [];
+        a.push(e);
+        byNormalizedEventKey.set(e.normalized_event_key, a);
       }
-      const normN = normalizeName(e.name || '');
-      if (normN && e.event_date) {
-        if (e.track_id) {
-          const k = `${normN}|${e.event_date}|${e.track_id}`;
-          const a = byNormDateTrack.get(k) || []; a.push(e); byNormDateTrack.set(k, a);
-        }
-        if (e.series_id) {
-          const k = `${normN}|${e.event_date}|${e.series_id}`;
-          const a = byNormDateSeries.get(k) || []; a.push(e); byNormDateSeries.set(k, a);
-        }
-        const k = `${normN}|${e.event_date}`;
-        const a = byNormDate.get(k) || []; a.push(e); byNormDate.set(k, a);
+      if (e.external_uid) {
+        const a = byExternalUid.get(e.external_uid) || [];
+        a.push(e);
+        byExternalUid.set(e.external_uid, a);
+      }
+      if (e.series_id && e.track_id && e.event_date) {
+        const k = `${e.series_id}:${e.track_id}:${e.event_date}`;
+        const a = byPositional.get(k) || [];
+        a.push(e);
+        byPositional.set(k, a);
       }
     }
 
-    // ── 3. Collect unique duplicate groups ───────────────────────────────────
+    // ── 3. Collect unique duplicate groups ───────────────────────────────
     const processedIds = new Set();
     const groups = [];
 
-    const addGroup = (match_type, key, grp) => {
-      const unique = grp.filter(r => !processedIds.has(r.id));
-      if (unique.length > 1) {
-        groups.push({ match_type, key, records: grp });
+    for (const [key, grp] of byNormalizedEventKey) {
+      if (grp.length > 1) {
+        groups.push({ match_type: 'normalized_event_key', key, records: grp });
         grp.forEach(r => processedIds.add(r.id));
       }
-    };
-
-    for (const [k, g] of byExternalUid)    if (g.length > 1) addGroup('external_uid', k, g);
-    for (const [k, g] of byCanonicalKey)   if (g.length > 1) addGroup('canonical_key', k, g);
-    for (const [k, g] of byNormEventKey)   if (g.length > 1) addGroup('normalized_event_key', k, g);
-    for (const [k, g] of byNormDateTrack)  if (g.length > 1) addGroup('name_date_track', k, g);
-    for (const [k, g] of byNormDateSeries) if (g.length > 1) addGroup('name_date_series', k, g);
-    for (const [k, g] of byNormDate)       if (g.length > 1) addGroup('name_date', k, g);
+    }
+    for (const [key, grp] of byExternalUid) {
+      if (grp.length > 1) {
+        const u = grp.filter(r => !processedIds.has(r.id));
+        if (u.length > 1) { groups.push({ match_type: 'external_uid', key, records: grp }); grp.forEach(r => processedIds.add(r.id)); }
+      }
+    }
+    for (const [key, grp] of byPositional) {
+      if (grp.length > 1) {
+        const u = grp.filter(r => !processedIds.has(r.id));
+        if (u.length > 1) { groups.push({ match_type: 'series_track_date', key, records: grp }); grp.forEach(r => processedIds.add(r.id)); }
+      }
+    }
 
     if (groups.length === 0) {
       return Response.json({
@@ -138,20 +126,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── 4. Pre-fetch reference counts for survivor selection ─────────────────
+    // ── 4. Pre-fetch counts for survivor selection ──────────────────────
     const candidateIds = [...new Set(groups.flatMap(g => g.records.map(r => r.id)))];
     const sessionCounts = {};
-    const resultCounts  = {};
+    const resultCounts = {};
     for (const id of candidateIds) {
       const [sess, res] = await Promise.all([
         base44.asServiceRole.entities.Session.filter({ event_id: id }).catch(() => []),
         base44.asServiceRole.entities.Results.filter({ event_id: id }).catch(() => []),
       ]);
       sessionCounts[id] = sess.length;
-      resultCounts[id]  = res.length;
+      resultCounts[id] = res.length;
     }
 
-    // ── 5. Process each group ────────────────────────────────────────────────
+    // ── 5. Process each group ──────────────────────────────────────────
     const report = {
       dry_run,
       total_events: allEvents.length,
@@ -165,29 +153,30 @@ Deno.serve(async (req) => {
     };
 
     for (const { match_type, key, records } of groups) {
-      // Skip already-inactive events
-      const active = records.filter(r => r.status !== 'Cancelled' && r.status !== 'Inactive');
+      const active = records.filter(r => r.status !== 'Inactive');
       if (active.length <= 1) {
         report.skipped_groups.push({ key, match_type, reason: 'all_already_inactive_or_single_active' });
         continue;
       }
 
-      const survivor   = pickSurvivor(active, sessionCounts, resultCounts);
+      const survivor = pickSurvivor(active, sessionCounts, resultCounts);
       const duplicates = active.filter(r => r.id !== survivor.id);
+
       report.groups_processed++;
 
-      // ── Re-index survivor ─────────────────────────────────────────────────
-      const normN         = normalizeName(survivor.name || '');
-      const canonSlug     = buildEntitySlug(survivor.name || '');
-      const canonKey      = buildCanonicalKey({ name: survivor.name, external_uid: survivor.external_uid, event_date: survivor.event_date, track_id: survivor.track_id, series_id: survivor.series_id });
-      const normEventKey  = buildNormalizedEventKey({ name: survivor.name, event_date: survivor.event_date, track_id: survivor.track_id, series_id: survivor.series_id });
+      // ── Re-index survivor with canonical fields ──────────────────────
+      const evKey = survivor.normalized_event_key || buildNormalizedEventKey({
+        name: survivor.name,
+        event_date: survivor.event_date,
+        track_id: survivor.track_id,
+        series_id: survivor.series_id,
+      });
+      const canonKey = survivor.canonical_key || `event:${(survivor.name || '').toLowerCase()}`;
 
       if (!dry_run) {
         await base44.asServiceRole.entities.Event.update(survivor.id, {
-          normalized_name:    normN || survivor.normalized_name,
-          canonical_slug:     canonSlug || survivor.canonical_slug,
-          canonical_key:      canonKey,
-          normalized_event_key: normEventKey,
+          normalized_event_key: evKey || survivor.normalized_event_key,
+          canonical_key: canonKey,
         }).catch(e => report.warnings.push(`survivor_update_failed:${survivor.id}:${e.message}`));
       }
 
@@ -198,24 +187,23 @@ Deno.serve(async (req) => {
         match_type,
         key,
         session_count: sessionCounts[survivor.id] || 0,
-        result_count:  resultCounts[survivor.id]  || 0,
-        external_uid:  survivor.external_uid || null,
-        canonical_key: canonKey,
+        result_count: resultCounts[survivor.id] || 0,
+        external_uid: survivor.external_uid || null,
         duplicate_count: duplicates.length,
         action: dry_run ? 'would_be_survivor' : 'confirmed_survivor',
       });
 
       const dupIds = [];
       for (const dup of duplicates) {
-        const marker = `DUPLICATE_OF:${survivor.id}`;
+        const dupMarker = `DUPLICATE_OF:${survivor.id}`;
         const existingNotes = dup.notes || '';
-        const newNotes = existingNotes.includes(marker)
+        const newNotes = existingNotes.includes(dupMarker)
           ? existingNotes
-          : (existingNotes ? `${existingNotes} | ${marker}` : marker);
+          : (existingNotes ? `${existingNotes} | ${dupMarker}` : dupMarker);
 
         if (!dry_run) {
           await base44.asServiceRole.entities.Event.update(dup.id, {
-            status: 'Cancelled',
+            status: 'Inactive',
             notes: newNotes,
             canonical_key: `event:DUPLICATE_OF:${survivor.id}`,
           }).catch(e => report.warnings.push(`dup_update_failed:${dup.id}:${e.message}`));
@@ -228,7 +216,7 @@ Deno.serve(async (req) => {
           survivor_id: survivor.id,
           survivor_name: survivor.name,
           match_type,
-          action: dry_run ? 'would_mark_cancelled' : 'marked_cancelled',
+          action: dry_run ? 'would_mark_inactive' : 'marked_inactive',
         });
         dupIds.push(dup.id);
       }
@@ -238,7 +226,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 6. OperationLog ──────────────────────────────────────────────────────
+    // ── 6. Write OperationLog ──────────────────────────────────────────
     if (!dry_run && report.duplicates_marked_inactive.length > 0) {
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'source_duplicate_repaired',

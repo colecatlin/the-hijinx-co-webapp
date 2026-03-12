@@ -6,16 +6,17 @@
  *
  * Repaired entities:
  *   - Session.event_id
- *   - Entry.event_id
  *   - Results.event_id
- *   - Standings.event_id
- *   - EventClass.event_id
+ *   - Entry.event_id
+ *   - Standings.event_id (if any)
  *
  * Input:
  *   {
  *     repairs: [{ survivor_id: string, duplicate_ids: string[] }],
  *     dry_run?: boolean
  *   }
+ *
+ * Output: repair counts per entity type
  *
  * Admin only. Does not hard-delete anything.
  */
@@ -47,48 +48,45 @@ Deno.serve(async (req) => {
     const { repairs = [], dry_run = false } = body;
 
     if (!repairs.length) {
-      return Response.json({ success: true, message: 'No repairs to process.' });
+      return Response.json({ success: true, message: 'No repairs to process.', report: {} });
     }
 
     const report = {
       dry_run,
       repairs_processed: repairs.length,
-      updated_sessions:     0,
-      updated_entries:      0,
-      updated_results:      0,
-      updated_standings:    0,
-      updated_event_classes: 0,
+      updated_sessions: 0,
+      updated_results: 0,
+      updated_entries: 0,
+      updated_standings: 0,
       warnings: [],
     };
 
     const models = {
-      Session:    base44.asServiceRole.entities.Session,
-      Entry:      base44.asServiceRole.entities.Entry,
-      Results:    base44.asServiceRole.entities.Results,
-      Standings:  base44.asServiceRole.entities.Standings,
-      EventClass: base44.asServiceRole.entities.EventClass,
+      Session:   base44.asServiceRole.entities.Session,
+      Results:   base44.asServiceRole.entities.Results,
+      Entry:     base44.asServiceRole.entities.Entry,
+      Standings: base44.asServiceRole.entities.Standings,
     };
 
     for (const { survivor_id, duplicate_ids = [] } of repairs) {
       if (!survivor_id || !duplicate_ids.length) continue;
 
       for (const dupId of duplicate_ids) {
-        const [sess, ent, res, std, ec] = await Promise.all([
-          repairField(models.Session,    'event_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(models.Entry,      'event_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(models.Results,    'event_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(models.Standings,  'event_id', dupId, survivor_id, dry_run, report.warnings),
-          repairField(models.EventClass, 'event_id', dupId, survivor_id, dry_run, report.warnings),
+        const [sess, res, ent, sta] = await Promise.all([
+          repairField(models.Session,   'event_id', dupId, survivor_id, dry_run, report.warnings),
+          repairField(models.Results,   'event_id', dupId, survivor_id, dry_run, report.warnings),
+          repairField(models.Entry,     'event_id', dupId, survivor_id, dry_run, report.warnings),
+          repairField(models.Standings, 'event_id', dupId, survivor_id, dry_run, report.warnings),
         ]);
 
-        report.updated_sessions      += sess;
-        report.updated_entries       += ent;
-        report.updated_results       += res;
-        report.updated_standings     += std;
-        report.updated_event_classes += ec;
+        report.updated_sessions   += sess;
+        report.updated_results    += res;
+        report.updated_entries    += ent;
+        report.updated_standings  += sta;
       }
     }
 
+    // ── OperationLog ─────────────────────────────────────────────────────
     if (!dry_run) {
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'event_references_repaired',
@@ -97,11 +95,10 @@ Deno.serve(async (req) => {
         metadata: {
           source_path: 'repair_event_references',
           repairs_processed: report.repairs_processed,
-          updated_sessions:      report.updated_sessions,
-          updated_entries:       report.updated_entries,
-          updated_results:       report.updated_results,
-          updated_standings:     report.updated_standings,
-          updated_event_classes: report.updated_event_classes,
+          updated_sessions: report.updated_sessions,
+          updated_results: report.updated_results,
+          updated_entries: report.updated_entries,
+          updated_standings: report.updated_standings,
         },
       }).catch(() => {});
     }
