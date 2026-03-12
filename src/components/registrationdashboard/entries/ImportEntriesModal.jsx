@@ -317,16 +317,35 @@ export default function ImportEntriesModal({
       setImportProgress((p) => ({ ...p, current: p.current + 1 }));
     }
 
-    // Log operation if available
+    // Structured unresolved breakdown (source reference failures)
+    const unresolvedBreakdown = {};
+    results.skipped.forEach(s => {
+      const field = s.reason?.includes('Driver') ? 'driver_id' :
+                    s.reason?.includes('class') ? 'series_class_id' :
+                    s.reason?.includes('Car number') ? 'car_number' : 'other';
+      unresolvedBreakdown[field] = (unresolvedBreakdown[field] || 0) + 1;
+    });
+
+    // Log with standardized operational import format
     try {
       await base44.asServiceRole.entities.OperationLog.create({
-        operation_type: 'entries_csv_import',
+        operation_type: 'operational_import_completed',
         source_type: 'RegistrationDashboard',
         entity_name: 'Entry',
         event_id: selectedEvent.id,
-        status: results.errors.length === 0 ? 'success' : 'partial',
-        message: `Imported ${results.created.length} new, ${results.updated.length} updated, ${results.skipped.length} skipped`,
-        metadata: results,
+        status: results.errors.length === 0 ? 'success' : 'completed',
+        message: `Entry import: ${results.created.length} created, ${results.updated.length} updated, ${results.skipped.length} unresolved`,
+        metadata: {
+          row_type: 'entry',
+          source_path: 'registration_dashboard_csv',
+          created_count: results.created.length,
+          updated_count: results.updated.length,
+          unresolved_count: results.skipped.length,
+          warning_count: 0,
+          error_count: results.errors.length,
+          unresolved_breakdown: unresolvedBreakdown,
+          event_id: selectedEvent.id,
+        },
       });
     } catch (_) {
       // OperationLog may not exist
