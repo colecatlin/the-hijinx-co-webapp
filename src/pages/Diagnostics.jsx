@@ -458,6 +458,60 @@ export default function Diagnostics() {
           </CardContent>
         </Card>
 
+        {/* ── Auth and Routing Health ──────────────────────────────────── */}
+        {authRouteReport && !authRouteRunning && (() => {
+          const r = authRouteReport;
+          const checks = [
+            { key: 'root_route_ok',           label: 'Root route resolves to Home' },
+            { key: 'logout_ok',               label: 'Logout destination is Home' },
+            { key: 'authenticated_pages_ok',  label: 'Authenticated pages redirect to login' },
+            { key: 'restricted_pages_ok',     label: 'Restricted pages enforce access' },
+            { key: 'admin_pages_ok',          label: 'Admin pages enforce admin role' },
+            { key: 'post_login_ok',           label: 'Post-login default is MyDashboard' },
+          ];
+          const allOk = checks.every(c => r[c.key] === true) && r.failures?.length === 0;
+          return (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" /> Authentication and Routing Health
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allOk ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
+                  {allOk ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /> : <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                  <span>{allOk ? 'All auth and routing checks passed' : `${r.failures?.length} failure(s) detected`}</span>
+                </div>
+                <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden text-xs">
+                  {checks.map((c, i) => (
+                    <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${r[c.key] ? 'bg-white' : 'bg-red-50'}`}>
+                      {r[c.key] ? <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> : <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
+                      <span className={r[c.key] ? 'text-gray-700' : 'text-red-700'}>{c.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {r.page_guards && (
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold text-gray-500 uppercase tracking-wide">Page Guards</p>
+                    {r.page_guards.map((g, i) => (
+                      <div key={i} className="flex items-center gap-2 text-gray-600">
+                        <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                        <span className="font-medium w-32 flex-shrink-0">{g.page}</span>
+                        <span className="text-gray-400 font-mono">{g.guard}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {r.warnings?.length > 0 && r.warnings.map((w, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* ── Access System Status ──────────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
