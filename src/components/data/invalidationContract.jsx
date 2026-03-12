@@ -95,6 +95,7 @@ export const INVALIDATION_GROUPS = {
     ['claimCheck_claims'],
     ['entityClaimRequests'],
     ['myOperationLogs'],
+    ['mediaProfile'],
   ],
 
   /**
