@@ -161,6 +161,13 @@ export default function EntityAccessManager({ collaborator, user }) {
     staleTime: 30_000,
   });
 
+  const { data: pendingInvitations = [], refetch: refetchInvitations } = useQuery({
+    queryKey: ['entityPendingInvitations', collaborator.entity_id],
+    queryFn: () => base44.entities.Invitation.filter({ entity_id: collaborator.entity_id, status: 'pending' }),
+    enabled: expanded,
+    staleTime: 30_000,
+  });
+
   const handleRemove = async (collab) => {
     // Safety: prevent removing the last owner
     const ownerCount = allCollaborators.filter(c => c.role === 'owner').length;
