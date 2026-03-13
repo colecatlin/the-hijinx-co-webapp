@@ -227,6 +227,12 @@ async function processSignal(base44, signal, stats) {
       recommendation_fingerprint: fingerprint,
       suppression_reason: inCooldown ? `cooldown_active_until_${existing.cooldown_until}` : undefined,
     });
+
+    // Still attempt clustering even for merged/suppressed signals
+    try {
+      await base44.asServiceRole.functions.invoke('clusterSignalIntoTrend', { signal_id: signal.id });
+    } catch (_) { /* best-effort */ }
+
     // Count merged/suppressed as not a new recommendation
     stats.signals_ignored++;
     return;
