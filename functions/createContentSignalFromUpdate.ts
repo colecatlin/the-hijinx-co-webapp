@@ -231,12 +231,14 @@ function generateSignalSummary(payload) {
 async function logOp(base44, event_type, meta) {
   try {
     await base44.asServiceRole.entities.OperationLog.create({
-      event_type,
-      entity_type: 'ContentSignal',
+      operation_type: event_type,
+      entity_name: 'ContentSignal',
       entity_id: meta.signal_id ?? meta.source_entity_id ?? '',
       status: 'success',
-      metadata: JSON.stringify(meta),
-      performed_at: new Date().toISOString(),
+      message: event_type,
+      metadata: meta,
+      function_name: 'createContentSignalFromUpdate',
+      source_type: 'api_function',
     });
   } catch (_) { /* fire and forget */ }
 }
