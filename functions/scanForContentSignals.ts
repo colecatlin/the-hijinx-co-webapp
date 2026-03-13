@@ -127,7 +127,11 @@ async function scanEvents(base44, cutoff, dryRun, stats) {
     else if (ev.status === 'postponed') trigger = 'event_postponed';
     else if (isRecent(ev, cutoff) && ev.created_date === ev.updated_date) trigger = 'event_created';
 
-    if (!trigger) { stats.skipped++; continue; }
+    if (!trigger) {
+      stats.skipped++;
+      stats.row_results.push({ source: 'Events', entity_id: ev.id, outcome: 'skipped', reason: 'no_meaningful_trigger' });
+      continue;
+    }
 
     try {
       const res = await dispatch(base44, {
@@ -144,12 +148,10 @@ async function scanEvents(base44, cutoff, dryRun, stats) {
           start_date: ev.start_date,
         },
       }, dryRun);
-
-      if (res?.data?.created || res?.dry_run) stats.created++;
-      else if (res?.data?.skipped) stats.skipped++;
-      else if (res?.data?.deduped) stats.deduped++;
+      recordResult(stats, 'Events', ev.id, res);
     } catch (err) {
       stats.errors.push(`Event ${ev.id}: ${err.message}`);
+      stats.row_results.push({ source: 'Events', entity_id: ev.id, outcome: 'error', reason: err.message });
     }
   }
 }
