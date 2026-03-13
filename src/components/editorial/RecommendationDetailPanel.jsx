@@ -113,6 +113,12 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
       const res = await base44.functions.invoke('convertRecommendationToDraft', { recommendationId: rec.id });
       if (res.data?.success) {
         toast.success('Draft created successfully');
+        logStoryRadarEvent({
+          event_type: 'story_radar_recommendation_drafted',
+          recommendation_id: rec.id,
+          previous_status: rec.status,
+          new_status: 'drafted',
+        });
         invalidate();
       } else {
         toast.error(res.data?.error ?? 'Failed to create draft');
