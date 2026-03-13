@@ -178,9 +178,24 @@ export default function StoryRadar() {
   });
 
   // ── Recommendation quick actions ──
-  const handleRecAction = async (id, newStatus) => {
+  const handleRecAction = async (rec, newStatus) => {
+    const id = typeof rec === 'string' ? rec : rec.id;
+    const previousStatus = typeof rec === 'object' ? rec.status : undefined;
     setActionLoading(prev => ({ ...prev, [id]: newStatus }));
     await base44.entities.StoryRecommendation.update(id, { status: newStatus });
+    const eventMap = {
+      approved: 'story_radar_recommendation_approved',
+      dismissed: 'story_radar_recommendation_dismissed',
+      saved: 'story_radar_recommendation_saved',
+      drafted: 'story_radar_recommendation_drafted',
+    };
+    logStoryRadarEvent({
+      event_type: eventMap[newStatus] ?? 'story_radar_recommendation_approved',
+      recommendation_id: id,
+      previous_status: previousStatus,
+      new_status: newStatus,
+      acted_by_user_id: user?.email,
+    });
     queryClient.invalidateQueries({ queryKey: ['high-priority-recs'] });
     queryClient.invalidateQueries({ queryKey: ['rec-counts'] });
     queryClient.invalidateQueries({ queryKey: ['coverage-gaps'] });
