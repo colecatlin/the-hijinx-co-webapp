@@ -76,7 +76,45 @@ const AI_OUTPUT_SCHEMA = {
   required: ['worth_covering'],
 };
 
+// ─── COVERAGE CONTEXT ────────────────────────────────────────────────────────
+
+async function fetchCoverageContext(base44, signal) {
+  try {
+    // Fetch recent coverage entries for the same entity or category
+    const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const recentCoverage = await base44.asServiceRole.entities.OutletStoryCoverageMap.list('-published_date', 50);
+    const entityName = signal.source_entity_name ?? '';
+    const relevant = recentCoverage.filter(c => {
+      if (!c.published_date || c.published_date < cutoff) return false;
+      if (entityName && c.covered_entity_names?.some(n => n.toLowerCase().includes(entityName.toLowerCase()))) return true;
+      if (c.category === signal.source_entity_type) return true;
+      return false;
+    }).slice(0, 5);
+    return relevant;
+  } catch (_) {
+    return [];
+  }
+}
+
+function buildCoverageContextBlock(coverageRows) {
+  if (!coverageRows.length) return '';
+  const lines = [``, `RECENT OUTLET COVERAGE MEMORY (use to inform coverage_gap_score and follow_up_story_flag):`];
+  for (const c of coverageRows) {
+    const date = c.published_date ? c.published_date.slice(0, 10) : 'unknown date';
+    lines.push(`  - "${c.story_title}" [${c.article_type ?? 'story'}] on ${date}`);
+    if (c.article_angle) lines.push(`    Angle: ${c.article_angle}`);
+    if (c.covered_topics?.length) lines.push(`    Topics: ${c.covered_topics.slice(0, 4).join(', ')}`);
+  }
+  lines.push(``, `Coverage scoring guidance:`);
+  lines.push(`  - If same entity + same angle recently covered → lower coverage_gap_score, set follow_up_story_flag=true`);
+  lines.push(`  - If same entity but clearly new angle → keep coverage_gap_score, story still has merit`);
+  lines.push(`  - If entity not recently covered → raise coverage_gap_score, story_gap_detected may be true`);
+  return lines.join('\n');
+}
+
 async function evaluateSignalWithAI(base44, signal) {
+  const coverageRows = await fetchCoverageContext(base44, signal);
+
   const parts = [
     `You are an editorial strategist for The Outlet, a motorsports media publication.`,
     `Evaluate the following platform update for editorial value. Focus on motorsports relevance, narrative potential, urgency, and audience interest.`,
@@ -101,6 +139,8 @@ async function evaluateSignalWithAI(base44, signal) {
   if (signal.raw_data) {
     try { parts.push(`  Raw Preview: ${JSON.stringify(JSON.parse(signal.raw_data)).slice(0, 400)}`); } catch (_) { /* skip */ }
   }
+
+  parts.push(buildCoverageContextBlock(coverageRows));
   parts.push(``, `Return structured JSON. All score fields 0–100.`);
 
   return await base44.asServiceRole.integrations.Core.InvokeLLM({
