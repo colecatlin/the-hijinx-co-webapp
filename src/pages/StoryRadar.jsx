@@ -292,28 +292,28 @@ export default function StoryRadar() {
                         variant="ghost"
                         className="h-7 px-2 text-xs text-green-700 hover:bg-green-50"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec.id, 'approved')}
-                      >
+                        onClick={() => handleRecAction(rec, 'approved')}
+                        >
                         {actionLoading[rec.id] === 'approved' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3 mr-1" />}
                         Approve
-                      </Button>
-                      <Button
+                        </Button>
+                        <Button
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-amber-700 hover:bg-amber-50"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec.id, 'saved')}
-                      >
+                        onClick={() => handleRecAction(rec, 'saved')}
+                        >
                         {actionLoading[rec.id] === 'saved' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bookmark className="w-3 h-3 mr-1" />}
                         Save
-                      </Button>
-                      <Button
+                        </Button>
+                        <Button
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-gray-500 hover:bg-gray-100"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec.id, 'dismissed')}
-                      >
+                        onClick={() => handleRecAction(rec, 'dismissed')}
+                        >
                         {actionLoading[rec.id] === 'dismissed' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3 mr-1" />}
                         Dismiss
                       </Button>
