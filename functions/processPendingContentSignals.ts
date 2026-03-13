@@ -2,12 +2,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
-async function logOp(base44, event_type, metadata = {}) {
+async function logOp(base44, operation_type, metadata = {}) {
   try {
     await base44.asServiceRole.entities.OperationLog.create({
-      event_type,
-      metadata: JSON.stringify(metadata),
-      created_at: new Date().toISOString(),
+      operation_type,
+      entity_name: metadata.source_entity_type ?? 'ContentSignal',
+      entity_id: metadata.signal_id ?? '',
+      metadata,
     });
   } catch (_) { /* fire-and-forget */ }
 }
