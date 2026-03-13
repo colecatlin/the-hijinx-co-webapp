@@ -69,70 +69,44 @@ const AI_OUTPUT_SCHEMA = {
     urgency_score:              { type: 'number' },
     confidence_score:           { type: 'number' },
     newsworthiness_score:       { type: 'number' },
-    audience_fit_score:         { type: 'number' },
-    freshness_score:            { type: 'number' },
-    narrative_strength_score:   { type: 'number' },
     coverage_gap_score:         { type: 'number' },
+    follow_up_story_flag:       { type: 'boolean' },
+    story_gap_detected:         { type: 'boolean' },
   },
   required: ['worth_covering'],
 };
 
-function buildPrompt(signal) {
+async function evaluateSignalWithAI(base44, signal) {
   const parts = [
-    `You are an editorial strategist for The Outlet, a motorsports media publication covering racing, business, culture, tech, and marketplace.`,
+    `You are an editorial strategist for The Outlet, a motorsports media publication.`,
+    `Evaluate the following platform update for editorial value. Focus on motorsports relevance, narrative potential, urgency, and audience interest.`,
+    `Rules: prefer concrete hooks, avoid filler, do NOT auto-publish, recommend only if clear editorial merit.`,
+    `Set follow_up_story_flag=true if this clearly relates to a recent published story.`,
+    `Set story_gap_detected=true if topic is important but undercovered.`,
     ``,
-    `Evaluate the following platform update for editorial value. Focus on:`,
-    `- Motorsports relevance and newsworthiness`,
-    `- Narrative potential and story hook strength`,
-    `- Urgency and time-sensitivity`,
-    `- Audience interest for motorsports readers`,
-    `- Whether this creates a genuinely new story opportunity (not a repeat of existing coverage)`,
-    ``,
-    `Rules:`,
-    `- Prefer concrete narrative hooks over generic angles`,
-    `- Avoid recommending filler or obvious recap content`,
-    `- Prioritize explainable, specific reasoning`,
-    `- Do NOT auto-publish or finalize anything — this is a recommendation only`,
-    `- Recommend only if there is clear editorial merit`,
-    ``,
-    `SIGNAL DETAILS:`,
-    `  Signal Type: ${signal.signal_type ?? 'unknown'}`,
-    `  Trigger Action: ${signal.trigger_action ?? 'unknown'}`,
+    `SIGNAL:`,
+    `  Type: ${signal.signal_type ?? 'unknown'}`,
+    `  Action: ${signal.trigger_action ?? 'unknown'}`,
     `  Summary: ${signal.signal_summary ?? '(none)'}`,
-    `  Source Entity Type: ${signal.source_entity_type ?? 'unknown'}`,
-    `  Source Entity Name: ${signal.source_entity_name ?? 'unknown'}`,
-    `  Importance Level: ${signal.importance_level ?? 'medium'}`,
+    `  Entity Type: ${signal.source_entity_type ?? 'unknown'}`,
+    `  Entity Name: ${signal.source_entity_name ?? 'unknown'}`,
+    `  Importance: ${signal.importance_level ?? 'medium'}`,
   ];
-
   if (signal.previous_value || signal.new_value) {
     parts.push(`  Change: "${signal.previous_value ?? '—'}" → "${signal.new_value ?? '—'}"`);
   }
-
   if (signal.related_entity_names?.length) {
-    parts.push(`  Related Entities: ${signal.related_entity_names.join(', ')}`);
+    parts.push(`  Related: ${signal.related_entity_names.join(', ')}`);
   }
-
   if (signal.raw_data) {
-    try {
-      const raw = JSON.parse(signal.raw_data);
-      const preview = JSON.stringify(raw).slice(0, 400);
-      parts.push(`  Raw Data Preview: ${preview}`);
-    } catch (_) { /* skip */ }
+    try { parts.push(`  Raw Preview: ${JSON.stringify(JSON.parse(signal.raw_data)).slice(0, 400)}`); } catch (_) { /* skip */ }
   }
+  parts.push(``, `Return structured JSON. All score fields 0–100.`);
 
-  parts.push(``);
-  parts.push(`Based on all of the above, return a structured JSON assessment. All score fields should be 0–100. Be direct and specific in title, angle, and summary fields. If worth_covering is false, you may leave most text fields empty but still explain briefly in the summary why this is not worth covering.`);
-
-  return parts.join('\n');
-}
-
-async function evaluateSignalWithAI(base44, signal) {
-  const prompt = buildPrompt(signal);
-  const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt,
+  return await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: parts.join('\n'),
     response_json_schema: AI_OUTPUT_SCHEMA,
   });
-  return result;
 }
 
 // ─── SIGNAL PROCESSING ────────────────────────────────────────────────────────
@@ -143,7 +117,6 @@ async function processSignal(base44, signal, stats) {
   try {
     aiResult = await evaluateSignalWithAI(base44, signal);
   } catch (err) {
-    // AI call failed — mark errored, log, allow retry
     await base44.asServiceRole.entities.ContentSignal.update(signal.id, {
       status: 'errored',
       ai_processed: false,
@@ -164,7 +137,6 @@ async function processSignal(base44, signal, stats) {
   const now = new Date().toISOString();
 
   if (!aiResult?.worth_covering) {
-    // Not worth covering — mark as ignored
     await base44.asServiceRole.entities.ContentSignal.update(signal.id, {
       status: 'ignored',
       ai_processed: true,
@@ -181,14 +153,45 @@ async function processSignal(base44, signal, stats) {
     return;
   }
 
-  // Worth covering — create StoryRecommendation
+  // Build fingerprint and check for dedup/cooldown
+  const fingerprint = buildFingerprint(aiResult, signal);
+  const { existing, inCooldown } = await findExistingRecommendation(base44, fingerprint);
+
+  if (existing) {
+    const updatedSignalIds = [...new Set([...(existing.source_signal_ids ?? []), signal.id])];
+    const noteTag = inCooldown ? '[suppressed]' : '[merged]';
+    await base44.asServiceRole.entities.StoryRecommendation.update(existing.id, {
+      source_signal_ids: updatedSignalIds,
+      urgency_score: Math.max(existing.urgency_score ?? 0, aiResult.urgency_score ?? 0),
+      editor_notes: (existing.editor_notes ?? '') +
+        `\n${noteTag} Signal ${signal.id} at ${now}${inCooldown ? ` (cooldown until ${existing.cooldown_until})` : ''}.`,
+    });
+    await base44.asServiceRole.entities.ContentSignal.update(signal.id, {
+      status: 'processed',
+      ai_processed: true,
+      ai_processed_at: now,
+      ai_notes: aiResult.summary ?? '',
+      linked_recommendation_id: existing.id,
+      recommendation_ids: [existing.id],
+    });
+    await logOp(base44, inCooldown ? 'story_radar_recommendation_suppressed' : 'story_radar_recommendation_merged', {
+      signal_id: signal.id,
+      recommendation_id: existing.id,
+      recommendation_fingerprint: fingerprint,
+      suppression_reason: inCooldown ? `cooldown_active_until_${existing.cooldown_until}` : undefined,
+    });
+    // Count merged/suppressed as not a new recommendation
+    stats.signals_ignored++;
+    return;
+  }
+
+  // Create new recommendation
+  const cooldownUntil = new Date(Date.now() + DEFAULT_COOLDOWN_HOURS * 60 * 60 * 1000).toISOString();
   let recommendation = null;
   try {
     recommendation = await base44.asServiceRole.entities.StoryRecommendation.create({
       title_suggestion:           aiResult.title_suggestion ?? '',
-      slug_suggestion:            aiResult.title_suggestion
-                                    ? aiResult.title_suggestion.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-                                    : '',
+      slug_suggestion:            (aiResult.title_suggestion ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       summary:                    aiResult.summary ?? '',
       angle:                      aiResult.angle ?? '',
       why_now:                    aiResult.why_now ?? '',
@@ -210,6 +213,10 @@ async function processSignal(base44, signal, stats) {
       confidence_score:           aiResult.confidence_score ?? 50,
       newsworthiness_score:       aiResult.newsworthiness_score ?? 50,
       coverage_gap_score:         aiResult.coverage_gap_score ?? 50,
+      follow_up_story_flag:       aiResult.follow_up_story_flag === true,
+      story_gap_detected:         aiResult.story_gap_detected === true,
+      recommendation_fingerprint: fingerprint,
+      cooldown_until:             cooldownUntil,
       status:                     'suggested',
       generated_at:               now,
       source_signal_ids:          [signal.id],
@@ -217,7 +224,6 @@ async function processSignal(base44, signal, stats) {
       related_entity_names:       signal.source_entity_name ? [signal.source_entity_name] : [],
     });
   } catch (err) {
-    // Recommendation create failed — still mark signal errored
     await base44.asServiceRole.entities.ContentSignal.update(signal.id, {
       status: 'errored',
       ai_processed: false,
@@ -235,7 +241,6 @@ async function processSignal(base44, signal, stats) {
     return;
   }
 
-  // Mark signal as processed, link recommendation
   await base44.asServiceRole.entities.ContentSignal.update(signal.id, {
     status: 'processed',
     ai_processed: true,
@@ -245,12 +250,12 @@ async function processSignal(base44, signal, stats) {
     recommendation_ids: [recommendation.id],
   });
 
-  await logOp(base44, 'story_radar_recommendation_generated', {
+  await logOp(base44, 'story_radar_recommendation_created', {
     signal_id: signal.id,
+    recommendation_id: recommendation.id,
+    recommendation_fingerprint: fingerprint,
     source_entity_type: signal.source_entity_type,
     source_entity_id: signal.source_entity_id,
-    worth_covering: true,
-    recommendation_id: recommendation.id,
     title_suggestion: aiResult.title_suggestion,
     priority_score: aiResult.priority_score,
   });
