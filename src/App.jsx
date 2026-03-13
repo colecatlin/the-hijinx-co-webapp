@@ -58,6 +58,11 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/PlatformDataMap" element={
+        <LayoutWrapper currentPageName="PlatformDataMap">
+          <PlatformDataMap />
+        </LayoutWrapper>
+      } />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
