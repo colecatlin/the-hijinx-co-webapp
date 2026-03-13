@@ -88,7 +88,24 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
   const saveNotes = () => doUpdate({ editor_notes: notesValue }, 'notes').then(() => setShowNotes(false));
   const saveAssign = () => doUpdate({ assigned_to: assignValue, status: rec.status === 'approved' ? 'assigned' : rec.status }, 'assign').then(() => setShowAssign(false));
 
-  const canConvertToDraft = rec.status === 'approved';
+  const canConvertToDraft = rec.status === 'approved' && !rec.linked_story_id;
+  const alreadyConverted = !!rec.linked_story_id || rec.status === 'drafted';
+
+  const handleConvertToDraft = async () => {
+    setActionLoading('draft');
+    try {
+      const res = await base44.functions.invoke('convertRecommendationToDraft', { recommendationId: rec.id });
+      if (res.data?.success) {
+        toast.success('Draft created successfully');
+        invalidate();
+      } else {
+        toast.error(res.data?.error ?? 'Failed to create draft');
+      }
+    } catch (e) {
+      toast.error(e?.response?.data?.error ?? 'Failed to create draft');
+    }
+    setActionLoading(null);
+  };
 
   return (
     <div className="flex flex-col h-full">
