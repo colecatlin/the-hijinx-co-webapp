@@ -164,14 +164,23 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
             {actionLoading === 'dismiss' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
             Dismiss
           </Button>
-          <Button size="sm" variant="outline"
-            className={`text-xs h-8 col-span-1 ${canConvertToDraft ? 'text-teal-700 border-teal-200 hover:bg-teal-50' : 'opacity-40 cursor-not-allowed'}`}
-            disabled={!!actionLoading || !canConvertToDraft}
-            title={!canConvertToDraft ? 'Only available when status is Approved' : ''}
-            onClick={() => canConvertToDraft && doUpdate({ status: 'drafted' }, 'draft')}>
-            {actionLoading === 'draft' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
-            Convert To Draft
-          </Button>
+          {alreadyConverted ? (
+            <Button size="sm" variant="outline"
+              className="text-xs h-8 col-span-1 text-teal-700 border-teal-200 hover:bg-teal-50"
+              disabled>
+              <CheckCircle className="w-3 h-3" />
+              Draft Created
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline"
+              className={`text-xs h-8 col-span-1 ${canConvertToDraft ? 'text-teal-700 border-teal-200 hover:bg-teal-50' : 'opacity-40 cursor-not-allowed'}`}
+              disabled={!!actionLoading || !canConvertToDraft}
+              title={!canConvertToDraft ? 'Must be Approved to convert to draft' : ''}
+              onClick={handleConvertToDraft}>
+              {actionLoading === 'draft' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+              Convert To Draft
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="text-indigo-700 border-indigo-200 hover:bg-indigo-50 text-xs h-8"
             onClick={() => { setShowAssign(v => !v); setShowNotes(false); }}>
             <UserPlus className="w-3 h-3" />
