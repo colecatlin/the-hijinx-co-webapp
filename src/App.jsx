@@ -12,6 +12,7 @@ import StoryRadar from './pages/StoryRadar';
 import EditorialRecommendations from './pages/EditorialRecommendations';
 import EditorialSignals from './pages/EditorialSignals';
 import EditorialTrendClusters from './pages/EditorialTrendClusters';
+import EditorialCoverageMap from './pages/EditorialCoverageMap';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -67,7 +68,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/recommendations" element={<LayoutWrapper currentPageName="management/editorial/recommendations"><EditorialRecommendations /></LayoutWrapper>} />
       <Route path="/management/editorial/signals" element={<LayoutWrapper currentPageName="management/editorial/signals"><EditorialSignals /></LayoutWrapper>} />
       <Route path="/management/editorial/trend-clusters" element={<LayoutWrapper currentPageName="management/editorial/trend-clusters"><EditorialTrendClusters /></LayoutWrapper>} />
-      <Route path="/management/editorial/coverage-map" element={<LayoutWrapper currentPageName="management/editorial/coverage-map"><EditorialHub /></LayoutWrapper>} />
+      <Route path="/management/editorial/coverage-map" element={<LayoutWrapper currentPageName="management/editorial/coverage-map"><EditorialCoverageMap /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
