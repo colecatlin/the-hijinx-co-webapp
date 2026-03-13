@@ -62,7 +62,16 @@ export default function TrendClusterDetailPanel({ cluster, onClose, onUpdated })
 
   const doUpdate = async (patch, action) => {
     setActionLoading(action);
+    const previousStatus = cluster.status;
     await base44.entities.StoryTrendCluster.update(cluster.id, patch);
+    if (patch.status) {
+      logStoryRadarEvent({
+        event_type: 'story_radar_cluster_status_changed',
+        cluster_id: cluster.id,
+        previous_status: previousStatus,
+        new_status: patch.status,
+      });
+    }
     queryClient.invalidateQueries({ queryKey: ['trend-clusters'] });
     queryClient.invalidateQueries({ queryKey: ['cluster-count'] });
     onUpdated?.();
