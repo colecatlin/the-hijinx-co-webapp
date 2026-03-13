@@ -107,12 +107,10 @@ async function scanResults(base44, cutoff, dryRun, stats) {
           series_id: r.series_id,
         },
       }, dryRun);
-
-      if (res?.data?.created || res?.dry_run) stats.created++;
-      else if (res?.data?.skipped) stats.skipped++;
-      else if (res?.data?.deduped) stats.deduped++;
+      recordResult(stats, 'Results', r.id, res);
     } catch (err) {
       stats.errors.push(`Results ${r.id}: ${err.message}`);
+      stats.row_results.push({ source: 'Results', entity_id: r.id, outcome: 'error', reason: err.message });
     }
   }
 }
