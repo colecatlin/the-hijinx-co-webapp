@@ -293,7 +293,7 @@ Deno.serve(async (req) => {
         trigger_action,
         reason_skipped: reason,
       });
-      return Response.json({ created: false, skipped: true, reason });
+      return Response.json({ created: false, skipped: true, dedupe_key: null, reason });
     }
 
     // ── Step 2: Dedupe check ──
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
         dedupe_key: dedupeKey,
         existing_signal_id: recentDupe.id,
       });
-      return Response.json({ created: false, deduped: true, existing_id: recentDupe.id });
+      return Response.json({ created: false, skipped: true, deduped: true, dedupe_key: dedupeKey, existing_id: recentDupe.id, reason: 'duplicate_within_cooldown' });
     }
 
     // ── Step 3: Build and create signal ──
