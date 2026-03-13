@@ -270,8 +270,6 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dry_run === true;
 
-    const cutoff = new Date(Date.now() - scanWindowHours * 60 * 60 * 1000).toISOString();
-
     // Support scan_window_minutes for short windows, fallback to scan_window_hours
     let scanWindowHours;
     if (body.scan_window_minutes != null) {
@@ -279,6 +277,8 @@ Deno.serve(async (req) => {
     } else {
       scanWindowHours = Number(body.scan_window_hours) || 24;
     }
+
+    const cutoff = new Date(Date.now() - scanWindowHours * 60 * 60 * 1000).toISOString();
 
     const stats = {
       scanned: 0,
