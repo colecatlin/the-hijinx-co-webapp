@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PlatformDataMap from './pages/PlatformDataMap';
 import EditorialHub from './pages/EditorialHub';
+import StoryRadar from './pages/StoryRadar';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
