@@ -60,6 +60,16 @@ export const MANAGEMENT_SECTIONS = [
     ]
   },
   {
+    title: 'Editorial',
+    items: [
+      { name: 'Story Radar', page: 'management/editorial/story-radar', icon: Radar, description: 'Monitor signals and surface stories worth covering' },
+      { name: 'Recommendations', page: 'management/editorial/recommendations', icon: Sparkles, description: 'AI-assisted story recommendations' },
+      { name: 'Signals', page: 'management/editorial/signals', icon: Activity, description: 'Raw signal feed from tracked sources' },
+      { name: 'Trend Clusters', page: 'management/editorial/trend-clusters', icon: TrendingUp, description: 'Grouped narrative threads and story patterns' },
+      { name: 'Coverage Map', page: 'management/editorial/coverage-map', icon: Map, description: 'Visual overview of coverage density and gaps' },
+    ]
+  },
+  {
     title: 'Site Settings',
     items: [
       { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
