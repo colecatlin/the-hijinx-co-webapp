@@ -117,6 +117,13 @@ function buildCoverageContextBlock(coverageRows) {
 async function runAIEvaluation(base44, signal) {
   const coverageRows = await fetchCoverageContext(base44, signal);
 
+  // Log coverage check
+  await logOp(base44, 'story_radar_coverage_check_run', {
+    signal_id: signal.id,
+    source_entity_name: signal.source_entity_name,
+    coverage_rows_found: coverageRows.length,
+  });
+
   const parts = [
     `You are an editorial strategist for The Outlet, a motorsports media publication.`,
     ``,

@@ -115,6 +115,13 @@ function buildCoverageContextBlock(coverageRows) {
 async function evaluateSignalWithAI(base44, signal) {
   const coverageRows = await fetchCoverageContext(base44, signal);
 
+  // Log that a coverage check was run for this signal
+  await logOp(base44, 'story_radar_coverage_check_run', {
+    signal_id: signal.id,
+    source_entity_name: signal.source_entity_name,
+    coverage_rows_found: coverageRows.length,
+  });
+
   const parts = [
     `You are an editorial strategist for The Outlet, a motorsports media publication.`,
     `Evaluate the following platform update for editorial value. Focus on motorsports relevance, narrative potential, urgency, and audience interest.`,
