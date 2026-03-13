@@ -9,6 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PlatformDataMap from './pages/PlatformDataMap';
 import EditorialHub from './pages/EditorialHub';
 import StoryRadar from './pages/StoryRadar';
+import EditorialRecommendations from './pages/EditorialRecommendations';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
