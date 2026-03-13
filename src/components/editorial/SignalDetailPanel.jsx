@@ -55,7 +55,19 @@ export default function SignalDetailPanel({ signal, onClose, onUpdated, onOpenRe
 
   const doUpdate = async (patch, action) => {
     setActionLoading(action);
+    const previousStatus = signal.status;
     await base44.entities.ContentSignal.update(signal.id, patch);
+    // Determine event type
+    const isRetry = action === 'retry';
+    const isProcess = action === 'process' || action === 'queue';
+    logStoryRadarEvent({
+      event_type: isRetry
+        ? 'story_radar_signal_retried'
+        : 'story_radar_signal_processed',
+      signal_id: signal.id,
+      previous_status: previousStatus,
+      new_status: patch.status,
+    });
     queryClient.invalidateQueries({ queryKey: ['signals'] });
     queryClient.invalidateQueries({ queryKey: ['signal-counts'] });
     onUpdated?.();
