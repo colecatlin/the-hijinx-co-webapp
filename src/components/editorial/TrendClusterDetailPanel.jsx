@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { X, Loader2, TrendingUp, TrendingDown, CheckCircle, XCircle, ExternalLink, Activity, Sparkles } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
 
 const STATUS_COLORS = {
   forming: 'bg-blue-100 text-blue-700',

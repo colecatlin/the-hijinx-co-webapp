@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
 
 const STATUS_COLORS = {
   suggested: 'bg-blue-100 text-blue-700',

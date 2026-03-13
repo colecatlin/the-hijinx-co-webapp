@@ -8,6 +8,7 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShieldOff, Radar, Activity, TrendingUp, Map, CheckCircle, XCircle, Bookmark, ExternalLink, ChevronRight, Loader2 } from 'lucide-react';
+import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
 import { formatDistanceToNow } from 'date-fns';
 
 const ALLOWED_ROLES = ['admin', 'editor', 'writer'];

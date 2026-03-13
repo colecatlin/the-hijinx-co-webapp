@@ -6,6 +6,7 @@ import {
   X, Loader2, ExternalLink, RefreshCw, Ban, PlayCircle, ListOrdered, ChevronRight
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-700',
