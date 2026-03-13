@@ -270,7 +270,6 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const scanWindowHours = Number(body.scan_window_hours) || 24;
     const dryRun = body.dry_run === true;
 
     const cutoff = new Date(Date.now() - scanWindowHours * 60 * 60 * 1000).toISOString();
