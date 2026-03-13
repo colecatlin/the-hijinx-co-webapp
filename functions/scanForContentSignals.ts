@@ -247,12 +247,10 @@ async function scanPublishedStories(base44, cutoff, dryRun, stats) {
           featured: story.featured,
         },
       }, dryRun);
-
-      if (res?.data?.created || res?.dry_run) stats.created++;
-      else if (res?.data?.skipped) stats.skipped++;
-      else if (res?.data?.deduped) stats.deduped++;
+      recordResult(stats, 'OutletStories', story.id, res);
     } catch (err) {
       stats.errors.push(`OutletStory ${story.id}: ${err.message}`);
+      stats.row_results.push({ source: 'OutletStories', entity_id: story.id, outcome: 'error', reason: err.message });
     }
   }
 }
