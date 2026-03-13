@@ -165,7 +165,11 @@ async function scanStandings(base44, cutoff, dryRun, stats) {
 
   for (const s of recent) {
     const classKey = s.series_class_id ?? s.series_id ?? 'unknown';
-    if (seenClasses.has(classKey)) { stats.skipped++; continue; }
+    if (seenClasses.has(classKey)) {
+      stats.skipped++;
+      stats.row_results.push({ source: 'Standings', entity_id: s.id, outcome: 'skipped', reason: 'class_already_signaled' });
+      continue;
+    }
     seenClasses.add(classKey);
     stats.scanned++;
 
@@ -185,12 +189,10 @@ async function scanStandings(base44, cutoff, dryRun, stats) {
           class_name: classKey,
         },
       }, dryRun);
-
-      if (res?.data?.created || res?.dry_run) stats.created++;
-      else if (res?.data?.skipped) stats.skipped++;
-      else if (res?.data?.deduped) stats.deduped++;
+      recordResult(stats, 'Standings', s.id, res);
     } catch (err) {
       stats.errors.push(`Standings ${s.id}: ${err.message}`);
+      stats.row_results.push({ source: 'Standings', entity_id: s.id, outcome: 'error', reason: err.message });
     }
   }
 }
