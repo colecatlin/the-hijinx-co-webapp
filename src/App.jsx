@@ -62,7 +62,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/management/editorial/story-radar" element={<LayoutWrapper currentPageName="management/editorial/story-radar"><StoryRadar /></LayoutWrapper>} />
-      <Route path="/management/editorial/recommendations" element={<LayoutWrapper currentPageName="management/editorial/recommendations"><EditorialHub /></LayoutWrapper>} />
+      <Route path="/management/editorial/recommendations" element={<LayoutWrapper currentPageName="management/editorial/recommendations"><EditorialRecommendations /></LayoutWrapper>} />
       <Route path="/management/editorial/signals" element={<LayoutWrapper currentPageName="management/editorial/signals"><EditorialHub /></LayoutWrapper>} />
       <Route path="/management/editorial/trend-clusters" element={<LayoutWrapper currentPageName="management/editorial/trend-clusters"><EditorialHub /></LayoutWrapper>} />
       <Route path="/management/editorial/coverage-map" element={<LayoutWrapper currentPageName="management/editorial/coverage-map"><EditorialHub /></LayoutWrapper>} />
