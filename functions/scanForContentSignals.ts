@@ -217,12 +217,10 @@ async function scanAnnouncements(base44, cutoff, dryRun, stats) {
           background_color: a.background_color,
         },
       }, dryRun);
-
-      if (res?.data?.created || res?.dry_run) stats.created++;
-      else if (res?.data?.skipped) stats.skipped++;
-      else if (res?.data?.deduped) stats.deduped++;
+      recordResult(stats, 'Announcements', a.id, res);
     } catch (err) {
       stats.errors.push(`Announcement ${a.id}: ${err.message}`);
+      stats.row_results.push({ source: 'Announcements', entity_id: a.id, outcome: 'error', reason: err.message });
     }
   }
 }
