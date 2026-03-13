@@ -7,7 +7,7 @@ import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShieldOff, Radar, Activity, TrendingUp, Map, CheckCircle, XCircle, Bookmark, ExternalLink, ChevronRight, Loader2 } from 'lucide-react';
+import { ShieldOff, Radar, Activity, TrendingUp, Map, CheckCircle, XCircle, Bookmark, ExternalLink, ChevronRight, Loader2, ListChecks, AlertTriangle, FileText, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const ALLOWED_ROLES = ['admin', 'editor', 'writer'];
@@ -215,11 +215,64 @@ export default function StoryRadar() {
     );
   }
 
+  // ── Queue summary metrics ──
+  const queueNeedsReview = (signalCounts?.new ?? 0) + (recCounts?.suggested ?? 0);
+  const criticalSignals = recentSignals.filter(s => s.importance_level === 'critical' && s.status === 'new').length;
+  const readyToDraft = (recCounts?.approved ?? 0);
+  const assignedToMe = highPriorityRecs.filter(r => r.assigned_to && user?.email && r.assigned_to.toLowerCase() === user.email.toLowerCase()).length;
+
   const countLoading = signalCountsLoading || recCountsLoading || clusterCountLoading || gapCountLoading;
 
   return (
     <ManagementLayout currentPage={PAGE}>
       <ManagementShell title="Story Radar" subtitle="Editorial signals, recommendations, and coverage intelligence">
+
+        {/* ── Review Queue Summary Banner ── */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <ListChecks className="w-4 h-4 text-white/70" />
+              <p className="text-xs font-bold text-white/70 uppercase tracking-wide">Editorial Review Queue</p>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-sm text-white">
+                  <span className="font-bold text-red-300">{queueNeedsReview}</span> need review
+                </span>
+              </div>
+              {criticalSignals > 0 && (
+                <div className="flex items-center gap-2">
+                  <Activity className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="text-sm text-white">
+                    <span className="font-bold text-orange-300">{criticalSignals}</span> critical signal{criticalSignals !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-teal-400" />
+                <span className="text-sm text-white">
+                  <span className="font-bold text-teal-300">{readyToDraft}</span> ready to draft
+                </span>
+              </div>
+              {assignedToMe > 0 && (
+                <div className="flex items-center gap-2">
+                  <User className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="text-sm text-white">
+                    <span className="font-bold text-indigo-300">{assignedToMe}</span> assigned to you
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          <Button
+            onClick={() => navigate('/management/editorial/review-queue')}
+            className="bg-white text-gray-900 hover:bg-gray-100 text-sm font-semibold shrink-0 gap-2"
+          >
+            <ListChecks className="w-4 h-4" />
+            Open Review Queue
+          </Button>
+        </div>
 
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
