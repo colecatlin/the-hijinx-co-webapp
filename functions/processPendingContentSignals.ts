@@ -1,5 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+
+const ACTIVE_STATUSES = ['suggested', 'approved', 'saved', 'drafted'];
+const DEFAULT_COOLDOWN_HOURS = 48;
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 async function logOp(base44, operation_type, metadata = {}) {
@@ -11,6 +16,30 @@ async function logOp(base44, operation_type, metadata = {}) {
       metadata,
     });
   } catch (_) { /* fire-and-forget */ }
+}
+
+function buildFingerprint(aiResult, signal) {
+  const type = (aiResult.story_type ?? 'news').toLowerCase().trim();
+  const category = (aiResult.recommended_category ?? '').toLowerCase().trim();
+  const entityIds = [signal.source_entity_id].filter(Boolean).sort().join('|');
+  const angleWords = (aiResult.angle ?? '')
+    .toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ')
+    .filter(w => w.length > 3).slice(0, 5).sort().join('-');
+  return `${type}::${category}::${entityIds}::${angleWords}`;
+}
+
+async function findExistingRecommendation(base44, fingerprint) {
+  const now = new Date().toISOString();
+  const matches = await base44.asServiceRole.entities.StoryRecommendation.filter(
+    { recommendation_fingerprint: fingerprint }, '-created_date', 10
+  );
+  const active = matches.filter(r => ACTIVE_STATUSES.includes(r.status));
+  if (!active.length) return { existing: null, inCooldown: false };
+  const newest = active[0];
+  if (newest.cooldown_until && newest.cooldown_until > now) {
+    return { existing: newest, inCooldown: true };
+  }
+  return { existing: newest, inCooldown: false };
 }
 
 // ─── AI EVALUATION ────────────────────────────────────────────────────────────
