@@ -81,7 +81,22 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
 
   const doUpdate = async (patch, action) => {
     setActionLoading(action);
+    const previousStatus = rec.status;
     await base44.entities.StoryRecommendation.update(rec.id, patch);
+    if (patch.status) {
+      const eventMap = {
+        approved: 'story_radar_recommendation_approved',
+        dismissed: 'story_radar_recommendation_dismissed',
+        saved: 'story_radar_recommendation_saved',
+        drafted: 'story_radar_recommendation_drafted',
+      };
+      logStoryRadarEvent({
+        event_type: eventMap[patch.status] ?? 'story_radar_recommendation_approved',
+        recommendation_id: rec.id,
+        previous_status: previousStatus,
+        new_status: patch.status,
+      });
+    }
     invalidate();
     setActionLoading(null);
   };
