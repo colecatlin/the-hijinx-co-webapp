@@ -79,32 +79,45 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
     onUpdated?.();
   };
 
-  const doUpdate = async (patch, action) => {
+  const doAction = async (action, note) => {
     setActionLoading(action);
-    const previousStatus = rec.status;
-    await base44.entities.StoryRecommendation.update(rec.id, patch);
-    if (patch.status) {
-      const eventMap = {
-        approved: 'story_radar_recommendation_approved',
-        dismissed: 'story_radar_recommendation_dismissed',
-        saved: 'story_radar_recommendation_saved',
-        drafted: 'story_radar_recommendation_drafted',
-      };
-      logStoryRadarEvent({
-        event_type: eventMap[patch.status] ?? 'story_radar_recommendation_approved',
+    try {
+      const res = await base44.functions.invoke('editorialRecommendationActions', {
+        action,
         recommendation_id: rec.id,
-        previous_status: previousStatus,
-        new_status: patch.status,
+        note,
       });
+      if (res.data?.success) {
+        invalidate();
+      } else {
+        toast.error(res.data?.error ?? `Action "${action}" failed`);
+      }
+    } catch (e) {
+      toast.error(e?.response?.data?.error ?? `Action "${action}" failed`);
     }
-    invalidate();
     setActionLoading(null);
   };
 
-  const saveNotes = () => doUpdate({ editor_notes: notesValue }, 'notes').then(() => setShowNotes(false));
-  const saveAssign = () => doUpdate({ assigned_to: assignValue, status: rec.status === 'approved' ? 'assigned' : rec.status }, 'assign').then(() => setShowAssign(false));
+  const saveNotes = async () => {
+    setActionLoading('notes');
+    await base44.entities.StoryRecommendation.update(rec.id, { editor_notes: notesValue });
+    invalidate();
+    setActionLoading(null);
+    setShowNotes(false);
+  };
 
-  const canConvertToDraft = rec.status === 'approved' && !rec.linked_story_id;
+  const saveAssign = async () => {
+    setActionLoading('assign');
+    await base44.entities.StoryRecommendation.update(rec.id, {
+      assigned_to: assignValue,
+      status: rec.status === 'approved' ? 'assigned' : rec.status,
+    });
+    invalidate();
+    setActionLoading(null);
+    setShowAssign(false);
+  };
+
+  const canConvertToDraft = ['approved', 'saved'].includes(rec.status) && !rec.linked_story_id;
   const alreadyConverted = !!rec.linked_story_id || rec.status === 'drafted';
 
   const handleConvertToDraft = async () => {
@@ -167,22 +180,22 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
         {/* Actions */}
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white text-xs h-8"
-            disabled={!!actionLoading} onClick={() => doUpdate({ status: 'approved', approved_at: new Date().toISOString() }, 'approve')}>
+            disabled={!!actionLoading} onClick={() => doAction('approve')}>
             {actionLoading === 'approve' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
             Approve
           </Button>
           <Button size="sm" variant="outline" className="text-amber-700 border-amber-200 hover:bg-amber-50 text-xs h-8"
-            disabled={!!actionLoading} onClick={() => doUpdate({ status: 'saved' }, 'save')}>
+            disabled={!!actionLoading} onClick={() => doAction('save')}>
             {actionLoading === 'save' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bookmark className="w-3 h-3" />}
             Save For Later
           </Button>
           <Button size="sm" variant="outline" className="text-purple-700 border-purple-200 hover:bg-purple-50 text-xs h-8"
-            disabled={!!actionLoading} onClick={() => doUpdate({ status: 'covered' }, 'covered')}>
-            {actionLoading === 'covered' ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+            disabled={!!actionLoading} onClick={() => doAction('mark_covered')}>
+            {actionLoading === 'mark_covered' ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
             Mark Covered
           </Button>
           <Button size="sm" variant="outline" className="text-gray-500 hover:bg-gray-50 text-xs h-8"
-            disabled={!!actionLoading} onClick={() => doUpdate({ status: 'dismissed' }, 'dismiss')}>
+            disabled={!!actionLoading} onClick={() => doAction('dismiss')}>
             {actionLoading === 'dismiss' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
             Dismiss
           </Button>

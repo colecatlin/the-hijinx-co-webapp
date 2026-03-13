@@ -1,4 +1,4 @@
-import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation and pages.
@@ -33,6 +33,16 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'Stories', page: 'ManageStories', icon: FileText, description: 'Create and publish articles' },
       { name: 'Issues', page: 'ManageIssues', icon: Book, description: 'Manage magazine issues' },
+    ]
+  },
+  {
+    title: 'Editorial',
+    items: [
+      { name: 'Story Radar', page: 'management/editorial/story-radar', icon: Radar, description: 'Editorial signal and recommendation dashboard' },
+      { name: 'Recommendations', page: 'management/editorial/recommendations', icon: Sparkles, description: 'Review and action story recommendations' },
+      { name: 'Signals', page: 'management/editorial/signals', icon: Activity, description: 'Review content signals and queue for processing' },
+      { name: 'Trend Clusters', page: 'management/editorial/trend-clusters', icon: TrendingUp, description: 'Monitor active editorial trend clusters' },
+      { name: 'Coverage Map', page: 'management/editorial/coverage-map', icon: Map, description: 'Review what has been covered and identify gaps' },
     ]
   },
   {

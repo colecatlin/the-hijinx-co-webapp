@@ -177,25 +177,16 @@ export default function StoryRadar() {
     enabled: !!user,
   });
 
-  // ── Recommendation quick actions ──
-  const handleRecAction = async (rec, newStatus) => {
+  // ── Recommendation quick actions — routed through backend function for safe status transitions ──
+  const handleRecAction = async (rec, action) => {
     const id = typeof rec === 'string' ? rec : rec.id;
-    const previousStatus = typeof rec === 'object' ? rec.status : undefined;
-    setActionLoading(prev => ({ ...prev, [id]: newStatus }));
-    await base44.entities.StoryRecommendation.update(id, { status: newStatus });
-    const eventMap = {
-      approved: 'story_radar_recommendation_approved',
-      dismissed: 'story_radar_recommendation_dismissed',
-      saved: 'story_radar_recommendation_saved',
-      drafted: 'story_radar_recommendation_drafted',
-    };
-    logStoryRadarEvent({
-      event_type: eventMap[newStatus] ?? 'story_radar_recommendation_approved',
-      recommendation_id: id,
-      previous_status: previousStatus,
-      new_status: newStatus,
-      acted_by_user_id: user?.email,
-    });
+    setActionLoading(prev => ({ ...prev, [id]: action }));
+    try {
+      await base44.functions.invoke('editorialRecommendationActions', {
+        action,
+        recommendation_id: id,
+      });
+    } catch (_) { /* errors visible in console, don't block UI */ }
     queryClient.invalidateQueries({ queryKey: ['high-priority-recs'] });
     queryClient.invalidateQueries({ queryKey: ['rec-counts'] });
     queryClient.invalidateQueries({ queryKey: ['coverage-gaps'] });
@@ -292,9 +283,9 @@ export default function StoryRadar() {
                         variant="ghost"
                         className="h-7 px-2 text-xs text-green-700 hover:bg-green-50"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec, 'approved')}
+                        onClick={() => handleRecAction(rec, 'approve')}
                         >
-                        {actionLoading[rec.id] === 'approved' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3 mr-1" />}
+                        {actionLoading[rec.id] === 'approve' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3 mr-1" />}
                         Approve
                         </Button>
                         <Button
@@ -302,9 +293,9 @@ export default function StoryRadar() {
                         variant="ghost"
                         className="h-7 px-2 text-xs text-amber-700 hover:bg-amber-50"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec, 'saved')}
+                        onClick={() => handleRecAction(rec, 'save')}
                         >
-                        {actionLoading[rec.id] === 'saved' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bookmark className="w-3 h-3 mr-1" />}
+                        {actionLoading[rec.id] === 'save' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bookmark className="w-3 h-3 mr-1" />}
                         Save
                         </Button>
                         <Button
@@ -312,9 +303,9 @@ export default function StoryRadar() {
                         variant="ghost"
                         className="h-7 px-2 text-xs text-gray-500 hover:bg-gray-100"
                         disabled={!!actionLoading[rec.id]}
-                        onClick={() => handleRecAction(rec, 'dismissed')}
+                        onClick={() => handleRecAction(rec, 'dismiss')}
                         >
-                        {actionLoading[rec.id] === 'dismissed' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3 mr-1" />}
+                        {actionLoading[rec.id] === 'dismiss' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3 mr-1" />}
                         Dismiss
                       </Button>
                     </div>

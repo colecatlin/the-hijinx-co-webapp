@@ -126,7 +126,20 @@ export default function SignalDetailPanel({ signal, onClose, onUpdated, onOpenRe
           <Button size="sm" variant="outline" className="h-8 text-xs text-yellow-700 border-yellow-200 hover:bg-yellow-50"
             disabled={!!actionLoading || signal.status !== 'errored'}
             title={signal.status !== 'errored' ? 'Only available for errored signals' : ''}
-            onClick={() => doUpdate({ status: 'queued', error_message: null }, 'retry')}>
+            onClick={async () => {
+              setActionLoading('retry');
+              try {
+                await base44.functions.invoke('editorialRecommendationActions', {
+                  action: 'retry_signal',
+                  signal_id: signal.id,
+                });
+                logStoryRadarEvent({ event_type: 'story_radar_signal_retried', signal_id: signal.id, previous_status: signal.status, new_status: 'new' });
+                queryClient.invalidateQueries({ queryKey: ['signals'] });
+                queryClient.invalidateQueries({ queryKey: ['signal-counts'] });
+                onUpdated?.();
+              } catch (_) {}
+              setActionLoading(null);
+            }}>
             {loading('retry') ?? <RefreshCw className="w-3 h-3" />}
             Retry Signal
           </Button>
