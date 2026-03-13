@@ -27,8 +27,37 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 // ─── HELPERS ──────────────────────────────────────────────────────
 
 async function dispatch(base44, payload, dryRun) {
-  if (dryRun) return { created: false, dry_run: true };
+  if (dryRun) return { data: { created: false, skipped: true, dry_run: true, reason: 'dry_run' } };
   return await base44.asServiceRole.functions.invoke('createContentSignalFromUpdate', payload);
+}
+
+function recordResult(stats, source, entityId, res) {
+  const d = res?.data ?? {};
+  let outcome, signal_id = null, reason = null, dedupe_key = null;
+
+  if (d.dry_run) {
+    outcome = 'dry_run';
+  } else if (d.created) {
+    outcome = 'created';
+    signal_id = d.signal_id;
+    dedupe_key = d.dedupe_key;
+    stats.created++;
+  } else if (d.deduped) {
+    outcome = 'deduped';
+    reason = d.reason ?? 'duplicate_within_cooldown';
+    dedupe_key = d.dedupe_key;
+    stats.deduped++;
+  } else if (d.skipped) {
+    outcome = 'skipped';
+    reason = d.reason;
+    stats.skipped++;
+  } else {
+    outcome = 'unknown';
+    stats.skipped++;
+  }
+
+  stats.row_results.push({ source, entity_id: entityId, outcome, signal_id, reason, dedupe_key });
+  stats.scanned++;
 }
 
 function isRecent(record, cutoff) {
