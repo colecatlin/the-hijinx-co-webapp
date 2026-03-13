@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   CheckCircle, XCircle, Bookmark, ShieldCheck, FileText, UserPlus,
-  X, ChevronRight, Loader2, StickyNote
+  X, ChevronRight, Loader2, StickyNote, ExternalLink
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 
 const STATUS_COLORS = {
