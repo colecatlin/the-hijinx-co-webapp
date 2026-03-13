@@ -328,8 +328,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Admin only
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
+    const user = await base44.auth.me().catch(() => null);
+    if (user !== null && user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
     }
 
@@ -387,6 +387,22 @@ Deno.serve(async (req) => {
     for (const signal of pending) {
       await processSignal(base44, signal, stats);
     }
+
+    // Log the batch run
+    try {
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'story_radar_ai_processing_run',
+        entity_name: 'ContentSignal',
+        entity_id: '',
+        metadata: {
+          signals_processed: stats.signals_checked,
+          recommendations_created: stats.recommendations_created,
+          duplicates_avoided: stats.signals_ignored,
+          warnings: stats.warnings,
+          failures: stats.errors,
+        },
+      });
+    } catch (_) { /* fire-and-forget */ }
 
     return Response.json({
       success: true,

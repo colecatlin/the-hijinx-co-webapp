@@ -262,8 +262,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Admin only
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
+    const user = await base44.auth.me().catch(() => null);
+    if (user !== null && user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
     }
 
@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Log the scan run ──
-    await logOp(base44, 'story_radar_signal_scan_run', {
+    await logOp(base44, 'story_radar_scan_run', {
       scan_window_hours: scanWindowHours,
       dry_run: dryRun,
       scanned_updates: stats.scanned,
