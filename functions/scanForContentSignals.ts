@@ -325,7 +325,8 @@ Deno.serve(async (req) => {
       signals_created: stats.created,
       signals_skipped: stats.skipped,
       duplicates_avoided: stats.deduped,
-      error_count: stats.errors.length,
+      warnings_count: stats.warnings.length,
+      errors_count: stats.errors.length,
     });
 
     return Response.json({
@@ -339,6 +340,7 @@ Deno.serve(async (req) => {
       warnings: stats.warnings,
       errors: stats.errors,
       sources,
+      row_results: stats.row_results,
     });
 
   } catch (error) {
