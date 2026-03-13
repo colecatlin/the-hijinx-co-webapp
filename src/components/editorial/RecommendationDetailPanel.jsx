@@ -320,6 +320,13 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
           {rec.assigned_to && <DetailRow label="Assigned To" value={rec.assigned_to} />}
           {rec.approved_by && <DetailRow label="Approved By" value={rec.approved_by} />}
           {rec.approved_at && <DetailRow label="Approved At" value={format(new Date(rec.approved_at), 'MMM d, yyyy h:mm a')} />}
+          {rec.converted_to_draft_at && <DetailRow label="Converted To Draft" value={format(new Date(rec.converted_to_draft_at), 'MMM d, yyyy h:mm a')} />}
+          {rec.linked_story_id && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Linked Story ID</p>
+              <p className="text-xs text-teal-700 font-mono">{rec.linked_story_id}</p>
+            </div>
+          )}
         </div>
 
       </div>
