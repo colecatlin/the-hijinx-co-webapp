@@ -363,7 +363,9 @@ Deno.serve(async (req) => {
 
     return Response.json({
       created: true,
+      skipped: false,
       signal_id: signal.id,
+      dedupe_key: dedupeKey,
       signal_type: signalType,
       importance_level: importanceLevel,
       signal_summary: signalSummary,
