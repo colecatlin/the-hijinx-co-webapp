@@ -334,7 +334,7 @@ export default function CreatorProfile() {
             )}
 
             {/* Trust signals */}
-            {(isVerified || profile.credentialed_media) && (
+            {(isVerified || profile.credentialed_media || credentialSignals.credentialed_media || credentialSignals.experienced_media) && (
               <div className="bg-gray-50 rounded-2xl p-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Recognition</p>
                 <div className="space-y-2">
@@ -344,10 +344,22 @@ export default function CreatorProfile() {
                       <span className="text-gray-700 text-sm">{isFeatured ? 'Featured Creator' : 'Verified Creator'}</span>
                     </div>
                   )}
-                  {profile.credentialed_media && (
+                  {(profile.credentialed_media || credentialSignals.credentialed_media) && (
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-green-500" />
                       <span className="text-gray-700 text-sm">Credentialed Media</span>
+                    </div>
+                  )}
+                  {credentialSignals.experienced_media && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-teal-500" />
+                      <span className="text-gray-700 text-sm">Experienced Media ({credentialSignals.total_credential_count} credentials)</span>
+                    </div>
+                  )}
+                  {credentialSignals.verified_event_media && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-indigo-400" />
+                      <span className="text-gray-700 text-sm">Active Event Coverage</span>
                     </div>
                   )}
                 </div>
