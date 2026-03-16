@@ -363,6 +363,8 @@ export default function MediaPortal() {
               currentUser={currentUser}
               isContributor={isContributor}
               hasMediaRole={userHasMediaRole}
+              mediaProfile={myMediaProfile}
+              mediaOutlet={myOutlets?.[0] || null}
             />
           </TabsContent>
 
