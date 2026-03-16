@@ -5,13 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Camera, Lock } from 'lucide-react';
+import { Camera, Lock, CheckCircle2, Clock, AlertCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 import ProfileTab from '@/components/media/portal/ProfileTab';
 import ApplyTab from '@/components/media/portal/ApplyTab';
 import MyRequestsTab from '@/components/media/portal/MyRequestsTab';
 import MyCredentialsTab from '@/components/media/portal/MyCredentialsTab';
 import MyAssetsTab from '@/components/media/portal/MyAssetsTab';
+import { isApprovedContributor, canAccessMediaPortalWorkspace } from '@/components/media/mediaPermissions';
 
 export default function MediaPortal() {
   const [activeTab, setActiveTab] = useState('profile');

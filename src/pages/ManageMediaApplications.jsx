@@ -301,11 +301,10 @@ export default function ManageMediaApplications() {
       >
         {/* Summary bar */}
         <div className="flex flex-wrap gap-3 mb-5">
-          {Object.entries({ pending: 'amber', approved: 'green', denied: 'red', needs_more_info: 'blue' }).map(([s, c]) => (
-            <div key={s} className={`px-3 py-1.5 rounded-lg bg-${c}-50 border border-${c}-200 text-xs font-medium text-${c}-700`}>
-              {STATUS_CONFIG[s]?.label}: {counts[s] || 0}
-            </div>
-          ))}
+            <div className="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-xs font-medium text-amber-700">Pending: {counts.pending || 0}</div>
+          <div className="px-3 py-1.5 rounded-lg bg-green-50 border border-green-200 text-xs font-medium text-green-700">Approved: {counts.approved || 0}</div>
+          <div className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-xs font-medium text-red-700">Denied: {counts.denied || 0}</div>
+          <div className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-medium text-blue-700">Needs Info: {counts.needs_more_info || 0}</div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
