@@ -8,7 +8,7 @@ import { ArrowRight, Camera, FileText, PenLine, Video, Image } from 'lucide-reac
 import { createPageUrl } from '@/components/utils';
 import CreatorCard from '@/components/media/public/CreatorCard';
 import OutletCard from '@/components/media/public/OutletCard';
-import { isPublicProfile, isPublicOutlet, isPublicAsset } from '@/components/media/public/mediaPublicHelpers';
+import { isPublicProfile, isPublicOutlet, isMediaHomeFeaturedAsset } from '@/components/media/public/mediaPublicHelpers';
 
 export default function MediaHome() {
   const { data: allProfiles = [] } = useQuery({
@@ -25,8 +25,8 @@ export default function MediaHome() {
 
   const { data: featuredAssets = [] } = useQuery({
     queryKey: ['featuredMediaAssets'],
-    queryFn: () => base44.entities.MediaAsset.list('-created_date', 50),
-    select: data => data.filter(a => isPublicAsset(a) && a.featured_on_media_home),
+    queryFn: () => base44.entities.MediaAsset.filter({ featured_on_media_home: true }),
+    select: data => data.filter(isMediaHomeFeaturedAsset),
   });
 
   const featuredCreators = allProfiles.filter(p => p.verification_status === 'featured' || p.verification_status === 'verified').slice(0, 6);

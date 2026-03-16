@@ -147,6 +147,26 @@ export default function MediaOutletProfile() {
               </section>
             )}
 
+            {/* Outlet showcase assets */}
+            {outletAssets.length > 0 && (
+              <section>
+                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Featured Work</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {outletAssets.map(asset => (
+                    <div key={asset.id} className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                      {(asset.thumbnail_url || asset.file_url) ? (
+                        <img src={asset.thumbnail_url || asset.file_url} alt={asset.title || ''} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Image className="w-6 h-6 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Contributors */}
             {contributors.length > 0 && (
               <section>
