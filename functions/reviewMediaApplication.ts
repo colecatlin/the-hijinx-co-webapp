@@ -98,6 +98,87 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Auto-create MediaProfile for the approved contributor
+      if (application.user_id) {
+        try {
+          const existingProfiles = await base44.asServiceRole.entities.MediaProfile
+            .filter({ user_id: application.user_id }, '-created_date', 1).catch(() => []);
+
+          if (existingProfiles.length === 0) {
+            // Derive primary_role from application_type
+            const roleMap = { writer: 'writer', journalist: 'journalist', photographer: 'photographer', videographer: 'videographer', editor_interest: 'editor', outlet_representative: 'outlet_representative', press: 'journalist', creator: 'creator' };
+            const priority = ['editor_interest', 'journalist', 'writer', 'photographer', 'videographer', 'outlet_representative', 'press', 'creator'];
+            const appTypes = application.application_type || [];
+            let primaryRole = 'creator';
+            for (const p of priority) {
+              if (appTypes.includes(p)) { primaryRole = roleMap[p]; break; }
+            }
+
+            // Generate slug from display_name or email prefix
+            const displayName = application.display_name || targetUser?.full_name || application.user_email?.split('@')[0] || 'contributor';
+            const baseSlug = displayName.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '') || 'contributor';
+            let slug = baseSlug;
+            let counter = 1;
+            while (true) {
+              const existing = await base44.asServiceRole.entities.MediaProfile.filter({ slug }, '-created_date', 1).catch(() => []);
+              if (existing.length === 0) break;
+              counter++;
+              slug = `${baseSlug}-${counter}`;
+            }
+
+            const profileData = {
+              user_id: application.user_id,
+              display_name: displayName,
+              slug,
+              profile_status: 'draft',
+              verification_status: 'pending',
+              public_visible: false,
+              creator_directory_eligible: false,
+              credentialed_media: false,
+              primary_role: primaryRole,
+              role_tags: appTypes,
+              specialties: application.specialties || [],
+              bio: application.bio || '',
+              location_city: application.location_city || '',
+              location_state: application.location_state || '',
+              location_country: application.location_country || '',
+              website_url: application.website_url || '',
+              social_links: application.social_links || {},
+              primary_affiliation_type: application.primary_affiliation_type || '',
+              primary_outlet_name: application.primary_outlet_name || '',
+              creator_terms_accepted: application.terms_accepted === true,
+              creator_rights_acknowledged: application.usage_rights_accepted === true,
+              availability_status: 'unavailable',
+            };
+
+            const newProfile = await base44.asServiceRole.entities.MediaProfile.create(profileData);
+
+            await base44.asServiceRole.entities.OperationLog.create({
+              operation_type: 'media_profile_created',
+              entity_type: 'MediaProfile',
+              entity_id: newProfile.id,
+              user_email: application.user_email,
+              status: 'success',
+              message: `MediaProfile auto-created on approval for ${application.user_email}`,
+              metadata: { user_id: application.user_id, media_profile_id: newProfile.id, acted_by_user_id: user.id, slug, source: 'auto_on_approval' },
+            }).catch(() => {});
+
+            await base44.asServiceRole.entities.OperationLog.create({
+              operation_type: 'media_profile_slug_generated',
+              entity_type: 'MediaProfile',
+              entity_id: newProfile.id,
+              user_email: application.user_email,
+              status: 'success',
+              message: `Slug "${slug}" generated for MediaProfile ${newProfile.id}`,
+              metadata: { user_id: application.user_id, media_profile_id: newProfile.id, slug },
+            }).catch(() => {});
+          }
+        } catch (profileErr) {
+          // Non-fatal — log and continue
+          console.error('Failed to auto-create MediaProfile:', profileErr.message);
+        }
+      }
+
       // Log media_access_granted
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'media_access_granted',
