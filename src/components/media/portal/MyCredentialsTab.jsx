@@ -9,7 +9,7 @@ import {
   CREDENTIAL_STATUS_COLORS, REQUEST_STATUS_COLORS, REQUEST_STATUS_LABELS,
   ACCESS_LEVEL_LABELS, CREDENTIAL_LEVEL_LABELS,
   getEffectiveCredentialStatus, logCredentialEvent,
-} from '@/components/media/credentials/credentialHelpers.js';
+} from '@/components/media/credentials/credentialHelpers.jsx';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
