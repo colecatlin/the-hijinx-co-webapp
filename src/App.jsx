@@ -18,6 +18,11 @@ import EditorialNarratives from './pages/EditorialNarratives';
 import EditorialResearchPackets from './pages/EditorialResearchPackets';
 import WriterWorkspace from './pages/WriterWorkspace';
 import ManageMediaApplications from './pages/ManageMediaApplications';
+import MediaHome from './pages/MediaHome';
+import CreatorDirectory from './pages/CreatorDirectory';
+import CreatorProfile from './pages/CreatorProfile';
+import MediaOutletDirectory from './pages/MediaOutletDirectory';
+import MediaOutletProfile from './pages/MediaOutletProfile';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -79,6 +84,11 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
       <Route path="/management/media/applications" element={<LayoutWrapper currentPageName="management/media/applications"><ManageMediaApplications /></LayoutWrapper>} />
+      <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
+      <Route path="/creators" element={<LayoutWrapper currentPageName="creators"><CreatorDirectory /></LayoutWrapper>} />
+      <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
+      <Route path="/media-outlets" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletDirectory /></LayoutWrapper>} />
+      <Route path="/media-outlets/:slug" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletProfile /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
