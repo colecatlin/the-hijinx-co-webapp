@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Globe, CheckCircle2, ArrowLeft, Building2 } from 'lucide-react';
-import { isPublicProfile, isPublicAsset, ROLE_LABELS, SOCIAL_ICONS, OUTLET_TYPE_LABELS } from '@/components/media/public/mediaPublicHelpers';
+import { isPublicProfile, isCreatorPortfolioAsset, ROLE_LABELS, SOCIAL_ICONS, OUTLET_TYPE_LABELS } from '@/components/media/public/mediaPublicHelpers';
 import { createPageUrl } from '@/components/utils';
 
 function NotFound() {
@@ -33,14 +33,28 @@ export default function CreatorProfile() {
     enabled: !!slug,
   });
 
-  // Public assets by this creator
+  // Rights-aware creator portfolio assets
   const { data: publicAssets = [] } = useQuery({
-    queryKey: ['creatorPublicAssets', profile?.user_id],
+    queryKey: ['creatorPortfolioAssets', profile?.id, profile?.user_id],
     queryFn: async () => {
-      const all = await base44.entities.MediaAsset.filter({ uploader_user_id: profile.user_id });
-      return all.filter(isPublicAsset).filter(a => a.featured_on_media_home || true).slice(0, 12);
+      // Fetch by owner_profile_id (preferred) or owner_user_id
+      const [byProfile, byUser] = await Promise.all([
+        profile.id ? base44.entities.MediaAsset.filter({ owner_profile_id: profile.id }) : Promise.resolve([]),
+        profile.user_id ? base44.entities.MediaAsset.filter({ owner_user_id: profile.user_id }) : Promise.resolve([]),
+      ]);
+      const seen = new Set();
+      const all = [...byProfile, ...byUser].filter(a => {
+        if (seen.has(a.id)) return false;
+        seen.add(a.id);
+        return true;
+      });
+      // Apply rights-aware portfolio filter
+      return all
+        .filter(a => isCreatorPortfolioAsset(a, profile))
+        .sort((a, b) => (b.featured_on_creator_profile ? 1 : 0) - (a.featured_on_creator_profile ? 1 : 0))
+        .slice(0, 12);
     },
-    enabled: !!profile?.user_id,
+    enabled: !!(profile?.id || profile?.user_id),
   });
 
   // Featured outlet stories by author name
