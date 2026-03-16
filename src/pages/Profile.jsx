@@ -25,6 +25,9 @@ import ManageStorySubmissions from '@/components/profile/ManageStorySubmissions'
 import RaceCoreAccessTab from '@/components/profile/RaceCoreAccessTab';
 import FavoritesTab from '@/components/profile/FavoritesTab';
 import AccountStatusCard from '@/components/profile/AccountStatusCard';
+import MediaApplicationForm from '@/components/media/portal/MediaApplicationForm';
+import MediaApplicationStatus from '@/components/media/portal/MediaApplicationStatus';
+import { isApprovedContributor } from '@/components/media/mediaPermissions';
 import {
   getResolvedManagedEntities,
   buildRaceCoreLaunchUrl,
@@ -42,7 +45,7 @@ const ENTITY_TYPE_COLORS = {
 
 function resolveTab(param) {
   const map = {
-    general: 'general', my_entities: 'my_entities', access_codes: 'access_codes', story: 'story',
+    general: 'general', my_entities: 'my_entities', access_codes: 'access_codes', story: 'story', media: 'media',
     account: 'general', entities: 'my_entities', access: 'access_codes', racecore: 'access_codes', fan: 'general',
   };
   return map[param] || 'general';
@@ -53,6 +56,7 @@ export default function Profile() {
   const [formData, setFormData] = useState(null);
   const [activityFilter, setActivityFilter] = useState('all');
   const [settingPrimary, setSettingPrimary] = useState(false);
+  const [mediaAppSubmitted, setMediaAppSubmitted] = useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const tabFromUrl = urlParams.get('tab');
@@ -90,6 +94,13 @@ export default function Profile() {
     queryKey: QueryKeys.profile.operationLogs(user?.email),
     queryFn: () => base44.entities.OperationLog.filter({ user_email: user.email }, '-created_date', 20),
     enabled: !!user?.email,
+  });
+
+  const { data: mediaApplication, refetch: refetchMediaApp } = useQuery({
+    queryKey: ['myMediaApplication', user?.id],
+    queryFn: () => base44.entities.MediaApplication.filter({ user_id: user.id }, '-created_date', 1),
+    enabled: !!user?.id,
+    select: data => data?.[0] || null,
   });
 
   useEffect(() => {
@@ -259,6 +270,7 @@ export default function Profile() {
                   { value: 'my_entities', label: hasCollaborations ? `My Entities (${resolvedEntities.length})` : 'My Entities' },
                   { value: 'access_codes', label: 'Access & Setup' },
                   { value: 'story', label: 'Story' },
+                  { value: 'media', label: 'Media' },
                 ].map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value}
                     className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-500 hover:text-gray-900">
@@ -620,6 +632,36 @@ export default function Profile() {
                   <CardDescription>Quick launch Race Core for your managed tracks and series.</CardDescription>
                 </CardHeader>
                 <CardContent><RaceCoreAccessTab user={user} /></CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Media Tab ─────────────────────────────────────────────────── */}
+            <TabsContent value="media" className="space-y-5">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Media Contributor Access</CardTitle>
+                  <CardDescription>
+                    Apply to become an approved media contributor on the platform.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isApprovedContributor(user) ? (
+                    <MediaApplicationStatus application={mediaApplication} isContributor={true} />
+                  ) : (mediaAppSubmitted || mediaApplication) ? (
+                    <MediaApplicationStatus
+                      application={mediaAppSubmitted || mediaApplication}
+                      isContributor={false}
+                    />
+                  ) : (
+                    <MediaApplicationForm
+                      user={user}
+                      onSubmitted={(app) => {
+                        setMediaAppSubmitted(app);
+                        refetchMediaApp();
+                      }}
+                    />
+                  )}
+                </CardContent>
               </Card>
             </TabsContent>
 

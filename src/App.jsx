@@ -17,6 +17,7 @@ import EditorialReviewQueue from './pages/EditorialReviewQueue';
 import EditorialNarratives from './pages/EditorialNarratives';
 import EditorialResearchPackets from './pages/EditorialResearchPackets';
 import WriterWorkspace from './pages/WriterWorkspace';
+import ManageMediaApplications from './pages/ManageMediaApplications';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/narratives" element={<LayoutWrapper currentPageName="management/editorial/narratives"><EditorialNarratives /></LayoutWrapper>} />
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
+      <Route path="/management/media/applications" element={<LayoutWrapper currentPageName="management/media/applications"><ManageMediaApplications /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
