@@ -5,7 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Globe, CheckCircle2, ArrowLeft, Users } from 'lucide-react';
-import { isPublicOutlet, isPublicProfile, OUTLET_TYPE_LABELS, SOCIAL_ICONS, ROLE_LABELS } from '@/components/media/public/mediaPublicHelpers';
+import { isPublicOutlet, isPublicProfile, isOutletShowcaseAsset, OUTLET_TYPE_LABELS, SOCIAL_ICONS, ROLE_LABELS } from '@/components/media/public/mediaPublicHelpers';
+import { Image } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 
 function NotFound() {
@@ -41,6 +42,22 @@ export default function MediaOutletProfile() {
       if (profileIds.length === 0) return [];
       const all = await base44.entities.MediaProfile.list('-created_date', 200);
       return all.filter(p => profileIds.includes(p.id) && isPublicProfile(p));
+    },
+    enabled: !!outlet?.id,
+  });
+
+  // Rights-aware outlet showcase assets
+  const { data: outletAssets = [] } = useQuery({
+    queryKey: ['outletShowcaseAssets', outlet?.id],
+    queryFn: async () => {
+      const byOutlet = await base44.entities.MediaAsset.filter({ owner_outlet_id: outlet.id });
+      const featured = await base44.entities.MediaAsset.filter({ featured_on_outlet_profile: true });
+      const seen = new Set();
+      return [...byOutlet, ...featured].filter(a => {
+        if (seen.has(a.id)) return false;
+        seen.add(a.id);
+        return isOutletShowcaseAsset(a, outlet);
+      }).slice(0, 12);
     },
     enabled: !!outlet?.id,
   });
