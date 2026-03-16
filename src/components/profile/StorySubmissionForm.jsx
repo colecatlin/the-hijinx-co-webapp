@@ -8,6 +8,7 @@ import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from 'sonner';
+import { logSubmissionEvent } from '@/components/editorial/editorialBridge';
 
 export default function StorySubmissionForm({ user }) {
   const [formData, setFormData] = useState({
