@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, Clock, ArrowRight, ExternalLink } from 'lucide-react';
 
 function SignalRow({ label, value, ok, neutral }) {
@@ -86,6 +85,26 @@ export default function ContributorStatusPanel({ profile, currentUser, credentia
           <ActionRow label="Submit a story" onClick={() => onNavigate('submissions')} />
           {hasBio && hasSpecialties && hasPhoto && <ActionRow label="View credential requests" onClick={() => onNavigate('requests')} />}
         </div>
+      </div>
+
+      {/* Public profile link */}
+      {isPublic && profile.slug && (
+        <Link
+          to={`/creators/${profile.slug}`}
+          className="flex items-center justify-center gap-2 bg-[#0f0f0f] border border-gray-800 hover:border-gray-600 rounded-xl px-4 py-3 transition-colors group"
+        >
+          <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-gray-300" />
+          <span className="text-gray-400 group-hover:text-gray-200 text-sm">View My Public Profile</span>
+        </Link>
+      )}
+
+      <div className="flex gap-3">
+        <Link to="/creators" className="flex-1">
+          <button className="w-full text-center text-gray-600 hover:text-gray-400 text-xs py-2 transition-colors">Browse Creator Directory</button>
+        </Link>
+        <Link to="/media-outlets" className="flex-1">
+          <button className="w-full text-center text-gray-600 hover:text-gray-400 text-xs py-2 transition-colors">Browse Outlets</button>
+        </Link>
       </div>
     </div>
   );
