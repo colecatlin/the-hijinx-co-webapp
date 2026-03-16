@@ -359,10 +359,15 @@ async function processSignal(base44, signal, stats) {
     priority_score: aiResult.priority_score,
   });
 
-  // Attempt trend clustering (non-blocking — failure does not fail signal processing)
+  // Attempt trend clustering (non-blocking)
   try {
     await base44.asServiceRole.functions.invoke('clusterSignalIntoTrend', { signal_id: signal.id });
   } catch (_) { /* clustering is best-effort */ }
+
+  // Attempt arc linking (non-blocking)
+  try {
+    await base44.asServiceRole.functions.invoke('linkRecommendationToArc', { recommendation_id: recommendation.id });
+  } catch (_) { /* arc linking is best-effort */ }
 
   stats.recommendations_created++;
 }
