@@ -15,6 +15,7 @@ import MyRequestsTab from '@/components/media/portal/MyRequestsTab';
 import MyCredentialsTab from '@/components/media/portal/MyCredentialsTab';
 import MyAssetsTab from '@/components/media/portal/MyAssetsTab';
 import { isApprovedContributor, canAccessMediaPortalWorkspace } from '@/components/media/mediaPermissions';
+import ContributorProfileTab from '@/components/media/portal/ContributorProfileTab';
 
 export default function MediaPortal() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -208,9 +209,14 @@ export default function MediaPortal() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-[#171717] border border-gray-800 p-1 flex gap-1 mb-6 w-full sm:w-auto">
+          <TabsList className="bg-[#171717] border border-gray-800 p-1 flex gap-1 mb-6 w-full sm:w-auto flex-wrap">
+            {(isContributor || currentUser?.role === 'admin') && (
+              <TabsTrigger value="my_profile" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
+                My Profile
+              </TabsTrigger>
+            )}
             <TabsTrigger value="profile" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
-              Profile
+              Media Profile
             </TabsTrigger>
             <TabsTrigger value="apply" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
               Apply
@@ -225,6 +231,12 @@ export default function MediaPortal() {
               My Assets
             </TabsTrigger>
           </TabsList>
+
+          {(isContributor || currentUser?.role === 'admin') && (
+            <TabsContent value="my_profile">
+              <ContributorProfileTab currentUser={currentUser} isAdmin={currentUser?.role === 'admin'} />
+            </TabsContent>
+          )}
 
           <TabsContent value="profile">
             <ProfileTab currentUser={currentUser} mediaUser={mediaUser} onSaved={handleSaved} />
