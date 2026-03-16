@@ -155,13 +155,16 @@ function buildCoverageContextBlock(coverageRows) {
 }
 
 async function evaluateSignalWithAI(base44, signal) {
-  const coverageRows = await fetchCoverageContext(base44, signal);
+  const [coverageRows, perfCtx] = await Promise.all([
+    fetchCoverageContext(base44, signal),
+    fetchPerformanceContext(base44, signal),
+  ]);
 
-  // Log that a coverage check was run for this signal
   await logOp(base44, 'story_radar_coverage_check_run', {
     signal_id: signal.id,
     source_entity_name: signal.source_entity_name,
     coverage_rows_found: coverageRows.length,
+    entity_avg_performance: perfCtx.entity_avg_performance,
   });
 
   const parts = [
@@ -190,6 +193,7 @@ async function evaluateSignalWithAI(base44, signal) {
   }
 
   parts.push(buildCoverageContextBlock(coverageRows));
+  parts.push(buildPerformanceContextBlock(perfCtx));
   parts.push(``, `Return structured JSON. All score fields 0–100.`);
 
   return await base44.asServiceRole.integrations.Core.InvokeLLM({
