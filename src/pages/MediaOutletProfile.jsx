@@ -4,9 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Globe, CheckCircle2, ArrowLeft, Users } from 'lucide-react';
+import { Globe, CheckCircle2, ArrowLeft, Users, Image } from 'lucide-react';
 import { isPublicOutlet, isPublicProfile, isOutletShowcaseAsset, OUTLET_TYPE_LABELS, SOCIAL_ICONS, ROLE_LABELS } from '@/components/media/public/mediaPublicHelpers';
-import { Image } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 
 function NotFound() {
