@@ -21,7 +21,6 @@ const navItems = [
     { name: 'Advertise', page: 'OutletAdvertising' },
   ]},
   { name: 'INDEX46', page: 'MotorsportsHome', sub: [
-    { name: 'Motorsports Home', page: 'MotorsportsHome' },
     { name: 'Drivers', page: 'DriverDirectory' },
     { name: 'Teams', page: 'TeamDirectory' },
     { name: 'Tracks', page: 'TrackDirectory' },
