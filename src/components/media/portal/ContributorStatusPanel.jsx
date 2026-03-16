@@ -1,6 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, Clock, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, XCircle, Clock, ArrowRight, ExternalLink } from 'lucide-react';
 
 function SignalRow({ label, value, ok, neutral }) {
   return (
