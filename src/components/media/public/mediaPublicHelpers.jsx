@@ -1,18 +1,10 @@
-/**
- * mediaPublicHelpers.js
- * Shared rights-aware display helpers for all public-facing media pages.
- *
- * Rules:
- * - Public display requires: status=approved, public_access=true,
- *   visibility_scope=public, rights_status in [cleared, pending→platform display allowed]
- * - Creator profile assets: must also belong to the creator
- * - Outlet profile assets: must have owner_outlet_id matching the outlet
- * - MediaHome featured: must additionally have featured_on_media_home=true
- *
- * DO NOT bypass these helpers on public pages.
- */
+// ─── mediaPublicHelpers.js ───────────────────────────────────────────────────
+// Centralized, rights-aware visibility logic for all public media pages.
+// Any public-facing page that renders MediaAssets, MediaProfiles, or
+// MediaOutlets MUST use these helpers instead of ad-hoc inline checks.
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── PROFILE VISIBILITY ───────────────────────────────────────────────────────
+// ── Profile visibility ────────────────────────────────────────────────────────
 
 export function isPublicProfile(profile) {
   if (!profile) return false;
@@ -23,7 +15,7 @@ export function isPublicProfile(profile) {
   );
 }
 
-// ─── OUTLET VISIBILITY ────────────────────────────────────────────────────────
+// ── Outlet visibility ─────────────────────────────────────────────────────────
 
 export function isPublicOutlet(outlet) {
   if (!outlet) return false;
@@ -34,101 +26,59 @@ export function isPublicOutlet(outlet) {
   );
 }
 
-// ─── ASSET BASE VISIBILITY CHECK ─────────────────────────────────────────────
+// ── Asset: shared base check ──────────────────────────────────────────────────
+// An asset must always pass this before any contextual check.
 
-/**
- * Core rights-aware check: is this asset safe for ANY public display?
- */
-export function isPublicAsset(asset) {
+function isRightsClearedForDisplay(asset) {
   if (!asset) return false;
-  const statusOk = asset.status === 'approved';
-  const accessOk = asset.public_access === true;
-  const visibilityOk = asset.visibility_scope === 'public';
-  const rightsOk = asset.rights_status === 'cleared' ||
-    // If rights_status is not set yet but platform_promotional_usage_allowed is explicitly true,
-    // still allow display (backward compatibility for pre-rights-model assets that were approved).
-    (asset.rights_status === undefined && asset.status === 'approved' && asset.public_access === true);
-  return statusOk && accessOk && visibilityOk && rightsOk;
-}
-
-/**
- * Asset eligible for creator profile portfolio display.
- * Must be public AND belong to (or be authorized for) the given creator.
- */
-export function isCreatorPortfolioAsset(asset, profile) {
-  if (!isPublicAsset(asset)) return false;
-  if (!profile) return false;
-  const ownerMatch =
-    (asset.owner_profile_id && asset.owner_profile_id === profile.id) ||
-    (asset.owner_user_id && asset.owner_user_id === profile.user_id) ||
-    (asset.uploader_user_id && asset.uploader_user_id === profile.user_id) ||
-    asset.featured_on_creator_profile === true;
-  return ownerMatch;
-}
-
-/**
- * Asset eligible for outlet profile showcase display.
- */
-export function isOutletShowcaseAsset(asset, outlet) {
-  if (!isPublicAsset(asset)) return false;
-  if (!outlet) return false;
   return (
-    (asset.owner_outlet_id && asset.owner_outlet_id === outlet.id) ||
-    asset.featured_on_outlet_profile === true
+    asset.status === 'approved' &&
+    asset.public_access === true &&
+    asset.visibility_scope === 'public' &&
+    asset.rights_status === 'cleared'
   );
 }
 
-/**
- * Asset eligible for MediaHome featured work section.
- */
+// ── Asset: MediaHome featured gallery ─────────────────────────────────────────
+// Requires admin-set featured_on_media_home flag AND rights clearance.
+
 export function isMediaHomeFeaturedAsset(asset) {
-  if (!isPublicAsset(asset)) return false;
-  return asset.featured_on_media_home === true;
+  return isRightsClearedForDisplay(asset) && asset.featured_on_media_home === true;
 }
 
-// ─── RIGHTS DISPLAY LABELS ────────────────────────────────────────────────────
+// ── Asset: Creator profile portfolio ─────────────────────────────────────────
+// Must belong to the creator AND be rights-cleared.
+// Optional: featured_on_creator_profile flag boosts sort order (handled by caller).
 
-export const RIGHTS_STATUS_LABELS = {
-  pending: 'Rights Pending',
-  cleared: 'Rights Cleared',
-  restricted: 'Restricted',
-  revoked: 'Revoked',
-};
+export function isCreatorPortfolioAsset(asset, profile) {
+  if (!isRightsClearedForDisplay(asset)) return false;
+  if (!profile) return false;
+  // Must match ownership
+  const ownerMatch =
+    (profile.id && asset.owner_profile_id === profile.id) ||
+    (profile.user_id && asset.owner_user_id === profile.user_id);
+  return ownerMatch;
+}
 
-export const RIGHTS_STATUS_COLORS = {
-  pending: 'bg-yellow-900/50 text-yellow-300',
-  cleared: 'bg-green-900/50 text-green-300',
-  restricted: 'bg-orange-900/50 text-orange-300',
-  revoked: 'bg-red-900/50 text-red-300',
-};
+// ── Asset: Outlet showcase ────────────────────────────────────────────────────
+// Must be owned by or explicitly associated with the outlet AND rights-cleared.
 
-export const ASSET_STATUS_COLORS = {
-  uploaded: 'bg-gray-700 text-gray-300',
-  in_review: 'bg-yellow-900/60 text-yellow-300',
-  approved: 'bg-green-900/60 text-green-300',
-  rejected: 'bg-red-900/60 text-red-300',
-  archived: 'bg-gray-800 text-gray-500',
-};
+export function isOutletShowcaseAsset(asset, outlet) {
+  if (!isRightsClearedForDisplay(asset)) return false;
+  if (!outlet) return false;
+  const outletMatch =
+    (outlet.id && asset.owner_outlet_id === outlet.id) ||
+    asset.featured_on_outlet_profile === true;
+  return outletMatch;
+}
 
-export const ASSET_STATUS_LABELS = {
-  uploaded: 'Uploaded',
-  in_review: 'Under Review',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  archived: 'Archived',
-};
+// ── Generic public asset (for backwards compat) ───────────────────────────────
 
-// ─── ROLE / TYPE LABELS ───────────────────────────────────────────────────────
+export function isPublicAsset(asset) {
+  return isRightsClearedForDisplay(asset);
+}
 
-export const ROLE_LABELS = {
-  writer: 'Writer',
-  editor: 'Editor',
-  photographer: 'Photographer',
-  videographer: 'Videographer',
-  journalist: 'Journalist',
-  creator: 'Creator',
-  outlet_representative: 'Outlet Representative',
-};
+// ── Display label maps ────────────────────────────────────────────────────────
 
 export const OUTLET_TYPE_LABELS = {
   publication: 'Publication',
@@ -141,54 +91,23 @@ export const OUTLET_TYPE_LABELS = {
   track_media: 'Track Media',
 };
 
+export const ROLE_LABELS = {
+  writer: 'Writer',
+  editor: 'Editor',
+  photographer: 'Photographer',
+  videographer: 'Videographer',
+  journalist: 'Journalist',
+  creator: 'Creator',
+  outlet_representative: 'Outlet Rep',
+};
+
 export const SOCIAL_ICONS = {
-  instagram: '📸',
+  instagram: '📷',
   x: '𝕏',
   twitter: '𝕏',
   youtube: '▶',
-  tiktok: '◉',
+  tiktok: '♪',
   facebook: 'f',
   linkedin: 'in',
+  website: '🌐',
 };
-
-// ─── OPERATION LOG HELPERS ────────────────────────────────────────────────────
-
-/**
- * Log rights-related changes to an asset.
- * Silently fails — do not let logging block UI operations.
- */
-export async function logAssetRightsEvent(base44, {
-  operation_type,
-  assetId,
-  agreementId = null,
-  ownerUserId = null,
-  ownerProfileId = null,
-  ownerOutletId = null,
-  actedByUserId,
-  previousStatus = null,
-  newStatus = null,
-  message = '',
-}) {
-  try {
-    await base44.entities.OperationLog.create({
-      operation_type,
-      entity_type: 'MediaAsset',
-      entity_id: assetId,
-      user_email: actedByUserId || '',
-      status: 'success',
-      message,
-      metadata: {
-        media_asset_id: assetId,
-        usage_rights_agreement_id: agreementId,
-        owner_user_id: ownerUserId,
-        owner_profile_id: ownerProfileId,
-        owner_outlet_id: ownerOutletId,
-        acted_by_user_id: actedByUserId,
-        previous_status: previousStatus,
-        new_status: newStatus,
-      },
-    });
-  } catch (_) {
-    // Silent — logging must never break UI
-  }
-}
