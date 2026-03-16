@@ -32,7 +32,13 @@ export default function StorySubmissionForm({ user }) {
   const queryClient = useQueryClient();
 
   const submissionMutation = useMutation({
-    mutationFn: (data) => base44.entities.StorySubmission.create(data),
+    mutationFn: (data) => base44.entities.StorySubmission.create({
+      ...data,
+      submission_source: 'profile',
+      submission_type: 'full_story',
+      submitter_user_id: user?.id || null,
+      editorial_status: 'pending_review',
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storySubmissions'] });
       setFormData({
