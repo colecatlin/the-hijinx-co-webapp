@@ -101,6 +101,11 @@ export const ROLE_LABELS = {
   outlet_representative: 'Outlet Rep',
 };
 
+export function logAssetRightsEvent(asset, eventType, user) {
+  // No-op placeholder for operation logging — implement via backend if needed
+  console.log(`[rights] ${eventType}`, { assetId: asset?.id, userId: user?.id });
+}
+
 export const SOCIAL_ICONS = {
   instagram: '📷',
   x: '𝕏',
