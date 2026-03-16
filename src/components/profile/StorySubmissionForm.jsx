@@ -33,15 +33,28 @@ export default function StorySubmissionForm({ user }) {
   const queryClient = useQueryClient();
 
   const submissionMutation = useMutation({
-    mutationFn: (data) => base44.entities.StorySubmission.create({
-      ...data,
-      submission_source: 'profile',
-      submission_type: 'full_story',
-      submitter_user_id: user?.id || null,
-      editorial_status: 'pending_review',
-    }),
+    mutationFn: async (data) => {
+      const submission = await base44.entities.StorySubmission.create({
+        ...data,
+        // Use subtitle as pitch fallback for the fan form (no dedicated pitch field)
+        pitch: data.pitch || data.subtitle || data.body?.replace(/<[^>]*>/g, '').slice(0, 500) || '',
+        submission_source: 'profile',
+        submission_type: 'full_story',
+        submitter_user_id: user?.id || null,
+        editorial_status: 'pending_review',
+        status: 'pending',
+      });
+      await logSubmissionEvent('story_submission_created', {
+        submissionId: submission.id,
+        submitterUserId: user?.id,
+        actedByUserId: user?.id,
+        newStatus: 'pending_review',
+      });
+      return submission;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storySubmissions'] });
+      queryClient.invalidateQueries({ queryKey: ['myContributorSubmissions'] });
       setFormData({
         name: user?.full_name || '',
         email: user?.email || '',
