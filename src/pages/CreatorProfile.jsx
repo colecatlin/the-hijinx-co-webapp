@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Globe, CheckCircle2, ArrowLeft, Building2 } from 'lucide-react';
+import { MapPin, Globe, CheckCircle2, ArrowLeft, Building2, Shield } from 'lucide-react';
+import { deriveCredentialSignals } from '@/components/media/credentials/credentialHelpers.js';
 import { isPublicProfile, isCreatorPortfolioAsset, ROLE_LABELS, SOCIAL_ICONS, OUTLET_TYPE_LABELS } from '@/components/media/public/mediaPublicHelpers.jsx';
 import { createPageUrl } from '@/components/utils';
 
