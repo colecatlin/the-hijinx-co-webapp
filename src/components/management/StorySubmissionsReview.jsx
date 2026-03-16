@@ -15,7 +15,6 @@ export default function StorySubmissionsReview() {
 
   return (
     <div className="space-y-6">
-      {/* Sub-nav */}
       <div className="flex gap-2 border-b border-gray-200 pb-3">
         <button
           onClick={() => setActiveView('submissions')}
