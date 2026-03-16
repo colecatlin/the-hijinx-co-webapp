@@ -202,6 +202,41 @@ export default function CreatorProfile() {
               </section>
             )}
 
+            {/* Credentialed Events */}
+            {creatorCredentials.length > 0 && (
+              <section>
+                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Shield className="w-4 h-4" /> Credentialed Events
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {creatorCredentials.map(cred => {
+                    const name = cred.scope_entity_type === 'event'
+                      ? (eventNames[cred.scope_entity_id] || 'Event')
+                      : cred.scope_entity_id?.slice(0, 8);
+                    const isActive = cred.status === 'active';
+                    return (
+                      <div key={cred.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${
+                          isActive
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}
+                      >
+                        {isActive && <CheckCircle2 className="w-3 h-3" />}
+                        {name}
+                        {cred.access_level && cred.access_level !== 'general' && (
+                          <span className="opacity-60 capitalize">· {cred.access_level.replace(/_/g, ' ')}</span>
+                        )}
+                        {cred.issued_at && (
+                          <span className="opacity-50">{new Date(cred.issued_at).getFullYear()}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* Featured assets */}
             {publicAssets.length > 0 && (
               <section>
