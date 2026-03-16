@@ -16,6 +16,7 @@ import MyCredentialsTab from '@/components/media/portal/MyCredentialsTab';
 import MyAssetsTab from '@/components/media/portal/MyAssetsTab';
 import { isApprovedContributor, canAccessMediaPortalWorkspace } from '@/components/media/mediaPermissions';
 import ContributorProfileTab from '@/components/media/portal/ContributorProfileTab';
+import OutletManagementTab from '@/components/media/portal/OutletManagementTab';
 
 export default function MediaPortal() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -42,6 +43,16 @@ export default function MediaPortal() {
       return byId[0] || null;
     },
     enabled: !!currentUser?.email,
+  });
+
+  // Contributor's MediaProfile (for outlet affiliation display)
+  const { data: myMediaProfile } = useQuery({
+    queryKey: ['myMediaProfile', currentUser?.id],
+    queryFn: async () => {
+      const results = await base44.entities.MediaProfile.filter({ user_id: currentUser.id }, '-created_date', 1);
+      return results[0] || null;
+    },
+    enabled: !!(currentUser?.id && (isApprovedContributor(currentUser) || currentUser?.role === 'admin')),
   });
 
   // Contributor access state
@@ -230,6 +241,11 @@ export default function MediaPortal() {
             <TabsTrigger value="assets" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
               My Assets
             </TabsTrigger>
+            {(isContributor || currentUser?.role === 'admin') && (
+              <TabsTrigger value="outlets" className="flex-1 sm:flex-none data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 text-xs px-4 py-2">
+                Outlets
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {(isContributor || currentUser?.role === 'admin') && (
@@ -253,6 +269,15 @@ export default function MediaPortal() {
           <TabsContent value="assets">
             <MyAssetsTab mediaUser={mediaUser} />
           </TabsContent>
+          {(isContributor || currentUser?.role === 'admin') && (
+            <TabsContent value="outlets">
+              <OutletManagementTab
+                currentUser={currentUser}
+                isAdmin={currentUser?.role === 'admin'}
+                mediaProfile={myMediaProfile}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
