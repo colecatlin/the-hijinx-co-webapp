@@ -338,7 +338,7 @@ export default function MediaPortal() {
               </TabsContent>
 
               <TabsContent value="assets">
-                <MyAssetsTab mediaUser={mediaUser} />
+                <MyAssetsTab mediaUser={mediaUser} currentUser={currentUser} isAdmin={isAdmin} />
               </TabsContent>
 
               <TabsContent value="requests">
