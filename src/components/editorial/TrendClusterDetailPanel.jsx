@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { X, Loader2, TrendingUp, TrendingDown, CheckCircle, XCircle, ExternalLink, Activity, Sparkles } from 'lucide-react';
+import GenerateResearchPacketButton from '@/components/editorial/GenerateResearchPacketButton';
 import { format, formatDistanceToNow } from 'date-fns';
 import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
 
@@ -136,6 +137,16 @@ export default function TrendClusterDetailPanel({ cluster, onClose, onUpdated })
             <p className="text-lg font-bold text-gray-900">{cluster.signal_count ?? cluster.signal_ids?.length ?? 0}</p>
             <p className="text-xs text-gray-400">Signals</p>
           </div>
+        </div>
+
+        {/* Research Packet */}
+        <div className="flex justify-end mb-1">
+          <GenerateResearchPacketButton
+            sourceType="trend_cluster"
+            sourceId={cluster.id}
+            sourceTitle={cluster.trend_name}
+            size="xs"
+          />
         </div>
 
         {/* Actions */}

@@ -9,6 +9,7 @@ import {
   CheckCircle, XCircle, Bookmark, ShieldCheck, FileText, UserPlus,
   X, ChevronRight, Loader2, StickyNote, ExternalLink
 } from 'lucide-react';
+import GenerateResearchPacketButton from '@/components/editorial/GenerateResearchPacketButton';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { logStoryRadarEvent } from '@/components/editorial/storyRadarLogger';
@@ -176,6 +177,16 @@ export default function RecommendationDetailPanel({ rec, onClose, onUpdated }) {
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
+
+        {/* Research Packet */}
+        <div className="flex justify-end mb-1">
+          <GenerateResearchPacketButton
+            sourceType="recommendation"
+            sourceId={rec.id}
+            sourceTitle={rec.title_suggestion}
+            size="xs"
+          />
+        </div>
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-2">

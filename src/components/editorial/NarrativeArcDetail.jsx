@@ -6,6 +6,7 @@ import {
   X, BookOpen, Zap, FileText, TrendingUp, Activity,
   Edit3, Save, Loader2, Map, Plus
 } from 'lucide-react';
+import GenerateResearchPacketButton from '@/components/editorial/GenerateResearchPacketButton';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -230,6 +231,16 @@ export default function NarrativeArcDetail({ arc, plan, onClose, onUpdated }) {
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Research Packet */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Research Packet</p>
+          <GenerateResearchPacketButton
+            sourceType="narrative_arc"
+            sourceId={arc.id}
+            sourceTitle={arc.arc_name}
+          />
         </div>
 
         {/* Status actions */}
