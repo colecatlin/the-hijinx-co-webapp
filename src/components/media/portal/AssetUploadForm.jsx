@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Loader2 } from 'lucide-react';
-import { logAssetRightsEvent } from '@/components/media/public/mediaPublicHelpers';
+import { logAssetRightsEvent } from '@/components/media/public/mediaPublicHelpers.jsx';
 
 export default function AssetUploadForm({ currentUser, mediaUser, onUploaded }) {
   const [form, setForm] = useState({

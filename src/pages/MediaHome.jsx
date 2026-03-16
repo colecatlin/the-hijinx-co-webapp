@@ -8,7 +8,7 @@ import { ArrowRight, Camera, FileText, PenLine, Video, Image } from 'lucide-reac
 import { createPageUrl } from '@/components/utils';
 import CreatorCard from '@/components/media/public/CreatorCard';
 import OutletCard from '@/components/media/public/OutletCard';
-import { isPublicProfile, isPublicOutlet, isMediaHomeFeaturedAsset } from '@/components/media/public/mediaPublicHelpers';
+import { isPublicProfile, isPublicOutlet, isMediaHomeFeaturedAsset } from '@/components/media/public/mediaPublicHelpers.jsx';
 
 export default function MediaHome() {
   const { data: allProfiles = [] } = useQuery({

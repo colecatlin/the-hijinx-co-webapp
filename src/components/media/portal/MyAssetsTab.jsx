@@ -12,7 +12,7 @@ import {
   ASSET_STATUS_COLORS, ASSET_STATUS_LABELS,
   RIGHTS_STATUS_COLORS, RIGHTS_STATUS_LABELS,
   logAssetRightsEvent,
-} from '@/components/media/public/mediaPublicHelpers';
+} from '@/components/media/public/mediaPublicHelpers.jsx';
 import AssetUploadForm from './AssetUploadForm';
 
 const VISIBILITY_LABELS = {
