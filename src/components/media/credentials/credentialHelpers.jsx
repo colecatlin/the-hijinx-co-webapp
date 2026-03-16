@@ -1,4 +1,4 @@
-// ─── credentialHelpers.js ────────────────────────────────────────────────────
+// ─── credentialHelpers.jsx ───────────────────────────────────────────────────
 // Shared helpers for credential eligibility signals, display labels,
 // and operation logging across the media ecosystem.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,18 +60,14 @@ export function getEffectiveCredentialStatus(cred) {
 }
 
 // ── Eligibility signals derived from credential history ───────────────────────
-// These are non-gating signals only — they do not grant access automatically.
+// Non-gating signals only — they do not grant access automatically.
 
-const EXPERIENCED_THRESHOLD = 3; // credentials before "experienced" signal kicks in
+const EXPERIENCED_THRESHOLD = 3;
 
 export function deriveCredentialSignals(credentials = []) {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-
+  const currentYear = new Date().getFullYear();
   const active = credentials.filter(c => getEffectiveCredentialStatus(c) === 'active');
   const total  = credentials.length;
-
-  // "Recent" = issued in current or prior season year
   const recentSeasonCutoff = new Date(`${currentYear - 1}-01-01`);
   const recentCredentials  = credentials.filter(c => c.issued_at && new Date(c.issued_at) >= recentSeasonCutoff);
 
