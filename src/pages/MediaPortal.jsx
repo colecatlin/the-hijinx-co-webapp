@@ -43,6 +43,17 @@ export default function MediaPortal() {
     enabled: !!currentUser?.email,
   });
 
+  // Contributor access state
+  const { data: mediaApplication } = useQuery({
+    queryKey: ['myMediaApplication', currentUser?.id],
+    queryFn: () => base44.entities.MediaApplication.filter({ user_id: currentUser.id }, '-created_date', 1),
+    enabled: !!currentUser?.id,
+    select: data => data?.[0] || null,
+  });
+
+  const isContributor = isApprovedContributor(currentUser);
+  const canAccessWorkspace = canAccessMediaPortalWorkspace(currentUser);
+
   // Unauthenticated view
   if (isAuthenticated === false) {
     return (
