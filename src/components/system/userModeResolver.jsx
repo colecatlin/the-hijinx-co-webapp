@@ -10,9 +10,14 @@ export function getUserMode({ user, collaborators = [], mediaProfile = null }) {
   const hasAny = collaborators.length > 0;
   const isApprovedMedia = mediaProfile?.status === 'approved';
 
+  // Check new contributor permission layer
+  const hasContributorAccess =
+    (user.workspace_access || []).includes('media_contributor') ||
+    (user.media_roles || []).length > 0;
+
   if (hasOwner) return 'entity_owner';
   if (hasAny) return 'entity_editor';
-  if (isApprovedMedia) return 'media_user';
+  if (isApprovedMedia || hasContributorAccess) return 'media_user';
   return 'fan';
 }
 
