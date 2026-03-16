@@ -3,8 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  X, BookOpen, Zap, FileText, TrendingUp, Activity, ExternalLink,
-  Edit3, Save, Loader2, Map, CheckCircle
+  X, BookOpen, Zap, FileText, TrendingUp, Activity,
+  Edit3, Save, Loader2, Map, Plus
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
