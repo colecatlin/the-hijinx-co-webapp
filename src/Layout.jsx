@@ -29,8 +29,8 @@ const navItems = [
     { name: 'Registration', page: 'Registration' },
     { name: 'Media Portal', page: 'MediaPortal' },
     { name: 'Media Home', page: 'MediaHome' },
-    { name: 'Creators', page: null, href: '/creators' },
-    { name: 'Media Outlets', page: null, href: '/media-outlets' },
+    { name: 'Creator Directory', href: '/creators' },
+    { name: 'Media Outlets', href: '/media-outlets' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
   { name: 'Creative', page: 'CreativeServices' },
@@ -176,7 +176,7 @@ export default function Layout({ children, currentPageName }) {
                           {item.sub.map((sub) => (
                             <Link
                               key={sub.name}
-                              to={createPageUrl(sub.page)}
+                              to={sub.href || createPageUrl(sub.page)}
                               className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
                             >
                               {sub.name}
@@ -268,7 +268,7 @@ export default function Layout({ children, currentPageName }) {
                           {item.sub.map((sub) => (
                             <Link
                               key={sub.name}
-                              to={createPageUrl(sub.page)}
+                              to={sub.href || createPageUrl(sub.page)}
                               className="block py-2 text-sm text-gray-500 hover:text-[#232323] transition-colors"
                             >
                               {sub.name}
