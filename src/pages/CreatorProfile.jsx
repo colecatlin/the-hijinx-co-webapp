@@ -65,6 +65,36 @@ export default function CreatorProfile() {
     enabled: !!profile?.display_name,
   });
 
+  // Credentials for credibility signals (only if profile has a user_id to link to MediaUser)
+  const { data: creatorCredentials = [] } = useQuery({
+    queryKey: ['creatorPublicCredentials', profile?.id],
+    queryFn: async () => {
+      if (!profile?.user_id) return [];
+      // Find the MediaUser record linked to this profile's user
+      const mediaUsers = await base44.entities.MediaUser.filter({ user_id: profile.user_id });
+      const mediaUserId = mediaUsers[0]?.id;
+      if (!mediaUserId) return [];
+      const creds = await base44.entities.MediaCredential.filter({ holder_media_user_id: mediaUserId });
+      // Only surface active or recently expired — no private notes
+      return creds.filter(c => ['active', 'expired'].includes(c.status)).slice(0, 8);
+    },
+    enabled: !!(profile?.user_id),
+  });
+
+  const { data: eventNames = {} } = useQuery({
+    queryKey: ['eventNamesForCreator'],
+    queryFn: async () => {
+      if (creatorCredentials.length === 0) return {};
+      const eventIds = [...new Set(creatorCredentials.filter(c => c.scope_entity_type === 'event').map(c => c.scope_entity_id).filter(Boolean))];
+      if (eventIds.length === 0) return {};
+      const all = await base44.entities.Event.list();
+      return Object.fromEntries(all.filter(e => eventIds.includes(e.id)).map(e => [e.id, e.name]));
+    },
+    enabled: creatorCredentials.length > 0,
+  });
+
+  const credentialSignals = deriveCredentialSignals(creatorCredentials);
+
   // Primary outlet
   const { data: primaryOutlet } = useQuery({
     queryKey: ['outletById', profile?.primary_outlet_id],
