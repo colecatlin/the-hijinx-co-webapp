@@ -80,7 +80,6 @@ const AI_OUTPUT_SCHEMA = {
 
 async function fetchCoverageContext(base44, signal) {
   try {
-    // Fetch recent coverage entries for the same entity or category
     const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
     const recentCoverage = await base44.asServiceRole.entities.OutletStoryCoverageMap.list('-published_date', 50);
     const entityName = signal.source_entity_name ?? '';
@@ -94,6 +93,49 @@ async function fetchCoverageContext(base44, signal) {
   } catch (_) {
     return [];
   }
+}
+
+// ─── PERFORMANCE CONTEXT ──────────────────────────────────────────────────────
+// Fetch historical performance averages to inform confidence scoring
+
+async function fetchPerformanceContext(base44, signal) {
+  try {
+    const all = await base44.asServiceRole.entities.StoryPerformanceMetrics.list('-published_date', 200);
+    const entityName = (signal.source_entity_name ?? '').toLowerCase();
+
+    // Entity-level performance
+    const entityMetrics = entityName
+      ? all.filter(m => m.related_entity_names?.some(n => n.toLowerCase().includes(entityName)))
+      : [];
+
+    // Story type / category averages (use signal entity type as rough proxy)
+    const avgPerf = (arr) => {
+      const valid = arr.map(m => m.performance_score).filter(v => v != null);
+      return valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : null;
+    };
+
+    return {
+      entity_avg_performance: avgPerf(entityMetrics),
+      entity_story_count: entityMetrics.length,
+      global_avg_performance: avgPerf(all),
+    };
+  } catch (_) {
+    return {};
+  }
+}
+
+function buildPerformanceContextBlock(perfCtx) {
+  if (!perfCtx || (!perfCtx.entity_avg_performance && !perfCtx.global_avg_performance)) return '';
+  const lines = ['', 'HISTORICAL PERFORMANCE CONTEXT (use to adjust confidence_score slightly):'];
+  if (perfCtx.entity_avg_performance != null) {
+    lines.push(`  - Entity avg performance score: ${perfCtx.entity_avg_performance}/100 across ${perfCtx.entity_story_count} stories`);
+    lines.push(`  - If entity historically performs well (score > 65), confidence_score may be nudged up by ~5-10 points`);
+  }
+  if (perfCtx.global_avg_performance != null) {
+    lines.push(`  - Platform avg performance: ${perfCtx.global_avg_performance}/100`);
+  }
+  lines.push('  - Do NOT let performance data override editorial judgment. Use as a soft signal only.');
+  return lines.join('\n');
 }
 
 function buildCoverageContextBlock(coverageRows) {
