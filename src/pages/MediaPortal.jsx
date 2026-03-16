@@ -132,6 +132,71 @@ export default function MediaPortal() {
           )}
         </div>
 
+        {/* Contributor access state banner */}
+        {currentUser && !isContributor && !mediaApplication && currentUser.role !== 'admin' && (
+          <div className="bg-[#171717] border border-gray-700 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <Lock className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-medium">Contributor Workspace Access Required</p>
+              <p className="text-gray-400 text-xs mt-0.5">Apply to become an approved media contributor to unlock the full MediaPortal workspace.</p>
+              <Link to={createPageUrl('Profile') + '?tab=media'}>
+                <Button size="sm" className="mt-3 bg-white text-black hover:bg-gray-100 gap-1.5 text-xs h-7">
+                  Apply Now <ArrowRight className="w-3 h-3" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {currentUser && !isContributor && mediaApplication && currentUser.role !== 'admin' && (
+          <div className={`border rounded-xl p-4 mb-6 flex items-start gap-3 ${
+            mediaApplication.status === 'pending' ? 'bg-amber-900/20 border-amber-800' :
+            mediaApplication.status === 'needs_more_info' ? 'bg-blue-900/20 border-blue-800' :
+            'bg-[#171717] border-gray-700'
+          }`}>
+            {mediaApplication.status === 'pending'
+              ? <Clock className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+              : mediaApplication.status === 'needs_more_info'
+              ? <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+              : <Lock className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />}
+            <div>
+              <p className="text-white text-sm font-medium">
+                {mediaApplication.status === 'pending' ? 'Application Under Review' :
+                 mediaApplication.status === 'needs_more_info' ? 'More Information Requested' :
+                 'Application Not Approved'}
+              </p>
+              <p className="text-gray-400 text-xs mt-0.5">
+                {mediaApplication.status === 'pending'
+                  ? 'Your contributor application has been submitted and is being reviewed.'
+                  : mediaApplication.status === 'needs_more_info'
+                  ? (mediaApplication.review_notes || 'The review team has requested more information.')
+                  : 'Your application was not approved. You may apply again from your profile.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isContributor && currentUser?.role !== 'admin' && (
+          <div className="bg-green-900/20 border border-green-800 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+            <div>
+              <p className="text-white text-sm font-medium">Approved Contributor</p>
+              <p className="text-gray-400 text-xs mt-0.5">You have approved media contributor access. Full workspace tools coming soon.</p>
+            </div>
+          </div>
+        )}
+
+        {currentUser?.role === 'admin' && (
+          <div className="bg-purple-900/20 border border-purple-800 rounded-xl p-4 mb-6 flex items-center justify-between gap-3">
+            <p className="text-purple-300 text-sm font-medium">Admin — full access</p>
+            <Link to="/management/media/applications">
+              <Button size="sm" variant="outline" className="text-xs h-7 border-purple-700 text-purple-300 hover:bg-purple-900/30">
+                Review Applications
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {submittedReq && (
           <div className="bg-green-900/20 border border-green-800 rounded-lg p-4 mb-6 flex items-start justify-between gap-3">
             <div>
