@@ -14,7 +14,7 @@ import AssignedPackets from '@/components/editorial/writer/AssignedPackets';
 import DraftsInProgress from '@/components/editorial/writer/DraftsInProgress';
 import SavedForLater from '@/components/editorial/writer/SavedForLater';
 import RecentEditorialUpdates from '@/components/editorial/writer/RecentEditorialUpdates';
-import WriterAssignmentsPanel from '@/components/editorial/writer/WriterAssignmentsPanel';
+import WriterAssignmentsPanel from '@/components/editorial/writer/WriterAssignmentsPanel.jsx';
 
 const PAGE = 'management/editorial/writer-workspace';
 const ALLOWED_ROLES = ['admin'];
