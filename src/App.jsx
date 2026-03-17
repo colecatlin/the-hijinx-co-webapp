@@ -18,6 +18,7 @@ import EditorialNarratives from './pages/EditorialNarratives';
 import EditorialResearchPackets from './pages/EditorialResearchPackets';
 import WriterWorkspace from './pages/WriterWorkspace';
 import ManageMediaApplications from './pages/ManageMediaApplications';
+import ManageAssignments from './pages/ManageAssignments';
 import MediaHome from './pages/MediaHome';
 import CreatorDirectory from './pages/CreatorDirectory';
 import CreatorProfile from './pages/CreatorProfile';
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
       <Route path="/management/media/applications" element={<LayoutWrapper currentPageName="management/media/applications"><ManageMediaApplications /></LayoutWrapper>} />
+      <Route path="/management/media/assignments" element={<LayoutWrapper currentPageName="management/media/assignments"><ManageAssignments /></LayoutWrapper>} />
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
       <Route path="/creators" element={<LayoutWrapper currentPageName="creators"><CreatorDirectory /></LayoutWrapper>} />
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
