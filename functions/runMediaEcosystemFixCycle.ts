@@ -32,17 +32,16 @@ Deno.serve(async (req) => {
 
     const safe = (p) => p.catch(() => []);
 
-    // Single parallel fetch — all data needed upfront
+    // Single parallel fetch — limited to avoid CPU timeout
     const [
-      profiles, outlets, assets, assignments, agreements, paymentAccounts, credentialRequests,
+      profiles, outlets, assets, assignments, paymentAccounts, credentialRequests,
     ] = await Promise.all([
-      safe(db.MediaProfile.list('-created_date', 100)),
-      safe(db.MediaOutlet.list('-created_date', 100)),
-      safe(db.MediaAsset.list('-created_date', 100)),
-      safe(db.MediaAssignment.list('-created_date', 100)),
-      safe(db.RevenueAgreement.list('-created_date', 50)),
-      safe(db.PaymentAccount.list('-created_date', 50)),
-      safe(db.CredentialRequest.list('-created_date', 50)),
+      safe(db.MediaProfile.list('-created_date', 30)),
+      safe(db.MediaOutlet.list('-created_date', 30)),
+      safe(db.MediaAsset.list('-created_date', 30)),
+      safe(db.MediaAssignment.list('-created_date', 30)),
+      safe(db.PaymentAccount.list('-created_date', 20)),
+      safe(db.CredentialRequest.list('-created_date', 30)),
     ]);
 
     // ── FIX 1.1: public_access=true assets with rights not cleared ────────────
