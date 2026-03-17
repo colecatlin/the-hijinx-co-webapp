@@ -26,6 +26,7 @@ import DiagnosticsEventIntegrity from '@/components/management/DiagnosticsEventI
 import DiagnosticsSessionIntegrity from '@/components/management/DiagnosticsSessionIntegrity';
 import DiagnosticsResultsAndStandingsIntegrity from '@/components/management/DiagnosticsResultsAndStandingsIntegrity';
 import DiagnosticsArchitectureHealth from '@/components/management/DiagnosticsArchitectureHealth';
+import DiagnosticsMediaEcosystem from '@/components/management/DiagnosticsMediaEcosystem';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -467,7 +468,6 @@ export default function Diagnostics() {
       const res = await base44.functions.invoke('repairDuplicateSeriesRecords', { dry_run });
       if (res.data?.error) throw new Error(res.data.error);
       setSeriesCleanupResult({ ...res.data, dry_run });
-      // Also run reference repair automatically if not dry_run and repairs exist
       if (!dry_run && res.data?.repairs?.length > 0) {
         const refRes = await base44.functions.invoke('repairSeriesReferences', { repairs: res.data.repairs, dry_run: false });
         const refReport = refRes.data?.report || {};
@@ -670,6 +670,9 @@ export default function Diagnostics() {
   return (
     <ManagementLayout currentPage="Diagnostics">
       <ManagementShell title="Platform Diagnostics" subtitle="Admin-only integrity audit and safe repair tooling">
+
+        {/* ── Media Ecosystem Health ───────────────────────────────────── */}
+        <DiagnosticsMediaEcosystem />
 
         {/* ── System Health ─────────────────────────────────────────────── */}
         <Card className="mb-6">
@@ -1205,29 +1208,6 @@ export default function Diagnostics() {
                       ))}
                     </div>
                   </div>
-                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Survivor Re-index Verification</h4>
-                    <div className="grid grid-cols-3 gap-3">
-                      <SummaryCard label="Repair Logs Found"   count={sv.repair_logs_checked ?? 0}                severity="ok" icon={CheckCircle} />
-                      <SummaryCard label="Series Survivors OK" count={sv.repaired_series_survivors_verified ?? 0} severity="ok" icon={CheckCircle} />
-                      <SummaryCard label="Track Survivors OK"  count={sv.repaired_track_survivors_verified ?? 0}  severity="ok" icon={CheckCircle} />
-                    </div>
-                    {sv.failed_survivor_ids?.length > 0 && <ExpandableList title={`${sv.failed_survivor_ids.length} survivor(s) missing canonical fields`} items={sv.failed_survivor_ids} severity="high" renderItem={r => `[${r.entity}] id=${r.id} — missing: ${(r.missing || []).join(', ')}`} />}
-                    {sv.repair_logs_checked === 0 && <p className="text-xs text-gray-400">No repair logs found — run Series or Track cleanup first to generate survivors.</p>}
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-2">
-                      Sync Recreation Risk
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${rr.verdict === 'safe' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{rr.verdict === 'safe' ? 'Safe' : 'Review'}</span>
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <SummaryCard label="Track Creations from Sync"  count={rr.track_creations_from_sync ?? 0}  severity={rr.track_creations_from_sync > 0 ? 'medium' : 'ok'}  icon={rr.track_creations_from_sync > 0 ? AlertTriangle : CheckCircle} />
-                      <SummaryCard label="Series Creations from Sync" count={rr.series_creations_from_sync ?? 0} severity={rr.series_creations_from_sync > 0 ? 'medium' : 'ok'} icon={rr.series_creations_from_sync > 0 ? AlertTriangle : CheckCircle} />
-                    </div>
-                    {rr.suspicious_series_creations?.length > 0 && <ExpandableList title="Series created by sync" items={rr.suspicious_series_creations} severity="medium" renderItem={r => `${r.name || r.id} — from: ${r.triggered_from} on ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`} />}
-                    {rr.suspicious_track_creations?.length > 0  && <ExpandableList title="Tracks created by sync"  items={rr.suspicious_track_creations}  severity="medium" renderItem={r => `${r.name || r.id} — from: ${r.triggered_from} on ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`} />}
-                    {rr.note && <p className="text-xs text-gray-400">{rr.note}</p>}
-                  </div>
                 </div>
               );
             })()}
@@ -1275,8 +1255,6 @@ export default function Diagnostics() {
                 duplicate_prevention_ok:   'No duplicate user+entity collaborator pairs',
                 invitation_burn_protection_ok: 'Accepted invitations have accepted_date (no premature burn)',
               };
-              const passed = Object.entries(CHECK_LABELS).filter(([k]) => r[k] === true);
-              const failed = Object.entries(CHECK_LABELS).filter(([k]) => r[k] === false);
               const overallOk = r.failures?.length === 0;
               return (
                 <div className="space-y-3">
@@ -1297,7 +1275,6 @@ export default function Diagnostics() {
                   </div>
                   {r.warnings?.length > 0 && (
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Warnings</p>
                       {r.warnings.map((w, i) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
                           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
@@ -1307,7 +1284,6 @@ export default function Diagnostics() {
                   )}
                   {r.failures?.length > 0 && (
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-red-700 uppercase tracking-wide">Failures</p>
                       {r.failures.map((f, i) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
                           <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{f}
@@ -1342,7 +1318,6 @@ export default function Diagnostics() {
               Backfill normalization fields, detect and clean duplicate Driver groups, repair linked Results/Entry/Standings references, and verify imports no longer recreate duplicate drivers.
               <br /><span className="text-gray-400">Recommended sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
             </p>
-
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={() => runDriverBackfill(true)} disabled={driverBackfillRunning || driverCleanupRunning} variant="outline" className="border-teal-300 text-teal-700 hover:bg-teal-50">
                 {driverBackfillRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Preview Backfill</>}
@@ -1360,125 +1335,26 @@ export default function Diagnostics() {
                 {driverVerifyRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : <><Play className="w-4 h-4 mr-2" />Run Driver Verification</>}
               </Button>
             </div>
-
-            {/* Backfill result */}
             {driverBackfillResult && !driverBackfillRunning && (
-              <div className={`rounded-lg border p-4 space-y-3 ${driverBackfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
-                <p className={`text-sm font-semibold flex items-center gap-2 ${driverBackfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
-                  {driverBackfillResult.mode === 'dry_run' ? <><AlertTriangle className="w-4 h-4" /> Backfill Preview</> : <><CheckCircle className="w-4 h-4" /> Backfill Complete</>}
-                  <span className="font-normal text-xs ml-2">{driverBackfillResult.total_drivers} total Drivers</span>
+              <div className={`rounded-lg border p-4 ${driverBackfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
+                <p className={`text-sm font-semibold mb-2 ${driverBackfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
+                  {driverBackfillResult.mode === 'dry_run' ? 'Backfill Preview' : 'Backfill Complete'} — {driverBackfillResult.total_drivers} total Drivers
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
                   {[
-                    { label: 'Already Complete',        v: driverBackfillResult.already_complete },
-                    { label: 'Filled: normalized_name', v: driverBackfillResult.backfilled_normalized_name },
-                    { label: 'Filled: canonical_slug',  v: driverBackfillResult.backfilled_canonical_slug },
-                    { label: 'Filled: canonical_key',   v: driverBackfillResult.backfilled_canonical_key },
+                    { label: 'Already Complete', v: driverBackfillResult.already_complete },
+                    { label: 'normalized_name',  v: driverBackfillResult.backfilled_normalized_name },
+                    { label: 'canonical_slug',   v: driverBackfillResult.backfilled_canonical_slug },
+                    { label: 'canonical_key',    v: driverBackfillResult.backfilled_canonical_key },
                   ].map(({ label, v }) => (
-                    <div key={label} className="bg-white rounded border p-2">
-                      <p className={`text-xl font-bold ${driverBackfillResult.mode === 'dry_run' ? 'text-teal-700' : 'text-green-700'}`}>{v ?? 0}</p>
-                      <p className="text-gray-500">{label}</p>
+                    <div key={label} className="bg-white rounded border p-1.5">
+                      <p className="text-lg font-bold text-gray-700">{v ?? 0}</p>
+                      <p className="text-gray-500 text-[10px]">{label}</p>
                     </div>
                   ))}
                 </div>
-                {driverBackfillResult.warnings?.length > 0 && (
-                  <ExpandableList title={`Warnings (${driverBackfillResult.warnings.length})`} items={driverBackfillResult.warnings} severity="medium" renderItem={w => w} />
-                )}
               </div>
             )}
-
-            {/* Cleanup result */}
-            {driverCleanupResult && !driverCleanupRunning && (() => {
-              const r = driverCleanupResult;
-              const isDry = r.dry_run;
-              return (
-                <div className={`rounded-lg border p-4 space-y-3 ${isDry ? 'border-yellow-200 bg-yellow-50' : r.groups_processed === 0 ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                  <p className={`text-sm font-semibold flex items-center gap-2 ${isDry ? 'text-yellow-800' : r.groups_processed === 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                    {r.groups_processed === 0 ? <><CheckCircle className="w-4 h-4" /> No duplicates found</> : isDry ? <><AlertTriangle className="w-4 h-4" /> Cleanup Preview</> : <><CheckCircle className="w-4 h-4" /> Cleanup Complete</>}
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                    {[
-                      { label: 'Groups Detected',     v: r.groups_detected ?? 0 },
-                      { label: 'Groups Processed',    v: r.groups_processed ?? 0 },
-                      { label: 'Survivors Confirmed', v: r.survivors?.length ?? 0 },
-                      { label: 'Marked Inactive',     v: r.duplicates_marked_inactive?.length ?? 0 },
-                    ].map(({ label, v }) => (
-                      <div key={label} className="bg-white rounded border p-2">
-                        <p className="text-xl font-bold text-gray-700">{v}</p>
-                        <p className="text-gray-500">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {r.skipped_groups?.length > 0 && (
-                    <ExpandableList title={`Skipped (ambiguous) groups (${r.skipped_groups.length})`} items={r.skipped_groups} severity="low"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.reason}`} />
-                  )}
-                  {r.survivors?.length > 0 && (
-                    <ExpandableList title={`Survivors (${r.survivors.length})`} items={r.survivors} severity="ok"
-                      renderItem={s => `${s.name} [${s.match_type}] results=${s.result_count} entries=${s.entry_count}`} />
-                  )}
-                  {r.duplicates_marked_inactive?.length > 0 && (
-                    <ExpandableList title={`Marked inactive (${r.duplicates_marked_inactive.length})`} items={r.duplicates_marked_inactive} severity="medium"
-                      renderItem={d => `${d.name} → survivor: ${d.survivor_name}`} />
-                  )}
-                  {r.warnings?.length > 0 && (
-                    <ExpandableList title={`Warnings (${r.warnings.length})`} items={r.warnings} severity="medium" renderItem={w => w} />
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Verification result */}
-            {driverVerifyResult && !driverVerifyRunning && (() => {
-              const v = driverVerifyResult;
-              const allOk = v.failures?.length === 0;
-              const d = v.details || {};
-              return (
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allOk ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
-                    {allOk ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
-                    <span>{allOk ? 'Driver integrity verified — all checks passed' : `${v.failures.length} failure(s) detected`}</span>
-                    <span className="text-xs font-normal ml-2 opacity-70">{v.generated_at ? new Date(v.generated_at).toLocaleString() : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <SummaryCard label="Normalization OK"   count={d.normalization_coverage?.missing_normalized_name?.length ?? 0} severity={v.normalization_ok ? 'ok' : 'high'} icon={v.normalization_ok ? CheckCircle : XCircle} />
-                    <SummaryCard label="Active Dup Groups"  count={v.duplicate_groups_remaining}  severity={v.duplicate_groups_remaining > 0 ? 'high' : 'ok'}   icon={v.duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Import Matching OK" count={d.import_check?.convergence_failures?.length ?? 0} severity={v.import_matching_ok ? 'ok' : 'medium'} icon={v.import_matching_ok ? CheckCircle : AlertTriangle} />
-                    <SummaryCard label="Suspicious Creates" count={v.suspicious_new_creates?.length ?? 0} severity={v.suspicious_new_creates?.length > 0 ? 'medium' : 'ok'} icon={v.suspicious_new_creates?.length > 0 ? AlertTriangle : CheckCircle} />
-                  </div>
-                  {d.active_duplicate_groups?.length > 0 && (
-                    <ExpandableList title={`Active duplicate groups (${d.active_duplicate_groups.length})`} items={d.active_duplicate_groups} severity="high"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.names?.join(', ')}`} />
-                  )}
-                  {d.normalization_coverage?.missing_normalized_name?.length > 0 && (
-                    <ExpandableList title={`Missing normalized_name (${d.normalization_coverage.missing_normalized_name.length})`} items={d.normalization_coverage.missing_normalized_name} severity="high"
-                      renderItem={t => t.name || t.id} />
-                  )}
-                  {d.import_check?.convergence_failures?.length > 0 && (
-                    <ExpandableList title="Import convergence failures" items={d.import_check.convergence_failures} severity="medium"
-                      renderItem={c => `"${c.name}" created ${c.create_count}x — sources: ${c.sources?.join(', ')}`} />
-                  )}
-                  {v.suspicious_new_creates?.length > 0 && (
-                    <ExpandableList title="Suspicious new creates (match_method=none)" items={v.suspicious_new_creates} severity="medium"
-                      renderItem={c => `"${c.name}" — source: ${c.source_path}`} />
-                  )}
-                  {d.survivors_missing_normalization?.length > 0 && (
-                    <ExpandableList title={`Repaired survivors missing normalization (${d.survivors_missing_normalization.length})`} items={d.survivors_missing_normalization} severity="high"
-                      renderItem={t => `${t.name || t.id} — missing: ${t.missing?.join(', ')}`} />
-                  )}
-                  {v.failures?.map((f, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
-                      <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{f}
-                    </div>
-                  ))}
-                  {v.warnings?.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
           </CardContent>
         </Card>
 
@@ -1491,11 +1367,9 @@ export default function Diagnostics() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-gray-500">
-              Backfill normalization fields, detect and clean duplicate Track groups, repair linked Event references, and verify sync sources converge on canonical Track records.
-              <br /><span className="text-gray-400">Recommended sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
+              Backfill normalization fields, detect and clean duplicate Track groups, repair linked Event references.
+              <br /><span className="text-gray-400">Sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
             </p>
-
-            {/* Action buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={() => runTrackBackfill(true)} disabled={trackBackfillRunning || trackCleanupRunning} variant="outline" className="border-teal-300 text-teal-700 hover:bg-teal-50">
                 {trackBackfillRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Preview Backfill</>}
@@ -1513,125 +1387,6 @@ export default function Diagnostics() {
                 {trackVerifyRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : <><Play className="w-4 h-4 mr-2" />Run Track Verification</>}
               </Button>
             </div>
-
-            {/* Backfill result */}
-            {trackBackfillResult && !trackBackfillRunning && (
-              <div className={`rounded-lg border p-4 space-y-3 ${trackBackfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
-                <p className={`text-sm font-semibold flex items-center gap-2 ${trackBackfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
-                  {trackBackfillResult.mode === 'dry_run' ? <><AlertTriangle className="w-4 h-4" /> Backfill Preview</> : <><CheckCircle className="w-4 h-4" /> Backfill Complete</>}
-                  <span className="font-normal text-xs ml-2">{trackBackfillResult.total_tracks} total Tracks</span>
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                  {[
-                    { label: 'Already Complete',       v: trackBackfillResult.already_complete },
-                    { label: 'Filled: normalized_name', v: trackBackfillResult.backfilled_normalized_name },
-                    { label: 'Filled: canonical_slug',  v: trackBackfillResult.backfilled_canonical_slug },
-                    { label: 'Filled: canonical_key',   v: trackBackfillResult.backfilled_canonical_key },
-                  ].map(({ label, v }) => (
-                    <div key={label} className="bg-white rounded border p-2">
-                      <p className={`text-xl font-bold ${trackBackfillResult.mode === 'dry_run' ? 'text-teal-700' : 'text-green-700'}`}>{v ?? 0}</p>
-                      <p className="text-gray-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                {trackBackfillResult.warnings?.length > 0 && (
-                  <ExpandableList title={`Warnings (${trackBackfillResult.warnings.length})`} items={trackBackfillResult.warnings} severity="medium" renderItem={w => w} />
-                )}
-              </div>
-            )}
-
-            {/* Cleanup result */}
-            {trackCleanupResult && !trackCleanupRunning && (() => {
-              const r = trackCleanupResult;
-              const isDry = r.dry_run;
-              return (
-                <div className={`rounded-lg border p-4 space-y-3 ${isDry ? 'border-yellow-200 bg-yellow-50' : r.groups_processed === 0 ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                  <p className={`text-sm font-semibold flex items-center gap-2 ${isDry ? 'text-yellow-800' : r.groups_processed === 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                    {r.groups_processed === 0 ? <><CheckCircle className="w-4 h-4" /> No duplicates found</> : isDry ? <><AlertTriangle className="w-4 h-4" /> Cleanup Preview</> : <><CheckCircle className="w-4 h-4" /> Cleanup Complete</>}
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                    {[
-                      { label: 'Groups Detected',     v: r.groups_detected ?? 0 },
-                      { label: 'Groups Processed',    v: r.groups_processed ?? 0 },
-                      { label: 'Survivors Confirmed', v: r.survivors?.length ?? 0 },
-                      { label: 'Marked Inactive',     v: r.duplicates_marked_inactive?.length ?? 0 },
-                    ].map(({ label, v }) => (
-                      <div key={label} className="bg-white rounded border p-2">
-                        <p className="text-xl font-bold text-gray-700">{v}</p>
-                        <p className="text-gray-500">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {r.survivors?.length > 0 && (
-                    <ExpandableList title={`Survivors (${r.survivors.length})`} items={r.survivors} severity="ok"
-                      renderItem={s => `${s.name}${s.location ? ' — ' + s.location : ''} [${s.match_type}] events=${s.event_count}`} />
-                  )}
-                  {r.duplicates_marked_inactive?.length > 0 && (
-                    <ExpandableList title={`Marked inactive (${r.duplicates_marked_inactive.length})`} items={r.duplicates_marked_inactive} severity="medium"
-                      renderItem={d => `${d.name} → survivor: ${d.survivor_name}`} />
-                  )}
-                  {r.skipped_groups?.length > 0 && (
-                    <ExpandableList title={`Skipped groups (${r.skipped_groups.length})`} items={r.skipped_groups} severity="low"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.reason}`} />
-                  )}
-                  {r.warnings?.length > 0 && (
-                    <ExpandableList title={`Warnings (${r.warnings.length})`} items={r.warnings} severity="medium" renderItem={w => w} />
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Verification result */}
-            {trackVerifyResult && !trackVerifyRunning && (() => {
-              const v = trackVerifyResult;
-              const allOk = v.failures?.length === 0;
-              const d = v.details || {};
-              return (
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allOk ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
-                    {allOk ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
-                    <span>{allOk ? 'Track integrity verified — all checks passed' : `${v.failures.length} failure(s) detected`}</span>
-                    <span className="text-xs font-normal ml-2 opacity-70">{v.generated_at ? new Date(v.generated_at).toLocaleString() : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <SummaryCard label="Normalization OK"       count={d.normalization_coverage?.missing_normalized_name?.length ?? 0} severity={v.normalization_ok ? 'ok' : 'high'} icon={v.normalization_ok ? CheckCircle : XCircle} />
-                    <SummaryCard label="Active Dup Groups"      count={v.duplicate_groups_remaining}  severity={v.duplicate_groups_remaining > 0 ? 'high' : 'ok'}   icon={v.duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Sync Convergence"       count={d.sync_check?.convergence_failures?.length ?? 0} severity={v.sync_alignment_ok ? 'ok' : 'medium'} icon={v.sync_alignment_ok ? CheckCircle : AlertTriangle} />
-                    <SummaryCard label="Suspicious Creates"     count={v.suspicious_new_creates?.length ?? 0} severity={v.suspicious_new_creates?.length > 0 ? 'medium' : 'ok'} icon={v.suspicious_new_creates?.length > 0 ? AlertTriangle : CheckCircle} />
-                  </div>
-                  {d.active_duplicate_groups?.length > 0 && (
-                    <ExpandableList title={`Active duplicate groups (${d.active_duplicate_groups.length})`} items={d.active_duplicate_groups} severity="high"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.names?.join(', ')}`} />
-                  )}
-                  {d.normalization_coverage?.missing_normalized_name?.length > 0 && (
-                    <ExpandableList title={`Missing normalized_name (${d.normalization_coverage.missing_normalized_name.length})`} items={d.normalization_coverage.missing_normalized_name} severity="high"
-                      renderItem={t => `${t.name || t.id}`} />
-                  )}
-                  {d.sync_check?.convergence_failures?.length > 0 && (
-                    <ExpandableList title="Sync convergence failures" items={d.sync_check.convergence_failures} severity="medium"
-                      renderItem={c => `"${c.name}" created ${c.create_count}x — sources: ${c.sources?.join(', ')}`} />
-                  )}
-                  {v.suspicious_new_creates?.length > 0 && (
-                    <ExpandableList title="Suspicious new creates (match_method=none)" items={v.suspicious_new_creates} severity="medium"
-                      renderItem={c => `"${c.name}" — source: ${c.source_path} on ${c.created_at ? new Date(c.created_at).toLocaleDateString() : '?'}`} />
-                  )}
-                  {d.survivors_missing_normalization?.length > 0 && (
-                    <ExpandableList title={`Repaired survivors missing normalization (${d.survivors_missing_normalization.length})`} items={d.survivors_missing_normalization} severity="high"
-                      renderItem={t => `${t.name || t.id} — missing: ${t.missing?.join(', ')}`} />
-                  )}
-                  {v.failures?.map((f, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
-                      <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{f}
-                    </div>
-                  ))}
-                  {v.warnings?.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
           </CardContent>
         </Card>
 
@@ -1644,11 +1399,9 @@ export default function Diagnostics() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-gray-500">
-              Backfill normalization fields, detect and clean duplicate Series groups, repair linked references, and verify sync sources converge on canonical names.
-              <br /><span className="text-gray-400">Recommended sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
+              Backfill normalization fields, detect and clean duplicate Series groups, repair linked references.
+              <br /><span className="text-gray-400">Sequence: 1. Backfill → 2. Run Cleanup → 3. Run Verification</span>
             </p>
-
-            {/* Action buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={() => runSeriesBackfill(true)} disabled={seriesBackfillRunning || seriesCleanupRunning} variant="outline" className="border-teal-300 text-teal-700 hover:bg-teal-50">
                 {seriesBackfillRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Preview Backfill</>}
@@ -1666,125 +1419,6 @@ export default function Diagnostics() {
                 {seriesVerifyRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : <><Play className="w-4 h-4 mr-2" />Run Series Verification</>}
               </Button>
             </div>
-
-            {/* Backfill result */}
-            {seriesBackfillResult && !seriesBackfillRunning && (
-              <div className={`rounded-lg border p-4 space-y-3 ${seriesBackfillResult.mode === 'dry_run' ? 'border-teal-200 bg-teal-50' : 'border-green-200 bg-green-50'}`}>
-                <p className={`text-sm font-semibold flex items-center gap-2 ${seriesBackfillResult.mode === 'dry_run' ? 'text-teal-800' : 'text-green-800'}`}>
-                  {seriesBackfillResult.mode === 'dry_run' ? <><AlertTriangle className="w-4 h-4" /> Backfill Preview</> : <><CheckCircle className="w-4 h-4" /> Backfill Complete</>}
-                  <span className="font-normal text-xs ml-2">{seriesBackfillResult.total_series} total Series</span>
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                  {[
-                    { label: 'Already Complete',      v: seriesBackfillResult.already_complete },
-                    { label: 'Filled: normalized_name', v: seriesBackfillResult.backfilled_normalized_name },
-                    { label: 'Filled: canonical_slug',  v: seriesBackfillResult.backfilled_canonical_slug },
-                    { label: 'Filled: canonical_key',   v: seriesBackfillResult.backfilled_canonical_key },
-                  ].map(({ label, v }) => (
-                    <div key={label} className="bg-white rounded border p-2">
-                      <p className={`text-xl font-bold ${seriesBackfillResult.mode === 'dry_run' ? 'text-teal-700' : 'text-green-700'}`}>{v ?? 0}</p>
-                      <p className="text-gray-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                {seriesBackfillResult.warnings?.length > 0 && (
-                  <ExpandableList title={`Warnings (${seriesBackfillResult.warnings.length})`} items={seriesBackfillResult.warnings} severity="medium" renderItem={w => w} />
-                )}
-              </div>
-            )}
-
-            {/* Cleanup result */}
-            {seriesCleanupResult && !seriesCleanupRunning && (() => {
-              const r = seriesCleanupResult;
-              const isDry = r.dry_run;
-              return (
-                <div className={`rounded-lg border p-4 space-y-3 ${isDry ? 'border-yellow-200 bg-yellow-50' : r.groups_processed === 0 ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                  <p className={`text-sm font-semibold flex items-center gap-2 ${isDry ? 'text-yellow-800' : r.groups_processed === 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                    {r.groups_processed === 0 ? <><CheckCircle className="w-4 h-4" /> No duplicates found</> : isDry ? <><AlertTriangle className="w-4 h-4" /> Cleanup Preview</> : <><CheckCircle className="w-4 h-4" /> Cleanup Complete</>}
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                    {[
-                      { label: 'Groups Detected',        v: r.groups_detected ?? 0 },
-                      { label: 'Groups Processed',       v: r.groups_processed ?? 0 },
-                      { label: 'Survivors Confirmed',    v: r.survivors?.length ?? 0 },
-                      { label: 'Marked Inactive',        v: r.duplicates_marked_inactive?.length ?? 0 },
-                    ].map(({ label, v }) => (
-                      <div key={label} className="bg-white rounded border p-2">
-                        <p className="text-xl font-bold text-gray-700">{v}</p>
-                        <p className="text-gray-500">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {r.survivors?.length > 0 && (
-                    <ExpandableList title={`Survivors (${r.survivors.length})`} items={r.survivors} severity="ok"
-                      renderItem={s => `${s.name} [${s.match_type}] events=${s.event_count} dup_count=${s.duplicate_count}`} />
-                  )}
-                  {r.duplicates_marked_inactive?.length > 0 && (
-                    <ExpandableList title={`Marked inactive (${r.duplicates_marked_inactive.length})`} items={r.duplicates_marked_inactive} severity="medium"
-                      renderItem={d => `${d.name} → survivor: ${d.survivor_name}`} />
-                  )}
-                  {r.skipped_groups?.length > 0 && (
-                    <ExpandableList title={`Skipped groups (${r.skipped_groups.length})`} items={r.skipped_groups} severity="low"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.reason}`} />
-                  )}
-                  {r.warnings?.length > 0 && (
-                    <ExpandableList title={`Warnings (${r.warnings.length})`} items={r.warnings} severity="medium" renderItem={w => w} />
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Verification result */}
-            {seriesVerifyResult && !seriesVerifyRunning && (() => {
-              const v = seriesVerifyResult;
-              const allOk = v.failures?.length === 0;
-              const d = v.details || {};
-              return (
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allOk ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
-                    {allOk ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
-                    <span>{allOk ? 'Series integrity verified — all checks passed' : `${v.failures.length} failure(s) detected`}</span>
-                    <span className="text-xs font-normal ml-2 opacity-70">{v.generated_at ? new Date(v.generated_at).toLocaleString() : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <SummaryCard label="Normalization OK"         count={d.normalization_coverage?.missing_normalized_name?.length ?? 0} severity={v.normalization_ok ? 'ok' : 'high'} icon={v.normalization_ok ? CheckCircle : XCircle} />
-                    <SummaryCard label="Active Dup Groups"        count={v.duplicate_groups_remaining}  severity={v.duplicate_groups_remaining > 0 ? 'high' : 'ok'}   icon={v.duplicate_groups_remaining > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Sync Name Alignment"      count={d.sync_name_check?.non_canonical_creates?.length ?? 0} severity={v.sync_name_alignment_ok ? 'ok' : 'medium'} icon={v.sync_name_alignment_ok ? CheckCircle : AlertTriangle} />
-                    <SummaryCard label="Suspicious New Creates"   count={v.suspicious_new_creates?.length ?? 0} severity={v.suspicious_new_creates?.length > 0 ? 'medium' : 'ok'} icon={v.suspicious_new_creates?.length > 0 ? AlertTriangle : CheckCircle} />
-                  </div>
-                  {d.active_duplicate_groups?.length > 0 && (
-                    <ExpandableList title={`Active duplicate groups (${d.active_duplicate_groups.length})`} items={d.active_duplicate_groups} severity="high"
-                      renderItem={g => `[${g.match_type}] "${g.key}" — ${g.count} records: ${g.names?.join(', ')}`} />
-                  )}
-                  {d.normalization_coverage?.missing_normalized_name?.length > 0 && (
-                    <ExpandableList title={`Missing normalized_name (${d.normalization_coverage.missing_normalized_name.length})`} items={d.normalization_coverage.missing_normalized_name} severity="high"
-                      renderItem={s => `${s.name || s.id}`} />
-                  )}
-                  {d.sync_name_check?.non_canonical_creates?.length > 0 && (
-                    <ExpandableList title="Non-canonical names created by sync" items={d.sync_name_check.non_canonical_creates} severity="medium"
-                      renderItem={c => `"${c.name}" — source: ${c.source_path}`} />
-                  )}
-                  {v.suspicious_new_creates?.length > 0 && (
-                    <ExpandableList title="Suspicious new creates (match_method=none)" items={v.suspicious_new_creates} severity="medium"
-                      renderItem={c => `"${c.name}" — source: ${c.source_path} on ${c.created_at ? new Date(c.created_at).toLocaleDateString() : '?'}`} />
-                  )}
-                  {d.survivors_missing_normalization?.length > 0 && (
-                    <ExpandableList title={`Repaired survivors missing normalization (${d.survivors_missing_normalization.length})`} items={d.survivors_missing_normalization} severity="high"
-                      renderItem={s => `${s.name || s.id} — missing: ${s.missing?.join(', ')}`} />
-                  )}
-                  {v.failures?.length > 0 && v.failures.map((f, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
-                      <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{f}
-                    </div>
-                  ))}
-                  {v.warnings?.length > 0 && v.warnings.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />{w}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
           </CardContent>
         </Card>
 
@@ -1796,54 +1430,21 @@ export default function Diagnostics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-xs text-gray-500">
-              Verifies that all source entity writes (Driver, Team, Track, Series, Event) go through the approved
-              sync pipeline. Detects raw creates/updates that bypass normalization and deduplication.
-            </p>
+            <p className="text-xs text-gray-500">Verifies all source entity writes go through the approved sync pipeline.</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={runWritePathAudit} disabled={writeAuditRunning} variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
-                {writeAuditRunning
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</>
-                  : <><Play className="w-4 h-4 mr-2" />Run Unsafe Write Path Audit</>}
+                {writeAuditRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running…</> : <><Play className="w-4 h-4 mr-2" />Run Unsafe Write Path Audit</>}
               </Button>
               {writeAuditReport && <span className="text-xs text-gray-400">Last run: {new Date(writeAuditReport.generated_at).toLocaleString()}</span>}
             </div>
-            {writeAuditRunning && <div className="py-6 text-center text-sm text-gray-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-orange-400" />Auditing source entity write paths…</div>}
+            {writeAuditRunning && <div className="py-4 text-center text-sm text-gray-500"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-orange-400" />Auditing source entity write paths…</div>}
             {writeAuditReport && !writeAuditRunning && (() => {
               const s = writeAuditReport.summary || {};
               const allSafe = s.unsafe_count === 0 && s.recent_logs_without_source_path === 0;
               return (
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allSafe ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
-                    {allSafe ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
-                    <span>{allSafe ? `All ${s.total_paths_checked} registered write paths are safe` : `${s.unsafe_count} unsafe path(s) — review below`}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <SummaryCard label="Total Paths"    count={s.total_paths_checked}                severity="ok"     icon={CheckCircle} />
-                    <SummaryCard label="Safe Paths"     count={s.safe_count}                         severity="ok"     icon={CheckCircle} />
-                    <SummaryCard label="Unsafe Paths"   count={s.unsafe_count}                       severity={s.unsafe_count > 0 ? 'high' : 'ok'} icon={s.unsafe_count > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Logs No Path"   count={s.recent_logs_without_source_path}    severity={s.recent_logs_without_source_path > 0 ? 'medium' : 'ok'} icon={s.recent_logs_without_source_path > 0 ? AlertTriangle : CheckCircle} />
-                  </div>
-                  {writeAuditReport.high_risk_paths?.length > 0 && (
-                    <ExpandableList title={`High-risk paths (${writeAuditReport.high_risk_paths.length})`} items={writeAuditReport.high_risk_paths} severity="high"
-                      renderItem={p => `[${p.source_path}] ${p.file} — ${p.entity_types?.join(', ')} — ${p.note}`} />
-                  )}
-                  {writeAuditReport.medium_risk_paths?.length > 0 && (
-                    <ExpandableList title={`Medium-risk paths (${writeAuditReport.medium_risk_paths.length})`} items={writeAuditReport.medium_risk_paths} severity="medium"
-                      renderItem={p => `[${p.source_path}] ${p.file} — ${p.entity_types?.join(', ')} — ${p.note}`} />
-                  )}
-                  {writeAuditReport.safe_paths?.length > 0 && (
-                    <ExpandableList title={`Safe paths (${writeAuditReport.safe_paths.length})`} items={writeAuditReport.safe_paths} severity="ok"
-                      renderItem={p => `[${p.source_path}] ${p.entity_types?.join(', ')} — ${p.sync_mode}`} />
-                  )}
-                  {writeAuditReport.logs_without_source_path?.length > 0 && (
-                    <ExpandableList title={`Recent OperationLog entries missing source_path (${writeAuditReport.logs_without_source_path.length})`} items={writeAuditReport.logs_without_source_path} severity="medium"
-                      renderItem={r => `${r.entity_name || r.entity_type || '?'} id=${r.entity_id || '?'} — created ${r.created_date ? new Date(r.created_date).toLocaleDateString() : '?'}`} />
-                  )}
-                  {writeAuditReport.unknown_source_paths?.length > 0 && (
-                    <ExpandableList title={`Unregistered source_path values in logs (${writeAuditReport.unknown_source_paths.length})`} items={writeAuditReport.unknown_source_paths} severity="medium"
-                      renderItem={r => `[${r.entity_type}] source_path="${r.source_path}" — ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '?'}`} />
-                  )}
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${allSafe ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'}`}>
+                  {allSafe ? <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                  <span>{allSafe ? `All ${s.total_paths_checked} paths safe` : `${s.unsafe_count} unsafe path(s)`}</span>
                 </div>
               );
             })()}
@@ -1861,33 +1462,14 @@ export default function Diagnostics() {
               </Button>
               {healthReport && <span className="text-xs text-gray-400">Last run: {new Date(healthReport.generated_at).toLocaleString()}</span>}
             </div>
-            {healthRunning && <div className="py-6 text-center text-sm text-gray-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-400" />Scanning access records for integrity issues…</div>}
+            {healthRunning && <div className="py-6 text-center text-sm text-gray-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-400" />Scanning access records…</div>}
             {healthReport && !healthRunning && (() => {
               const s = healthReport.summary || {};
               const total = Object.values(s).reduce((a, b) => a + b, 0);
               return (
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${total === 0 ? 'bg-green-50 border-green-300 text-green-800' : 'bg-yellow-50 border-yellow-300 text-yellow-800'}`}>
-                    {total === 0 ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />}
-                    <span>{total === 0 ? 'All clean — no access integrity issues found' : `${total} issue(s) detected across access system`}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <SummaryCard label="Duplicate Collaborators"    count={s.duplicate_collaborators}    severity={s.duplicate_collaborators > 0 ? 'high' : 'ok'}    icon={s.duplicate_collaborators > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Orphan Collaborators"       count={s.orphan_collaborators}       severity={s.orphan_collaborators > 0 ? 'high' : 'ok'}       icon={s.orphan_collaborators > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Invalid Invitations"        count={s.invalid_invitations}        severity={s.invalid_invitations > 0 ? 'medium' : 'ok'}       icon={s.invalid_invitations > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Missing Access Codes"       count={s.missing_access_codes}       severity={s.missing_access_codes > 0 ? 'medium' : 'ok'}      icon={s.missing_access_codes > 0 ? AlertTriangle : CheckCircle} />
-                    <SummaryCard label="Expired Pending Invitations" count={s.expired_pending_invitations} severity={s.expired_pending_invitations > 0 ? 'low' : 'ok'} icon={s.expired_pending_invitations > 0 ? AlertCircle : CheckCircle} />
-                  </div>
-                  <ExpandableList title="Duplicate collaborators" items={healthReport.duplicate_collaborators || []} severity="high"
-                    renderItem={r => r.error ? r.error : `${r.user_id} → [${r.entity_type}:${r.entity_id}] — ${r.count} records`} />
-                  <ExpandableList title="Orphan collaborators (entity missing)" items={healthReport.orphan_collaborators || []} severity="high"
-                    renderItem={r => r.error ? r.error : `${r.user_email || r.user_id} → [${r.entity_type}:${r.entity_id}]`} />
-                  <ExpandableList title="Accepted invitations with no collaborator" items={healthReport.invalid_invitations || []} severity="medium"
-                    renderItem={r => r.error ? r.error : `${r.email} → ${r.entity_name || r.entity_id} [${r.entity_type}]`} />
-                  <ExpandableList title="Owner collaborators missing access code" items={healthReport.missing_access_codes || []} severity="medium"
-                    renderItem={r => r.error ? r.error : `${r.user_email || r.user_id} → ${r.entity_name || r.entity_id} [${r.entity_type}]`} />
-                  <ExpandableList title="Expired invitations still pending" items={healthReport.expired_pending_invitations || []} severity="low"
-                    renderItem={r => r.error ? r.error : `${r.email} → ${r.entity_name || r.entity_id} (expired ${new Date(r.expiration_date).toLocaleDateString()})`} />
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-medium text-sm ${total === 0 ? 'bg-green-50 border-green-300 text-green-800' : 'bg-yellow-50 border-yellow-300 text-yellow-800'}`}>
+                  {total === 0 ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />}
+                  <span>{total === 0 ? 'All clean' : `${total} issue(s) detected`}</span>
                 </div>
               );
             })()}
@@ -1913,42 +1495,6 @@ export default function Diagnostics() {
                 <SummaryCard label="Low Priority"    count={sum.low_priority_issues}    severity="low"    icon={RefreshCw} />
               </div>
               <div className="text-xs text-gray-400">Generated at {new Date(report.generated_at).toLocaleString()}</div>
-              <Card>
-                <CardHeader><CardTitle className="text-sm">Issue Breakdown</CardTitle></CardHeader>
-                <CardContent>
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b text-left text-xs text-gray-500 uppercase"><th className="pb-2 pr-4">Category</th><th className="pb-2 pr-4">Check</th><th className="pb-2 pr-4">Count</th><th className="pb-2">Severity</th></tr></thead>
-                    <tbody className="divide-y divide-gray-100 text-xs">
-                      {[
-                        { cat: 'Source',       check: 'Duplicate groups',             count: src.summary?.duplicate_count,             sev: 'high' },
-                        { cat: 'Source',       check: 'Broken required links',         count: src.summary?.broken_link_count,           sev: 'high' },
-                        { cat: 'Source',       check: 'Missing normalization',         count: src.summary?.missing_normalization_count, sev: 'medium' },
-                        { cat: 'Source',       check: 'Missing slug / routing',        count: src.summary?.broken_routing_count,        sev: 'low' },
-                        { cat: 'Entity Layer', check: 'Source without Entity row',     count: ent.summary?.source_without_entity_count, sev: 'high' },
-                        { cat: 'Entity Layer', check: 'Entity with dangling source',   count: ent.summary?.entity_without_source_count, sev: 'high' },
-                        { cat: 'Entity Layer', check: 'Broken event relationships',    count: ent.summary?.broken_event_relationships_count, sev: 'high' },
-                        { cat: 'Entity Layer', check: 'Broken confirmations',          count: ent.summary?.broken_confirmations_count,  sev: 'medium' },
-                        { cat: 'Access',       check: 'Collaborator missing source',   count: acc.summary?.collaborator_missing_source_count, sev: 'high' },
-                        { cat: 'Access',       check: 'Duplicate collaborators',       count: acc.summary?.duplicate_collaborators_count,    sev: 'low' },
-                        { cat: 'Access',       check: 'Owner missing access code',     count: acc.summary?.owner_missing_access_code_count,  sev: 'medium' },
-                        { cat: 'Access',       check: 'Expired pending invitations',   count: acc.summary?.expired_pending_invitations_count, sev: 'medium' },
-                        { cat: 'Access',       check: 'Invitation entity missing',     count: acc.summary?.invitation_entity_missing_count,  sev: 'medium' },
-                        { cat: 'Routes',       check: 'Missing slug',                  count: rte.summary?.missing_slug_count,          sev: 'low' },
-                        { cat: 'Routes',       check: 'Duplicate slug',                count: rte.summary?.duplicate_slug_count,        sev: 'low' },
-                        { cat: 'Routes',       check: 'Invisible public records',      count: rte.summary?.invisible_public_count,      sev: 'low' },
-                        { cat: 'Routes',       check: 'Missing display name',          count: rte.summary?.missing_display_count,       sev: 'low' },
-                      ].map((row, i) => (
-                        <tr key={i} className={row.count > 0 ? '' : 'opacity-40'}>
-                          <td className="py-1.5 pr-4 text-gray-500">{row.cat}</td>
-                          <td className="py-1.5 pr-4">{row.check}</td>
-                          <td className="py-1.5 pr-4 font-semibold">{row.count ?? 0}</td>
-                          <td className="py-1.5"><SeverityBadge level={row.count > 0 ? row.sev : 'ok'} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="source" className="space-y-8">
