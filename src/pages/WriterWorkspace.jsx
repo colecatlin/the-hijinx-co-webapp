@@ -14,6 +14,7 @@ import AssignedPackets from '@/components/editorial/writer/AssignedPackets';
 import DraftsInProgress from '@/components/editorial/writer/DraftsInProgress';
 import SavedForLater from '@/components/editorial/writer/SavedForLater';
 import RecentEditorialUpdates from '@/components/editorial/writer/RecentEditorialUpdates';
+import WriterAssignmentsPanel from '@/components/editorial/writer/WriterAssignmentsPanel';
 
 const PAGE = 'management/editorial/writer-workspace';
 const ALLOWED_ROLES = ['admin'];
@@ -95,7 +96,8 @@ export default function WriterWorkspace() {
   const filterDraft = (d) => !q || d.title?.toLowerCase().includes(q);
 
   const tabs = [
-    { key: 'assigned', label: 'Assigned', count: myRecs.length },
+    { key: 'assignments', label: 'Assignments', count: null },
+    { key: 'assigned', label: 'Recommendations', count: myRecs.length },
     { key: 'packets', label: 'Research Packets', count: myPackets.length },
     { key: 'drafts', label: 'Drafts', count: myDrafts.length },
     { key: 'saved', label: 'Saved', count: savedRecs.length },
@@ -158,6 +160,9 @@ export default function WriterWorkspace() {
           </div>
         ) : (
           <>
+            {activeTab === 'assignments' && (
+              <WriterAssignmentsPanel currentUser={user} />
+            )}
             {activeTab === 'assigned' && (
               <AssignedRecommendations
                 recs={myRecs.filter(filterRec)}
