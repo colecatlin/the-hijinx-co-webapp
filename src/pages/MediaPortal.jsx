@@ -89,6 +89,7 @@ function buildTabs(isContributor, isAdmin) {
     tabs.push({ id: 'credentials', label: 'Credentials' });
     tabs.push({ id: 'assets', label: 'Assets' });
     tabs.push({ id: 'requests', label: 'Requests' });
+    tabs.push({ id: 'assignments', label: 'Assignments' });
     tabs.push({ id: 'status', label: 'Status' });
   }
   tabs.push({ id: 'submissions', label: 'Submissions' });
@@ -344,6 +345,10 @@ export default function MediaPortal() {
 
               <TabsContent value="requests">
                 <MyRequestsTab mediaUser={mediaUser} currentUser={currentUser} />
+              </TabsContent>
+
+              <TabsContent value="assignments">
+                <MyAssignmentsTab currentUser={currentUser} isContributor={isContributor} />
               </TabsContent>
 
               <TabsContent value="status">
