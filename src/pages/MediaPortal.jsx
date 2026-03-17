@@ -22,6 +22,7 @@ import ContributorProfileTab from '@/components/media/portal/ContributorProfileT
 import OutletManagementTab from '@/components/media/portal/OutletManagementTab';
 import MySubmissionsTab from '@/components/media/portal/MySubmissionsTab';
 import ContributorStatusPanel from '@/components/media/portal/ContributorStatusPanel';
+import MyAssignmentsTab from '@/components/media/portal/MyAssignmentsTab';
 
 // Dashboard and state views
 import PortalOverviewDashboard from '@/components/media/portal/PortalOverviewDashboard';
