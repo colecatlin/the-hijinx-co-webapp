@@ -30,7 +30,8 @@ const REVENUE_STATUS_COLORS = {
   cancelled: 'bg-red-100 text-red-700'
 };
 
-function StatsCard({ icon: Icon, label, value, sub }) {
+function StatsCard({ icon: IconComponent, label, value, sub }) {
+  const Icon = IconComponent;
   return (
     <Card>
       <CardContent className="pt-4 pb-4">
