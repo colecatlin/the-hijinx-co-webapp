@@ -61,11 +61,11 @@ Deno.serve(async (req) => {
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
       safe(db.MediaAsset.list('-created_date', 20)),
       safe(db.Product.list('-created_date', 20)),
-      // counts for hero stats (large limits to get real totals)
-      safe(db.Series.filter({ status: 'Active' }, '-created_date', 9999)),
-      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 9999)),
-      safe(db.Track.filter({ status: 'Active' }, '-created_date', 9999)),
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', 9999)),
+      // counts for hero stats — capped at 500 to avoid CPU timeout
+      safe(db.Series.filter({ status: 'Active' }, '-created_date', 500)),
+      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 500)),
+      safe(db.Track.filter({ status: 'Active' }, '-created_date', 500)),
+      safe(db.Event.filter({ status: 'Published' }, 'event_date', 500)),
     ]);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -207,14 +207,31 @@ Deno.serve(async (req) => {
       } catch (_) {}
     }
 
-    // Fall back to auto spotlight logic if manual IDs weren't set or resolved
-    if (!spotlightDriver || !spotlightEvent) {
-      try {
-        // Use service role so this works with and without a user session (public homepage)
-        const spotRes = await base44.asServiceRole.functions.invoke('getHomepageSpotlights', {});
-        if (!spotlightDriver) spotlightDriver = spotRes?.spotlight_driver || null;
-        if (!spotlightEvent)  spotlightEvent  = spotRes?.spotlight_event  || null;
-      } catch (_) {}
+    // Fall back to auto spotlight logic using already-fetched data
+    if (!spotlightDriver) {
+      const bestDriver = (autoDrivers || []).find(d => d.featured === true) || (autoDrivers || [])[0] || null;
+      if (bestDriver) {
+        spotlightDriver = {
+          id: bestDriver.id,
+          name: [bestDriver.first_name, bestDriver.last_name].filter(Boolean).join(' '),
+          subtitle: bestDriver.primary_discipline || null,
+          slug: bestDriver.slug || null,
+          image: bestDriver.profile_image_url || null,
+        };
+      }
+    }
+    if (!spotlightEvent) {
+      const upcoming = (autoEvents || []).find(e => e.event_date >= today && e.status === 'Published');
+      const fallbackEvent = upcoming || (autoEvents || [])[0];
+      if (fallbackEvent) {
+        spotlightEvent = {
+          id: fallbackEvent.id,
+          name: fallbackEvent.name,
+          event_date: fallbackEvent.event_date || null,
+          status: fallbackEvent.status || null,
+          series_name: fallbackEvent.series_name || null,
+        };
+      }
     }
 
     // ── 5. Return payload ────────────────────────────────────────────────────
