@@ -839,56 +839,54 @@ Deno.serve(async (req) => {
     };
 
     // Log the audit run
-    await db.OperationLog.create({
-      entity_type: 'System',
-      entity_id: 'media_ecosystem',
-      action: 'media_ecosystem_audit_run',
-      status: overallStatus === 'healthy' ? 'success' : overallStatus === 'critical' ? 'error' : 'warning',
-      message: `Media Ecosystem Audit — overall: ${overallStatus}`,
-      metadata: JSON.stringify({
-        records_checked: true,
-        failures_count: allFailures.length,
-        warnings_count: allWarnings.length,
-        overall_status: overallStatus,
-        launch_blockers_count: launchBlockers.length,
-        acted_by_user_id: user.id,
-        operation_type: 'media_ecosystem_audit_run'
-      }),
-      created_at: generated_at,
-    });
+    const logBase = { entity_name: 'System', entity_id: 'media_ecosystem' };
+    try {
+      await db.OperationLog.create({
+        ...logBase,
+        operation_type: 'media_ecosystem_audit_run',
+        status: overallStatus === 'healthy' ? 'success' : overallStatus === 'critical' ? 'error' : 'warning',
+        description: `Media Ecosystem Audit — overall: ${overallStatus}`,
+        metadata: {
+          records_checked: true,
+          failures_count: allFailures.length,
+          warnings_count: allWarnings.length,
+          overall_status: overallStatus,
+          launch_blockers_count: launchBlockers.length,
+          acted_by_user_id: user.id,
+        },
+      });
+    } catch (_) {}
 
     if (allFailures.length > 0) {
-      await db.OperationLog.create({
-        entity_type: 'System',
-        entity_id: 'media_ecosystem',
-        action: 'media_ecosystem_issue_detected',
-        status: 'error',
-        message: `Media Ecosystem Audit detected ${allFailures.length} failure(s)`,
-        metadata: JSON.stringify({
-          failures: allFailures.slice(0, 20),
-          launch_blockers_count: launchBlockers.length,
-          operation_type: 'media_ecosystem_issue_detected'
-        }),
-        created_at: generated_at,
-      });
+      try {
+        await db.OperationLog.create({
+          ...logBase,
+          operation_type: 'media_ecosystem_issue_detected',
+          status: 'error',
+          description: `Media Ecosystem Audit detected ${allFailures.length} failure(s)`,
+          metadata: {
+            failures: allFailures.slice(0, 20),
+            launch_blockers_count: launchBlockers.length,
+          },
+        });
+      } catch (_) {}
     }
 
-    await db.OperationLog.create({
-      entity_type: 'System',
-      entity_id: 'media_ecosystem',
-      action: 'media_ecosystem_health_report_generated',
-      status: 'success',
-      message: `Media Ecosystem Health Report generated — ${report.summary.total_checks} checks, ${allFailures.length} failures, ${allWarnings.length} warnings`,
-      metadata: JSON.stringify({
-        overall_status: overallStatus,
-        total_checks: report.summary.total_checks,
-        failures_count: allFailures.length,
-        warnings_count: allWarnings.length,
-        launch_blockers_count: launchBlockers.length,
-        operation_type: 'media_ecosystem_health_report_generated'
-      }),
-      created_at: generated_at,
-    });
+    try {
+      await db.OperationLog.create({
+        ...logBase,
+        operation_type: 'media_ecosystem_health_report_generated',
+        status: 'success',
+        description: `Media Ecosystem Health Report generated — ${report.summary.total_checks} checks, ${allFailures.length} failures, ${allWarnings.length} warnings`,
+        metadata: {
+          overall_status: overallStatus,
+          total_checks: report.summary.total_checks,
+          failures_count: allFailures.length,
+          warnings_count: allWarnings.length,
+          launch_blockers_count: launchBlockers.length,
+        },
+      });
+    } catch (_) {}
 
     return Response.json(report);
   } catch (error) {
