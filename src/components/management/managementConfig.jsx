@@ -1,4 +1,4 @@
-import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation and pages.
@@ -54,6 +54,7 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'Media Applications', page: 'management/media/applications', icon: Camera, description: 'Review and approve media contributor applications' },
       { name: 'Assignments', page: 'management/media/assignments', icon: Briefcase, description: 'Create and manage contributor assignments with deliverables' },
+      { name: 'Requests', page: 'management/media/requests', icon: Send, description: 'Hiring and collaboration requests from teams, outlets, and brands' },
     ]
   },
   {
