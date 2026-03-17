@@ -20,6 +20,7 @@ import WriterWorkspace from './pages/WriterWorkspace';
 import ManageMediaApplications from './pages/ManageMediaApplications';
 import ManageAssignments from './pages/ManageAssignments';
 import ManageRequests from './pages/ManageRequests';
+import ManageRevenue from './pages/ManageRevenue';
 import MediaHome from './pages/MediaHome';
 import CreatorDirectory from './pages/CreatorDirectory';
 import CreatorProfile from './pages/CreatorProfile';
@@ -88,6 +89,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/media/applications" element={<LayoutWrapper currentPageName="management/media/applications"><ManageMediaApplications /></LayoutWrapper>} />
       <Route path="/management/media/assignments" element={<LayoutWrapper currentPageName="management/media/assignments"><ManageAssignments /></LayoutWrapper>} />
       <Route path="/management/media/requests" element={<LayoutWrapper currentPageName="management/media/requests"><ManageRequests /></LayoutWrapper>} />
+      <Route path="/management/media/revenue" element={<LayoutWrapper currentPageName="management/media/revenue"><ManageRevenue /></LayoutWrapper>} />
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
       <Route path="/creators" element={<LayoutWrapper currentPageName="creators"><CreatorDirectory /></LayoutWrapper>} />
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
