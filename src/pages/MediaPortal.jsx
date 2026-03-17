@@ -24,6 +24,7 @@ import MySubmissionsTab from '@/components/media/portal/MySubmissionsTab';
 import ContributorStatusPanel from '@/components/media/portal/ContributorStatusPanel';
 import MyAssignmentsTab from '@/components/media/portal/MyAssignmentsTab';
 import MyMediaRequestsTab from '@/components/media/portal/MyMediaRequestsTab';
+import MyPaymentsTab from '@/components/media/portal/MyPaymentsTab';
 
 // Dashboard and state views
 import PortalOverviewDashboard from '@/components/media/portal/PortalOverviewDashboard';
@@ -92,6 +93,7 @@ function buildTabs(isContributor, isAdmin) {
     tabs.push({ id: 'requests', label: 'Requests' });
     tabs.push({ id: 'requests', label: 'Requests' });
     tabs.push({ id: 'assignments', label: 'Assignments' });
+    tabs.push({ id: 'payments', label: 'Payments' });
     tabs.push({ id: 'status', label: 'Status' });
   }
   tabs.push({ id: 'submissions', label: 'Submissions' });
@@ -359,6 +361,10 @@ export default function MediaPortal() {
 
               <TabsContent value="assignments">
                 <MyAssignmentsTab currentUser={currentUser} isContributor={isContributor} />
+              </TabsContent>
+
+              <TabsContent value="payments">
+                <MyPaymentsTab currentUser={currentUser} myProfile={myMediaProfile} />
               </TabsContent>
 
               <TabsContent value="status">
