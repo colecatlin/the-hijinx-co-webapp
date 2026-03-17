@@ -2,10 +2,10 @@
  * runMediaEcosystemFixCycle
  *
  * Structured fix cycle for media ecosystem issues.
- * Ingests the latest health report, classifies issues by severity and category,
- * applies safe data fixes, and returns a structured fix log.
+ * Default mode: dry_run=true — scans and classifies issues without writing data.
+ * Pass dry_run=false to apply safe fixes.
  *
- * Admin-only. Does NOT silently patch data — all fixes are logged and returned.
+ * Admin-only. All fixes are logged and returned.
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
@@ -17,341 +17,237 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden — admin only' }, { status: 403 });
 
+    const body = await req.json().catch(() => ({}));
+    const dry_run = body.dry_run !== false; // default true
+
     const db = base44.asServiceRole.entities;
     const started_at = new Date().toISOString();
     const fix_log = [];
     let fixes_applied = 0;
     let fixes_failed = 0;
 
-    // ── Helper ────────────────────────────────────────────────────────────────
     const logFix = (id, category, severity, issue, root_cause, fix_applied, entities_affected, resolved, notes = '') => {
-      fix_log.push({
-        fix_id: id,
-        category,
-        severity,
-        issue_description: issue,
-        root_cause,
-        fix_applied,
-        entities_affected,
-        routes_affected: [],
-        resolved_boolean: resolved,
-        resolved_at: resolved ? new Date().toISOString() : null,
-        notes,
-      });
+      fix_log.push({ fix_id: id, category, severity, issue_description: issue, root_cause, fix_applied, entities_affected, routes_affected: [], resolved_boolean: resolved, resolved_at: resolved ? new Date().toISOString() : null, notes });
     };
 
     const safe = (p) => p.catch(() => []);
 
-    // ── Fetch all relevant data ───────────────────────────────────────────────
+    // Single parallel fetch — all data needed upfront
     const [
-      profiles, outlets, assets, assignments, requests,
-      agreements, paymentAccounts, credentialRequests,
+      profiles, outlets, assets, assignments, agreements, paymentAccounts, credentialRequests,
     ] = await Promise.all([
       safe(db.MediaProfile.list('-created_date', 100)),
       safe(db.MediaOutlet.list('-created_date', 100)),
       safe(db.MediaAsset.list('-created_date', 100)),
       safe(db.MediaAssignment.list('-created_date', 100)),
-      safe(db.MediaRequest.list('-created_date', 100)),
       safe(db.RevenueAgreement.list('-created_date', 50)),
       safe(db.PaymentAccount.list('-created_date', 50)),
-      safe(db.CredentialRequest.list('-created_date', 100)),
+      safe(db.CredentialRequest.list('-created_date', 50)),
     ]);
 
-    // ════════════════════════════════════════════════════════════════════════
-    // LAYER 1 — Access & Security
-    // ════════════════════════════════════════════════════════════════════════
-
-    // Fix 1.1: public_access=true assets with rights not cleared → revoke public_access
+    // ── FIX 1.1: public_access=true assets with rights not cleared ────────────
     const publicAssetsNoRights = assets.filter(a => a.public_access === true && a.rights_status !== 'cleared' && a.status !== 'approved');
-    if (publicAssetsNoRights.length > 0) {
-      for (const asset of publicAssetsNoRights) {
-        try {
-          await db.MediaAsset.update(asset.id, { public_access: false });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-1.1', 'access_control', 'critical',
-        `${publicAssetsNoRights.length} asset(s) had public_access=true with rights not cleared`,
-        'public_access set true before rights clearance completed',
-        `Set public_access=false on ${publicAssetsNoRights.length} asset(s)`,
-        ['MediaAsset'],
-        true,
-        `Asset IDs: ${publicAssetsNoRights.map(a => a.id).join(', ')}`
-      );
-    } else {
-      logFix('FIX-1.1', 'access_control', 'critical',
-        'public_access=true assets with uncleared rights',
-        'N/A',
-        'No action needed — no violations found',
-        ['MediaAsset'], true, 'Clean');
+    if (publicAssetsNoRights.length > 0 && !dry_run) {
+      const updates = publicAssetsNoRights.map(a => db.MediaAsset.update(a.id, { public_access: false }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
+      fixes_failed += results.filter(r => r === null).length;
     }
-
-    // Fix 1.2: public_visible=true profiles with hidden/draft status → revoke public_visible
-    const inconsistentProfiles = profiles.filter(p =>
-      p.public_visible === true && (p.profile_status === 'hidden' || p.profile_status === 'draft')
+    logFix('FIX-1.1', 'access_control', 'critical',
+      publicAssetsNoRights.length > 0 ? `${publicAssetsNoRights.length} asset(s) public_access=true with rights not cleared` : 'public_access rights gate',
+      'public_access set true before rights clearance',
+      dry_run ? `Would set public_access=false on ${publicAssetsNoRights.length} asset(s)` : `Set public_access=false on ${publicAssetsNoRights.length} asset(s)`,
+      ['MediaAsset'],
+      publicAssetsNoRights.length === 0 || !dry_run,
+      publicAssetsNoRights.length > 0 ? `IDs: ${publicAssetsNoRights.slice(0, 5).map(a => a.id).join(', ')}` : 'Clean'
     );
-    if (inconsistentProfiles.length > 0) {
-      for (const profile of inconsistentProfiles) {
-        try {
-          await db.MediaProfile.update(profile.id, { public_visible: false });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-1.2', 'access_control', 'high',
-        `${inconsistentProfiles.length} profile(s) public_visible=true but status=hidden/draft`,
-        'public_visible not cleared when profile was hidden or reverted to draft',
-        `Set public_visible=false on ${inconsistentProfiles.length} profile(s)`,
-        ['MediaProfile'], true,
-        `Profile IDs: ${inconsistentProfiles.map(p => p.id).join(', ')}`
-      );
-    } else {
-      logFix('FIX-1.2', 'access_control', 'high',
-        'MediaProfile visibility/status consistency',
-        'N/A', 'No action needed', ['MediaProfile'], true, 'Clean');
-    }
 
-    // Fix 1.3: payout_profile_ready=true on non-monetization_eligible profiles
+    // ── FIX 1.2: public_visible profiles with hidden/draft status ─────────────
+    const inconsistentProfiles = profiles.filter(p => p.public_visible === true && (p.profile_status === 'hidden' || p.profile_status === 'draft'));
+    if (inconsistentProfiles.length > 0 && !dry_run) {
+      const updates = inconsistentProfiles.map(p => db.MediaProfile.update(p.id, { public_visible: false }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
+      fixes_failed += results.filter(r => r === null).length;
+    }
+    logFix('FIX-1.2', 'access_control', 'high',
+      inconsistentProfiles.length > 0 ? `${inconsistentProfiles.length} profile(s) public_visible=true but status=hidden/draft` : 'Profile visibility consistency',
+      'public_visible not cleared when profile hidden/drafted',
+      dry_run ? `Would set public_visible=false on ${inconsistentProfiles.length} profile(s)` : `Set public_visible=false on ${inconsistentProfiles.length} profile(s)`,
+      ['MediaProfile'],
+      inconsistentProfiles.length === 0 || !dry_run,
+      inconsistentProfiles.length === 0 ? 'Clean' : `IDs: ${inconsistentProfiles.slice(0, 5).map(p => p.id).join(', ')}`
+    );
+
+    // ── FIX 1.3: payout_profile_ready on non-eligible profiles ───────────────
     const wrongPayoutFlag = profiles.filter(p => p.payout_profile_ready === true && p.monetization_eligible === false);
-    if (wrongPayoutFlag.length > 0) {
-      for (const profile of wrongPayoutFlag) {
-        try {
-          await db.MediaProfile.update(profile.id, { payout_profile_ready: false });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-1.3', 'access_control', 'medium',
-        `${wrongPayoutFlag.length} profile(s) payout_profile_ready=true but monetization_eligible=false`,
-        'payout_profile_ready set inconsistently',
-        `Cleared payout_profile_ready on ${wrongPayoutFlag.length} profile(s)`,
-        ['MediaProfile'], true);
-    } else {
-      logFix('FIX-1.3', 'access_control', 'medium',
-        'Monetization flag consistency', 'N/A', 'No action needed', ['MediaProfile'], true, 'Clean');
+    if (wrongPayoutFlag.length > 0 && !dry_run) {
+      const updates = wrongPayoutFlag.map(p => db.MediaProfile.update(p.id, { payout_profile_ready: false }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
     }
+    logFix('FIX-1.3', 'access_control', 'medium',
+      wrongPayoutFlag.length > 0 ? `${wrongPayoutFlag.length} profile(s) payout_profile_ready=true but not monetization_eligible` : 'Monetization flag consistency',
+      'payout_profile_ready set without monetization_eligible gate',
+      dry_run ? `Would clear payout_profile_ready on ${wrongPayoutFlag.length} profile(s)` : `Cleared on ${wrongPayoutFlag.length} profile(s)`,
+      ['MediaProfile'], wrongPayoutFlag.length === 0 || !dry_run,
+      wrongPayoutFlag.length === 0 ? 'Clean' : ''
+    );
 
-    // ════════════════════════════════════════════════════════════════════════
-    // LAYER 2 — Entity & Relationship Integrity
-    // ════════════════════════════════════════════════════════════════════════
-
-    // Fix 2.1: Active MediaProfiles missing slugs — generate from display_name
-    const activeMissingSlug = profiles.filter(p => !p.slug && p.profile_status === 'active' && p.display_name);
-    if (activeMissingSlug.length > 0) {
-      for (const profile of activeMissingSlug) {
-        const slug = profile.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        try {
-          await db.MediaProfile.update(profile.id, { slug });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-2.1', 'entity_schema', 'medium',
-        `${activeMissingSlug.length} active MediaProfile(s) missing slug`,
-        'slug not auto-generated on creation',
-        `Generated slugs from display_name for ${activeMissingSlug.length} profile(s)`,
-        ['MediaProfile'], true);
-    } else {
-      logFix('FIX-2.1', 'entity_schema', 'medium',
-        'Active MediaProfiles missing slugs', 'N/A', 'No action needed', ['MediaProfile'], true, 'Clean');
-    }
-
-    // Fix 2.2: Active MediaOutlets missing slugs
-    const activeMissingOutletSlug = outlets.filter(o => !o.slug && o.outlet_status === 'active' && o.name);
-    if (activeMissingOutletSlug.length > 0) {
-      for (const outlet of activeMissingOutletSlug) {
-        const slug = outlet.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        try {
-          await db.MediaOutlet.update(outlet.id, { slug });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-2.2', 'entity_schema', 'medium',
-        `${activeMissingOutletSlug.length} active MediaOutlet(s) missing slug`,
-        'slug not auto-generated on creation',
-        `Generated slugs for ${activeMissingOutletSlug.length} outlet(s)`,
-        ['MediaOutlet'], true);
-    } else {
-      logFix('FIX-2.2', 'entity_schema', 'medium',
-        'Active MediaOutlets missing slugs', 'N/A', 'No action needed', ['MediaOutlet'], true, 'Clean');
-    }
-
-    // Fix 2.3: direct_publish trust violation — revoke can_publish_without_review
+    // ── FIX 2.1: Direct publish trust violations ──────────────────────────────
     const trustViolators = profiles.filter(p =>
       p.can_publish_without_review === true &&
       !['verified_writer', 'senior_writer', 'editor'].includes(p.writer_trust_level)
     );
-    if (trustViolators.length > 0) {
-      for (const profile of trustViolators) {
-        try {
-          await db.MediaProfile.update(profile.id, { can_publish_without_review: false });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-2.3', 'editorial_integration', 'critical',
-        `${trustViolators.length} profile(s) have can_publish_without_review=true but insufficient trust level`,
-        'can_publish_without_review set without verifying writer_trust_level',
-        `Revoked can_publish_without_review on ${trustViolators.length} profile(s)`,
-        ['MediaProfile'], true,
-        `Profile IDs: ${trustViolators.map(p => p.id).join(', ')}`
-      );
-    } else {
-      logFix('FIX-2.3', 'editorial_integration', 'critical',
-        'Direct publish trust gate', 'N/A', 'No action needed', ['MediaProfile'], true, 'Clean');
+    if (trustViolators.length > 0 && !dry_run) {
+      const updates = trustViolators.map(p => db.MediaProfile.update(p.id, { can_publish_without_review: false }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
     }
+    logFix('FIX-2.1', 'editorial_integration', 'critical',
+      trustViolators.length > 0 ? `${trustViolators.length} profile(s) can_publish_without_review=true but trust level insufficient` : 'Direct publish trust gate',
+      'can_publish_without_review granted without verifying writer_trust_level',
+      dry_run ? `Would revoke can_publish_without_review on ${trustViolators.length} profile(s)` : `Revoked on ${trustViolators.length} profile(s)`,
+      ['MediaProfile'], trustViolators.length === 0 || !dry_run,
+      trustViolators.length === 0 ? 'Clean' : `IDs: ${trustViolators.map(p => p.id).join(', ')}`
+    );
 
-    // ════════════════════════════════════════════════════════════════════════
-    // LAYER 3 — Credential Integrity
-    // ════════════════════════════════════════════════════════════════════════
+    // ── FIX 2.2: Active profiles missing slugs ───────────────────────────────
+    const activeMissingSlug = profiles.filter(p => !p.slug && p.profile_status === 'active' && p.display_name);
+    if (activeMissingSlug.length > 0 && !dry_run) {
+      const updates = activeMissingSlug.map(p => {
+        const slug = p.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        return db.MediaProfile.update(p.id, { slug }).catch(() => null);
+      });
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
+    }
+    logFix('FIX-2.2', 'slug_system', 'medium',
+      activeMissingSlug.length > 0 ? `${activeMissingSlug.length} active MediaProfile(s) missing slug` : 'Profile slug completeness',
+      'slug not auto-generated on creation',
+      dry_run ? `Would generate slugs for ${activeMissingSlug.length} profile(s)` : `Generated slugs for ${activeMissingSlug.length} profile(s)`,
+      ['MediaProfile'], activeMissingSlug.length === 0 || !dry_run,
+      activeMissingSlug.length === 0 ? 'Clean' : ''
+    );
 
-    // Fix 3.1: Log any credential requests approved without reviewer — surface for admin review
+    // ── FIX 2.3: Active outlets missing slugs ────────────────────────────────
+    const activeMissingOutletSlug = outlets.filter(o => !o.slug && o.outlet_status === 'active' && o.name);
+    if (activeMissingOutletSlug.length > 0 && !dry_run) {
+      const updates = activeMissingOutletSlug.map(o => {
+        const slug = o.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        return db.MediaOutlet.update(o.id, { slug }).catch(() => null);
+      });
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
+    }
+    logFix('FIX-2.3', 'slug_system', 'medium',
+      activeMissingOutletSlug.length > 0 ? `${activeMissingOutletSlug.length} active MediaOutlet(s) missing slug` : 'Outlet slug completeness',
+      'slug not auto-generated on creation',
+      dry_run ? `Would generate slugs for ${activeMissingOutletSlug.length} outlet(s)` : `Generated slugs for ${activeMissingOutletSlug.length} outlet(s)`,
+      ['MediaOutlet'], activeMissingOutletSlug.length === 0 || !dry_run,
+      activeMissingOutletSlug.length === 0 ? 'Clean' : ''
+    );
+
+    // ── FIX 3.1: Credential requests approved without reviewer ───────────────
     const autoApprovedCreds = credentialRequests.filter(r => r.status === 'approved' && !r.reviewed_by_user_id);
     logFix('FIX-3.1', 'credential_integration', 'medium',
-      autoApprovedCreds.length > 0
-        ? `${autoApprovedCreds.length} CredentialRequest(s) approved without reviewed_by_user_id`
-        : 'Credential approval authority check',
-      'reviewed_by_user_id not set during approval',
-      autoApprovedCreds.length > 0
-        ? `Flagged ${autoApprovedCreds.length} record(s) for admin review — no auto-fix applied to preserve audit trail`
-        : 'No action needed',
+      autoApprovedCreds.length > 0 ? `${autoApprovedCreds.length} CredentialRequest(s) approved without reviewed_by_user_id` : 'Credential approval authority',
+      'reviewed_by_user_id not populated during approval',
+      autoApprovedCreds.length > 0 ? 'Flagged for manual admin review — audit trail preserved, no auto-fix applied' : 'No action needed',
       ['CredentialRequest'],
       autoApprovedCreds.length === 0,
-      autoApprovedCreds.length > 0
-        ? `IDs requiring review: ${autoApprovedCreds.map(r => r.id).join(', ')}`
-        : 'Clean'
+      autoApprovedCreds.length > 0 ? `IDs requiring review: ${autoApprovedCreds.slice(0, 5).map(r => r.id).join(', ')}` : 'Clean'
     );
 
-    // ════════════════════════════════════════════════════════════════════════
-    // LAYER 4 — Assignment Workflow
-    // ════════════════════════════════════════════════════════════════════════
-
-    // Fix 4.1: cancelled assignments missing cancelled_at
+    // ── FIX 4.1: Cancelled assignments missing timestamp ─────────────────────
     const cancelledNoTs = assignments.filter(a => a.status === 'cancelled' && !a.cancelled_at);
-    if (cancelledNoTs.length > 0) {
+    if (cancelledNoTs.length > 0 && !dry_run) {
       const ts = new Date().toISOString();
-      for (const a of cancelledNoTs) {
-        try {
-          await db.MediaAssignment.update(a.id, { cancelled_at: ts });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-4.1', 'assignment_workflow', 'low',
-        `${cancelledNoTs.length} cancelled assignment(s) missing cancelled_at`,
-        'timestamp not set when status changed to cancelled',
-        `Backfilled cancelled_at on ${cancelledNoTs.length} assignment(s)`,
-        ['MediaAssignment'], true);
-    } else {
-      logFix('FIX-4.1', 'assignment_workflow', 'low',
-        'cancelled_at backfill', 'N/A', 'No action needed', ['MediaAssignment'], true, 'Clean');
+      const updates = cancelledNoTs.map(a => db.MediaAssignment.update(a.id, { cancelled_at: ts }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
     }
+    logFix('FIX-4.1', 'assignment_workflow', 'low',
+      cancelledNoTs.length > 0 ? `${cancelledNoTs.length} cancelled assignment(s) missing cancelled_at` : 'Assignment cancelled_at coverage',
+      'timestamp not set on status change',
+      dry_run ? `Would backfill cancelled_at on ${cancelledNoTs.length} record(s)` : `Backfilled ${cancelledNoTs.length} record(s)`,
+      ['MediaAssignment'], cancelledNoTs.length === 0 || !dry_run,
+      cancelledNoTs.length === 0 ? 'Clean' : ''
+    );
 
-    // Fix 4.2: completed assignments missing completed_at
+    // ── FIX 4.2: Completed assignments missing timestamp ─────────────────────
     const completedNoTs = assignments.filter(a => a.status === 'completed' && !a.completed_at);
-    if (completedNoTs.length > 0) {
+    if (completedNoTs.length > 0 && !dry_run) {
       const ts = new Date().toISOString();
-      for (const a of completedNoTs) {
-        try {
-          await db.MediaAssignment.update(a.id, { completed_at: ts });
-          fixes_applied++;
-        } catch (e) {
-          fixes_failed++;
-        }
-      }
-      logFix('FIX-4.2', 'assignment_workflow', 'low',
-        `${completedNoTs.length} completed assignment(s) missing completed_at`,
-        'timestamp not set when status changed to completed',
-        `Backfilled completed_at on ${completedNoTs.length} assignment(s)`,
-        ['MediaAssignment'], true);
-    } else {
-      logFix('FIX-4.2', 'assignment_workflow', 'low',
-        'completed_at backfill', 'N/A', 'No action needed', ['MediaAssignment'], true, 'Clean');
+      const updates = completedNoTs.map(a => db.MediaAssignment.update(a.id, { completed_at: ts }).catch(() => null));
+      const results = await Promise.all(updates);
+      fixes_applied += results.filter(Boolean).length;
     }
+    logFix('FIX-4.2', 'assignment_workflow', 'low',
+      completedNoTs.length > 0 ? `${completedNoTs.length} completed assignment(s) missing completed_at` : 'Assignment completed_at coverage',
+      'timestamp not set on status change',
+      dry_run ? `Would backfill completed_at on ${completedNoTs.length} record(s)` : `Backfilled ${completedNoTs.length} record(s)`,
+      ['MediaAssignment'], completedNoTs.length === 0 || !dry_run,
+      completedNoTs.length === 0 ? 'Clean' : ''
+    );
 
-    // ════════════════════════════════════════════════════════════════════════
-    // LAYER 5 — Payments & Stripe
-    // ════════════════════════════════════════════════════════════════════════
-
-    // Fix 5.1: active PaymentAccounts with payouts_enabled=false — flag only, don't auto-fix Stripe state
+    // ── FIX 5.1: Stripe payout inconsistency — flag only ─────────────────────
     const inconsistentPayAccounts = paymentAccounts.filter(a => a.account_status === 'active' && !a.payouts_enabled);
     logFix('FIX-5.1', 'payments_and_stripe', 'medium',
-      inconsistentPayAccounts.length > 0
-        ? `${inconsistentPayAccounts.length} active PaymentAccount(s) with payouts_enabled=false`
-        : 'PaymentAccount payout consistency',
-      'account_status=active set without confirming payouts_enabled from Stripe',
-      inconsistentPayAccounts.length > 0
-        ? `Flagged ${inconsistentPayAccounts.length} account(s) — run syncStripeAccountStatus to resync from Stripe`
-        : 'No action needed',
+      inconsistentPayAccounts.length > 0 ? `${inconsistentPayAccounts.length} active PaymentAccount(s) with payouts_enabled=false` : 'PaymentAccount payout consistency',
+      'account_status set active without syncing payouts_enabled from Stripe',
+      inconsistentPayAccounts.length > 0 ? 'Run syncStripeAccountStatus to resync Stripe state' : 'No action needed',
       ['PaymentAccount'],
       inconsistentPayAccounts.length === 0,
-      inconsistentPayAccounts.length > 0
-        ? `IDs: ${inconsistentPayAccounts.map(a => a.id).join(', ')}`
-        : 'Clean'
+      inconsistentPayAccounts.length > 0 ? `IDs: ${inconsistentPayAccounts.slice(0, 5).map(a => a.id).join(', ')}` : 'Clean'
     );
 
-    // ════════════════════════════════════════════════════════════════════════
-    // Summary & operation log
-    // ════════════════════════════════════════════════════════════════════════
-
+    // ── Summary ───────────────────────────────────────────────────────────────
     const resolved_count = fix_log.filter(f => f.resolved_boolean).length;
     const unresolved_count = fix_log.filter(f => !f.resolved_boolean).length;
-    const critical_count = fix_log.filter(f => f.severity === 'critical').length;
-    const high_count = fix_log.filter(f => f.severity === 'high').length;
+    const critical_issues = fix_log.filter(f => f.severity === 'critical' && !f.resolved_boolean);
+    const overall_stable = critical_issues.length === 0;
 
-    const overall_stable = critical_count === 0 && fixes_failed === 0;
+    // Log operation
+    try {
+      await db.OperationLog.create({
+        entity_name: 'System',
+        entity_id: 'media_ecosystem',
+        operation_type: dry_run ? 'bug_fix_cycle_started' : (overall_stable ? 'media_ecosystem_stabilized' : 'bug_fix_applied'),
+        status: overall_stable ? 'success' : 'warning',
+        description: dry_run
+          ? `Fix cycle DRY RUN — ${fix_log.length} issues scanned, ${unresolved_count} would need fixes`
+          : `Fix cycle applied — ${fixes_applied} fixes applied, ${fixes_failed} failed`,
+        metadata: { dry_run, fixes_applied, fixes_failed, issues_reviewed: fix_log.length, resolved_count, unresolved_count, acted_by_user_id: user.id },
+      });
+    } catch (_) {}
 
-    const result = {
+    return Response.json({
       fix_cycle_status: overall_stable ? 'stabilized' : 'issues_remain',
+      mode: dry_run ? 'dry_run' : 'live',
       started_at,
       completed_at: new Date().toISOString(),
-      fixes_applied,
-      fixes_failed,
+      fixes_applied: dry_run ? 0 : fixes_applied,
+      fixes_failed: dry_run ? 0 : fixes_failed,
       issues_reviewed: fix_log.length,
       resolved_count,
       unresolved_count,
       launch_ready: overall_stable,
       fix_log,
-      summary: {
+      issues_by_severity: {
         critical: fix_log.filter(f => f.severity === 'critical'),
-        high: fix_log.filter(f => f.severity === 'high'),
-        medium: fix_log.filter(f => f.severity === 'medium'),
-        low: fix_log.filter(f => f.severity === 'low'),
-        unresolved: fix_log.filter(f => !f.resolved_boolean),
+        high:     fix_log.filter(f => f.severity === 'high'),
+        medium:   fix_log.filter(f => f.severity === 'medium'),
+        low:      fix_log.filter(f => f.severity === 'low'),
       },
+      issues_by_category: fix_log.reduce((acc, f) => {
+        if (!acc[f.category]) acc[f.category] = [];
+        acc[f.category].push(f);
+        return acc;
+      }, {}),
       categories_addressed: [...new Set(fix_log.map(f => f.category))],
-    };
-
-    // Log
-    try {
-      await db.OperationLog.create({
-        entity_name: 'System',
-        entity_id: 'media_ecosystem',
-        operation_type: overall_stable ? 'media_ecosystem_stabilized' : 'bug_fix_cycle_started',
-        status: overall_stable ? 'success' : 'warning',
-        description: `Fix cycle complete — ${fixes_applied} fixes applied, ${fixes_failed} failed, ${unresolved_count} unresolved`,
-        metadata: {
-          fixes_applied,
-          fixes_failed,
-          issues_reviewed: fix_log.length,
-          resolved_count,
-          unresolved_count,
-          overall_stable,
-          acted_by_user_id: user.id,
-        },
-      });
-    } catch (_) {}
-
-    return Response.json(result);
+      unresolved_items: fix_log.filter(f => !f.resolved_boolean),
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
