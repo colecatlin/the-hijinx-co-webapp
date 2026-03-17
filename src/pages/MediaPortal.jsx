@@ -23,6 +23,7 @@ import OutletManagementTab from '@/components/media/portal/OutletManagementTab';
 import MySubmissionsTab from '@/components/media/portal/MySubmissionsTab';
 import ContributorStatusPanel from '@/components/media/portal/ContributorStatusPanel';
 import MyAssignmentsTab from '@/components/media/portal/MyAssignmentsTab';
+import MyMediaRequestsTab from '@/components/media/portal/MyMediaRequestsTab';
 
 // Dashboard and state views
 import PortalOverviewDashboard from '@/components/media/portal/PortalOverviewDashboard';
@@ -88,6 +89,7 @@ function buildTabs(isContributor, isAdmin) {
     tabs.push({ id: 'outlets', label: 'Outlets' });
     tabs.push({ id: 'credentials', label: 'Credentials' });
     tabs.push({ id: 'assets', label: 'Assets' });
+    tabs.push({ id: 'requests', label: 'Requests' });
     tabs.push({ id: 'requests', label: 'Requests' });
     tabs.push({ id: 'assignments', label: 'Assignments' });
     tabs.push({ id: 'status', label: 'Status' });
@@ -345,6 +347,14 @@ export default function MediaPortal() {
 
               <TabsContent value="requests">
                 <MyRequestsTab mediaUser={mediaUser} currentUser={currentUser} />
+              </TabsContent>
+
+              <TabsContent value="requests">
+                <MyMediaRequestsTab
+                  currentUser={currentUser}
+                  myProfile={myMediaProfile}
+                  mediaUser={mediaUser}
+                />
               </TabsContent>
 
               <TabsContent value="assignments">
