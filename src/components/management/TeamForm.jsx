@@ -11,9 +11,10 @@ import LocationFields from '@/components/shared/LocationFields';
 import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 
 export default function TeamForm({ team, onClose }) {
+  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(team?.slug || '');
+
   const [formData, setFormData] = useState(team || {
     name: '',
-    slug: '',
     headquarters_city: '',
     headquarters_state: '',
     country: 'USA',
