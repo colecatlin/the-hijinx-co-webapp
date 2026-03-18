@@ -20,15 +20,56 @@ const ENTITY_MODELS = {
 
 /**
  * Resolve an entity by route params.
- * Priority: A. id exact  →  B. slug filter  →  C. Driver first+last fallback
+ *
+ * For Drivers: priority is canonical_slug → slug → id
+ * For others:  priority is id → slug
+ *
  * Returns null if not found.
  *
- * @param {{ entityType: string, id?: string, slug?: string, first?: string, last?: string }}
+ * @param {{ entityType: string, id?: string, slug?: string, canonicalSlug?: string }}
  * @returns {Promise<object|null>}
  */
-export async function resolveEntityByRouteParam({ entityType, id, slug, first, last }) {
+export async function resolveEntityByRouteParam({ entityType, id, slug, canonicalSlug }) {
   const model = ENTITY_MODELS[entityType];
   if (!model) return null;
+
+  // ── Driver: canonical_slug is the primary public lookup ──────────────────
+  if (entityType === 'Driver') {
+    const lookupSlug = canonicalSlug || slug;
+
+    // 1. Try canonical_slug filter (preferred)
+    if (lookupSlug) {
+      try {
+        const results = await base44.entities.Driver.filter({ canonical_slug: lookupSlug });
+        if (Array.isArray(results) && results.length > 0) return results[0];
+      } catch { /* fall through */ }
+
+      // 2. Try slug field filter (for older records without canonical_slug)
+      try {
+        const results = await base44.entities.Driver.filter({ slug: lookupSlug });
+        if (Array.isArray(results) && results.length > 0) return results[0];
+      } catch { /* fall through */ }
+
+      // 3. List+find fallback (checks both fields)
+      try {
+        const all = await base44.entities.Driver.list();
+        const found = (all || []).find(
+          r => r.canonical_slug === lookupSlug || r.slug === lookupSlug
+        );
+        if (found) return found;
+      } catch { /* fall through */ }
+    }
+
+    // 4. ID-based legacy fallback
+    if (id) {
+      const record = await getSourceEntityByTypeAndId(entityType, id);
+      if (record) return record;
+    }
+
+    return null;
+  }
+
+  // ── All other entities: id → slug ────────────────────────────────────────
 
   // A. Try by ID (direct get – most efficient)
   if (id) {
@@ -50,20 +91,6 @@ export async function resolveEntityByRouteParam({ entityType, id, slug, first, l
         r => r.slug === slug || r.canonical_slug === slug
       );
       if (found) return found;
-    } catch {
-      return null;
-    }
-  }
-
-  // C. Driver only: first + last name fallback (for legacy URLs)
-  if (entityType === 'Driver' && first && last) {
-    try {
-      const all = await base44.entities.Driver.list();
-      return (all || []).find(
-        d =>
-          d.first_name?.toLowerCase() === first.toLowerCase() &&
-          d.last_name?.toLowerCase() === last.toLowerCase()
-      ) || null;
     } catch {
       return null;
     }

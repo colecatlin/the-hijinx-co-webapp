@@ -1,11 +1,16 @@
 // Canonical Routing Contract for all entity profiles
 // This is the single source of truth for all profile URLs
+//
+// Driver note:
+//   Public driver profile URLs use a dedicated path route: /drivers/:canonical_slug
+//   Use getDriverProfileUrl(driver) from lib/driverUrl.js for all driver links.
+//   buildProfileUrl('Driver', ...) is kept for legacy compatibility only.
 
 export const PROFILE_ROUTES = {
   Track: { basePath: 'TrackProfile', param: 'slug' }, // Uses ?slug={slug}
   Series: { basePath: 'SeriesDetail', param: 'slug' }, // Uses ?slug={slug}
   Team: { basePath: 'TeamProfile', param: 'slug' }, // Uses ?slug={slug}
-  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Uses ?slug={slug}
+  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Legacy fallback — prefer /drivers/:canonical_slug
   Event: { basePath: 'EventResults', param: 'id' }, // Uses ?id={id} (no slug yet)
 };
 
