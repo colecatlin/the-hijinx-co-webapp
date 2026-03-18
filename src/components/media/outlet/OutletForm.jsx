@@ -29,6 +29,8 @@ const SOCIAL_FIELDS = [
 
 export default function OutletForm({ outlet, onSaved, onCancel }) {
   const isEdit = !!outlet?.id;
+  const { slug: slugPreview, syncSlugFromSource, setSlugManually } = useSlugField(outlet?.slug || '');
+
   const [fields, setFields] = useState({
     name: outlet?.name || '',
     outlet_type: outlet?.outlet_type || '',
@@ -44,7 +46,10 @@ export default function OutletForm({ outlet, onSaved, onCancel }) {
   });
   const [saving, setSaving] = useState(false);
 
-  const set = (key, val) => setFields(f => ({ ...f, [key]: val }));
+  const set = (key, val) => {
+    setFields(f => ({ ...f, [key]: val }));
+    if (key === 'name' && !isEdit) syncSlugFromSource(val);
+  };
   const setSocial = (key, val) => set('social_links', { ...fields.social_links, [key]: val });
 
   const handleSave = async () => {
@@ -88,6 +93,18 @@ export default function OutletForm({ outlet, onSaved, onCancel }) {
           <Label className="text-gray-400 text-xs mb-1 block">Outlet Name *</Label>
           <Input value={fields.name} onChange={e => set('name', e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-white" placeholder="Publication or brand name" />
         </div>
+        {!isEdit && (
+          <div>
+            <Label className="text-gray-400 text-xs mb-1 block">URL Slug (auto-filled)</Label>
+            <Input
+              value={slugPreview}
+              onChange={e => setSlugManually(e.target.value)}
+              className="bg-[#1a1a1a] border-gray-700 text-white font-mono text-sm"
+              placeholder="auto-generated from name"
+            />
+            <p className="text-gray-600 text-xs mt-1">/media-outlets/<span className="text-gray-400">{slugPreview || '…'}</span></p>
+          </div>
+        )}
         <div>
           <Label className="text-gray-400 text-xs mb-1 block">Outlet Type *</Label>
           <Select value={fields.outlet_type} onValueChange={v => set('outlet_type', v)}>
