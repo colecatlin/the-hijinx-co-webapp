@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
-import { buildProfileUrl } from '@/components/utils/routingContract';
-import { createPageUrl } from '@/components/utils';
+import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { MapPin } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getSecondaryDisciplines } from '@/components/utils/disciplineUtils';
@@ -38,7 +37,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
   const handleProfileClick = (e) => {
     e.stopPropagation();
-    navigate(buildProfileUrl('Driver', driver.slug || driver.id));
+    navigate(getDriverProfileUrl(driver));
   };
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
