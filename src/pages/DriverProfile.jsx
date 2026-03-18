@@ -124,6 +124,13 @@ export default function DriverProfile() {
   const allClasses= profileData?.classes ?? [];
   const driverTeam= profileData?.team    ?? null;
 
+  // If we resolved by legacy id and the driver has a canonical_slug, redirect to canonical route
+  useEffect(() => {
+    if (driver && legacyId && driver.canonical_slug) {
+      navigate(`/drivers/${encodeURIComponent(driver.canonical_slug)}`, { replace: true });
+    }
+  }, [driver?.id, legacyId, driver?.canonical_slug]);
+
   // Track analytics on load
   useEffect(() => {
     if (driver) {
