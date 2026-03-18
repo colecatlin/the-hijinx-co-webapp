@@ -21,49 +21,37 @@ const ENTITY_MODELS = {
 /**
  * Resolve an entity by route params.
  *
- * For Drivers: priority is canonical_slug → slug → id
- * For others:  priority is id → slug
+ * For Drivers:
+ *   1. canonical_slug filter (primary — what /drivers/:slug maps to)
+ *   2. id direct get (legacy fallback only)
+ *
+ * For others: id → slug
  *
  * Returns null if not found.
  *
- * @param {{ entityType: string, id?: string, slug?: string, canonicalSlug?: string }}
+ * @param {{ entityType: string, id?: string, slug?: string }}
  * @returns {Promise<object|null>}
  */
-export async function resolveEntityByRouteParam({ entityType, id, slug, canonicalSlug }) {
+export async function resolveEntityByRouteParam({ entityType, id, slug }) {
   const model = ENTITY_MODELS[entityType];
   if (!model) return null;
 
-  // ── Driver: canonical_slug is the primary public lookup ──────────────────
+  // ── Driver: canonical_slug is the ONLY public lookup ─────────────────────
   if (entityType === 'Driver') {
-    const lookupSlug = canonicalSlug || slug;
-
-    // 1. Try canonical_slug filter (preferred)
-    if (lookupSlug) {
+    // 1. Try canonical_slug filter (primary public identity)
+    if (slug) {
       try {
-        const results = await base44.entities.Driver.filter({ canonical_slug: lookupSlug });
+        const results = await base44.entities.Driver.filter({ canonical_slug: slug });
         if (Array.isArray(results) && results.length > 0) return results[0];
-      } catch { /* fall through */ }
-
-      // 2. Try slug field filter (for older records without canonical_slug)
-      try {
-        const results = await base44.entities.Driver.filter({ slug: lookupSlug });
-        if (Array.isArray(results) && results.length > 0) return results[0];
-      } catch { /* fall through */ }
-
-      // 3. List+find fallback (checks both fields)
-      try {
-        const all = await base44.entities.Driver.list();
-        const found = (all || []).find(
-          r => r.canonical_slug === lookupSlug || r.slug === lookupSlug
-        );
-        if (found) return found;
       } catch { /* fall through */ }
     }
 
-    // 4. ID-based legacy fallback
+    // 2. ID-based legacy fallback (for old ?id= links only)
     if (id) {
-      const record = await getSourceEntityByTypeAndId(entityType, id);
-      if (record) return record;
+      try {
+        const record = await getSourceEntityByTypeAndId(entityType, id);
+        if (record) return record;
+      } catch { /* fall through */ }
     }
 
     return null;
