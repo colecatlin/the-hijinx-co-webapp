@@ -19,14 +19,8 @@
  * }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { normalizeName, generateEntitySlug } from './normalizeEntityIdentity.js';
 
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-function buildSlug(value) {
-  return normalizeName(value).replace(/\s+/g, '-');
-}
 function buildTrackCanonicalKey(record, normalizedName) {
   if (record.external_uid) return `track:${record.external_uid}`;
   const norm = normalizedName || normalizeName(record.name || '');
@@ -78,7 +72,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const slug    = t.canonical_slug || buildSlug(normalized);
+      const slug    = t.canonical_slug || generateEntitySlug(normalized);
       const cKey    = t.canonical_key  || buildTrackCanonicalKey(t, normalized);
 
       if (!cKey) {

@@ -15,14 +15,8 @@
  *            backfilled_canonical_key, skipped, warnings }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { normalizeName, generateEntitySlug } from './normalizeEntityIdentity.js';
 
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-function buildSlug(value) {
-  return normalizeName(value).replace(/\s+/g, '-');
-}
 function buildCanonicalKey(normalized, external_uid) {
   if (external_uid) return `series:${external_uid}`;
   return `series:${normalized}`;
@@ -66,7 +60,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const slug       = s.canonical_slug  || buildSlug(normalized);
+      const slug       = s.canonical_slug  || generateEntitySlug(normalized);
       const cKey       = s.canonical_key   || buildCanonicalKey(normalized, s.external_uid || null);
 
       const needsNorm  = !s.normalized_name;

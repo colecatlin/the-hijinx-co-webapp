@@ -18,11 +18,7 @@
  * Output: { total_events, backfilled_keys, already_complete, skipped, warnings }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
+import { normalizeName, generateEntitySlug } from './normalizeEntityIdentity.js';
 
 function buildNormalizedEventKey({ name, event_date, track_id, series_id }) {
   const norm = normalizeName(name || '');
@@ -75,7 +71,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const slug = e.slug || normalized.replace(/\s+/g, '-');
+      const slug = e.slug || generateEntitySlug(normalized);
       const evKey = e.normalized_event_key || buildNormalizedEventKey({
         name: e.name,
         event_date: e.event_date,

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { generateUniqueEntitySlug } from './normalizeEntityIdentity.js';
 
 /**
  * createMediaOutlet
@@ -11,29 +12,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  *   description, website_url, social_links, logo_url, cover_image_url,
  *   primary_contact_user_id, specialties, series_covered  — all optional
  */
-
-function normalizeToSlug(str) {
-  return (str || '')
-    .toLowerCase().trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'outlet';
-}
-
-async function generateUniqueSlug(base44, name, excludeId = null) {
-  const base = normalizeToSlug(name);
-  let candidate = base;
-  let counter = 1;
-  while (true) {
-    const existing = await base44.asServiceRole.entities.MediaOutlet
-      .filter({ slug: candidate }, '-created_date', 1).catch(() => []);
-    const collision = existing.find(o => o.id !== excludeId);
-    if (!collision) return candidate;
-    counter++;
-    candidate = `${base}-${counter}`;
-  }
-}
 
 Deno.serve(async (req) => {
   try {
@@ -51,7 +29,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'name and outlet_type are required' }, { status: 400 });
     }
 
-    const slug = await generateUniqueSlug(base44, name);
+    const slug = await generateUniqueEntitySlug(base44, 'MediaOutlet', name, null, 'outlet');
 
     const outletData = {
       name,

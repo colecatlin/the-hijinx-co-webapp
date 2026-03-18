@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { generateUniqueEntitySlug } from './normalizeEntityIdentity.js';
 
 /**
  * createMediaProfile
@@ -11,29 +12,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  *   source_application_id - optional, MediaApplication ID to seed from
  *   force_update     - boolean, if true update existing profile's missing fields
  */
-
-function normalizeToSlug(str) {
-  return (str || '')
-    .toLowerCase().trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-async function generateUniqueSlug(base44, displayName, excludeId = null) {
-  const base = normalizeToSlug(displayName) || 'contributor';
-  let candidate = base;
-  let counter = 1;
-  while (true) {
-    const existing = await base44.asServiceRole.entities.MediaProfile
-      .filter({ slug: candidate }, '-created_date', 1).catch(() => []);
-    const collision = existing.find(p => p.id !== excludeId);
-    if (!collision) return candidate;
-    counter++;
-    candidate = `${base}-${counter}`;
-  }
-}
 
 function derivePrimaryRole(applicationTypes = []) {
   const priority = ['editor_interest', 'journalist', 'writer', 'photographer', 'videographer', 'outlet_representative', 'press', 'creator'];
@@ -123,7 +101,7 @@ Deno.serve(async (req) => {
       || targetUser?.email?.split('@')[0]
       || 'contributor';
 
-    const slug = existingProfile?.slug || await generateUniqueSlug(base44, displayName, existingProfile?.id || null);
+    const slug = existingProfile?.slug || await generateUniqueEntitySlug(base44, 'MediaProfile', displayName, existingProfile?.id || null, 'contributor');
 
     const profileData = {
       user_id,

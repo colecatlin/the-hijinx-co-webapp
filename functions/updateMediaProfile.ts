@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { generateUniqueEntitySlug } from './normalizeEntityIdentity.js';
 
 /**
  * updateMediaProfile
@@ -13,8 +14,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  * - admins can edit all fields including trust/status fields
  *
  * Payload:
- *   profile_id - required
- *   fields     - object of fields to update
+ *   profile_id      - required
+ *   fields          - object of fields to update
+ *   regenerate_slug - boolean (admin-only), regenerate slug from display_name
  */
 
 const CONTRIBUTOR_EDITABLE = new Set([
@@ -24,29 +26,6 @@ const CONTRIBUTOR_EDITABLE = new Set([
   'primary_role', 'role_tags', 'primary_affiliation_type',
   'primary_outlet_name', 'series_covered',
 ]);
-
-function normalizeToSlug(str) {
-  return (str || '')
-    .toLowerCase().trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-async function generateUniqueSlug(base44, displayName, excludeId) {
-  const base = normalizeToSlug(displayName) || 'contributor';
-  let candidate = base;
-  let counter = 1;
-  while (true) {
-    const existing = await base44.asServiceRole.entities.MediaProfile
-      .filter({ slug: candidate }, '-created_date', 1).catch(() => []);
-    const collision = existing.find(p => p.id !== excludeId);
-    if (!collision) return candidate;
-    counter++;
-    candidate = `${base}-${counter}`;
-  }
-}
 
 function computeDirectoryEligibility(profile) {
   const missing = [];
@@ -119,8 +98,9 @@ Deno.serve(async (req) => {
     // Handle slug regeneration if display_name changed and admin explicitly requests it
     let previousSlug = profile.slug;
     let newSlug = profile.slug;
-    if (isAdmin && allowedFields.display_name && allowedFields.display_name !== profile.display_name && allowedFields.regenerate_slug) {
-      newSlug = await generateUniqueSlug(base44, allowedFields.display_name, profile_id);
+    if (isAdmin && allowedFields.regenerate_slug) {
+      const nameForSlug = allowedFields.display_name || profile.display_name;
+      newSlug = await generateUniqueEntitySlug(base44, 'MediaProfile', nameForSlug, profile_id, 'contributor');
       allowedFields.slug = newSlug;
       delete allowedFields.regenerate_slug;
     }

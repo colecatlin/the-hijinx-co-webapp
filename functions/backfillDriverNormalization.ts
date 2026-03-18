@@ -20,11 +20,8 @@
  * }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { normalizeName, generateEntitySlug } from './normalizeEntityIdentity.js';
 
-function normalizeName(value) {
-  if (!value) return '';
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
 function driverFullName(d) {
   return `${d.first_name || ''} ${d.last_name || ''}`.trim();
 }
@@ -78,7 +75,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const slug = d.canonical_slug || normalized.replace(/\s+/g, '-');
+      const slug = d.canonical_slug || generateEntitySlug(normalized);
       const cKey = d.canonical_key  || buildDriverCanonicalKey(d, normalized);
 
       if (!cKey) {

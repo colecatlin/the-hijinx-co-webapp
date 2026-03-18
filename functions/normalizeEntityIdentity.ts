@@ -1,31 +1,92 @@
 /**
  * normalizeEntityIdentity.js
- * Shared helpers for entity deduplication and canonical identification.
- * Exported as plain functions — import this file from other backend functions.
+ * Shared helpers for entity deduplication, canonical identification,
+ * and SINGLE SOURCE OF TRUTH for slug generation across the platform.
+ *
+ * ── Slug API ──────────────────────────────────────────────────────────────
+ *   generateEntitySlug(text)
+ *     → deterministic URL-safe slug from any string
+ *
+ *   generateUniqueEntitySlug(base44, entityName, text, excludeId?)
+ *     → collision-safe slug for a specific entity collection
+ *       appends -2, -3, … until unique
+ *
+ * All other slug helpers (normalizeToSlug, buildSlug, buildEntitySlug)
+ * are DEPRECATED — they delegate here and will be removed after backfill
+ * functions are retired.
+ * ──────────────────────────────────────────────────────────────────────────
  */
 
+// ── Internal primitive ─────────────────────────────────────────────────────
+
+function _normalizeStringForSlug(value) {
+  if (!value) return '';
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')  // keep existing hyphens, drop everything else unsafe
+    .replace(/\s+/g, '-')            // spaces → hyphens
+    .replace(/-+/g, '-')             // collapse multiple hyphens
+    .replace(/^-+|-+$/g, '');        // trim leading/trailing hyphens
+}
+
+// ── Public slug API ────────────────────────────────────────────────────────
+
 /**
- * normalizeName
- * - trim, lowercase
- * - remove punctuation except alphanumeric and spaces
- * - collapse multiple spaces
+ * generateEntitySlug(text)
+ * Converts any string into a deterministic, URL-safe slug.
+ *   - lowercase
+ *   - trim whitespace
+ *   - replace spaces with hyphens
+ *   - remove unsafe characters
+ *   - collapse multiple hyphens
+ *   - never returns empty string (falls back to 'entity')
  */
+export function generateEntitySlug(text) {
+  return _normalizeStringForSlug(text) || 'entity';
+}
+
+/**
+ * generateUniqueEntitySlug(base44, entityName, text, excludeId?)
+ * Generates a slug guaranteed to be unique within the given entity collection.
+ *
+ * @param {object}  base44      - Base44 SDK instance (must have asServiceRole)
+ * @param {string}  entityName  - e.g. 'MediaProfile', 'MediaOutlet', 'Driver'
+ * @param {string}  text        - Source text to slugify
+ * @param {string}  [excludeId] - Record ID to exclude from collision check (for updates)
+ * @param {string}  [fallback]  - Fallback base if text produces empty slug
+ * @returns {Promise<string>}
+ */
+export async function generateUniqueEntitySlug(base44, entityName, text, excludeId = null, fallback = 'entity') {
+  const base = generateEntitySlug(text) || generateEntitySlug(fallback) || 'entity';
+  let candidate = base;
+  let counter = 1;
+  while (true) {
+    const existing = await base44.asServiceRole.entities[entityName]
+      .filter({ slug: candidate }, '-created_date', 1).catch(() => []);
+    const collision = existing.find(r => r.id !== excludeId);
+    if (!collision) return candidate;
+    counter++;
+    candidate = `${base}-${counter}`;
+  }
+}
+
+// ── Legacy shims (kept for backfill compatibility, do not use in new code) ──
+
+/** @deprecated Use generateEntitySlug instead */
 export function normalizeName(value) {
   if (!value) return '';
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')   // replace non-alphanumeric/space with space
-    .replace(/\s+/g, ' ')            // collapse multiple spaces
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
-/**
- * buildEntitySlug
- * Normalized name with spaces replaced by hyphens.
- */
+/** @deprecated Use generateEntitySlug instead */
 export function buildEntitySlug(value) {
-  return normalizeName(value).replace(/\s+/g, '-');
+  return generateEntitySlug(value);
 }
 
 /**
