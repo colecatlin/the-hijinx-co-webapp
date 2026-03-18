@@ -88,6 +88,19 @@ export default function TeamForm({ team, onClose }) {
             />
           </div>
 
+          {!team && (
+            <div>
+              <label className="block text-sm font-medium mb-1">URL Slug</label>
+              <Input
+                value={slug}
+                onChange={(e) => setSlugManually(e.target.value)}
+                placeholder="auto-generated from name"
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">Used in public URLs · auto-fills from team name</p>
+            </div>
+          )}
+
           <LocationFields
             cityValue={formData.headquarters_city}
             stateValue={formData.headquarters_state}
