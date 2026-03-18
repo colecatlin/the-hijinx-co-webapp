@@ -44,10 +44,17 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 }
 
 export default function DriverProfile() {
+  // Support both new canonical route (/drivers/:slug via React Router params)
+  // and legacy query-param routes (?slug=... or ?id=...)
+  const { slug: routeSlug } = React.useContext(DriverRouteContext) || {};
   const urlParams = new URLSearchParams(window.location.search);
-  const driverSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
-  const firstName  = (urlParams.get('first') || '').trim() || null;
-  const lastName   = (urlParams.get('last')  || '').trim() || null;
+
+  // Canonical slug: prefer route param, then ?slug query param
+  const canonicalSlug = routeSlug || urlParams.get('slug') || null;
+  // Legacy id fallback only — used when no slug is available
+  const legacyId = (!canonicalSlug && urlParams.get('id')) ? urlParams.get('id').trim() || null : null;
+  // driverSlug is what we pass to the resolver
+  const driverSlug = canonicalSlug ? canonicalSlug.trim() || null : legacyId;
 
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
