@@ -21,7 +21,11 @@ const safe = (promise, fallback) => promise.catch(() => fallback);
 /**
  * Fetch all data needed for a Driver profile page.
  *
- * @param {{ id?: string, slug?: string, first?: string, last?: string }}
+ * Lookup priority:
+ *   1. canonical_slug (slug param — matched against Driver.canonical_slug then Driver.slug)
+ *   2. id (legacy fallback — matched by record id)
+ *
+ * @param {{ slug?: string, id?: string }}
  * @returns {Promise<{
  *   driver: object|null,
  *   team: object|null,
@@ -34,13 +38,11 @@ const safe = (promise, fallback) => promise.catch(() => fallback);
  *   classes: object[]
  * }>}
  */
-export async function getDriverProfileData({ id, slug, first, last }) {
+export async function getDriverProfileData({ slug, id }) {
   const driver = await resolveEntityByRouteParam({
     entityType: 'Driver',
-    id,
     slug,
-    first,
-    last,
+    id,
   });
   if (!driver) return { driver: null };
 
