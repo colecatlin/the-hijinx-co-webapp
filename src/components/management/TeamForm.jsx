@@ -53,28 +53,16 @@ export default function TeamForm({ team, onClose }) {
     },
   });
 
-  const generateUniqueSlug = (name) => {
-    if (!name) return '';
-    const baseSlug = generateSlug(name);
-    const existingSlugs = (allTeams || [])
-      .filter(t => !team || t.id !== team.id)
-      .map(t => t.slug)
-      .filter(Boolean);
-    const { suggestion } = validateSlug(baseSlug, existingSlugs);
-    return suggestion;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    saveMutation.mutate(formData);
+    const finalSlug = slug || generateEntitySlug(formData.name) || 'team';
+    saveMutation.mutate({ ...formData, slug: finalSlug });
   };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'name') {
-      const slug = generateUniqueSlug(value);
-      setFormData(prev => ({ ...prev, slug }));
+    if (field === 'name' && !team) {
+      syncSlugFromSource(value);
     }
   };
 
