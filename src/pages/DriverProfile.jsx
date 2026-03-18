@@ -61,7 +61,7 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 export default function DriverProfile() {
   // Support both new canonical route (/drivers/:slug via React Router params)
   // and legacy query-param routes (?slug=... or ?id=...)
-  const { slug: routeSlug } = React.useContext(DriverRouteContext) || {};
+  const { slug: routeSlug } = React.useContext(DriverRouteContext) || {};  // eslint-disable-line
   const urlParams = new URLSearchParams(window.location.search);
 
   // Canonical slug: prefer route param, then ?slug query param
