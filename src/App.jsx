@@ -26,6 +26,7 @@ import CreatorDirectory from './pages/CreatorDirectory';
 import CreatorProfile from './pages/CreatorProfile';
 import MediaOutletDirectory from './pages/MediaOutletDirectory';
 import MediaOutletProfile from './pages/MediaOutletProfile';
+import OutletStoryPage from './pages/OutletStoryPage';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -95,6 +96,8 @@ const AuthenticatedApp = () => {
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
       <Route path="/media-outlets" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletDirectory /></LayoutWrapper>} />
       <Route path="/media-outlets/:slug" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletProfile /></LayoutWrapper>} />
+      {/* Canonical slug-based story route */}
+      <Route path="/story/:slug" element={<LayoutWrapper currentPageName="OutletStoryPage"><OutletStoryPage /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />

@@ -75,10 +75,10 @@ Deno.serve(async (req) => {
       urls.push(`  <url>\n    <loc>${BASE_URL}/EventProfile?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
     }
 
-    // ── Outlet stories ─────────────────────────────────────────────────────
+    // ── Outlet stories (slug-based canonical route only) ──────────────────
     for (const s of stories) {
-      if (!s.id) continue;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/OutletStoryPage?id=${s.id}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+      if (!s.slug) continue; // skip stories without a slug — not route-ready
+      urls.push(`  <url>\n    <loc>${BASE_URL}/story/${s.slug}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

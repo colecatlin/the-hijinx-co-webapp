@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { format } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 import SectionHeader from '@/components/shared/SectionHeader';
@@ -138,7 +139,7 @@ export default function OutletHome() {
             {filtered.map((story) => (
               <Link
                 key={story.id}
-                to={createPageUrl('OutletStoryPage') + `?id=${story.id}`}
+                to={getOutletStoryUrl(story)}
                 className="group"
               >
                 <div className="aspect-[3/2] bg-gray-100 mb-4 overflow-hidden">
