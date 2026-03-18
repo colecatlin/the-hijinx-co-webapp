@@ -71,7 +71,7 @@ export default function OutletForm({ outlet, onSaved, onCancel }) {
           toast.error(result.data?.error || 'Failed to update');
         }
       } else {
-        const result = await base44.functions.invoke('createMediaOutlet', fields);
+        const result = await base44.functions.invoke('createMediaOutlet', { ...fields, slug: slugPreview || undefined });
         if (result.data?.success) {
           toast.success(`Outlet created — slug: ${result.data.slug}`);
           onSaved?.();
@@ -92,19 +92,13 @@ export default function OutletForm({ outlet, onSaved, onCancel }) {
         <div>
           <Label className="text-gray-400 text-xs mb-1 block">Outlet Name *</Label>
           <Input value={fields.name} onChange={e => set('name', e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-white" placeholder="Publication or brand name" />
+          {!isEdit && (
+            <div className="mt-2">
+              <Label className="text-gray-500 text-xs mb-1 block">URL Slug</Label>
+              <Input value={slugPreview} onChange={e => setSlugManually(e.target.value)} className="bg-[#1a1a1a] border-gray-700 text-gray-300 font-mono text-xs" placeholder="auto-generated from name" />
+            </div>
+          )}
         </div>
-        {!isEdit && (
-          <div>
-            <Label className="text-gray-400 text-xs mb-1 block">URL Slug (auto-filled)</Label>
-            <Input
-              value={slugPreview}
-              onChange={e => setSlugManually(e.target.value)}
-              className="bg-[#1a1a1a] border-gray-700 text-white font-mono text-sm"
-              placeholder="auto-generated from name"
-            />
-            <p className="text-gray-600 text-xs mt-1">/media-outlets/<span className="text-gray-400">{slugPreview || '…'}</span></p>
-          </div>
-        )}
         <div>
           <Label className="text-gray-400 text-xs mb-1 block">Outlet Type *</Label>
           <Select value={fields.outlet_type} onValueChange={v => set('outlet_type', v)}>
