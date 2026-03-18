@@ -1,5 +1,39 @@
-import React, { useState, useMemo, useEffect, createContext, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, createContext } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import Analytics from '@/components/system/analyticsTracker';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { QueryKeys } from '@/components/utils/queryKeys';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { isPublicVisible } from '@/components/core/publishModel';
+import { getDriverProfileData } from '@/components/entities/publicPageDataApi';
+import PageShell from '@/components/shared/PageShell';
+import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { MapPin, ExternalLink, TrendingUp, Camera, Calendar, Share2, Home, GitCompare, Flag, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import CareerStatusTag from '@/components/competition/CareerStatusTag';
+import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
+import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
+import StatsSection from '@/components/drivers/StatsSection';
+import { format, isValid } from 'date-fns';
+import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import CountryFlag from '@/components/shared/CountryFlag';
+import { createPageUrl } from '@/components/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ScheduleSection from '@/components/schedule/ScheduleSection';
+import FollowDriverButton from '@/components/drivers/FollowDriverButton';
+import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
+import ResultsPanel from '@/components/results/ResultsPanel';
+import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
+import PublicMediaGallery from '@/components/media/PublicMediaGallery';
+
+const DQ = applyDefaultQueryOptions();
 
 // Context used to pass the route :slug param into DriverProfile
 // when rendered via the /drivers/:slug route
@@ -17,43 +51,6 @@ export function DriverProfileRouteWrapper() {
     </DriverRouteContext.Provider>
   );
 }
-import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
-import Analytics from '@/components/system/analyticsTracker';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { QueryKeys } from '@/components/utils/queryKeys';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { isPublicVisible } from '@/components/core/publishModel';
-import { useNavigate } from 'react-router-dom';
-import { getDriverProfileData } from '@/components/entities/publicPageDataApi';
-
-const DQ = applyDefaultQueryOptions();
-import PageShell from '@/components/shared/PageShell';
-import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, TrendingUp, Users, Heart, Camera, Briefcase, Calendar, Share2, Home, GitCompare, Flag } from 'lucide-react';
-import CareerStatusTag from '@/components/competition/CareerStatusTag';
-import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
-import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
-import StatsSection from '@/components/drivers/StatsSection';
-import { Link } from 'react-router-dom';
-import { format, isValid } from 'date-fns';
-import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
-import SocialShareButtons from '@/components/shared/SocialShareButtons';
-import CountryFlag from '@/components/shared/CountryFlag';
-import { createPageUrl } from '@/components/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import ScheduleSection from '@/components/schedule/ScheduleSection';
-import FollowDriverButton from '@/components/drivers/FollowDriverButton';
-import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
-import ResultsPanel from '@/components/results/ResultsPanel';
-import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
-import PublicMediaGallery from '@/components/media/PublicMediaGallery';
-import { AlertCircle, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
   if (!dateStr) return 'TBA';
