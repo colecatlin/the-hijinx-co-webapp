@@ -22,9 +22,10 @@ const CATEGORY_MAP = {
 const PRIMARY_CATEGORIES = Object.keys(CATEGORY_MAP);
 
 export default function StoryForm({ story, onClose }) {
+  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(story?.slug || '');
+
   const [formData, setFormData] = useState({
     title: story?.title || '',
-    slug: story?.slug || '',
     subtitle: story?.subtitle || '',
     body: story?.body || '',
     author: story?.author || '',
@@ -62,11 +63,8 @@ export default function StoryForm({ story, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const submitData = { ...formData };
-    if (!submitData.slug) {
-      submitData.slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    }
-    mutation.mutate(submitData);
+    const finalSlug = slug || generateEntitySlug(formData.title) || 'story';
+    mutation.mutate({ ...formData, slug: finalSlug });
   };
 
   const handleChange = (field, value) => {
@@ -77,10 +75,8 @@ export default function StoryForm({ story, onClose }) {
     } else {
       setFormData({ ...formData, [field]: value });
     }
-    
     if (field === 'title' && !story) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setFormData(prev => ({ ...prev, slug }));
+      syncSlugFromSource(value);
     }
   };
 
@@ -130,6 +126,17 @@ export default function StoryForm({ story, onClose }) {
               onChange={(e) => handleChange('subtitle', e.target.value)}
               placeholder="Subheadline or deck"
             />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-1">URL Slug</label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlugManually(e.target.value)}
+              placeholder="auto-generated from title"
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">Public URL: /story/<span className="text-gray-600">{slug || '…'}</span></p>
           </div>
 
           <div>
