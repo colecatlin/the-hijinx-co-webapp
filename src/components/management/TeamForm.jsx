@@ -36,8 +36,7 @@ export default function TeamForm({ team, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const slug = generateUniqueSlug(data.name);
-      const payload = { ...data, slug, ...(team && { id: team.id }) };
+      const payload = { ...data, ...(team && { id: team.id }) };
 
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
         entity_type: 'team',
