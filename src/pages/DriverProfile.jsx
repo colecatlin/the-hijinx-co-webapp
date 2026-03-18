@@ -98,15 +98,15 @@ export default function DriverProfile() {
   });
 
   // Single consolidated data loader
+  // - canonicalSlug  → preferred: resolves by canonical_slug field
+  // - legacyId       → fallback: resolves by record id (legacy links only)
   const { data: profileData, isLoading } = useQuery({
-    queryKey: QueryKeys.profiles.driver(driverSlug, firstName, lastName),
+    queryKey: QueryKeys.profiles.driver(driverSlug),
     queryFn: () => getDriverProfileData({
-      id: driverSlug,
-      slug: driverSlug,
-      first: firstName,
-      last: lastName,
+      slug: canonicalSlug || undefined,
+      id: legacyId || undefined,
     }),
-    enabled: !!(driverSlug || (firstName && lastName)),
+    enabled: !!driverSlug,
     ...DQ,
   });
 
