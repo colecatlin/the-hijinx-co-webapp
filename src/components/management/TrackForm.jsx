@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import LocationFields from '@/components/shared/LocationFields';
+import { useSlugField } from '@/hooks/useSlugField';
 
 export default function TrackForm({ track, onClose }) {
   const [formData, setFormData] = useState(track || {

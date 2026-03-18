@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Save, Loader2 } from 'lucide-react';
+import { useSlugField } from '@/hooks/useSlugField';
 
 const OUTLET_TYPES = [
   { value: 'publication', label: 'Publication' },

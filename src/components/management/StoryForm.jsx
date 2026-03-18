@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 
 const CATEGORY_MAP = {
   Racing: ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],

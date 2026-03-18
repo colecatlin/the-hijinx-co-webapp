@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle2, Loader2, X } from 'lucide-react';
+import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 
 export default function SeriesForm({ series, onClose, onSeriesCreated }) {
   const [formData, setFormData] = useState({
