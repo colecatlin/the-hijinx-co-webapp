@@ -1,4 +1,22 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, createContext, useContext } from 'react';
+import { useParams } from 'react-router-dom';
+
+// Context used to pass the route :slug param into DriverProfile
+// when rendered via the /drivers/:slug route
+export const DriverRouteContext = createContext(null);
+
+/**
+ * Wrapper used by the /drivers/:slug route.
+ * Injects the canonical slug from React Router into DriverProfile.
+ */
+export function DriverProfileRouteWrapper() {
+  const { slug } = useParams();
+  return (
+    <DriverRouteContext.Provider value={{ slug }}>
+      <DriverProfile />
+    </DriverRouteContext.Provider>
+  );
+}
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
