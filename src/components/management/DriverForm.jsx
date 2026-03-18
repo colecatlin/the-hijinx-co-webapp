@@ -25,35 +25,75 @@ export default function DriverForm({ driver, onClose }) {
 
   const queryClient = useQueryClient();
 
+  // ── Normalization helpers (mirror backend logic) ──
+  const normalizeName = (value) => {
+    if (!value) return '';
+    return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+
+  const generateEntitySlug = (text) => {
+    if (!text) return '';
+    return text.trim().toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
   const generateUniqueNumericId = async () => {
     let numericId;
     let isUnique = false;
-    
     while (!isUnique) {
       numericId = String(Math.floor(Math.random() * 90000000) + 10000000);
       const existing = await base44.entities.Driver.filter({ numeric_id: numericId });
       isUnique = existing.length === 0;
     }
-    
     return numericId;
   };
 
-  const generateSlugFromData = (firstName, lastName, numericId) => {
-    const slugBase = `${firstName} ${lastName}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    return `${slugBase}-${numericId}`;
+  const generateUniqueCanonicalSlug = async (baseSlug, excludeId = null) => {
+    let candidate = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = await base44.entities.Driver.filter({ canonical_slug: candidate }).catch(() => []);
+      const collision = existing.find(r => r.id !== excludeId);
+      if (!collision) return candidate;
+      counter++;
+      candidate = `${baseSlug}-${counter}`;
+    }
   };
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      // For new drivers, pre-generate numeric_id + slug so we can pass them to syncSourceAndEntityRecord
       let payload = { ...data };
+
       if (!driver) {
+        // ── New driver: generate all identity fields ──
         const numericId = await generateUniqueNumericId();
-        const slug = generateSlugFromData(data.first_name, data.last_name, numericId);
-        payload = { ...payload, numeric_id: numericId, slug };
+        // slug = internal unique slug (name + numeric id)
+        const slugBase = `${data.first_name} ${data.last_name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const slug = `${slugBase}-${numericId}`;
+        // canonical_slug = public route identity (clean name slug, collision-safe)
+        const normalized = normalizeName(`${data.first_name} ${data.last_name}`);
+        const canonicalSlugBase = generateEntitySlug(normalized);
+        const canonical_slug = await generateUniqueCanonicalSlug(canonicalSlugBase);
+        // normalized_name + canonical_key
+        const normalized_name = normalized;
+        let canonical_key = `driver:${normalized}`;
+        if (data.date_of_birth) canonical_key = `driver:${normalized}:${data.date_of_birth}`;
+        else if (data.primary_number) canonical_key = `driver:${normalized}:${data.primary_number}`;
+
+        payload = { ...payload, numeric_id: numericId, slug, canonical_slug, normalized_name, canonical_key };
       } else {
-        // For updates, carry the existing id so upsertSourceEntity matches it
+        // ── Existing driver: carry id for update matching ──
         payload = { ...payload, id: driver.id };
+        // If canonical_slug is missing on an existing record, generate it now
+        if (!driver.canonical_slug) {
+          const normalized = normalizeName(`${data.first_name} ${data.last_name}`);
+          const canonicalSlugBase = generateEntitySlug(normalized);
+          const canonical_slug = await generateUniqueCanonicalSlug(canonicalSlugBase, driver.id);
+          payload = { ...payload, canonical_slug, normalized_name: normalized };
+        }
       }
 
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
@@ -62,7 +102,24 @@ export default function DriverForm({ driver, onClose }) {
         triggered_from: 'driver_form',
       });
 
-      if (result?.data?.source_record) return result.data.source_record;
+      if (result?.data?.source_record) {
+        const record = result.data.source_record;
+        // Log canonical slug generation for new drivers
+        if (!driver && record.canonical_slug) {
+          await base44.functions.invoke('createActivityFeedItemSafe', {
+            event_type: 'driver_canonical_slug_generated',
+            entity_type: 'Driver',
+            entity_id: record.id,
+            metadata: {
+              driver_id: record.id,
+              new_canonical_slug: record.canonical_slug,
+              new_slug: record.slug,
+              acted_by_user_id: null,
+            },
+          }).catch(() => {});
+        }
+        return record;
+      }
       throw new Error(result?.data?.error || 'syncSourceAndEntityRecord returned no record');
     },
     onSuccess: () => {
