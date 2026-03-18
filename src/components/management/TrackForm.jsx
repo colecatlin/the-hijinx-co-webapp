@@ -12,6 +12,8 @@ import LocationFields from '@/components/shared/LocationFields';
 import { useSlugField } from '@/hooks/useSlugField';
 
 export default function TrackForm({ track, onClose }) {
+  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(track?.canonical_slug || '');
+
   const [formData, setFormData] = useState(track || {
     name: '',
     location_city: '',
@@ -61,6 +63,9 @@ export default function TrackForm({ track, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'name' && !track) {
+      syncSlugFromSource(value);
+    }
   };
 
   const handleSeriesToggle = (seriesId) => {
@@ -102,6 +107,19 @@ export default function TrackForm({ track, onClose }) {
               required
             />
           </div>
+
+          {!track && (
+            <div>
+              <label className="block text-sm font-medium mb-1">URL Slug</label>
+              <Input
+                value={slug}
+                onChange={(e) => setSlugManually(e.target.value)}
+                placeholder="auto-generated from name"
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">Used in public URLs · auto-fills from name</p>
+            </div>
+          )}
 
           <LocationFields
             cityValue={formData.location_city}
