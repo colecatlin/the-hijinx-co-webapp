@@ -58,7 +58,8 @@ export default function TrackForm({ track, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    saveMutation.mutate(formData);
+    const finalSlug = slug || '';
+    saveMutation.mutate({ ...formData, canonical_slug: finalSlug || undefined });
   };
 
   const handleChange = (field, value) => {
