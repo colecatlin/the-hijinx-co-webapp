@@ -8,12 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
-import { generateSlug, validateSlug } from '@/components/utils/routingContract';
+import { useSlugField } from '@/hooks/useSlugField';
+import { validateSlug } from '@/components/utils/routingContract';
 
 export default function TeamForm({ team, onClose }) {
+  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(team?.slug || '');
+
   const [formData, setFormData] = useState(team || {
     name: '',
-    slug: '',
     headquarters_city: '',
     headquarters_state: '',
     country: 'USA',
@@ -33,10 +35,19 @@ export default function TeamForm({ team, onClose }) {
     queryFn: () => base44.entities.Team.list(),
   });
 
+  const getUniqueSlug = (baseSlug) => {
+    const existingSlugs = (allTeams || [])
+      .filter(t => !team || t.id !== team.id)
+      .map(t => t.slug)
+      .filter(Boolean);
+    return validateSlug(baseSlug, existingSlugs).suggestion;
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const slug = generateUniqueSlug(data.name);
-      const payload = { ...data, slug, ...(team && { id: team.id }) };
+      // Ensure slug is unique at submit time (client-side check, backend also validates)
+      const finalSlug = slug ? getUniqueSlug(slug) : getUniqueSlug(data.name);
+      const payload = { ...data, slug: finalSlug, ...(team && { id: team.id }) };
 
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
         entity_type: 'team',
@@ -53,17 +64,6 @@ export default function TeamForm({ team, onClose }) {
     },
   });
 
-  const generateUniqueSlug = (name) => {
-    if (!name) return '';
-    const baseSlug = generateSlug(name);
-    const existingSlugs = (allTeams || [])
-      .filter(t => !team || t.id !== team.id)
-      .map(t => t.slug)
-      .filter(Boolean);
-    const { suggestion } = validateSlug(baseSlug, existingSlugs);
-    return suggestion;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate(formData);
@@ -71,10 +71,8 @@ export default function TeamForm({ team, onClose }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'name') {
-      const slug = generateUniqueSlug(value);
-      setFormData(prev => ({ ...prev, slug }));
+    if (field === 'name' && !team) {
+      syncSlugFromSource(value);
     }
   };
 
