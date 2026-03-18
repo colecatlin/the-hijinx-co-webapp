@@ -9,9 +9,10 @@ import { CheckCircle2, Loader2, X } from 'lucide-react';
 import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 
 export default function SeriesForm({ series, onClose, onSeriesCreated }) {
+  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(series?.slug || '');
+
   const [formData, setFormData] = useState({
     name: series?.name || '',
-    slug: series?.slug || '',
     governing_body: series?.governing_body || '',
     discipline: series?.discipline || 'Mixed',
     founded_year: series?.founded_year || new Date().getFullYear(),
@@ -48,19 +49,14 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const submitData = { ...formData };
-    if (!submitData.slug) {
-      submitData.slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    }
-    mutation.mutate(submitData);
+    const finalSlug = slug || generateEntitySlug(formData.name) || 'series';
+    mutation.mutate({ ...formData, slug: finalSlug });
   };
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    
     if (field === 'name' && !series) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setFormData(prev => ({ ...prev, slug }));
+      syncSlugFromSource(value);
     }
   };
 
@@ -82,6 +78,17 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
               placeholder="Series name"
               required
             />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-1">URL Slug</label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlugManually(e.target.value)}
+              placeholder="auto-generated from name"
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">Used in public URLs · auto-fills from name</p>
           </div>
 
           <div>
