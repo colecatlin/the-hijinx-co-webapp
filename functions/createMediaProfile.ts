@@ -1,5 +1,28 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { generateUniqueEntitySlug } from './normalizeEntityIdentity.js';
+
+// ── Unified slug utilities (single implementation, inlined per platform constraints) ──
+function generateEntitySlug(text) {
+  if (!text) return 'entity';
+  const slug = text.trim().toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'entity';
+}
+async function generateUniqueEntitySlug(base44, entityName, text, excludeId = null, fallback = 'entity') {
+  const base = generateEntitySlug(text) || generateEntitySlug(fallback) || 'entity';
+  let candidate = base;
+  let counter = 1;
+  while (true) {
+    const existing = await base44.asServiceRole.entities[entityName]
+      .filter({ slug: candidate }, '-created_date', 1).catch(() => []);
+    const collision = existing.find(r => r.id !== excludeId);
+    if (!collision) return candidate;
+    counter++;
+    candidate = `${base}-${counter}`;
+  }
+}
 
 /**
  * createMediaProfile

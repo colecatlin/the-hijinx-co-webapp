@@ -19,7 +19,17 @@
  * }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { normalizeName, generateEntitySlug } from './normalizeEntityIdentity.js';
+
+// ── Unified slug utilities (inlined per platform constraints) ──
+function normalizeName(value) {
+  if (!value) return '';
+  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function generateEntitySlug(text) {
+  if (!text) return '';
+  return text.trim().toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+}
 
 function buildTrackCanonicalKey(record, normalizedName) {
   if (record.external_uid) return `track:${record.external_uid}`;
