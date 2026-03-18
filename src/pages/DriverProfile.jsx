@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, createContext } from 'react';
+import React, { useState, useMemo, useEffect, createContext, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
@@ -61,7 +61,7 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 export default function DriverProfile() {
   // Support both new canonical route (/drivers/:slug via React Router params)
   // and legacy query-param routes (?slug=... or ?id=...)
-  const { slug: routeSlug } = React.useContext(DriverRouteContext) || {};  // eslint-disable-line
+  const { slug: routeSlug } = useContext(DriverRouteContext) || {};
   const urlParams = new URLSearchParams(window.location.search);
 
   // Canonical slug: prefer route param, then ?slug query param
