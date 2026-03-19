@@ -2,10 +2,10 @@ import React from 'react';
 import { TrendingUp, Zap, Star, Users } from 'lucide-react';
 
 const SCORE_DIMS = [
-  { label: 'Performance', icon: TrendingUp, color: 'text-blue-400', desc: 'Race results & championship data' },
-  { label: 'Brand', icon: Star, color: 'text-yellow-400', desc: 'Social presence & media coverage' },
-  { label: 'Alignment', icon: Zap, color: 'text-green-400', desc: 'Sponsor & partner fit score' },
-  { label: 'Momentum', icon: Users, color: 'text-purple-400', desc: 'Trajectory & season trend signals' },
+  { label: 'Performance', Icon: TrendingUp, color: 'text-blue-400', desc: 'Race results & championship data' },
+  { label: 'Brand', Icon: Star, color: 'text-yellow-400', desc: 'Social presence & media coverage' },
+  { label: 'Alignment', Icon: Zap, color: 'text-green-400', desc: 'Sponsor & partner fit score' },
+  { label: 'Momentum', Icon: Users, color: 'text-purple-400', desc: 'Trajectory & season trend signals' },
 ];
 
 export default function DriverScorePlaceholder() {
