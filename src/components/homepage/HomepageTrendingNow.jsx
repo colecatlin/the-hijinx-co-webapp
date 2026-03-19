@@ -102,7 +102,7 @@ function TabContent({ tab, drivers, tracks, series, events }) {
       {tab === 'events' && items.slice(0, 8).map((e, i) => {
         let dateStr = null;
         try { dateStr = e.event_date ? format(parseISO(e.event_date), 'MMM d') : null; } catch (_) { dateStr = e.event_date; }
-        const href = `${createPageUrl('EventProfile')}?id=${e.id}`;
+        const href = `/EventProfile?id=${e.id}`;
         return (
           <RowShell key={e.id || i} href={href} index={i}>
             <Avatar src={null} alt={e.name} Icon={Calendar} />
