@@ -513,7 +513,7 @@ export default function DriverProfile() {
         {activeTab === 'career' && (
           <div className="pb-12">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Career History</h2>
-            <DriverCareerTab driverId={driver.id} />
+            <DriverCareerTab driverId={driver.id} initialEntries={careerEntries} />
           </div>
         )}
 
@@ -663,7 +663,7 @@ export default function DriverProfile() {
         {activeTab === 'sponsors' && (
           <div className="pb-12">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Sponsors</h2>
-            <DriverSponsorsTab driverId={driver.id} />
+            <DriverSponsorsTab driverId={driver.id} initialSponsors={sponsors} />
           </div>
         )}
 
