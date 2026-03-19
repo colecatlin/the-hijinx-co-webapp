@@ -6,7 +6,7 @@
 export function getDriverProfileUrl(driver) {
   if (!driver) return '/DriverDirectory';
   const slug = driver.canonical_slug || driver.slug;
-  if (slug) return `/DriverProfile?slug=${slug}`;
+  if (slug) return `/drivers/${slug}`;
   if (driver.id) return `/DriverProfile?id=${driver.id}`;
   return '/DriverDirectory';
 }
