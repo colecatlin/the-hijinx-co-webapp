@@ -157,9 +157,9 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           cityValue={formData.headquarters_city}
           stateValue={formData.headquarters_state}
           countryValue={formData.country || 'USA'}
-          onCityChange={(v) => setFormData({ ...formData, headquarters_city: v })}
-          onStateChange={(v) => setFormData({ ...formData, headquarters_state: v })}
-          onCountryChange={(v) => setFormData({ ...formData, country: v })}
+          onCityChange={(v) => setFormData(prev => ({ ...prev, headquarters_city: v }))}
+          onStateChange={(v) => setFormData(prev => ({ ...prev, headquarters_state: v }))}
+          onCountryChange={(v) => setFormData(prev => ({ ...prev, country: v }))}
           cityLabel="City *"
           stateLabel="State *"
           countryLabel="Country *"
