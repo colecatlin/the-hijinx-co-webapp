@@ -78,15 +78,20 @@ export default function LocationFields({
       let city = '', state = '', country = '';
       place.address_components.forEach(c => {
         if (c.types.includes('locality')) city = c.long_name;
+        else if (c.types.includes('sublocality_level_1') && !city) city = c.long_name;
         if (c.types.includes('administrative_area_level_1')) state = c.short_name;
         if (c.types.includes('country')) country = c.long_name;
       });
 
-      onCityChange(city);
-      onStateChange(state);
-      onCountryChange(country);
-      setSearchValue(place.formatted_address || `${city}, ${state}, ${country}`);
-      setConfirmed(true);
+      // Use setTimeout to defer state updates so Google's own DOM manipulation
+      // (which can blur/focus and trigger re-renders) finishes first
+      setTimeout(() => {
+        onCityChange(city);
+        onStateChange(state);
+        onCountryChange(country);
+        setSearchValue(place.formatted_address || `${city}, ${state}, ${country}`);
+        setConfirmed(true);
+      }, 0);
     });
   }, [apiReady]);
 
