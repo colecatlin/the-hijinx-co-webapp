@@ -223,13 +223,13 @@ export default function DriverProfile() {
   const { data: eventsForEntries = [] } = useQuery({
     queryKey: QueryKeys.events.list({ _driver: driver?.id }),
     queryFn: () => base44.entities.Event.list(),
-    enabled: entries.length > 0,
+    enabled: !!driver?.id && entries.length > 0,
     ...DQ,
   });
   const { data: tracksForEntries = [] } = useQuery({
     queryKey: QueryKeys.tracks.list(),
     queryFn: () => base44.entities.Track.list(),
-    enabled: entries.length > 0,
+    enabled: !!driver?.id && entries.length > 0,
     ...DQ,
   });
 
