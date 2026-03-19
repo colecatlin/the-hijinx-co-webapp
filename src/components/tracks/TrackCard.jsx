@@ -60,9 +60,14 @@ export default function TrackCard({ track, disciplines = [], media }) {
           ))}
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-gray-600 font-mono">
-          {track.length_miles && <span>{track.length_miles} mi</span>}
-          {track.turns_count && <span>{track.turns_count} turns</span>}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-4 text-xs text-gray-600 font-mono">
+            {track.length_miles && <span>{track.length_miles} mi</span>}
+            {track.turns_count && <span>{track.turns_count} turns</span>}
+          </div>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-[#232323] group-hover:text-[#00FFDA] transition-colors">
+            View Profile <ArrowRight className="w-3 h-3" />
+          </span>
         </div>
       </div>
 
