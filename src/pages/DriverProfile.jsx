@@ -138,6 +138,18 @@ export default function DriverProfile() {
     }
   }, [driver?.id]);
 
+  // No slug or id in URL at all — redirect to directory
+  if (!driverSlug) {
+    return (
+      <PageShell className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+          <p className="text-gray-500 mb-4">No driver specified.</p>
+          <a href="/DriverDirectory" className="text-sm text-[#232323] underline">← Back to Drivers</a>
+        </div>
+      </PageShell>
+    );
+  }
+
   if (isLoading) {
     return (
       <PageShell className="bg-white">
