@@ -4,6 +4,7 @@
  */
 
 import { createPageUrl } from '@/components/utils';
+import { buildProfileUrl } from '@/components/utils/routingContract';
 import { formatDistanceToNow } from 'date-fns';
 
 const BADGE_LABELS = {
@@ -17,21 +18,29 @@ const BADGE_LABELS = {
   series_updated:      'Series',
 };
 
+// For activity feed items, we only have IDs (not slugs), so we use ?id= fallbacks
+// except for drivers which use /drivers/:id as a fallback via the canonical route
 const ENTITY_ROUTES = {
-  driver:  (id) => `${createPageUrl('DriverProfile')}?id=${id}`,
-  track:   (id) => `${createPageUrl('TrackProfile')}?id=${id}`,
-  series:  (id) => `${createPageUrl('SeriesDetail')}?id=${id}`,
-  event:   (id) => `${createPageUrl('EventProfile')}?id=${id}`,
-  story:   (id) => `${createPageUrl('OutletStoryPage')}?id=${id}`,
+  driver:  (id, slug) => slug ? `/drivers/${encodeURIComponent(slug)}` : `/DriverProfile?id=${id}`,
+  track:   (id, slug) => slug ? buildProfileUrl('Track', slug) : `/TrackProfile?id=${id}`,
+  series:  (id, slug) => slug ? buildProfileUrl('Series', slug) : `/SeriesDetail?id=${id}`,
+  event:   (id) => `/EventProfile?id=${id}`,
+  story:   (id, slug) => slug ? `/story/${slug}` : `/OutletStoryPage?id=${id}`,
   results: (id) => `${createPageUrl('EventResults')}?id=${id}`,
 };
 
 function resolveHref(item) {
-  if (item.related_event_id)  return `${createPageUrl('EventProfile')}?id=${item.related_event_id}`;
-  if (item.related_driver_id) return `${createPageUrl('DriverProfile')}?id=${item.related_driver_id}`;
-  if (item.related_series_id) return `${createPageUrl('SeriesDetail')}?id=${item.related_series_id}`;
+  if (item.related_event_id)  return `/EventProfile?id=${item.related_event_id}`;
+  if (item.related_driver_id) {
+    const slug = item.related_driver_slug || item.entity_slug;
+    return slug ? `/drivers/${encodeURIComponent(slug)}` : `/DriverProfile?id=${item.related_driver_id}`;
+  }
+  if (item.related_series_id) {
+    const slug = item.related_series_slug || item.entity_slug;
+    return slug ? buildProfileUrl('Series', slug) : `/SeriesDetail?id=${item.related_series_id}`;
+  }
   if (item.entity_type && item.entity_id && ENTITY_ROUTES[item.entity_type]) {
-    return ENTITY_ROUTES[item.entity_type](item.entity_id);
+    return ENTITY_ROUTES[item.entity_type](item.entity_id, item.entity_slug);
   }
   return null;
 }
