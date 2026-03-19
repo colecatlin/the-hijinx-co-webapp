@@ -147,7 +147,7 @@ export default function DriverProfile() {
     return results.filter(r => officialSessionIds.has(r.session_id)).slice(0, 10);
   }, [results, sessions]);
 
-  // Events for entry display (unused but kept for stable hook count)
+  // Entry event IDs (for stable hook count)
   const allEvents = useMemo(() => {
     return [...new Set(entries.map(e => e.event_id).filter(Boolean))];
   }, [entries]);
