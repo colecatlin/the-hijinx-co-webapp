@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { ArrowRight, User, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -8,9 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 export default function HomepageDriverSpotlight({ driver }) {
   if (!driver) return null;
 
-  const profileUrl = driver.slug
-    ? `${createPageUrl('DriverProfile')}?slug=${driver.slug}`
-    : `${createPageUrl('DriverProfile')}?id=${driver.id}`;
+  const profileUrl = getDriverProfileUrl(driver);
 
   return (
     <motion.div
