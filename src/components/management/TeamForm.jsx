@@ -66,6 +66,10 @@ export default function TeamForm({ team, onClose }) {
     }
   };
 
+  const handleLocationChange = (city, state, country) => {
+    setFormData(prev => ({ ...prev, headquarters_city: city, headquarters_state: state, country }));
+  };
+
   return (
     <PageShell>
       <div className="max-w-3xl mx-auto px-6 py-12">
