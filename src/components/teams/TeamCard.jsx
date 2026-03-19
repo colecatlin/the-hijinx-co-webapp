@@ -15,7 +15,7 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
 
   const handleProfileClick = (e) => {
     e.stopPropagation();
-    navigate(buildProfileUrl('Team', team.slug || team.id));
+    navigate(buildProfileUrl('Team', team.canonical_slug || team.slug || team.id));
   };
 
   // Build series groups: each series with its drivers + car numbers
