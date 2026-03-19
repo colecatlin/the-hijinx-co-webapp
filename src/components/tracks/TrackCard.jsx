@@ -4,6 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 
+function getTrackUrl(track) {
+  if (track.slug) return buildProfileUrl('Track', track.slug);
+  return `/TrackProfile?id=${track.id}`;
+}
+
 export default function TrackCard({ track, disciplines = [], media }) {
   return (
     <Link
