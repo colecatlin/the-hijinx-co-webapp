@@ -90,7 +90,8 @@ function TabContent({ tab, drivers, tracks, series, events }) {
         );
       })}
       {tab === 'series' && items.slice(0, 8).map((s, i) => {
-        const href = s.slug ? `${createPageUrl('SeriesDetail')}?slug=${s.slug}` : `${createPageUrl('SeriesDetail')}?id=${s.id}`;
+        const slug = s.canonical_slug || s.slug;
+        const href = slug ? buildProfileUrl('Series', slug) : `/SeriesDetail?id=${s.id}`;
         return (
           <RowShell key={s.id || i} href={href} index={i}>
             <Avatar src={s.logo_url} alt={s.name} Icon={Trophy} />
