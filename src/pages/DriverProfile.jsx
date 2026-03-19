@@ -87,7 +87,7 @@ const TABS = [
   { id: 'insights',  label: 'Insights' },
   { id: 'media',     label: 'Media' },
   { id: 'sponsors',  label: 'Sponsors' },
-  { id: 'claims',    label: 'Claims' },
+
 ];
 
 export default function DriverProfile() {
@@ -667,13 +667,7 @@ export default function DriverProfile() {
           </div>
         )}
 
-        {/* ── CLAIMS TAB ─────────────────────────────────── */}
-        {activeTab === 'claims' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Profile Claims</h2>
-            <ClaimEntityButton entityType="Driver" entityId={driver?.id} entityName={fullName} />
-          </div>
-        )}
+
       </div>
 
       {/* Compare dialog — unchanged */}
