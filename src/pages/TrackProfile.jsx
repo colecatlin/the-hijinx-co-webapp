@@ -59,6 +59,7 @@ export default function TrackProfile() {
 
   const sections = [
     { id: 'overview', label: 'Overview' },
+    { id: 'map',      label: 'Map & Area' },
     { id: 'events',   label: `Events (${events.length})` },
     { id: 'series',   label: `Series (${series.length})` },
   ];
