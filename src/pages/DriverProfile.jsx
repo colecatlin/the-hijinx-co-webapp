@@ -139,6 +139,33 @@ export default function DriverProfile() {
     }
   }, [driver?.id]);
 
+  // Official results: sessions with Official or Locked status
+  const officialResults = useMemo(() => {
+    const officialSessionIds = new Set(
+      sessions.filter(s => ['Official', 'Locked'].includes(s.status)).map(s => s.id)
+    );
+    return results.filter(r => officialSessionIds.has(r.session_id)).slice(0, 10);
+  }, [results, sessions]);
+
+  // Events for entry display (unused but kept for stable hook count)
+  const allEvents = useMemo(() => {
+    return [...new Set(entries.map(e => e.event_id).filter(Boolean))];
+  }, [entries]);
+
+  // Load events + tracks for entry display
+  const { data: eventsForEntries = [] } = useQuery({
+    queryKey: QueryKeys.events.list({ _driver: driver?.id }),
+    queryFn: () => base44.entities.Event.list(),
+    enabled: !!driver?.id && entries.length > 0,
+    ...DQ,
+  });
+  const { data: tracksForEntries = [] } = useQuery({
+    queryKey: QueryKeys.tracks.list(),
+    queryFn: () => base44.entities.Track.list(),
+    enabled: !!driver?.id && entries.length > 0,
+    ...DQ,
+  });
+
   // No slug or id in URL at all — redirect to directory
   if (!driverSlug) {
     return (
