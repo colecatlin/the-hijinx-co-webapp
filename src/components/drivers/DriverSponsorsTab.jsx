@@ -15,12 +15,13 @@ const SPONSOR_COLORS = {
   Technical: 'bg-gray-100 text-gray-700 border-gray-200',
 };
 
-export default function DriverSponsorsTab({ driverId }) {
+export default function DriverSponsorsTab({ driverId, initialSponsors }) {
   const { data: sponsors = [], isLoading } = useQuery({
     queryKey: ['driverSponsors', driverId],
     queryFn: () => base44.entities.DriverSponsor.filter({ driver_id: driverId }),
     enabled: !!driverId,
     staleTime: 5 * 60 * 1000,
+    initialData: initialSponsors?.length > 0 ? initialSponsors : undefined,
   });
 
   if (isLoading) return <div className="py-12 text-center text-gray-400 text-sm">Loading sponsors…</div>;

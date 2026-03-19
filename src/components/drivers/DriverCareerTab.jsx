@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trophy, Flag, BookOpen } from 'lucide-react';
 
-export default function DriverCareerTab({ driverId }) {
+export default function DriverCareerTab({ driverId, initialEntries }) {
   const [filterSeries, setFilterSeries] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
 
@@ -14,6 +14,7 @@ export default function DriverCareerTab({ driverId }) {
     queryFn: () => base44.entities.DriverCareerEntry.filter({ driver_id: driverId }, '-year'),
     enabled: !!driverId,
     staleTime: 5 * 60 * 1000,
+    initialData: initialEntries?.length > 0 ? initialEntries : undefined,
   });
 
   const years = useMemo(() => [...new Set(careerEntries.map(e => e.year))].filter(Boolean).sort((a, b) => b - a), [careerEntries]);
