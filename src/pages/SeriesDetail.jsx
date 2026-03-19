@@ -61,6 +61,10 @@ export default function SeriesDetail() {
 
   const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
 
+  useEffect(() => {
+    if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
+  }, [series?.id]);
+
   if (isLoading) {
     return (
       <PageShell>
@@ -71,10 +75,6 @@ export default function SeriesDetail() {
       </PageShell>
     );
   }
-
-  useEffect(() => {
-    if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
-  }, [series?.id]);
 
   if (!series) return <EntityNotFound entityType="Series" />;
 
