@@ -71,7 +71,7 @@ function TabContent({ tab, drivers, tracks, series, events }) {
     <div>
       {tab === 'drivers' && items.slice(0, 8).map((d, i) => {
         const name = [d.first_name, d.last_name].filter(Boolean).join(' ') || d.name || '—';
-        const href = d.slug ? `${createPageUrl('DriverProfile')}?slug=${d.slug}` : `${createPageUrl('DriverProfile')}?id=${d.id}`;
+        const href = getDriverProfileUrl(d);
         return (
           <RowShell key={d.id || i} href={href} index={i}>
             <Avatar src={d.image} alt={name} Icon={User} />
