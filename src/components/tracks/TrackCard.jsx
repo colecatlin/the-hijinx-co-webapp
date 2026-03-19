@@ -12,7 +12,7 @@ function getTrackUrl(track) {
 export default function TrackCard({ track, disciplines = [], media }) {
   return (
     <Link
-      to={buildProfileUrl('Track', track.slug)}
+      to={getTrackUrl(track)}
       className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
     >
       <div className="p-5">
