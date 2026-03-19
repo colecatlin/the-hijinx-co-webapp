@@ -231,35 +231,6 @@ export default function DriverProfile() {
     }
   };
 
-  // Official results: sessions with Official or Locked status
-  const officialResults = useMemo(() => {
-    const officialSessionIds = new Set(
-      sessions.filter(s => ['Official', 'Locked'].includes(s.status)).map(s => s.id)
-    );
-    return results.filter(r => officialSessionIds.has(r.session_id)).slice(0, 10);
-  }, [results, sessions]);
-
-  // Events for entry display
-  const allEvents = useMemo(() => {
-    const eventIds = [...new Set(entries.map(e => e.event_id).filter(Boolean))];
-    return eventIds; // events are loaded via profile data
-  }, [entries]);
-
-  // We need events + tracks for entry display — load them separately since
-  // getDriverProfileData doesn't load all events/tracks (avoids over-fetching)
-  const { data: eventsForEntries = [] } = useQuery({
-    queryKey: QueryKeys.events.list({ _driver: driver?.id }),
-    queryFn: () => base44.entities.Event.list(),
-    enabled: !!driver?.id && entries.length > 0,
-    ...DQ,
-  });
-  const { data: tracksForEntries = [] } = useQuery({
-    queryKey: QueryKeys.tracks.list(),
-    queryFn: () => base44.entities.Track.list(),
-    enabled: !!driver?.id && entries.length > 0,
-    ...DQ,
-  });
-
   const upcomingEntries = entries
     .filter(entry => {
       const event = eventsForEntries.find(e => e.id === entry.event_id);
