@@ -109,9 +109,9 @@ export default function TeamForm({ team, onClose }) {
             cityValue={formData.headquarters_city}
             stateValue={formData.headquarters_state}
             countryValue={formData.country}
-            onCityChange={(v) => handleChange('headquarters_city', v)}
-            onStateChange={(v) => handleChange('headquarters_state', v)}
-            onCountryChange={(v) => handleChange('country', v)}
+            onCityChange={(v) => setFormData(prev => ({ ...prev, headquarters_city: v }))}
+            onStateChange={(v) => setFormData(prev => ({ ...prev, headquarters_state: v }))}
+            onCountryChange={(v) => setFormData(prev => ({ ...prev, country: v }))}
             cityLabel="City"
             stateLabel="State"
             countryLabel="Country"
