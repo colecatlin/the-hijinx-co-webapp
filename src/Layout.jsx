@@ -277,13 +277,19 @@ export default function Layout({ children, currentPageName }) {
                       {item.sub && (
                         <div className="pl-4 mb-2">
                           {item.sub.map((sub) => (
-                            <Link
-                              key={sub.name}
-                              to={sub.href || createPageUrl(sub.page)}
-                              className="block py-2 text-sm text-gray-500 hover:text-[#232323] transition-colors"
-                            >
-                              {sub.name}
-                            </Link>
+                            sub.disabled ? (
+                              <div key={sub.name} className="pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                {sub.name.replace(/^— | —$/g, '')}
+                              </div>
+                            ) : (
+                              <Link
+                                key={sub.name}
+                                to={sub.href || createPageUrl(sub.page)}
+                                className="block py-2 text-sm text-gray-500 hover:text-[#232323] transition-colors"
+                              >
+                                {sub.name}
+                              </Link>
+                            )
                           ))}
                         </div>
                       )}
