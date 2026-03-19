@@ -233,6 +233,11 @@ export default function TrackProfile() {
               </div>
             )}
 
+            {/* Map & Area */}
+            {activeSection === 'map' && (
+              <TrackMapPanel track={track} />
+            )}
+
             {/* Events */}
             {activeSection === 'events' && (
               <TrackEventsPanel upcomingEvents={upcomingEvents} pastEvents={pastEvents} />
