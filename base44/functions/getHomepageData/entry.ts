@@ -181,12 +181,11 @@ Deno.serve(async (req) => {
         const d = drivers?.[0];
         if (d) {
           spotlightDriver = {
-            id:             d.id,
-            name:           [d.first_name, d.last_name].filter(Boolean).join(' '),
-            subtitle:       d.primary_discipline || null,
-            slug:           d.slug || null,
-            canonical_slug: d.canonical_slug || d.slug || null,
-            image:          null,
+            id:   d.id,
+            name: [d.first_name, d.last_name].filter(Boolean).join(' '),
+            subtitle: d.primary_discipline || null,
+            slug: d.slug || null,
+            image: null,
           };
         }
       } catch (_) {}
@@ -213,12 +212,11 @@ Deno.serve(async (req) => {
       const bestDriver = (autoDrivers || []).find(d => d.featured === true) || (autoDrivers || [])[0] || null;
       if (bestDriver) {
         spotlightDriver = {
-          id:             bestDriver.id,
-          name:           [bestDriver.first_name, bestDriver.last_name].filter(Boolean).join(' '),
-          subtitle:       bestDriver.primary_discipline || null,
-          slug:           bestDriver.slug || null,
-          canonical_slug: bestDriver.canonical_slug || bestDriver.slug || null,
-          image:          bestDriver.profile_image_url || null,
+          id: bestDriver.id,
+          name: [bestDriver.first_name, bestDriver.last_name].filter(Boolean).join(' '),
+          subtitle: bestDriver.primary_discipline || null,
+          slug: bestDriver.slug || null,
+          image: bestDriver.profile_image_url || null,
         };
       }
     }
