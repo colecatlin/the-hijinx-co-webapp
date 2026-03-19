@@ -5,7 +5,8 @@ import { MapPin, ArrowRight } from 'lucide-react';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 
 function getTrackUrl(track) {
-  if (track.slug) return buildProfileUrl('Track', track.slug);
+  const slug = track.canonical_slug || track.slug;
+  if (slug) return buildProfileUrl('Track', slug);
   return `/TrackProfile?id=${track.id}`;
 }
 
