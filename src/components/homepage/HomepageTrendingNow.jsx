@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { buildProfileUrl } from '@/components/utils/routingContract';
-import { getDriverProfileUrl } from '@/lib/driverUrl';
+import { getDriverProfileUrl } from '@/components/utils/driverUrl';
 import { TrendingUp, User, MapPin, Trophy, Calendar, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
