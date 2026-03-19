@@ -179,13 +179,19 @@ export default function Layout({ children, currentPageName }) {
                           className="absolute top-full left-0 bg-white border border-gray-100 shadow-lg min-w-[180px] py-2 z-50"
                         >
                           {item.sub.map((sub) => (
-                            <Link
-                              key={sub.name}
-                              to={sub.href || createPageUrl(sub.page)}
-                              className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
-                            >
-                              {sub.name}
-                            </Link>
+                            sub.disabled ? (
+                              <div key={sub.name} className="px-4 pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-100 first:border-t-0">
+                                {sub.name.replace(/^— | —$/g, '')}
+                              </div>
+                            ) : (
+                              <Link
+                                key={sub.name}
+                                to={sub.href || createPageUrl(sub.page)}
+                                className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
+                              >
+                                {sub.name}
+                              </Link>
+                            )
                           ))}
                         </motion.div>
                       )}
