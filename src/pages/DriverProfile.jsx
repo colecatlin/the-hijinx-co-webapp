@@ -124,15 +124,17 @@ export default function DriverProfile() {
     ...DQ,
   });
 
-  const driver    = profileData?.driver   ?? null;
-  const media     = profileData?.media    ?? null;
-  const programs  = profileData?.programs ?? [];
-  const entries   = profileData?.entries  ?? [];
-  const results   = profileData?.results  ?? [];
-  const sessions  = profileData?.sessions ?? [];
-  const allSeries = profileData?.series   ?? [];
-  const allClasses= profileData?.classes  ?? [];
-  const driverTeam= profileData?.team     ?? null;
+  const driver       = profileData?.driver        ?? null;
+  const media        = profileData?.media         ?? null;
+  const programs     = profileData?.programs      ?? [];
+  const entries      = profileData?.entries       ?? [];
+  const results      = profileData?.results       ?? [];
+  const sessions     = profileData?.sessions      ?? [];
+  const allSeries    = profileData?.series        ?? [];
+  const allClasses   = profileData?.classes       ?? [];
+  const driverTeam   = profileData?.team          ?? null;
+  const careerEntries= profileData?.careerEntries ?? [];
+  const sponsors     = profileData?.sponsors      ?? [];
 
   useEffect(() => {
     if (driver && legacyId && driver.canonical_slug) {
