@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import TrackEventsPanel from '@/components/tracks/TrackEventsPanel';
+import TrackMapPanel from '@/components/tracks/TrackMapPanel';
 import { createPageUrl } from '@/components/utils';
 import { MapPin, Globe, Phone, Mail, Flag, Ruler, ExternalLink, Calendar } from 'lucide-react';
 import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
