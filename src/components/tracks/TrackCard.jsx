@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Flag } from 'lucide-react';
+import { MapPin, ArrowRight } from 'lucide-react';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 
 export default function TrackCard({ track, disciplines = [], media }) {
