@@ -19,7 +19,7 @@ const getStatusCfg = (status) =>
 export default function HomepageEventSpotlight({ event }) {
   if (!event) return null;
 
-  const eventUrl = `${createPageUrl('EventProfile')}?id=${event.id}`;
+  const eventUrl = `/EventProfile?id=${event.id}`;
   const statusCfg = getStatusCfg(event.status);
 
   let formattedDate = null;
