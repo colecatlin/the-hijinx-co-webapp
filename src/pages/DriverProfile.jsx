@@ -107,10 +107,11 @@ export default function DriverProfile() {
     ...DQ,
   });
 
-  // Separate driver list query for the compare dialog only
+  // Separate driver list query for the compare dialog only — only load when viewing a valid profile
   const { data: allDrivers = [] } = useQuery({
     queryKey: QueryKeys.drivers.list(),
     queryFn: () => base44.entities.Driver.list(),
+    enabled: !!driverSlug,
     ...DQ,
   });
 
