@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getDriverProfileUrl } from '@/lib/driverUrl';
+import { getDriverProfileUrl } from '@/components/utils/driverUrl';
 import { ArrowRight, User, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
