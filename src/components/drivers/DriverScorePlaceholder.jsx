@@ -25,7 +25,7 @@ export default function DriverScorePlaceholder() {
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {SCORE_DIMS.map(({ label, icon: Icon, color, desc }) => (
+        {SCORE_DIMS.map(({ label, Icon, color, desc }) => (
           <div key={label} className="bg-white border border-gray-100 rounded-lg p-3">
             <Icon className={`w-4 h-4 ${color} mb-2 opacity-60`} />
             <div className="text-xs font-bold text-gray-300 uppercase tracking-wide mb-0.5">{label}</div>
