@@ -55,6 +55,8 @@ export async function getDriverProfileData({ slug, id }) {
     sessionsResult,
     seriesResult,
     classesResult,
+    careerEntriesResult,
+    sponsorsResult,
   ] = await Promise.allSettled([
     driver.team_id
       ? resolveLinkedEntityById({ entityType: 'Team', entityId: driver.team_id })
@@ -68,18 +70,22 @@ export async function getDriverProfileData({ slug, id }) {
     safe(base44.entities.Session.list(), []),
     safe(base44.entities.Series.list(), []),
     safe(base44.entities.SeriesClass.list(), []),
+    safe(base44.entities.DriverCareerEntry.filter({ driver_id: driver.id }), []),
+    safe(base44.entities.DriverSponsor.filter({ driver_id: driver.id }), []),
   ]);
 
   return {
     driver,
-    team:     teamResult.status    === 'fulfilled' ? teamResult.value    : null,
-    media:    mediaResult.status   === 'fulfilled' ? mediaResult.value   : null,
-    programs: programsResult.status === 'fulfilled' ? programsResult.value : [],
-    entries:  entriesResult.status  === 'fulfilled' ? entriesResult.value  : [],
-    results:  resultsResult.status  === 'fulfilled' ? resultsResult.value  : [],
-    sessions: sessionsResult.status === 'fulfilled' ? sessionsResult.value : [],
-    series:   seriesResult.status   === 'fulfilled' ? seriesResult.value   : [],
-    classes:  classesResult.status  === 'fulfilled' ? classesResult.value  : [],
+    team:          teamResult.status          === 'fulfilled' ? teamResult.value          : null,
+    media:         mediaResult.status         === 'fulfilled' ? mediaResult.value         : null,
+    programs:      programsResult.status      === 'fulfilled' ? programsResult.value      : [],
+    entries:       entriesResult.status       === 'fulfilled' ? entriesResult.value       : [],
+    results:       resultsResult.status       === 'fulfilled' ? resultsResult.value       : [],
+    sessions:      sessionsResult.status      === 'fulfilled' ? sessionsResult.value      : [],
+    series:        seriesResult.status        === 'fulfilled' ? seriesResult.value        : [],
+    classes:       classesResult.status       === 'fulfilled' ? classesResult.value       : [],
+    careerEntries: careerEntriesResult.status === 'fulfilled' ? careerEntriesResult.value : [],
+    sponsors:      sponsorsResult.status      === 'fulfilled' ? sponsorsResult.value      : [],
   };
 }
 

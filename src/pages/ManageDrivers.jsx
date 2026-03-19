@@ -28,6 +28,9 @@ import DriverStatsManagement from '@/components/management/DriverManagement/Driv
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
 import DriverResultsSection from '@/components/management/DriverManagement/DriverResultsSection.jsx';
 import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
+import DriverBrandingSection from '@/components/management/DriverManagement/DriverBrandingSection.jsx';
+import DriverCareerManager from '@/components/management/DriverManagement/DriverCareerManager.jsx';
+import DriverSponsorManager from '@/components/management/DriverManagement/DriverSponsorManager.jsx';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { toast } from 'sonner';
 
@@ -339,8 +342,11 @@ export default function ManageDrivers() {
           </div>
 
           <Tabs defaultValue="core" className="mt-6">
-            <TabsList>
+            <TabsList className="flex-wrap h-auto gap-1">
               <TabsTrigger value="core">Core Details</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="career">Career History</TabsTrigger>
+              <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
               <TabsTrigger value="programs">Programs</TabsTrigger>
               <TabsTrigger value="results">Race Results</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
@@ -349,6 +355,15 @@ export default function ManageDrivers() {
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
+            </TabsContent>
+            <TabsContent value="branding" className="mt-6">
+              <DriverBrandingSection driverId={selectedDriverForEdit.id} driver={selectedDriverForEdit} onSaveSuccess={handleSaveSuccess} />
+            </TabsContent>
+            <TabsContent value="career" className="mt-6">
+              <DriverCareerManager driverId={selectedDriverForEdit.id} />
+            </TabsContent>
+            <TabsContent value="sponsors" className="mt-6">
+              <DriverSponsorManager driverId={selectedDriverForEdit.id} />
             </TabsContent>
             <TabsContent value="programs" className="mt-6">
               <DriverProgramsList driverId={selectedDriverForEdit.id} />
