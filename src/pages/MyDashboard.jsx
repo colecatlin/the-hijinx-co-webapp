@@ -28,7 +28,7 @@ import { getUserQuickActions } from '@/components/system/userQuickActions';
 import {
   User, Users, MapPin, Trophy, ChevronRight,
   Shield, Edit, Edit2, Plus, KeyRound, ExternalLink, Star,
-  Flag, Gauge, Calendar, Heart, Camera, Lock
+  Flag, Gauge, Calendar, Heart, Camera, Lock, ShieldCheck
 } from 'lucide-react';
 
 const ENTITY_ICONS = { Driver: User, Team: Users, Track: MapPin, Series: Trophy };
@@ -233,6 +233,11 @@ export default function MyDashboard() {
               {welcomeName && <p className="text-sm text-gray-500 mt-1">Welcome back, {welcomeName}</p>}
             </div>
             <div className="flex gap-2 flex-shrink-0 flex-wrap">
+              <Link to="/ClaimsCenter">
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Claims Center
+                </Button>
+              </Link>
               <Link to={createPageUrl('MotorsportsHome')}>
                 <Button size="sm" className="gap-1.5 text-xs bg-[#232323] hover:bg-black text-white">
                   <Flag className="w-3.5 h-3.5" /> Browse Motorsports

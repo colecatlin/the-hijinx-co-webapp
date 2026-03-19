@@ -28,6 +28,7 @@ import MediaOutletDirectory from './pages/MediaOutletDirectory';
 import MediaOutletProfile from './pages/MediaOutletProfile';
 import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
+import ClaimsCenter from './pages/ClaimsCenter';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -101,6 +102,7 @@ const AuthenticatedApp = () => {
       <Route path="/story/:slug" element={<LayoutWrapper currentPageName="OutletStoryPage"><OutletStoryPage /></LayoutWrapper>} />
       {/* Canonical slug-based driver profile route */}
       <Route path="/drivers/:slug" element={<LayoutWrapper currentPageName="DriverProfile"><DriverProfileRouteWrapper /></LayoutWrapper>} />
+      <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
