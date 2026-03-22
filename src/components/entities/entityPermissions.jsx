@@ -19,6 +19,9 @@ export {
   requireEntityAccess,
 } from '@/components/access/entityAccess';
 
+// hasEntityAccess — backward compat alias used by RegistrationDashboard
+export { hasEntityAccess } from '@/components/access/entityAccess';
+
 /**
  * getHighestEntityRole — sync helper using pre-loaded collaborations array.
  * Kept here for backward compat with components that import from entityPermissions.
