@@ -267,6 +267,16 @@ function MyClaims({ userId }) {
               {claim.justification && (
                 <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">"{claim.justification}"</p>
               )}
+              {claim.status === 'needs_more_info' && claim.admin_notes && (
+                <p className="text-xs text-blue-600 mt-1 bg-blue-50 border border-blue-100 rounded px-2 py-1">
+                  Admin: {claim.admin_notes}
+                </p>
+              )}
+              {claim.status === 'rejected' && claim.admin_notes && (
+                <p className="text-xs text-red-500 mt-1 bg-red-50 border border-red-100 rounded px-2 py-1">
+                  Reason: {claim.admin_notes}
+                </p>
+              )}
             </div>
             <StatusBadge status={claim.status} />
           </div>
