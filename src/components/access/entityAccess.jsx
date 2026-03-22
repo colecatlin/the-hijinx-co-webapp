@@ -103,6 +103,25 @@ export async function getUserOwnedEntities(userId) {
 }
 
 /**
+ * Check if a specific user has any access (owner or editor) to a specific entity.
+ * Sync variant — pass pre-loaded collaborations array.
+ * Also available as async: use canManageEntity() instead.
+ */
+export async function hasEntityAccess({ userId, entityType, entityId }) {
+  if (!userId || !entityType || !entityId) return false;
+  try {
+    const collabs = await base44.entities.EntityCollaborator.filter({
+      user_id: userId,
+      entity_type: entityType,
+      entity_id: entityId,
+    });
+    return collabs && collabs.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Throw if current user cannot manage the entity.
  */
 export async function requireEntityAccess(entityType, entityId) {
