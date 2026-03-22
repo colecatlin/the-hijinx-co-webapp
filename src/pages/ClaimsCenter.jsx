@@ -29,7 +29,8 @@ const STATUS_CONFIG = {
   pending: { label: 'Pending Review', color: 'bg-amber-50 text-amber-700 border-amber-200', Icon: Clock },
   approved: { label: 'Approved', color: 'bg-green-50 text-green-700 border-green-200', Icon: CheckCircle2 },
   rejected: { label: 'Denied', color: 'bg-red-50 text-red-700 border-red-200', Icon: XCircle },
-  needs_more_info: { label: 'Needs More Info', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: AlertCircle },
+  needs_more_info: { label: 'More Info Needed', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: AlertCircle },
+  needs_more_info_active: { label: 'Action Required', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: AlertCircle },
 };
 
 function StatusBadge({ status }) {
