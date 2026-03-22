@@ -20,6 +20,114 @@ const ENTITY_SDK_MAP = {
   Series: 'Series',
 };
 
+// ─── Sync ownership: owner_user_id + EntityCollaborator in one atomic-ish block ────
+async function syncEntityOwnership({ base44, entityType, entityId, entityName, userId, userEmail, role, actedByEmail, actedByUserId, now }) {
+  const existingCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+    entity_type: entityType,
+    entity_id: entityId,
+  });
+
+  const existingOwners = existingCollabs.filter(c => c.role === 'owner');
+  const previousOwnerCollab = existingOwners.find(c => c.user_id !== userId);
+  const alreadyLinked = existingCollabs.find(c => c.user_id === userId || c.user_email === userEmail);
+
+  let collaboratorId = null;
+  let previousOwnerId = null;
+
+  // Capture previous owner for audit
+  if (previousOwnerCollab) {
+    previousOwnerId = previousOwnerCollab.user_id;
+    // Downgrade prior owner to editor to avoid conflicting owners
+    await base44.asServiceRole.entities.EntityCollaborator.update(previousOwnerCollab.id, { role: 'editor' });
+    await base44.asServiceRole.entities.OperationLog.create({
+      operation_type: 'entity_owner_overridden',
+      entity_name: entityType,
+      entity_id: entityId,
+      status: 'success',
+      message: `Previous owner ${previousOwnerCollab.user_email} downgraded to editor on ${entityName} (${entityType})`,
+      initiated_by: actedByEmail,
+      metadata: {
+        entity_type: entityType,
+        entity_id: entityId,
+        previous_owner_user_id: previousOwnerCollab.user_id,
+        new_owner_user_id: userId,
+        acted_by_user_id: actedByUserId,
+        collaborator_record_id: previousOwnerCollab.id,
+      },
+    });
+  }
+
+  // Create or upgrade the new owner's collaborator record
+  if (alreadyLinked) {
+    if (alreadyLinked.role !== role) {
+      await base44.asServiceRole.entities.EntityCollaborator.update(alreadyLinked.id, { role });
+      await base44.asServiceRole.entities.OperationLog.create({
+        operation_type: 'entity_owner_permissions_synced',
+        entity_name: entityType,
+        entity_id: entityId,
+        status: 'success',
+        message: `Collaborator role upgraded to ${role} for ${userEmail} on ${entityName}`,
+        initiated_by: actedByEmail,
+        metadata: {
+          entity_type: entityType,
+          entity_id: entityId,
+          new_owner_user_id: userId,
+          previous_owner_user_id: previousOwnerId,
+          acted_by_user_id: actedByUserId,
+          collaborator_record_id: alreadyLinked.id,
+        },
+      });
+    }
+    collaboratorId = alreadyLinked.id;
+  } else {
+    // Reuse access code from existing owner if available, else generate new
+    let accessCode = existingOwners.length > 0 && existingOwners[0].access_code
+      ? existingOwners[0].access_code
+      : await generateUniqueCode(base44);
+    if (!accessCode) throw new Error('Failed to generate unique access code');
+
+    const created = await base44.asServiceRole.entities.EntityCollaborator.create({
+      user_id: userId,
+      user_email: userEmail,
+      entity_type: entityType,
+      entity_id: entityId,
+      entity_name: entityName,
+      role,
+      access_code: accessCode,
+    });
+    collaboratorId = created?.id || null;
+
+    await base44.asServiceRole.entities.OperationLog.create({
+      operation_type: 'entity_owner_assigned',
+      entity_name: entityType,
+      entity_id: entityId,
+      status: 'success',
+      message: `Owner collaborator record created for ${userEmail} on ${entityName} (${entityType})`,
+      initiated_by: actedByEmail,
+      metadata: {
+        entity_type: entityType,
+        entity_id: entityId,
+        new_owner_user_id: userId,
+        previous_owner_user_id: previousOwnerId,
+        acted_by_user_id: actedByUserId,
+        collaborator_record_id: collaboratorId,
+      },
+    });
+  }
+
+  // Sync owner_user_id on the entity record itself
+  if (role === 'owner') {
+    try {
+      const entitySdk = base44.asServiceRole.entities[ENTITY_SDK_MAP[entityType]];
+      if (entitySdk) {
+        await entitySdk.update(entityId, { owner_user_id: userId });
+      }
+    } catch (_) { /* non-critical — entity may not have owner_user_id field */ }
+  }
+
+  return { collaboratorId, previousOwnerId };
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
@@ -83,49 +191,20 @@ Deno.serve(async (req) => {
 
   // ── APPROVE ─────────────────────────────────────────────────────
   if (action === 'approve') {
-    const existingCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
-      entity_type: claim.entity_type,
-      entity_id: claim.entity_id,
+    const { collaboratorId, previousOwnerId } = await syncEntityOwnership({
+      base44,
+      entityType: claim.entity_type,
+      entityId: claim.entity_id,
+      entityName: claim.entity_name,
+      userId: claim.user_id,
+      userEmail: claim.user_email,
+      role,
+      actedByEmail: user.email,
+      actedByUserId: user.id,
+      now,
     });
 
-    const existingOwners = existingCollabs.filter(c => c.role === 'owner');
-    const alreadyLinked = existingCollabs.find(
-      c => c.user_id === claim.user_id || c.user_email === claim.user_email
-    );
-
-    if (alreadyLinked) {
-      if (alreadyLinked.role !== role) {
-        await base44.asServiceRole.entities.EntityCollaborator.update(alreadyLinked.id, { role });
-      }
-    } else {
-      let accessCode = '';
-      if (existingOwners.length > 0 && existingOwners[0].access_code) {
-        accessCode = existingOwners[0].access_code;
-      } else {
-        accessCode = await generateUniqueCode(base44);
-        if (!accessCode) return Response.json({ error: 'Failed to generate unique access code' }, { status: 500 });
-      }
-      await base44.asServiceRole.entities.EntityCollaborator.create({
-        user_id: claim.user_id,
-        user_email: claim.user_email,
-        entity_type: claim.entity_type,
-        entity_id: claim.entity_id,
-        entity_name: claim.entity_name,
-        role,
-        access_code: accessCode,
-      });
-    }
-
-    // Update owner_user_id on the entity itself when granting owner role
-    if (role === 'owner') {
-      try {
-        const entitySdk = base44.asServiceRole.entities[ENTITY_SDK_MAP[claim.entity_type]];
-        if (entitySdk) {
-          await entitySdk.update(claim.entity_id, { owner_user_id: claim.user_id });
-        }
-      } catch (_) { /* non-critical if entity doesn't have owner_user_id */ }
-    }
-
+    // Update claim record
     await base44.asServiceRole.entities.EntityClaimRequest.update(claim_id, {
       status: 'approved',
       admin_notes,
@@ -134,6 +213,27 @@ Deno.serve(async (req) => {
       granted_role: role,
     });
 
+    // Ownership transfer log
+    await base44.asServiceRole.entities.OperationLog.create({
+      operation_type: 'ownership_transferred',
+      entity_name: claim.entity_type,
+      entity_id: claim.entity_id,
+      status: 'success',
+      message: `Ownership of ${claim.entity_name} (${claim.entity_type}) transferred to ${claim.user_email}`,
+      initiated_by: user.email,
+      metadata: {
+        entity_type: claim.entity_type,
+        entity_id: claim.entity_id,
+        previous_owner_user_id: previousOwnerId,
+        new_owner_user_id: claim.user_id,
+        acted_by_user_id: user.id,
+        role,
+        collaborator_record_id: collaboratorId,
+        source: 'claim_approval',
+      },
+    });
+
+    // Claim approved log
     await base44.asServiceRole.entities.OperationLog.create({
       operation_type: 'claim_approved',
       entity_name: 'EntityClaimRequest',
@@ -145,24 +245,16 @@ Deno.serve(async (req) => {
         entity_type: claim.entity_type,
         entity_id: claim.entity_id,
         target_user_email: claim.user_email,
+        previous_owner_user_id: previousOwnerId,
+        new_owner_user_id: claim.user_id,
         role,
         acted_by_user_id: user.id,
-        had_existing_owner: existingOwners.length > 0,
+        collaborator_record_id: collaboratorId,
+        had_existing_owner: !!previousOwnerId,
       },
     });
 
-    // Log ownership transfer
-    await base44.asServiceRole.entities.OperationLog.create({
-      operation_type: 'ownership_transferred',
-      entity_name: claim.entity_type,
-      entity_id: claim.entity_id,
-      status: 'success',
-      message: `Ownership of ${claim.entity_name} transferred to ${claim.user_email}`,
-      initiated_by: user.email,
-      metadata: { user_id: claim.user_id, user_email: claim.user_email, role, source: 'claim_approval' },
-    });
-
-    // Auto-set primary entity for claimant if they have none yet
+    // Auto-set primary entity if claimant has none
     try {
       const claimants = await base44.asServiceRole.entities.User.filter({ id: claim.user_id });
       const claimant = claimants[0];
@@ -174,7 +266,7 @@ Deno.serve(async (req) => {
       }
     } catch (_) { /* non-critical */ }
 
-    return Response.json({ success: true, action: 'approved', role });
+    return Response.json({ success: true, action: 'approved', role, collaborator_id: collaboratorId });
   }
 
   return Response.json({ error: 'Invalid action' }, { status: 400 });
