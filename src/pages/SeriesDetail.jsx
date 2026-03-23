@@ -67,8 +67,18 @@ export default function SeriesDetail({ overrideSlug } = {}) {
 
   const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
 
+  // Sort classes: manual sort_order first, then highest competition_level first
+  const sortedClasses = useMemo(() => [...classes].sort((a, b) => {
+    const aHasOrder = a.sort_order != null;
+    const bHasOrder = b.sort_order != null;
+    if (aHasOrder && bHasOrder) return a.sort_order - b.sort_order;
+    if (aHasOrder) return -1;
+    if (bHasOrder) return 1;
+    return (b.competition_level || 0) - (a.competition_level || 0);
+  }), [classes]);
+
   // All hooks must be called before any early returns
-  const activeClasses = useMemo(() => classes.filter(c => c.active !== false), [classes]);
+  const activeClasses = useMemo(() => sortedClasses.filter(c => c.active !== false), [sortedClasses]);
   const publicEvents = useMemo(() => allEvents.filter(e => isPublicVisible('Event', e)), [allEvents]);
 
   const seasonEvents = useMemo(() => {

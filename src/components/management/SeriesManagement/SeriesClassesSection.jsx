@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Pencil, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Pencil, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 
