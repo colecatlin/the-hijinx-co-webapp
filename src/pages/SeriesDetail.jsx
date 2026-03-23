@@ -65,7 +65,22 @@ export default function SeriesDetail({ overrideSlug } = {}) {
   const results   = profileData?.results   ?? [];
   const standings = profileData?.standings ?? [];
 
-  const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
+  const CURRENT_YEAR = new Date().getFullYear();
+  const seasonYear = searchParams.get('seasonYear') || CURRENT_YEAR.toString();
+
+  // Build season year options: 2 future years, current year, then past years back to earliest event
+  const availableYears = useMemo(() => {
+    const earliestFromEvents = allEvents.reduce((min, e) => {
+      const y = parseInt(e.season || (e.event_date ? e.event_date.substring(0, 4) : null));
+      return y && y < min ? y : min;
+    }, CURRENT_YEAR - 1);
+    const earliest = Math.min(earliestFromEvents, CURRENT_YEAR - 1);
+    const years = [];
+    for (let y = CURRENT_YEAR + 2; y >= earliest; y--) {
+      years.push(y);
+    }
+    return years;
+  }, [allEvents, CURRENT_YEAR]);
 
   // Sort classes: manual sort_order first, then highest competition_level first
   const sortedClasses = useMemo(() => [...classes].sort((a, b) => {
