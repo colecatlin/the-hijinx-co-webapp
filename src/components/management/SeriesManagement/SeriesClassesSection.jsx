@@ -51,6 +51,17 @@ function computeScoreTotal(data) {
   return SCORE_FIELDS.reduce((sum, f) => sum + (Number(data[f.key]) || 0), 0);
 }
 
+function sortClasses(classes) {
+  return [...classes].sort((a, b) => {
+    const aHasOrder = a.sort_order != null;
+    const bHasOrder = b.sort_order != null;
+    if (aHasOrder && bHasOrder) return a.sort_order - b.sort_order;
+    if (aHasOrder) return -1;
+    if (bHasOrder) return 1;
+    return (b.competition_level || 0) - (a.competition_level || 0);
+  });
+}
+
 export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(null);
