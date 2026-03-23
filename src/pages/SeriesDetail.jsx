@@ -67,38 +67,10 @@ export default function SeriesDetail({ overrideSlug } = {}) {
 
   const seasonYear = searchParams.get('seasonYear') || new Date().getFullYear().toString();
 
-  useEffect(() => {
-    if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
-  }, [series?.id]);
+  // All hooks must be called before any early returns
+  const activeClasses = useMemo(() => classes.filter(c => c.active !== false), [classes]);
+  const publicEvents = useMemo(() => allEvents.filter(e => isPublicVisible('Event', e)), [allEvents]);
 
-  if (isLoading) {
-    return (
-      <PageShell>
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <Skeleton className="h-12 w-1/3 mb-4" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </PageShell>
-    );
-  }
-
-  if (!series) return <EntityNotFound entityType="Series" />;
-
-  const sections = [
-    { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'history', label: 'History', icon: TrendingUp },
-    { id: 'classes', label: 'Classes', icon: Flag },
-    { id: 'schedule', label: 'Schedule', icon: Calendar },
-  ];
-
-  const displayLevel = series.override_competition_level || series.derived_competition_level;
-  const isOverride = !!series.override_competition_level;
-  const activeClasses = classes.filter(c => c.active !== false);
-
-  // Public-visible events
-  const publicEvents = allEvents.filter(e => isPublicVisible('Event', e));
-
-  // Season-filtered events
   const seasonEvents = useMemo(() => {
     return allEvents
       .filter(e => e.season === seasonYear && isPublicVisible('Event', e))
@@ -137,6 +109,33 @@ export default function SeriesDetail({ overrideSlug } = {}) {
       .sort((a, b) => (a.position || 999) - (b.position || 999))
       .slice(0, 10);
   }, [standings, series?.id, seasonYear, activeClassName]);
+
+  useEffect(() => {
+    if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
+  }, [series?.id]);
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <Skeleton className="h-12 w-1/3 mb-4" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!series) return <EntityNotFound entityType="Series" />;
+
+  const sections = [
+    { id: 'overview', label: 'Overview', icon: MapPin },
+    { id: 'history', label: 'History', icon: TrendingUp },
+    { id: 'classes', label: 'Classes', icon: Flag },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
+  ];
+
+  const displayLevel = series.override_competition_level || series.derived_competition_level;
+  const isOverride = !!series.override_competition_level;
 
   const seriesImg = series.banner_url || series.logo_url || SITE_FALLBACK_IMAGE;
   const seriesDesc = [
