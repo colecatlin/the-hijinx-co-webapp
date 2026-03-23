@@ -73,8 +73,8 @@ export function isPublicVisible(entityName, record, options = {}) {
       return record.profile_status === 'live';
 
     case 'Event':
-      // Public if status is upcoming, in_progress, or completed
-      return ['upcoming', 'in_progress', 'completed'].includes(record.status);
+      // Public if status is Published, Live, or Completed
+      return ['Published', 'Live', 'Completed', 'upcoming', 'in_progress', 'completed'].includes(record.status);
 
     case 'Session':
       // Public only if Official or Locked
