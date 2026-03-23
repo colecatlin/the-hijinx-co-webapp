@@ -28,6 +28,7 @@ import MediaOutletDirectory from './pages/MediaOutletDirectory';
 import MediaOutletProfile from './pages/MediaOutletProfile';
 import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
+import { SeriesDetailRouteWrapper } from './pages/SeriesDetail';
 import ClaimsCenter from './pages/ClaimsCenter';
 import ChampImportAdmin from './pages/ChampImportAdmin';
 
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
       <Route path="/story/:slug" element={<LayoutWrapper currentPageName="OutletStoryPage"><OutletStoryPage /></LayoutWrapper>} />
       {/* Canonical slug-based driver profile route */}
       <Route path="/drivers/:slug" element={<LayoutWrapper currentPageName="DriverProfile"><DriverProfileRouteWrapper /></LayoutWrapper>} />
+      <Route path="/series/:slug" element={<LayoutWrapper currentPageName="SeriesDetail"><SeriesDetailRouteWrapper /></LayoutWrapper>} />
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/management/champ-import" element={<LayoutWrapper currentPageName="ChampImportAdmin"><ChampImportAdmin /></LayoutWrapper>} />

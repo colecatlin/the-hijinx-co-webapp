@@ -20,7 +20,7 @@ export default function SeriesCard({ series }) {
 
   return (
     <Link
-      to={series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?id=${series.id}`}
+      to={series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?slug=${series.id}`}
       className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col relative"
     >
       {displayLevel && (

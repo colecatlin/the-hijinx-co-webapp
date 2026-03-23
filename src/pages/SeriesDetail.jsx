@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSeriesDetailData } from '@/components/entities/publicPageDataApi';
 import { isPublicVisible } from '@/components/core/publishModel';
@@ -39,9 +39,15 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
   }
 }
 
-export default function SeriesDetail() {
+// Route wrapper for /series/:slug path-based routing
+export function SeriesDetailRouteWrapper() {
+  const { slug } = useParams();
+  return <SeriesDetail overrideSlug={slug} />;
+}
+
+export default function SeriesDetail({ overrideSlug } = {}) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const seriesSlug = (searchParams.get('slug') || searchParams.get('id') || '').trim() || null;
+  const seriesSlug = overrideSlug || (searchParams.get('slug') || searchParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedClassName, setSelectedClassName] = useState('');
 
