@@ -287,15 +287,8 @@ export default function EventDirectory() {
                     className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
-                      <span className={`shrink-0 ml-2 px-2 py-1 text-xs rounded ${
-                        event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                        event.status === 'in_progress' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {event.status}
-                      </span>
-                    </div>
+                       <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
+                     </div>
                     <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Calendar className="w-4 h-4" />
