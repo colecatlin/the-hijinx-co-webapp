@@ -290,15 +290,15 @@ export default function EventDirectory() {
                        <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
                      </div>
                     <div className="space-y-1 text-sm text-gray-600">
+                      {event.series && (
+                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">{event.series}</div>
+                      )}
                       <div className="flex items-center gap-2 flex-wrap">
                         <Calendar className="w-4 h-4" />
                         {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
-                        {event.round_number && seriesMap[event.series]?.uses_rounds && <span className="text-gray-400">· Rd {event.round_number}</span>}
+                        {event.round_number && seriesMap[event.series]?.uses_rounds && <span className="text-gray-400">&middot; Rd {event.round_number}</span>}
                         <DaysUntilBadge eventDate={event.event_date} status={event.status} />
                       </div>
-                      {event.series && (
-                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
-                      )}
                     </div>
                   </Link>
                 ))}
