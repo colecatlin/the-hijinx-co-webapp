@@ -256,6 +256,7 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
   }
 
   const activeClasses = classes.filter(c => c.active !== false);
+  const sorted = sortClasses(classes);
 
   return (
     <Card>
@@ -268,6 +269,7 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
               No active classes — series competition level cannot be derived
             </div>
           )}
+          <p className="text-xs text-gray-400 mt-1">Displayed highest competition level first. Use ↑↓ to manually reorder.</p>
         </div>
         <Button size="sm" onClick={() => { setFormData(emptyForm); setEditing('new'); }}>
           <Plus className="w-4 h-4 mr-1" />
@@ -275,12 +277,31 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
         </Button>
       </CardHeader>
       <CardContent>
-        {classes.length > 0 ? (
+        {sorted.length > 0 ? (
           <div className="space-y-3">
-            {classes.map(cls => {
+            {sorted.map((cls, index) => {
               const scoreTotal = computeScoreTotal(cls);
               return (
                 <div key={cls.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between">
+                  <div className="flex items-center gap-2 mr-3 flex-shrink-0">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => handleMove(sorted, index, -1)}
+                        disabled={index === 0}
+                        className="p-0.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={() => handleMove(sorted, index, 1)}
+                        disabled={index === sorted.length - 1}
+                        className="p-0.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5 text-gray-500" />
+                      </button>
+                    </div>
+                    <span className="text-xs text-gray-400 font-mono w-4 text-center">{index + 1}</span>
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       <p className="font-semibold">{cls.class_name}</p>
