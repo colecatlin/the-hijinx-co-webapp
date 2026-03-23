@@ -117,6 +117,7 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
     const payload = {
       ...formData,
       competition_level: formData.competition_level ? Number(formData.competition_level) : null,
+      sort_order: formData.sort_order !== '' ? Number(formData.sort_order) : null,
       ...SCORE_FIELDS.reduce((acc, f) => {
         acc[f.key] = formData[f.key] ? Number(formData[f.key]) : null;
         return acc;
