@@ -97,6 +97,21 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seriesClasses', seriesId] }),
   });
 
+  const reorderMutation = useMutation({
+    mutationFn: ({ id, sort_order }) => base44.entities.SeriesClass.update(id, { sort_order }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seriesClasses', seriesId] }),
+  });
+
+  const handleMove = (sorted, index, direction) => {
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= sorted.length) return;
+    // Assign explicit sort_order to both swapped items
+    const itemA = sorted[index];
+    const itemB = sorted[swapIndex];
+    reorderMutation.mutate({ id: itemA.id, sort_order: swapIndex });
+    reorderMutation.mutate({ id: itemB.id, sort_order: index });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
