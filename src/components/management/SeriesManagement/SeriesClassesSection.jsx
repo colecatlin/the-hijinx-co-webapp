@@ -174,6 +174,12 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
               </div>
             </div>
 
+            <div>
+                <Label>Display Order</Label>
+                <Input className="mt-1 w-24" type="number" min={0} placeholder="Auto" value={formData.sort_order} onChange={(e) => setFormData({...formData, sort_order: e.target.value})} />
+                <p className="text-xs text-gray-400 mt-1">Lower number = displayed first. Leave blank to auto-sort by competition level.</p>
+              </div>
+
             {/* Competition classification — admin only */}
             <div className={`border rounded-lg p-4 space-y-4 ${!isAdmin ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex items-center gap-2">
