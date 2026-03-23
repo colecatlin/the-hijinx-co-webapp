@@ -36,6 +36,7 @@ const emptyForm = {
   vehicle_type: '',
   competition_level: '',
   geographic_scope: '',
+  sort_order: '',
   media_score: '',
   attendance_score: '',
   purse_score: '',
