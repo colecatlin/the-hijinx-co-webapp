@@ -380,9 +380,9 @@ export default function SeriesDetail({ overrideSlug } = {}) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[2025, 2026, 2027, 2028].map(year => (
+                {availableYears.map(year => (
                   <SelectItem key={year} value={year.toString()}>
-                    {year}
+                    {year}{year === CURRENT_YEAR ? ' (Current)' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
