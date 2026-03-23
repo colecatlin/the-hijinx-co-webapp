@@ -22,11 +22,9 @@ export function isDriverPublic(driver) {
  */
 export function isEventPublic(event) {
   if (!event) return false;
-  
-  const isPublishReady = event.publish_ready === true;
-  const isPublishableStatus = ['Published', 'Live', 'Completed'].includes(event.status);
-  
-  return isPublishReady && isPublishableStatus;
+  // If publish_ready flag exists, use it; otherwise fall back to status check
+  if (event.publish_ready === false) return false;
+  return ['Published', 'Live', 'Completed'].includes(event.status);
 }
 
 /**
@@ -134,14 +132,10 @@ export function getPublishStatus(entity, entityType) {
       break;
       
     case 'Event':
-      const publishReady = entity.publish_ready === true;
       const statusOk = ['Published', 'Live', 'Completed'].includes(entity.status);
-      status.isPublic = publishReady && statusOk;
-      status.reason = !publishReady 
-        ? 'Not publish ready' 
-        : !statusOk 
-        ? `Status: ${entity.status}` 
-        : 'Published';
+      const publishBlocked = entity.publish_ready === false;
+      status.isPublic = statusOk && !publishBlocked;
+      status.reason = publishBlocked ? 'Not publish ready' : statusOk ? 'Published' : `Status: ${entity.status}`;
       break;
       
     case 'Session':
