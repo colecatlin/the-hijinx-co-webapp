@@ -29,6 +29,7 @@ import MediaOutletProfile from './pages/MediaOutletProfile';
 import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
 import ClaimsCenter from './pages/ClaimsCenter';
+import ChampImportAdmin from './pages/ChampImportAdmin';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
