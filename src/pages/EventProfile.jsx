@@ -83,6 +83,10 @@ export default function EventProfile() {
   const isPublicEvent = event && isEventPublic(event);
   const canViewDraft  = user?.role === 'admin' && event?.status === 'Draft';
 
+  useEffect(() => {
+    if (event) Analytics.profileViewEvent(event.id, event.name, event.status);
+  }, [event?.id]);
+
   if (isLoading) {
     return (
       <PageShell className="bg-white">
@@ -93,10 +97,6 @@ export default function EventProfile() {
       </PageShell>
     );
   }
-
-  useEffect(() => {
-    if (event) Analytics.profileViewEvent(event.id, event.name, event.status);
-  }, [event?.id]);
 
   if (!event) return <EntityNotFound entityType="Event" />;
   if (!isPublicEvent && !canViewDraft) return <EntityUnavailable entityType="Event" />;
