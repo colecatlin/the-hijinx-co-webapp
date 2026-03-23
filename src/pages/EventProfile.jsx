@@ -674,15 +674,9 @@ export default function EventProfile() {
           </section>
         </div>
 
-        <div className="space-y-4">
-          <section id="section-results" className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Submit Results</h2>
-            <EventResultsSubmissionForm eventName={event.name} eventDate={event.event_date} />
-          </section>
-          <div className="bg-white border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-[#232323] mb-6">Official Results & Standings</h2>
-            <ResultsPanel eventId={event?.id} seriesName={event.series} />
-          </div>
+        <div className="bg-white border border-gray-200 p-8">
+          <h2 className="text-2xl font-bold text-[#232323] mb-6">Official Results & Standings</h2>
+          <ResultsPanel eventId={event?.id} seriesName={event.series} />
         </div>
       </div>
     </PageShell>
