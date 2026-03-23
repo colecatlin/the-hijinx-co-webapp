@@ -136,6 +136,7 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
       vehicle_type: cls.vehicle_type || '',
       competition_level: cls.competition_level || '',
       geographic_scope: cls.geographic_scope || '',
+      sort_order: cls.sort_order ?? '',
       media_score: cls.media_score || '',
       attendance_score: cls.attendance_score || '',
       purse_score: cls.purse_score || '',
