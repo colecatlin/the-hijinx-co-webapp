@@ -114,7 +114,7 @@ export default function EventDirectory() {
   const filteredUpcomingEvents = upcomingEvents
     .filter(event => {
       const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSeries = seriesFilter === 'all' || (event.series_name || event.series) === seriesFilter;
+      const matchesSeries = seriesFilter === 'all' || event.series === seriesFilter;
       const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
       return matchesSearch && matchesSeries && matchesStatus;
     });
@@ -128,7 +128,7 @@ export default function EventDirectory() {
     return podium.some(p => p.name?.toLowerCase().includes(term));
   });
 
-  const uniqueSeries = [...new Set([...upcomingEvents, ...completedEvents].map(e => e.series_name || e.series).filter(Boolean))];
+  const uniqueSeries = [...new Set([...upcomingEvents, ...completedEvents].map(e => e.series).filter(Boolean))];
 
   const positionIcon = (pos) => {
     if (pos === 1) return <Trophy className="w-3.5 h-3.5 text-yellow-500" />;
@@ -290,8 +290,8 @@ export default function EventDirectory() {
                        <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
                      </div>
                     <div className="space-y-1 text-sm text-gray-600">
-                      {(event.series_name || event.series) && (
-                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">{event.series_name || event.series}</div>
+                      {event.series_name && (
+                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">{event.series_name}</div>
                       )}
                       <div className="flex items-center gap-2 flex-wrap">
                         <Calendar className="w-4 h-4" />
