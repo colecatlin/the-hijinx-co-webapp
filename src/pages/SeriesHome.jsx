@@ -16,11 +16,13 @@ export default function SeriesHome() {
   const [status, setStatus] = useState('all');
   const [sortBy, setSortBy] = useState('name');
 
-  const { data: series = [], isLoading } = useQuery({
+  const { data: rawSeries, isLoading } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
     staleTime: 10 * 60 * 1000,
   });
+
+  const series = Array.isArray(rawSeries) ? rawSeries : [];
 
   let filteredSeries = series.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
