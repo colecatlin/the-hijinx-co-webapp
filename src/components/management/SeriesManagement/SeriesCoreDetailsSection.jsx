@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Upload, Trash2, Plus, X } from 'lucide-react';
+import EntityImagePanel from '@/components/shared/EntityImagePanel';
 
 export default function SeriesCoreDetailsSection({ seriesId }) {
   const [formData, setFormData] = useState({});
@@ -374,6 +375,15 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
             </Button>
           </div>
         </div>
+
+        <EntityImagePanel
+          entity={formData}
+          onSave={async (imgs) => {
+            setFormData(prev => ({ ...prev, ...imgs }));
+            await base44.entities.Series.update(seriesId, imgs);
+            toast.success('Images saved');
+          }}
+        />
 
         <Button onClick={handleSave} disabled={updateMutation.isPending}>
           {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}

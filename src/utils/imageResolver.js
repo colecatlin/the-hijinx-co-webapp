@@ -27,23 +27,24 @@ export function getBestImage(entity, type = 'event', context = 'grid') {
 
   switch (type) {
     case 'driver': {
-      // Hero context: prefer full cinematic image
       if (context === 'hero' || context === 'spotlight') {
         return entity.hero_image_url
+          || entity.card_image_url
           || entity.profile_image_url
           || entity.thumbnail_url
           || getFallback('driver');
       }
-      // Grid / feed: profile image is cleaner
-      return entity.profile_image_url
+      return entity.card_image_url
+        || entity.profile_image_url
         || entity.hero_image_url
         || entity.thumbnail_url
         || getFallback('driver');
     }
 
     case 'event': {
-      return entity.banner_url
+      return entity.card_image_url
         || entity.hero_image_url
+        || entity.banner_url
         || entity.cover_image
         || entity.track_image
         || entity.image_url
@@ -51,15 +52,32 @@ export function getBestImage(entity, type = 'event', context = 'grid') {
     }
 
     case 'track': {
-      return entity.hero_image_url
+      return entity.card_image_url
+        || entity.hero_image_url
         || entity.cover_image
         || entity.aerial_image_url
         || entity.image_url
         || getFallback('track');
     }
 
+    case 'series': {
+      return entity.card_image_url
+        || entity.hero_image_url
+        || entity.banner_url
+        || entity.logo_url
+        || getFallback('track');
+    }
+
+    case 'team': {
+      return entity.card_image_url
+        || entity.hero_image_url
+        || entity.logo_url
+        || getFallback('track');
+    }
+
     case 'story': {
-      return entity.cover_image
+      return entity.card_image_url
+        || entity.cover_image
         || entity.hero_image_url
         || entity.thumbnail_url
         || entity.image_url
@@ -75,8 +93,8 @@ export function getBestImage(entity, type = 'event', context = 'grid') {
     }
 
     case 'feed': {
-      // Feed items have varied shapes — try all common fields
-      return entity.image_url
+      return entity.card_image_url
+        || entity.image_url
         || entity.driver_image
         || entity.cover_image
         || entity.thumbnail_url
@@ -86,6 +104,6 @@ export function getBestImage(entity, type = 'event', context = 'grid') {
     }
 
     default:
-      return entity.image_url || entity.cover_image || getFallback('event');
+      return entity.card_image_url || entity.image_url || entity.cover_image || getFallback('event');
   }
 }

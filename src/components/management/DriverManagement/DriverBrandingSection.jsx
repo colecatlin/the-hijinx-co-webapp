@@ -13,6 +13,7 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
     bio: '',
     tagline: '',
     hero_image_url: '',
+    card_image_url: '',
     profile_image_url: '',
     website_url: '',
     instagram_url: '',
@@ -33,6 +34,7 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         bio: driver.bio || '',
         tagline: driver.tagline || '',
         hero_image_url: driver.hero_image_url || '',
+        card_image_url: driver.card_image_url || '',
         profile_image_url: driver.profile_image_url || '',
         website_url: driver.website_url || '',
         instagram_url: driver.instagram_url || '',
@@ -57,6 +59,7 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         bio: data.bio || null,
         tagline: data.tagline || null,
         hero_image_url: data.hero_image_url || null,
+        card_image_url: data.card_image_url || null,
         profile_image_url: data.profile_image_url || null,
         website_url: data.website_url || null,
         instagram_url: data.instagram_url || null,
@@ -126,6 +129,7 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         <div className="border-t pt-5 space-y-4">
           <h4 className="font-semibold text-sm text-gray-700">Profile Images</h4>
           {[
+            { field: 'card_image_url', label: 'Card / Featured Image (homepage cards)' },
             { field: 'profile_image_url', label: 'Profile / Portrait Image' },
             { field: 'hero_image_url', label: 'Hero / Banner Image' },
           ].map(({ field, label }) => (
