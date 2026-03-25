@@ -3,100 +3,78 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 
-function ProductCard({ product, index }) {
+const LIFESTYLE_BG = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&q=75';
+const FALLBACK_PRODUCT = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=70';
+
+function ProductCard({ product, index, large = false }) {
+  const img = product.image_url || FALLBACK_PRODUCT;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -6 }}
+      initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }} transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -5 }}
       className="group relative overflow-hidden"
-      style={{ background: '#1A3249', border: '1px solid rgba(255,248,245,0.06)' }}
+      style={{ background: '#111' }}
     >
-      <div className="aspect-square overflow-hidden" style={{ background: '#232323' }}>
-        {product.image_url ? (
-          <motion.img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            style={{ filter: 'contrast(1.05)' }}
-            whileHover={{ scale: 1.07 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="font-black text-5xl" style={{ color: 'rgba(255,248,245,0.06)' }}>H</span>
-          </div>
-        )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #1A3249 15%, transparent 60%)' }} />
+      <div className={`overflow-hidden ${large ? 'aspect-[3/4]' : 'aspect-square'}`}>
+        <motion.img src={img} alt={product.name} className="w-full h-full object-cover"
+          style={{ filter: 'brightness(0.7) contrast(1.05) saturate(0.9)' }}
+          whileHover={{ scale: 1.07, filter: 'brightness(0.85) contrast(1.05) saturate(1)' }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.85) 20%, transparent 60%)' }} />
       </div>
-      <div className="p-4">
-        <div className="font-bold text-sm leading-tight" style={{ color: '#FFF8F5' }}>{product.name}</div>
-        {product.price != null && (
-          <div className="font-black text-base mt-1" style={{ color: '#00FFDA' }}>${product.price}</div>
-        )}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <div className="font-bold text-sm" style={{ color: '#FFF8F5' }}>{product.name}</div>
+        {product.price != null && <div className="font-black text-base mt-0.5" style={{ color: '#00FFDA' }}>${product.price}</div>}
       </div>
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-0.5"
-        style={{ background: '#00FFDA', originX: 0 }}
-        initial={{ scaleX: 0 }}
-        whileHover={{ scaleX: 1 }}
-        transition={{ duration: 0.3 }}
-      />
+      <motion.div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: '#00FFDA', scaleX: 0, originX: 0 }}
+        whileHover={{ scaleX: 1 }} transition={{ duration: 0.3 }} />
     </motion.div>
   );
 }
 
 export default function ApparelSection({ products = [] }) {
   return (
-    <section style={{ background: '#232323', borderBottom: '1px solid rgba(255,248,245,0.06)' }} className="py-16 md:py-20">
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          className="flex items-end justify-between mb-10"
-          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.4 }}
-        >
+    <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.05)' }} className="overflow-hidden">
+      {/* Lifestyle hero banner */}
+      <div className="relative" style={{ height: 260 }}>
+        <img src={LIFESTYLE_BG} alt="" className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.3) contrast(1.15) saturate(0.6)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, #0a0a0a 100%)' }} />
+        <div className="relative z-10 h-full flex items-center max-w-7xl mx-auto px-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-6 h-px" style={{ background: '#00FFDA' }} />
               <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold" style={{ color: '#00FFDA' }}>Apparel</span>
             </div>
-            <h2 className="font-black text-3xl leading-none" style={{ color: '#FFF8F5' }}>Wear the Culture.</h2>
+            <h2 className="font-black leading-none" style={{ color: '#FFF8F5', fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>
+              Wear the Culture.
+            </h2>
           </div>
-          <Link
-            to={createPageUrl('ApparelHome')}
-            className="font-bold text-xs tracking-wide uppercase transition-colors hidden md:block hover:text-[#00FFDA]"
-            style={{ color: 'rgba(255,248,245,0.4)' }}
-          >
-            Shop All →
-          </Link>
-        </motion.div>
+        </div>
+      </div>
 
+      {/* Products */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
         {products.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {products.slice(0, 4).map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {products.slice(0, 4).map((product, i) => (
+              <ProductCard key={product.id} product={product} index={i} large={i === 0} />
+            ))}
           </div>
         ) : (
-          <motion.div
-            className="flex items-center justify-center py-16"
-            style={{ border: '1px solid rgba(255,248,245,0.06)', background: '#1A3249' }}
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-          >
-            <div className="text-center">
-              <div className="font-black text-4xl mb-2" style={{ color: 'rgba(255,248,245,0.08)' }}>HIJINX</div>
+          <div className="relative overflow-hidden flex items-center justify-center" style={{ height: 200, background: '#111' }}>
+            <img src={LIFESTYLE_BG} alt="" className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter: 'brightness(0.15) contrast(1.1)' }} />
+            <div className="relative z-10 text-center">
+              <div className="font-black text-5xl mb-2" style={{ color: 'rgba(255,248,245,0.1)' }}>HIJINX</div>
               <div className="text-xs" style={{ color: 'rgba(255,248,245,0.3)' }}>Apparel coming soon</div>
             </div>
-          </motion.div>
+          </div>
         )}
-
-        <div className="mt-6 md:hidden">
-          <Link
-            to={createPageUrl('ApparelHome')}
-            className="block text-center py-3 font-bold text-sm tracking-wide uppercase"
-            style={{ border: '1px solid rgba(0,255,218,0.3)', color: '#00FFDA' }}
-          >
-            Shop All
+        <div className="mt-6 flex justify-end">
+          <Link to={createPageUrl('ApparelHome')} className="font-bold text-xs uppercase tracking-wide" style={{ color: 'rgba(255,248,245,0.35)' }}>
+            Shop All →
           </Link>
         </div>
       </div>
