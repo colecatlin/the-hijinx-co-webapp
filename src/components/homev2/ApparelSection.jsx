@@ -1,20 +1,28 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { motion } from 'framer-motion';
 
-function ProductCard({ product }) {
+function ProductCard({ product, index }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -6 }}
       className="group relative overflow-hidden"
       style={{ background: '#1A3249', border: '1px solid rgba(255,248,245,0.06)' }}
     >
       <div className="aspect-square overflow-hidden" style={{ background: '#232323' }}>
         {product.image_url ? (
-          <img
+          <motion.img
             src={product.image_url}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover"
             style={{ filter: 'contrast(1.05)' }}
+            whileHover={{ scale: 1.07 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -29,8 +37,14 @@ function ProductCard({ product }) {
           <div className="font-black text-base mt-1" style={{ color: '#00FFDA' }}>${product.price}</div>
         )}
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#00FFDA' }} />
-    </div>
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-0.5"
+        style={{ background: '#00FFDA', originX: 0 }}
+        initial={{ scaleX: 0 }}
+        whileHover={{ scaleX: 1 }}
+        transition={{ duration: 0.3 }}
+      />
+    </motion.div>
   );
 }
 
@@ -38,42 +52,42 @@ export default function ApparelSection({ products = [] }) {
   return (
     <section style={{ background: '#232323', borderBottom: '1px solid rgba(255,248,245,0.06)' }} className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-6">
-
-        <div className="flex items-end justify-between mb-10">
+        <motion.div
+          className="flex items-end justify-between mb-10"
+          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.4 }}
+        >
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-6 h-px" style={{ background: '#00FFDA' }} />
               <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold" style={{ color: '#00FFDA' }}>Apparel</span>
             </div>
-            <h2 className="font-black text-3xl leading-none" style={{ color: '#FFF8F5' }}>
-              Wear the Culture.
-            </h2>
+            <h2 className="font-black text-3xl leading-none" style={{ color: '#FFF8F5' }}>Wear the Culture.</h2>
           </div>
           <Link
             to={createPageUrl('ApparelHome')}
-            className="font-bold text-xs tracking-wide uppercase transition-colors hidden md:block"
+            className="font-bold text-xs tracking-wide uppercase transition-colors hidden md:block hover:text-[#00FFDA]"
             style={{ color: 'rgba(255,248,245,0.4)' }}
           >
             Shop All →
           </Link>
-        </div>
+        </motion.div>
 
         {products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {products.slice(0, 4).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {products.slice(0, 4).map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
           </div>
         ) : (
-          <div
+          <motion.div
             className="flex items-center justify-center py-16"
             style={{ border: '1px solid rgba(255,248,245,0.06)', background: '#1A3249' }}
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           >
             <div className="text-center">
               <div className="font-black text-4xl mb-2" style={{ color: 'rgba(255,248,245,0.08)' }}>HIJINX</div>
               <div className="text-xs" style={{ color: 'rgba(255,248,245,0.3)' }}>Apparel coming soon</div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div className="mt-6 md:hidden">
