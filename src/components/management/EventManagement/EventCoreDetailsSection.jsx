@@ -206,6 +206,7 @@ export default function EventCoreDetailsSection({ event, isDraftOnly = false }) 
         </Card>
         <EntityImagePanel
           entity={event}
+          entityType="Event"
           onSave={async (imgs) => {
             await base44.entities.Event.update(event.id, imgs);
             queryClient.invalidateQueries({ queryKey: ['event', event.id] });

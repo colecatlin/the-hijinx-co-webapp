@@ -261,6 +261,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
         {teamId !== 'new' && (
           <EntityImagePanel
             entity={formData}
+            entityType="Team"
             onSave={async (imgs) => {
               setFormData(prev => ({ ...prev, ...imgs }));
               await base44.entities.Team.update(teamId, imgs);

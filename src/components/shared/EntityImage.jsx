@@ -53,34 +53,38 @@ export default function EntityImage({
 }
 
 // ─── Resolution logic ────────────────────────────────────────────────────────
+// Priority: card_image_url → hero_image_url → legacy fields → null
 
 function resolveImage(entity, type, context) {
   if (!entity) return null;
 
+  // Explicit controlled fields checked first for all types
+  const isHeroContext = context === 'hero' || context === 'spotlight';
+
   switch (type) {
     case 'driver':
-      if (context === 'hero' || context === 'spotlight') {
-        return entity.hero_image_url || entity.profile_image_url || entity.thumbnail_url || null;
+      if (isHeroContext) {
+        return entity.hero_image_url || entity.card_image_url || entity.profile_image_url || entity.thumbnail_url || null;
       }
-      return entity.profile_image_url || entity.hero_image_url || entity.thumbnail_url || null;
+      return entity.card_image_url || entity.profile_image_url || entity.hero_image_url || entity.thumbnail_url || null;
 
     case 'team':
-      return entity.logo_url || entity.banner_url || entity.hero_image_url || entity.image_url || null;
+      return entity.card_image_url || entity.hero_image_url || entity.logo_url || entity.banner_url || entity.image_url || null;
 
     case 'track':
-      return entity.hero_image_url || entity.cover_image || entity.aerial_image_url || entity.image_url || null;
+      return entity.card_image_url || entity.hero_image_url || entity.cover_image || entity.aerial_image_url || entity.image_url || null;
 
     case 'series':
-      return entity.banner_url || entity.logo_url || entity.hero_image_url || entity.image_url || null;
+      return entity.card_image_url || entity.hero_image_url || entity.banner_url || entity.logo_url || entity.image_url || null;
 
     case 'event':
-      return entity.banner_url || entity.hero_image_url || entity.cover_image || entity.track_image || entity.image_url || null;
+      return entity.card_image_url || entity.hero_image_url || entity.banner_url || entity.cover_image || entity.track_image || entity.image_url || null;
 
     case 'story':
-      return entity.cover_image || entity.hero_image_url || entity.thumbnail_url || entity.image_url || null;
+      return entity.card_image_url || entity.cover_image || entity.hero_image_url || entity.thumbnail_url || entity.image_url || null;
 
     default:
-      return entity.image_url || entity.cover_image || entity.hero_image_url || entity.thumbnail_url || null;
+      return entity.card_image_url || entity.image_url || entity.cover_image || entity.hero_image_url || entity.thumbnail_url || null;
   }
 }
 

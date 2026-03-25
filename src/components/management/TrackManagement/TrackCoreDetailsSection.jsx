@@ -218,6 +218,7 @@ export default function TrackCoreDetailsSection({ trackId }) {
 
         <EntityImagePanel
           entity={formData}
+          entityType="Track"
           onSave={async (imgs) => {
             setFormData(prev => ({ ...prev, ...imgs }));
             await base44.entities.Track.update(trackId, imgs);

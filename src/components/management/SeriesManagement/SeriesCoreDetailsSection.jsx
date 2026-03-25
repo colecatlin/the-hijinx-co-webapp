@@ -378,6 +378,7 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
 
         <EntityImagePanel
           entity={formData}
+          entityType="Series"
           onSave={async (imgs) => {
             setFormData(prev => ({ ...prev, ...imgs }));
             await base44.entities.Series.update(seriesId, imgs);

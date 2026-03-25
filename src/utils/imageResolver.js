@@ -1,12 +1,29 @@
 /**
- * getBestImage(entity, type, context)
+ * getBestImage(entity, type, context, taggedAssets?)
  *
  * Returns the most contextually relevant image URL for a given entity.
  *
- * @param {object} entity  - The entity object (driver, event, track, story, media, feed item)
- * @param {string} type    - 'driver' | 'event' | 'track' | 'story' | 'media' | 'feed'
- * @param {string} context - 'hero' | 'grid' | 'feed' | 'spotlight' (optional, affects priority)
+ * @param {object} entity        - The entity object
+ * @param {string} type          - 'driver' | 'event' | 'track' | 'series' | 'team' | 'story' | 'media' | 'feed'
+ * @param {string} context       - 'hero' | 'grid' | 'feed' | 'spotlight'
+ * @param {array}  taggedAssets  - Optional pre-fetched MediaAsset[] tagged to this entity
  */
+
+/**
+ * Pick the best image from a tagged MediaAsset array for a given context_type priority.
+ * Priority: exact match on context_type → is_primary → first available
+ */
+export function getBestTaggedImage(assets = [], preferredContext = 'card') {
+  if (!assets.length) return null;
+  const byContext = assets.filter(a => a.context_type === preferredContext);
+  const primary = byContext.find(a => a.is_primary) || byContext[0];
+  if (primary) return primary.file_url || primary.thumbnail_url;
+  // Fallback to action shots
+  const action = assets.find(a => a.context_type === 'action');
+  if (action) return action.file_url || action.thumbnail_url;
+  // Any available
+  return assets[0]?.file_url || assets[0]?.thumbnail_url || null;
+}
 
 // Legacy unsplash fallbacks — used only where EntityImage/EntityPlaceholderImage cannot be used (e.g. plain <img> in non-entity contexts)
 const FALLBACKS = {
