@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Upload, ImageIcon } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
 import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
+import HeroSlideManager from '@/components/management/HeroSlideManager';
 
 const SECTIONS = [
   { key: 'hero_bg', label: 'Homepage Hero Background' },
