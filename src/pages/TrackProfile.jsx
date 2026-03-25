@@ -341,7 +341,6 @@ export default function TrackProfile() {
             )}
           </div>
         </div>
-      <div className="max-w-7xl mx-auto px-6">
         <ProfileClaimFooter entityType="Track" entityId={track?.id} entityName={track.name} />
       </div>
     </PageShell>

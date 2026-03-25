@@ -358,6 +358,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
               )}
             </div>
           </div>
+          </div>
         </div>
 
         {/* Season Selector */}
