@@ -574,6 +574,8 @@ export default function SeriesDetail({ overrideSlug } = {}) {
               </div>
             </div>
           </section>
+        </div>
+
         <ProfileClaimFooter entityType="Series" entityId={series?.id} entityName={series.name} />
       </div>
     </PageShell>

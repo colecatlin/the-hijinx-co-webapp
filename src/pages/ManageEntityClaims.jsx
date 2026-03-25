@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   CheckCircle2, XCircle, Clock, User, AlertCircle, Loader2,
-  MessageSquare, Search, Filter, ChevronRight, Shield, Calendar
+  MessageSquare, Search, Filter, ChevronRight, Shield, Calendar,
+  AlertTriangle, UserCheck, Lock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -33,6 +34,29 @@ const STATUS_CONFIG = {
   needs_more_info: { label: 'Needs Info', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: MessageSquare },
 };
 
+const MODE_CONFIG = {
+  claim: { label: 'Claim', color: 'bg-gray-100 text-gray-600 border-gray-300', Icon: Shield },
+  dispute: { label: 'Dispute', color: 'bg-amber-50 text-amber-700 border-amber-200', Icon: AlertTriangle },
+  access_request: { label: 'Access Request', color: 'bg-blue-50 text-blue-600 border-blue-200', Icon: UserCheck },
+};
+
+const RESOLUTION_LABELS = {
+  approved_as_owner: 'Approved as Owner',
+  approved_as_editor: 'Approved as Editor',
+  ownership_overridden: 'Ownership Overridden',
+  ownership_retained: 'Ownership Retained',
+  denied: 'Denied',
+  needs_more_info: 'Needs More Info',
+};
+
+const DISPUTE_REASON_LABELS = {
+  rightful_owner: 'Claims to be rightful owner',
+  incorrect_current_claim: 'Believes current claim is incorrect',
+  should_have_management_access: 'Requesting management access',
+  ownership_review_requested: 'Requesting admin ownership review',
+  other: 'Other reason',
+};
+
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   return (
@@ -43,11 +67,28 @@ function StatusBadge({ status }) {
   );
 }
 
+function ModeBadge({ mode }) {
+  const resolvedMode = mode || 'claim';
+  const cfg = MODE_CONFIG[resolvedMode] || MODE_CONFIG.claim;
+  return (
+    <Badge className={`text-xs border px-1.5 py-0 ${cfg.color}`}>
+      {cfg.label}
+    </Badge>
+  );
+}
+
 function safeDate(d) {
   try { return format(new Date(d), 'MMM d, yyyy'); } catch { return '—'; }
 }
 
+function getClaimMode(claim) {
+  if (claim.claim_mode) return claim.claim_mode;
+  if (claim.claim_type === 'dispute') return 'dispute';
+  return 'claim';
+}
+
 function ClaimRow({ claim, onOpen }) {
+  const mode = getClaimMode(claim);
   return (
     <button
       onClick={() => onOpen(claim)}
@@ -60,9 +101,7 @@ function ClaimRow({ claim, onOpen }) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm text-gray-900">{claim.entity_name}</span>
           <Badge className={`text-xs border px-1.5 py-0 ${ENTITY_COLORS[claim.entity_type] || ''}`}>{claim.entity_type}</Badge>
-          {claim.claim_type === 'dispute' && (
-            <Badge className="text-xs border px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">Dispute</Badge>
-          )}
+          <ModeBadge mode={mode} />
         </div>
         <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1"><User className="w-3 h-3" />{claim.user_email}</span>
@@ -77,26 +116,26 @@ function ClaimRow({ claim, onOpen }) {
 
 function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
   const queryClient = useQueryClient();
-  const [action, setAction] = useState(null); // 'approve' | 'reject' | 'needs_more_info'
-  const [grantRole, setGrantRole] = useState('owner');
+  const [resolution, setResolution] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [processing, setProcessing] = useState(false);
 
   if (!claim) return null;
 
+  const mode = getClaimMode(claim);
+  const isActionable = claim.status === 'pending' || claim.status === 'needs_more_info';
+
   const handleConfirm = async () => {
-    if (!action) return;
+    if (!resolution) return;
     setProcessing(true);
     const res = await base44.functions.invoke('approveEntityClaim', {
       claim_id: claim.id,
-      action,
-      role: grantRole,
+      resolution_type: resolution,
       admin_notes: adminNotes,
     });
     const data = res?.data;
     if (data?.success) {
-      const msgs = { approve: 'Claim approved — access granted.', reject: 'Claim rejected.', needs_more_info: 'More info requested.' };
-      toast.success(msgs[action] || 'Done.');
+      toast.success(RESOLUTION_LABELS[data.resolution_type] || 'Done.');
       invalidateDataGroups(queryClient, ['access', 'collaborators', 'profile']);
       onActionComplete();
     } else {
@@ -105,31 +144,74 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
     setProcessing(false);
   };
 
-  const isActionable = claim.status === 'pending' || claim.status === 'needs_more_info';
+  const isApproveResolution = ['approved_as_owner', 'approved_as_editor', 'ownership_overridden'].includes(resolution);
+  const isDenyResolution = ['denied', 'ownership_retained'].includes(resolution);
+
+  // Mode-specific action sets
+  const standardActions = [
+    { id: 'approved_as_owner', label: 'Approve as Owner', color: 'green', Icon: CheckCircle2 },
+    { id: 'approved_as_editor', label: 'Approve as Editor', color: 'teal', Icon: UserCheck },
+    { id: 'needs_more_info', label: 'Needs Info', color: 'blue', Icon: MessageSquare },
+    { id: 'denied', label: 'Deny', color: 'red', Icon: XCircle },
+  ];
+  const disputeActions = [
+    { id: 'ownership_overridden', label: 'Override — Grant Ownership', color: 'orange', Icon: AlertTriangle },
+    { id: 'approved_as_editor', label: 'Grant Editor Access', color: 'teal', Icon: UserCheck },
+    { id: 'needs_more_info', label: 'Needs Info', color: 'blue', Icon: MessageSquare },
+    { id: 'ownership_retained', label: 'Retain Current Owner / Deny', color: 'red', Icon: Lock },
+  ];
+  const accessRequestActions = [
+    { id: 'approved_as_editor', label: 'Approve as Editor', color: 'teal', Icon: UserCheck },
+    { id: 'needs_more_info', label: 'Needs Info', color: 'blue', Icon: MessageSquare },
+    { id: 'denied', label: 'Deny', color: 'red', Icon: XCircle },
+  ];
+
+  const actionSet = mode === 'dispute' ? disputeActions : mode === 'access_request' ? accessRequestActions : standardActions;
+
+  const colorMap = {
+    green: { active: 'bg-green-600 hover:bg-green-700 text-white border-green-600', inactive: 'border-green-200 text-green-700 hover:bg-green-50' },
+    teal: { active: 'bg-teal-600 hover:bg-teal-700 text-white border-teal-600', inactive: 'border-teal-200 text-teal-700 hover:bg-teal-50' },
+    blue: { active: 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600', inactive: 'border-blue-200 text-blue-700 hover:bg-blue-50' },
+    orange: { active: 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600', inactive: 'border-orange-200 text-orange-700 hover:bg-orange-50' },
+    red: { active: 'bg-red-600 hover:bg-red-700 text-white border-red-600', inactive: 'border-red-200 text-red-600 hover:bg-red-50' },
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-gray-500" />
             Claim Review
           </DialogTitle>
-          <DialogDescription>Review and act on this ownership claim</DialogDescription>
+          <DialogDescription>
+            {mode === 'dispute' ? 'Ownership dispute — review carefully before acting'
+              : mode === 'access_request' ? 'Access request — grant editor access or deny'
+              : 'Standard ownership claim'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-1">
-          {/* Entity */}
+          {/* Entity + mode */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className={`text-xs border ${ENTITY_COLORS[claim.entity_type] || ''}`}>{claim.entity_type}</Badge>
               <span className="font-semibold text-sm text-gray-900">{claim.entity_name}</span>
-              {claim.claim_type === 'dispute' && (
-                <Badge className="text-xs border bg-amber-50 text-amber-700 border-amber-200">Ownership Dispute</Badge>
-              )}
+              <ModeBadge mode={mode} />
             </div>
             <p className="text-xs text-gray-500">Entity ID: {claim.entity_id}</p>
           </div>
+
+          {/* Dispute context banner */}
+          {mode === 'dispute' && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 space-y-1">
+              <p className="font-semibold">⚠ This is an ownership dispute</p>
+              <p>This profile is already claimed. The claimant is contesting current ownership.</p>
+              {claim.existing_owner_user_id && (
+                <p>Current owner ID at submission: <span className="font-mono">{claim.existing_owner_user_id}</span></p>
+              )}
+            </div>
+          )}
 
           {/* Claimant */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-1">
@@ -138,10 +220,18 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
             <p className="text-xs text-gray-400">User ID: {claim.user_id}</p>
           </div>
 
+          {/* Dispute reason */}
+          {claim.dispute_reason && (
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dispute Reason</p>
+              <p className="text-sm text-gray-700">{DISPUTE_REASON_LABELS[claim.dispute_reason] || claim.dispute_reason}</p>
+            </div>
+          )}
+
           {/* Justification */}
           {claim.justification && (
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Their Reason</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Their Statement</p>
               <p className="text-sm text-gray-700 italic">"{claim.justification}"</p>
             </div>
           )}
@@ -154,6 +244,14 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
             </div>
           )}
 
+          {/* Previous resolution if any */}
+          {claim.admin_resolution_type && (
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Previous Resolution</p>
+              <p className="text-sm text-gray-700">{RESOLUTION_LABELS[claim.admin_resolution_type] || claim.admin_resolution_type}</p>
+            </div>
+          )}
+
           {/* Submitted */}
           <div className="flex items-center justify-between text-xs text-gray-400">
             <span>Submitted {safeDate(claim.created_date)}</span>
@@ -163,48 +261,41 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
           {/* Actions */}
           {isActionable && (
             <div className="border-t pt-4 space-y-3">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Admin Action</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Admin Resolution</p>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant={action === 'approve' ? 'default' : 'outline'}
-                  onClick={() => setAction('approve')}
-                  className={`gap-1.5 text-xs ${action === 'approve' ? 'bg-green-600 hover:bg-green-700 border-green-600' : 'border-green-200 text-green-700 hover:bg-green-50'}`}>
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                </Button>
-                <Button size="sm" variant={action === 'needs_more_info' ? 'default' : 'outline'}
-                  onClick={() => setAction('needs_more_info')}
-                  className={`gap-1.5 text-xs ${action === 'needs_more_info' ? 'bg-blue-600 hover:bg-blue-700 border-blue-600' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`}>
-                  <MessageSquare className="w-3.5 h-3.5" /> Needs Info
-                </Button>
-                <Button size="sm" variant={action === 'reject' ? 'default' : 'outline'}
-                  onClick={() => setAction('reject')}
-                  className={`gap-1.5 text-xs ${action === 'reject' ? 'bg-red-600 hover:bg-red-700 border-red-600' : 'border-red-200 text-red-600 hover:bg-red-50'}`}>
-                  <XCircle className="w-3.5 h-3.5" /> Reject
-                </Button>
+                {actionSet.map(({ id, label, color, Icon: ActionIcon }) => {
+                  const c = colorMap[color] || colorMap.blue;
+                  const isSelected = resolution === id;
+                  return (
+                    <Button
+                      key={id}
+                      size="sm"
+                      variant={isSelected ? 'default' : 'outline'}
+                      onClick={() => setResolution(id)}
+                      className={`gap-1.5 text-xs ${isSelected ? c.active : c.inactive}`}
+                    >
+                      <ActionIcon className="w-3.5 h-3.5" />
+                      {label}
+                    </Button>
+                  );
+                })}
               </div>
 
-              {action === 'approve' && (
-                <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1.5">Grant Role</p>
-                  <Select value={grantRole} onValueChange={setGrantRole}>
-                    <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="owner">Owner</SelectItem>
-                      <SelectItem value="editor">Editor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {action && (
+              {resolution && (
                 <div>
                   <p className="text-xs font-medium text-gray-600 mb-1.5">
-                    {action === 'approve' ? 'Admin Notes (optional)' : action === 'reject' ? 'Reason for rejection (optional)' : 'What info is needed?'}
+                    {isApproveResolution ? 'Admin Notes (optional)' : isDenyResolution ? 'Reason (optional)' : 'What info is needed?'}
                   </p>
                   <Textarea
                     rows={3}
                     value={adminNotes}
                     onChange={e => setAdminNotes(e.target.value)}
-                    placeholder={action === 'needs_more_info' ? 'e.g. Please provide proof of identity or racing license...' : 'Internal notes...'}
+                    placeholder={
+                      resolution === 'needs_more_info' ? 'e.g. Please provide proof of identity or racing license...'
+                        : resolution === 'ownership_overridden' ? 'Notes on why ownership is being transferred...'
+                        : resolution === 'ownership_retained' ? 'Why the dispute is being denied...'
+                        : 'Internal notes...'
+                    }
                     className="text-sm"
                   />
                 </div>
@@ -215,18 +306,21 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
 
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
-          {isActionable && action && (
-            <Button size="sm" disabled={processing} onClick={handleConfirm}
+          {isActionable && resolution && (
+            <Button
+              size="sm"
+              disabled={processing}
+              onClick={handleConfirm}
               className={
-                action === 'approve' ? 'bg-green-600 hover:bg-green-700 text-white' :
-                action === 'reject' ? 'bg-red-600 hover:bg-red-700 text-white' :
+                isApproveResolution ? 'bg-green-600 hover:bg-green-700 text-white' :
+                isDenyResolution ? 'bg-red-600 hover:bg-red-700 text-white' :
                 'bg-blue-600 hover:bg-blue-700 text-white'
-              }>
+              }
+            >
               {processing
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> Processing...</>
-                : action === 'approve' ? 'Approve & Grant Access'
-                : action === 'reject' ? 'Confirm Rejection'
-                : 'Request More Info'}
+                : `Confirm — ${RESOLUTION_LABELS[resolution] || resolution}`
+              }
             </Button>
           )}
         </DialogFooter>
@@ -240,6 +334,7 @@ export default function ManageEntityClaims() {
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterMode, setFilterMode] = useState('all');
   const [activeTab, setActiveTab] = useState('pending');
 
   const { data: user } = useQuery({
@@ -269,9 +364,11 @@ export default function ManageEntityClaims() {
         c.entity_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.user_email?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'all' || c.entity_type === filterType;
-      return matchesSearch && matchesType;
+      const mode = getClaimMode(c);
+      const matchesMode = filterMode === 'all' || mode === filterMode;
+      return matchesSearch && matchesType && matchesMode;
     });
-  }, [claims, searchQuery, filterType]);
+  }, [claims, searchQuery, filterType, filterMode]);
 
   const byStatus = (status) => filtered.filter(c => c.status === status);
   const pending = byStatus('pending');
@@ -286,15 +383,24 @@ export default function ManageEntityClaims() {
     { id: 'rejected', label: 'Rejected', count: rejected.length, items: rejected, Icon: XCircle },
   ];
 
+  const disputeCount = claims.filter(c => getClaimMode(c) === 'dispute' && c.status === 'pending').length;
+
   return (
     <ManagementLayout currentPage="ManageEntityClaims">
       <ManagementShell
         title="Claim Review Center"
-        subtitle="Review, approve, or deny ownership claims for Drivers, Teams, Tracks, and Series"
+        subtitle="Review ownership claims, disputes, and access requests for Drivers, Teams, Tracks, and Series"
       >
+        {disputeCount > 0 && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-sm text-amber-800">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span><strong>{disputeCount}</strong> pending ownership dispute{disputeCount > 1 ? 's' : ''} require review.</span>
+          </div>
+        )}
+
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-5">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row gap-3 mb-5 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               value={searchQuery}
@@ -306,13 +412,22 @@ export default function ManageEntityClaims() {
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-36 h-9 text-sm"><SelectValue placeholder="Entity type" /></SelectTrigger>
+              <SelectTrigger className="w-32 h-9 text-sm"><SelectValue placeholder="Entity type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="Driver">Driver</SelectItem>
                 <SelectItem value="Team">Team</SelectItem>
                 <SelectItem value="Track">Track</SelectItem>
                 <SelectItem value="Series">Series</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterMode} onValueChange={setFilterMode}>
+              <SelectTrigger className="w-36 h-9 text-sm"><SelectValue placeholder="Claim mode" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Modes</SelectItem>
+                <SelectItem value="claim">Claims</SelectItem>
+                <SelectItem value="dispute">Disputes</SelectItem>
+                <SelectItem value="access_request">Access Requests</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -340,7 +455,7 @@ export default function ManageEntityClaims() {
                   <Card>
                     <CardContent className="py-12 text-center text-gray-400 text-sm">
                       No {tab.label.toLowerCase()} claims
-                      {(searchQuery || filterType !== 'all') && ' matching your filters'}
+                      {(searchQuery || filterType !== 'all' || filterMode !== 'all') && ' matching your filters'}
                     </CardContent>
                   </Card>
                 ) : (

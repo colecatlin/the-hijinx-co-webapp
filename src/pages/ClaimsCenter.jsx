@@ -106,14 +106,19 @@ function ClaimForm({ user, prefill, onSuccess }) {
   const handleSubmit = async () => {
     if (!selected) return;
     setSubmitting(true);
-    const justification = isDispute
-      ? `[DISPUTE] ${disputeReason}${message ? ' — ' + message : ''}`
-      : message;
+    const disputeReasonKey = mode === 'dispute'
+      ? (['I am the rightful owner of this profile', DISPUTE_REASONS[0]].includes(disputeReason) ? 'rightful_owner'
+        : disputeReason.includes('incorrectly') ? 'incorrect_current_claim'
+        : disputeReason.includes('access') ? 'should_have_management_access'
+        : disputeReason.includes('admin review') ? 'ownership_review_requested'
+        : 'other')
+      : undefined;
     const res = await base44.functions.invoke('requestEntityClaim', {
       entity_type: selected.type,
       entity_id: selected.id,
-      message: justification,
-      claim_type: isDispute ? 'dispute' : 'claim',
+      message,
+      claim_mode: isDispute ? 'dispute' : 'claim',
+      dispute_reason: disputeReasonKey,
     });
     const data = res?.data;
     if (!data?.ok) {
@@ -306,11 +311,24 @@ function MyClaims({ userId }) {
               <p className="text-xs text-gray-400 mt-0.5">
                 {claim.entity_type} · {d && isValid(d) ? format(d, 'MMM d, yyyy') : ''}
               </p>
-              {claim.claim_type === 'dispute' && (
+              {(claim.claim_mode === 'dispute' || claim.claim_type === 'dispute') && (
                 <span className="inline-block text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-0.5">Dispute</span>
               )}
+              {claim.claim_mode === 'access_request' && (
+                <span className="inline-block text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 mt-0.5">Access Request</span>
+              )}
               {claim.justification && (
-                <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">"{claim.justification.replace(/^\[DISPUTE\] /, '')}"</p>
+                <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">"{claim.justification}"</p>
+              )}
+              {claim.status === 'approved' && claim.granted_role && (
+                <p className="text-xs text-green-700 mt-1 bg-green-50 border border-green-100 rounded px-2 py-1">
+                  Granted as {claim.granted_role}{claim.admin_resolution_type === 'ownership_overridden' ? ' (ownership overridden)' : ''}
+                </p>
+              )}
+              {claim.status === 'rejected' && claim.admin_resolution_type === 'ownership_retained' && (
+                <p className="text-xs text-gray-600 mt-1 bg-gray-50 border border-gray-200 rounded px-2 py-1">
+                  Current ownership was retained after review.
+                </p>
               )}
               {claim.status === 'needs_more_info' && claim.admin_notes && (
                 <p className="text-xs text-blue-600 mt-1 bg-blue-50 border border-blue-100 rounded px-2 py-1">
