@@ -87,9 +87,9 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           <div className="relative h-full flex flex-col">
             {/* Image Section */}
             <div className="flex-1 relative overflow-hidden bg-gray-100">
-              {media?.headshot_url || media?.hero_image_url ? (
+              {media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url ? (
                 <img 
-                src={media.headshot_url || media.hero_image_url} 
+                src={media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url} 
                 alt={`${driver.first_name} ${driver.last_name}`}
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -108,7 +108,7 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
               )}
               
               {/* Bib Number Overlay */}
-              {bibNumber && (media?.headshot_url || media?.hero_image_url) && (
+              {bibNumber && (media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url) && (
                 <div className="absolute top-4 right-4 bg-white/95 px-4 py-2 border border-gray-300">
                   <div className="text-4xl font-black text-[#232323] leading-none">
                     {bibNumber}
