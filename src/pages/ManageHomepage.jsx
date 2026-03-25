@@ -66,8 +66,9 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="hero">Hero Slides</TabsTrigger>
             <TabsTrigger value="editorial">Editorial</TabsTrigger>
             <TabsTrigger value="data">Images</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
