@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
+import EntityPlaceholderImage from '@/components/shared/EntityPlaceholderImage';
 import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { MapPin } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -87,26 +88,17 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           <div className="relative h-full flex flex-col">
             {/* Image Section */}
             <div className="flex-1 relative overflow-hidden bg-gray-100">
-              {media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url ? (
-                <img 
-                src={media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url} 
-                alt={`${driver.first_name} ${driver.last_name}`}
-                className="w-full h-full object-cover"
-                loading="lazy"
+              {(media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url) ? (
+                <img
+                  src={media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url}
+                  alt={`${driver.first_name} ${driver.last_name}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
-                  <div className="text-6xl font-black text-gray-400 mb-4">
-                    {driver.first_name?.[0] || ''}{driver.last_name?.[0] || ''}
-                  </div>
-                  {bibNumber && (
-                    <div className="text-8xl font-black text-gray-300">
-                      {bibNumber}
-                    </div>
-                  )}
-                </div>
+                <EntityPlaceholderImage entity={driver} entityType="driver" />
               )}
-              
+
               {/* Bib Number Overlay */}
               {bibNumber && (media?.headshot_url || media?.hero_image_url || driver.profile_image_url || driver.hero_image_url) && (
                 <div className="absolute top-4 right-4 bg-white/95 px-4 py-2 border border-gray-300">

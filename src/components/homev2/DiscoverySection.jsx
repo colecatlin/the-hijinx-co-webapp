@@ -2,25 +2,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
-import { getBestImage, getFallback } from '@/utils/imageResolver';
-
-const FALLBACK_RACE = 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=75';
-const FALLBACK_PORTRAIT = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75';
+import EntityImage from '@/components/shared/EntityImage';
 
 const reveal = {
   hidden: { y: 32, opacity: 0 },
   visible: (i = 0) => ({ y: 0, opacity: 1, transition: { duration: 0.45, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] } }),
 };
 
-/* ── Large feature card (hero slot) ── */
 function LargeStoryCard({ story }) {
-  const img = getBestImage(story, 'story', 'grid');
   return (
     <motion.div custom={0} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
-        <motion.img src={img} alt={story.title} className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'brightness(0.5) contrast(1.1)' }}
-          whileHover={{ scale: 1.03 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
+        <motion.div className="absolute inset-0" whileHover={{ scale: 1.03 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+          <EntityImage entity={story} entityType="story" context="grid"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'brightness(0.5) contrast(1.1)' }} />
+        </motion.div>
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 35%, transparent 75%)' }} />
         <div className="absolute top-0 left-0 right-0 p-4">
           {story.primary_category && (
@@ -44,16 +41,15 @@ function LargeStoryCard({ story }) {
   );
 }
 
-/* ── Large driver feature card ── */
 function LargeDriverCard({ driver }) {
-  const img = getBestImage(driver, 'driver', 'spotlight');
   return (
     <motion.div custom={1} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/drivers/${driver.slug || driver.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
-        <motion.img src={img} alt={`${driver.first_name} ${driver.last_name}`}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{ filter: 'brightness(0.45) contrast(1.15)' }}
-          whileHover={{ scale: 1.04 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} />
+        <motion.div className="absolute inset-0" whileHover={{ scale: 1.04 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+          <EntityImage entity={driver} entityType="driver" context="spotlight"
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            style={{ filter: 'brightness(0.45) contrast(1.15)' }} />
+        </motion.div>
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 30%, transparent 65%)' }} />
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="font-mono text-[9px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,248,245,0.35)' }}>Driver</div>
@@ -67,16 +63,15 @@ function LargeDriverCard({ driver }) {
   );
 }
 
-/* ── Driver portrait card ── */
 function DriverCard({ driver, index }) {
-  const img = getBestImage(driver, 'driver', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/drivers/${driver.slug || driver.id}`} className="group relative overflow-hidden block" style={{ minHeight: 180, background: '#111' }}>
-        <motion.img src={img} alt={`${driver.first_name} ${driver.last_name}`}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{ filter: 'brightness(0.5) contrast(1.2)' }}
-          whileHover={{ scale: 1.06 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} />
+        <motion.div className="absolute inset-0" whileHover={{ scale: 1.06 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+          <EntityImage entity={driver} entityType="driver" context="grid"
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            style={{ filter: 'brightness(0.5) contrast(1.2)' }} />
+        </motion.div>
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.92) 30%, transparent 65%)' }} />
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <div className="font-black text-sm leading-tight" style={{ color: '#FFF8F5' }}>{driver.first_name} {driver.last_name}</div>
@@ -89,17 +84,16 @@ function DriverCard({ driver, index }) {
   );
 }
 
-/* ── Event date card ── */
 function EventCard({ event, index }) {
-  const img = getBestImage(event, 'event', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>
         <Link to={createPageUrl('EventDirectory')} className="group flex items-center gap-3 overflow-hidden"
           style={{ background: '#0f1e2e', border: '1px solid rgba(255,248,245,0.07)' }}>
-          {/* Date thumb */}
           <div className="relative shrink-0 w-16 h-16 overflow-hidden">
-            <img src={img} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.4) contrast(1.1)' }} />
+            <EntityImage entity={event} entityType="event" context="feed"
+              className="w-full h-full object-cover"
+              style={{ filter: 'brightness(0.4) contrast(1.1)' }} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               {event.event_date && (
                 <>
@@ -119,16 +113,15 @@ function EventCard({ event, index }) {
   );
 }
 
-/* ── Small story card ── */
 function SmallStoryCard({ story, index }) {
-  const img = getBestImage(story, 'story', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden flex gap-3"
         style={{ background: '#0f1e2e', border: '1px solid rgba(255,248,245,0.07)' }}>
         <div className="relative shrink-0 w-20 h-16 overflow-hidden">
-          <motion.img src={img} alt={story.title} className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.6)' }} whileHover={{ scale: 1.08 }} transition={{ duration: 0.4 }} />
+          <EntityImage entity={story} entityType="story" context="feed"
+            className="w-full h-full object-cover"
+            style={{ filter: 'brightness(0.6)' }} />
         </div>
         <div className="flex-1 min-w-0 py-2 pr-3 flex flex-col justify-center">
           {story.primary_category && <div className="font-mono text-[8px] uppercase mb-1" style={{ color: '#00FFDA' }}>{story.primary_category}</div>}
@@ -163,38 +156,18 @@ export default function DiscoverySection({ featuredDrivers = [], featuredStories
           <Link to={createPageUrl('OutletHome')} className="font-bold text-xs uppercase hidden md:block" style={{ color: 'rgba(255,248,245,0.25)' }}>All Stories →</Link>
         </motion.div>
 
-        {/* Feature row — 2 large cards */}
         {(primaryStory || primaryDriver) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            {primaryStory && (
-              <div className="md:col-span-1">
-                <LargeStoryCard story={primaryStory} />
-              </div>
-            )}
-            {primaryDriver && (
-              <div className="md:col-span-1">
-                <LargeDriverCard driver={primaryDriver} />
-              </div>
-            )}
+            {primaryStory && <div className="md:col-span-1"><LargeStoryCard story={primaryStory} /></div>}
+            {primaryDriver && <div className="md:col-span-1"><LargeDriverCard driver={primaryDriver} /></div>}
           </div>
         )}
 
-        {/* Secondary grid — smaller cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {gridDrivers.map((d, i) => (
-            <div key={d.id}>
-              <DriverCard driver={d} index={i + 2} />
-            </div>
-          ))}
-          {gridStories.slice(0, 1).map((s, i) => (
-            <div key={s.id}>
-              <SmallStoryCard story={s} index={i + 5} />
-            </div>
-          ))}
+          {gridDrivers.map((d, i) => <div key={d.id}><DriverCard driver={d} index={i + 2} /></div>)}
+          {gridStories.slice(0, 1).map((s, i) => <div key={s.id}><SmallStoryCard story={s} index={i + 5} /></div>)}
           {upcomingEvents.slice(0, 4).map((e, i) => (
-            <div key={e.id} className="col-span-2 md:col-span-2">
-              <EventCard event={e} index={i + 6} />
-            </div>
+            <div key={e.id} className="col-span-2 md:col-span-2"><EventCard event={e} index={i + 6} /></div>
           ))}
         </div>
       </div>

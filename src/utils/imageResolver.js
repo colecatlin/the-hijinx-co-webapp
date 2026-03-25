@@ -8,13 +8,14 @@
  * @param {string} context - 'hero' | 'grid' | 'feed' | 'spotlight' (optional, affects priority)
  */
 
+// Legacy unsplash fallbacks — used only where EntityImage/EntityPlaceholderImage cannot be used (e.g. plain <img> in non-entity contexts)
 const FALLBACKS = {
-  driver:    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75',
+  driver:    null,
   event:     'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=800&q=75',
   track:     'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=75',
   story:     'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&q=75',
-  media:     'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60',
-  feed:      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=60',
+  media:     null,
+  feed:      null,
 };
 
 export function getFallback(type) {

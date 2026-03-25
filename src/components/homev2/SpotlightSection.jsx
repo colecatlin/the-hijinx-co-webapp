@@ -1,16 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getBestImage, getFallback } from '@/utils/imageResolver';
-
-const FALLBACK = 'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=1200&q=80';
+import EntityImage from '@/components/shared/EntityImage';
 
 export default function SpotlightSection({ spotlightDriver, spotlightEvent, featuredStory }) {
   const hasContent = spotlightDriver || spotlightEvent || featuredStory;
   if (!hasContent) return null;
-
-  const driverImg = getBestImage(spotlightDriver, 'driver', 'spotlight');
-  const storyImg = getBestImage(featuredStory, 'story', 'spotlight');
 
   return (
     <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.04)' }} className="py-0">
@@ -22,7 +17,6 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
         </motion.div>
 
         <div className={`grid gap-2 ${spotlightDriver && featuredStory ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-          {/* Driver — full-bleed cinematic card */}
           {spotlightDriver && (
             <motion.div
               initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }}
@@ -30,13 +24,12 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
             >
               <Link to={`/drivers/${spotlightDriver.slug || spotlightDriver.id}`}
                 className="group relative overflow-hidden block" style={{ height: 520, background: '#111' }}>
-                <motion.img src={driverImg} alt={`${spotlightDriver.first_name} ${spotlightDriver.last_name}`}
-                  className="absolute inset-0 w-full h-full object-cover object-top"
-                  style={{ filter: 'brightness(0.45) contrast(1.2) saturate(1.05)' }}
-                  whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} />
-                {/* Vignette */}
+                <motion.div className="absolute inset-0" whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+                  <EntityImage entity={spotlightDriver} entityType="driver" context="spotlight"
+                    className="w-full h-full object-cover object-top"
+                    style={{ filter: 'brightness(0.45) contrast(1.2) saturate(1.05)' }} />
+                </motion.div>
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(10,10,10,0.85) 30%, transparent 70%), linear-gradient(to top, rgba(10,10,10,0.95) 25%, transparent 60%)' }} />
-                {/* Content */}
                 <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
                   <span className="font-mono text-[9px] tracking-[0.45em] uppercase mb-4 inline-flex items-center gap-2" style={{ color: '#D33F49' }}>
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#D33F49' }} />
@@ -64,7 +57,6 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
             </motion.div>
           )}
 
-          {/* Featured story */}
           {featuredStory && (
             <motion.div
               initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }}
@@ -72,10 +64,11 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
             >
               <Link to={`/story/${featuredStory.slug || featuredStory.id}`}
                 className="group relative overflow-hidden block" style={{ height: 520, background: '#111' }}>
-                <motion.img src={storyImg} alt={featuredStory.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{ filter: 'brightness(0.4) contrast(1.15) saturate(1.05)' }}
-                  whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} />
+                <motion.div className="absolute inset-0" whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+                  <EntityImage entity={featuredStory} entityType="story" context="spotlight"
+                    className="w-full h-full object-cover"
+                    style={{ filter: 'brightness(0.4) contrast(1.15) saturate(1.05)' }} />
+                </motion.div>
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.97) 30%, transparent 65%)' }} />
                 <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
                   {featuredStory.primary_category && (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { getBestImage } from '@/utils/imageResolver';
+import EntityImage from '@/components/shared/EntityImage';
 
 const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&q=60';
 
@@ -20,8 +20,9 @@ function Marquee({ items }) {
               style={{ borderRight: '1px solid rgba(255,248,245,0.07)' }}>
               {/* Visual thumbnail */}
               <div className="w-8 h-8 rounded-sm overflow-hidden shrink-0" style={{ border: '1px solid rgba(255,248,245,0.12)' }}>
-                <img src={img} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.75) contrast(1.1)' }}
-                  onError={e => { e.target.src = FALLBACK_AVATAR; }} />
+                <EntityImage entity={item} entityType="feed" context="feed"
+                  className="w-full h-full object-cover"
+                  style={{ filter: 'brightness(0.75) contrast(1.1)' }} />
               </div>
               <div>
                 <div className="font-semibold text-xs leading-tight whitespace-nowrap" style={{ color: '#FFF8F5', maxWidth: 200 }}>
