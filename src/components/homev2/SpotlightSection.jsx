@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { getBestImage, getFallback } from '@/utils/imageResolver';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=1200&q=80';
 
@@ -8,8 +9,8 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
   const hasContent = spotlightDriver || spotlightEvent || featuredStory;
   if (!hasContent) return null;
 
-  const driverImg = spotlightDriver?.hero_image_url || spotlightDriver?.profile_image_url || FALLBACK;
-  const storyImg = featuredStory?.cover_image || FALLBACK;
+  const driverImg = getBestImage(spotlightDriver, 'driver', 'spotlight');
+  const storyImg = getBestImage(featuredStory, 'story', 'spotlight');
 
   return (
     <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.04)' }} className="py-0">

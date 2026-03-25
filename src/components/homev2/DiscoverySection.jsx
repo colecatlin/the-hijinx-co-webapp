@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
+import { getBestImage, getFallback } from '@/utils/imageResolver';
 
 const FALLBACK_RACE = 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=75';
 const FALLBACK_PORTRAIT = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=75';
@@ -13,7 +14,7 @@ const reveal = {
 
 /* ── Large feature card (hero slot) ── */
 function LargeStoryCard({ story }) {
-  const img = story.cover_image || FALLBACK_RACE;
+  const img = getBestImage(story, 'story', 'grid');
   return (
     <motion.div custom={0} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
@@ -45,7 +46,7 @@ function LargeStoryCard({ story }) {
 
 /* ── Large driver feature card ── */
 function LargeDriverCard({ driver }) {
-  const img = driver.profile_image_url || driver.hero_image_url || FALLBACK_PORTRAIT;
+  const img = getBestImage(driver, 'driver', 'spotlight');
   return (
     <motion.div custom={1} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/drivers/${driver.slug || driver.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
@@ -68,7 +69,7 @@ function LargeDriverCard({ driver }) {
 
 /* ── Driver portrait card ── */
 function DriverCard({ driver, index }) {
-  const img = driver.profile_image_url || driver.hero_image_url || FALLBACK_PORTRAIT;
+  const img = getBestImage(driver, 'driver', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/drivers/${driver.slug || driver.id}`} className="group relative overflow-hidden block" style={{ minHeight: 180, background: '#111' }}>
@@ -90,7 +91,7 @@ function DriverCard({ driver, index }) {
 
 /* ── Event date card ── */
 function EventCard({ event, index }) {
-  const img = event.cover_image || event.track_image || FALLBACK_RACE;
+  const img = getBestImage(event, 'event', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>
@@ -120,7 +121,7 @@ function EventCard({ event, index }) {
 
 /* ── Small story card ── */
 function SmallStoryCard({ story, index }) {
-  const img = story.cover_image || FALLBACK_RACE;
+  const img = getBestImage(story, 'story', 'grid');
   return (
     <motion.div custom={index} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
       <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden flex gap-3"

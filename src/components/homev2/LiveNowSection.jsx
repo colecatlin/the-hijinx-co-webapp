@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { getBestImage } from '@/utils/imageResolver';
 
 const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&q=60';
 
@@ -13,7 +14,7 @@ function Marquee({ items }) {
         transition={{ duration: items.length * 5, ease: 'linear', repeat: Infinity }}
       >
         {doubled.map((item, i) => {
-          const img = item.image_url || item.driver_image || item.cover_image || item.thumbnail || FALLBACK_AVATAR;
+          const img = getBestImage(item, 'feed', 'feed');
           return (
             <div key={i} className="flex items-center gap-3 shrink-0 px-4 py-1"
               style={{ borderRight: '1px solid rgba(255,248,245,0.07)' }}>

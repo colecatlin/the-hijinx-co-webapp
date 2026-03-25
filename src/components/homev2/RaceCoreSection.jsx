@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
+import { getFallback } from '@/utils/imageResolver';
 
-const RACE_BG = 'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=1200&q=70';
+const RACE_BG = getFallback('track');
 
 function EventRow({ event, index }) {
   return (
