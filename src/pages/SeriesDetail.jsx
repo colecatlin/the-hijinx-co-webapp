@@ -23,7 +23,7 @@ import { format, parseISO, isValid } from 'date-fns';
 import { ExternalLink, Globe, Instagram, Twitter, Youtube, Facebook, Calendar, MapPin, TrendingUp, Share2, Flag, BarChart3, AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
-import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
+import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 import SeriesNameHistory from '@/components/series/SeriesNameHistory';
@@ -342,14 +342,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
           </div>
 
           <div className="space-y-6 relative -mt-1">
-            <div className="absolute -top-12 right-0 z-10 flex items-center gap-2">
-              <ClaimEntityButton entityType="Series" entityId={series?.id} entityName={series.name} />
-              <SocialShareButtons
-                url={window.location.href}
-                title={`${series.name} - Series`}
-                description={series.description}
-              />
-            </div>
+            <div className="absolute -top-12 right-0 z-10">
             <div className="bg-white">
               {series.logo_url ? (
                 <div className="w-full bg-gray-50 border border-gray-200 flex items-center justify-center p-8" style={{minHeight: 240}}>
@@ -581,7 +574,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
               </div>
             </div>
           </section>
-        </div>
+        <ProfileClaimFooter entityType="Series" entityId={series?.id} entityName={series.name} />
       </div>
     </PageShell>
   );

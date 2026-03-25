@@ -30,8 +30,14 @@ const STATUS_CONFIG = {
   approved: { label: 'Approved', color: 'bg-green-50 text-green-700 border-green-200', Icon: CheckCircle2 },
   rejected: { label: 'Denied', color: 'bg-red-50 text-red-700 border-red-200', Icon: XCircle },
   needs_more_info: { label: 'More Info Needed', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: AlertCircle },
-  needs_more_info_active: { label: 'Action Required', color: 'bg-blue-50 text-blue-700 border-blue-200', Icon: AlertCircle },
 };
+
+const DISPUTE_REASONS = [
+  'I am the rightful owner of this profile',
+  'I should have access to manage this profile',
+  'This profile was incorrectly claimed by someone else',
+  'I need admin review of the current ownership',
+];
 
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
@@ -44,6 +50,8 @@ function StatusBadge({ status }) {
 }
 
 function ClaimForm({ user, prefill, onSuccess }) {
+  const mode = prefill?.mode || 'claim';
+  const isDispute = mode === 'dispute';
   const [step, setStep] = useState(prefill?.entityId ? 'form' : 'search');
   const [search, setSearch] = useState('');
   const [entityType, setEntityType] = useState(prefill?.entityType || 'Driver');
@@ -53,6 +61,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
     prefill?.entityId ? { id: prefill.entityId, name: prefill.entityName, type: prefill.entityType } : null
   );
   const [message, setMessage] = useState('');
+  const [disputeReason, setDisputeReason] = useState(DISPUTE_REASONS[0]);
   const [submitting, setSubmitting] = useState(false);
   const qc = useQueryClient();
 
@@ -97,19 +106,23 @@ function ClaimForm({ user, prefill, onSuccess }) {
   const handleSubmit = async () => {
     if (!selected) return;
     setSubmitting(true);
+    const justification = isDispute
+      ? `[DISPUTE] ${disputeReason}${message ? ' — ' + message : ''}`
+      : message;
     const res = await base44.functions.invoke('requestEntityClaim', {
       entity_type: selected.type,
       entity_id: selected.id,
-      message,
+      message: justification,
+      claim_type: isDispute ? 'dispute' : 'claim',
     });
     const data = res?.data;
     if (!data?.ok) {
-      toast.error(data?.error || 'Failed to submit claim. Please try again.');
+      toast.error(data?.error || 'Failed to submit. Please try again.');
       setSubmitting(false);
       return;
     }
     invalidateDataGroups(qc, ['access']);
-    toast.success('Claim submitted! An admin will review it shortly.');
+    toast.success(isDispute ? 'Ownership review request submitted.' : 'Claim submitted! An admin will review it shortly.');
     setSubmitting(false);
     onSuccess?.();
   };
@@ -201,26 +214,55 @@ function ClaimForm({ user, prefill, onSuccess }) {
             )}
           </div>
 
-          <div>
-            <Label className="text-sm font-semibold">
-              Why are you the rightful owner?
-              <span className="text-gray-400 font-normal ml-1">(optional but helpful)</span>
-            </Label>
-            <Textarea
-              className="mt-2"
-              rows={4}
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              placeholder="e.g. I am this driver / I run this team / I operate this track..."
-            />
-          </div>
+          {isDispute ? (
+            <>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                This profile is already claimed. You are submitting an ownership review request for admin evaluation.
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Reason for dispute</Label>
+                <div className="mt-2 space-y-2">
+                  {DISPUTE_REASONS.map(r => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setDisputeReason(r)}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg border transition-colors ${
+                        disputeReason === r ? 'bg-[#232323] text-white border-[#232323]' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Additional context <span className="text-gray-400 font-normal ml-1">(optional)</span></Label>
+                <Textarea className="mt-2" rows={3} value={message} onChange={e => setMessage(e.target.value)} placeholder="Provide any supporting details..." />
+              </div>
+            </>
+          ) : (
+            <div>
+              <Label className="text-sm font-semibold">
+                Why are you the rightful owner?
+                <span className="text-gray-400 font-normal ml-1">(optional but helpful)</span>
+              </Label>
+              <Textarea
+                className="mt-2"
+                rows={4}
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="e.g. I am this driver / I run this team / I operate this track..."
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3">
             {!prefill?.entityId && (
               <Button variant="outline" onClick={() => setStep('search')}>Back</Button>
             )}
             <Button onClick={handleSubmit} disabled={submitting} className="bg-[#232323] text-white gap-1.5">
-              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><ShieldCheck className="w-4 h-4" /> Submit Claim</>}
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><ShieldCheck className="w-4 h-4" /> {isDispute ? 'Submit Ownership Review' : 'Submit Claim'}</>}
             </Button>
           </div>
         </>
@@ -264,8 +306,11 @@ function MyClaims({ userId }) {
               <p className="text-xs text-gray-400 mt-0.5">
                 {claim.entity_type} · {d && isValid(d) ? format(d, 'MMM d, yyyy') : ''}
               </p>
+              {claim.claim_type === 'dispute' && (
+                <span className="inline-block text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-0.5">Dispute</span>
+              )}
               {claim.justification && (
-                <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">"{claim.justification}"</p>
+                <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">"{claim.justification.replace(/^\[DISPUTE\] /, '')}"</p>
               )}
               {claim.status === 'needs_more_info' && claim.admin_notes && (
                 <p className="text-xs text-blue-600 mt-1 bg-blue-50 border border-blue-100 rounded px-2 py-1">
@@ -301,6 +346,7 @@ export default function ClaimsCenter() {
     entityType: params.get('entityType') || '',
     entityId: params.get('entityId') || '',
     entityName: params.get('entityName') || '',
+    mode: params.get('mode') || 'claim',
   };
   const hasPrefill = !!prefill.entityId;
 
@@ -334,7 +380,11 @@ export default function ClaimsCenter() {
             <div className="flex items-center gap-2 mb-5">
               <ShieldCheck className="w-5 h-5 text-gray-700" />
               <h2 className="text-base font-semibold text-gray-900">
-                {hasPrefill ? `Claim ${prefill.entityName || prefill.entityType + ' Profile'}` : 'Start a Claim'}
+                {hasPrefill && prefill.mode === 'dispute'
+                  ? `Request Ownership Review — ${prefill.entityName || prefill.entityType}`
+                  : hasPrefill
+                  ? `Claim ${prefill.entityName || prefill.entityType + ' Profile'}`
+                  : 'Start a Claim'}
               </h2>
             </div>
 

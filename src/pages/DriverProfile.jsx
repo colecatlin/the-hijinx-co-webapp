@@ -32,7 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ScheduleSection from '@/components/schedule/ScheduleSection';
 import FollowDriverButton from '@/components/drivers/FollowDriverButton';
-import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
+import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
@@ -323,10 +323,6 @@ export default function DriverProfile() {
         <div className="flex flex-wrap items-center gap-2 pt-4 pb-2">
           <Link to={createPageUrl('DriverDirectory')} className="text-xs text-gray-400 hover:text-[#232323] mr-2">← Drivers</Link>
           <FollowDriverButton driverId={driver?.id} />
-          <ClaimEntityButton entityType="Driver" entityId={driver?.id} entityName={fullName} />
-          <Button variant="outline" size="sm" onClick={() => setShowCompareDialog(true)}>
-            <GitCompare className="w-4 h-4 mr-1.5" />Compare
-          </Button>
           <SocialShareButtons url={window.location.href} title={`${fullName} - Driver Profile`} description="" />
         </div>
 
@@ -669,6 +665,8 @@ export default function DriverProfile() {
 
 
       </div>
+
+      <ProfileClaimFooter entityType="Driver" entityId={driver?.id} entityName={fullName} />
 
       {/* Compare dialog — unchanged */}
       <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>

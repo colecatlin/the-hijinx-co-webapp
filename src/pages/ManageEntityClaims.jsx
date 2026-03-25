@@ -60,6 +60,9 @@ function ClaimRow({ claim, onOpen }) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm text-gray-900">{claim.entity_name}</span>
           <Badge className={`text-xs border px-1.5 py-0 ${ENTITY_COLORS[claim.entity_type] || ''}`}>{claim.entity_type}</Badge>
+          {claim.claim_type === 'dispute' && (
+            <Badge className="text-xs border px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">Dispute</Badge>
+          )}
         </div>
         <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1"><User className="w-3 h-3" />{claim.user_email}</span>
@@ -118,9 +121,12 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
         <div className="space-y-4 py-1">
           {/* Entity */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-1.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge className={`text-xs border ${ENTITY_COLORS[claim.entity_type] || ''}`}>{claim.entity_type}</Badge>
               <span className="font-semibold text-sm text-gray-900">{claim.entity_name}</span>
+              {claim.claim_type === 'dispute' && (
+                <Badge className="text-xs border bg-amber-50 text-amber-700 border-amber-200">Ownership Dispute</Badge>
+              )}
             </div>
             <p className="text-xs text-gray-500">Entity ID: {claim.entity_id}</p>
           </div>

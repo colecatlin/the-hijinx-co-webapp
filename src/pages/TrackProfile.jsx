@@ -12,7 +12,7 @@ import TrackEventsPanel from '@/components/tracks/TrackEventsPanel';
 import TrackMapPanel from '@/components/tracks/TrackMapPanel';
 import { createPageUrl } from '@/components/utils';
 import { MapPin, Globe, Phone, Mail, Flag, Ruler, ExternalLink, Calendar } from 'lucide-react';
-import ClaimEntityButton from '@/components/onboarding/ClaimEntityButton';
+import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import { isAfter, parseISO } from 'date-fns';
 
 export default function TrackProfile() {
@@ -125,10 +125,7 @@ export default function TrackProfile() {
           </div>
         )}
 
-        {/* Claim button */}
-        <div className="mb-3">
-          <ClaimEntityButton entityType="Track" entityId={track?.id} entityName={track.name} />
-        </div>
+
 
         {/* Section nav */}
         <div className="flex gap-6 border-b border-gray-200 mb-6 mt-2">
@@ -344,6 +341,8 @@ export default function TrackProfile() {
             )}
           </div>
         </div>
+      <div className="max-w-7xl mx-auto px-6">
+        <ProfileClaimFooter entityType="Track" entityId={track?.id} entityName={track.name} />
       </div>
     </PageShell>
   );

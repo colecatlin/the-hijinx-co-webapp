@@ -5,7 +5,7 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { entity_type, entity_id, message } = await req.json();
+  const { entity_type, entity_id, message, claim_type = 'claim' } = await req.json();
   if (!entity_type || !entity_id) {
     return Response.json({ error: 'entity_type and entity_id are required' }, { status: 400 });
   }
@@ -54,14 +54,16 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'You already have access to this entity.' }, { status: 409 });
   }
 
-  // Safety: check if entity already has an owner
-  const owners = await base44.asServiceRole.entities.EntityCollaborator.filter({
-    entity_type,
-    entity_id,
-    role: 'owner',
-  });
-  if (owners && owners.length > 0) {
-    return Response.json({ error: 'This entity already has an owner. Contact the current owner or an admin.' }, { status: 409 });
+  // Safety: check if entity already has an owner (skip for dispute/review requests)
+  if (claim_type !== 'dispute') {
+    const owners = await base44.asServiceRole.entities.EntityCollaborator.filter({
+      entity_type,
+      entity_id,
+      role: 'owner',
+    });
+    if (owners && owners.length > 0) {
+      return Response.json({ error: 'This entity already has an owner. Contact the current owner or an admin.' }, { status: 409 });
+    }
   }
 
   const now = new Date().toISOString();
@@ -72,6 +74,7 @@ Deno.serve(async (req) => {
     entity_id,
     entity_name: entityName,
     justification: message || '',
+    claim_type: claim_type || 'claim',
     status: 'pending',
     created_at: now,
     updated_at: now,
