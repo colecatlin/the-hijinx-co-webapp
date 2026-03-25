@@ -12,7 +12,7 @@ export default function SpotlightSection({ spotlightDriver, spotlightEvent, feat
   const storyImg = featuredStory?.cover_image || FALLBACK;
 
   return (
-    <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(0,255,218,0.08)' }} className="py-2">
+    <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.04)' }} className="py-0">
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
         <motion.div className="flex items-center gap-3 mb-10"
           initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>

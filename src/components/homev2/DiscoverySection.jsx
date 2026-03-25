@@ -11,34 +11,56 @@ const reveal = {
   visible: (i = 0) => ({ y: 0, opacity: 1, transition: { duration: 0.45, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] } }),
 };
 
-/* ── Large story card (hero slot) ── */
+/* ── Large feature card (hero slot) ── */
 function LargeStoryCard({ story }) {
   const img = story.cover_image || FALLBACK_RACE;
   return (
-    <motion.div custom={0} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} className="row-span-2">
-      <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden block h-full" style={{ minHeight: 420, background: '#111' }}>
+    <motion.div custom={0} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
+      <Link to={`/story/${story.slug || story.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
         <motion.img src={img} alt={story.title} className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'brightness(0.55) contrast(1.15)' }}
-          whileHover={{ scale: 1.04 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
+          style={{ filter: 'brightness(0.5) contrast(1.1)' }}
+          whileHover={{ scale: 1.03 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 35%, transparent 75%)' }} />
-        {/* Category bar */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 p-4">
           {story.primary_category && (
-            <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-1" style={{ background: '#00FFDA', color: '#232323', fontWeight: 800 }}>
+            <span className="font-mono text-[9px] tracking-widest uppercase px-2 py-1" style={{ background: 'rgba(255,248,245,0.1)', color: 'rgba(255,248,245,0.5)', fontWeight: 700 }}>
               {story.primary_category}
             </span>
           )}
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h3 className="font-black text-2xl md:text-3xl leading-tight" style={{ color: '#FFF8F5' }}>{story.title}</h3>
-          {story.subtitle && <p className="text-sm mt-2 leading-relaxed" style={{ color: 'rgba(255,248,245,0.55)' }}>{story.subtitle}</p>}
+          {story.subtitle && <p className="text-sm mt-2 leading-relaxed" style={{ color: 'rgba(255,248,245,0.45)' }}>{story.subtitle}</p>}
           <div className="flex items-center gap-2 mt-4">
-            <span className="font-bold text-xs" style={{ color: '#00FFDA' }}>Read Story</span>
-            <div className="h-px w-6" style={{ background: '#00FFDA' }} />
+            <span className="font-bold text-xs" style={{ color: 'rgba(255,248,245,0.5)' }}>Read Story</span>
+            <div className="h-px w-6 group-hover:w-10 transition-all" style={{ background: 'rgba(255,248,245,0.3)' }} />
           </div>
         </div>
         <motion.div className="absolute bottom-0 left-0 h-0.5 right-0" style={{ background: '#00FFDA', scaleX: 0, originX: 0 }}
           whileHover={{ scaleX: 1 }} transition={{ duration: 0.35 }} />
+      </Link>
+    </motion.div>
+  );
+}
+
+/* ── Large driver feature card ── */
+function LargeDriverCard({ driver }) {
+  const img = driver.profile_image_url || driver.hero_image_url || FALLBACK_PORTRAIT;
+  return (
+    <motion.div custom={1} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
+      <Link to={`/drivers/${driver.slug || driver.id}`} className="group relative overflow-hidden block" style={{ height: 440, background: '#111' }}>
+        <motion.img src={img} alt={`${driver.first_name} ${driver.last_name}`}
+          className="absolute inset-0 w-full h-full object-cover object-top"
+          style={{ filter: 'brightness(0.45) contrast(1.15)' }}
+          whileHover={{ scale: 1.04 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 30%, transparent 65%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="font-mono text-[9px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,248,245,0.35)' }}>Driver</div>
+          <div className="font-black text-3xl leading-tight" style={{ color: '#FFF8F5' }}>{driver.first_name}<br />{driver.last_name}</div>
+          {driver.primary_discipline && <div className="font-mono text-[10px] uppercase mt-2" style={{ color: 'rgba(255,248,245,0.35)' }}>{driver.primary_discipline}</div>}
+        </div>
+        <motion.div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: '#00FFDA', scaleX: 0, originX: 0 }}
+          whileHover={{ scaleX: 1 }} transition={{ duration: 0.3 }} />
       </Link>
     </motion.div>
   );
@@ -121,59 +143,56 @@ export default function DiscoverySection({ featuredDrivers = [], featuredStories
   if (!hasContent) return null;
 
   const primaryStory = featuredStories[0];
-  const secondaryStories = featuredStories.slice(1, 4);
+  const primaryDriver = featuredDrivers[0];
+  const gridDrivers = featuredDrivers.slice(1, 4);
+  const gridStories = featuredStories.slice(1, 4);
 
   return (
-    <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.05)' }} className="py-16 md:py-20">
+    <section style={{ background: '#0a0a0a' }} className="py-14 md:py-18">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div className="flex items-end justify-between mb-10"
+        <motion.div className="flex items-end justify-between mb-8"
           initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-6 h-px" style={{ background: '#00FFDA' }} />
-              <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold" style={{ color: '#00FFDA' }}>Discover</span>
+              <div className="w-5 h-px" style={{ background: 'rgba(255,248,245,0.2)' }} />
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase font-bold" style={{ color: 'rgba(255,248,245,0.4)' }}>Discover</span>
             </div>
             <h2 className="font-black text-3xl md:text-4xl leading-none" style={{ color: '#FFF8F5' }}>What's Happening</h2>
           </div>
-          <Link to={createPageUrl('OutletHome')} className="font-bold text-xs uppercase hidden md:block" style={{ color: 'rgba(255,248,245,0.3)' }}>All Stories →</Link>
+          <Link to={createPageUrl('OutletHome')} className="font-bold text-xs uppercase hidden md:block" style={{ color: 'rgba(255,248,245,0.25)' }}>All Stories →</Link>
         </motion.div>
 
-        {/* Main asymmetric grid */}
-        <div className="grid grid-cols-12 gap-2 md:gap-3">
-          {/* Large story — 5 cols, 2 rows */}
-          {primaryStory && (
-            <div className="col-span-12 md:col-span-5 md:row-span-2">
-              <LargeStoryCard story={primaryStory} />
-            </div>
-          )}
-          {/* Driver portraits — 4 cols */}
-          {featuredDrivers.slice(0, 2).map((d, i) => (
-            <div key={d.id} className="col-span-6 md:col-span-2">
-              <DriverCard driver={d} index={i + 1} />
-            </div>
-          ))}
-          {/* Third driver or story */}
-          {featuredDrivers[2] && (
-            <div className="col-span-6 md:col-span-2">
-              <DriverCard driver={featuredDrivers[2]} index={3} />
-            </div>
-          )}
-          {/* Secondary stories */}
-          {secondaryStories.slice(0, 1).map((s, i) => (
-            <div key={s.id} className="col-span-6 md:col-span-3">
-              <SmallStoryCard story={s} index={i + 4} />
+        {/* Feature row — 2 large cards */}
+        {(primaryStory || primaryDriver) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            {primaryStory && (
+              <div className="md:col-span-1">
+                <LargeStoryCard story={primaryStory} />
+              </div>
+            )}
+            {primaryDriver && (
+              <div className="md:col-span-1">
+                <LargeDriverCard driver={primaryDriver} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Secondary grid — smaller cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {gridDrivers.map((d, i) => (
+            <div key={d.id}>
+              <DriverCard driver={d} index={i + 2} />
             </div>
           ))}
-          {/* Events row */}
+          {gridStories.slice(0, 1).map((s, i) => (
+            <div key={s.id}>
+              <SmallStoryCard story={s} index={i + 5} />
+            </div>
+          ))}
           {upcomingEvents.slice(0, 4).map((e, i) => (
-            <div key={e.id} className="col-span-6 md:col-span-3">
+            <div key={e.id} className="col-span-2 md:col-span-2">
               <EventCard event={e} index={i + 6} />
-            </div>
-          ))}
-          {/* Remaining stories */}
-          {secondaryStories.slice(1).map((s, i) => (
-            <div key={s.id} className="col-span-6 md:col-span-3">
-              <SmallStoryCard story={s} index={i + 10} />
             </div>
           ))}
         </div>

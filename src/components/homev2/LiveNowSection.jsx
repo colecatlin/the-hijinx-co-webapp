@@ -42,7 +42,7 @@ function Marquee({ items }) {
 export default function LiveNowSection({ feedItems = [] }) {
   if (!feedItems.length) return null;
   return (
-    <section style={{ background: '#0f1e2e', borderBottom: '1px solid rgba(0,255,218,0.12)' }} className="py-3">
+    <section style={{ background: '#111', borderBottom: '1px solid rgba(255,248,245,0.05)' }} className="py-2">
       <div className="flex items-center">
         <div className="flex items-center gap-2 shrink-0 px-6 py-1" style={{ borderRight: '1px solid rgba(255,248,245,0.1)', minWidth: 130 }}>
           <motion.span className="w-2 h-2 rounded-full shrink-0" style={{ background: '#D33F49' }}

@@ -28,7 +28,7 @@ const DIRECTORIES = [
 
 export default function ExploreSection() {
   return (
-    <section style={{ background: '#0a0a0a', borderTop: '1px solid rgba(0,255,218,0.1)', borderBottom: '1px solid rgba(255,248,245,0.05)' }} className="py-14 md:py-16">
+    <section style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,248,245,0.04)' }} className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div className="flex items-end justify-between mb-10"
           initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>

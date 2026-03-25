@@ -65,11 +65,7 @@ export default function Home() {
       />
 
       {/* ── 1. Hero ──────────────────────────────────────────────────────── */}
-      <HeroSection
-        stats={hp.hero_stats}
-        featuredDrivers={hp.featured_drivers}
-        featuredStory={hp.featured_story}
-      />
+      <HeroSection stats={hp.hero_stats} />
 
       {/* ── 2. Live Now ──────────────────────────────────────────────────── */}
       <LiveNowSection feedItems={formattedFeed.slice(0, 10)} />
