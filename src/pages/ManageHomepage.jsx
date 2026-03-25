@@ -82,6 +82,10 @@ export default function ManageHomepage() {
             <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
           </TabsContent>
 
+          <TabsContent value="hero" className="space-y-6">
+            <HeroSlideManager />
+          </TabsContent>
+
           <TabsContent value="editorial" className="space-y-6">
             <HomepageEditorialSettings />
           </TabsContent>
