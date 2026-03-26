@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
-import EntityImagePanel from '@/components/shared/EntityImagePanel';
 
 export default function TrackCoreDetailsSection({ trackId }) {
   const [formData, setFormData] = useState({});
@@ -215,16 +214,6 @@ export default function TrackCoreDetailsSection({ trackId }) {
             maxSizeMB={8}
           />
         </div>
-
-        <EntityImagePanel
-          entity={formData}
-          entityType="Track"
-          onSave={async (imgs) => {
-            setFormData(prev => ({ ...prev, ...imgs }));
-            await base44.entities.Track.update(trackId, imgs);
-            toast.success('Images saved');
-          }}
-        />
 
         <Button onClick={handleSave} disabled={updateMutation.isPending}>
           {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}

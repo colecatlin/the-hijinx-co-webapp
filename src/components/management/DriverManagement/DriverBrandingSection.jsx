@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import MediaPicker from '@/components/shared/MediaPicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
     bio: '',
     tagline: '',
     hero_image_url: '',
-    card_image_url: '',
     profile_image_url: '',
     website_url: '',
     instagram_url: '',
@@ -35,7 +33,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         bio: driver.bio || '',
         tagline: driver.tagline || '',
         hero_image_url: driver.hero_image_url || '',
-        card_image_url: driver.card_image_url || '',
         profile_image_url: driver.profile_image_url || '',
         website_url: driver.website_url || '',
         instagram_url: driver.instagram_url || '',
@@ -60,7 +57,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         bio: data.bio || null,
         tagline: data.tagline || null,
         hero_image_url: data.hero_image_url || null,
-        card_image_url: data.card_image_url || null,
         profile_image_url: data.profile_image_url || null,
         website_url: data.website_url || null,
         instagram_url: data.instagram_url || null,
@@ -130,19 +126,28 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         <div className="border-t pt-5 space-y-4">
           <h4 className="font-semibold text-sm text-gray-700">Profile Images</h4>
           {[
-            { field: 'card_image_url', label: 'Card / Featured Image', context: 'card' },
-            { field: 'profile_image_url', label: 'Profile / Portrait Image', context: 'portrait' },
-            { field: 'hero_image_url', label: 'Hero / Banner Image', context: 'hero' },
-          ].map(({ field, label, context }) => (
-            <div key={field}>
-              <MediaPicker
-                value={formData[field]}
-                onChange={url => handleChange(field, url)}
-                entityType="Driver"
-                entityId={driverId}
-                contextType={context}
-                label={label}
-              />
+            { field: 'profile_image_url', label: 'Profile / Portrait Image' },
+            { field: 'hero_image_url', label: 'Hero / Banner Image' },
+          ].map(({ field, label }) => (
+            <div key={field} className="flex items-start gap-4">
+              {formData[field] ? (
+                <img src={formData[field]} alt={label} className="w-20 h-14 object-cover rounded border border-gray-200 flex-shrink-0" />
+              ) : (
+                <div className="w-20 h-14 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">None</div>
+              )}
+              <div className="flex-1 space-y-1">
+                <Label className="text-xs">{label}</Label>
+                <Input
+                  className="text-xs"
+                  value={formData[field]}
+                  onChange={e => handleChange(field, e.target.value)}
+                  placeholder="https://..."
+                />
+                <label className="cursor-pointer inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50">
+                  <input type="file" accept="image/*" className="hidden" onChange={e => uploadImage(e, field)} />
+                  Upload
+                </label>
+              </div>
             </div>
           ))}
         </div>

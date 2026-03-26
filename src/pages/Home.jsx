@@ -4,15 +4,22 @@ import { base44 } from '@/api/base44Client';
 import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import PageShell from '@/components/shared/PageShell';
+import HomepageHero from '@/components/home/HomepageHero';
+import HomepageTicker from '@/components/home/HomepageTicker';
+import HomepageChooseYourLane from '@/components/homepage/HomepageChooseYourLane';
+import HomepageFeaturedStory from '@/components/home/HomepageFeaturedStory';
+import HomepageFeaturedEntities from '@/components/home/HomepageFeaturedEntities';
+import HomepageRaceCoreTeaser from '@/components/home/HomepageRaceCoreTeaser';
+import HomepageApparel from '@/components/home/HomepageApparel';
+import HomepageMovement from '@/components/home/HomepageMovement';
+import HomepageFinalCTA from '@/components/home/HomepageFinalCTA';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
+import HomepageDriverSpotlight from '@/components/homepage/HomepageDriverSpotlight';
+import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight';
+import HomepageLiveFeedRail from '@/components/homepage/HomepageLiveFeedRail';
+import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappeningNow';
 import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
-
-// ── v2 section components ─────────────────────────────────────────────────────
-import HeroSection      from '@/components/homev2/HeroSection';
-import LiveNowSection   from '@/components/homev2/LiveNowSection';
-import FeaturedSection  from '@/components/homev2/FeaturedSection';
-import CoreSection      from '@/components/homev2/CoreSection';
-import BrandSection     from '@/components/homev2/BrandSection';
+import HomepageTrendingNow from '@/components/homepage/HomepageTrendingNow';
 
 export default function Home() {
   // Current user for personalization + Race Core access check
@@ -60,29 +67,78 @@ export default function Home() {
         noSuffix={false}
       />
 
-      {/* ── 1. Hero ──────────────────────────────────────────────────────── */}
-      <HeroSection stats={hp.hero_stats} />
+      {/* ── 1. Hero ─────────────────────────────────────────────────────────── */}
+      <HomepageHero stats={hp.hero_stats} />
 
-      {/* ── 2. Live Now (thin strip) ──────────────────────────────────────── */}
-      <LiveNowSection feedItems={formattedFeed.slice(0, 10)} />
+      {/* ── Ticker ──────────────────────────────────────────────────────────── */}
+      <HomepageTicker
+        tickerItems={hp.ticker_items}
+        activityItems={hp.activity_feed?.slice(0, 6)}
+      />
 
-      {/* ── 3. Featured (Discovery + Spotlight merged) ───────────────────── */}
-      <FeaturedSection
-        featuredDrivers={hp.featured_drivers}
-        featuredStories={hp.featured_stories}
-        upcomingEvents={hp.upcoming_events}
-        spotlightDriver={hp.spotlight_driver}
+      {/* ── 2. Live Feed Rail — compact horizontal strip, white bg ──────────── */}
+      <HomepageLiveFeedRail items={formattedFeed.slice(0, 10)} />
+
+      {/* ── 3. Spotlights — Driver + Event ──────────────────────────────────── */}
+      {hasSpotlight && (
+        <section className="bg-white border-b border-gray-200 py-12 md:py-16">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center gap-3 mb-7">
+              <div className="w-8 h-px bg-[#1DA1A1]" />
+              <span className="font-mono text-[10px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">Spotlight</span>
+            </div>
+            <div className={`grid gap-4 ${hasDriver && hasEvent ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
+              {hasDriver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
+              {hasEvent  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 4. Choose Your Lane — ecosystem routing ─────────────────────────── */}
+      <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
+
+      {/* ── 5. Trending Now — tabbed entity discovery ───────────────────────── */}
+      <HomepageTrendingNow
+        drivers={hp.featured_drivers}
+        tracks={hp.featured_tracks}
+        series={hp.featured_series}
+        events={hp.upcoming_events}
+        isLoading={isLoading}
+      />
+
+      {/* ── 6. Featured Story — editorial ───────────────────────────────────── */}
+      <HomepageFeaturedStory
         featuredStory={hp.featured_story}
+        supportingStories={(hp.featured_stories || []).slice(1, 4)}
       />
 
-      {/* ── 4. Core (Race Core + Explore merged) ─────────────────────────── */}
-      <CoreSection
-        upcomingEvents={hp.upcoming_events}
-        recentResults={hp.recent_results}
+      {/* ── 7. What's Happening Now — activity card grid ────────────────────── */}
+      <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
+
+      {/* ── 8. Featured Motorsports — deeper entity browse ──────────────────── */}
+      <HomepageFeaturedEntities
+        drivers={hp.featured_drivers}
+        tracks={hp.featured_tracks}
+        series={hp.featured_series}
+        events={hp.upcoming_events}
+        allSeries={hp.featured_series}
+        programsByDriver={{}}
+        mediaByDriver={{}}
+        isLoading={isLoading}
       />
 
-      {/* ── 5. Brand (Apparel + Movement + CTA merged) ───────────────────── */}
-      <BrandSection products={hp.featured_products} />
+      {/* ── 9. Race Core system feature ─────────────────────────────────────── */}
+      <HomepageRaceCoreTeaser />
+
+      {/* ── 10. Apparel feature ─────────────────────────────────────────────── */}
+      <HomepageApparel products={hp.featured_products} />
+
+      {/* ── 11. Movement / culture ──────────────────────────────────────────── */}
+      <HomepageMovement />
+
+      {/* ── 12. Final CTA ───────────────────────────────────────────────────── */}
+      <HomepageFinalCTA />
 
     </PageShell>
   );

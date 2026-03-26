@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Upload, ImageIcon } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
 import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
-import HeroSlideManager from '@/components/management/HeroSlideManager';
 
 const SECTIONS = [
   { key: 'hero_bg', label: 'Homepage Hero Background' },
@@ -66,9 +65,8 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="hero">Hero Slides</TabsTrigger>
             <TabsTrigger value="editorial">Editorial</TabsTrigger>
             <TabsTrigger value="data">Images</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -80,10 +78,6 @@ export default function ManageHomepage() {
               <p className="text-2xl font-bold text-gray-900">{settings.length}</p>
             </div>
             <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
-          </TabsContent>
-
-          <TabsContent value="hero" className="space-y-6">
-            <HeroSlideManager />
           </TabsContent>
 
           <TabsContent value="editorial" className="space-y-6">

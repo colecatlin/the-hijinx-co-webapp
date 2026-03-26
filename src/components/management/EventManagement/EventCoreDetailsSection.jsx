@@ -7,8 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Loader2, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import EntityImagePanel from '@/components/shared/EntityImagePanel';
-import { toast } from 'sonner';
 
 export default function EventCoreDetailsSection({ event, isDraftOnly = false }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -204,15 +202,6 @@ export default function EventCoreDetailsSection({ event, isDraftOnly = false }) 
             </div>
           </div>
         </Card>
-        <EntityImagePanel
-          entity={event}
-          entityType="Event"
-          onSave={async (imgs) => {
-            await base44.entities.Event.update(event.id, imgs);
-            queryClient.invalidateQueries({ queryKey: ['event', event.id] });
-            toast.success('Images saved');
-          }}
-        />
       </>
     );
   }

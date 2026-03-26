@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { RefreshCw, Upload, X } from 'lucide-react';
 import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
-import EntityImagePanel from '@/components/shared/EntityImagePanel';
 import { generateSlug, validateSlug } from '@/components/utils/routingContract';
 
 export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
@@ -257,18 +256,6 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
             />
           </div>
         </div>
-
-        {teamId !== 'new' && (
-          <EntityImagePanel
-            entity={formData}
-            entityType="Team"
-            onSave={async (imgs) => {
-              setFormData(prev => ({ ...prev, ...imgs }));
-              await base44.entities.Team.update(teamId, imgs);
-              toast.success('Images saved');
-            }}
-          />
-        )}
 
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
