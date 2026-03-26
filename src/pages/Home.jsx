@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import PageShell from '@/components/shared/PageShell';
@@ -22,12 +23,7 @@ import { formatActivityFeedItems } from '@/components/homepage/activityFeedForma
 import HomepageTrendingNow from '@/components/homepage/HomepageTrendingNow';
 
 export default function Home() {
-  // Current user for personalization + Race Core access check
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
+  const { user } = useAuth();
 
   const { data: collaboratorEntities } = useQuery({
     queryKey: ['hp_collaborators', user?.id],
@@ -41,7 +37,6 @@ export default function Home() {
     (c) => c.entity_type === 'track' || c.entity_type === 'series'
   );
 
-  // Single centralized homepage data query — all sections read from here
   const { data: hpResult, isLoading } = useQuery({
     queryKey: ['homepageData'],
     queryFn: getHomepageData,

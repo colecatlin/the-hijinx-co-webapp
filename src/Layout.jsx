@@ -58,6 +58,7 @@ export default function Layout({ children, currentPageName }) {
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: user } = useQuery({

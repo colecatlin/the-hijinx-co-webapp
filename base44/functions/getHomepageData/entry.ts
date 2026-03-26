@@ -46,26 +46,26 @@ Deno.serve(async (req) => {
       activityFeed,
       autoMedia,
       autoProducts,
-      // hero stats counts
+      // hero stats counts — fetch with id-only minimal data
       allActiveSeries,
       allLiveDrivers,
       allActiveTracks,
       allPublishedEvents,
     ] = await Promise.all([
-      safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 50)),
-      safe(db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', 20)),
-      safe(db.Track.filter({ status: 'Active' }, '-created_date', 20)),
-      safe(db.Series.filter({ status: 'Active' }, '-popularity_rank', 20)),
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', 20)),
+      safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
+      safe(db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', TARGET)),
+      safe(db.Track.filter({ status: 'Active' }, '-created_date', TARGET)),
+      safe(db.Series.filter({ status: 'Active' }, '-popularity_rank', TARGET)),
+      safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 6)),
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
-      safe(db.MediaAsset.list('-created_date', 20)),
-      safe(db.Product.list('-created_date', 20)),
-      // counts for hero stats — capped at 500 to avoid CPU timeout
-      safe(db.Series.filter({ status: 'Active' }, '-created_date', 500)),
-      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 500)),
-      safe(db.Track.filter({ status: 'Active' }, '-created_date', 500)),
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', 500)),
+      safe(db.MediaAsset.list('-created_date', MEDIA_TARGET)),
+      safe(db.Product.list('-created_date', TARGET)),
+      // counts for hero stats — capped at 100 for performance
+      safe(db.Series.filter({ status: 'Active' }, '-created_date', 100)),
+      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 100)),
+      safe(db.Track.filter({ status: 'Active' }, '-created_date', 100)),
+      safe(db.Event.filter({ status: 'Published' }, 'event_date', 100)),
     ]);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -176,35 +176,29 @@ Deno.serve(async (req) => {
     let spotlightEvent  = null;
 
     if (useManual && settings?.spotlight_driver_id) {
-      try {
-        const drivers = await db.Driver.filter({ id: settings.spotlight_driver_id });
-        const d = drivers?.[0];
-        if (d) {
-          spotlightDriver = {
-            id:   d.id,
-            name: [d.first_name, d.last_name].filter(Boolean).join(' '),
-            subtitle: d.primary_discipline || null,
-            slug: d.slug || null,
-            image: null,
-          };
-        }
-      } catch (_) {}
+      const d = (autoDrivers || []).find(r => r.id === settings.spotlight_driver_id);
+      if (d) {
+        spotlightDriver = {
+          id:   d.id,
+          name: [d.first_name, d.last_name].filter(Boolean).join(' '),
+          subtitle: d.primary_discipline || null,
+          slug: d.slug || null,
+          image: d.profile_image_url || d.hero_image_url || null,
+        };
+      }
     }
 
     if (useManual && settings?.spotlight_event_id) {
-      try {
-        const events = await db.Event.filter({ id: settings.spotlight_event_id });
-        const e = events?.[0];
-        if (e) {
-          spotlightEvent = {
-            id:          e.id,
-            name:        e.name,
-            event_date:  e.event_date,
-            status:      e.status,
-            series_name: e.series_name || null,
-          };
-        }
-      } catch (_) {}
+      const e = (autoEvents || []).find(r => r.id === settings.spotlight_event_id);
+      if (e) {
+        spotlightEvent = {
+          id:          e.id,
+          name:        e.name,
+          event_date:  e.event_date,
+          status:      e.status,
+          series_name: e.series_name || null,
+        };
+      }
     }
 
     // Fall back to auto spotlight logic using already-fetched data
