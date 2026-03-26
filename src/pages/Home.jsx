@@ -10,13 +10,9 @@ import { formatActivityFeedItems } from '@/components/homepage/activityFeedForma
 // ── v2 section components ─────────────────────────────────────────────────────
 import HeroSection      from '@/components/homev2/HeroSection';
 import LiveNowSection   from '@/components/homev2/LiveNowSection';
-import DiscoverySection from '@/components/homev2/DiscoverySection';
-import SpotlightSection from '@/components/homev2/SpotlightSection';
-import ExploreSection   from '@/components/homev2/ExploreSection';
-import RaceCoreSection  from '@/components/homev2/RaceCoreSection';
-import ApparelSection   from '@/components/homev2/ApparelSection';
-import MovementSection  from '@/components/homev2/MovementSection';
-import FinalCTASection  from '@/components/homev2/FinalCTASection';
+import FeaturedSection  from '@/components/homev2/FeaturedSection';
+import CoreSection      from '@/components/homev2/CoreSection';
+import BrandSection     from '@/components/homev2/BrandSection';
 
 export default function Home() {
   // Current user for personalization + Race Core access check
@@ -67,40 +63,26 @@ export default function Home() {
       {/* ── 1. Hero ──────────────────────────────────────────────────────── */}
       <HeroSection stats={hp.hero_stats} />
 
-      {/* ── 2. Live Now ──────────────────────────────────────────────────── */}
+      {/* ── 2. Live Now (thin strip) ──────────────────────────────────────── */}
       <LiveNowSection feedItems={formattedFeed.slice(0, 10)} />
 
-      {/* ── 3. Discovery ─────────────────────────────────────────────────── */}
-      <DiscoverySection
+      {/* ── 3. Featured (Discovery + Spotlight merged) ───────────────────── */}
+      <FeaturedSection
         featuredDrivers={hp.featured_drivers}
         featuredStories={hp.featured_stories}
         upcomingEvents={hp.upcoming_events}
-      />
-
-      {/* ── 4. Spotlight ─────────────────────────────────────────────────── */}
-      <SpotlightSection
         spotlightDriver={hp.spotlight_driver}
-        spotlightEvent={hp.spotlight_event}
         featuredStory={hp.featured_story}
       />
 
-      {/* ── 5. Explore ───────────────────────────────────────────────────── */}
-      <ExploreSection />
-
-      {/* ── 6. Race Core ─────────────────────────────────────────────────── */}
-      <RaceCoreSection
+      {/* ── 4. Core (Race Core + Explore merged) ─────────────────────────── */}
+      <CoreSection
         upcomingEvents={hp.upcoming_events}
         recentResults={hp.recent_results}
       />
 
-      {/* ── 7. Apparel ───────────────────────────────────────────────────── */}
-      <ApparelSection products={hp.featured_products} />
-
-      {/* ── 8. Movement ──────────────────────────────────────────────────── */}
-      <MovementSection />
-
-      {/* ── 9. Final CTA ─────────────────────────────────────────────────── */}
-      <FinalCTASection />
+      {/* ── 5. Brand (Apparel + Movement + CTA merged) ───────────────────── */}
+      <BrandSection products={hp.featured_products} />
 
     </PageShell>
   );
