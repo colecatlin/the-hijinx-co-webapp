@@ -14,7 +14,7 @@ function Marquee({ items }) {
         transition={{ duration: items.length * 5, ease: 'linear', repeat: Infinity }}
       >
         {doubled.map((item, i) => {
-          const img = getBestImage(item, 'feed', 'feed');
+          // img resolved by EntityImage internally
           return (
             <div key={i} className="flex items-center gap-3 shrink-0 px-4 py-1"
               style={{ borderRight: '1px solid rgba(255,248,245,0.07)' }}>
