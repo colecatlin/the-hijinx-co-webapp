@@ -20,7 +20,7 @@ import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight
 import HomepageLiveFeedRail from '@/components/homepage/HomepageLiveFeedRail';
 import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappeningNow';
 import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
-import HomepageTrendingNow from '@/components/homepage/HomepageTrendingNow';
+
 
 export default function Home() {
   const { user } = useAuth();
@@ -93,14 +93,7 @@ export default function Home() {
       {/* ── 4. Choose Your Lane — ecosystem routing ─────────────────────────── */}
       <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
 
-      {/* ── 5. Trending Now — tabbed entity discovery ───────────────────────── */}
-      <HomepageTrendingNow
-        drivers={hp.featured_drivers}
-        tracks={hp.featured_tracks}
-        series={hp.featured_series}
-        events={hp.upcoming_events}
-        isLoading={isLoading}
-      />
+
 
       {/* ── 6. Featured Story — editorial ───────────────────────────────────── */}
       <HomepageFeaturedStory
