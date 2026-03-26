@@ -11,34 +11,39 @@ function tagItem(item, type) {
 }
 
 function getHref(item) {
-  if (item._type === 'driver') return `/drivers/${item.slug || item.id}`;
-  if (item._type === 'event')  return createPageUrl('EventDirectory');
-  return `/story/${item.slug || item.id}`;
+  if (item._type === 'driver') {
+    return '/drivers/' + (item.slug || item.id);
+  }
+  if (item._type === 'event') {
+    return createPageUrl('EventDirectory');
+  }
+  return '/story/' + (item.slug || item.id);
 }
 
 function getEntityType(item) {
   if (item._type === 'driver') return 'driver';
-  if (item._type === 'event')  return 'event';
+  if (item._type === 'event') return 'event';
   return 'story';
 }
 
 function getLabel(item) {
   if (item._type === 'driver') return item.primary_discipline || 'Driver';
-  if (item._type === 'event')  return item.series_name || 'Event';
+  if (item._type === 'event') return item.series_name || 'Event';
   return item.primary_category || 'Story';
 }
 
 function getTitle(item) {
-  if (item._type === 'driver') return `${item.first_name} ${item.last_name}`;
+  if (item._type === 'driver') return (item.first_name || '') + ' ' + (item.last_name || '');
   return item.name || item.title || '';
 }
 
 function getSub(item) {
   if (item._type === 'driver') return item.tagline || null;
-  if (item._type === 'event')
+  if (item._type === 'event') {
     return item.event_date
       ? new Date(item.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
       : null;
+  }
   return item.subtitle || null;
 }
 
@@ -61,7 +66,6 @@ function HeroCard({ item }) {
           style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.88) 30%, rgba(10,10,10,0.15) 65%, transparent 90%)' }} />
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to right, rgba(10,10,10,0.5) 0%, transparent 55%)' }} />
-
         <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
           <div className="max-w-2xl">
             <span className="font-mono text-[9px] tracking-[0.45em] uppercase mb-4 inline-flex items-center gap-2"
@@ -156,12 +160,11 @@ function GridCard({ item, index }) {
 
 export default function FeaturedSection({
   featuredDrivers = [],
-  featuredStories  = [],
-  upcomingEvents   = [],
-  spotlightDriver  = null,
-  featuredStory    = null,
+  featuredStories = [],
+  upcomingEvents = [],
+  spotlightDriver = null,
+  featuredStory = null,
 }) {
-  // Build a flat pool of all items, tagged by type
   const pool = [];
   if (spotlightDriver) pool.push(tagItem(spotlightDriver, 'driver'));
   featuredDrivers.forEach(d => {
@@ -175,36 +178,28 @@ export default function FeaturedSection({
 
   if (!pool.length) return null;
 
-  // Layer 1: first item = hero
   const hero = pool[0];
-
-  // Layer 2: next 2–3 items, mixed types
   const secondary = pool.slice(1, 4);
-
-  // Layer 3: remaining up to 8 items
   const grid = pool.slice(4, 12);
 
   return (
     <section style={{ background: '#FFF8F5' }} className="py-14 md:py-20">
       <div className="max-w-7xl mx-auto px-6 flex flex-col gap-2">
 
-        {/* ── Layer 1: Hero ── */}
         <HeroCard item={hero} />
 
-        {/* ── Layer 2: Secondary ── */}
         {secondary.length > 0 && (
           <div className={`grid gap-2 ${secondary.length === 1 ? 'grid-cols-1' : secondary.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
             {secondary.map((item, i) => (
-              <SecondaryCard key={`${item._type}-${item.id}`} item={item} index={i} />
+              <SecondaryCard key={item._type + '-' + item.id} item={item} index={i} />
             ))}
           </div>
         )}
 
-        {/* ── Layer 3: Discovery grid ── */}
         {grid.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {grid.map((item, i) => (
-              <GridCard key={`${item._type}-${item.id}`} item={item} index={i} />
+              <GridCard key={item._type + '-' + item.id} item={item} index={i} />
             ))}
           </div>
         )}
