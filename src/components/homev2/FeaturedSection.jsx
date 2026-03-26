@@ -50,39 +50,38 @@ function HeroCard({ item }) {
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
       <Link to={getHref(item)} className="group relative block overflow-hidden"
-        style={{ height: 'clamp(420px, 55vh, 640px)', background: '#111' }}>
+        style={{ height: 'clamp(420px, 55vh, 640px)', background: '#e5e5e5' }}>
         <motion.div className="absolute inset-0"
           whileHover={{ scale: 1.02 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
           <EntityImage entity={item} entityType={getEntityType(item)} context="spotlight"
             className="absolute inset-0 w-full h-full object-cover object-top"
-            style={{ filter: 'brightness(0.38) contrast(1.15) saturate(1.05)' }} />
+            style={{ filter: 'brightness(0.55) contrast(1.1) saturate(0.9)' }} />
         </motion.div>
-        {/* Gradient: strong bottom, subtle left */}
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.97) 28%, rgba(10,10,10,0.3) 60%, transparent 85%)' }} />
+          style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.88) 30%, rgba(10,10,10,0.15) 65%, transparent 90%)' }} />
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to right, rgba(10,10,10,0.6) 0%, transparent 50%)' }} />
+          style={{ background: 'linear-gradient(to right, rgba(10,10,10,0.5) 0%, transparent 55%)' }} />
 
         <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
           <div className="max-w-2xl">
             <span className="font-mono text-[9px] tracking-[0.45em] uppercase mb-4 inline-flex items-center gap-2"
-              style={{ color: 'rgba(255,248,245,0.45)' }}>
+              style={{ color: 'rgba(255,255,255,0.55)' }}>
               {getLabel(item)}
             </span>
             <h2 className="font-black leading-none mb-4"
-              style={{ color: '#FFF8F5', fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
+              style={{ color: '#FFFFFF', fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
               {getTitle(item)}
             </h2>
             {getSub(item) && (
               <p className="text-base leading-relaxed max-w-lg mb-6"
-                style={{ color: 'rgba(255,248,245,0.5)', fontSize: 'clamp(0.85rem, 1.5vw, 1rem)' }}>
+                style={{ color: 'rgba(255,255,255,0.55)', fontSize: 'clamp(0.85rem, 1.5vw, 1rem)' }}>
                 {getSub(item)}
               </p>
             )}
             <div className="inline-flex items-center gap-3">
-              <span className="font-bold text-sm" style={{ color: '#00FFDA' }}>View</span>
+              <span className="font-bold text-sm" style={{ color: '#FFFFFF' }}>View</span>
               <div className="h-px w-10 transition-all duration-300 group-hover:w-16"
-                style={{ background: '#00FFDA' }} />
+                style={{ background: '#FFFFFF' }} />
             </div>
           </div>
         </div>
@@ -98,31 +97,29 @@ function SecondaryCard({ item, index }) {
     <motion.div
       custom={index} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}>
-      <Link to={getHref(item)} className="group relative block overflow-hidden"
-        style={{ height: 300, background: '#111' }}>
-        <motion.div className="absolute inset-0"
-          whileHover={{ scale: 1.04 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
-          <EntityImage entity={item} entityType={getEntityType(item)} context="grid"
-            className="absolute inset-0 w-full h-full object-cover object-top"
-            style={{ filter: 'brightness(0.42) contrast(1.1)' }} />
-        </motion.div>
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 35%, transparent 70%)' }} />
-        <div className="absolute inset-0 p-5 flex flex-col justify-end">
-          <span className="font-mono text-[8px] tracking-[0.35em] uppercase mb-2"
-            style={{ color: 'rgba(255,248,245,0.4)' }}>
+      <Link to={getHref(item)} className="group block overflow-hidden bg-white"
+        style={{ height: 300, border: '1px solid #E5E7EB' }}>
+        <div className="relative overflow-hidden" style={{ height: 180 }}>
+          <motion.div className="absolute inset-0"
+            whileHover={{ scale: 1.04 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+            <EntityImage entity={item} entityType={getEntityType(item)} context="grid"
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              style={{ filter: 'brightness(0.85) contrast(1.05)' }} />
+          </motion.div>
+        </div>
+        <div className="p-4">
+          <span className="font-mono text-[8px] tracking-[0.35em] uppercase mb-1 block"
+            style={{ color: '#9CA3AF' }}>
             {getLabel(item)}
           </span>
-          <h3 className="font-black text-xl leading-tight mb-2" style={{ color: '#FFF8F5' }}>
+          <h3 className="font-bold text-base leading-tight mb-1" style={{ color: '#232323' }}>
             {getTitle(item)}
           </h3>
           {getSub(item) && (
-            <p className="text-xs line-clamp-2" style={{ color: 'rgba(255,248,245,0.4)' }}>{getSub(item)}</p>
+            <p className="text-xs line-clamp-2" style={{ color: '#6B7280' }}>{getSub(item)}</p>
           )}
         </div>
-        <motion.div className="absolute bottom-0 left-0 right-0 h-0.5"
-          style={{ background: '#00FFDA', scaleX: 0, originX: 0 }}
-          whileHover={{ scaleX: 1 }} transition={{ duration: 0.35 }} />
+        <div className="h-0.5 w-0 group-hover:w-full transition-all duration-300" style={{ background: '#00FFDA' }} />
       </Link>
     </motion.div>
   );
@@ -135,26 +132,21 @@ function GridCard({ item, index }) {
     <motion.div
       custom={index} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }} transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}>
-      <Link to={getHref(item)} className="group relative block overflow-hidden"
-        style={{ height: 160, background: '#111' }}>
-        <motion.div className="absolute inset-0"
-          whileHover={{ scale: 1.06 }} transition={{ duration: 0.5 }}>
-          <EntityImage entity={item} entityType={getEntityType(item)} context="feed"
-            className="absolute inset-0 w-full h-full object-cover object-top"
-            style={{ filter: 'brightness(0.45) contrast(1.1)' }} />
-        </motion.div>
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.95) 40%, transparent 75%)' }} />
-        <div className="absolute inset-0 p-3 flex flex-col justify-end">
-          <div className="font-mono text-[8px] uppercase mb-1 truncate"
-            style={{ color: 'rgba(255,248,245,0.35)' }}>{getLabel(item)}</div>
-          <div className="font-bold text-sm leading-tight truncate" style={{ color: '#FFF8F5' }}>
-            {getTitle(item)}
-          </div>
+      <Link to={getHref(item)} className="group block overflow-hidden bg-white"
+        style={{ border: '1px solid #E5E7EB' }}>
+        <div className="relative overflow-hidden" style={{ height: 110 }}>
+          <motion.div className="absolute inset-0"
+            whileHover={{ scale: 1.06 }} transition={{ duration: 0.5 }}>
+            <EntityImage entity={item} entityType={getEntityType(item)} context="feed"
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              style={{ filter: 'brightness(0.88) contrast(1.05)' }} />
+          </motion.div>
         </div>
-        <motion.div className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: '#00FFDA', scaleX: 0, originX: 0 }}
-          whileHover={{ scaleX: 1 }} transition={{ duration: 0.3 }} />
+        <div className="p-3">
+          <div className="font-mono text-[8px] uppercase mb-0.5 truncate" style={{ color: '#9CA3AF' }}>{getLabel(item)}</div>
+          <div className="font-bold text-sm leading-tight truncate" style={{ color: '#232323' }}>{getTitle(item)}</div>
+        </div>
+        <div className="h-0.5 w-0 group-hover:w-full transition-all duration-300" style={{ background: '#00FFDA' }} />
       </Link>
     </motion.div>
   );
@@ -193,7 +185,7 @@ export default function FeaturedSection({
   const grid = pool.slice(4, 12);
 
   return (
-    <section style={{ background: '#0a0a0a' }} className="py-14 md:py-20">
+    <section style={{ background: '#FFF8F5' }} className="py-14 md:py-20">
       <div className="max-w-7xl mx-auto px-6 flex flex-col gap-2">
 
         {/* ── Layer 1: Hero ── */}

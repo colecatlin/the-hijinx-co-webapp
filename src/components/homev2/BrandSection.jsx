@@ -17,29 +17,29 @@ export default function BrandSection({ products = [] }) {
   ];
 
   return (
-    <section style={{ background: '#080808' }}>
+    <section style={{ background: '#FFF8F5', borderTop: '1px solid #E5E7EB' }}>
 
       {/* ── Layer 1: Visual entry ── */}
       <div className="relative overflow-hidden" style={{ height: 'clamp(360px, 50vh, 560px)' }}>
         <img src={HERO_BG} alt=""
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'brightness(0.22) contrast(1.2) saturate(0.6)' }} />
+          style={{ filter: 'brightness(0.35) contrast(1.15) saturate(0.7)' }} />
         {/* Gradient fades into next layer */}
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, rgba(8,8,8,0.1) 0%, rgba(8,8,8,0.5) 60%, #080808 100%)' }} />
+          style={{ background: 'linear-gradient(to bottom, rgba(30,30,30,0.05) 0%, rgba(30,30,30,0.45) 60%, #FFF8F5 100%)' }} />
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to right, rgba(8,8,8,0.7) 0%, transparent 55%)' }} />
+          style={{ background: 'linear-gradient(to right, rgba(20,20,20,0.6) 0%, transparent 55%)' }} />
 
         <div className="relative z-10 h-full flex items-end max-w-7xl mx-auto px-6 pb-16">
           <motion.div
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
             <div className="font-mono text-[9px] tracking-[0.45em] uppercase mb-4"
-              style={{ color: 'rgba(0,255,218,0.5)' }}>The Culture</div>
+              style={{ color: 'rgba(255,255,255,0.55)' }}>The Culture</div>
             <h2 className="font-black leading-none"
-              style={{ color: '#FFF8F5', fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}>
+              style={{ color: '#FFFFFF', fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}>
               Motorsports,<br />
-              <span style={{ color: '#00FFDA' }}>Alive.</span>
+              <span style={{ color: '#FFFFFF', opacity: 0.7 }}>Alive.</span>
             </h2>
           </motion.div>
         </div>
@@ -54,24 +54,24 @@ export default function BrandSection({ products = [] }) {
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
             <p className="font-black leading-tight mb-8"
-              style={{ color: '#FFF8F5', fontSize: 'clamp(1.6rem, 3.5vw, 2.6rem)' }}>
+              style={{ color: '#232323', fontSize: 'clamp(1.6rem, 3.5vw, 2.6rem)' }}>
               For the drivers who grind.<br />
               The teams who sacrifice.<br />
               The tracks that shape legends.<br />
-              <span style={{ color: 'rgba(255,248,245,0.35)' }}>The media that captures it all.</span>
+              <span style={{ color: '#9CA3AF' }}>The media that captures it all.</span>
             </p>
             <div className="flex flex-wrap gap-4">
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link to={createPageUrl('MotorsportsHome')}
                   className="inline-flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-wide uppercase"
-                  style={{ background: '#00FFDA', color: '#0a0a0a' }}>
+                  style={{ background: '#232323', color: '#FFFFFF' }}>
                   Get Involved
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link to={createPageUrl('Registration')}
                   className="inline-flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-wide uppercase"
-                  style={{ border: '1px solid rgba(255,248,245,0.15)', color: 'rgba(255,248,245,0.6)' }}>
+                  style={{ border: '1px solid #D1D5DB', color: '#6B7280' }}>
                   Race Core Platform
                 </Link>
               </motion.div>
@@ -90,9 +90,9 @@ export default function BrandSection({ products = [] }) {
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}>
                 <img src={src} alt=""
                   className="absolute inset-0 w-full h-full object-cover"
-                  style={{ filter: 'brightness(0.55) contrast(1.1) saturate(0.75)' }} />
+                  style={{ filter: 'brightness(0.75) contrast(1.05) saturate(0.8)' }} />
                 <div className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.6) 0%, transparent 60%)' }} />
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 60%)' }} />
               </motion.div>
             ))}
           </div>
@@ -100,16 +100,16 @@ export default function BrandSection({ products = [] }) {
 
         {/* Subtle apparel callout */}
         <motion.div className="mt-16 flex items-center justify-between pt-8"
-          style={{ borderTop: '1px solid rgba(255,248,245,0.06)' }}
+          style={{ borderTop: '1px solid #E5E7EB' }}
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
           viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}>
           <div className="font-mono text-[10px] tracking-[0.4em] uppercase"
-            style={{ color: 'rgba(255,248,245,0.18)' }}>
+            style={{ color: '#D1D5DB' }}>
             HIJINX — Motorsports, Culture, Competition
           </div>
           <Link to={createPageUrl('ApparelHome')}
             className="font-bold text-xs uppercase tracking-wide"
-            style={{ color: 'rgba(255,248,245,0.2)' }}>
+            style={{ color: '#9CA3AF' }}>
             Wear the Culture →
           </Link>
         </motion.div>
