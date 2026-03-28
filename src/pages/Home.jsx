@@ -70,7 +70,7 @@ export default function Home() {
 
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          ZONE 2 — FEATURED  (spotlight · stories · activity)
+          ZONE 2 — CULTURE  (spotlight · stories)
       ═══════════════════════════════════════════════════════════════════════ */}
       {hasSpotlight && (
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-0">
@@ -87,7 +87,7 @@ export default function Home() {
 
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          ZONE 3 — CORE  (navigate · browse · race platform)
+          ZONE 3 — CORE  (explore · browse · race platform)
       ═══════════════════════════════════════════════════════════════════════ */}
       <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
       <HomepageFeaturedEntities
