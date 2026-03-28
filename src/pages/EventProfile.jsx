@@ -111,57 +111,7 @@ export default function EventProfile() {
   const orgId    = event?.series_id || event?.track_id;
   const racedayUrl = `${createPageUrl('RegistrationDashboard')}?orgType=${orgType}&orgId=${orgId}&seasonYear=${event?.season}&eventId=${event?.id}`;
 
-  const activeClassSessions = useMemo(() => {
-    if (!selectedClassName || selectedClassName === 'all') return sessions;
-    return sessions.filter(s => s.series_class_id === selectedClassName || s.class_name === selectedClassName);
-  }, [sessions, selectedClassName]);
-
-  const filteredSessions = useMemo(() => {
-    return activeClassSessions.filter(s =>
-      selectedSessionType === 'all' || s.session_type === selectedSessionType
-    );
-  }, [activeClassSessions, selectedSessionType]);
-
-  const officialSessions = useMemo(() => {
-    return sessions.filter(s => ['Official', 'Locked'].includes(s.status));
-  }, [sessions]);
-
-  const eventStandings = useMemo(() => {
-    return standings
-      .filter(s => s.series_id === event?.series_id && s.season_year === event?.season)
-      .sort((a, b) => (a.position || 999) - (b.position || 999))
-      .slice(0, 10);
-  }, [standings, event?.series_id, event?.season]);
-
-  const sessionTypes = useMemo(() => {
-    return [...new Set(sessions.map(s => s.session_type).filter(Boolean))].sort();
-  }, [sessions]);
-
-  const SESSION_TYPE_ORDER = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
-  const sortedSessions = useMemo(() => {
-    return [...sessions].sort((a, b) => {
-      const aIdx = SESSION_TYPE_ORDER.indexOf(a.session_type || '');
-      const bIdx = SESSION_TYPE_ORDER.indexOf(b.session_type || '');
-      if (aIdx !== bIdx) {
-        return (aIdx >= 0 ? aIdx : SESSION_TYPE_ORDER.length) - (bIdx >= 0 ? bIdx : SESSION_TYPE_ORDER.length);
-      }
-      if (a.scheduled_time && b.scheduled_time) return new Date(a.scheduled_time) - new Date(b.scheduled_time);
-      if (a.scheduled_time) return -1;
-      if (b.scheduled_time) return 1;
-      return (a.name || '').localeCompare(b.name || '');
-    });
-  }, [sessions]);
-
-  const sessionStats = useMemo(() => {
-    const statuses = {};
-    sessions.forEach(s => {
-      const status = (s.status || 'Draft').toLowerCase();
-      statuses[status] = (statuses[status] || 0) + 1;
-    });
-    return statuses;
-  }, [sessions]);
-
-  const daysUntil = safeDaysUntil(event.event_date);
+  const daysUntil = safeDaysUntil(event?.event_date);
 
   const eventTitle = event.season ? `${event.season} ${event.name}` : event.name;
   const eventDesc = [
