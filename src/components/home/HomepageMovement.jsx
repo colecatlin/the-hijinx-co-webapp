@@ -1,7 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Instagram, Youtube, ArrowRight } from 'lucide-react';
 
 const IDENTITIES = ['RACERS', 'BUILDERS', 'CREATORS', 'DREAMERS', 'FANS'];
+
+function SubscribeInline() {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Enter a valid email.');
+      return;
+    }
+    setError('');
+    setSent(true);
+  };
+
+  if (sent) {
+    return (
+      <p className="font-mono text-[10px] tracking-[0.3em] text-[#1DA1A1] uppercase">You're in. We'll be in touch.</p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
+      <p className="font-mono text-[10px] tracking-[0.3em] text-gray-500 uppercase">Stay in it.</p>
+      <div className="flex items-center gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); setError(''); }}
+          placeholder="your@email.com"
+          className="bg-white border border-gray-200 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#1DA1A1] w-56 transition-colors"
+        />
+        <button
+          type="submit"
+          className="flex items-center gap-1.5 px-5 py-2.5 bg-[#0A0A0A] text-white text-xs font-bold tracking-wider uppercase hover:bg-[#1DA1A1] transition-colors"
+        >
+          Join <ArrowRight className="w-3 h-3" />
+        </button>
+      </div>
+      {error && <p className="text-[10px] text-red-400 font-mono">{error}</p>}
+    </form>
+  );
+}
 
 export default function HomepageMovement() {
   return (
@@ -69,12 +114,36 @@ export default function HomepageMovement() {
           ))}
         </div>
 
+        {/* Email subscribe + follow */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.7 }}
+          className="mt-14 flex flex-col items-center gap-6"
+        >
+          <SubscribeInline />
+
+          {/* Follow along */}
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[9px] tracking-[0.3em] text-gray-400 uppercase">Follow along</span>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"
+              className="p-2 text-gray-400 hover:text-[#1DA1A1] transition-colors">
+              <Instagram className="w-4 h-4" />
+            </a>
+            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
+              className="p-2 text-gray-400 hover:text-[#1DA1A1] transition-colors">
+              <Youtube className="w-4 h-4" />
+            </a>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.7, duration: 1 }}
-          className="mt-20"
+          transition={{ delay: 0.9, duration: 1 }}
+          className="mt-10"
         >
           <p className="font-mono text-[9px] tracking-[0.45em] text-gray-400 uppercase">
             Dream it.&nbsp;&nbsp;Build it.&nbsp;&nbsp;Live it. — HIJINX CO
