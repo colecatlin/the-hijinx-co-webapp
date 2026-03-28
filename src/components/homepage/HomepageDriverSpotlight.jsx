@@ -11,6 +11,7 @@ export default function HomepageDriverSpotlight({ driver }) {
   const profileUrl = getDriverProfileUrl(driver);
 
   return (
+    <Link to={profileUrl} className="block">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -80,13 +81,11 @@ export default function HomepageDriverSpotlight({ driver }) {
         </div>
 
         {/* CTA */}
-        <Link
-          to={profileUrl}
-          className="inline-flex items-center gap-2 mt-6 text-xs font-bold tracking-wider uppercase text-[#00FFDA] group-hover:gap-3 transition-all"
-        >
+        <div className="inline-flex items-center gap-2 mt-6 text-xs font-bold tracking-wider uppercase text-[#00FFDA] group-hover:gap-3 transition-all">
           View Driver <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
