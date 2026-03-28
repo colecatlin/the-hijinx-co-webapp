@@ -11,7 +11,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
 
   if (!featured) {
     return (
-      <section className="bg-white py-16 md:py-24 border-b border-gray-100">
+      <section className="bg-white py-12 md:py-18 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-end justify-between mb-8 md:mb-12">
             <div>
@@ -53,7 +53,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
   }
 
   return (
-    <section className="bg-white py-16 md:py-24 border-b border-gray-100">
+    <section className="bg-white py-12 md:py-18 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-end justify-between mb-8 md:mb-12">
@@ -96,7 +96,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D]" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
               {/* Top teal + blue accent */}
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/40 to-transparent" />

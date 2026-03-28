@@ -5,7 +5,7 @@ const IDENTITIES = ['RACERS', 'BUILDERS', 'CREATORS', 'DREAMERS', 'FANS'];
 
 export default function HomepageMovement() {
   return (
-    <section className="relative bg-[#F5F8FA] py-20 md:py-32 overflow-hidden border-b border-gray-200">
+    <section className="relative bg-[#F5F8FA] py-16 md:py-24 overflow-hidden">
 
       {/* Background photo with higher contrast */}
       <div className="absolute inset-0 z-0">

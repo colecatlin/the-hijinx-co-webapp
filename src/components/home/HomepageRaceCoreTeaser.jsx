@@ -23,7 +23,7 @@ const MOCK_ROWS = [
 
 export default function HomepageRaceCoreTeaser() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden border-b border-white/5">
+    <section className="relative py-16 md:py-24 overflow-hidden border-b border-white/5">
 
       {/* Rich dark background with blue-teal gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#000D1A] via-[#001A0D] to-[#050505]" />

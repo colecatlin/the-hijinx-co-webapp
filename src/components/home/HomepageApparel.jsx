@@ -12,16 +12,13 @@ const COLLECTION_CARDS = [
 
 export default function HomepageApparel({ products = [] }) {
   return (
-    <section className="bg-white py-16 md:py-24 border-b border-gray-100 overflow-hidden">
+    <section className="bg-white py-12 md:py-16 border-b border-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
 
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-[#00FFDA]" />
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">HIJINX CO.</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Lifestyle Apparel</h2>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-px bg-[#00FFDA]" />
+            <span className="font-mono text-[10px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">HIJINX CO. · Lifestyle Apparel</span>
           </div>
           <Link
             to={createPageUrl('ApparelHome')}
