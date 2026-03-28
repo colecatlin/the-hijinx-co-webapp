@@ -183,6 +183,7 @@ Deno.serve(async (req) => {
           name: [d.first_name, d.last_name].filter(Boolean).join(' '),
           subtitle: d.primary_discipline || null,
           slug: d.slug || null,
+          canonical_slug: d.canonical_slug || d.slug || null,
           image: d.profile_image_url || d.hero_image_url || null,
         };
       }
@@ -210,6 +211,7 @@ Deno.serve(async (req) => {
           name: [bestDriver.first_name, bestDriver.last_name].filter(Boolean).join(' '),
           subtitle: bestDriver.primary_discipline || null,
           slug: bestDriver.slug || null,
+          canonical_slug: bestDriver.canonical_slug || bestDriver.slug || null,
           image: bestDriver.profile_image_url || null,
         };
       }

@@ -27,6 +27,7 @@ export default function HomepageEventSpotlight({ event }) {
   catch (_) { formattedDate = event.event_date; }
 
   return (
+    <Link to={eventUrl} className="block">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -103,13 +104,11 @@ export default function HomepageEventSpotlight({ event }) {
         </div>
 
         {/* CTA */}
-        <Link
-          to={eventUrl}
-          className="inline-flex items-center gap-2 mt-6 text-xs font-bold tracking-wider uppercase text-red-400 group-hover:gap-3 transition-all"
-        >
+        <div className="inline-flex items-center gap-2 mt-6 text-xs font-bold tracking-wider uppercase text-red-400 group-hover:gap-3 transition-all">
           View Event <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
