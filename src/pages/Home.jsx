@@ -62,19 +62,19 @@ export default function Home() {
         noSuffix={false}
       />
 
-      {/* ── 1. Hero ─────────────────────────────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ZONE 1 — HERO + LIVE STRIP
+      ═══════════════════════════════════════════════════════════════════════ */}
       <HomepageHero stats={hp.hero_stats} />
-
-      {/* ── Ticker ──────────────────────────────────────────────────────────── */}
       <HomepageTicker
         tickerItems={hp.ticker_items}
         activityItems={hp.activity_feed?.slice(0, 6)}
       />
-
-      {/* ── 2. Live Feed Rail — compact horizontal strip, white bg ──────────── */}
       <HomepageLiveFeedRail items={formattedFeed.slice(0, 10)} />
 
-      {/* ── 3. Spotlights — Driver + Event ──────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ZONE 2 — FEATURED  (spotlight · stories · activity)
+      ═══════════════════════════════════════════════════════════════════════ */}
       {hasSpotlight && (
         <section className="bg-white border-b border-gray-200 py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-6">
@@ -89,22 +89,16 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* ── 4. Choose Your Lane — ecosystem routing ─────────────────────────── */}
-      <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
-
-
-
-      {/* ── 6. Featured Story — editorial ───────────────────────────────────── */}
       <HomepageFeaturedStory
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 4)}
       />
-
-      {/* ── 7. What's Happening Now — activity card grid ────────────────────── */}
       <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
 
-      {/* ── 8. Featured Motorsports — deeper entity browse ──────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ZONE 3 — CORE  (navigate · browse · race platform)
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
       <HomepageFeaturedEntities
         drivers={hp.featured_drivers}
         tracks={hp.featured_tracks}
@@ -115,17 +109,13 @@ export default function Home() {
         mediaByDriver={{}}
         isLoading={isLoading}
       />
-
-      {/* ── 9. Race Core system feature ─────────────────────────────────────── */}
       <HomepageRaceCoreTeaser />
 
-      {/* ── 10. Apparel feature ─────────────────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ZONE 4 — BRAND  (apparel · movement · CTA)
+      ═══════════════════════════════════════════════════════════════════════ */}
       <HomepageApparel products={hp.featured_products} />
-
-      {/* ── 11. Movement / culture ──────────────────────────────────────────── */}
       <HomepageMovement />
-
-      {/* ── 12. Final CTA ───────────────────────────────────────────────────── */}
       <HomepageFinalCTA />
 
     </PageShell>
