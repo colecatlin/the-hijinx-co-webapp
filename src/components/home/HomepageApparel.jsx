@@ -74,7 +74,7 @@ export default function HomepageApparel({ products = [] }) {
           </motion.div>
 
           {/* Collection cards */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 h-full">
             {COLLECTION_CARDS.map((card, i) => (
               <motion.div
                 key={card.label}
@@ -86,7 +86,7 @@ export default function HomepageApparel({ products = [] }) {
               >
                 <Link
                   to={createPageUrl('ApparelHome')}
-                  className="group flex flex-col justify-between h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 p-5 transition-all duration-200"
+                  className="group flex flex-col justify-between h-full bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 p-5 transition-all duration-200"
                 >
                   <div>
                     <span className="font-mono text-[9px] tracking-[0.3em] text-[#008080] uppercase font-bold">{card.tag}</span>
