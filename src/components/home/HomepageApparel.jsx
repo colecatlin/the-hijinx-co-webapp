@@ -5,10 +5,10 @@ import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const COLLECTION_CARDS = [
-  { label: 'Race Day Collection', sub: 'Built for the track and beyond.',    tag: 'New Season' },
-  { label: 'Heritage Series',     sub: 'Rooted in motorsports culture.',     tag: 'Limited' },
-  { label: "Builder's Edit",      sub: 'For the ones who make it happen.',   tag: 'Essentials' },
-];
+{ label: 'Race Day Collection', sub: 'Built for the track and beyond.', tag: 'New Season' },
+{ label: 'Heritage Series', sub: 'Rooted in motorsports culture.', tag: 'Limited' },
+{ label: "Builder's Edit", sub: 'For the ones who make it happen.', tag: 'Essentials' }];
+
 
 export default function HomepageApparel({ products = [] }) {
   return (
@@ -22,8 +22,8 @@ export default function HomepageApparel({ products = [] }) {
           </div>
           <Link
             to={createPageUrl('ApparelHome')}
-            className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-500 hover:text-[#1DA1A1] transition-colors uppercase font-bold"
-          >
+            className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gray-500 hover:text-[#1DA1A1] transition-colors uppercase font-bold">
+            
             Shop HIJINX Apparel <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
@@ -36,18 +36,18 @@ export default function HomepageApparel({ products = [] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.65 }}
-            className="lg:col-span-2"
-          >
+            className="lg:col-span-2">
+            
             <Link
               to={createPageUrl('ApparelHome')}
-              className="group relative flex flex-col justify-end min-h-[400px] overflow-hidden border border-gray-300 hover:border-[#1DA1A1] hover:shadow-[0_8px_40px_rgba(0,0,0,0.15)] transition-all duration-300"
-            >
+              className="group relative flex flex-col justify-end min-h-[400px] overflow-hidden border border-gray-300 hover:border-[#1DA1A1] hover:shadow-[0_8px_40px_rgba(0,0,0,0.15)] transition-all duration-300">
+              
               <img
                 src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&q=80"
                 alt="HIJINX Apparel"
                 className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-65 group-hover:scale-105 transition-all duration-700"
-                loading="lazy"
-              />
+                loading="lazy" />
+              
               <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/95 via-[#080808]/45 to-transparent" />
 
               {/* Teal + blue accent lines */}
@@ -75,19 +75,19 @@ export default function HomepageApparel({ products = [] }) {
 
           {/* Collection cards */}
           <div className="flex flex-col gap-4 h-full">
-            {COLLECTION_CARDS.map((card, i) => (
-              <motion.div
-                key={card.label}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex-1"
-              >
+            {COLLECTION_CARDS.map((card, i) =>
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="flex-1">
+              
                 <Link
-                  to={createPageUrl('ApparelHome')}
-                  className="group flex flex-col justify-between h-full bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 p-5 transition-all duration-200"
-                >
+                to={createPageUrl('ApparelHome')} className="bg-white px-4 py-1 group flex flex-col justify-between h-full border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200">
+
+                
                   <div>
                     <span className="font-mono text-[9px] tracking-[0.3em] text-[#008080] uppercase font-bold">{card.tag}</span>
                     <h4 className="text-sm font-bold text-gray-900 mt-2 group-hover:text-[#1DA1A1] transition-colors">{card.label}</h4>
@@ -96,20 +96,20 @@ export default function HomepageApparel({ products = [] }) {
                   <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#1DA1A1] group-hover:translate-x-1 transition-all mt-3" />
                 </Link>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
 
         <div className="mt-6 md:hidden">
           <Link
             to={createPageUrl('ApparelHome')}
-            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#1DA1A1] transition-all uppercase"
-          >
+            className="flex items-center justify-center gap-2 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] py-4 font-mono text-[10px] tracking-[0.25em] text-gray-500 hover:text-[#1DA1A1] transition-all uppercase">
+            
             <ShoppingBag className="w-3.5 h-3.5" />
             Shop HIJINX Apparel
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 }
