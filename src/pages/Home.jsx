@@ -17,9 +17,6 @@ import HomepageFinalCTA from '@/components/home/HomepageFinalCTA';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
 import HomepageDriverSpotlight from '@/components/homepage/HomepageDriverSpotlight';
 import HomepageEventSpotlight from '@/components/homepage/HomepageEventSpotlight';
-import HomepageLiveFeedRail from '@/components/homepage/HomepageLiveFeedRail';
-import HomepageWhatsHappeningNow from '@/components/homepage/HomepageWhatsHappeningNow';
-import { formatActivityFeedItems } from '@/components/homepage/activityFeedFormatter';
 
 
 export default function Home() {
@@ -46,7 +43,7 @@ export default function Home() {
 
   // Always safe — fallback to empty shapes if result not yet available
   const hp = hpResult?.data ?? FALLBACK_DATA;
-  const formattedFeed = formatActivityFeedItems(Array.isArray(hp.activity_feed) ? hp.activity_feed : []);
+
 
   const hasDriver  = !!hp.spotlight_driver;
   const hasEvent   = !!hp.spotlight_event;
@@ -70,30 +67,24 @@ export default function Home() {
         tickerItems={hp.ticker_items}
         activityItems={hp.activity_feed?.slice(0, 6)}
       />
-      <HomepageLiveFeedRail items={formattedFeed.slice(0, 10)} />
+
 
       {/* ═══════════════════════════════════════════════════════════════════════
           ZONE 2 — FEATURED  (spotlight · stories · activity)
       ═══════════════════════════════════════════════════════════════════════ */}
       {hasSpotlight && (
-        <section className="bg-white border-b border-gray-200 py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center gap-3 mb-7">
-              <div className="w-8 h-px bg-[#1DA1A1]" />
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#1DA1A1] uppercase font-bold">Spotlight</span>
-            </div>
-            <div className={`grid gap-4 ${hasDriver && hasEvent ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
-              {hasDriver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
-              {hasEvent  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
-            </div>
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-0">
+          <div className={`grid gap-4 ${hasDriver && hasEvent ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-2xl'}`}>
+            {hasDriver && <HomepageDriverSpotlight driver={hp.spotlight_driver} />}
+            {hasEvent  && <HomepageEventSpotlight  event={hp.spotlight_event}  />}
           </div>
-        </section>
+        </div>
       )}
       <HomepageFeaturedStory
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 4)}
       />
-      <HomepageWhatsHappeningNow items={formattedFeed.slice(0, 6)} />
+
 
       {/* ═══════════════════════════════════════════════════════════════════════
           ZONE 3 — CORE  (navigate · browse · race platform)
