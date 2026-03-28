@@ -8,8 +8,12 @@ import { DASHBOARD_ITEM, MANAGEMENT_SECTIONS } from '@/components/management/man
 export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
   const [query, setQuery] = useState('');
+  // Core Entities and Editorial open by default; others collapsed
   const [expandedSections, setExpandedSections] = useState(
-    MANAGEMENT_SECTIONS.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
+    MANAGEMENT_SECTIONS.reduce((acc, section) => ({
+      ...acc,
+      [section.title]: section.title === 'Core Entities' || section.title === 'Editorial',
+    }), {})
   );
 
   // Derive current page from pathname (e.g. "/ManageDrivers" → "ManageDrivers")

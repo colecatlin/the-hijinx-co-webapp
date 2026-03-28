@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
-import ManagementSearch from '@/components/management/ManagementSearch';
 import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
-import { MANAGEMENT_SECTIONS } from '@/components/management/managementConfig';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ShieldOff } from 'lucide-react';
+import { ShieldOff, Gauge, FileText, User, Calendar, Trophy, ArrowRight, Newspaper, BarChart3 } from 'lucide-react';
+
+const QUICK_ACTIONS = [
+  { label: 'Race Core Ops', sub: 'Event workspace, entries, results, live ops', page: 'RegistrationDashboard', Icon: Gauge, highlight: true },
+  { label: 'Drivers', sub: 'Profiles, claims, programs', page: 'ManageDrivers', Icon: User },
+  { label: 'Events', sub: 'Create and manage race events', page: 'ManageEvents', Icon: Calendar },
+  { label: 'Series', sub: 'Championships and standings', page: 'ManageSeries', Icon: Trophy },
+  { label: 'Stories', sub: 'Publish and edit content', page: 'ManageStories', Icon: Newspaper },
+  { label: 'Results', sub: 'Race results and sessions', page: 'ManageResults', Icon: BarChart3 },
+];
 
 export default function Management() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(MANAGEMENT_SECTIONS[0].title);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -49,55 +54,46 @@ export default function Management() {
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
-        <ManagementShell title="Management" subtitle="Admin studio for Index46 data and site systems" maxWidth="max-w-none">
+        <ManagementShell title="Management" subtitle="Admin control center" maxWidth="max-w-5xl">
+
+          {/* Platform stats */}
           <StatsBar />
 
-          <div className="mt-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-lg mb-6">
-                {MANAGEMENT_SECTIONS.map(section => (
-                  <TabsTrigger
-                    key={section.title}
-                    value={section.title}
-                    className="text-xs px-3 py-1.5"
-                  >
-                    {section.title}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {MANAGEMENT_SECTIONS.map(section => (
-                <TabsContent key={section.title} value={section.title}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {section.items.map(item => {
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.page}
-                          onClick={() => navigate(createPageUrl(item.page))}
-                          className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all text-left group"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center shrink-0 transition-colors">
-                            {Icon && <Icon className="w-5 h-5 text-gray-600" />}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                            {item.description && (
-                              <p className="text-xs text-gray-400 mt-0.5 leading-snug">{item.description}</p>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
+          {/* Quick actions */}
+          <div className="mt-8">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Access</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {QUICK_ACTIONS.map(({ label, sub, page, Icon, highlight }) => (
+                <Link
+                  key={page}
+                  to={createPageUrl(page)}
+                  className={`group flex items-start gap-3 p-4 rounded-lg border transition-all ${
+                    highlight
+                      ? 'bg-gray-900 border-gray-900 hover:bg-gray-800 text-white'
+                      : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${
+                    highlight ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'
+                  } transition-colors`}>
+                    <Icon className={`w-4 h-4 ${highlight ? 'text-white' : 'text-gray-600'}`} />
                   </div>
-                </TabsContent>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold ${highlight ? 'text-white' : 'text-gray-900'}`}>{label}</p>
+                    <p className={`text-xs mt-0.5 leading-snug ${highlight ? 'text-white/60' : 'text-gray-400'}`}>{sub}</p>
+                  </div>
+                  <ArrowRight className={`w-3.5 h-3.5 mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${highlight ? 'text-white' : 'text-gray-400'}`} />
+                </Link>
               ))}
-            </Tabs>
+            </div>
           </div>
 
-          <div className="mt-6">
+          {/* Data health */}
+          <div className="mt-8">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Data Health</p>
             <DataHealthPanel />
           </div>
+
         </ManagementShell>
       </ManagementLayout>
     </>
