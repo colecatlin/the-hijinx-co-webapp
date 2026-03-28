@@ -74,7 +74,7 @@ export default function HomepageApparel({ products = [] }) {
           </motion.div>
 
           {/* Collection cards */}
-          <div className="flex flex-col gap-4 min-h-[400px]">
+          <div className="flex flex-col gap-4 h-full">
             {COLLECTION_CARDS.map((card, i) => (
               <motion.div
                 key={card.label}
