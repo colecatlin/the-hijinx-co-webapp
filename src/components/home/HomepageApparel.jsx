@@ -45,10 +45,10 @@ export default function HomepageApparel({ products = [] }) {
               <img
                 src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&q=80"
                 alt="HIJINX Apparel"
-                className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:opacity-65 group-hover:scale-105 transition-all duration-700"
+                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-65 group-hover:scale-105 transition-all duration-700"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/90 via-[#080808]/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/95 via-[#080808]/45 to-transparent" />
 
               {/* Teal + blue accent lines */}
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/90 via-[#2563EB]/35 to-transparent" />
