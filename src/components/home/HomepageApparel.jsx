@@ -28,7 +28,7 @@ export default function HomepageApparel({ products = [] }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
           {/* Large feature block */}
           <motion.div
@@ -74,7 +74,7 @@ export default function HomepageApparel({ products = [] }) {
           </motion.div>
 
           {/* Collection cards */}
-          <div className="flex flex-col gap-4 h-full">
+          <div className="flex flex-col gap-4 min-h-[400px]">
             {COLLECTION_CARDS.map((card, i) => (
               <motion.div
                 key={card.label}
