@@ -53,8 +53,23 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: driverProgramsList = [] } = useQuery({
+    queryKey: ['homepageFeaturedDriverPrograms', ...featuredDriverIds],
+    queryFn: () => base44.entities.DriverProgram.filter({ driver_id: { $in: featuredDriverIds } }),
+    enabled: featuredDriverIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const mediaByDriver = driverMediaList.reduce((acc, m) => {
     if (m.driver_id) acc[m.driver_id] = m;
+    return acc;
+  }, {});
+
+  const programsByDriver = driverProgramsList.reduce((acc, p) => {
+    if (p.driver_id) {
+      if (!acc[p.driver_id]) acc[p.driver_id] = [];
+      acc[p.driver_id].push(p);
+    }
     return acc;
   }, {});
 
@@ -111,7 +126,7 @@ export default function Home() {
         series={hp.featured_series}
         events={hp.upcoming_events}
         allSeries={hp.featured_series}
-        programsByDriver={{}}
+        programsByDriver={programsByDriver}
         mediaByDriver={mediaByDriver}
         isLoading={isLoading}
       />
