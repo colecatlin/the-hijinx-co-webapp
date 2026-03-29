@@ -35,6 +35,7 @@ export async function getHomepageData() {
       featured_story:    payload.featured_story    ?? null,
       featured_stories:  Array.isArray(payload.featured_stories)  ? payload.featured_stories  : [],
       featured_drivers:  Array.isArray(payload.featured_drivers)  ? payload.featured_drivers  : [],
+      featured_teams:    Array.isArray(payload.featured_teams)    ? payload.featured_teams    : [],
       featured_tracks:   Array.isArray(payload.featured_tracks)   ? payload.featured_tracks   : [],
       featured_series:   Array.isArray(payload.featured_series)   ? payload.featured_series   : [],
       upcoming_events:   Array.isArray(payload.upcoming_events)   ? payload.upcoming_events   : [],

@@ -92,6 +92,7 @@ export default function Home() {
       <HomepageChooseYourLane user={user} hasRaceCoreAccess={hasRaceCoreAccess} />
       <HomepageFeaturedEntities
         drivers={hp.featured_drivers}
+        teams={hp.featured_teams || []}
         tracks={hp.featured_tracks}
         series={hp.featured_series}
         events={hp.upcoming_events}

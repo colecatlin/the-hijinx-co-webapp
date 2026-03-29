@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
     const [
       autoStories,
       autoDrivers,
+      autoTeams,
       autoTracks,
       autoSeries,
       autoEvents,
@@ -54,6 +55,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
       safe(db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', TARGET)),
+      safe(db.Team.filter({ status: 'Active' }, '-created_date', TARGET)),
       safe(db.Track.filter({ status: 'Active' }, '-created_date', TARGET)),
       safe(db.Series.filter({ status: 'Active' }, '-popularity_rank', TARGET)),
       safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
@@ -105,8 +107,9 @@ Deno.serve(async (req) => {
       ? [featuredStory, ...(autoStories || []).filter(s => s.id !== featuredStory.id)].slice(0, 5)
       : (autoStories || []).slice(0, 5);
 
-    // featured_drivers / tracks / series
+    // featured_drivers / teams / tracks / series
     const featuredDrivers = resolveBucket(settings?.featured_driver_ids, autoDrivers, TARGET);
+    const featuredTeams   = (autoTeams || []).slice(0, TARGET);
     const featuredTracks  = resolveBucket(settings?.featured_track_ids,  autoTracks,  TARGET);
     const featuredSeries  = resolveBucket(settings?.featured_series_ids, autoSeries,  TARGET);
 
@@ -242,6 +245,7 @@ Deno.serve(async (req) => {
       featured_story:    featuredStory,
       featured_stories:  featuredStories,
       featured_drivers:  featuredDrivers,
+      featured_teams:    featuredTeams,
       featured_tracks:   featuredTracks,
       featured_series:   featuredSeries,
       upcoming_events:   upcomingEvents,

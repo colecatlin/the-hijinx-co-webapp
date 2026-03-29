@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ArrowRight, Users, MapPin, Trophy, Calendar } from 'lucide-react';
+import { ArrowRight, Users, MapPin, Trophy, Calendar, Flag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import DriverCard from '@/components/drivers/DriverCard';
@@ -9,6 +9,7 @@ import DriverCard from '@/components/drivers/DriverCard';
 // ── Tab config ─────────────────────────────────────────────────────────────
 const TABS = [
   { id: 'drivers', label: 'Drivers', Icon: Users,    page: 'DriverDirectory' },
+  { id: 'teams',   label: 'Teams',   Icon: Flag,     page: 'TeamDirectory' },
   { id: 'tracks',  label: 'Tracks',  Icon: MapPin,   page: 'TrackDirectory' },
   { id: 'series',  label: 'Series',  Icon: Trophy,   page: 'SeriesHome' },
   { id: 'events',  label: 'Events',  Icon: Calendar, page: 'EventDirectory' },
@@ -52,11 +53,11 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
 }
 
 export default function HomepageFeaturedEntities({
-  drivers = [], tracks = [], series = [], events = [],
+  drivers = [], teams = [], tracks = [], series = [], events = [],
   allSeries = [], programsByDriver = {}, mediaByDriver = {},
   isLoading = false,
 }) {
-  const allEmpty = !isLoading && !drivers.length && !tracks.length && !series.length && !events.length;
+  const allEmpty = !isLoading && !drivers.length && !teams.length && !tracks.length && !series.length && !events.length;
   const [activeTab, setActiveTab] = useState('drivers');
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
@@ -139,6 +140,24 @@ export default function HomepageFeaturedEntities({
               ) : (
                 <EmptyState tab="drivers" page="DriverDirectory" />
               )
+            ) : activeTab === 'teams' ? (
+              teams.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {teams.map((team, i) => (
+                    <motion.div key={team.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                      <EntityCard
+                        name={team.name}
+                        sub={[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ') || team.primary_discipline}
+                        imageUrl={team.logo_url}
+                        linkPage="TeamDirectory"
+                        linkId={team.id}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState tab="teams" page="TeamDirectory" />
+              )
             ) : activeTab === 'tracks' ? (
               tracks.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -216,6 +235,7 @@ export default function HomepageFeaturedEntities({
 
 const TAB_BROWSE_LABELS = {
   drivers: 'Browse Drivers',
+  teams:   'Browse Teams',
   tracks:  'Browse Tracks',
   series:  'Browse Series',
   events:  'Explore Motorsports',
