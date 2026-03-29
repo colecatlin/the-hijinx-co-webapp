@@ -168,7 +168,7 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
 
         <div>
           <label className="text-sm font-medium">Status</label>
-          <Select value={formData.status || ''} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+          <Select value={formData.racing_status || ''} onValueChange={(value) => setFormData({ ...formData, racing_status: value })}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

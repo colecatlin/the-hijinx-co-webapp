@@ -128,7 +128,7 @@ export default function TrackCoreDetailsSection({ trackId }) {
           </div>
           <div>
             <label className="text-sm font-medium">Status</label>
-            <Select value={formData.status || 'Active'} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+            <Select value={formData.operational_status || 'Active'} onValueChange={(value) => setFormData({ ...formData, operational_status: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
