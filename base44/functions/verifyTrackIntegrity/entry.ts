@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     // ── 1. Normalization coverage ──────────────────────────────────────────
     const allTracks = await base44.asServiceRole.entities.Track.list('-created_date', 3000);
-    const activeTracks = allTracks.filter(t => t.status !== 'Inactive');
+    const activeTracks = allTracks.filter(t => t.operational_status !== 'Inactive');
 
     const missingNormalizedName = activeTracks.filter(t => !t.normalized_name);
     const missingCanonicalSlug  = activeTracks.filter(t => !t.canonical_slug);

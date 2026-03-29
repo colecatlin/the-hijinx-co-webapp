@@ -32,16 +32,21 @@ function auditEntityRoutes(records, entity_type) {
 
     // Visibility check: slug exists but entity is hidden
     if (r.slug) {
-      const status = (r.status || '').toLowerCase();
-      const profileStatus = (r.profile_status || '').toLowerCase();
-      const publicStatus = (r.public_status || '').toLowerCase();
+      // Use the renamed canonical fields per entity type
       const isHidden =
-        status === 'inactive' ||
-        profileStatus === 'draft' ||
-        publicStatus === 'draft' ||
-        publicStatus === 'archived';
+        r.racing_status === 'Inactive' ||
+        r.operational_status === 'Inactive' ||
+        r.visibility_status === 'draft' ||
+        (r.public_status || '').toLowerCase() === 'draft' ||
+        (r.public_status || '').toLowerCase() === 'archived';
       if (isHidden) {
-        invisible_public.push({ id: r.id, name, slug: r.slug, status: r.status, profile_status: r.profile_status, public_status: r.public_status });
+        invisible_public.push({
+          id: r.id, name, slug: r.slug,
+          racing_status: r.racing_status,
+          operational_status: r.operational_status,
+          visibility_status: r.visibility_status,
+          public_status: r.public_status,
+        });
       }
     }
   }

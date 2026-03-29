@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
     // ── 1. Normalization coverage ──────────────────────────────────────────
     const allSeries = await base44.asServiceRole.entities.Series.list('-created_date', 3000);
-    const activeSeries = allSeries.filter(s => s.status !== 'Inactive');
+    const activeSeries = allSeries.filter(s => s.operational_status !== 'Inactive');
 
     const missingNormalizedName = activeSeries.filter(s => !s.normalized_name);
     const missingCanonicalSlug  = activeSeries.filter(s => !s.canonical_slug);

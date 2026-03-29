@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     const allDrivers = await base44.asServiceRole.entities.Driver.list('-created_date', 5000);
 
-    const publicDrivers = allDrivers.filter(d => d.profile_status === 'live');
+    const publicDrivers = allDrivers.filter(d => d.visibility_status === 'live');
     const allPublicCount = publicDrivers.length;
 
     const missingCanonicalSlug = [];

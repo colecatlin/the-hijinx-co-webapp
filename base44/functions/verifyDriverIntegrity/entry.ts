@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     // ── 1. Normalization coverage ──────────────────────────────────────────
     const allDrivers = await base44.asServiceRole.entities.Driver.list('-created_date', 5000);
-    const activeDrivers = allDrivers.filter(d => d.status !== 'Inactive');
+    const activeDrivers = allDrivers.filter(d => d.racing_status !== 'Inactive');
 
     const missingNormalizedName = activeDrivers.filter(d => !d.normalized_name);
     const missingCanonicalSlug  = activeDrivers.filter(d => !d.canonical_slug);

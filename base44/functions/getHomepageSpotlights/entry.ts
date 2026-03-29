@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // ── Fetch supporting data in parallel ──────────────────────────────────
     const [drivers, events, activity, recentResults] = await Promise.all([
-      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 50)),
+      safe(db.Driver.filter({ visibility_status: 'live' }, '-created_date', 50)),
       safe(db.Event.list('event_date', 20)),
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 20)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 10)),

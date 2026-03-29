@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
 
     // Fetch all entity collections (safe limits applied)
     const [drivers, teams, tracks, series, events, stories] = await Promise.all([
-      base44.asServiceRole.entities.Driver.filter({ profile_status: 'live' }, '-updated_date', MAX_ENTITIES),
-      base44.asServiceRole.entities.Team.filter({ status: 'Active' }, '-updated_date', MAX_ENTITIES),
-      base44.asServiceRole.entities.Track.filter({ status: 'Active' }, '-updated_date', MAX_ENTITIES),
-      base44.asServiceRole.entities.Series.filter({ status: 'Active' }, '-updated_date', MAX_ENTITIES),
+      base44.asServiceRole.entities.Driver.filter({ visibility_status: 'live' }, '-updated_date', MAX_ENTITIES),
+      base44.asServiceRole.entities.Team.filter({ racing_status: 'Active' }, '-updated_date', MAX_ENTITIES),
+      base44.asServiceRole.entities.Track.filter({ operational_status: 'Active' }, '-updated_date', MAX_ENTITIES),
+      base44.asServiceRole.entities.Series.filter({ operational_status: 'Active' }, '-updated_date', MAX_ENTITIES),
       base44.asServiceRole.entities.Event.filter({ published_flag: true }, '-updated_date', MAX_ENTITIES),
       base44.asServiceRole.entities.OutletStory.filter({ status: 'published' }, '-updated_date', MAX_ENTITIES),
     ]);
