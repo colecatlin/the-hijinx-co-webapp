@@ -44,6 +44,20 @@ export default function Home() {
   // Always safe — fallback to empty shapes if result not yet available
   const hp = hpResult?.data ?? FALLBACK_DATA;
 
+  const featuredDriverIds = (hp.featured_drivers || []).map(d => d.id).filter(Boolean);
+
+  const { data: driverMediaList = [] } = useQuery({
+    queryKey: ['homepageFeaturedDriverMedia', ...featuredDriverIds],
+    queryFn: () => base44.entities.DriverMedia.filter({ driver_id: { $in: featuredDriverIds } }),
+    enabled: featuredDriverIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const mediaByDriver = driverMediaList.reduce((acc, m) => {
+    if (m.driver_id) acc[m.driver_id] = m;
+    return acc;
+  }, {});
+
 
   const hasDriver  = !!hp.spotlight_driver;
   const hasEvent   = !!hp.spotlight_event;
@@ -98,7 +112,7 @@ export default function Home() {
         events={hp.upcoming_events}
         allSeries={hp.featured_series}
         programsByDriver={{}}
-        mediaByDriver={{}}
+        mediaByDriver={mediaByDriver}
         isLoading={isLoading}
       />
       <HomepageRaceCoreTeaser />
