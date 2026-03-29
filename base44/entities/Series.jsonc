@@ -1,0 +1,199 @@
+{
+  "name": "Series",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Series name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly identifier"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Full official name"
+    },
+    "sanctioning_body": {
+      "type": "string",
+      "description": "Organization that sanctions the series"
+    },
+    "discipline": {
+      "type": "string",
+      "enum": [
+        "Stock Car",
+        "Off Road",
+        "Dirt Oval",
+        "Snowmobile",
+        "Dirt Bike",
+        "Open Wheel",
+        "Sports Car",
+        "Touring Car",
+        "Rally",
+        "Drag",
+        "Motorcycle",
+        "Karting",
+        "Water",
+        "Alternative"
+      ],
+      "description": "Racing discipline"
+    },
+    "geographic_scope": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Regional",
+        "National",
+        "International",
+        "Global"
+      ],
+      "description": "Geographic scope of the series"
+    },
+    "derived_competition_level": {
+      "type": "number",
+      "description": "Derived from highest competition_level among active classes (1-5)"
+    },
+    "derived_competition_score": {
+      "type": "number",
+      "description": "Derived from highest competition_score_total among active classes"
+    },
+    "override_competition_level": {
+      "type": "number",
+      "description": "Admin override for competition level (1-5). Overrides derived value if set."
+    },
+    "override_reason": {
+      "type": "string",
+      "description": "Reason for manual competition level override"
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Current season year"
+    },
+    "description": {
+      "type": "string",
+      "description": "Series description"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Series logo URL"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Banner image URL"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Official website"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Contact email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "social_facebook": {
+      "type": "string",
+      "description": "Facebook URL"
+    },
+    "social_instagram": {
+      "type": "string",
+      "description": "Instagram handle or URL"
+    },
+    "social_x": {
+      "type": "string",
+      "description": "X (Twitter) handle or URL"
+    },
+    "social_youtube": {
+      "type": "string",
+      "description": "YouTube channel URL"
+    },
+    "social_linkedin": {
+      "type": "string",
+      "description": "LinkedIn URL"
+    },
+    "title_sponsor_name": {
+      "type": "string",
+      "description": "Title/presenting sponsor name"
+    },
+    "title_sponsor_logo_url": {
+      "type": "string",
+      "description": "Title sponsor logo image URL"
+    },
+    "title_sponsor_url": {
+      "type": "string",
+      "description": "Title sponsor website URL"
+    },
+    "popularity_rank": {
+      "type": "number",
+      "description": "Popularity ranking \u2014 lower number = higher prominence"
+    },
+    "operational_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Inactive",
+        "Upcoming"
+      ],
+      "default": "Active",
+      "description": "[RaceCore] Series operational status. Renamed from 'status'."
+    },
+    "visibility_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "[Management] Controls public profile visibility. New field."
+    },
+    "uses_rounds": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this series uses a round system for events"
+    },
+    "is_sample": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is sample/demo data"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit numeric access code"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal admin notes"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized lowercase name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Canonical slug derived from normalized name for deduplication"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Canonical unique key: entity_type:external_uid or entity_type:normalized_name"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source system or import job that created this record"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "UID from external data source for deduplication"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this record was last seen during a sync operation"
+    }
+  },
+  "required": [
+    "name",
+    "discipline"
+  ]
+}

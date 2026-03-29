@@ -1,0 +1,128 @@
+{
+  "name": "Team",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Team name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly identifier"
+    },
+    "headquarters_city": {
+      "type": "string",
+      "description": "City where team is based"
+    },
+    "headquarters_state": {
+      "type": "string",
+      "description": "State or region"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country"
+    },
+    "primary_discipline": {
+      "type": "string",
+      "enum": [
+        "Off Road",
+        "Snowmobile",
+        "Asphalt Oval",
+        "Road Racing",
+        "Rallycross",
+        "Drag Racing",
+        "Mixed"
+      ],
+      "description": "Primary racing discipline"
+    },
+    "team_level": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Regional",
+        "National",
+        "International"
+      ],
+      "description": "Competition level"
+    },
+    "racing_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Part Time",
+        "Historic",
+        "Inactive"
+      ],
+      "default": "Active",
+      "description": "[RaceCore] Team's operational racing activity status. Renamed from 'status'."
+    },
+    "visibility_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "[Management] Controls public profile visibility. New field."
+    },
+    "founded_year": {
+      "type": "number",
+      "description": "Year the team was founded"
+    },
+    "description_summary": {
+      "type": "string",
+      "description": "Team description"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Team logo image URL"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Vehicle manufacturer"
+    },
+    "manufacturer_logo_url": {
+      "type": "string",
+      "description": "Manufacturer logo image URL"
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "Google Calendar ID for race schedule"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit numeric access code"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized lowercase name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Canonical slug derived from normalized name for deduplication"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Canonical unique key for deduplication"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source system or import job that created this record"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "UID from external data source for deduplication"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when last seen during a sync operation"
+    }
+  },
+  "required": [
+    "name",
+    "headquarters_city",
+    "headquarters_state",
+    "country"
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "name": "Driver",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "First name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Last name"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit numeric access code"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique identifier (auto-generated)"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Contact email address"
+    },
+    "represented_by": {
+      "type": "string",
+      "description": "Agent, manager, or representative"
+    },
+    "hometown_city": {
+      "type": "string",
+      "description": "Hometown city (birthplace)"
+    },
+    "hometown_state": {
+      "type": "string",
+      "description": "Hometown state or region (birthplace)"
+    },
+    "hometown_country": {
+      "type": "string",
+      "description": "Hometown country (birthplace/nationality)"
+    },
+    "racing_base_city": {
+      "type": "string",
+      "description": "Current racing base city"
+    },
+    "racing_base_state": {
+      "type": "string",
+      "description": "Current racing base state or region"
+    },
+    "racing_base_country": {
+      "type": "string",
+      "description": "Current racing base country"
+    },
+    "primary_number": {
+      "type": "string",
+      "description": "Primary car or bib number"
+    },
+    "manufacturer": {
+      "type": "string",
+      "enum": [
+        "Chevrolet",
+        "Ford",
+        "Toyota",
+        "Honda",
+        "Other"
+      ],
+      "description": "Vehicle manufacturer"
+    },
+    "primary_discipline": {
+      "type": "string",
+      "enum": [
+        "Off Road",
+        "Snowmobile",
+        "Asphalt Oval",
+        "Road Racing",
+        "Rallycross",
+        "Drag Racing",
+        "Mixed"
+      ],
+      "description": "Primary racing discipline (user-selected)"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team"
+    },
+    "primary_series_id": {
+      "type": "string",
+      "description": "Reference to primary Series"
+    },
+    "primary_class_id": {
+      "type": "string",
+      "description": "Reference to primary SeriesClass"
+    },
+    "career_status": {
+      "type": "string",
+      "enum": [
+        "Novice",
+        "Amateur",
+        "Semi-Professional",
+        "Professional"
+      ],
+      "description": "Driver career status level"
+    },
+    "racing_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Inactive",
+        "Part Time"
+      ],
+      "default": "Active",
+      "description": "[RaceCore] Driver's current racing activity status. Renamed from 'status'."
+    },
+    "visibility_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "[Management] Controls public profile visibility. Renamed from 'profile_status'."
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this driver is featured on homepage"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "User ID of the driver owner"
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "Google Calendar ID for race schedule"
+    },
+    "primary_color": {
+      "type": "string",
+      "description": "Driver's primary brand/scheme color (hex)"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized lowercase full name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Canonical slug derived from normalized name for deduplication"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Canonical unique key for deduplication"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source system or import job that created this record"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "UID from external data source for deduplication"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when last seen during a sync operation"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Full public biography for the driver"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short headline or identity statement"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Primary hero image for profile"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Primary profile image"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Personal or team website"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    },
+    "tiktok_url": {
+      "type": "string"
+    },
+    "x_url": {
+      "type": "string"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "years_active_start": {
+      "type": "number",
+      "description": "Year driver began racing"
+    },
+    "years_active_end": {
+      "type": "number",
+      "description": "Optional end year if inactive"
+    },
+    "nicknames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name"
+  ]
+}
