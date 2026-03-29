@@ -311,11 +311,11 @@ export default function ManageSeries() {
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{series.filter(s => s.status === 'Active').length}</p>
+                <p className="text-2xl font-bold text-green-600">{series.filter(s => s.operational_status === 'Active').length}</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Inactive</p>
-                <p className="text-2xl font-bold text-gray-500">{series.filter(s => s.status !== 'Active').length}</p>
+                <p className="text-2xl font-bold text-gray-500">{series.filter(s => s.operational_status !== 'Active').length}</p>
               </div>
             </div>
             <Button onClick={handleAdd} className="w-full bg-[#232323] hover:bg-[#1A3249]">
@@ -394,9 +394,9 @@ export default function ManageSeries() {
                     <td className="px-4 py-3 text-gray-600">{s.competition_level}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 text-xs rounded ${
-                        s.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        s.operational_status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {s.status}
+                        {s.operational_status}
                       </span>
                     </td>
                     <td className="px-4 py-3">

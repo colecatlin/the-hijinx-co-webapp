@@ -334,8 +334,8 @@ export default function SeriesDetail({ overrideSlug } = {}) {
                 <p className="text-gray-700 leading-relaxed mt-4">{series.description}</p>
               )}
               <div className="flex flex-wrap gap-2 mt-4">
-                <Badge className={series.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
-                  {series.status}
+                <Badge className={series.operational_status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                  {series.operational_status}
                 </Badge>
               </div>
             </div>

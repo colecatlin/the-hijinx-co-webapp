@@ -107,18 +107,18 @@ export default function TrackProfile() {
                   </div>
                 )}
               </div>
-              {track.status && (
+              {track.operational_status && (
                 <Badge
                   variant="outline"
                   className={`text-sm mt-1 ${
-                    track.status === 'Active'
+                    track.operational_status === 'Active'
                       ? 'border-[#00FFDA] text-[#00FFDA]'
-                      : track.status === 'Seasonal'
+                      : track.operational_status === 'Seasonal'
                       ? 'border-blue-400 text-blue-600'
                       : 'border-gray-400 text-gray-500'
                   }`}
                 >
-                  {track.status}
+                  {track.operational_status}
                 </Badge>
               )}
             </div>
@@ -270,18 +270,18 @@ export default function TrackProfile() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Status badge (only shown when hero image is present) */}
-            {track.image_url && track.status && (
+            {track.image_url && track.operational_status && (
               <Badge
                 variant="outline"
                 className={`text-sm ${
-                  track.status === 'Active'
+                  track.operational_status === 'Active'
                     ? 'border-[#00FFDA] text-[#00FFDA]'
-                    : track.status === 'Seasonal'
+                    : track.operational_status === 'Seasonal'
                     ? 'border-blue-400 text-blue-600'
                     : 'border-gray-400 text-gray-500'
                 }`}
               >
-                {track.status}
+                {track.operational_status}
               </Badge>
             )}
 

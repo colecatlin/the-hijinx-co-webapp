@@ -246,7 +246,7 @@ export default function DriverForm({ driver, onClose }) {
 
           <div>
             <label className="block text-sm font-medium mb-2">Profile Visibility</label>
-            <Select value={formData.profile_status || 'draft'} onValueChange={(value) => handleChange('profile_status', value)}>
+            <Select value={formData.visibility_status || 'draft'} onValueChange={(value) => handleChange('visibility_status', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select visibility" />
               </SelectTrigger>

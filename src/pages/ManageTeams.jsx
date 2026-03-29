@@ -270,7 +270,7 @@ export default function ManageTeams() {
           <Button variant="outline" onClick={() => document.getElementById('import-teams').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
           <Button onClick={handleNascarImport} disabled={importing} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Sparkles className="w-4 h-4 mr-2" />{importing ? 'Importing...' : 'NASCAR Import'}</Button>
           <Button onClick={handleEnrich} disabled={enriching} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />{enriching ? 'Enriching...' : 'AI Enrich'}</Button>
-          <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
+          <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', racing_status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -290,14 +290,14 @@ export default function ManageTeams() {
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{teams.filter(t => t.status === 'Active').length}</p>
+                <p className="text-2xl font-bold text-green-600">{teams.filter(t => t.racing_status === 'Active').length}</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Inactive</p>
-                <p className="text-2xl font-bold text-gray-500">{teams.filter(t => t.status !== 'Active').length}</p>
+                <p className="text-2xl font-bold text-gray-500">{teams.filter(t => t.racing_status !== 'Active').length}</p>
               </div>
             </div>
-            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', racing_status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Team
             </Button>
@@ -401,11 +401,11 @@ export default function ManageTeams() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        team.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        team.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
+                        team.racing_status === 'Active' ? 'bg-green-100 text-green-800' :
+                        team.racing_status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {team.status}
+                        {team.racing_status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

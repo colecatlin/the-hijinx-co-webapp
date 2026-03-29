@@ -188,7 +188,7 @@ export default function DriverProfile() {
   }
 
   if (!driver) return <EntityNotFound entityType="Driver" />;
-  if (driver.profile_status === 'draft' && user?.role !== 'admin') return <EntityUnavailable entityType="Driver" />;
+  if (driver.visibility_status === 'draft' && user?.role !== 'admin') return <EntityUnavailable entityType="Driver" />;
 
   const fullName = `${driver.first_name} ${driver.last_name}`;
   const hometown = [driver.hometown_city, driver.hometown_state, driver.hometown_country].filter(Boolean).join(', ');
@@ -278,8 +278,8 @@ export default function DriverProfile() {
               <div className="flex items-center gap-3 flex-wrap mb-1">
                 <CountryFlag country={driver.hometown_country} />
                 {driver.career_status && <CareerStatusTag status={driver.career_status} size="sm" />}
-                {driver.status && driver.status !== 'Active' && (
-                  <Badge className="bg-white/10 text-white/70 border border-white/20 text-xs">{driver.status}</Badge>
+                {driver.racing_status && driver.racing_status !== 'Active' && (
+                  <Badge className="bg-white/10 text-white/70 border border-white/20 text-xs">{driver.racing_status}</Badge>
                 )}
               </div>
               <div className="flex items-baseline gap-3 flex-wrap">

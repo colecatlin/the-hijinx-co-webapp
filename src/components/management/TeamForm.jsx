@@ -18,7 +18,7 @@ export default function TeamForm({ team, onClose }) {
     headquarters_city: '',
     headquarters_state: '',
     country: 'USA',
-    status: 'Active',
+    racing_status: 'Active',
     founded_year: new Date().getFullYear(),
     description_summary: '',
     ownership_type: 'Private',
@@ -178,7 +178,7 @@ export default function TeamForm({ team, onClose }) {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Status *</label>
-              <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+              <Select value={formData.racing_status} onValueChange={(value) => handleChange('racing_status', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

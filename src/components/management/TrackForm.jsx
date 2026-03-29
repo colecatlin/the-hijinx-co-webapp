@@ -19,7 +19,7 @@ export default function TrackForm({ track, onClose }) {
     location_city: '',
     location_state: '',
     location_country: 'USA',
-    status: 'Active',
+    operational_status: 'Active',
     founded_year: null,
     description_summary: '',
     track_type: '',
@@ -192,7 +192,7 @@ export default function TrackForm({ track, onClose }) {
 
           <div>
             <label className="block text-sm font-medium mb-2">Status *</label>
-            <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+            <Select value={formData.operational_status || 'Active'} onValueChange={(value) => handleChange('operational_status', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

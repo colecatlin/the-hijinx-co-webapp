@@ -164,9 +164,9 @@ export default function TeamProfile() {
                 <CountryFlag country={team.country} />
                 <h1 className="text-4xl font-black text-[#232323]">{team.name}</h1>
               </div>
-              {team.status && (
-                <Badge className={team.status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
-                  {team.status}
+              {team.racing_status && (
+                <Badge className={team.racing_status === 'Active' ? 'bg-[#00FFDA] text-[#232323]' : 'bg-gray-200 text-gray-700'}>
+                  {team.racing_status}
                 </Badge>
               )}
             </div>

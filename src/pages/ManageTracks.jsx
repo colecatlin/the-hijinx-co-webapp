@@ -168,11 +168,11 @@ export default function ManageTracks() {
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{tracks.filter(t => t.status === 'Active').length}</p>
+                <p className="text-2xl font-bold text-green-600">{tracks.filter(t => t.operational_status === 'Active').length}</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Seasonal</p>
-                <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.status === 'Seasonal').length}</p>
+                <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.operational_status === 'Seasonal').length}</p>
               </div>
             </div>
             <Button onClick={() => setShowForm(true)} className="w-full bg-[#232323] hover:bg-[#1A3249]">
@@ -262,11 +262,11 @@ export default function ManageTracks() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        track.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        track.status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
+                        track.operational_status === 'Active' ? 'bg-green-100 text-green-800' :
+                        track.operational_status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {track.status || 'Active'}
+                        {track.operational_status || 'Active'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

@@ -130,10 +130,10 @@ export default function ManageDrivers() {
   };
 
   const toggleProfileStatusMutation = useMutation({
-    mutationFn: ({ id, profile_status }) => base44.entities.Driver.update(id, { profile_status }),
-    onSuccess: (_, { profile_status }) => {
+    mutationFn: ({ id, visibility_status }) => base44.entities.Driver.update(id, { visibility_status }),
+    onSuccess: (_, { visibility_status }) => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      toast.success(`Profile set to ${profile_status}`);
+      toast.success(`Profile set to ${visibility_status}`);
     },
   });
 
@@ -166,7 +166,7 @@ export default function ManageDrivers() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Driver.update(id, { status }),
+    mutationFn: ({ id, racing_status }) => base44.entities.Driver.update(id, { racing_status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setEditingStatuses({});
@@ -185,12 +185,12 @@ export default function ManageDrivers() {
       if (sortField === 'name') {
         aVal = `${a.last_name} ${a.first_name}`.toLowerCase();
         bVal = `${b.last_name} ${b.first_name}`.toLowerCase();
-      } else if (sortField === 'profile_status') {
-        aVal = a.profile_status || 'draft';
-        bVal = b.profile_status || 'draft';
-      } else if (sortField === 'status') {
-        aVal = a.status || '';
-        bVal = b.status || '';
+      } else if (sortField === 'visibility_status') {
+        aVal = a.visibility_status || 'draft';
+        bVal = b.visibility_status || 'draft';
+      } else if (sortField === 'racing_status') {
+        aVal = a.racing_status || '';
+        bVal = b.racing_status || '';
       } else {
         aVal = a[sortField] || '';
         bVal = b[sortField] || '';
@@ -241,8 +241,8 @@ export default function ManageDrivers() {
     if (!window.confirm(`Apply changes to ${selectedDrivers.length} selected driver(s)?`)) return;
     setApplyingBulk(true);
     const updates = {};
-    if (bulkStatus) updates.status = bulkStatus;
-    if (bulkProfileStatus) updates.profile_status = bulkProfileStatus;
+    if (bulkStatus) updates.racing_status = bulkStatus;
+    if (bulkProfileStatus) updates.visibility_status = bulkProfileStatus;
     if (bulkDiscipline) updates.primary_discipline = bulkDiscipline;
     for (const id of selectedDrivers) {
       await base44.entities.Driver.update(id, updates);
@@ -401,7 +401,7 @@ export default function ManageDrivers() {
           <Button variant="outline" onClick={() => document.getElementById('import-drivers').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
           <Button onClick={async () => { setBackfillingIds(true); try { const res = await base44.functions.invoke('assignDriverNumericIds'); toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`); queryClient.invalidateQueries({ queryKey: ['drivers'] }); } catch (e) { toast.error('Failed to assign IDs: ' + e.message); } finally { setBackfillingIds(false); } }} disabled={backfillingIds} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Hash className="w-4 h-4 mr-2" />{backfillingIds ? 'Assigning...' : 'Assign IDs'}</Button>
           <Button onClick={() => setShowDuplicateFinder(true)} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"><AlertCircle className="w-4 h-4 mr-2" />Find Duplicates</Button>
-          <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
+          <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', racing_status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -421,18 +421,18 @@ export default function ManageDrivers() {
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{drivers.filter(d => d.status === 'Active').length}</p>
+                <p className="text-2xl font-bold text-green-600">{drivers.filter(d => d.racing_status === 'Active').length}</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Profiles Live</p>
-                <p className="text-2xl font-bold text-blue-600">{drivers.filter(d => d.profile_status === 'live').length}</p>
+                <p className="text-2xl font-bold text-blue-600">{drivers.filter(d => d.visibility_status === 'live').length}</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Part Time</p>
-                <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.status === 'Part Time').length}</p>
+                <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.racing_status === 'Part Time').length}</p>
               </div>
             </div>
-            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', racing_status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Driver
             </Button>
@@ -552,11 +552,11 @@ export default function ManageDrivers() {
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('primary_discipline')}>
                     Discipline <SortIcon field="primary_discipline" />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('status')}>
-                    Status <SortIcon field="status" />
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('racing_status')}>
+                    Status <SortIcon field="racing_status" />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('profile_status')}>
-                    Profile <SortIcon field="profile_status" />
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('visibility_status')}>
+                    Profile <SortIcon field="visibility_status" />
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
                     Actions
@@ -586,7 +586,7 @@ export default function ManageDrivers() {
                         <Select 
                           value={editingStatuses[driver.id]} 
                           onValueChange={(value) => {
-                            updateStatusMutation.mutate({ id: driver.id, status: value });
+                            updateStatusMutation.mutate({ id: driver.id, racing_status: value });
                           }}
                         >
                           <SelectTrigger className="w-32">
@@ -601,20 +601,20 @@ export default function ManageDrivers() {
                       ) : (
                         <span 
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded cursor-pointer ${
-                            driver.status === 'Active' ? 'bg-green-100 text-green-800' :
-                            driver.status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
+                            driver.racing_status === 'Active' ? 'bg-green-100 text-green-800' :
+                            driver.racing_status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-gray-100 text-gray-800'
                           }`}
-                          onClick={() => setEditingStatuses({ [driver.id]: driver.status })}
+                          onClick={() => setEditingStatuses({ [driver.id]: driver.racing_status })}
                         >
-                          {driver.status || 'Active'}
+                          {driver.racing_status || 'Active'}
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       {(() => {
                         const { isReady, missing } = getProfileReadiness(driver);
-                        const isLive = driver.profile_status === 'live';
+                        const isLive = driver.visibility_status === 'live';
                         return (
                           <TooltipProvider>
                             <Tooltip>
@@ -627,7 +627,7 @@ export default function ManageDrivers() {
                                     }
                                     toggleProfileStatusMutation.mutate({
                                       id: driver.id,
-                                      profile_status: isLive ? 'draft' : 'live',
+                                      visibility_status: isLive ? 'draft' : 'live',
                                     });
                                   }}
                                   className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded transition-colors ${
@@ -730,8 +730,8 @@ export default function ManageDrivers() {
           <TabsContent value="publish">
             <PublishTab 
               entityCount={drivers.length}
-              draftCount={drivers.filter(d => d.profile_status === 'draft').length}
-              liveCount={drivers.filter(d => d.profile_status === 'live').length}
+              draftCount={drivers.filter(d => d.visibility_status === 'draft').length}
+              liveCount={drivers.filter(d => d.visibility_status === 'live').length}
               hasPublishControl={true}
             />
           </TabsContent>

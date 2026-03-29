@@ -16,7 +16,7 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
     governing_body: series?.governing_body || '',
     discipline: series?.discipline || 'Mixed',
     founded_year: series?.founded_year || new Date().getFullYear(),
-    status: series?.status || 'Active',
+    operational_status: series?.operational_status || 'Active',
     description_summary: series?.description_summary || '',
     region: series?.region || 'Global',
     competition_level: series?.competition_level || 'Professional',
@@ -166,7 +166,7 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
 
           <div>
             <label className="block text-sm font-medium mb-2">Status</label>
-            <Select value={formData.status} onValueChange={(val) => handleChange('status', val)}>
+            <Select value={formData.operational_status} onValueChange={(val) => handleChange('operational_status', val)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

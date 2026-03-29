@@ -54,19 +54,19 @@ Deno.serve(async (req) => {
       allPublishedEvents,
     ] = await Promise.all([
       safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
-      safe(db.Driver.filter({ featured: true, profile_status: 'live' }, '-created_date', TARGET)),
-      safe(db.Team.filter({ status: 'Active' }, '-created_date', TARGET)),
-      safe(db.Track.filter({ status: 'Active' }, '-created_date', TARGET)),
-      safe(db.Series.filter({ status: 'Active' }, '-popularity_rank', TARGET)),
+      safe(db.Driver.filter({ featured: true, visibility_status: 'live' }, '-created_date', TARGET)),
+      safe(db.Team.filter({ racing_status: 'Active' }, '-created_date', TARGET)),
+      safe(db.Track.filter({ operational_status: 'Active' }, '-created_date', TARGET)),
+      safe(db.Series.filter({ operational_status: 'Active' }, '-popularity_rank', TARGET)),
       safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 6)),
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
       safe(db.MediaAsset.list('-created_date', MEDIA_TARGET)),
       safe(db.Product.list('-created_date', TARGET)),
       // counts for hero stats — capped at 100 for performance
-      safe(db.Series.filter({ status: 'Active' }, '-created_date', 100)),
-      safe(db.Driver.filter({ profile_status: 'live' }, '-created_date', 100)),
-      safe(db.Track.filter({ status: 'Active' }, '-created_date', 100)),
+      safe(db.Series.filter({ operational_status: 'Active' }, '-created_date', 100)),
+      safe(db.Driver.filter({ visibility_status: 'live' }, '-created_date', 100)),
+      safe(db.Track.filter({ operational_status: 'Active' }, '-created_date', 100)),
       safe(db.Event.filter({ status: 'Published' }, 'event_date', 100)),
     ]);
 
