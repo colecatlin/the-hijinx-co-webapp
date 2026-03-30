@@ -22,6 +22,7 @@ import EventResultsInputSection from '@/components/management/EventManagement/Ev
 import AIEventGenerator from '@/components/management/AIEventGenerator';
 import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
+import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 
 export default function ManageEvents() {
   const navigate = useNavigate();
@@ -189,6 +190,7 @@ export default function ManageEvents() {
               <TabsTrigger value="core">Core Details</TabsTrigger>
               <TabsTrigger value="sessions">Sessions</TabsTrigger>
               <TabsTrigger value="results">Results</TabsTrigger>
+              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <EventCoreDetailsSection event={selectedEventForEdit} isDraftOnly={selectedEventForEdit.status === 'Draft'} />
@@ -208,6 +210,16 @@ export default function ManageEvents() {
                 </div>
               </div>
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="override" className="mt-6">
+                <AdminOverridePanel
+                  entityType="Event"
+                  entityId={selectedEventForEdit.id}
+                  entityRecord={selectedEventForEdit}
+                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['events'] })}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </ManagementLayout>
