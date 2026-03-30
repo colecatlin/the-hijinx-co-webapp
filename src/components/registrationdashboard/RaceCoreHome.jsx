@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Plus,
+  Database,
   Flag,
   Users,
   ClipboardCheck,
@@ -100,6 +101,7 @@ export default function RaceCoreHome({
   onTabChange,
   onCreateEvent,
   onOpenImportEntries,
+  onOpenQuickCreate,
 }) {
   const navigate = useNavigate();
 
@@ -314,6 +316,25 @@ export default function RaceCoreHome({
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-950/20 border border-green-800/30 text-xs text-green-400">
           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
           <span>No outstanding items — event operations are running.</span>
+        </div>
+      )}
+
+      {/* ── Admin Quick Create ─────────────────────────────────────────── */}
+      {isAdmin && (
+        <div>
+          <SectionLabel>Quick Create</SectionLabel>
+          <div className="grid grid-cols-3 gap-2">
+            {['Driver','Team','Track','Series','Event'].map((type) => (
+              <button
+                key={type}
+                onClick={() => onOpenQuickCreate?.(type)}
+                className="flex items-center gap-2 px-3 py-2.5 bg-[#1A1A1A] border border-gray-800 hover:border-blue-700/60 hover:bg-blue-950/20 rounded-lg text-xs text-gray-400 hover:text-blue-300 transition-all text-left"
+              >
+                <Plus className="w-3 h-3 shrink-0" />
+                <span className="font-medium">{type}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

@@ -47,6 +47,7 @@ import TimingSyncManager from '@/components/registrationdashboard/TimingSyncMana
 import GateManager from '@/components/registrationdashboard/GateManager';
 import ExportsDataHub from '@/components/registrationdashboard/ExportsDataHub';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
+import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
 import { motion } from 'framer-motion';
@@ -199,6 +200,8 @@ export default function RegistrationDashboard() {
   const [showArchiveWarning, setShowArchiveWarning] = useState(false);
   const [showMediaPortalDialog, setShowMediaPortalDialog] = useState(false);
   const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [quickCreateType, setQuickCreateType] = useState('Driver');
   const [overrideText, setOverrideText] = useState('');
   const [overrideReason, setOverrideReason] = useState('');
   const queryClient = useQueryClient();
@@ -983,6 +986,16 @@ export default function RegistrationDashboard() {
               <div className="flex-1" />
               {/* Quick Actions */}
               <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setQuickCreateType('Driver'); setQuickCreateOpen(true); }}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Quick Create
+                  </Button>
+                )}
                 {canAction(dashboardPermissions, 'create_event') && (
                   <Button
                     variant="outline"
@@ -1208,10 +1221,11 @@ export default function RegistrationDashboard() {
                   operationLogs={operationLogs}
                   standingsDirty={standingsDirty}
                   isAdmin={isAdmin}
-                  user={user}
-                  onTabChange={setActiveTab}
-                  onCreateEvent={handleCreateEvent}
-                  onOpenImportEntries={() => setShowImportEntriesModal(true)}
+                    user={user}
+                    onTabChange={setActiveTab}
+                    onCreateEvent={handleCreateEvent}
+                    onOpenImportEntries={() => setShowImportEntriesModal(true)}
+                    onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
                 />
               )}
 
@@ -1676,6 +1690,25 @@ export default function RegistrationDashboard() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Quick Create Modal (admin only) */}
+        {isAdmin && (
+          <RaceCoreQuickCreate
+            open={quickCreateOpen}
+            onClose={() => setQuickCreateOpen(false)}
+            initialEntityType={quickCreateType}
+            tracks={tracks}
+            seriesList={seriesList}
+            onCreated={(type) => {
+              // Invalidate relevant lists so new entity appears in selectors immediately
+              if (type === 'Event') queryClient.invalidateQueries({ queryKey: ['events'] });
+              if (type === 'Track') queryClient.invalidateQueries({ queryKey: ['tracks'] });
+              if (type === 'Series') queryClient.invalidateQueries({ queryKey: ['series'] });
+              if (type === 'Driver') queryClient.invalidateQueries({ queryKey: ['drivers'] });
+              if (type === 'Team') queryClient.invalidateQueries({ queryKey: ['teams'] });
+            }}
+          />
+        )}
 
         {/* Import Entries CSV Modal */}
         <ImportEntriesModal
