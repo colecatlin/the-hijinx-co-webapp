@@ -577,7 +577,7 @@ export default function ResultsManager({
               API Sync (Coming Soon)
             </Button>
           </div>
-        </div>
+      </div>
 
       {!selectedSession ? (
         <Card className="bg-[#171717] border-gray-800">
