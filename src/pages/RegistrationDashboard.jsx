@@ -9,6 +9,7 @@ import PageShell from '@/components/shared/PageShell';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
+import RaceCoreHome from '@/components/registrationdashboard/RaceCoreHome';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
 import EntriesManager from '@/components/registrationdashboard/EntriesManager';
 import ImportEntriesModal from '@/components/registrationdashboard/entries/ImportEntriesModal';
@@ -1195,34 +1196,22 @@ export default function RegistrationDashboard() {
              {/* Lazy-mounted tabs: only render active tab content */}
             <div className="mt-6">
               {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
-                <OverviewGrid
+                <RaceCoreHome
                   dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
                   selectedSeries={selectedSeries}
                   sessions={sessions}
-                  standings={standings}
                   results={results}
+                  standings={standings}
                   operationLogs={operationLogs}
-                  importLogs={importLogs}
-                  complianceSeverity={complianceSeverity}
-                  announcerMode={announcerMode}
-                  onSelectSession={(sessionId) => {
-                    setActiveTab('results');
-                    sessionStorage.setItem('selectedSessionId', sessionId);
-                  }}
-                  onEntriesNavigate={(params) => {
-                    // Switch to entries tab and push filter params to URL
-                    setActiveTab('entries');
-                    const next = new URLSearchParams(searchParams);
-                    next.set('tab', 'entries');
-                    if (params.classId) next.set('classId', params.classId); else next.delete('classId');
-                    if (params.payment) next.set('payment', params.payment); else next.delete('payment');
-                    if (params.checkin) next.set('checkin', params.checkin); else next.delete('checkin');
-                    if (params.tech) next.set('tech', params.tech); else next.delete('tech');
-                    setSearchParams(next, { replace: true });
-                  }}
+                  standingsDirty={standingsDirty}
+                  isAdmin={isAdmin}
+                  user={user}
+                  onTabChange={setActiveTab}
+                  onCreateEvent={handleCreateEvent}
+                  onOpenImportEntries={() => setShowImportEntriesModal(true)}
                 />
               )}
 
