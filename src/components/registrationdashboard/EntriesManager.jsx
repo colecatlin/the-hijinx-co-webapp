@@ -37,8 +37,6 @@ import {
 } from './entriesFilters';
 import { buildEntryPayload, getEntryFieldValue } from './entryFieldSupport';
 
-
-
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 function entryStatusBadge(status) {
   switch (status) {
@@ -82,10 +80,8 @@ export default function EntriesManager({
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ── Filters synced to URL ──
   const [filters, setFilters] = useState(() => filtersFromParams(searchParams));
 
-  // Keep filters in sync when URL params change (e.g. deep link from Overview)
   useEffect(() => {
     setFilters(filtersFromParams(searchParams));
   }, [searchParams.toString()]);
@@ -98,7 +94,6 @@ export default function EntriesManager({
     });
   }, [searchParams, setSearchParams]);
 
-  // ── UI state ──
   const [selectedEntries, setSelectedEntries] = useState(new Set());
   const [editingEntry, setEditingEntry] = useState(null);
   const [detailEntry, setDetailEntry] = useState(null);
@@ -106,13 +101,11 @@ export default function EntriesManager({
   const [showSelfService, setShowSelfService] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  // Bulk
   const [showBulkTransponderModal, setShowBulkTransponderModal] = useState(false);
   const [bulkTransponderInput, setBulkTransponderInput] = useState('');
   const [showBulkClassModal, setShowBulkClassModal] = useState(false);
   const [bulkClassId, setBulkClassId] = useState('');
 
-  // ── Data hook ──
   const {
     entries = [],
     drivers = [],
@@ -127,7 +120,6 @@ export default function EntriesManager({
     enabled: !!eventId,
   });
 
-  // ── Lookups ──
   const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
 
@@ -136,19 +128,15 @@ export default function EntriesManager({
     return d ? `${d.first_name} ${d.last_name}` : '—';
   };
   const getClassName = (entry) => {
-    if (entry.series_class_id) {
-      return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
-    }
+    if (entry.series_class_id) return classesMap[entry.series_class_id]?.class_name || entry.series_class_id;
     return '—';
   };
 
-  // ── Filtering ──
   const filteredEntries = useMemo(
     () => applyFilters(entries, filters, driversMap),
     [entries, filters, driversMap]
   );
 
-  // ── Mutations ──
   const sharedOpts = {
     invalidateAfterOperation,
     dashboardContext: dashboardContext ?? { eventId },
@@ -156,44 +144,34 @@ export default function EntriesManager({
   };
 
   const { mutateAsync: createEntry, isPending: creatingEntry } = useDashboardMutation({
-    operationType: 'entry_created',
-    entityName: 'Entry',
+    operationType: 'entry_created', entityName: 'Entry',
     mutationFn: (data) => base44.entities.Entry.create(data),
-    successMessage: 'Entry created',
-    ...sharedOpts,
+    successMessage: 'Entry created', ...sharedOpts,
   });
 
   const { mutateAsync: updateEntry, isPending: updatingEntry } = useDashboardMutation({
-    operationType: 'entry_updated',
-    entityName: 'Entry',
+    operationType: 'entry_updated', entityName: 'Entry',
     mutationFn: ({ id, data }) => base44.entities.Entry.update(id, data),
-    successMessage: 'Entry updated',
-    ...sharedOpts,
+    successMessage: 'Entry updated', ...sharedOpts,
   });
 
   const { mutateAsync: deleteEntry } = useDashboardMutation({
-    operationType: 'entry_deleted',
-    entityName: 'Entry',
+    operationType: 'entry_deleted', entityName: 'Entry',
     mutationFn: (id) => base44.entities.Entry.delete(id),
-    successMessage: 'Entry deleted',
-    ...sharedOpts,
+    successMessage: 'Entry deleted', ...sharedOpts,
   });
 
   const { mutateAsync: bulkUpdateEntries, isPending: bulkUpdating } = useDashboardMutation({
-    operationType: 'entry_bulk_updated',
-    entityName: 'Entry',
+    operationType: 'entry_bulk_updated', entityName: 'Entry',
     mutationFn: (updates) => Promise.all(updates.map((u) => base44.entities.Entry.update(u.id, u.data))),
-    successMessage: 'Bulk update complete',
-    ...sharedOpts,
+    successMessage: 'Bulk update complete', ...sharedOpts,
   });
 
-  // ── Reset on event change ──
   useEffect(() => {
     setSelectedEntries(new Set());
     setEditingEntry(null);
   }, [eventId]);
 
-  // ── Summary stats ──
   const stats = useMemo(() => ({
     total: entries.length,
     registered: entries.filter((e) => e.entry_status === 'Registered').length,
@@ -203,10 +181,8 @@ export default function EntriesManager({
     noTransponder: entries.filter((e) => !e.transponder_id).length,
   }), [entries]);
 
-  // ── Handlers ──
   const handleSaveEntry = async (id, data) => {
     await updateEntry({ id, data });
-    // Refresh UI
     setEditingEntry(null);
     setDetailEntry(null);
   };
@@ -240,13 +216,7 @@ export default function EntriesManager({
 
   const handleBulkClass = async () => {
     if (!bulkClassId) { toast.error('Select a class'); return; }
-    const selected = seriesClasses.find((c) => c.id === bulkClassId);
-    const updates = Array.from(selectedEntries).map((id) => ({
-      id,
-      data: {
-        series_class_id: bulkClassId,
-      },
-    }));
+    const updates = Array.from(selectedEntries).map((id) => ({ id, data: { series_class_id: bulkClassId } }));
     await bulkUpdateEntries(updates);
     setShowBulkClassModal(false);
     setBulkClassId('');
@@ -258,7 +228,6 @@ export default function EntriesManager({
   const handleBulkTransponders = async () => {
     const lines = bulkTransponderInput.split('\n').map((l) => l.trim()).filter(Boolean);
     if (!lines.length) { toast.error('Enter at least one transponder ID'); return; }
-    // Sort selected entries by car_number ascending
     const selectedList = Array.from(selectedEntries)
       .map((id) => entries.find((e) => e.id === id))
       .filter(Boolean)
@@ -290,7 +259,6 @@ export default function EntriesManager({
     downloadCSV([headers, ...rows], `entries-${eventId}-${ts}.csv`);
   };
 
-  // ── Empty / loading states ──
   if (!eventId) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -325,38 +293,29 @@ export default function EntriesManager({
     <div className="space-y-4">
       {/* Summary stats */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
-        <div className="text-center">
-          <p className="text-xs text-gray-400">Total</p>
-          <p className="text-lg font-bold text-white">{stats.total}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-400">Registered</p>
-          <p className="text-lg font-bold text-blue-400">{stats.registered}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-400">Checked In</p>
-          <p className="text-lg font-bold text-green-400">{stats.checkedIn}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-400">Teched</p>
-          <p className="text-lg font-bold text-purple-400">{stats.teched}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-400">Unpaid</p>
-          <p className="text-lg font-bold text-yellow-400">{stats.unpaid}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-400">No Transponder</p>
-          <p className="text-lg font-bold text-red-400">{stats.noTransponder}</p>
-        </div>
+        {[
+          { label: 'Total', value: stats.total, color: 'text-white' },
+          { label: 'Registered', value: stats.registered, color: 'text-blue-400' },
+          { label: 'Checked In', value: stats.checkedIn, color: 'text-green-400' },
+          { label: 'Teched', value: stats.teched, color: 'text-purple-400' },
+          { label: 'Unpaid', value: stats.unpaid, color: 'text-yellow-400' },
+          { label: 'No Transponder', value: stats.noTransponder, color: 'text-red-400' },
+        ].map(s => (
+          <div key={s.label} className="text-center">
+            <p className="text-xs text-gray-400">{s.label}</p>
+            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white">Entries</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {filteredEntries.length} of {entries.length} entries
+          <h2 className="text-base font-bold text-white">Entries</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {filteredEntries.length} of {entries.length} entr{entries.length === 1 ? 'y' : 'ies'}
+            {stats.unpaid > 0 && <span className="text-amber-400 ml-2">· {stats.unpaid} unpaid</span>}
+            {stats.noTransponder > 0 && <span className="text-red-400 ml-2">· {stats.noTransponder} missing transponder</span>}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
@@ -423,13 +382,13 @@ export default function EntriesManager({
 
       {/* Bulk Actions */}
       {hasBulk && (
-      <div className="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
-      <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
-      <div className="flex gap-2 flex-wrap">
-        <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
-        {seriesClasses.length > 0 && (
-        <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
-        )}
+        <div className="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
+          <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
+            {seriesClasses.length > 0 && (
+              <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
+            )}
             <Button onClick={handleBulkWithdraw} size="sm" variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/20">Withdraw</Button>
             <Button onClick={handleExportCSV} size="sm" variant="outline" className="border-gray-600 text-gray-300">
               <Download className="w-4 h-4 mr-1" /> Export Selected
@@ -485,9 +444,7 @@ export default function EntriesManager({
                     key={entry.id}
                     onClick={() => setEditingEntry(entry)}
                     className={`border-b border-gray-800 cursor-pointer transition-colors ${
-                      rowNeedsAttention(entry)
-                        ? 'bg-amber-950/20 hover:bg-amber-950/30'
-                        : 'hover:bg-gray-800/40'
+                      rowNeedsAttention(entry) ? 'bg-amber-950/20 hover:bg-amber-950/30' : 'hover:bg-gray-800/40'
                     }`}
                   >
                     <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
@@ -537,7 +494,7 @@ export default function EntriesManager({
         </Card>
       )}
 
-      {/* Create Entry Drawer */}
+      {/* Drawers */}
       <EntryCreateDrawer
         open={showCreateDrawer}
         onOpenChange={setShowCreateDrawer}
@@ -547,8 +504,6 @@ export default function EntriesManager({
         classes={seriesClasses}
         onCreated={handleEntryCreated}
       />
-
-      {/* Edit Entry Drawer */}
       <EntryEditDrawer
         open={!!editingEntry}
         onOpenChange={(open) => { if (!open) setEditingEntry(null); }}
@@ -558,10 +513,6 @@ export default function EntriesManager({
         classes={seriesClasses}
         onUpdated={handleEntryUpdated}
       />
-
-
-
-
 
       {/* Bulk Transponder Modal */}
       <Dialog open={showBulkTransponderModal} onOpenChange={setShowBulkTransponderModal}>
@@ -595,15 +546,15 @@ export default function EntriesManager({
           <div>
             <label className="text-xs text-gray-400 block mb-2">Select new class</label>
             <Select value={bulkClassId} onValueChange={setBulkClassId}>
-                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  {seriesClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-              <Button onClick={handleBulkClass} disabled={bulkUpdating || !seriesClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
+              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
+              <SelectContent className="bg-[#262626] border-gray-700">
+                {seriesClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button onClick={handleBulkClass} disabled={bulkUpdating || !seriesClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
               {bulkUpdating ? 'Applying…' : 'Apply'}
             </Button>
           </DialogFooter>

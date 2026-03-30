@@ -365,14 +365,14 @@ export default function ClassSessionBuilder({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white">Classes & Sessions</h2>
-          <p className="text-sm text-gray-400 mt-1">Define classes, then build sessions under each class</p>
+          <h2 className="text-base font-bold text-white">Classes &amp; Sessions</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Define classes, then build sessions under each class.</p>
         </div>
-        <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shrink-0">
           <Plus className="w-4 h-4 mr-1" /> Add Class
         </Button>
       </div>

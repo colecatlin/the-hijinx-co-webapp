@@ -546,19 +546,18 @@ export default function ResultsManager({
 
   return (
     <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-bold text-white">Results</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {sessions.length} session{sessions.length !== 1 ? 's' : ''} · select a session below to enter or publish results
+          </p>
+        </div>
+      </div>
+
       {/* Top control bar */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
-        <div className="flex items-end gap-3 flex-wrap">
-          <div className="flex-1 min-w-[160px]">
-            <label className="text-xs text-gray-400 block mb-1">Class</label>
-            <Select value={classFilter} onValueChange={(v) => { setClassFilter(v); setSessionId(''); }}>
-              <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
-                <SelectItem value="all">All Classes</SelectItem>
-                {classOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="flex-1 min-w-[200px]">
             <label className="text-xs text-gray-400 block mb-1">Session</label>
             <Select value={sessionId} onValueChange={setSessionId}>

@@ -45,8 +45,6 @@ export default function CheckInManager({
   const hasAccess = canTab(dashboardPermissions, 'checkin');
   const canEdit = ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions?.role);
 
-  // ── State ──────────────────────────────────────────────────────────────────
-
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -54,8 +52,6 @@ export default function CheckInManager({
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [noteModalEntry, setNoteModalEntry] = useState(null);
   const [noteText, setNoteText] = useState('');
-
-  // ── Queries ────────────────────────────────────────────────────────────────
 
   const { data: entries = [] } = useQuery({
     queryKey: ['entries_checkin', eventId],
@@ -96,8 +92,6 @@ export default function CheckInManager({
     ...DQ,
   });
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
-
   const updateEntryMutation = useMutation({
     mutationFn: ({ entryId, data }) => base44.entities.Entry.update(entryId, data),
     onSuccess: () => {
@@ -124,8 +118,6 @@ export default function CheckInManager({
     },
   });
 
-  // ── Derived data ───────────────────────────────────────────────────────────
-
   const driverMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const teamMap = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t])), [teams]);
   const classMap = useMemo(
@@ -133,10 +125,8 @@ export default function CheckInManager({
     [seriesClasses]
   );
 
-  // Entry is the single source of truth for check-in
   const primaryData = entries;
 
-  // Get unique classes
   const uniqueClasses = useMemo(() => {
     const classIds = new Set();
     primaryData.forEach((item) => {
@@ -146,15 +136,12 @@ export default function CheckInManager({
     return Array.from(classIds);
   }, [primaryData]);
 
-  // Helper to check if entry has issues
   const hasIssues = useCallback((item) => {
     const issues = [];
-
     if (item.payment_status && item.payment_status !== 'Paid') issues.push('unpaid');
     if (item.waiver_verified === false) issues.push('waiver');
     if (item.tech_status && ['Failed', 'Recheck Required'].includes(item.tech_status)) issues.push('tech');
     if (item.entry_status !== 'Checked In') {
-      // Also check OperationLog for checkin status
       const hasCheckInLog = operationLogs.some((log) => {
         try {
           const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata;
@@ -165,11 +152,9 @@ export default function CheckInManager({
       });
       if (!hasCheckInLog) issues.push('not_checkin');
     }
-
     return issues;
   }, [operationLogs]);
 
-  // Filter and search
   const filteredData = useMemo(() => {
     let result = [...primaryData];
 
@@ -181,7 +166,6 @@ export default function CheckInManager({
         const driverName = driver ? `${driver.first_name} ${driver.last_name}`.toLowerCase() : '';
         const teamName = team ? team.name.toLowerCase() : '';
         const carNum = (item.car_number || '').toLowerCase();
-
         return driverName.includes(q) || teamName.includes(q) || carNum.includes(q);
       });
     }
@@ -212,22 +196,16 @@ export default function CheckInManager({
     });
   }, [primaryData, driverMap, teamMap, search, classFilter, statusFilter, showIssuesOnly, hasIssues]);
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-
   const handleCheckIn = useCallback(
     (item) => {
       if (!canEdit) return;
       const now = new Date().toISOString();
       updateEntryMutation.mutate({
         entryId: item.id,
-        data: {
-          entry_status: 'Checked In',
-          checkin_time: now,
-          checked_in_by_user_id: currentUser?.id || '',
-        },
+        data: { entry_status: 'Checked In', checkin_time: now },
       });
     },
-    [canEdit, currentUser, updateEntryMutation]
+    [canEdit, updateEntryMutation]
   );
 
   const handleUndoCheckIn = useCallback(
@@ -245,10 +223,7 @@ export default function CheckInManager({
     (item) => {
       if (!canEdit) return;
       const nextPaymentStatus = item.payment_status === 'Paid' ? 'Unpaid' : 'Paid';
-      updateEntryMutation.mutate({
-        entryId: item.id,
-        data: { payment_status: nextPaymentStatus },
-      });
+      updateEntryMutation.mutate({ entryId: item.id, data: { payment_status: nextPaymentStatus } });
     },
     [canEdit, updateEntryMutation]
   );
@@ -257,10 +232,7 @@ export default function CheckInManager({
     (item) => {
       if (!canEdit) return;
       const nextWaiverStatus = item.waiver_status === 'Verified' ? 'Missing' : 'Verified';
-      updateEntryMutation.mutate({
-        entryId: item.id,
-        data: { waiver_status: nextWaiverStatus },
-      });
+      updateEntryMutation.mutate({ entryId: item.id, data: { waiver_status: nextWaiverStatus } });
     },
     [canEdit, updateEntryMutation]
   );
@@ -273,7 +245,6 @@ export default function CheckInManager({
 
   const handleSaveNote = useCallback(() => {
     if (!noteModalEntry || !noteText.trim()) return;
-
     createOperationLogMutation.mutate({
       operation_type: 'checkin_note',
       source_type: 'manual',
@@ -287,13 +258,10 @@ export default function CheckInManager({
         timestamp_client: new Date().toISOString(),
       }),
     });
-
     setNoteModalOpen(false);
     setNoteModalEntry(null);
     setNoteText('');
   }, [noteModalEntry, noteText, eventId, createOperationLogMutation]);
-
-  // ── Empty/No access state ──────────────────────────────────────────────────
 
   if (!hasAccess) {
     return (
@@ -322,17 +290,21 @@ export default function CheckInManager({
 
   return (
     <div className="space-y-4">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader>
-          <div>
-            <CardTitle className="text-white text-2xl">Check In</CardTitle>
-            <p className="text-sm text-gray-400 mt-1">Driver and crew arrival tracking</p>
-          </div>
-        </CardHeader>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <div>
+          <h2 className="text-base font-bold text-white">Check In</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {entries.length > 0
+              ? `${entries.filter(e => e.entry_status === 'Checked In').length} of ${entries.length} checked in`
+              : 'Driver and crew arrival tracking'}
+          </p>
+        </div>
+      </div>
 
-        {/* Controls */}
-        <CardContent className="space-y-3 border-t border-gray-700 pt-4">
+      {/* Controls */}
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="pt-4 space-y-3">
           <div className="flex gap-2">
             <Input
               placeholder="Search driver, car number, team..."
@@ -347,14 +319,11 @@ export default function CheckInManager({
               Refresh
             </Button>
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Class</label>
               <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="all" className="text-white">All Classes</SelectItem>
                   {uniqueClasses.map((classId) => (
@@ -365,13 +334,10 @@ export default function CheckInManager({
                 </SelectContent>
               </Select>
             </div>
-
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Status</label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="bg-[#262626] border-gray-700 text-white text-xs h-9"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-[#262626] border-gray-700">
                   <SelectItem value="all" className="text-white">All</SelectItem>
                   <SelectItem value="checked_in" className="text-white">Checked In</SelectItem>
@@ -379,14 +345,9 @@ export default function CheckInManager({
                 </SelectContent>
               </Select>
             </div>
-
             <Button
               onClick={() => setShowIssuesOnly(!showIssuesOnly)}
-              className={`col-span-1 text-xs h-9 ${
-                showIssuesOnly
-                  ? 'bg-red-700 hover:bg-red-600'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } text-white`}
+              className={`col-span-1 text-xs h-9 ${showIssuesOnly ? 'bg-red-700 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'} text-white`}
             >
               {showIssuesOnly ? '✓ Issues' : 'Issues'}
             </Button>
@@ -394,7 +355,7 @@ export default function CheckInManager({
         </CardContent>
       </Card>
 
-      {/* ── Check In List ──────────────────────────────────────────────────── */}
+      {/* Check In List */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader>
           <CardTitle className="text-white text-sm">
@@ -425,7 +386,6 @@ export default function CheckInManager({
                         : 'bg-[#262626] border-gray-700'
                     }`}
                   >
-                    {/* Header row */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -437,50 +397,28 @@ export default function CheckInManager({
                         {team && <p className="text-xs text-gray-500">{team.name}</p>}
                         <p className="text-xs text-gray-500">{className}</p>
                       </div>
-
-                      {/* Status badges */}
                       <div className="flex flex-col items-end gap-1 ml-2">
-                        <Badge
-                          className={`text-xs whitespace-nowrap ${
-                            checked ? 'bg-green-900/50 text-green-300' : 'bg-gray-700'
-                          }`}
-                        >
+                        <Badge className={`text-xs whitespace-nowrap ${checked ? 'bg-green-900/50 text-green-300' : 'bg-gray-700'}`}>
                           {checked ? 'Checked In' : 'Not Checked In'}
                         </Badge>
                         {item.payment_status && item.payment_status !== 'Paid' && (
-                          <Badge className="text-xs bg-red-900/50 text-red-300 whitespace-nowrap">
-                            Unpaid
-                          </Badge>
+                          <Badge className="text-xs bg-red-900/50 text-red-300 whitespace-nowrap">Unpaid</Badge>
                         )}
                         {item.waiver_verified === false && (
-                          <Badge className="text-xs bg-yellow-900/50 text-yellow-300 whitespace-nowrap">
-                            No Waiver
-                          </Badge>
+                          <Badge className="text-xs bg-yellow-900/50 text-yellow-300 whitespace-nowrap">No Waiver</Badge>
                         )}
                         {item.tech_status && ['Failed', 'Recheck Required'].includes(item.tech_status) && (
-                          <Badge className="text-xs bg-orange-900/50 text-orange-300 whitespace-nowrap">
-                            Tech Issue
-                          </Badge>
+                          <Badge className="text-xs bg-orange-900/50 text-orange-300 whitespace-nowrap">Tech Issue</Badge>
                         )}
                       </div>
                     </div>
-
-                    {/* Action buttons */}
                     <div className="flex gap-1 flex-wrap pt-2 border-t border-gray-600">
                       {!checked ? (
-                        <Button
-                          onClick={() => handleCheckIn(item)}
-                          disabled={!canEdit}
-                          className="text-xs h-7 px-2 bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                        >
+                        <Button onClick={() => handleCheckIn(item)} disabled={!canEdit} className="text-xs h-7 px-2 bg-green-600 hover:bg-green-700 disabled:opacity-50">
                           ✓ Check In
                         </Button>
                       ) : (
-                        <Button
-                          onClick={() => handleUndoCheckIn(item)}
-                          disabled={!canEdit}
-                          className="text-xs h-7 px-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
-                        >
+                        <Button onClick={() => handleUndoCheckIn(item)} disabled={!canEdit} className="text-xs h-7 px-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50">
                           ↶ Undo
                         </Button>
                       )}
@@ -489,7 +427,7 @@ export default function CheckInManager({
                         disabled={!canEdit}
                         className={`text-xs h-7 px-2 disabled:opacity-50 ${item.payment_status === 'Paid' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                       >
-                        ${item.payment_status === 'Paid' ? '✓' : '✗'}
+                        {item.payment_status === 'Paid' ? '$ ✓' : '$ ✗'}
                       </Button>
                       <Button
                         onClick={() => handleWaiverToggle(item)}
@@ -498,11 +436,7 @@ export default function CheckInManager({
                       >
                         {item.waiver_status === 'Verified' ? '✓' : '!'} Waiver
                       </Button>
-                      <Button
-                        onClick={() => handleOpenNoteModal(item)}
-                        disabled={!canEdit}
-                        className="text-xs h-7 px-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1"
-                      >
+                      <Button onClick={() => handleOpenNoteModal(item)} disabled={!canEdit} className="text-xs h-7 px-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1">
                         <Plus className="w-3 h-3" /> Note
                       </Button>
                     </div>
@@ -514,13 +448,12 @@ export default function CheckInManager({
         </CardContent>
       </Card>
 
-      {/* ── Note Modal ────────────────────────────────────────────────────── */}
+      {/* Note Modal */}
       <Dialog open={noteModalOpen} onOpenChange={setNoteModalOpen}>
         <DialogContent className="bg-[#262626] border-gray-800">
           <DialogHeader>
             <DialogTitle className="text-white">Add Check In Note</DialogTitle>
           </DialogHeader>
-
           {noteModalEntry && (
             <div className="space-y-3">
               <p className="text-sm text-gray-400">
@@ -535,19 +468,11 @@ export default function CheckInManager({
               />
             </div>
           )}
-
           <DialogFooter>
-            <Button
-              onClick={() => setNoteModalOpen(false)}
-              className="bg-gray-700 hover:bg-gray-600 text-white text-xs h-8"
-            >
+            <Button onClick={() => setNoteModalOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white text-xs h-8">
               Cancel
             </Button>
-            <Button
-              onClick={handleSaveNote}
-              disabled={!noteText.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 disabled:opacity-50"
-            >
+            <Button onClick={handleSaveNote} disabled={!noteText.trim()} className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 disabled:opacity-50">
               Save Note
             </Button>
           </DialogFooter>
