@@ -37,6 +37,7 @@ import MediaTabContent from '@/components/registrationdashboard/MediaTabContent'
 import MediaGovernanceManager from '@/components/registrationdashboard/MediaGovernanceManager';
 import MediaPortal from '@/components/registrationdashboard/media/MediaPortal';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
+import RaceCoreSidebar from '@/components/registrationdashboard/RaceCoreSidebar';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
@@ -1056,8 +1057,16 @@ export default function RegistrationDashboard() {
                 </div>
                 </div>
 
-        {/* Main Content */}
-          <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Main Content — sidebar + workspace */}
+          <div className="flex min-h-[calc(100vh-72px)]">            <RaceCoreSidebar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              dashboardPermissions={dashboardPermissions}
+              isAdmin={isAdmin}
+              user={user}
+              selectedEvent={selectedEvent}
+            />
+          <div className="flex-1 px-6 py-8 overflow-auto">
             {/* Hard Event Lock Banner */}
             {!selectedEvent && (
               <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
@@ -1178,232 +1187,12 @@ export default function RegistrationDashboard() {
             </div>
           )}
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-[#171717] border border-gray-800 p-1 h-auto flex flex-wrap gap-1">
-              {canTab(dashboardPermissions, 'overview') && (
-                <TabsTrigger
-                  value="overview"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'event_builder') && (
-                <TabsTrigger
-                  value="eventBuilder"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Event Builder
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'classes_sessions') && (
-                <TabsTrigger
-                  value="classesSessions"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ClipboardCheck className="w-4 h-4 mr-2" /> Classes & Sessions
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'entries') && (
-                <TabsTrigger
-                  value="entries"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Users className="w-4 h-4 mr-2" /> Entries
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'compliance') && (
-                <TabsTrigger
-                  value="compliance"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <AlertCircle className="w-4 h-4 mr-2" /> Compliance
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'checkin') && (
-                <TabsTrigger
-                  value="checkIn"
-                  disabled={!selectedEvent}
-                  className={`px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isLiveMode 
-                      ? 'bg-blue-900/30 text-blue-300 data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 border border-blue-800/50' 
-                      : 'data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400'
-                  }`}
-                >
-                  <Car className="w-4 h-4 mr-2" /> Check In
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'tech') && (
-                <TabsTrigger
-                  value="tech"
-                  disabled={!selectedEvent}
-                  className={`px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isLiveMode 
-                      ? 'bg-blue-900/30 text-blue-300 data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 border border-blue-800/50' 
-                      : 'data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400'
-                  }`}
-                >
-                  <Wrench className="w-4 h-4 mr-2" /> Tech
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'results') && (
-                <TabsTrigger
-                  value="results"
-                  className={`px-4 py-2 ${
-                    isLiveMode 
-                      ? 'bg-blue-900/30 text-blue-300 data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 border border-blue-800/50' 
-                      : 'data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400'
-                  }`}
-                >
-                  <Flag className="w-4 h-4 mr-2" /> Results
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'points_standings') && (
-                <TabsTrigger
-                  value="pointsStandings"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <Trophy className="w-4 h-4 mr-2" /> Points & Standings
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'exports') && (
-                <TabsTrigger
-                  value="exportsDataHub"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-purple-800 data-[state=active]:text-purple-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Download className="w-4 h-4 mr-2" /> Data Hub
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'integrations') && (
-                <TabsTrigger
-                  value="integrations"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <Plug className="w-4 h-4 mr-2" /> Integrations
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'audit_log') && (
-                <TabsTrigger
-                  value="auditLog"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <History className="w-4 h-4 mr-2" /> Audit Log
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'announcer') && (
-                <TabsTrigger
-                  value="announcer"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-blue-800 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Mic className="w-4 h-4 mr-2" /> Announcer
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'gate') && (
-                <TabsTrigger
-                  value="gateConsole"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-green-800 data-[state=active]:text-green-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <DoorOpen className="w-4 h-4 mr-2" /> Gate Console
-                </TabsTrigger>
-              )}
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
-                <TabsTrigger
-                  value="gateManager"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-green-900 data-[state=active]:text-green-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <DoorOpen className="w-4 h-4 mr-2" /> Gate Manager
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'race_control') && (
-                <TabsTrigger
-                  value="raceControlConsole"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-red-800 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Radio className="w-4 h-4 mr-2" /> Race Control Console
-                </TabsTrigger>
-              )}
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
-                <TabsTrigger
-                  value="raceControl"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Radio className="w-4 h-4 mr-2" /> Race Control Manager
-                </TabsTrigger>
-              )}
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
-                <TabsTrigger
-                  value="paddock"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-amber-800 data-[state=active]:text-amber-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Users className="w-4 h-4 mr-2" /> Paddock
-                </TabsTrigger>
-              )}
+          {/* Workspace content — sidebar drives tab selection */}
+           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+             {/* TabsList hidden — navigation handled by RaceCoreSidebar */}
+             <TabsList className="hidden" />
 
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && (
-                <TabsTrigger
-                  value="timing_sync"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-purple-800 data-[state=active]:text-purple-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Clock className="w-4 h-4 mr-2" /> Timing Sync
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'announcer_pack') && (
-                <TabsTrigger
-                  value="announcer_pack"
-                  className="data-[state=active]:bg-indigo-800 data-[state=active]:text-indigo-100 text-gray-400 px-4 py-2"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" /> Announcer Pack
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'imports') && (
-                <TabsTrigger
-                  value="imports"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <Upload className="w-4 h-4 mr-2" /> Imports
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'media') && (
-                <TabsTrigger
-                  value="media"
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-400 px-4 py-2"
-                >
-                  <Users className="w-4 h-4 mr-2" /> Media
-                </TabsTrigger>
-              )}
-              {canTab(dashboardPermissions, 'media_portal') && (
-                <TabsTrigger
-                  value="media_portal"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-blue-900 data-[state=active]:text-blue-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Camera className="w-4 h-4 mr-2" /> Media
-                </TabsTrigger>
-              )}
-              {isAdmin && (
-                <TabsTrigger
-                  value="opsCenter"
-                  disabled={!selectedEvent}
-                  className="data-[state=active]:bg-red-900 data-[state=active]:text-red-100 text-gray-400 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Gauge className="w-4 h-4 mr-2" /> Ops Center
-                </TabsTrigger>
-              )}
-              </TabsList>
-
-            {/* Lazy-mounted tabs: only render active tab content */}
+             {/* Lazy-mounted tabs: only render active tab content */}
             <div className="mt-6">
               {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
                 <OverviewGrid
@@ -1775,6 +1564,7 @@ export default function RegistrationDashboard() {
               )}
               </div>
               </Tabs>
+          </div>
         </div>
 
         {/* Modals */}
