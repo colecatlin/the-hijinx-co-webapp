@@ -86,7 +86,7 @@ export default function Management() {
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
-        <ManagementShell title="Management" subtitle="Admin control center" maxWidth="max-w-5xl">
+        <ManagementShell title="Management" subtitle="Platform control center — profiles, content, and admin tools" maxWidth="max-w-5xl">
 
           {/* Platform stats */}
           <StatsBar />
@@ -101,16 +101,16 @@ export default function Management() {
                 <Gauge className="w-4 h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-white">Race Core Ops</p>
-                <p className="text-xs mt-0.5 leading-snug text-white/60">Event workspace, entries, results, live ops</p>
+                <p className="text-sm font-semibold text-white">Race Core → Ops</p>
+                <p className="text-xs mt-0.5 leading-snug text-white/60">Operational zone — events, entries, sessions, results, standings, live race-day</p>
               </div>
               <ArrowRight className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-white" />
             </Link>
           </div>
 
-          {/* Operational summary cards */}
+          {/* Entity profile summary cards */}
           <div className="mt-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Operational Summary</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Entity Profiles</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 
               {/* Drivers */}

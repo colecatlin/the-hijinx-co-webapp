@@ -8,11 +8,11 @@ import { DASHBOARD_ITEM, MANAGEMENT_SECTIONS } from '@/components/management/man
 export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
   const [query, setQuery] = useState('');
-  // Core Entities and Editorial open by default; others collapsed
+  // Entity Profiles and Editorial open by default; others collapsed
   const [expandedSections, setExpandedSections] = useState(
     MANAGEMENT_SECTIONS.reduce((acc, section) => ({
       ...acc,
-      [section.title]: section.title === 'Core Entities' || section.title === 'Editorial',
+      [section.title]: section.title === 'Entity Profiles' || section.title === 'Editorial',
     }), {})
   );
 
@@ -72,14 +72,14 @@ export default function ManagementSidebar({ onNavigate }) {
               <Link
                 to={createPageUrl('RegistrationDashboard')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold',
+                  'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold border border-gray-200',
                   currentPage === 'RegistrationDashboard'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-gray-900 text-white border-gray-900'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >
                 <Gauge className="w-4 h-4 shrink-0" />
-                <span className="flex-1">Race Core Ops</span>
+                <span className="flex-1">Race Core → Ops</span>
               </Link>
               <div className="border-t border-gray-200 my-2" />
             </>

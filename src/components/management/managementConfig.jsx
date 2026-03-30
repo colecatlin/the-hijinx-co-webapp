@@ -14,18 +14,31 @@ export const DASHBOARD_ITEM = {
 
 export const MANAGEMENT_SECTIONS = [
   {
-    title: 'Core Entities',
+    title: 'Entity Profiles',
     shortcut: 'C',
+    description: 'Profile visibility, ownership, and presentation for public-facing shared entities',
     items: [
-      { name: 'Drivers', page: 'ManageDrivers', icon: User, shortcut: 'D', description: 'Manage all driver profiles and data' },
-      { name: 'Teams', page: 'ManageTeams', icon: Users, shortcut: 'T', description: 'Manage racing teams and organizations' },
-      { name: 'Tracks', page: 'ManageTracks', icon: MapPin, description: 'Manage racing venues and facilities' },
-      { name: 'Series', page: 'ManageSeries', icon: Trophy, description: 'Manage racing series and championships' },
-      { name: 'Events', page: 'ManageEvents', icon: Calendar, shortcut: 'E', description: 'Manage race events and schedules' },
-      { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Manage race sessions and timing' },
-      { name: 'Results', page: 'ManageResults', icon: Award, description: 'Manage race results and standings' },
-      { name: 'Points Config', page: 'ManagePointsConfig', icon: Trophy, description: 'Link Google Sheets for automated standings calculation' },
-      { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review driver-submitted results' },
+      { name: 'Driver Profiles', page: 'ManageDrivers', icon: User, shortcut: 'D', description: 'Driver profile management, ownership, visibility, and media' },
+      { name: 'Team Profiles', page: 'ManageTeams', icon: Users, shortcut: 'T', description: 'Team profile management and presentation' },
+      { name: 'Track Profiles', page: 'ManageTracks', icon: MapPin, description: 'Track profile management and venue presentation' },
+      { name: 'Series Profiles', page: 'ManageSeries', icon: Trophy, description: 'Series profile management and championship presentation' },
+      { name: 'Event Metadata', page: 'ManageEvents', icon: Calendar, shortcut: 'E', description: 'Event publication, promotion, and public-facing metadata' },
+    ]
+  },
+  {
+    title: 'Race Core Records',
+    description: 'Operational racing data — use Race Core Ops for live race-day management',
+    items: [
+      { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Review and repair race session records' },
+      { name: 'Results', page: 'ManageResults', icon: Award, description: 'Review and repair race results records' },
+      { name: 'Points Config', page: 'ManagePointsConfig', icon: Trophy, description: 'Points sheet integration and standings automation' },
+    ]
+  },
+  {
+    title: 'Claims & Access',
+    items: [
+      { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review and approve driver profile claims' },
+      { name: 'Access Management', page: 'ManageAccess', icon: Handshake, description: 'Manage user collaborator access to entities' },
     ]
   },
   {
@@ -63,7 +76,6 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
       { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries' },
-      { name: 'Access Management', page: 'ManageAccess', icon: Handshake, description: 'Manage user access to entities' },
     ]
   },
   {
