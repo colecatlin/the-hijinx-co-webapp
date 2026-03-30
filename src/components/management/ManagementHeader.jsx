@@ -1,17 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
-import { User, Users, MapPin, Trophy, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import ManagementSearch from './ManagementSearch';
-
-const QUICK_ACTIONS = [
-  { label: 'Driver', page: 'ManageDrivers', icon: User },
-  { label: 'Team', page: 'ManageTeams', icon: Users },
-  { label: 'Track', page: 'ManageTracks', icon: MapPin },
-  { label: 'Series', page: 'ManageSeries', icon: Trophy },
-  { label: 'Event', page: 'ManageEvents', icon: Calendar },
-];
 
 const PAGE_TITLES = {
   Management: { title: 'Management Dashboard', subtitle: 'Backend system for all content and data' },
@@ -38,7 +26,6 @@ const PAGE_TITLES = {
 };
 
 export default function ManagementHeader({ currentPage }) {
-  const navigate = useNavigate();
   const info = PAGE_TITLES[currentPage] || { title: currentPage || 'Management', subtitle: '' };
 
   return (
@@ -51,23 +38,6 @@ export default function ManagementHeader({ currentPage }) {
 
       {/* Search */}
       <ManagementSearch />
-
-      {/* Quick actions */}
-      <div className="flex items-center gap-1 shrink-0">
-        <span className="text-xs text-gray-400 mr-1 hidden xl:block">New:</span>
-        {QUICK_ACTIONS.map(({ label, page, icon: Icon }) => (
-          <Button
-            key={page}
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 hidden sm:flex"
-            onClick={() => navigate(createPageUrl(page))}
-          >
-            <Icon className="w-3 h-3" />
-            <span className="hidden lg:inline">{label}</span>
-          </Button>
-        ))}
-      </div>
     </div>
   );
 }

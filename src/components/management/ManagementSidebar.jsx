@@ -8,11 +8,12 @@ import { DASHBOARD_ITEM, MANAGEMENT_SECTIONS } from '@/components/management/man
 export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
   const [query, setQuery] = useState('');
-  // Entity Profiles and Editorial open by default; others collapsed
+  // Sections open by default — most-used groups
+  const DEFAULT_OPEN = new Set(['Entity Profiles', 'Editorial', 'Claims & Access', 'Race Core Records']);
   const [expandedSections, setExpandedSections] = useState(
     MANAGEMENT_SECTIONS.reduce((acc, section) => ({
       ...acc,
-      [section.title]: section.title === 'Entity Profiles' || section.title === 'Editorial',
+      [section.title]: DEFAULT_OPEN.has(section.title),
     }), {})
   );
 

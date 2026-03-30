@@ -9,7 +9,7 @@ import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
 import { Button } from '@/components/ui/button';
-import { ShieldOff, Gauge, ArrowRight, User, Calendar, Trophy, FileText, Users, MapPin, AlertCircle, ImageOff, Clock } from 'lucide-react';
+import { ShieldOff, Gauge, ArrowRight, User, Calendar, Trophy, FileText, Users, MapPin, AlertCircle, FileText as FileTextIcon, ListChecks, BarChart3, Handshake } from 'lucide-react';
 
 export default function Management() {
   const navigate = useNavigate();
@@ -108,9 +108,29 @@ export default function Management() {
             </Link>
           </div>
 
-          {/* Entity profile summary cards */}
+          {/* Admin quick actions */}
           <div className="mt-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Entity Profiles</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Admin Quick Actions</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Review Queue', to: createPageUrl('management/editorial/review-queue'), icon: ListChecks },
+                { label: 'Driver Claims', to: createPageUrl('ManageDriverClaims'), icon: FileTextIcon },
+                { label: 'Access Mgmt', to: createPageUrl('ManageAccess'), icon: Handshake },
+                { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
+                { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
+              ].map(({ label, to, icon: Icon }) => (
+                <Link key={label} to={to}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  <Icon className="w-3 h-3" /> {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Entity platform overview cards */}
+          <div className="mt-8">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Platform Overview</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 
               {/* Drivers */}
