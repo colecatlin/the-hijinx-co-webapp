@@ -28,6 +28,7 @@ import SeriesTracksSection from '@/components/management/SeriesManagement/Series
 import SeriesDriversSection from '@/components/management/SeriesManagement/SeriesDriversSection';
 import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesTeamsSection';
 import { useNavigate } from 'react-router-dom';
+import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +43,13 @@ export default function ManageSeries() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  // Permission check for the currently-open series edit view
+  const editingSeriesRecord = selectedSeriesForEdit?.id
+    ? series.find(s => s.id === selectedSeriesForEdit.id) || selectedSeriesForEdit
+    : selectedSeriesForEdit;
+  const { canEditManagement: canEditSeriesManagement } =
+    useEntityEditPermission('Series', selectedSeriesForEdit?.id, editingSeriesRecord);
 
   // Check for duplicate series on load (lightweight — fires once)
   useEffect(() => {
@@ -229,7 +237,10 @@ export default function ManageSeries() {
               <TabsTrigger value="tracks" className="text-xs">Tracks</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <SeriesCoreDetailsSection seriesId={selectedSeriesForEdit.id} />
+              <SeriesCoreDetailsSection
+                seriesId={selectedSeriesForEdit.id}
+                isReadOnly={!canEditSeriesManagement}
+              />
             </TabsContent>
             <TabsContent value="format" className="mt-6">
               <SeriesFormatSection seriesId={selectedSeriesForEdit.id} />

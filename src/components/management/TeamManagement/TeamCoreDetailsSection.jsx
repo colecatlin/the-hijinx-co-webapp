@@ -12,7 +12,7 @@ import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
 import { generateSlug, validateSlug } from '@/components/utils/routingContract';
 
-export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
+export default function TeamCoreDetailsSection({ teamId, onTeamCreated, isReadOnly = false }) {
   const [formData, setFormData] = useState({ country: 'USA' });
   const [isSaved, setIsSaved] = useState(false);
   const [errors, setErrors] = useState({});
@@ -257,8 +257,13 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated }) {
           </div>
         </div>
 
+        {isReadOnly && (
+          <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            You have view-only access to this team. Contact an admin or the team owner to request edit access.
+          </div>
+        )}
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
+          <Button onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending || isReadOnly} className="disabled:opacity-50 disabled:cursor-not-allowed">
             {isSaved ? 'Saved' : (updateMutation.isPending || createMutation.isPending) ? 'Saving...' : teamId === 'new' ? 'Create Team' : 'Save Changes'}
           </Button>
           {teamId !== 'new' && (

@@ -17,6 +17,11 @@ export {
   getCollaborationsByType,
   getMyCollaborations,
   requireEntityAccess,
+  // Surface-level permission helpers
+  canEditManagementEntity,
+  canEditRaceCoreEntity,
+  canEditProtectedCoreFields,
+  useEntityEditPermission,
 } from '@/components/access/entityAccess';
 
 // hasEntityAccess — backward compat alias used by RegistrationDashboard

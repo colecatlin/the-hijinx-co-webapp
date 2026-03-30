@@ -23,7 +23,7 @@ const DISCIPLINES = [
   'Mixed'
 ];
 
-export default function DriverCoreDetailsSection({ driverId, driver: passedDriver, onSaveSuccess, isReadOnly }) {
+export default function DriverCoreDetailsSection({ driverId, driver: passedDriver, onSaveSuccess, isReadOnly = false, isAdmin = false }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -409,22 +409,29 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
           </Select>
         </div>
 
-        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <Checkbox
-            id="featured"
-            checked={formData.featured}
-            onCheckedChange={(checked) => handleInputChange('featured', checked)}
-          />
-          <Label htmlFor="featured" className="text-sm font-medium cursor-pointer">
-            Featured on homepage
-          </Label>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <Checkbox
+              id="featured"
+              checked={formData.featured}
+              onCheckedChange={(checked) => handleInputChange('featured', checked)}
+            />
+            <Label htmlFor="featured" className="text-sm font-medium cursor-pointer">
+              Featured on homepage
+            </Label>
+          </div>
+        )}
 
+        {isReadOnly && (
+          <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            You have view-only access to this driver profile. Contact an admin or the profile owner to request edit access.
+          </div>
+        )}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="bg-gray-900 hover:bg-gray-800"
+            disabled={updateMutation.isPending || isReadOnly}
+            className="bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {updateMutation.isPending ? 'Saving...' : isSaved ? '✓ Saved' : 'Save Changes'}
           </Button>

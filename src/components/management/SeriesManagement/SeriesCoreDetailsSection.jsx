@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Upload, Trash2, Plus, X } from 'lucide-react';
 
-export default function SeriesCoreDetailsSection({ seriesId }) {
+export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false }) {
   const [formData, setFormData] = useState({});
   const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
@@ -375,7 +375,12 @@ export default function SeriesCoreDetailsSection({ seriesId }) {
           </div>
         </div>
 
-        <Button onClick={handleSave} disabled={updateMutation.isPending}>
+        {isReadOnly && (
+          <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            You have view-only access to this series. Contact an admin or the series owner to request edit access.
+          </div>
+        )}
+        <Button onClick={handleSave} disabled={updateMutation.isPending || isReadOnly} className="disabled:opacity-50 disabled:cursor-not-allowed">
           {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>

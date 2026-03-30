@@ -26,6 +26,7 @@ import TeamPartnersSection from '@/components/management/TeamManagement/TeamPart
 import TeamMediaSection from '@/components/management/TeamManagement/TeamMediaSection';
 import TeamOperationsSection from '@/components/management/TeamManagement/TeamOperationsSection';
 import TeamCommunitySection from '@/components/management/TeamManagement/TeamCommunitySection';
+import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 
 export default function ManageTeams() {
   const navigate = useNavigate();
@@ -41,6 +42,13 @@ export default function ManageTeams() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  // Permission check for the currently-open team edit view
+  const editingTeamRecord = selectedTeamForEdit?.id && selectedTeamForEdit.id !== 'new'
+    ? teams.find(t => t.id === selectedTeamForEdit.id) || selectedTeamForEdit
+    : selectedTeamForEdit;
+  const { canEditManagement: canEditTeamManagement } =
+    useEntityEditPermission('Team', selectedTeamForEdit?.id, editingTeamRecord);
 
   // Support deep-link: ?teamId=xxx opens that team directly
   useEffect(() => {
@@ -223,9 +231,10 @@ export default function ManageTeams() {
               <TabsTrigger value="community" disabled={tabsLocked}>Community</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <TeamCoreDetailsSection 
-                teamId={selectedTeamForEdit.id} 
+              <TeamCoreDetailsSection
+                teamId={selectedTeamForEdit.id}
                 onTeamCreated={(newTeam) => setSelectedTeamForEdit(newTeam)}
+                isReadOnly={!canEditTeamManagement}
               />
             </TabsContent>
             <TabsContent value="programs" className="mt-6">

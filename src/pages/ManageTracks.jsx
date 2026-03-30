@@ -17,6 +17,7 @@ import TrackForm from '@/components/management/TrackForm';
 import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
 import TrackSeriesSection from '@/components/management/TrackManagement/TrackSeriesSection';
 import ActivityTab from '@/components/management/ActivityTab';
+import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageTracks() {
@@ -31,6 +32,13 @@ export default function ManageTracks() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  // Permission check for the currently-open track edit view
+  const editingTrackRecord = selectedTrackForEdit?.id
+    ? tracks.find(t => t.id === selectedTrackForEdit.id) || selectedTrackForEdit
+    : selectedTrackForEdit;
+  const { canEditManagement: canEditTrackManagement } =
+    useEntityEditPermission('Track', selectedTrackForEdit?.id, editingTrackRecord);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -118,7 +126,10 @@ export default function ManageTracks() {
               <TabsTrigger value="series">Series</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <TrackCoreDetailsSection trackId={selectedTrackForEdit.id} />
+              <TrackCoreDetailsSection
+                trackId={selectedTrackForEdit.id}
+                isReadOnly={!canEditTrackManagement}
+              />
             </TabsContent>
             <TabsContent value="series" className="mt-6">
               <TrackSeriesSection trackId={selectedTrackForEdit.id} trackName={selectedTrackForEdit.name} />

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
 
-export default function TrackCoreDetailsSection({ trackId }) {
+export default function TrackCoreDetailsSection({ trackId, isReadOnly = false }) {
   const [formData, setFormData] = useState({});
   const [isSaved, setIsSaved] = useState(false);
   const queryClient = useQueryClient();
@@ -215,7 +215,12 @@ export default function TrackCoreDetailsSection({ trackId }) {
           />
         </div>
 
-        <Button onClick={handleSave} disabled={updateMutation.isPending}>
+        {isReadOnly && (
+          <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            You have view-only access to this track. Contact an admin or the track owner to request edit access.
+          </div>
+        )}
+        <Button onClick={handleSave} disabled={updateMutation.isPending || isReadOnly} className="disabled:opacity-50 disabled:cursor-not-allowed">
           {isSaved ? 'Saved' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>

@@ -33,6 +33,7 @@ import DriverCareerManager from '@/components/management/DriverManagement/Driver
 import DriverSponsorManager from '@/components/management/DriverManagement/DriverSponsorManager.jsx';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { toast } from 'sonner';
+import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +67,15 @@ export default function ManageDrivers() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
+
+  // Permission check for the currently-open driver edit view
+  const editingDriverRecord = selectedDriverForEdit?.id && selectedDriverForEdit.id !== 'new'
+    ? drivers.find(d => d.id === selectedDriverForEdit.id) || selectedDriverForEdit
+    : selectedDriverForEdit;
+  const {
+    canEditManagement: canEditDriverManagement,
+    canEditProtectedFields: canEditDriverProtectedFields,
+  } = useEntityEditPermission('Driver', selectedDriverForEdit?.id, editingDriverRecord);
 
   // Support deep-link: ?driverId=xxx opens that driver directly
   React.useEffect(() => {
@@ -354,7 +364,12 @@ export default function ManageDrivers() {
               <TabsTrigger value="access">Access</TabsTrigger>
             </TabsList>
             <TabsContent value="core" className="mt-6">
-              <DriverCoreDetailsSection driverId={selectedDriverForEdit.id} onSaveSuccess={handleSaveSuccess} />
+              <DriverCoreDetailsSection
+                driverId={selectedDriverForEdit.id}
+                onSaveSuccess={handleSaveSuccess}
+                isReadOnly={!canEditDriverManagement}
+                isAdmin={isAdmin}
+              />
             </TabsContent>
             <TabsContent value="branding" className="mt-6">
               <DriverBrandingSection driverId={selectedDriverForEdit.id} driver={selectedDriverForEdit} onSaveSuccess={handleSaveSuccess} />

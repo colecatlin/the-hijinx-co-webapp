@@ -181,3 +181,12 @@ export function getUserOwnedEntitiesSync(userId, collaborations = []) {
 export function getCollaborationsByType(userId, entityType, collaborations = []) {
   return collaborations.filter(c => c.user_id === userId && c.entity_type === entityType);
 }
+
+// ─── Surface-level permission helpers ────────────────────────────────────────
+// These are re-exported from entityEditPermission for convenience.
+export {
+  canEditManagementEntity,
+  canEditRaceCoreEntity,
+  canEditProtectedCoreFields,
+  useEntityEditPermission,
+} from '@/components/access/entityEditPermission';
