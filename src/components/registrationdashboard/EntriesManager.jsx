@@ -74,10 +74,14 @@ export default function EntriesManager({
   seriesId,
   selectedEvent,
   dashboardContext,
+  dashboardPermissions,
   invalidateAfterOperation: invalidateAfterOperationProp,
 }) {
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
+  const canEdit = dashboardPermissions
+    ? ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions.role)
+    : true;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [filters, setFilters] = useState(() => filtersFromParams(searchParams));
@@ -319,11 +323,17 @@ export default function EntriesManager({
           </p>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
-          <Button onClick={() => setShowImportModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Import CSV</Button>
-          <Button onClick={() => setShowSelfService(true)} size="sm" className="bg-purple-700 hover:bg-purple-600 text-white">My Registration</Button>
-          <Button onClick={() => setShowCreateDrawer(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="w-4 h-4 mr-1" /> Add Entry
-          </Button>
+          {canEdit && (
+            <Button onClick={() => setShowImportModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Import CSV</Button>
+          )}
+          {canEdit && (
+            <Button onClick={() => setShowSelfService(true)} size="sm" className="bg-purple-700 hover:bg-purple-600 text-white">My Registration</Button>
+          )}
+          {canEdit && (
+            <Button onClick={() => setShowCreateDrawer(true)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Plus className="w-4 h-4 mr-1" /> Add Entry
+            </Button>
+          )}
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="border-gray-700 text-gray-300">
             <Download className="w-4 h-4 mr-1" /> Export CSV
           </Button>

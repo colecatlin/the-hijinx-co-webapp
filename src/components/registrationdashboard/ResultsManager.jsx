@@ -557,7 +557,7 @@ export default function ResultsManager({
       </div>
 
       {/* Top control bar */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
+      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 flex items-end gap-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <label className="text-xs text-gray-400 block mb-1">Session</label>
             <Select value={sessionId} onValueChange={setSessionId}>
@@ -578,7 +578,6 @@ export default function ResultsManager({
             </Button>
           </div>
         </div>
-      </div>
 
       {!selectedSession ? (
         <Card className="bg-[#171717] border-gray-800">
