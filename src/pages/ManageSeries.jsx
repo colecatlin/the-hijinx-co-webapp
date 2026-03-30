@@ -29,6 +29,7 @@ import SeriesDriversSection from '@/components/management/SeriesManagement/Serie
 import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesTeamsSection';
 import { useNavigate } from 'react-router-dom';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
+import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -235,6 +236,7 @@ export default function ManageSeries() {
               <TabsTrigger value="teams" className="text-xs">Teams</TabsTrigger>
               <TabsTrigger value="drivers" className="text-xs">Drivers</TabsTrigger>
               <TabsTrigger value="tracks" className="text-xs">Tracks</TabsTrigger>
+              {isAdmin && <TabsTrigger value="override" className="text-xs">⚙ Override</TabsTrigger>}
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <SeriesCoreDetailsSection
@@ -271,6 +273,16 @@ export default function ManageSeries() {
             <TabsContent value="tracks" className="mt-6">
               <SeriesTracksSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="override" className="mt-6">
+                <AdminOverridePanel
+                  entityType="Series"
+                  entityId={selectedSeriesForEdit.id}
+                  entityRecord={editingSeriesRecord}
+                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['series'] })}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </ManagementLayout>

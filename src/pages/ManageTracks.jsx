@@ -18,6 +18,7 @@ import TrackCoreDetailsSection from '@/components/management/TrackManagement/Tra
 import TrackSeriesSection from '@/components/management/TrackManagement/TrackSeriesSection';
 import ActivityTab from '@/components/management/ActivityTab';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
+import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 import PublishTab from '@/components/management/PublishTab';
 
 export default function ManageTracks() {
@@ -124,6 +125,7 @@ export default function ManageTracks() {
             <TabsList>
               <TabsTrigger value="core">Core Details</TabsTrigger>
               <TabsTrigger value="series">Series</TabsTrigger>
+              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <TrackCoreDetailsSection
@@ -134,6 +136,16 @@ export default function ManageTracks() {
             <TabsContent value="series" className="mt-6">
               <TrackSeriesSection trackId={selectedTrackForEdit.id} trackName={selectedTrackForEdit.name} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="override" className="mt-6">
+                <AdminOverridePanel
+                  entityType="Track"
+                  entityId={selectedTrackForEdit.id}
+                  entityRecord={editingTrackRecord}
+                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['tracks'] })}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </ManagementLayout>

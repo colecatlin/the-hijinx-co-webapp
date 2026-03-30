@@ -34,6 +34,7 @@ import DriverSponsorManager from '@/components/management/DriverManagement/Drive
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { toast } from 'sonner';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
+import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -362,6 +363,7 @@ export default function ManageDrivers() {
               <TabsTrigger value="media">Media</TabsTrigger>
               <TabsTrigger value="stats">Stats</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
+              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <DriverCoreDetailsSection
@@ -398,6 +400,16 @@ export default function ManageDrivers() {
             <TabsContent value="access" className="mt-6">
               <DriverAccessSection driverId={selectedDriverForEdit.id} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="override" className="mt-6">
+                <AdminOverridePanel
+                  entityType="Driver"
+                  entityId={selectedDriverForEdit.id}
+                  entityRecord={editingDriverRecord}
+                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['drivers', 'all'] })}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </ManagementLayout>

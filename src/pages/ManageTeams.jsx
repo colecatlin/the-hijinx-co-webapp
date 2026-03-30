@@ -27,6 +27,7 @@ import TeamMediaSection from '@/components/management/TeamManagement/TeamMediaSe
 import TeamOperationsSection from '@/components/management/TeamManagement/TeamOperationsSection';
 import TeamCommunitySection from '@/components/management/TeamManagement/TeamCommunitySection';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
+import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 
 export default function ManageTeams() {
   const navigate = useNavigate();
@@ -229,6 +230,7 @@ export default function ManageTeams() {
               <TabsTrigger value="media" disabled={tabsLocked}>Media</TabsTrigger>
               <TabsTrigger value="operations" disabled={tabsLocked}>Operations</TabsTrigger>
               <TabsTrigger value="community" disabled={tabsLocked}>Community</TabsTrigger>
+              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
             </TabsList>
             <TabsContent value="core" className="mt-6">
               <TeamCoreDetailsSection
@@ -261,6 +263,16 @@ export default function ManageTeams() {
             <TabsContent value="community" className="mt-6">
               <TeamCommunitySection teamId={selectedTeamForEdit.id} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="override" className="mt-6">
+                <AdminOverridePanel
+                  entityType="Team"
+                  entityId={selectedTeamForEdit.id}
+                  entityRecord={editingTeamRecord}
+                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['teams'] })}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </ManagementLayout>
