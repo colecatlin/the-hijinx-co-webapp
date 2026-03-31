@@ -85,7 +85,8 @@ export default function HomepageApparel({ products = [] }) {
               className="flex-1">
               
                 <Link
-                to={createPageUrl('ApparelHome')} className="bg-white px-4 py-1 group flex flex-col justify-between h-full border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200">
+                 to={createPageUrl('ApparelHome')} className="bg-white px-5 py-4 group flex flex-col justify-between h-full border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/60 to-transparent" />
 
                 
                   <div>

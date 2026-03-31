@@ -21,14 +21,14 @@ function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
   return (
     <Link
       to={href}
-      className="group bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
+      className="group bg-white border border-gray-200 hover:border-[#1DA1A1]/60 hover:shadow-[0_4px_20px_rgba(29,161,161,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
     >
       <div className="aspect-[16/9] overflow-hidden bg-gray-100">
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-all duration-500"
+            className="w-full h-full object-cover opacity-55 group-hover:opacity-80 group-hover:scale-[1.03] transition-all duration-500"
             loading="lazy"
           />
         ) : (
@@ -62,14 +62,14 @@ export default function HomepageFeaturedEntities({
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
   return (
-    <section className="bg-[#F5F9FA] py-16 md:py-24 border-b border-[#E0EDEF]">
+    <section className="bg-white py-16 md:py-24 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-[#232323]" />
+              <div className="w-8 h-px bg-[#1DA1A1]" />
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#008080] uppercase font-bold">Discovery</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">

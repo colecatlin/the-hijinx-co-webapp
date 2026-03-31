@@ -1,16 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Gauge, ArrowRight, Activity, Radio, Target, Zap, TrendingUp } from 'lucide-react';
+import { Gauge, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const FEATURES = [
-  { Icon: Activity,   label: 'Live Event Management' },
-  { Icon: Radio,      label: 'Results & Standings' },
-  { Icon: Target,     label: 'Entry Processing' },
-  { Icon: Zap,        label: 'Race Control Tools' },
-  { Icon: TrendingUp, label: 'Points Systems' },
-  { Icon: Gauge,      label: 'Tech Inspection' },
+  'Event Management',
+  'Driver Registration',
+  'Tech Inspection',
+  'Results & Standings',
+  'Race Control',
+  'Points Systems',
 ];
 
 const MOCK_ROWS = [
@@ -62,12 +62,12 @@ export default function HomepageRaceCoreTeaser() {
               Race Core powers event management, driver registration, tech inspection, results processing, standings, and live race control for tracks and series operators nationwide.
             </p>
 
-            {/* Feature grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-10">
-              {FEATURES.map(({ Icon: FeatureIcon, label }) => (
-                <div key={label} className="flex items-center gap-2.5 border border-white/8 hover:border-[#00FFDA]/35 bg-white/3 hover:bg-[#00FFDA]/5 px-3.5 py-3 transition-all duration-200">
-                  <FeatureIcon className="w-3.5 h-3.5 text-[#00FFDA]/70 flex-shrink-0" />
-                  <span className="text-[11px] text-white/60 font-medium leading-tight">{label}</span>
+            {/* Feature list */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-10">
+              {FEATURES.map((label) => (
+                <div key={label} className="flex items-center gap-2.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00FFDA] flex-shrink-0" />
+                  <span className="text-sm text-white/65 font-medium">{label}</span>
                 </div>
               ))}
             </div>

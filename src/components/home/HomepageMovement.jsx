@@ -1,5 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 const IDENTITIES = ['RACERS', 'BUILDERS', 'CREATORS', 'DREAMERS', 'FANS'];
 
@@ -75,9 +78,15 @@ export default function HomepageMovement() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.9, duration: 1 }}
-          className="mt-10"
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="mt-10 flex flex-col items-center gap-5"
         >
+          <Link
+            to={createPageUrl('MotorsportsHome')}
+            className="group inline-flex items-center gap-2 text-xs font-bold text-[#1DA1A1] hover:text-[#008080] uppercase tracking-widest transition-colors"
+          >
+            Explore the Platform <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </Link>
           <p className="font-mono text-[9px] tracking-[0.45em] text-gray-400 uppercase">
             Dream it.&nbsp;&nbsp;Build it.&nbsp;&nbsp;Live it. — HIJINX CO
           </p>

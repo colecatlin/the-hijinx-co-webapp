@@ -69,7 +69,7 @@ export default function HomepageHero({ stats: liveStats }) {
 
   useEffect(() => {
     if (paused) return;
-    const id = setInterval(advance, 5000);
+    const id = setInterval(advance, 4000);
     return () => clearInterval(id);
   }, [paused, advance]);
 
@@ -128,13 +128,13 @@ export default function HomepageHero({ stats: liveStats }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSlide}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: mounted ? 1 : 0, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Eyebrow */}
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-0.5 bg-[#00FFDA]" />
               <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold">{slide.eyebrow}</span>
             </div>
@@ -149,15 +149,15 @@ export default function HomepageHero({ stats: liveStats }) {
             </h1>
 
             {/* Subtext */}
-            <p className="text-white/80 text-base md:text-lg max-w-lg leading-relaxed mb-12 font-light">
+            <p className="text-white/65 text-sm md:text-base max-w-md leading-relaxed mb-8 font-light">
               {slide.subtext}
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-16">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-12">
               <Link
                 to={createPageUrl(slide.cta_primary.page)}
-                className="group inline-flex items-center gap-2.5 px-7 py-4 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
+                className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
               >
                 <slide.cta_primary.Icon className="w-4 h-4" />
                 {slide.cta_primary.label}
@@ -165,17 +165,10 @@ export default function HomepageHero({ stats: liveStats }) {
               </Link>
               <Link
                 to={createPageUrl(slide.cta_secondary.page)}
-                className="group inline-flex items-center gap-2.5 px-7 py-4 border-2 border-white/30 text-white text-sm font-bold tracking-wide hover:border-[#00FFDA] hover:text-[#00FFDA] hover:bg-[#00FFDA]/5 transition-all duration-200"
+                className="group inline-flex items-center gap-2.5 px-7 py-3.5 border border-white/25 text-white/80 text-sm font-bold tracking-wide hover:border-[#00FFDA] hover:text-[#00FFDA] hover:bg-[#00FFDA]/5 transition-all duration-200"
               >
                 <slide.cta_secondary.Icon className="w-4 h-4" />
                 {slide.cta_secondary.label}
-              </Link>
-              <Link
-                to={createPageUrl(slide.cta_tertiary.page)}
-                className="group inline-flex items-center gap-2 px-4 py-4 text-white/50 text-sm font-medium tracking-wide hover:text-white/85 transition-colors"
-              >
-                {slide.cta_tertiary.label}
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
 
@@ -195,7 +188,7 @@ export default function HomepageHero({ stats: liveStats }) {
       </div>
 
       {/* ── Slide Indicators ── */}
-      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
+      <div className="absolute bottom-8 left-8 z-10 flex items-center gap-2">
         {SLIDES.map((_, i) => (
           <button
             key={i}
