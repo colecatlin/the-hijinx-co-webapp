@@ -15,27 +15,46 @@ const TABS = [
   { id: 'events',  label: 'Events',  Icon: Calendar, page: 'EventDirectory' },
 ];
 
-// ── Generic entity mini-card for tracks / series / events ──────────────────
-function EntityCard({ name, sub, imageUrl, linkPage, linkId }) {
+// ── Generic entity mini-card ──────────────────────────────────────────────────
+// imageType: 'photo' (object-cover), 'logo' (centered on dark bg), 'none' (texture fallback)
+function EntityCard({ name, sub, imageUrl, imageType = 'photo', fallbackIcon: FallbackIcon, linkPage, linkId }) {
   const href = linkId ? `${createPageUrl(linkPage)}?id=${linkId}` : createPageUrl(linkPage);
+  const initials = name ? name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() : '?';
+
+  const renderImage = () => {
+    if (imageType === 'logo' && imageUrl) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0D1117] to-[#1A2030] p-6">
+          <img src={imageUrl} alt={name} className="max-h-full max-w-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-400" loading="lazy" />
+        </div>
+      );
+    }
+    if (imageType === 'photo' && imageUrl) {
+      return (
+        <img src={imageUrl} alt={name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500" loading="lazy" />
+      );
+    }
+    // Branded texture fallback
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0D1117] via-[#111827] to-[#0A1628] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #00FFDA 0, #00FFDA 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#00FFDA]/50 to-transparent" />
+        {FallbackIcon ? (
+          <FallbackIcon className="w-8 h-8 text-[#00FFDA]/30 mb-2" />
+        ) : (
+          <span className="text-2xl font-black text-white/20 tracking-tight">{initials}</span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Link
       to={href}
       className="group bg-white border border-gray-200 hover:border-[#1DA1A1]/60 hover:shadow-[0_4px_20px_rgba(29,161,161,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
     >
-      <div className="aspect-[16/9] overflow-hidden bg-gray-100">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover opacity-55 group-hover:opacity-80 group-hover:scale-[1.03] transition-all duration-500"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-gray-200" />
-          </div>
-        )}
+      <div className="aspect-[16/9] overflow-hidden bg-[#0D1117]">
+        {renderImage()}
       </div>
       <div className="p-4 flex flex-col gap-1.5 flex-1">
         <h4 className="text-sm font-semibold text-gray-900 group-hover:text-[#1DA1A1] transition-colors tracking-tight leading-snug line-clamp-2">
@@ -155,6 +174,8 @@ export default function HomepageFeaturedEntities({
                         name={team.name}
                         sub={[team.headquarters_city, team.headquarters_state].filter(Boolean).join(', ') || team.primary_discipline}
                         imageUrl={team.logo_url}
+                        imageType="logo"
+                        fallbackIcon={Flag}
                         linkPage="TeamDirectory"
                         linkId={team.id}
                       />
@@ -173,6 +194,8 @@ export default function HomepageFeaturedEntities({
                         name={track.name}
                         sub={[track.location_city, track.location_state].filter(Boolean).join(', ')}
                         imageUrl={track.image_url || track.logo_url}
+                        imageType={track.image_url ? 'photo' : 'logo'}
+                        fallbackIcon={MapPin}
                         linkPage="TrackDirectory"
                         linkId={track.id}
                       />
@@ -190,7 +213,9 @@ export default function HomepageFeaturedEntities({
                       <EntityCard
                         name={s.name}
                         sub={s.discipline}
-                        imageUrl={s.logo_url || s.banner_url}
+                        imageUrl={s.banner_url || s.logo_url}
+                        imageType={s.banner_url ? 'photo' : 'logo'}
+                        fallbackIcon={Trophy}
                         linkPage="SeriesHome"
                         linkId={s.id}
                       />
@@ -210,6 +235,7 @@ export default function HomepageFeaturedEntities({
                         name={ev.name}
                         sub={ev.series_name || (ev.event_date && !isNaN(new Date(ev.event_date)) ? new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null)}
                         imageUrl={null}
+                        fallbackIcon={Calendar}
                         linkPage="EventDirectory"
                         linkId={ev.id}
                       />

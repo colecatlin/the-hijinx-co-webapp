@@ -8,6 +8,10 @@ import { base44 } from '@/api/base44Client';
 
 const FALLBACK_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg';
 
+// Motorsports action images — used as fallbacks when no entity-specific image exists
+const MOTORSPORTS_BG_1 = 'https://images.unsplash.com/photo-1504998781941-14a1204bd6ee?w=1600&q=80&fit=crop'; // pit lane, mechanics
+const MOTORSPORTS_BG_2 = 'https://images.unsplash.com/photo-1591134119792-f8b7d56c5dd7?w=1600&q=80&fit=crop'; // racing action
+
 const BRAND_SLIDES = [
   {
     eyebrow:        'RACE CORE',
@@ -16,7 +20,7 @@ const BRAND_SLIDES = [
     subtext:        'Event management, driver registration, results, and standings — all in one platform.',
     cta_primary:    { label: 'Open Race Core',      page: 'Registration',    Icon: Gauge },
     cta_secondary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
-    bgImage: null,
+    bgImage: MOTORSPORTS_BG_1,
   },
   {
     eyebrow:        'THE OUTLET',
@@ -25,7 +29,7 @@ const BRAND_SLIDES = [
     subtext:        'Race reports, features, and editorial coverage from across the sport.',
     cta_primary:    { label: 'Read The Outlet',     page: 'OutletHome',     Icon: Newspaper },
     cta_secondary:  { label: 'Shop Apparel',        page: 'ApparelHome',    Icon: ShoppingBag },
-    bgImage: null,
+    bgImage: MOTORSPORTS_BG_2,
   },
 ];
 
