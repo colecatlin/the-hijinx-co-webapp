@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { getEntityProfileUrl } from '@/components/utils/routingContract';
+import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { ArrowRight, Users, MapPin, Trophy, Calendar, Flag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,8 +19,7 @@ const TABS = [
 
 // ── Generic entity mini-card ──────────────────────────────────────────────────
 // imageType: 'photo' (object-cover), 'logo' (centered on dark bg), 'none' (texture fallback)
-function EntityCard({ name, sub, imageUrl, imageType = 'photo', fallbackIcon: FallbackIcon, linkPage, linkId }) {
-  const href = linkId ? `${createPageUrl(linkPage)}?id=${linkId}` : createPageUrl(linkPage);
+function EntityCard({ name, sub, imageUrl, imageType = 'photo', fallbackIcon: FallbackIcon, href }) {
   const initials = name ? name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() : '?';
 
   const renderImage = () => {
@@ -176,8 +177,7 @@ export default function HomepageFeaturedEntities({
                         imageUrl={team.logo_url}
                         imageType="logo"
                         fallbackIcon={Flag}
-                        linkPage="TeamDirectory"
-                        linkId={team.id}
+                        href={getEntityProfileUrl('Team', team)}
                       />
                     </motion.div>
                   ))}
@@ -196,8 +196,7 @@ export default function HomepageFeaturedEntities({
                         imageUrl={track.image_url || track.logo_url}
                         imageType={track.image_url ? 'photo' : 'logo'}
                         fallbackIcon={MapPin}
-                        linkPage="TrackDirectory"
-                        linkId={track.id}
+                        href={getEntityProfileUrl('Track', track)}
                       />
                     </motion.div>
                   ))}
@@ -216,8 +215,7 @@ export default function HomepageFeaturedEntities({
                         imageUrl={s.banner_url || s.logo_url}
                         imageType={s.banner_url ? 'photo' : 'logo'}
                         fallbackIcon={Trophy}
-                        linkPage="SeriesHome"
-                        linkId={s.id}
+                        href={getEntityProfileUrl('Series', s)}
                       />
                     </motion.div>
                   ))}
@@ -236,8 +234,7 @@ export default function HomepageFeaturedEntities({
                         sub={ev.series_name || (ev.event_date && !isNaN(new Date(ev.event_date)) ? new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null)}
                         imageUrl={null}
                         fallbackIcon={Calendar}
-                        linkPage="EventDirectory"
-                        linkId={ev.id}
+                        href={getEntityProfileUrl('Event', ev)}
                       />
                     </motion.div>
                   ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronDown, Gauge, ShoppingBag, Globe, Newspaper, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -54,8 +55,8 @@ function buildSlides(featuredDriver, featuredStory) {
         headline_line1: words.slice(0, 4).join(' ') || 'Latest Story',
         headline_line2: words.slice(4, 8).join(' ') || '',
         subtext:        featuredStory.subtitle || 'Read the latest from The Outlet.',
-        cta_primary:    { label: 'Read Story',   page: 'OutletStoryPage', storyId: featuredStory.id, Icon: Newspaper },
-        cta_secondary:  { label: 'All Stories',  page: 'OutletHome', Icon: Globe },
+        cta_primary:    { label: 'Read Story',  href: getOutletStoryUrl(featuredStory), Icon: Newspaper },
+        cta_secondary:  { label: 'All Stories', page: 'OutletHome', Icon: Globe },
         bgImage: featuredStory.cover_image || null,
       };
     }
@@ -168,7 +169,7 @@ export default function HomepageHero({ stats: liveStats, featuredDriver = null, 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-12">
               <Link
-                to={slide.cta_primary.href || (slide.cta_primary.storyId ? `${createPageUrl(slide.cta_primary.page)}?id=${slide.cta_primary.storyId}` : createPageUrl(slide.cta_primary.page))}
+                to={slide.cta_primary.href || createPageUrl(slide.cta_primary.page)}
                 className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
               >
                 <slide.cta_primary.Icon className="w-4 h-4" />

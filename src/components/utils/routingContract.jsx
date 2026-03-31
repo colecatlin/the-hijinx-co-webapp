@@ -7,12 +7,43 @@
 //   buildProfileUrl('Driver', ...) is kept for legacy compatibility only.
 
 export const PROFILE_ROUTES = {
-  Track: { basePath: 'TrackProfile', param: 'slug' }, // Uses ?slug={slug}
-  Series: { basePath: null, pathPattern: '/series', param: 'slug' }, // Uses /series/:slug
-  Team: { basePath: 'TeamProfile', param: 'slug' }, // Uses ?slug={slug}
-  Driver: { basePath: 'DriverProfile', param: 'slug' }, // Legacy fallback — prefer /drivers/:canonical_slug
-  Event: { basePath: 'EventResults', param: 'id' }, // Uses ?id={id} (no slug yet)
+  Track:  { basePath: 'TrackProfile',  param: 'slug' }, // ?slug={slug}
+  Series: { pathPattern: '/series',    param: 'slug' }, // /series/:slug (canonical)
+  Team:   { basePath: 'TeamProfile',   param: 'slug' }, // ?slug={slug}
+  Driver: { pathPattern: '/drivers',   param: 'slug' }, // /drivers/:slug (canonical) — prefer getDriverProfileUrl()
+  Event:  { basePath: 'EventResults',  param: 'id'   }, // ?id={id} (no slug yet)
 };
+
+/**
+ * getEntityProfileUrl(entityType, entity)
+ * Returns canonical profile URL for any entity, with safe fallbacks.
+ * @param {string} entityType
+ * @param {object} entity - must have slug (or canonical_slug for Driver, or id for Event)
+ * @returns {string}
+ */
+export function getEntityProfileUrl(entityType, entity) {
+  if (!entity) return '#';
+  const route = PROFILE_ROUTES[entityType];
+  if (!route) return '#';
+
+  const slug = entity.canonical_slug || entity.slug;
+
+  if (entityType === 'Event') {
+    return entity.id ? `/EventResults?id=${encodeURIComponent(entity.id)}` : '/EventDirectory';
+  }
+
+  if (!slug) {
+    // No slug: fall back to directory
+    const fallbacks = { Driver: '/DriverDirectory', Team: '/TeamDirectory', Track: '/TrackDirectory', Series: '/SeriesHome', Event: '/EventDirectory' };
+    return fallbacks[entityType] || '#';
+  }
+
+  if (route.pathPattern) {
+    return `${route.pathPattern}/${encodeURIComponent(slug)}`;
+  }
+
+  return `/${route.basePath}?${route.param}=${encodeURIComponent(slug)}`;
+}
 
 /**
  * Build a profile URL for any entity

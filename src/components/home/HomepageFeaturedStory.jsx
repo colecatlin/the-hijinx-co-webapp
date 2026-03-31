@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { format } from 'date-fns';
 import { ArrowRight, Newspaper } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -90,7 +91,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
             className="lg:col-span-3"
           >
             <Link
-              to={createPageUrl('OutletStoryPage') + `?id=${featured.id}`}
+              to={getOutletStoryUrl(featured)}
               className="group relative flex flex-col justify-end min-h-[420px] md:min-h-[500px] overflow-hidden border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_8px_40px_rgba(0,0,0,0.14)] transition-all duration-300"
             >
               {featured.cover_image ? (
@@ -145,7 +146,7 @@ export default function HomepageFeaturedStory({ featuredStory, supportingStories
                 className="flex-1"
               >
                 <Link
-                  to={createPageUrl('OutletStoryPage') + `?id=${story.id}`}
+                  to={getOutletStoryUrl(story)}
                   className="group flex gap-4 h-full min-h-[110px] bg-white border border-gray-200 hover:border-[#1DA1A1] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:-translate-y-px p-4 transition-all duration-200 overflow-hidden"
                 >
                   {story.cover_image && (
