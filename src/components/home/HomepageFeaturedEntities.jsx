@@ -62,7 +62,13 @@ export default function HomepageFeaturedEntities({
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
   return (
-    <section className="bg-white py-16 md:py-24 border-b border-gray-100">
+    <motion.section
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="bg-white py-16 md:py-24 border-b border-gray-100"
+    >
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
@@ -229,7 +235,7 @@ export default function HomepageFeaturedEntities({
           </Link>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

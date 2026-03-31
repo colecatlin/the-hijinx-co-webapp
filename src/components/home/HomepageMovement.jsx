@@ -63,7 +63,8 @@ export default function HomepageMovement() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.09, duration: 0.45 }}
-              className="group px-6 py-3 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default"
+              whileHover={{ y: -4, scale: 1.04, transition: { duration: 0.15 } }}
+              className="group px-6 py-3 border border-gray-200 hover:border-[#1DA1A1] hover:bg-[#F0FAFA] bg-white shadow-sm hover:shadow-lg cursor-default"
             >
               <span className="font-black text-sm tracking-[0.25em] text-gray-500 group-hover:text-[#1DA1A1] transition-colors">
                 {word}

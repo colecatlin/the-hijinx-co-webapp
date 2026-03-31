@@ -80,6 +80,7 @@ export default function HomepageApparel({ products = [] }) {
               key={card.label}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
+              whileHover={{ y: -3, transition: { duration: 0.18 } }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               className="flex-1">

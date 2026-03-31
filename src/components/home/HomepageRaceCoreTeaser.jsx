@@ -14,11 +14,11 @@ const FEATURES = [
 ];
 
 const MOCK_ROWS = [
-  { pos: '01', num: '#18', pts: '248 pts' },
-  { pos: '02', num: '#44', pts: '241 pts' },
-  { pos: '03', num: '#07', pts: '235 pts' },
-  { pos: '04', num: '#12', pts: '228 pts' },
-  { pos: '05', num: '#33', pts: '219 pts' },
+  { pos: '01', num: '#18', pts: '248', trend: 'up' },
+  { pos: '02', num: '#44', pts: '241', trend: 'up' },
+  { pos: '03', num: '#07', pts: '235', trend: 'same' },
+  { pos: '04', num: '#12', pts: '228', trend: 'down' },
+  { pos: '05', num: '#33', pts: '219', trend: 'up' },
 ];
 
 export default function HomepageRaceCoreTeaser() {
@@ -134,15 +134,26 @@ export default function HomepageRaceCoreTeaser() {
 
               {/* Data rows */}
               {MOCK_ROWS.map((row, i) => (
-                <div key={i} className={`flex items-center gap-4 px-5 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/3 transition-colors ${i === 0 ? 'bg-[#00FFDA]/4' : ''}`}>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.07, duration: 0.4 }}
+                  className={`flex items-center gap-4 px-5 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/4 transition-colors cursor-default ${i === 0 ? 'bg-[#00FFDA]/4' : ''}`}
+                >
                   <span className={`font-mono text-xs w-6 font-bold ${i === 0 ? 'text-[#00FFDA]' : 'text-[#00FFDA]/45'}`}>{row.pos}</span>
                   <div className="flex-1 flex gap-2 items-center">
                     <div className={`w-5 h-5 rounded-sm flex-shrink-0 ${i === 0 ? 'bg-[#00FFDA]/20' : 'bg-white/8'}`} />
                     <div className="h-2 bg-white/12 rounded-sm" style={{ width: `${60 + i * 12}px` }} />
                   </div>
                   <span className="font-mono text-[10px] text-white/25 w-12">{row.num}</span>
-                  <span className={`font-mono text-[10px] w-16 text-right font-bold ${i === 0 ? 'text-[#00FFDA]' : 'text-[#00FFDA]/50'}`}>{row.pts}</span>
-                </div>
+                  <div className="flex items-center gap-1.5 w-16 justify-end">
+                    <span className={`font-mono text-[10px] font-bold ${i === 0 ? 'text-[#00FFDA]' : 'text-[#00FFDA]/50'}`}>{row.pts}</span>
+                    {row.trend === 'up'   && <span className="text-[#00FFDA]/60 text-[8px] leading-none">▲</span>}
+                    {row.trend === 'down' && <span className="text-[#EF4444]/60 text-[8px] leading-none">▼</span>}
+                  </div>
+                </motion.div>
               ))}
 
               <div className="px-5 py-4 border-t border-white/5 flex justify-between items-center">
