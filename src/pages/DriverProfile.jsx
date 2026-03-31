@@ -642,7 +642,6 @@ export default function DriverProfile() {
         {activeTab === 'insights' && (
           <div className="pb-12 space-y-8">
             <h2 className="text-2xl font-black text-[#232323] mb-2">Performance Insights</h2>
-            <StatsSection driver={driver} results={results} sessions={sessions} events={eventsForEntries} />
             <DriverScorePlaceholder />
           </div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -13,6 +13,9 @@ import TrackMapPanel from '@/components/tracks/TrackMapPanel';
 import { createPageUrl } from '@/components/utils';
 import { MapPin, Globe, Phone, Mail, Flag, Ruler, ExternalLink, Calendar } from 'lucide-react';
 import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
+import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import Analytics from '@/components/system/analyticsTracker';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { isAfter, parseISO } from 'date-fns';
 
 export default function TrackProfile() {
@@ -41,6 +44,10 @@ export default function TrackProfile() {
     .filter(e => e.event_date && !isAfter(parseISO(e.event_date), today))
     .sort((a, b) => b.event_date.localeCompare(a.event_date));
 
+  useEffect(() => {
+    if (track) Analytics.track('track_profile_view', { trackId: track.id, trackName: track.name });
+  }, [track?.id]);
+
   if (isLoading) {
     return (
       <PageShell className="bg-white">
@@ -64,13 +71,24 @@ export default function TrackProfile() {
     { id: 'series',   label: `Series (${series.length})` },
   ];
 
+  const trackDesc = [track.track_type, track.surface_type, location ? `Located in ${location}` : ''].filter(Boolean).join(' · ') || `${track.name} track profile on HIJINX.`;
+
   return (
     <PageShell className="bg-white">
+      <SeoMeta
+        title={buildEntityTitle(track.name, 'Track Profile')}
+        description={track.description || trackDesc}
+        image={track.image_url || SITE_FALLBACK_IMAGE}
+      />
+
       {/* Back link */}
       <div className="max-w-7xl mx-auto px-6 pt-4">
-        <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-500 hover:text-[#232323] transition-colors">
-          ← Back to Tracks
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to={createPageUrl('TrackDirectory')} className="text-sm text-gray-500 hover:text-[#232323] transition-colors">
+            ← Back to Tracks
+          </Link>
+          <SocialShareButtons url={window.location.href} title={`${track.name} - Track Profile`} description={trackDesc} />
+        </div>
       </div>
 
       {/* Hero image */}
