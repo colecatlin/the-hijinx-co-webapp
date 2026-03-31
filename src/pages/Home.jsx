@@ -9,9 +9,7 @@ import HomepageHero from '@/components/home/HomepageHero';
 import HomepageTicker from '@/components/home/HomepageTicker';
 import HomepageFeaturedStory from '@/components/home/HomepageFeaturedStory';
 import HomepageFeaturedEntities from '@/components/home/HomepageFeaturedEntities';
-import HomepageRaceCoreTeaser from '@/components/home/HomepageRaceCoreTeaser';
 import HomepageApparel from '@/components/home/HomepageApparel';
-import HomepageMovement from '@/components/home/HomepageMovement';
 import HomepageFinalCTA from '@/components/home/HomepageFinalCTA';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
 
@@ -87,7 +85,11 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════════════
           ZONE 1 — HERO + LIVE STRIP
       ═══════════════════════════════════════════════════════════════════════ */}
-      <HomepageHero stats={hp.hero_stats} />
+      <HomepageHero
+        stats={hp.hero_stats}
+        featuredDriver={hp.featured_drivers?.[0] ?? null}
+        featuredStory={hp.featured_story ?? null}
+      />
       <HomepageTicker
         tickerItems={hp.ticker_items}
         activityItems={hp.activity_feed?.slice(0, 6)}
@@ -117,13 +119,11 @@ export default function Home() {
         mediaByDriver={mediaByDriver}
         isLoading={isLoading}
       />
-      <HomepageRaceCoreTeaser />
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          ZONE 4 — BRAND  (apparel · movement · CTA)
+          ZONE 4 — BRAND  (apparel · CTA)
       ═══════════════════════════════════════════════════════════════════════ */}
       <HomepageApparel products={hp.featured_products} />
-      <HomepageMovement />
       <HomepageFinalCTA />
 
     </PageShell>

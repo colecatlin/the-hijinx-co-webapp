@@ -2,61 +2,66 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronDown, Gauge, ShoppingBag, Globe, Newspaper } from 'lucide-react';
+import { ArrowRight, ChevronDown, Gauge, ShoppingBag, Globe, Newspaper, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const FALLBACK_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg';
 
-const SLIDES = [
-  {
-    eyebrow:        'THE HIJINX CO',
-    headline_line1: 'Built for the ones',
-    headline_line2: 'chasing more.',
-    subtext:        'Motorsports, culture, data, apparel, and the people driving it forward.',
-    cta_primary:    { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
-    cta_secondary:  { label: 'Shop HIJINX Apparel',  page: 'ApparelHome',     Icon: ShoppingBag },
-    cta_tertiary:   { label: 'Explore Motorsports',  page: 'MotorsportsHome', Icon: Globe },
-  },
+const BRAND_SLIDES = [
   {
     eyebrow:        'RACE CORE',
     headline_line1: 'The operating system',
     headline_line2: 'for motorsports.',
-    subtext:        'Event management, driver registration, tech inspection, results, standings — all in one platform.',
-    cta_primary:    { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
-    cta_secondary:  { label: 'Explore Motorsports',  page: 'MotorsportsHome', Icon: Globe },
-    cta_tertiary:   { label: 'Browse Events',        page: 'EventDirectory',  Icon: Globe },
+    subtext:        'Event management, driver registration, results, and standings — all in one platform.',
+    cta_primary:    { label: 'Open Race Core',      page: 'Registration',    Icon: Gauge },
+    cta_secondary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
+    bgImage: null,
   },
   {
     eyebrow:        'THE OUTLET',
     headline_line1: 'Motorsports culture,',
     headline_line2: 'documented.',
     subtext:        'Race reports, features, and editorial coverage from across the sport.',
-    cta_primary:    { label: 'Read The Outlet',      page: 'OutletHome',      Icon: Newspaper },
-    cta_secondary:  { label: 'Submit a Story',       page: 'OutletSubmit',    Icon: Globe },
-    cta_tertiary:   { label: 'Browse Motorsports',   page: 'MotorsportsHome', Icon: Globe },
-  },
-  {
-    eyebrow:        'HIJINX CO. APPAREL',
-    headline_line1: 'In motion.',
-    headline_line2: 'On purpose.',
-    subtext:        'Lifestyle gear built for racers, builders, creators, and fans who live the sport.',
-    cta_primary:    { label: 'Shop HIJINX Apparel',  page: 'ApparelHome',     Icon: ShoppingBag },
-    cta_secondary:  { label: 'Explore Motorsports',  page: 'MotorsportsHome', Icon: Globe },
-    cta_tertiary:   { label: 'About HIJINX',         page: 'About',           Icon: Globe },
-  },
-  {
-    eyebrow:        'A MOVEMENT',
-    headline_line1: 'Built for those who',
-    headline_line2: 'move the sport.',
-    subtext:        'HIJINX is a platform, a culture, and a community at the intersection of speed, creativity, and identity.',
-    cta_primary:    { label: 'Explore Motorsports',  page: 'MotorsportsHome', Icon: Globe },
-    cta_secondary:  { label: 'Open Race Core',       page: 'Registration',    Icon: Gauge },
-    cta_tertiary:   { label: 'Read The Outlet',      page: 'OutletHome',      Icon: Newspaper },
+    cta_primary:    { label: 'Read The Outlet',     page: 'OutletHome',     Icon: Newspaper },
+    cta_secondary:  { label: 'Shop Apparel',        page: 'ApparelHome',    Icon: ShoppingBag },
+    bgImage: null,
   },
 ];
 
-export default function HomepageHero({ stats: liveStats }) {
+function buildSlides(featuredDriver, featuredStory) {
+  const contentSlide = (() => {
+    if (featuredDriver) {
+      const location = [featuredDriver.racing_base_city, featuredDriver.racing_base_state].filter(Boolean).join(', ');
+      return {
+        eyebrow:        (featuredDriver.primary_discipline || 'Featured Driver').toUpperCase(),
+        headline_line1: featuredDriver.first_name,
+        headline_line2: featuredDriver.last_name,
+        subtext:        featuredDriver.tagline || [featuredDriver.career_status, location].filter(Boolean).join(' · ') || 'Motorsports competitor.',
+        cta_primary:    { label: 'View Profile',    href: `/drivers/${featuredDriver.slug || featuredDriver.id}`, Icon: Users },
+        cta_secondary:  { label: 'Browse Drivers',  page: 'DriverDirectory', Icon: Globe },
+        bgImage: featuredDriver.hero_image_url || featuredDriver.profile_image_url || null,
+      };
+    }
+    if (featuredStory) {
+      const words = (featuredStory.title || '').split(' ');
+      return {
+        eyebrow:        (featuredStory.primary_category || 'The Outlet').toUpperCase(),
+        headline_line1: words.slice(0, 4).join(' ') || 'Latest Story',
+        headline_line2: words.slice(4, 8).join(' ') || '',
+        subtext:        featuredStory.subtitle || 'Read the latest from The Outlet.',
+        cta_primary:    { label: 'Read Story',   page: 'OutletStoryPage', storyId: featuredStory.id, Icon: Newspaper },
+        cta_secondary:  { label: 'All Stories',  page: 'OutletHome', Icon: Globe },
+        bgImage: featuredStory.cover_image || null,
+      };
+    }
+    return null;
+  })();
+
+  return contentSlide ? [contentSlide, ...BRAND_SLIDES] : BRAND_SLIDES;
+}
+
+export default function HomepageHero({ stats: liveStats, featuredDriver = null, featuredStory = null }) {
   const [mounted, setMounted]       = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [paused, setPaused]         = useState(false);
@@ -78,7 +83,12 @@ export default function HomepageHero({ stats: liveStats }) {
     queryFn: () => base44.entities.HomepageSettings.filter({ key: 'hero_bg' }),
   });
 
-  const bg_image = heroSettings?.[0]?.image_url || FALLBACK_BG;
+  const globalBg = heroSettings?.[0]?.image_url || FALLBACK_BG;
+
+  const SLIDES = buildSlides(featuredDriver, featuredStory);
+  const safeIndex = activeSlide >= SLIDES.length ? 0 : activeSlide;
+  const slide = SLIDES[safeIndex];
+  const bg_image = slide?.bgImage || globalBg;
 
   const stats = liveStats ? [
     liveStats.series_count > 0 ? { value: String(liveStats.series_count), label: 'Series Tracked'  } : null,
@@ -86,8 +96,6 @@ export default function HomepageHero({ stats: liveStats }) {
     liveStats.track_count  > 0 ? { value: String(liveStats.track_count),  label: 'Tracks'          } : null,
     liveStats.event_count  > 0 ? { value: String(liveStats.event_count),  label: 'Events'          } : null,
   ].filter(Boolean) : [];
-
-  const slide = SLIDES[activeSlide];
 
   return (
     <section
@@ -156,7 +164,7 @@ export default function HomepageHero({ stats: liveStats }) {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-12">
               <Link
-                to={createPageUrl(slide.cta_primary.page)}
+                to={slide.cta_primary.href || (slide.cta_primary.storyId ? `${createPageUrl(slide.cta_primary.page)}?id=${slide.cta_primary.storyId}` : createPageUrl(slide.cta_primary.page))}
                 className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
               >
                 <slide.cta_primary.Icon className="w-4 h-4" />
@@ -164,7 +172,7 @@ export default function HomepageHero({ stats: liveStats }) {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                to={createPageUrl(slide.cta_secondary.page)}
+                to={slide.cta_secondary.href || createPageUrl(slide.cta_secondary.page)}
                 className="group inline-flex items-center gap-2.5 px-7 py-3.5 border border-white/25 text-white/80 text-sm font-bold tracking-wide hover:border-[#00FFDA] hover:text-[#00FFDA] hover:bg-[#00FFDA]/5 transition-all duration-200"
               >
                 <slide.cta_secondary.Icon className="w-4 h-4" />

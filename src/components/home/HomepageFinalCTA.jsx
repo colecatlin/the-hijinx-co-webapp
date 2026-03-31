@@ -92,14 +92,11 @@ export default function HomepageFinalCTA() {
               </a>
             </div>
 
-            {/* Join CTA */}
             <Link
-              to={createPageUrl('Registration')}
-              className="group inline-flex items-center gap-2 mt-2 px-6 py-3 border border-white/15 text-white/60 text-xs font-bold tracking-wider uppercase hover:border-[#00FFDA]/50 hover:text-[#00FFDA] hover:bg-[#00FFDA]/5 transition-all duration-200"
+              to={createPageUrl('MotorsportsHome')}
+              className="group inline-flex items-center gap-2 mt-2 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#00FFDA] uppercase transition-colors"
             >
-              <Gauge className="w-3.5 h-3.5" />
-              Open Race Core
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              Explore the Platform <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </motion.div>
 
