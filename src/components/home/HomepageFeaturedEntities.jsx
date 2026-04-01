@@ -78,7 +78,16 @@ export default function HomepageFeaturedEntities({
   isLoading = false,
 }) {
   const allEmpty = !isLoading && !drivers.length && !teams.length && !tracks.length && !series.length && !events.length;
-  const [activeTab, setActiveTab] = useState('drivers');
+
+  // Default to first non-empty tab instead of showing empty drivers tab
+  const getDefaultTab = () => {
+    const tabData = { drivers, teams, tracks, series, events };
+    for (const tab of TABS) {
+      if ((tabData[tab.id] || []).length > 0) return tab.id;
+    }
+    return 'drivers';
+  };
+  const [activeTab, setActiveTab] = useState(() => getDefaultTab());
   const activeTabConfig = TABS.find(t => t.id === activeTab);
 
   return (

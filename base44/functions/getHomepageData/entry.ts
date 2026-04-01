@@ -38,37 +38,45 @@ Deno.serve(async (req) => {
     // ── 2. Fetch all auto data in parallel ───────────────────────────────────
     const [
       autoStories,
-      autoDrivers,
-      autoTeams,
-      autoTracks,
-      autoSeries,
+      allFeaturedDrivers,
+      allTeams,
+      allTracks,
+      allSeriesPool,
       autoEvents,
       results,
       activityFeed,
       autoMedia,
       autoProducts,
-      // hero stats counts — fetch with id-only minimal data
-      allActiveSeries,
-      allLiveDrivers,
-      allActiveTracks,
       allPublishedEvents,
     ] = await Promise.all([
       safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
-      safe(db.Driver.filter({ featured: true, visibility_status: 'live' }, '-created_date', TARGET)),
-      safe(db.Team.filter({ racing_status: 'Active' }, '-created_date', TARGET)),
-      safe(db.Track.filter({ operational_status: 'Active' }, '-created_date', TARGET)),
-      safe(db.Series.filter({ operational_status: 'Active' }, '-popularity_rank', TARGET)),
+      // Fetch all featured drivers — JS-filter for legacy/new visibility field
+      safe(db.Driver.filter({ featured: true }, '-created_date', 50)),
+      // Fetch all teams — JS-filter for legacy/new status field
+      safe(db.Team.list('-created_date', 50)),
+      // Fetch all tracks — JS-filter for legacy/new status field
+      safe(db.Track.list('-created_date', 50)),
+      // Fetch all series — JS-filter for legacy/new status field
+      safe(db.Series.list('-popularity_rank', 50)),
       safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 6)),
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
       safe(db.MediaAsset.list('-created_date', MEDIA_TARGET)),
       safe(db.Product.list('-created_date', TARGET)),
-      // counts for hero stats — capped at 100 for performance
-      safe(db.Series.filter({ operational_status: 'Active' }, '-created_date', 100)),
-      safe(db.Driver.filter({ visibility_status: 'live' }, '-created_date', 100)),
-      safe(db.Track.filter({ operational_status: 'Active' }, '-created_date', 100)),
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', 100)),
+      // For hero stat counts
+      safe(db.Event.filter({ status: 'Published' }, 'event_date', 200)),
     ]);
+
+    // ── Transitional field-compat filters (support legacy + new field names) ──
+    const isDriverVisible = (d) => d.visibility_status === 'live' || d.profile_status === 'live';
+    const isTeamActive    = (t) => t.racing_status === 'Active' || t.status === 'Active';
+    const isTrackActive   = (t) => t.operational_status === 'Active' || t.status === 'Active';
+    const isSeriesActive  = (s) => s.operational_status === 'Active' || s.status === 'Active';
+
+    const autoDrivers = (allFeaturedDrivers || []).filter(isDriverVisible);
+    const autoTeams   = (allTeams   || []).filter(isTeamActive);
+    const autoTracks  = (allTracks  || []).filter(isTrackActive);
+    const autoSeries  = (allSeriesPool || []).filter(s => isSeriesActive(s) && !s.is_sample);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     // Resolve manual IDs against a fetched pool; silently drop missing ones
@@ -235,9 +243,9 @@ Deno.serve(async (req) => {
 
     // ── 5. Return payload ────────────────────────────────────────────────────
     const hero_stats = {
-      series_count: (allActiveSeries || []).filter(s => !s.is_sample).length,
-      driver_count: (allLiveDrivers  || []).length,
-      track_count:  (allActiveTracks || []).length,
+      series_count: (allSeriesPool  || []).filter(s => isSeriesActive(s) && !s.is_sample).length,
+      driver_count: (allFeaturedDrivers || []).filter(isDriverVisible).length,
+      track_count:  (allTracks || []).filter(isTrackActive).length,
       event_count:  (allPublishedEvents || []).length,
     };
 

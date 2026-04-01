@@ -293,6 +293,12 @@ export default function ComplianceManager({
     return Array.from(names);
   }, [complianceData.entriesMap]);
 
+  // Must be declared before any early returns (Rules of Hooks)
+  const myComplianceStatus = useMemo(() => {
+    if (!myEntry) return null;
+    return complianceData.entriesMap.get(myEntry.id) || null;
+  }, [myEntry, complianceData.entriesMap]);
+
   // ── Waiver toggle ──────────────────────────────────────────────────────────
   const handleToggleWaiver = async (entry) => {
     if (!(await verifyEntryEventIntegrity(entry, selectedEvent, base44))) {
@@ -382,13 +388,6 @@ export default function ComplianceManager({
   }
 
   const { flags, totalEntries, totalFlagged } = complianceData;
-
-  // Compute my compliance status
-  const myComplianceStatus = useMemo(() => {
-    if (!myEntry) return null;
-    const entryData = complianceData.entriesMap.get(myEntry.id);
-    return entryData || null;
-  }, [myEntry, complianceData.entriesMap]);
 
   return (
     <div className="space-y-4">
