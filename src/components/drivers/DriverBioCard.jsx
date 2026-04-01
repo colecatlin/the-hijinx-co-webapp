@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, calculateAge } from 'date-fns';
+import { format } from 'date-fns';
 
 export default function DriverBioCard({ driver }) {
   const age = driver.date_of_birth ? calculateAge(new Date(driver.date_of_birth)) : null;

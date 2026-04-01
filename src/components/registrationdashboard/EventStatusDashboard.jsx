@@ -18,34 +18,27 @@ export default function EventStatusDashboard({
   invalidateAfterOperation,
   onTabChange,
 }) {
-  if (!selectedEvent) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to view status dashboard</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load sessions
   const { data: sessions = [], refetch: refetchSessions } = useQuery({
-    queryKey: ['sessions', selectedEvent.id],
+    queryKey: ['sessions', selectedEvent?.id],
     queryFn: () => base44.entities.Session.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
   // Load entries
   const { data: entries = [], refetch: refetchEntries } = useQuery({
-    queryKey: ['entries', selectedEvent.id],
+    queryKey: ['entries', selectedEvent?.id],
     queryFn: () => base44.entities.Entry.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
   // Load results
   const { data: results = [], refetch: refetchResults } = useQuery({
-    queryKey: ['results', selectedEvent.id],
+    queryKey: ['results', selectedEvent?.id],
     queryFn: () => base44.entities.Results.filter({ event_id: selectedEvent.id }),
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
@@ -64,11 +57,12 @@ export default function EventStatusDashboard({
 
   // Load operation logs
   const { data: operationLogs = [], refetch: refetchLogs } = useQuery({
-    queryKey: ['operationLogs', selectedEvent.id],
+    queryKey: ['operationLogs', selectedEvent?.id],
     queryFn: async () => {
       const logs = await base44.entities.OperationLog.list('-created_date', 200);
       return logs.filter((l) => l.metadata?.event_id === selectedEvent.id);
     },
+    enabled: !!selectedEvent?.id,
     ...DQ,
   });
 
@@ -77,6 +71,16 @@ export default function EventStatusDashboard({
     () => computeEventMetrics({ sessions, entries, results, standings, operationLogs }),
     [sessions, entries, results, standings, operationLogs]
   );
+
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <p className="text-gray-400">Select an event to view status dashboard</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleRefresh = async () => {
     try {

@@ -29,7 +29,6 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'event_published':
       broad.push(['events'], ['seasonCalendarEvents'], ['seasonCalendarSessions'], ['seasonCalendarEntries'], ['seasonCalendarResults'], ['selectedEvent'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
-      invalidateAfterOperation('event_updated', { eventId });
       break;
 
     case 'event_collaboration_requested':

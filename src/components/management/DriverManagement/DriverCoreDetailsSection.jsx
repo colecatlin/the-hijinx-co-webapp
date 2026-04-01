@@ -12,6 +12,7 @@ import MediaUploader from '@/components/shared/MediaUploader';
 import ImageCropModal from '@/components/shared/ImageCropModal';
 import LocationFieldsWithPicker from '@/components/shared/LocationFieldsWithPicker';
 import DateInput from '@/components/shared/DateInput';
+import DriverManagersSection from '@/components/management/DriverEditor/DriverManagersSection';
 
 const DISCIPLINES = [
   'Off Road',

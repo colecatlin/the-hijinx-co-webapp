@@ -348,16 +348,6 @@ export default function ManageEntityClaims() {
     enabled: user?.role === 'admin',
   });
 
-  if (user && user.role !== 'admin') {
-    return (
-      <ManagementLayout currentPage="ManageEntityClaims">
-        <ManagementShell title="Access Denied" subtitle="">
-          <div className="py-20 text-center text-gray-500">This page is for administrators only.</div>
-        </ManagementShell>
-      </ManagementLayout>
-    );
-  }
-
   const filtered = useMemo(() => {
     return claims.filter(c => {
       const matchesSearch = !searchQuery ||
@@ -369,6 +359,16 @@ export default function ManageEntityClaims() {
       return matchesSearch && matchesType && matchesMode;
     });
   }, [claims, searchQuery, filterType, filterMode]);
+
+  if (user && user.role !== 'admin') {
+    return (
+      <ManagementLayout currentPage="ManageEntityClaims">
+        <ManagementShell title="Access Denied" subtitle="">
+          <div className="py-20 text-center text-gray-500">This page is for administrators only.</div>
+        </ManagementShell>
+      </ManagementLayout>
+    );
+  }
 
   const byStatus = (status) => filtered.filter(c => c.status === status);
   const pending = byStatus('pending');

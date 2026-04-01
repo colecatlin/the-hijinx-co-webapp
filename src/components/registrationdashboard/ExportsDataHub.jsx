@@ -8,17 +8,6 @@ import { AlertCircle, Download, Copy, FileJson } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ExportsDataHub({ selectedEvent, dashboardContext, dashboardPermissions }) {
-  if (!selectedEvent) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to access exports</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load all data
   const { data: entries = [] } = useQuery({
     queryKey: ['racecore', 'exports', 'entries', selectedEvent.id],
@@ -220,6 +209,17 @@ export default function ExportsDataHub({ selectedEvent, dashboardContext, dashbo
       };
     });
   }, [entries, driverMap, teamMap, classMap, results]);
+
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to access exports</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Export card component
   const ExportCard = ({ title, description, data, exportTypes }) => (

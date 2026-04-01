@@ -151,7 +151,7 @@ export default function EventProfile() {
             </div>
             <div className="pb-2 flex-shrink-0 flex items-center gap-2">
               <SocialShareButtons url={window.location.href} title={`${event.name} - Event`} description="" />
-              <Link to={`${createPageUrl('EventResults')}?eventId=${event?.id}`}>
+              <Link to={`${createPageUrl('EventResults')}?id=${event?.id}`}>
                 <button className="px-3 py-1.5 text-xs font-medium bg-white/10 text-white border border-white/20 rounded-lg hover:bg-white/20 transition-colors">View Results</button>
               </Link>
               {isAdmin && (
@@ -196,7 +196,7 @@ export default function EventProfile() {
               {track && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Venue</div>
-                  <Link to={`${createPageUrl('TrackProfile')}?id=${track.id}`} className="group">
+                  <Link to={`${createPageUrl('TrackProfile')}?slug=${track.canonical_slug || track.slug || track.id}`} className="group">
                     <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{track.name}</div>
                     {(track.location_city || track.location_state) && (
                       <div className="flex items-center gap-1 text-sm text-gray-600">
@@ -210,7 +210,7 @@ export default function EventProfile() {
               {series && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Series</div>
-                  <Link to={`${createPageUrl('SeriesDetail')}?id=${series.id}`} className="group">
+                  <Link to={`/series/${series.canonical_slug || series.slug || series.id}`} className="group">
                     <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series.name}</div>
                     {event.season && <div className="text-sm text-gray-600">Season {event.season}</div>}
                   </Link>

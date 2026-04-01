@@ -37,18 +37,6 @@ export default function MediaGovernanceManager({
 
   const isAdmin = currentUser?.role === 'admin';
 
-  // Check if we have org context
-  if (!dashboardContext?.orgId || !dashboardContext?.orgType) {
-    return (
-      <Card className="bg-[#1A1A1A] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-10 h-10 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-300">Select a Track or Series to manage media.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load manageable entities
   const { data: collaborations = [] } = useQuery({
     queryKey: ['entity_collaborators', currentUser?.id],
@@ -60,8 +48,8 @@ export default function MediaGovernanceManager({
   });
 
   const manageableEntities = useMemo(() => {
+    if (!dashboardContext?.orgId) return [];
     if (isAdmin) {
-      // Admins can manage all
       return [
         { entity_type: 'track', entity_id: dashboardContext.orgId },
         ...(selectedEvent ? [{ entity_type: 'event', entity_id: selectedEvent.id }] : []),
@@ -69,8 +57,6 @@ export default function MediaGovernanceManager({
         ...(selectedSeries ? [{ entity_type: 'series', entity_id: selectedSeries.id }] : []),
       ];
     }
-
-    // Non-admin: filter collaborations to current org context
     const managed = collaborations
       .filter((c) => {
         if (dashboardContext.orgType === 'track' && c.entity_id === dashboardContext.orgId) return true;
@@ -78,14 +64,22 @@ export default function MediaGovernanceManager({
         return false;
       })
       .map((c) => ({ entity_type: c.entity_type, entity_id: c.entity_id }));
-
-    // Also add selected event if in context
     if (selectedEvent && !managed.some((m) => m.entity_id === selectedEvent.id)) {
       managed.push({ entity_type: 'event', entity_id: selectedEvent.id });
     }
-
     return managed;
-  }, [isAdmin, collaborations, dashboardContext.orgId, dashboardContext.orgType, selectedEvent]);
+  }, [isAdmin, collaborations, dashboardContext?.orgId, dashboardContext?.orgType, selectedEvent]);
+
+  if (!dashboardContext?.orgId || !dashboardContext?.orgType) {
+    return (
+      <Card className="bg-[#1A1A1A] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-10 h-10 text-gray-500 mx-auto mb-4" />
+          <p className="text-gray-300">Select a Track or Series to manage media.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isAdmin && manageableEntities.length === 0) {
     return (

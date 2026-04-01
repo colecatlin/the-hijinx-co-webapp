@@ -12,17 +12,6 @@ export default function GateConsole({ selectedEvent, dashboardContext, dashboard
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  if (!selectedEvent) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to access Gate Console</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load entries
   const { data: entries = [], isLoading: entriesLoading } = useQuery({
     queryKey: ['gateConsole', 'entries', selectedEvent.id],
@@ -89,8 +78,6 @@ export default function GateConsole({ selectedEvent, dashboardContext, dashboard
   // Filter entries
   const filteredEntries = useMemo(() => {
     let filtered = entries;
-
-    // Search filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(e => {
@@ -103,8 +90,6 @@ export default function GateConsole({ selectedEvent, dashboardContext, dashboard
         );
       });
     }
-
-    // Status filter
     if (filterStatus === 'unpaid') {
       filtered = filtered.filter(e => e.payment_status !== 'Paid');
     } else if (filterStatus === 'waiver_missing') {
@@ -112,9 +97,19 @@ export default function GateConsole({ selectedEvent, dashboardContext, dashboard
     } else if (filterStatus === 'not_checked_in') {
       filtered = filtered.filter(e => e.entry_status !== 'Checked In');
     }
-
     return filtered;
   }, [entries, searchQuery, filterStatus, driverMap, teamMap]);
+
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to access Gate Console</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (entriesLoading) {
     return (

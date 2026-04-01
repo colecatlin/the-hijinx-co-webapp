@@ -16,16 +16,12 @@ export default function CollaborationStatusPanel({
   const queryClient = useQueryClient();
   const [isResponding, setIsResponding] = useState(false);
 
-  if (!selectedEvent?.collaboration_id) {
-    return null;
-  }
-
   const { data: collaboration, isLoading } = useQuery({
     queryKey: ['eventCollaboration', selectedEvent.collaboration_id],
     queryFn: () => base44.entities.EventCollaboration.list().then(colls =>
       colls.find(c => c.id === selectedEvent.collaboration_id)
     ),
-    enabled: !!selectedEvent.collaboration_id
+    enabled: !!selectedEvent?.collaboration_id
   });
 
   const respondMutation = useMutation({
@@ -45,9 +41,8 @@ export default function CollaborationStatusPanel({
     }
   });
 
-  if (isLoading || !collaboration) {
-    return null;
-  }
+  if (!selectedEvent?.collaboration_id) return null;
+  if (isLoading || !collaboration) return null;
 
   const isPending = dashboardContext?.orgType === 'track'
     ? collaboration.track_acceptance_status === 'pending'

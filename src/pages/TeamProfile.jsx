@@ -334,7 +334,7 @@ export default function TeamProfile() {
                       <h3 className="text-lg font-semibold text-[#232323] mb-3">Completed Events</h3>
                       <div className="space-y-3">
                         {completedEntries.map(({ event, track, bestPosition }) => event && (
-                          <Link key={event.id} to={`${createPageUrl('EventResults')}?eventId=${event.id}`} className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all">
+                          <Link key={event.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-md transition-all">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h4 className="font-semibold text-[#232323]">{event.name}</h4>

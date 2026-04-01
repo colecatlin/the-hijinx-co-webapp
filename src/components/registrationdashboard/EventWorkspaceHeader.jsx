@@ -40,9 +40,7 @@ export default function EventWorkspaceHeader({
   dashboardPermissions,
   invalidateAfterOperation,
 }) {
-  if (!selectedEvent) return null;
-
-  const eventId = selectedEvent.id;
+  const eventId = selectedEvent?.id;
   const seriesId = selectedSeries?.id || selectedEvent?.series_id || '';
   const seasonYear = dashboardContext?.seasonYear || selectedEvent?.season || '';
 
@@ -136,6 +134,8 @@ export default function EventWorkspaceHeader({
     ],
     [sessions.length, results.length, entriesLabel, entriesCount, techInspections.length, complianceFlags.length, standingsStatus, standingsClass]
   );
+
+  if (!selectedEvent) return null;
 
   return (
     <div className="space-y-4 mb-6">

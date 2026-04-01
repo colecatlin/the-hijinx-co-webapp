@@ -39,8 +39,6 @@ export default function IssuedCredentialsManager({
 
   const now = useMemo(() => new Date(), []);
 
-  if (!dashboardContext?.orgId || !dashboardContext?.orgType) return null;
-
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
 
   // Load credentials
@@ -161,6 +159,8 @@ export default function IssuedCredentialsManager({
     const user = await base44.auth.me();
     revokeMutation.mutate({ credentialId: selectedCredentialId, userId: user.id, notes: revokeNotes });
   };
+
+  if (!dashboardContext?.orgId || !dashboardContext?.orgType) return null;
 
   const computedExpiredCount = enrichedCredentials.filter(
     (c) => c._effectiveStatus === 'expired' && c.status === 'active'

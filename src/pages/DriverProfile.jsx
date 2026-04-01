@@ -295,7 +295,7 @@ export default function DriverProfile() {
                 {driver.primary_discipline && <span>{driver.primary_discipline}</span>}
                 {hometown && <span className="flex items-center gap-1"><Home className="w-3 h-3" />{hometown}</span>}
                 {driverTeam && (
-                  <Link to={`${createPageUrl('TeamProfile')}?id=${driverTeam.id}`} className="hover:text-[#00FFDA] transition-colors font-medium text-white/80">
+                  <Link to={`${createPageUrl('TeamProfile')}?slug=${driverTeam.canonical_slug || driverTeam.slug || driverTeam.id}`} className="hover:text-[#00FFDA] transition-colors font-medium text-white/80">
                     {driverTeam.name}
                   </Link>
                 )}
@@ -439,7 +439,7 @@ export default function DriverProfile() {
                   {driverTeam && (
                     <div>
                       <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Team</div>
-                      <Link to={`${createPageUrl('TeamProfile')}?id=${driverTeam.id}`} className="font-bold text-[#232323] hover:text-[#00FFDA] transition-colors">
+                      <Link to={`${createPageUrl('TeamProfile')}?slug=${driverTeam.canonical_slug || driverTeam.slug || driverTeam.id}`} className="font-bold text-[#232323] hover:text-[#00FFDA] transition-colors">
                         {driverTeam.name}
                       </Link>
                     </div>
@@ -448,7 +448,7 @@ export default function DriverProfile() {
                     <div>
                       <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Series</div>
                       {driverSeriesList.map(s => (
-                        <Link key={s.id} to={`/SeriesDetail?slug=${s.slug || s.id}`} className="block font-semibold text-[#232323] hover:underline text-sm">{s.name}</Link>
+                        <Link key={s.id} to={`/series/${s.canonical_slug || s.slug || s.id}`} className="block font-semibold text-[#232323] hover:underline text-sm">{s.name}</Link>
                       ))}
                     </div>
                   )}
@@ -558,7 +558,7 @@ export default function DriverProfile() {
                       <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">Past Events</h3>
                       <div className="space-y-3">
                         {pastEntries.map(({ entry, event, track, resultData }) => event && (
-                          <Link key={entry.id} to={`${createPageUrl('EventResults')}?eventId=${event.id}`}
+                          <Link key={entry.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`}
                             className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
                             <div className="flex items-start justify-between">
                               <div>

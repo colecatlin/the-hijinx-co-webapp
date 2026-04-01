@@ -232,7 +232,7 @@ export default function TrackProfile() {
                       {series.map(s => (
                         <Link
                           key={s.id}
-                          to={`/SeriesDetail?slug=${s.slug || s.id}`}
+                          to={`/series/${s.canonical_slug || s.slug || s.id}`}
                           className="flex items-center justify-between p-3 border border-gray-200 hover:border-[#232323] transition-colors rounded-lg group"
                         >
                           <div className="flex items-center gap-3">
@@ -270,7 +270,7 @@ export default function TrackProfile() {
                   series.map(s => (
                     <Link
                       key={s.id}
-                      to={`/SeriesDetail?slug=${s.slug || s.id}`}
+                      to={`/series/${s.canonical_slug || s.slug || s.id}`}
                       className="flex items-center justify-between p-4 border border-gray-200 hover:border-[#232323] transition-colors group"
                     >
                       <div>

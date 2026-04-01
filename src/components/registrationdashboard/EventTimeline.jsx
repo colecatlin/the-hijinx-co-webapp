@@ -31,19 +31,6 @@ export default function EventTimeline({ selectedEvent }) {
 
   const eventId = selectedEvent?.id;
 
-  if (!selectedEvent) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-8">
-          <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-400">Select an event to view timeline</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load data
   const { data: sessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
@@ -86,14 +73,22 @@ export default function EventTimeline({ selectedEvent }) {
 
   // Build timeline
   const timelineItems = useMemo(() => {
-    const items = buildEventTimeline({
-      sessions,
-      results,
-      entries,
-      operationLogs,
-    });
+    const items = buildEventTimeline({ sessions, results, entries, operationLogs });
     return items.filter((item) => filters.includes(item.type));
   }, [sessions, results, entries, operationLogs, filters]);
+
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-8">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-400">Select an event to view timeline</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleRefresh = async () => {
     setRefreshing(true);

@@ -329,7 +329,7 @@ export default function MediaApply() {
                 <Button variant="outline" className="w-full border-gray-700 text-gray-300">Back to Portal</Button>
               </Link>
               <Link to={createPageUrl('MediaApply')} className="flex-1">
-                <Button className="w-full bg-blue-700 hover:bg-blue-600" onClick={() => { setSubmitted(null); setStep(0); setTargetId(''); setRoles([]); setAssignmentDesc(''); setPolicyAcceptances({}); setWaiverSigned(false); setDeliverableAcks({}); }}>
+                <Button className="w-full bg-blue-700 hover:bg-blue-600" onClick={() => { setSubmitted(null); setStep(0); setTargetId(''); setRoles([]); setAssignmentDesc(''); setPolicyAcceptances({}); setDeliverableAcks({}); }}>
                   New Application
                 </Button>
               </Link>

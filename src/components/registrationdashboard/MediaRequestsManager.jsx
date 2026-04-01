@@ -32,15 +32,6 @@ export default function MediaRequestsManager({
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
 
-  // Safety guards
-  if (!dashboardContext?.orgId || !dashboardContext?.orgType) {
-    return null;
-  }
-
-  if (!selectedEvent) {
-    return null;
-  }
-
   // Determine org context
   const orgEntityId = selectedTrack?.id || selectedSeries?.id;
   const orgEntityType = selectedTrack ? 'track' : 'series';
@@ -176,6 +167,9 @@ export default function MediaRequestsManager({
         return 'bg-gray-900/40 text-gray-300';
     }
   };
+
+  if (!dashboardContext?.orgId || !dashboardContext?.orgType) return null;
+  if (!selectedEvent) return null;
 
   if (!orgEntityId) {
     return (

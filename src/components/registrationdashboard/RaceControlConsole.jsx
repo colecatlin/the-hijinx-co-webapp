@@ -22,17 +22,6 @@ export default function RaceControlConsole({
 }) {
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  if (!selectedEvent) {
-    return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to access Race Control Console</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Load sessions
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ['raceControl', 'sessions', selectedEvent.id],
@@ -109,13 +98,19 @@ export default function RaceControlConsole({
     const duplicatePositions = positions.length !== new Set(positions).size;
     const totalResults = sessionResults.length;
     const missingDriver = sessionResults.filter(r => !r.driver_id).length;
-
-    return {
-      totalResults,
-      duplicatePositions,
-      missingDriver,
-    };
+    return { totalResults, duplicatePositions, missingDriver };
   }, [selectedSession, results]);
+
+  if (!selectedEvent) {
+    return (
+      <Card className="bg-[#171717] border-gray-800">
+        <CardContent className="py-12 text-center">
+          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-400">Select an event to access Race Control Console</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (sessionsLoading) {
     return (
