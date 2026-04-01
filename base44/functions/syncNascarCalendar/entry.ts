@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       const seriesPayload = {
         name: seriesName,
         discipline: 'Stock Car',
-        status: 'Active',
+        operational_status: 'Active',
         data_source: 'syncNascarCalendar',
         sync_last_seen_at: now,
       };

@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
           entity_type: 'track',
           payload: {
             name: tName,
-            status: 'Active',
+            operational_status: 'Active',
             location_city: '',
             location_country: 'United States',
             external_uid: extUid,
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
             full_name: seriesName,
             discipline: 'Stock Car',
             sanctioning_body: 'NASCAR',
-            status: 'Active',
+            operational_status: 'Active',
             season_year: season_year.toString(),
             data_source: 'syncNascarSchedule',
           },
