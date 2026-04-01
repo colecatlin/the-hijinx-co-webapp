@@ -50,13 +50,9 @@ Deno.serve(async (req) => {
       allPublishedEvents,
     ] = await Promise.all([
       safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
-      // Fetch all featured drivers — JS-filter for legacy/new visibility field
       safe(db.Driver.filter({ featured: true }, '-created_date', 50)),
-      // Fetch all teams — JS-filter for legacy/new status field
       safe(db.Team.list('-created_date', 50)),
-      // Fetch all tracks — JS-filter for legacy/new status field
       safe(db.Track.list('-created_date', 50)),
-      // Fetch all series — JS-filter for legacy/new status field
       safe(db.Series.list('-popularity_rank', 50)),
       safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 6)),
@@ -67,11 +63,11 @@ Deno.serve(async (req) => {
       safe(db.Event.filter({ status: 'Published' }, 'event_date', 200)),
     ]);
 
-    // ── Transitional field-compat filters (support legacy + new field names) ──
-    const isDriverVisible = (d) => d.visibility_status === 'live' || d.profile_status === 'live';
-    const isTeamActive    = (t) => t.racing_status === 'Active' || t.status === 'Active';
-    const isTrackActive   = (t) => t.operational_status === 'Active' || t.status === 'Active';
-    const isSeriesActive  = (s) => s.operational_status === 'Active' || s.status === 'Active';
+    // ── Normalized field filters (legacy OR fallbacks removed 2026-04-01) ──────
+    const isDriverVisible = (d) => d.visibility_status === 'live';
+    const isTeamActive    = (t) => t.racing_status === 'Active';
+    const isTrackActive   = (t) => t.operational_status === 'Active';
+    const isSeriesActive  = (s) => s.operational_status === 'Active' && s.is_sample !== true;
 
     const autoDrivers = (allFeaturedDrivers || []).filter(isDriverVisible);
     const autoTeams   = (allTeams   || []).filter(isTeamActive);
