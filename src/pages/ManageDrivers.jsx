@@ -69,15 +69,6 @@ export default function ManageDrivers() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
-  // Permission check for the currently-open driver edit view
-  const editingDriverRecord = selectedDriverForEdit?.id && selectedDriverForEdit.id !== 'new'
-    ? drivers.find(d => d.id === selectedDriverForEdit.id) || selectedDriverForEdit
-    : selectedDriverForEdit;
-  const {
-    canEditManagement: canEditDriverManagement,
-    canEditProtectedFields: canEditDriverProtectedFields,
-  } = useEntityEditPermission('Driver', selectedDriverForEdit?.id, editingDriverRecord);
-
   // Support deep-link: ?driverId=xxx opens that driver directly
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -102,6 +93,14 @@ export default function ManageDrivers() {
     queryKey: ['drivers', 'all'],
     queryFn: () => base44.entities.Driver.list('-updated_date', 500),
   });
+
+  // Permission check for the currently-open driver edit view
+  const editingDriverRecord = selectedDriverForEdit?.id && selectedDriverForEdit.id !== 'new'
+    ? drivers.find(d => d.id === selectedDriverForEdit.id) || selectedDriverForEdit
+    : selectedDriverForEdit;
+  const {
+    canEditManagement: canEditDriverManagement,
+  } = useEntityEditPermission('Driver', selectedDriverForEdit?.id, editingDriverRecord);
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
