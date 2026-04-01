@@ -28,9 +28,13 @@ import {
   Loader2,
   Send,
   AlertTriangle,
+  Plus,
+  Image,
 } from 'lucide-react';
 import CollaborationApprovalPanel from '@/components/registrationdashboard/CollaborationApprovalPanel';
 import EventLegitimacyPanel from '@/components/registrationdashboard/EventLegitimacyPanel';
+import EventInlineCreateModal from './EventInlineCreateModal';
+import EventMediaSection from './EventMediaSection';
 import { setupEventCollaborators } from '@/components/registrationdashboard/eventCollaboratorSetup';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 
@@ -84,7 +88,10 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     round_number: '',
     external_uid: '',
     location_note: '',
+    event_logo_url: '',
+    event_cover_image_url: '',
   });
+  const [inlineModal, setInlineModal] = useState(null); // 'track' | 'series' | null
   const [trackAcceptance, setTrackAcceptance] = useState('Pending');
   const [seriesAcceptance, setSeriesAcceptance] = useState('Pending');
   const [trackPublishApproved, setTrackPublishApproved] = useState(false);
@@ -137,6 +144,8 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
           ?.replace(/^TZ:[^|]+/, '')
           .replace(/^\|/, '')
           .trim() || '',
+        event_logo_url: event.event_logo_url || '',
+        event_cover_image_url: event.event_cover_image_url || '',
       });
       setTrackAcceptance(event.track_acceptance_status || 'Pending');
       setSeriesAcceptance(event.series_acceptance_status || 'Pending');
@@ -156,6 +165,8 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
         round_number: '',
         external_uid: '',
         location_note: '',
+        event_logo_url: '',
+        event_cover_image_url: '',
       });
       setTrackAcceptance('Pending');
       setSeriesAcceptance('Pending');
@@ -362,6 +373,8 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       round_number: formData.round_number ? parseInt(formData.round_number) : null,
       external_uid: formData.external_uid || null,
       location_note: locationNoteWithTz,
+      event_logo_url: formData.event_logo_url || null,
+      event_cover_image_url: formData.event_cover_image_url || null,
       created_by_entity_type: !selectedEventId ? (isAdmin ? 'admin' : 'track') : undefined,
       created_by_entity_id: !selectedEventId && formData.track_id && !isAdmin ? formData.track_id : undefined,
       track_acceptance_status: trackAcceptanceTarget,
@@ -499,57 +512,77 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
           <CardContent className="pt-6 space-y-6">
             {/* Track & Series */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300">
-                  Track <span className="text-red-400">*</span>
-                </Label>
-                <Select
-                  value={formData.track_id}
-                  onValueChange={v => handleChange('track_id', v)}
-                  disabled={!canEditEventCore || isLiveMode}
-                >
-                  <SelectTrigger
-                    className={`bg-[#262626] border-gray-700 text-white ${
-                      errors.track_id ? 'border-red-500' : ''
-                    }`}
-                  >
-                    <SelectValue placeholder="Select track..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    {activeTracks.map(track => (
-                      <SelectItem key={track.id} value={track.id} className="text-white">
-                        {track.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.track_id && (
-                  <p className="text-red-400 text-xs">{errors.track_id}</p>
-                )}
-              </div>
+             <div className="space-y-2">
+               <div className="flex items-center justify-between">
+                 <Label className="text-gray-300">Track <span className="text-red-400">*</span></Label>
+                 {(canEditEventCore && !isLiveMode) && (
+                   <button
+                     type="button"
+                     onClick={() => setInlineModal('track')}
+                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                   >
+                     <Plus className="w-3 h-3" /> Add New
+                   </button>
+                 )}
+               </div>
+               <Select
+                 value={formData.track_id}
+                 onValueChange={v => handleChange('track_id', v)}
+                 disabled={!canEditEventCore || isLiveMode}
+               >
+                 <SelectTrigger
+                   className={`bg-[#262626] border-gray-700 text-white ${
+                     errors.track_id ? 'border-red-500' : ''
+                   }`}
+                 >
+                   <SelectValue placeholder="Select track..." />
+                 </SelectTrigger>
+                 <SelectContent className="bg-[#262626] border-gray-700">
+                   {activeTracks.map(track => (
+                     <SelectItem key={track.id} value={track.id} className="text-white">
+                       {track.name}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+               {errors.track_id && (
+                 <p className="text-red-400 text-xs">{errors.track_id}</p>
+               )}
+             </div>
 
-              <div className="space-y-2">
-                <Label className="text-gray-300">Series</Label>
-                <Select
-                  value={formData.series_id}
-                  onValueChange={v => handleChange('series_id', v)}
-                  disabled={!canEditEventCore || isLiveMode}
-                >
-                  <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                    <SelectValue placeholder="Select series..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    <SelectItem value={null} className="text-gray-400">
-                      None
-                    </SelectItem>
-                    {activeSeries.map(series => (
-                      <SelectItem key={series.id} value={series.id} className="text-white">
-                        {series.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+             <div className="space-y-2">
+               <div className="flex items-center justify-between">
+                 <Label className="text-gray-300">Series</Label>
+                 {(canEditEventCore && !isLiveMode) && (
+                   <button
+                     type="button"
+                     onClick={() => setInlineModal('series')}
+                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                   >
+                     <Plus className="w-3 h-3" /> Add New
+                   </button>
+                 )}
+               </div>
+               <Select
+                 value={formData.series_id}
+                 onValueChange={v => handleChange('series_id', v)}
+                 disabled={!canEditEventCore || isLiveMode}
+               >
+                 <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                   <SelectValue placeholder="Select series..." />
+                 </SelectTrigger>
+                 <SelectContent className="bg-[#262626] border-gray-700">
+                   <SelectItem value={null} className="text-gray-400">
+                     None
+                   </SelectItem>
+                   {activeSeries.map(series => (
+                     <SelectItem key={series.id} value={series.id} className="text-white">
+                       {series.name}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
             </div>
 
             {/* Season */}
@@ -711,6 +744,20 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
               />
             </div>
 
+            {/* Media */}
+            <div className="space-y-3 pt-2 border-t border-gray-800">
+              <div className="flex items-center gap-2">
+                <Image className="w-4 h-4 text-gray-500" />
+                <p className="text-sm font-medium text-gray-300">Event Media <span className="text-gray-600 text-xs font-normal">(optional)</span></p>
+              </div>
+              <EventMediaSection
+                logoUrl={formData.event_logo_url}
+                coverUrl={formData.event_cover_image_url}
+                onChange={(field, val) => handleChange(field, val)}
+                disabled={!canEditEventCore}
+              />
+            </div>
+
             {/* Action Buttons */}
             {canEditEventCore && (
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-800">
@@ -796,6 +843,24 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
           </CardContent>
         </Card>
       </div>
+
+      {/* Inline create modals */}
+      <EventInlineCreateModal
+        type="track"
+        open={inlineModal === 'track'}
+        onClose={() => setInlineModal(null)}
+        onCreated={(newTrack) => {
+          handleChange('track_id', newTrack.id);
+        }}
+      />
+      <EventInlineCreateModal
+        type="series"
+        open={inlineModal === 'series'}
+        onClose={() => setInlineModal(null)}
+        onCreated={(newSeries) => {
+          handleChange('series_id', newSeries.id);
+        }}
+      />
 
       {/* Right Column - Preview + Collaboration */}
       <div className="space-y-6">

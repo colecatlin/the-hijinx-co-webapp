@@ -1,0 +1,223 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Event name"
+    },
+    "track_id": {
+      "type": "string",
+      "description": "Reference to Track"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series entity"
+    },
+    "series_name": {
+      "type": "string",
+      "description": "Series name"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season year"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Event date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "End date for multi-day events"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "PendingApproval",
+        "Published",
+        "Live",
+        "Completed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "description": "Event lifecycle state (operational status)"
+    },
+    "public_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "live",
+        "completed",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Public facing pipeline status"
+    },
+    "published_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether event is published for public visibility"
+    },
+    "round_number": {
+      "type": "number",
+      "description": "Round number in series"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "UID from external calendar feed (e.g. ICS) for deduplication"
+    },
+    "location_note": {
+      "type": "string",
+      "description": "Location text from external calendar feed"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit numeric access code"
+    },
+    "created_by_entity_type": {
+      "type": "string",
+      "enum": [
+        "track",
+        "series",
+        "admin"
+      ],
+      "default": "admin",
+      "description": "Which entity type created this event"
+    },
+    "created_by_entity_id": {
+      "type": "string",
+      "description": "ID of the Track or Series that created this event"
+    },
+    "track_acceptance_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Accepted",
+        "Rejected"
+      ],
+      "default": "Pending",
+      "description": "Track side acceptance status"
+    },
+    "series_acceptance_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Accepted",
+        "Rejected"
+      ],
+      "default": "Pending",
+      "description": "Series side acceptance status"
+    },
+    "track_accepted_by_user_id": {
+      "type": "string",
+      "description": "User ID who accepted on behalf of Track"
+    },
+    "series_accepted_by_user_id": {
+      "type": "string",
+      "description": "User ID who accepted on behalf of Series"
+    },
+    "track_accepted_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Track accepted"
+    },
+    "series_accepted_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Series accepted"
+    },
+    "track_publish_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Track approval for publishing"
+    },
+    "series_publish_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Series approval for publishing"
+    },
+    "track_publish_approved_by_user_id": {
+      "type": "string",
+      "description": "User ID who approved publish for Track"
+    },
+    "series_publish_approved_by_user_id": {
+      "type": "string",
+      "description": "User ID who approved publish for Series"
+    },
+    "track_publish_approved_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Track approved publish"
+    },
+    "series_publish_approved_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Series approved publish"
+    },
+    "points_ruleset_id": {
+      "type": "string",
+      "description": "Optional per-event override of points ruleset"
+    },
+    "published_by_user_id": {
+      "type": "string",
+      "description": "User ID who published the event"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When event was published"
+    },
+    "event_logo_url": {
+      "type": "string",
+      "description": "Square logo for Event branding (1:1 ratio recommended)"
+    },
+    "event_cover_image_url": {
+      "type": "string",
+      "description": "Wide cover image for Event header (16:9 or 2.6:1 ratio recommended)"
+    },
+    "event_media_gallery": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Gallery of event image URLs"
+    },
+    "event_promo_video_url": {
+      "type": "string",
+      "description": "Promotional video URL for the event"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized lowercase event name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Canonical slug derived from normalized name for deduplication"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Canonical unique key for deduplication"
+    },
+    "normalized_event_key": {
+      "type": "string",
+      "description": "Composite normalized key: entity_type:normalized_name:date:track:series"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source system or import job that created this record"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when last seen during a sync operation"
+    }
+  },
+  "required": [
+    "name",
+    "event_date"
+  ]
+}
