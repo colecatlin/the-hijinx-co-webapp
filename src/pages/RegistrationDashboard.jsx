@@ -876,8 +876,8 @@ export default function RegistrationDashboard() {
   return (
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
-        {/* Sticky Top Summary Bar */}
-         <div className="sticky top-0 z-50 bg-[#171717] border-b border-gray-800 px-6 py-4">
+        {/* Sticky Top Summary Bar — top-[108px] accounts for global nav: h-16 logo (64px) + nav links bar (~44px) */}
+         <div className="sticky top-[108px] z-40 bg-[#171717] border-b border-gray-800 px-6 py-4">
            <div className="max-w-7xl mx-auto">
              {(authLoading || userLoading) && (
                <div className="text-xs text-gray-500 mb-3">Loading permissions…</div>
