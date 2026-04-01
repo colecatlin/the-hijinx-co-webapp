@@ -194,7 +194,6 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.track_id) newErrors.track_id = 'Track is required';
     if (!formData.name.trim()) newErrors.name = 'Event name is required';
     if (!formData.event_date) newErrors.event_date = 'Start date is required';
     if (!formData.end_date) newErrors.end_date = 'End date is required';
