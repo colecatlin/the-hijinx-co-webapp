@@ -54,7 +54,7 @@
         "Inactive"
       ],
       "default": "Active",
-      "description": "[RaceCore] Team's operational racing activity status. Renamed from 'status'."
+      "description": "[RaceCore] Team's operational racing activity status."
     },
     "visibility_status": {
       "type": "string",
@@ -63,7 +63,7 @@
         "live"
       ],
       "default": "draft",
-      "description": "[Management] Controls public profile visibility. New field."
+      "description": "[Management] Controls public profile visibility."
     },
     "founded_year": {
       "type": "number",

@@ -137,7 +137,7 @@
         "Upcoming"
       ],
       "default": "Active",
-      "description": "[RaceCore] Series operational status. Renamed from 'status'."
+      "description": "[RaceCore] Series operational status."
     },
     "visibility_status": {
       "type": "string",
@@ -146,7 +146,7 @@
         "live"
       ],
       "default": "draft",
-      "description": "[Management] Controls public profile visibility. New field."
+      "description": "[Management] Controls public profile visibility."
     },
     "uses_rounds": {
       "type": "boolean",

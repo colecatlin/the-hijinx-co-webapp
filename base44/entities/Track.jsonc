@@ -87,7 +87,7 @@
         "Seasonal"
       ],
       "default": "Active",
-      "description": "[RaceCore] Track's operational activity status. Renamed from 'status'."
+      "description": "[RaceCore] Track's operational activity status."
     },
     "visibility_status": {
       "type": "string",
@@ -96,7 +96,7 @@
         "live"
       ],
       "default": "draft",
-      "description": "[Management] Controls public profile visibility. New field."
+      "description": "[Management] Controls public profile visibility."
     },
     "calendar_id": {
       "type": "string",

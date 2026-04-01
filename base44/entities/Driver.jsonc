@@ -113,7 +113,7 @@
         "Part Time"
       ],
       "default": "Active",
-      "description": "[RaceCore] Driver's current racing activity status. Renamed from 'status'."
+      "description": "[RaceCore] Driver's current racing activity status."
     },
     "visibility_status": {
       "type": "string",
@@ -122,7 +122,7 @@
         "live"
       ],
       "default": "draft",
-      "description": "[Management] Controls public profile visibility. Renamed from 'profile_status'."
+      "description": "[Management] Controls public profile visibility."
     },
     "featured": {
       "type": "boolean",
