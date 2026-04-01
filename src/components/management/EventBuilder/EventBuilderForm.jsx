@@ -75,6 +75,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     queryFn: () => base44.auth.me(),
     staleTime: 60000,
   });
+
   const [formData, setFormData] = useState({
     track_id: '',
     series_id: '',
@@ -217,7 +218,6 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   });
   const collaboration = collabRecords[0] || null;
 
-  // Load EntityConfirmation for publish gating
   const { data: eventEntityList = [] } = useQuery({
     queryKey: ['entityRecord', 'event', selectedEventId],
     queryFn: () => base44.entities.Entity.filter({ entity_type: 'event', source_entity_id: selectedEventId }),
@@ -234,21 +234,17 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
   const isEntityConfirmed = confirmationListEB[0]?.effective_status === 'confirmed';
 
   const createCollaboration = async (eventId, trackId, seriesId) => {
-    if (!seriesId) return; // Only create collaboration if both track and series exist
-    
+    if (!seriesId) return;
     try {
       const existing = await base44.entities.EventCollaboration.filter({ event_id: eventId });
-      if (existing.length > 0) return; // already exists
-      
-      // Call backend function to request collaboration
-      const orgType = currentUser?.role === 'admin' ? 'admin' : 'track'; // Assume track unless explicitly series
+      if (existing.length > 0) return;
+      const orgType = currentUser?.role === 'admin' ? 'admin' : 'track';
       await base44.functions.invoke('requestEventCollaboration', {
         eventId,
         trackId,
         seriesId,
         requestedByType: orgType
       });
-      
       queryClient.invalidateQueries({ queryKey: ['eventCollaboration', eventId] });
     } catch (error) {
       console.warn('Collaboration creation error:', error);
@@ -259,12 +255,11 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
     try {
       await base44.functions.invoke('ensureEventEntityLinks', { event_id: eventId });
       queryClient.invalidateQueries({ queryKey: ['entityRecord', 'event', eventId] });
-    } catch (_) { /* non-fatal — panel will retry on next load */ }
+    } catch (_) { /* non-fatal */ }
   };
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Route through syncSourceAndEntityRecord to prevent duplicates
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
         entity_type: 'event',
         payload: data,
@@ -276,11 +271,8 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       return result.data.source_record;
     },
     onSuccess: async (newEvent) => {
-      // Auto-setup EntityCollaborator links (owner + track/series owners)
       await setupEventCollaborators(newEvent, currentUser?.id);
-      // Create EventCollaboration record
       await createCollaboration(newEvent.id, newEvent.track_id, newEvent.series_id);
-      // ensureEventEntityLinks already called inside syncSourceAndEntityRecord, but invalidate caches
       invalidateAfterOperation('event_created', { eventId: newEvent.id });
       invalidateAfterOperation('event_collaboration_updated', { eventId: newEvent.id });
       toast.success('Event created successfully');
@@ -295,7 +287,6 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      // Route updates through syncSourceAndEntityRecord too
       const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
         entity_type: 'event',
         payload: { ...data, id },
@@ -329,16 +320,14 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       ? `TZ:${formData.timezone}|${formData.location_note}`
       : `TZ:${formData.timezone}`;
 
-    // Determine target status and collaboration fields
     let targetStatus = formData.status;
     let trackAcceptanceTarget = trackAcceptance;
     let seriesAcceptanceTarget = seriesAcceptance;
     let trackPublishTarget = trackPublishApproved;
     let seriesPublishTarget = seriesPublishApproved;
 
-    // On creation, set acceptance based on who creates it
     if (!selectedEventId) {
-      const orgType = currentUser?.role === 'admin' ? null : null; // admin creates both accepted
+      const orgType = currentUser?.role === 'admin' ? null : null;
       trackAcceptanceTarget = !selectedEventId && orgType === 'track' ? 'Accepted' : (!formData.track_id ? 'Pending' : 'Pending');
       seriesAcceptanceTarget = !selectedEventId && orgType === 'series' ? 'Accepted' : (!formData.series_id ? 'Pending' : 'Pending');
       if (isAdmin || !orgType) {
@@ -347,7 +336,6 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       }
     }
 
-    // Publish gating: can only publish if both sides accepted AND approved
     if (publish) {
       if (trackAcceptanceTarget !== 'Accepted' || seriesAcceptanceTarget !== 'Accepted') {
         toast.error('Both Track and Series must accept before publishing');
@@ -395,7 +383,6 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
   const handleArchive = () => {
     if (!selectedEventId) return;
-
     const archivedNote = `ARCHIVED|${formData.location_note || ''}`;
     updateMutation.mutate({
       id: selectedEventId,
@@ -483,7 +470,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       end_date: null,
       status: 'Draft',
       round_number: formData.round_number ? parseInt(formData.round_number) + 1 : null,
-      external_uid: null, // must be null — new event, new UID
+      external_uid: null,
       location_note: locationNoteWithTz,
       track_acceptance_status: 'Pending',
       series_acceptance_status: 'Pending',
@@ -493,586 +480,583 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
   const isEditing = !!selectedEventId;
   const isSaving = createMutation.isPending || updateMutation.isPending;
-
   const selectedTrack = activeTracks.find(t => t.id === formData.track_id);
   const selectedSeries = activeSeries.find(s => s.id === formData.series_id);
   const currentStatus = STATUS_OPTIONS.find(s => s.value === formData.status);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left Column - Form */}
-      <div className="lg:col-span-2 space-y-6">
-        <Card className="bg-[#171717] border-gray-800">
-          <CardHeader className="border-b border-gray-800">
-            <CardTitle className="text-white flex items-center gap-2">
-              <FileEdit className="w-5 h-5" />
-              {isEditing ? 'Edit Event' : 'Create New Event'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-6">
-            {/* Track & Series */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div className="space-y-2">
-               <div className="flex items-center justify-between">
-                 <Label className="text-gray-300">Track <span className="text-red-400">*</span></Label>
-                 {(canEditEventCore && !isLiveMode) && (
-                   <button
-                     type="button"
-                     onClick={() => setInlineModal('track')}
-                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                   >
-                     <Plus className="w-3 h-3" /> Add New
-                   </button>
-                 )}
-               </div>
-               <Select
-                 value={formData.track_id}
-                 onValueChange={v => handleChange('track_id', v)}
-                 disabled={!canEditEventCore || isLiveMode}
-               >
-                 <SelectTrigger
-                   className={`bg-[#262626] border-gray-700 text-white ${
-                     errors.track_id ? 'border-red-500' : ''
-                   }`}
-                 >
-                   <SelectValue placeholder="Select track..." />
-                 </SelectTrigger>
-                 <SelectContent className="bg-[#262626] border-gray-700">
-                   {activeTracks.map(track => (
-                     <SelectItem key={track.id} value={track.id} className="text-white">
-                       {track.name}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-               {errors.track_id && (
-                 <p className="text-red-400 text-xs">{errors.track_id}</p>
-               )}
-             </div>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Form */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="bg-[#171717] border-gray-800">
+            <CardHeader className="border-b border-gray-800">
+              <CardTitle className="text-white flex items-center gap-2">
+                <FileEdit className="w-5 h-5" />
+                {isEditing ? 'Edit Event' : 'Create New Event'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              {/* Track & Series */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-gray-300">Track <span className="text-red-400">*</span></Label>
+                    {(canEditEventCore && !isLiveMode) && (
+                      <button
+                        type="button"
+                        onClick={() => setInlineModal('track')}
+                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" /> Add New
+                      </button>
+                    )}
+                  </div>
+                  <Select
+                    value={formData.track_id}
+                    onValueChange={v => handleChange('track_id', v)}
+                    disabled={!canEditEventCore || isLiveMode}
+                  >
+                    <SelectTrigger
+                      className={`bg-[#262626] border-gray-700 text-white ${
+                        errors.track_id ? 'border-red-500' : ''
+                      }`}
+                    >
+                      <SelectValue placeholder="Select track..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      {activeTracks.map(track => (
+                        <SelectItem key={track.id} value={track.id} className="text-white">
+                          {track.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.track_id && (
+                    <p className="text-red-400 text-xs">{errors.track_id}</p>
+                  )}
+                </div>
 
-             <div className="space-y-2">
-               <div className="flex items-center justify-between">
-                 <Label className="text-gray-300">Series</Label>
-                 {(canEditEventCore && !isLiveMode) && (
-                   <button
-                     type="button"
-                     onClick={() => setInlineModal('series')}
-                     className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                   >
-                     <Plus className="w-3 h-3" /> Add New
-                   </button>
-                 )}
-               </div>
-               <Select
-                 value={formData.series_id}
-                 onValueChange={v => handleChange('series_id', v)}
-                 disabled={!canEditEventCore || isLiveMode}
-               >
-                 <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                   <SelectValue placeholder="Select series..." />
-                 </SelectTrigger>
-                 <SelectContent className="bg-[#262626] border-gray-700">
-                   <SelectItem value={null} className="text-gray-400">
-                     None
-                   </SelectItem>
-                   {activeSeries.map(series => (
-                     <SelectItem key={series.id} value={series.id} className="text-white">
-                       {series.name}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-            </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-gray-300">Series</Label>
+                    {(canEditEventCore && !isLiveMode) && (
+                      <button
+                        type="button"
+                        onClick={() => setInlineModal('series')}
+                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" /> Add New
+                      </button>
+                    )}
+                  </div>
+                  <Select
+                    value={formData.series_id}
+                    onValueChange={v => handleChange('series_id', v)}
+                    disabled={!canEditEventCore || isLiveMode}
+                  >
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                      <SelectValue placeholder="Select series..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectItem value={null} className="text-gray-400">
+                        None
+                      </SelectItem>
+                      {activeSeries.map(series => (
+                        <SelectItem key={series.id} value={series.id} className="text-white">
+                          {series.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            {/* Season */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">Season</Label>
-              <Input
-                value={formData.season}
-                onChange={e => handleChange('season', e.target.value)}
-                placeholder="e.g., 2024"
-                disabled={!canEditEventCore || isLiveMode}
-                className="bg-[#262626] border-gray-700 text-white"
-              />
-            </div>
+              {/* Season */}
+              <div className="space-y-2">
+                <Label className="text-gray-300">Season</Label>
+                <Input
+                  value={formData.season}
+                  onChange={e => handleChange('season', e.target.value)}
+                  placeholder="e.g., 2024"
+                  disabled={!canEditEventCore || isLiveMode}
+                  className="bg-[#262626] border-gray-700 text-white"
+                />
+              </div>
 
-            {/* Name & Slug */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">
-                Event Name <span className="text-red-400">*</span>
-              </Label>
-              <Input
-                value={formData.name}
-                onChange={e => handleChange('name', e.target.value)}
-                placeholder="Enter event name"
-                disabled={!canEditEventCore || isLiveMode}
-                className={`bg-[#262626] border-gray-700 text-white ${
-                  errors.name ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-gray-300">Slug</Label>
-              <Input
-                value={formData.slug}
-                onChange={e => handleChange('slug', e.target.value)}
-                placeholder="event-slug"
-                disabled={!canEditEventCore}
-                className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
-              />
-            </div>
-
-            {/* Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name & Slug */}
               <div className="space-y-2">
                 <Label className="text-gray-300">
-                  Start Date <span className="text-red-400">*</span>
+                  Event Name <span className="text-red-400">*</span>
                 </Label>
                 <Input
-                  type="date"
-                  value={formData.event_date}
-                  onChange={e => handleChange('event_date', e.target.value)}
+                  value={formData.name}
+                  onChange={e => handleChange('name', e.target.value)}
+                  placeholder="Enter event name"
                   disabled={!canEditEventCore || isLiveMode}
                   className={`bg-[#262626] border-gray-700 text-white ${
-                    errors.event_date ? 'border-red-500' : ''
+                    errors.name ? 'border-red-500' : ''
                   }`}
                 />
-                {errors.event_date && (
-                  <p className="text-red-400 text-xs">{errors.event_date}</p>
-                )}
+                {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label className="text-gray-300">
-                  End Date <span className="text-red-400">*</span>
-                </Label>
+                <Label className="text-gray-300">Slug</Label>
                 <Input
-                  type="date"
-                  value={formData.end_date}
-                  onChange={e => handleChange('end_date', e.target.value)}
-                  disabled={!canEditEventCore || isLiveMode}
-                  className={`bg-[#262626] border-gray-700 text-white ${
-                    errors.end_date ? 'border-red-500' : ''
-                  }`}
+                  value={formData.slug}
+                  onChange={e => handleChange('slug', e.target.value)}
+                  placeholder="event-slug"
+                  disabled={!canEditEventCore}
+                  className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
                 />
-                {errors.end_date && (
-                  <p className="text-red-400 text-xs">{errors.end_date}</p>
-                )}
               </div>
-            </div>
 
-            {/* Timezone */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">Timezone</Label>
-              <Select
-                value={formData.timezone}
-                onValueChange={v => handleChange('timezone', v)}
-                disabled={!canEditEventCore}
-              >
-                <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
-                  {TIMEZONES.map(tz => (
-                    <SelectItem key={tz} value={tz} className="text-white">
-                      {tz.replace('_', ' ')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-gray-300">
+                    Start Date <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={formData.event_date}
+                    onChange={e => handleChange('event_date', e.target.value)}
+                    disabled={!canEditEventCore || isLiveMode}
+                    className={`bg-[#262626] border-gray-700 text-white ${
+                      errors.event_date ? 'border-red-500' : ''
+                    }`}
+                  />
+                  {errors.event_date && (
+                    <p className="text-red-400 text-xs">{errors.event_date}</p>
+                  )}
+                </div>
 
-            {/* Status & Round */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-gray-300">
+                    End Date <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={formData.end_date}
+                    onChange={e => handleChange('end_date', e.target.value)}
+                    disabled={!canEditEventCore || isLiveMode}
+                    className={`bg-[#262626] border-gray-700 text-white ${
+                      errors.end_date ? 'border-red-500' : ''
+                    }`}
+                  />
+                  {errors.end_date && (
+                    <p className="text-red-400 text-xs">{errors.end_date}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Timezone */}
               <div className="space-y-2">
-                <Label className="text-gray-300">Status</Label>
+                <Label className="text-gray-300">Timezone</Label>
                 <Select
-                  value={formData.status}
-                  onValueChange={v => handleChange('status', v)}
+                  value={formData.timezone}
+                  onValueChange={v => handleChange('timezone', v)}
                   disabled={!canEditEventCore}
                 >
                   <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
-                    {STATUS_OPTIONS.map(status => (
-                      <SelectItem key={status.value} value={status.value} className="text-white">
-                        {status.label}
+                    {TIMEZONES.map(tz => (
+                      <SelectItem key={tz} value={tz} className="text-white">
+                        {tz.replace('_', ' ')}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Status & Round */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-gray-300">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={v => handleChange('status', v)}
+                    disabled={!canEditEventCore}
+                  >
+                    <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#262626] border-gray-700">
+                      {STATUS_OPTIONS.map(status => (
+                        <SelectItem key={status.value} value={status.value} className="text-white">
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-gray-300">Round Number</Label>
+                  <Input
+                    type="number"
+                    value={formData.round_number}
+                    onChange={e => handleChange('round_number', e.target.value)}
+                    placeholder="e.g., 1"
+                    disabled={!canEditEventCore}
+                    className="bg-[#262626] border-gray-700 text-white"
+                  />
+                </div>
+              </div>
+
+              {/* External UID */}
               <div className="space-y-2">
-                <Label className="text-gray-300">Round Number</Label>
+                <Label className="text-gray-300">External UID</Label>
                 <Input
-                  type="number"
-                  value={formData.round_number}
-                  onChange={e => handleChange('round_number', e.target.value)}
-                  placeholder="e.g., 1"
+                  value={formData.external_uid}
+                  onChange={e => handleChange('external_uid', e.target.value)}
+                  placeholder="UID from external calendar"
                   disabled={!canEditEventCore}
-                  className="bg-[#262626] border-gray-700 text-white"
+                  className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
                 />
               </div>
-            </div>
 
-            {/* External UID */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">External UID</Label>
-              <Input
-                value={formData.external_uid}
-                onChange={e => handleChange('external_uid', e.target.value)}
-                placeholder="UID from external calendar"
-                disabled={!canEditEventCore}
-                className="bg-[#262626] border-gray-700 text-white font-mono text-sm"
-              />
-            </div>
-
-            {/* Location Note */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">Location Note</Label>
-              <Textarea
-                value={formData.location_note}
-                onChange={e => handleChange('location_note', e.target.value)}
-                placeholder="Additional location details..."
-                disabled={!canEditEventCore}
-                className="bg-[#262626] border-gray-700 text-white min-h-[80px]"
-              />
-            </div>
-
-            {/* Media */}
-            <div className="space-y-3 pt-2 border-t border-gray-800">
-              <div className="flex items-center gap-2">
-                <Image className="w-4 h-4 text-gray-500" />
-                <p className="text-sm font-medium text-gray-300">Event Media <span className="text-gray-600 text-xs font-normal">(optional)</span></p>
+              {/* Location Note */}
+              <div className="space-y-2">
+                <Label className="text-gray-300">Location Note</Label>
+                <Textarea
+                  value={formData.location_note}
+                  onChange={e => handleChange('location_note', e.target.value)}
+                  placeholder="Additional location details..."
+                  disabled={!canEditEventCore}
+                  className="bg-[#262626] border-gray-700 text-white min-h-[80px]"
+                />
               </div>
-              <EventMediaSection
-                logoUrl={formData.event_logo_url}
-                coverUrl={formData.event_cover_image_url}
-                onChange={(field, val) => handleChange(field, val)}
-                disabled={!canEditEventCore}
-              />
-            </div>
 
-            {/* Action Buttons */}
-            {canEditEventCore && (
-              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-800">
-                <Button
-                  onClick={() => handleSave(false)}
-                  disabled={isSaving}
-                  className="bg-gray-700 hover:bg-gray-600 text-white"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
-                  {isEditing ? 'Update Draft' : 'Save Draft'}
-                </Button>
-                {(() => {
-                  const publishReady = trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved && isEntityConfirmed;
-                  const publishDisabled = isSaving || !publishReady;
-                  const publishTitle = !isEntityConfirmed
-                    ? 'Event must be confirmed by required parties before publishing'
-                    : !publishReady
-                    ? 'Event awaiting dual acceptance and approval'
-                    : 'Publish event';
-                  return (
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        onClick={() => handleSave(true)}
-                        disabled={publishDisabled}
-                        className={publishReady ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
-                        title={publishTitle}
-                      >
-                        <Send className="w-4 h-4 mr-2" />
-                        {publishReady ? 'Publish Event' : 'Pending Approval'}
-                      </Button>
-                      {!isEntityConfirmed && selectedEventId && (
-                        <p className="text-xs text-amber-400 flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          Event must be confirmed by required parties before publishing
-                        </p>
-                      )}
-                    </div>
-                  );
-                })()}
-                {isEditing && (
-                  <>
-                    <Button
-                      onClick={handleDuplicate}
-                      disabled={isSaving}
-                      variant="outline"
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Duplicate
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (isLiveMode && onArchiveAttempt) {
-                          onArchiveAttempt();
-                        } else {
-                          handleArchive();
-                        }
-                      }}
-                      disabled={isSaving}
-                      variant="outline"
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                    >
-                      <Archive className="w-4 h-4 mr-2" />
-                      Archive
-                    </Button>
-                  </>
-                )}
+              {/* Media */}
+              <div className="space-y-3 pt-2 border-t border-gray-800">
+                <div className="flex items-center gap-2">
+                  <Image className="w-4 h-4 text-gray-500" />
+                  <p className="text-sm font-medium text-gray-300">Event Media <span className="text-gray-600 text-xs font-normal">(optional)</span></p>
+                </div>
+                <EventMediaSection
+                  logoUrl={formData.event_logo_url}
+                  coverUrl={formData.event_cover_image_url}
+                  onChange={(field, val) => handleChange(field, val)}
+                  disabled={!canEditEventCore}
+                />
               </div>
-            )}
 
-            {!canEditEventCore && (
-              <div className="pt-4 border-t border-gray-800">
-                <p className="text-amber-500 text-sm flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  You do not have planning rights to edit this event
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Inline create modals */}
-      <EventInlineCreateModal
-        type="track"
-        open={inlineModal === 'track'}
-        onClose={() => setInlineModal(null)}
-        onCreated={(newTrack) => {
-          handleChange('track_id', newTrack.id);
-        }}
-      />
-      <EventInlineCreateModal
-        type="series"
-        open={inlineModal === 'series'}
-        onClose={() => setInlineModal(null)}
-        onCreated={(newSeries) => {
-          handleChange('series_id', newSeries.id);
-        }}
-      />
-
-      {/* Right Column - Preview + Collaboration */}
-      <div className="space-y-6">
-        {selectedEventId && (
-          <>
-            <EventLegitimacyPanel
-              selectedEventId={selectedEventId}
-              event={event}
-              isAdmin={isAdmin}
-              currentUser={currentUser}
-              invalidateAfterOperation={invalidateAfterOperation}
-            />
-
-            <CollaborationApprovalPanel
-              eventId={selectedEventId}
-              isAdmin={isAdmin}
-              currentUser={currentUser}
-            />
-            
-            {/* Acceptance & Publish Approval Cards */}
-            {(canEditEventCore || isAdmin) && (
-              <>
-                <Card className="bg-blue-900/20 border-blue-800">
-                  <CardHeader className="border-b border-blue-800 pb-3">
-                    <CardTitle className="text-white text-sm flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      Track Acceptance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4 space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-300">Status:</span>
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                        trackAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
-                        trackAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
-                        'bg-amber-900/50 text-amber-300'
-                      }`}>
-                        {trackAcceptance}
-                      </span>
-                    </div>
-                    {trackAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleTrackAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
-                          Accept
-                        </Button>
-                        <Button size="sm" onClick={() => handleTrackAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
-                          Reject
-                        </Button>
-                      </div>
+              {/* Action Buttons */}
+              {canEditEventCore && (
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-800">
+                  <Button
+                    onClick={() => handleSave(false)}
+                    disabled={isSaving}
+                    className="bg-gray-700 hover:bg-gray-600 text-white"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
                     )}
-                  </CardContent>
-                </Card>
+                    {isEditing ? 'Update Draft' : 'Save Draft'}
+                  </Button>
+                  {(() => {
+                    const publishReady = trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && trackPublishApproved && seriesPublishApproved && isEntityConfirmed;
+                    const publishDisabled = isSaving || !publishReady;
+                    const publishTitle = !isEntityConfirmed
+                      ? 'Event must be confirmed by required parties before publishing'
+                      : !publishReady
+                      ? 'Event awaiting dual acceptance and approval'
+                      : 'Publish event';
+                    return (
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          onClick={() => handleSave(true)}
+                          disabled={publishDisabled}
+                          className={publishReady ? "bg-green-700 hover:bg-green-600 text-white" : "bg-gray-700 text-gray-400 cursor-not-allowed"}
+                          title={publishTitle}
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          {publishReady ? 'Publish Event' : 'Pending Approval'}
+                        </Button>
+                        {!isEntityConfirmed && selectedEventId && (
+                          <p className="text-xs text-amber-400 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            Event must be confirmed by required parties before publishing
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {isEditing && (
+                    <>
+                      <Button
+                        onClick={handleDuplicate}
+                        disabled={isSaving}
+                        variant="outline"
+                        className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Duplicate
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (isLiveMode && onArchiveAttempt) {
+                            onArchiveAttempt();
+                          } else {
+                            handleArchive();
+                          }
+                        }}
+                        disabled={isSaving}
+                        variant="outline"
+                        className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                      >
+                        <Archive className="w-4 h-4 mr-2" />
+                        Archive
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
 
-                {formData.series_id && (
-                  <Card className="bg-purple-900/20 border-purple-800">
-                    <CardHeader className="border-b border-purple-800 pb-3">
+              {!canEditEventCore && (
+                <div className="pt-4 border-t border-gray-800">
+                  <p className="text-amber-500 text-sm flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    You do not have planning rights to edit this event
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Preview + Collaboration */}
+        <div className="space-y-6">
+          {selectedEventId && (
+            <>
+              <EventLegitimacyPanel
+                selectedEventId={selectedEventId}
+                event={event}
+                isAdmin={isAdmin}
+                currentUser={currentUser}
+                invalidateAfterOperation={invalidateAfterOperation}
+              />
+
+              <CollaborationApprovalPanel
+                eventId={selectedEventId}
+                isAdmin={isAdmin}
+                currentUser={currentUser}
+              />
+
+              {(canEditEventCore || isAdmin) && (
+                <>
+                  <Card className="bg-blue-900/20 border-blue-800">
+                    <CardHeader className="border-b border-blue-800 pb-3">
                       <CardTitle className="text-white text-sm flex items-center gap-2">
                         <Shield className="w-4 h-4" />
-                        Series Acceptance
+                        Track Acceptance
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-4 space-y-3">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-300">Status:</span>
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          seriesAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
-                          seriesAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
+                          trackAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
+                          trackAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
                           'bg-amber-900/50 text-amber-300'
                         }`}>
-                          {seriesAcceptance}
+                          {trackAcceptance}
                         </span>
                       </div>
-                      {seriesAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
+                      {trackAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => handleSeriesAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
+                          <Button size="sm" onClick={() => handleTrackAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
                             Accept
                           </Button>
-                          <Button size="sm" onClick={() => handleSeriesAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
+                          <Button size="sm" onClick={() => handleTrackAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
                             Reject
                           </Button>
                         </div>
                       )}
                     </CardContent>
                   </Card>
-                )}
 
-                {trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && (
-                  <>
-                    <Card className="bg-blue-900/20 border-blue-800">
-                      <CardHeader className="border-b border-blue-800 pb-3">
-                        <CardTitle className="text-white text-sm">Track Publish Approval</CardTitle>
+                  {formData.series_id && (
+                    <Card className="bg-purple-900/20 border-purple-800">
+                      <CardHeader className="border-b border-purple-800 pb-3">
+                        <CardTitle className="text-white text-sm flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Series Acceptance
+                        </CardTitle>
                       </CardHeader>
-                      <CardContent className="pt-4">
-                        <button
-                          onClick={() => handleTrackPublishApproval()}
-                          className={`w-full px-4 py-2 rounded text-sm font-medium transition-colors ${
-                            trackPublishApproved
-                              ? 'bg-green-900/50 text-green-300 border border-green-700'
-                              : 'bg-gray-900/50 text-gray-400 border border-gray-700 hover:bg-gray-800/50'
-                          }`}
-                        >
-                          {trackPublishApproved ? '✓ Approved' : 'Not Approved'}
-                        </button>
+                      <CardContent className="pt-4 space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-300">Status:</span>
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            seriesAcceptance === 'Accepted' ? 'bg-green-900/50 text-green-300' :
+                            seriesAcceptance === 'Rejected' ? 'bg-red-900/50 text-red-300' :
+                            'bg-amber-900/50 text-amber-300'
+                          }`}>
+                            {seriesAcceptance}
+                          </span>
+                        </div>
+                        {seriesAcceptance === 'Pending' && (canEditEventCore || isAdmin) && (
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => handleSeriesAccept(true)} className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs h-8">
+                              Accept
+                            </Button>
+                            <Button size="sm" onClick={() => handleSeriesAccept(false)} variant="outline" className="flex-1 border-red-700 text-red-400 hover:bg-red-900/20 text-xs h-8">
+                              Reject
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
+                  )}
 
-                    {formData.series_id && (
-                      <Card className="bg-purple-900/20 border-purple-800">
-                        <CardHeader className="border-b border-purple-800 pb-3">
-                          <CardTitle className="text-white text-sm">Series Publish Approval</CardTitle>
+                  {trackAcceptance === 'Accepted' && seriesAcceptance === 'Accepted' && (
+                    <>
+                      <Card className="bg-blue-900/20 border-blue-800">
+                        <CardHeader className="border-b border-blue-800 pb-3">
+                          <CardTitle className="text-white text-sm">Track Publish Approval</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-4">
                           <button
-                            onClick={() => handleSeriesPublishApproval()}
+                            onClick={() => handleTrackPublishApproval()}
                             className={`w-full px-4 py-2 rounded text-sm font-medium transition-colors ${
-                              seriesPublishApproved
+                              trackPublishApproved
                                 ? 'bg-green-900/50 text-green-300 border border-green-700'
                                 : 'bg-gray-900/50 text-gray-400 border border-gray-700 hover:bg-gray-800/50'
                             }`}
                           >
-                            {seriesPublishApproved ? '✓ Approved' : 'Not Approved'}
+                            {trackPublishApproved ? '✓ Approved' : 'Not Approved'}
                           </button>
                         </CardContent>
                       </Card>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </>
-        )}
-        <Card className="bg-[#171717] border-gray-800">
-          <CardHeader className="border-b border-gray-800">
-            <CardTitle className="text-white text-sm">Event Preview</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div>
-              <h3 className="text-lg font-bold text-white">
-                {formData.name || 'Untitled Event'}
-              </h3>
-              {currentStatus && (
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white mt-2 ${currentStatus.color}`}
-                >
-                  {currentStatus.label}
-                </span>
-              )}
-            </div>
 
-            <div className="space-y-3 text-sm">
-              {selectedTrack && (
-                <div className="flex items-start gap-2 text-gray-400">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span className="text-white">{selectedTrack.name}</span>
-                  {selectedTrack.location_city && (
-                    <span>, {selectedTrack.location_city}</span>
+                      {formData.series_id && (
+                        <Card className="bg-purple-900/20 border-purple-800">
+                          <CardHeader className="border-b border-purple-800 pb-3">
+                            <CardTitle className="text-white text-sm">Series Publish Approval</CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-4">
+                            <button
+                              onClick={() => handleSeriesPublishApproval()}
+                              className={`w-full px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                seriesPublishApproved
+                                  ? 'bg-green-900/50 text-green-300 border border-green-700'
+                                  : 'bg-gray-900/50 text-gray-400 border border-gray-700 hover:bg-gray-800/50'
+                              }`}
+                            >
+                              {seriesPublishApproved ? '✓ Approved' : 'Not Approved'}
+                            </button>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </>
                   )}
-                </div>
+                </>
               )}
+            </>
+          )}
 
-              {selectedSeries && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Hash className="w-4 h-4" />
-                  <span className="text-white">{selectedSeries.name}</span>
-                </div>
-              )}
-
-              {formData.season && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-white">Season {formData.season}</span>
-                </div>
-              )}
-
-              {formData.event_date && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-white">
-                    {formData.event_date}
-                    {formData.end_date && formData.end_date !== formData.event_date && (
-                      <> - {formData.end_date}</>
-                    )}
+          <Card className="bg-[#171717] border-gray-800">
+            <CardHeader className="border-b border-gray-800">
+              <CardTitle className="text-white text-sm">Event Preview</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {formData.name || 'Untitled Event'}
+                </h3>
+                {currentStatus && (
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white mt-2 ${currentStatus.color}`}
+                  >
+                    {currentStatus.label}
                   </span>
-                </div>
-              )}
-
-              {formData.round_number && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Hash className="w-4 h-4" />
-                  <span className="text-white">Round {formData.round_number}</span>
-                </div>
-              )}
-
-              {formData.external_uid && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Link className="w-4 h-4" />
-                  <span className="text-white font-mono text-xs">
-                    {formData.external_uid}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {formData.location_note && (
-              <div className="pt-3 border-t border-gray-800">
-                <p className="text-xs text-gray-500">Location Note</p>
-                <p className="text-sm text-gray-300 mt-1">{formData.location_note}</p>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              <div className="space-y-3 text-sm">
+                {selectedTrack && (
+                  <div className="flex items-start gap-2 text-gray-400">
+                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span className="text-white">{selectedTrack.name}</span>
+                    {selectedTrack.location_city && (
+                      <span>, {selectedTrack.location_city}</span>
+                    )}
+                  </div>
+                )}
+
+                {selectedSeries && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Hash className="w-4 h-4" />
+                    <span className="text-white">{selectedSeries.name}</span>
+                  </div>
+                )}
+
+                {formData.season && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-white">Season {formData.season}</span>
+                  </div>
+                )}
+
+                {formData.event_date && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-white">
+                      {formData.event_date}
+                      {formData.end_date && formData.end_date !== formData.event_date && (
+                        <> - {formData.end_date}</>
+                      )}
+                    </span>
+                  </div>
+                )}
+
+                {formData.round_number && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Hash className="w-4 h-4" />
+                    <span className="text-white">Round {formData.round_number}</span>
+                  </div>
+                )}
+
+                {formData.external_uid && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Link className="w-4 h-4" />
+                    <span className="text-white font-mono text-xs">
+                      {formData.external_uid}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {formData.location_note && (
+                <div className="pt-3 border-t border-gray-800">
+                  <p className="text-xs text-gray-500">Location Note</p>
+                  <p className="text-sm text-gray-300 mt-1">{formData.location_note}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+
+      {/* Inline create modals — outside grid, portaled to body by Radix Dialog */}
+      <EventInlineCreateModal
+        type="track"
+        open={inlineModal === 'track'}
+        onClose={() => setInlineModal(null)}
+        onCreated={(newTrack) => handleChange('track_id', newTrack.id)}
+      />
+      <EventInlineCreateModal
+        type="series"
+        open={inlineModal === 'series'}
+        onClose={() => setInlineModal(null)}
+        onCreated={(newSeries) => handleChange('series_id', newSeries.id)}
+      />
+    </>
   );
 }
