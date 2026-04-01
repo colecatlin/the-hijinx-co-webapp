@@ -350,7 +350,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
 
     const eventData = {
       track_id: formData.track_id,
-      series_id: formData.series_id || null,
+      series_id: (formData.series_id && formData.series_id !== '') ? formData.series_id : null,
       series_name: selectedSeries?.name || null,
       season: formData.season,
       name: formData.name.trim(),
@@ -461,7 +461,7 @@ export default function EventBuilderForm({ selectedEventId, onEventCreated, isAd
       : `TZ:${formData.timezone}`;
     const duplicatedData = {
       track_id: formData.track_id,
-      series_id: formData.series_id || null,
+      series_id: (formData.series_id && formData.series_id !== '') ? formData.series_id : null,
       series_name: selectedSeries?.name || null,
       season: formData.season,
       name: `${formData.name} Copy`,
