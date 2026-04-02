@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import MediaProfileTab from '@/components/profile/MediaProfileTab';
 import { Label } from '@/components/ui/label';
-import { Save, LogOut, Lock, ChevronRight, CheckCircle2, AlertCircle, KeyRound, Users, Gauge, Star, ExternalLink, Shield, Edit, Clock, XCircle } from 'lucide-react';
+import { Save, LogOut, Lock, ChevronRight, CheckCircle2, AlertCircle, KeyRound, Users, Gauge, Star, ExternalLink, Shield, Edit, Clock, XCircle, AlertTriangle, Camera } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
@@ -106,6 +107,8 @@ export default function Profile() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
+        role_interest_category: user.role_interest_category || '',
+        newsletter_subscriber: user.newsletter_subscriber || false,
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
         favorite_series: user.favorite_series || [],
@@ -121,6 +124,8 @@ export default function Profile() {
       await base44.auth.updateMe({
         first_name: data.first_name,
         last_name: data.last_name,
+        role_interest_category: data.role_interest_category || undefined,
+        newsletter_subscriber: data.newsletter_subscriber || false,
         favorite_drivers: data.favorite_drivers || [],
         favorite_teams: data.favorite_teams || [],
         favorite_series: data.favorite_series || [],
@@ -288,11 +293,78 @@ export default function Profile() {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Preferences</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="newsletter_subscriber"
+                      checked={formData.newsletter_subscriber || false}
+                      onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })}
+                    />
+                    <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm">Subscribe to the Index46 newsletter</Label>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Button type="submit" size="lg" disabled={updateMutation.isPending}
                 className="bg-[#232323] hover:bg-black text-white gap-2 w-full sm:w-auto">
                 <Save className="w-4 h-4" />
                 {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
+
+              {/* Danger Zone */}
+              <div className="border border-red-200 rounded-xl p-5 space-y-4 bg-red-50/40">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500" />
+                  <h3 className="text-sm font-semibold text-red-700">Danger Zone</h3>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 border-t border-red-100">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Reset Onboarding</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Re-run first-time setup to update your role or preferences.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-red-200 text-red-600 hover:bg-red-50 gap-1.5 text-xs flex-shrink-0"
+                    onClick={async () => {
+                      await base44.auth.updateMe({ onboarding_complete: false }).catch(() => {});
+                      window.location.href = createPageUrl('MyDashboard');
+                    }}
+                  >
+                    Reset Onboarding
+                  </Button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 border-t border-red-100">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Request Account Deletion</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Account deletion is handled manually by our team.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-red-200 text-red-600 hover:bg-red-50 gap-1.5 text-xs flex-shrink-0"
+                    onClick={() => {
+                      base44.entities.ContactMessage.create({
+                        name: user.full_name || user.email,
+                        email: user.email,
+                        subject: 'Account Deletion Request',
+                        message: `User ${user.email} (ID: ${user.id}) has requested account deletion.`,
+                      }).catch(() => {});
+                      alert('Your deletion request has been submitted. Our team will follow up via email within 2 business days.');
+                    }}
+                  >
+                    Request Deletion
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
             {/* ── My Entities Tab ──────────────────────────────────────────── */}
@@ -613,42 +685,57 @@ export default function Profile() {
 
             {/* ── Media Tab ─────────────────────────────────────────────────── */}
             <TabsContent value="media" className="space-y-5">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Media Profile</CardTitle>
-                  <CardDescription>Your media role, portfolio links, and coverage preferences.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <MediaProfileTab user={user} />
-                </CardContent>
-              </Card>
+              {user?.role_interest_category === 'Media / Creator' ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Media Profile</CardTitle>
+                      <CardDescription>Your media role, portfolio links, and coverage preferences.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <MediaProfileTab user={user} />
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Media Contributor Access</CardTitle>
-                  <CardDescription>
-                    Apply to become an approved media contributor on the platform.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isApprovedContributor(user) ? (
-                    <MediaApplicationStatus application={mediaApplication} isContributor={true} />
-                  ) : (mediaAppSubmitted || mediaApplication) ? (
-                    <MediaApplicationStatus
-                      application={mediaAppSubmitted || mediaApplication}
-                      isContributor={false}
-                    />
-                  ) : (
-                    <MediaApplicationForm
-                      user={user}
-                      onSubmitted={(app) => {
-                        setMediaAppSubmitted(app);
-                        refetchMediaApp();
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Media Contributor Access</CardTitle>
+                      <CardDescription>Apply to become an approved media contributor on the platform.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {isApprovedContributor(user) ? (
+                        <MediaApplicationStatus application={mediaApplication} isContributor={true} />
+                      ) : (mediaAppSubmitted || mediaApplication) ? (
+                        <MediaApplicationStatus application={mediaAppSubmitted || mediaApplication} isContributor={false} />
+                      ) : (
+                        <MediaApplicationForm user={user} onSubmitted={(app) => { setMediaAppSubmitted(app); refetchMediaApp(); }} />
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <Card>
+                  <CardContent className="py-10 text-center">
+                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Camera className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <h3 className="text-base font-bold text-gray-900 mb-1">Interested in contributing media?</h3>
+                    <p className="text-sm text-gray-500 max-w-sm mx-auto mb-5">
+                      Photographers, videographers, journalists, and content creators can apply for credentials, submit assets, and be featured across the platform.
+                    </p>
+                    <p className="text-xs text-gray-400 mb-4">First, update your account type to <strong>Media / Creator</strong> in the Account tab, then return here to apply.</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => document.querySelector('[data-value="general"]')?.click()}
+                    >
+                      Go to Account Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* ── Story Tab ─────────────────────────────────────────────────── */}

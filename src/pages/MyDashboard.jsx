@@ -71,19 +71,6 @@ function EntityCard({ collaborator, onManage, onRaceCore, isPrimary, onSetPrimar
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-        {!isPrimary && (
-          <Button variant="ghost" size="sm" disabled={settingPrimary === collaborator.entity_id}
-            onClick={() => onSetPrimary(collaborator)}
-            className="gap-1.5 text-xs text-gray-400 hover:text-amber-600">
-            <Star className="w-3.5 h-3.5" />
-            {settingPrimary === collaborator.entity_id ? 'Setting...' : 'Set Primary'}
-          </Button>
-        )}
-        {collaborator.is_racecore_entity && (
-          <Button variant="outline" size="sm" onClick={() => onRaceCore(collaborator)} className="gap-1.5 text-xs">
-            <Gauge className="w-3.5 h-3.5" /> Open Race Core
-          </Button>
-        )}
         <Button variant="outline" size="sm" onClick={() => onManage(collaborator)}
           className="gap-1.5 text-xs hover:bg-[#232323] hover:text-white hover:border-[#232323] transition-colors">
           Open Editor
