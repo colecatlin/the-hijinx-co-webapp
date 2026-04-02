@@ -241,7 +241,8 @@ export default function HomepageFeaturedEntities({
                       <EntityCard
                         name={ev.name}
                         sub={ev.series_name || (ev.event_date && !isNaN(new Date(ev.event_date)) ? new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null)}
-                        imageUrl={null}
+                        imageUrl={ev.event_cover_image_url || ev.event_logo_url || null}
+                        imageType={ev.event_cover_image_url ? 'photo' : ev.event_logo_url ? 'logo' : 'photo'}
                         fallbackIcon={Calendar}
                         href={getEntityProfileUrl('Event', ev)}
                       />

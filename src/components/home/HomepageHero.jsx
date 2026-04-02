@@ -10,17 +10,17 @@ import { base44 } from '@/api/base44Client';
 const FALLBACK_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg';
 
 // Motorsports action images — used as fallbacks when no entity-specific image exists
-const MOTORSPORTS_BG_1 = 'https://images.unsplash.com/photo-1504998781941-14a1204bd6ee?w=1600&q=80&fit=crop'; // pit lane, mechanics
-const MOTORSPORTS_BG_2 = 'https://images.unsplash.com/photo-1591134119792-f8b7d56c5dd7?w=1600&q=80&fit=crop'; // racing action
+const MOTORSPORTS_BG_1 = 'https://images.unsplash.com/photo-1549317661-bd32c8ce0729?w=1600&q=80&fit=crop'; // racing pit crew action
+const MOTORSPORTS_BG_2 = 'https://images.unsplash.com/photo-1612194850099-ce09b85aeae8?w=1600&q=80&fit=crop'; // motorsports track
 
 const BRAND_SLIDES = [
   {
-    eyebrow:        'RACE CORE',
-    headline_line1: 'The operating system',
-    headline_line2: 'for motorsports.',
-    subtext:        'Event management, driver registration, results, and standings — all in one platform.',
-    cta_primary:    { label: 'Open Race Core',      page: 'Registration',    Icon: Gauge },
-    cta_secondary:  { label: 'Explore Motorsports', page: 'MotorsportsHome', Icon: Globe },
+    eyebrow:        'HIJINX',
+    headline_line1: 'Where motorsports',
+    headline_line2: 'lives online.',
+    subtext:        'Drivers, teams, tracks, series, and results — tracked and searchable in one place.',
+    cta_primary:    { label: 'Explore INDEX46',    page: 'MotorsportsHome', Icon: Globe },
+    cta_secondary:  { label: 'Read The Outlet',   page: 'OutletHome',      Icon: Newspaper },
     bgImage: MOTORSPORTS_BG_1,
   },
   {
@@ -28,8 +28,8 @@ const BRAND_SLIDES = [
     headline_line1: 'Motorsports culture,',
     headline_line2: 'documented.',
     subtext:        'Race reports, features, and editorial coverage from across the sport.',
-    cta_primary:    { label: 'Read The Outlet',     page: 'OutletHome',     Icon: Newspaper },
-    cta_secondary:  { label: 'Shop Apparel',        page: 'ApparelHome',    Icon: ShoppingBag },
+    cta_primary:    { label: 'Read Stories',      page: 'OutletHome',      Icon: Newspaper },
+    cta_secondary:  { label: 'Browse Drivers',    page: 'DriverDirectory', Icon: Users },
     bgImage: MOTORSPORTS_BG_2,
   },
 ];

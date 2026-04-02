@@ -67,7 +67,7 @@ export default function HomepageFinalCTA() {
             Stay in it.
           </h2>
           <p className="text-white/50 text-sm leading-relaxed mb-10 max-w-sm mx-auto">
-            Get race results, editorial drops, and platform updates — straight to your inbox.
+            Race results, editorial drops, and new profiles — first to your inbox.
           </p>
 
           <SubscribeForm />
@@ -78,26 +78,17 @@ export default function HomepageFinalCTA() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.7 }}
-            className="mt-10 flex flex-col items-center gap-4"
+            className="mt-10 flex items-center justify-center gap-5"
           >
-            <div className="flex items-center gap-5">
-              <span className="font-mono text-[9px] tracking-[0.3em] text-white/30 uppercase">Follow along</span>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"
-                className="p-2 text-white/30 hover:text-[#00FFDA] transition-colors">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
-                className="p-2 text-white/30 hover:text-[#00FFDA] transition-colors">
-                <Youtube className="w-4 h-4" />
-              </a>
-            </div>
-
-            <Link
-              to={createPageUrl('MotorsportsHome')}
-              className="group inline-flex items-center gap-2 mt-2 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#00FFDA] uppercase transition-colors"
-            >
-              Explore the Platform <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            <span className="font-mono text-[9px] tracking-[0.3em] text-white/30 uppercase">Follow along</span>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"
+              className="p-2 text-white/30 hover:text-[#00FFDA] transition-colors">
+              <Instagram className="w-4 h-4" />
+            </a>
+            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
+              className="p-2 text-white/30 hover:text-[#00FFDA] transition-colors">
+              <Youtube className="w-4 h-4" />
+            </a>
           </motion.div>
 
           <motion.div
