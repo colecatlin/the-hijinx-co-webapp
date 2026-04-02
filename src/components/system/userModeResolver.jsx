@@ -18,6 +18,8 @@ export function getUserMode({ user, collaborators = [], mediaProfile = null }) {
   if (hasOwner) return 'entity_owner';
   if (hasAny) return 'entity_editor';
   if (isApprovedMedia || hasContributorAccess) return 'media_user';
+  // Intent-based: media-identified users get media_user experience (no authority granted)
+  if (user.role_interest_category === 'Media / Creator') return 'media_user';
   return 'fan';
 }
 

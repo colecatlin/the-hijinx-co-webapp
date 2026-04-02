@@ -1,99 +1,66 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
+import { ExternalLink } from 'lucide-react';
 
-export default function FavoritesTab({
-  formData,
-  drivers,
-  teams,
-  series,
-  tracks,
-  toggleFavorite,
-}) {
+export default function FavoritesTab({ formData }) {
+  const counts = {
+    drivers: (formData?.favorite_drivers || []).length,
+    teams: (formData?.favorite_teams || []).length,
+    series: (formData?.favorite_series || []).length,
+    tracks: (formData?.favorite_tracks || []).length,
+  };
+  const total = counts.drivers + counts.teams + counts.series + counts.tracks;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-50 p-6 rounded-lg space-y-6"
-    >
-      <h2 className="text-xl font-bold text-[#232323] flex items-center gap-2">
-        <Heart className="w-5 h-5" />
-        Your Favorites
-      </h2>
-
-      {/* Favorite Drivers */}
-      <div>
-        <Label className="text-base mb-3 block">Favorite Drivers</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {drivers.map((driver) => (
-            <div key={driver.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={formData.favorite_drivers.includes(driver.id)}
-                onCheckedChange={() => toggleFavorite('drivers', driver.id)}
-              />
-              <label className="text-sm text-[#232323] cursor-pointer">
-                {driver.name} {driver.number ? `#${driver.number}` : ''}
-              </label>
-            </div>
-          ))}
+    <div className="space-y-4">
+      {total === 0 ? (
+        <p className="text-sm text-gray-500">
+          You haven't followed any drivers, teams, tracks, or series yet. Visit their pages to follow them.
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {counts.drivers > 0 && (
+            <span className="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-medium">
+              {counts.drivers} Driver{counts.drivers !== 1 ? 's' : ''}
+            </span>
+          )}
+          {counts.teams > 0 && (
+            <span className="px-3 py-1.5 text-xs bg-purple-50 text-purple-700 border border-purple-200 rounded-lg font-medium">
+              {counts.teams} Team{counts.teams !== 1 ? 's' : ''}
+            </span>
+          )}
+          {counts.series > 0 && (
+            <span className="px-3 py-1.5 text-xs bg-orange-50 text-orange-700 border border-orange-200 rounded-lg font-medium">
+              {counts.series} Series
+            </span>
+          )}
+          {counts.tracks > 0 && (
+            <span className="px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-lg font-medium">
+              {counts.tracks} Track{counts.tracks !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
+      )}
+
+      <div className="flex flex-wrap gap-4">
+        {[
+          { label: 'Browse Drivers', page: 'DriverDirectory' },
+          { label: 'Browse Teams', page: 'TeamDirectory' },
+          { label: 'Browse Series', page: 'SeriesHome' },
+          { label: 'Browse Tracks', page: 'TrackDirectory' },
+        ].map(({ label, page }) => (
+          <Link key={page} to={createPageUrl(page)}>
+            <span className="text-xs text-gray-400 hover:text-gray-700 flex items-center gap-1 transition-colors">
+              <ExternalLink className="w-3 h-3" /> {label}
+            </span>
+          </Link>
+        ))}
       </div>
 
-      {/* Favorite Teams */}
-      <div>
-        <Label className="text-base mb-3 block">Favorite Teams</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {teams.map((team) => (
-            <div key={team.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={formData.favorite_teams.includes(team.id)}
-                onCheckedChange={() => toggleFavorite('teams', team.id)}
-              />
-              <label className="text-sm text-[#232323] cursor-pointer">
-                {team.name}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Favorite Series */}
-      <div>
-        <Label className="text-base mb-3 block">Favorite Series</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {series.map((s) => (
-            <div key={s.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={formData.favorite_series.includes(s.id)}
-                onCheckedChange={() => toggleFavorite('series', s.id)}
-              />
-              <label className="text-sm text-[#232323] cursor-pointer">
-                {s.name}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Favorite Tracks */}
-      <div>
-        <Label className="text-base mb-3 block">Favorite Tracks</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {tracks.map((track) => (
-            <div key={track.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={formData.favorite_tracks.includes(track.id)}
-                onCheckedChange={() => toggleFavorite('tracks', track.id)}
-              />
-              <label className="text-sm text-[#232323] cursor-pointer">
-                {track.name}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+      <p className="text-xs text-gray-400">
+        Personalized content based on your follows is coming soon.
+      </p>
+    </div>
   );
 }

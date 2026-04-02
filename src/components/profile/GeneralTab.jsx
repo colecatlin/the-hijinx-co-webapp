@@ -1,104 +1,34 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { User } from 'lucide-react';
-import { motion } from 'framer-motion';
-import DateInput from '@/components/shared/DateInput';
 
 export default function GeneralTab({ user, formData, setFormData }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-50 p-6 rounded-lg space-y-6"
-    >
-      <h2 className="text-xl font-bold text-[#232323] flex items-center gap-2">
-        <User className="w-5 h-5" />
-        Basic Information
-      </h2>
-
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="first_name">First Name</Label>
-            <Input
-              id="first_name"
-              value={formData.first_name || ''}
-              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="last_name">Last Name</Label>
-            <Input
-              id="last_name"
-              value={formData.last_name || ''}
-              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-            />
-          </div>
-        </div>
-
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="display_name">Display Name</Label>
+          <Label htmlFor="first_name">First Name</Label>
           <Input
-            id="display_name"
-            value={formData.display_name || ''}
-            onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-            placeholder="e.g., RacingFanatic23"
+            id="first_name"
+            value={formData.first_name || ''}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            className="mt-1"
           />
         </div>
-
         <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" value={user.email} disabled className="bg-gray-100" />
-        </div>
-
-        <div>
-          <Label>Date of Birth</Label>
-          <div className="mt-1">
-            <DateInput
-              value={formData.birth_date}
-              onChange={(value) => setFormData({ ...formData, birth_date: value })}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              value={formData.city || ''}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="state">State/Region</Label>
-            <Input
-              id="state"
-              value={formData.state || ''}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              value={formData.country || ''}
-              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="newsletter_subscriber"
-            checked={formData.newsletter_subscriber || false}
-            onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })}
+          <Label htmlFor="last_name">Last Name</Label>
+          <Input
+            id="last_name"
+            value={formData.last_name || ''}
+            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            className="mt-1"
           />
-          <Label htmlFor="newsletter_subscriber" className="cursor-pointer">Subscribe to newsletter</Label>
         </div>
       </div>
-    </motion.div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" value={user?.email || ''} disabled className="bg-gray-100 mt-1" />
+      </div>
+    </div>
   );
 }

@@ -235,18 +235,7 @@ export default function MyDashboard() {
             buildEditorUrl={buildEditorUrl}
           />
 
-          {/* Driver profile completion prompt — shown to driver owners with incomplete profiles */}
-          {!isLoading && user && user.primary_entity_type === 'Driver' && user.primary_entity_id && (
-            <DriverCompletionPrompt user={user} />
-          )}
 
-          {/* Pending claims + invitations — shown for all users, fan or entity */}
-          {user && !isLoading && <PendingAccessSection user={user} />}
-
-          {/* Primary entity prompt — shown when user has entities but no primary set */}
-          {!isLoading && hasEntities && !primaryEntity && !primaryStale && (
-            <PrimaryEntityPrompt user={user} entities={resolvedEntities} />
-          )}
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -332,18 +321,6 @@ export default function MyDashboard() {
 
           {!isLoading && !hasEntities && <div className="border-t border-gray-100" />}
 
-          {/* Mode-aware dashboard banner */}
-          {!isLoading && (
-            <DashboardModeBanner
-              user={user}
-              collaborators={resolvedEntities}
-              mediaProfile={mediaProfile}
-              raceCoreTarget={raceCoreTarget}
-              primaryEntity={primaryEntity}
-              buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
-              buildEditorUrl={buildEditorUrl}
-            />
-          )}
 
           {/* Media-specific prompts — shown for users who self-identified as Media / Creator */}
           {!isLoading && user?.role_interest_category === 'Media / Creator' && (
@@ -360,6 +337,9 @@ export default function MyDashboard() {
             <h2 className="text-base font-semibold text-gray-900">My Activity</h2>
             <MyEntriesSection user={user} isLoading={userLoading} />
           </div>
+
+          {/* Pending invitations and access */}
+          {user && !isLoading && <PendingAccessSection user={user} />}
 
           <div className="border-t border-gray-100" />
 

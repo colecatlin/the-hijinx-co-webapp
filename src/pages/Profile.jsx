@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import MediaProfileTab from '@/components/profile/MediaProfileTab';
 import { Label } from '@/components/ui/label';
 import { Save, LogOut, Lock, ChevronRight, CheckCircle2, AlertCircle, KeyRound, Users, Gauge, Star, ExternalLink, Shield, Edit, Clock, XCircle } from 'lucide-react';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
@@ -28,6 +28,7 @@ import AccountStatusCard from '@/components/profile/AccountStatusCard';
 import MediaApplicationForm from '@/components/media/portal/MediaApplicationForm';
 import MediaApplicationStatus from '@/components/media/portal/MediaApplicationStatus';
 import { isApprovedContributor } from '@/components/media/mediaPermissions';
+import { getUserMode } from '@/components/system/userModeResolver';
 import {
   getResolvedManagedEntities,
   buildRaceCoreLaunchUrl,
@@ -66,10 +67,7 @@ export default function Profile() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: drivers = [] } = useQuery({ queryKey: QueryKeys.drivers.list(), queryFn: () => base44.entities.Driver.list() });
-  const { data: teams = [] } = useQuery({ queryKey: QueryKeys.teams.list(), queryFn: () => base44.entities.Team.list() });
-  const { data: series = [] } = useQuery({ queryKey: QueryKeys.series.list(), queryFn: () => base44.entities.Series.list() });
-  const { data: tracks = [] } = useQuery({ queryKey: QueryKeys.tracks.list(), queryFn: () => base44.entities.Track.list() });
+
 
   const { data: resolvedEntities = [] } = useQuery({
     queryKey: QueryKeys.managedCollaborations.byUser(user?.id),
@@ -108,12 +106,6 @@ export default function Profile() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        display_name: user.display_name || '',
-        birth_date: user.birth_date || null,
-        city: user.city || '',
-        state: user.state || '',
-        country: user.country || '',
-        newsletter_subscriber: user.newsletter_subscriber || false,
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
         favorite_series: user.favorite_series || [],
@@ -129,19 +121,11 @@ export default function Profile() {
       await base44.auth.updateMe({
         first_name: data.first_name,
         last_name: data.last_name,
-        display_name: data.display_name,
-        birth_date: data.birth_date,
-        city: data.city,
-        state: data.state,
-        country: data.country,
-        newsletter_subscriber: data.newsletter_subscriber,
-        // Include favorites so they persist
         favorite_drivers: data.favorite_drivers || [],
         favorite_teams: data.favorite_teams || [],
         favorite_series: data.favorite_series || [],
         favorite_tracks: data.favorite_tracks || [],
       });
-      // Non-critical secondary update — soft-fail so it never blocks a profile save
       base44.functions.invoke('updateUserProfile', { formData: data }).catch(() => {});
     },
     onSuccess: () => invalidateDataGroups(queryClient, ['profile']),
@@ -163,6 +147,8 @@ export default function Profile() {
   };
   const handleLogout = () => base44.auth.logout(createPageUrl('Home'));
 
+  const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile: null });
+  const isMediaUser = mode === 'media_user';
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
   const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
   const hasCollaborations = resolvedEntities.length > 0;
@@ -270,7 +256,7 @@ export default function Profile() {
                   { value: 'my_entities', label: hasCollaborations ? `My Entities (${resolvedEntities.length})` : 'My Entities' },
                   { value: 'access_codes', label: 'Access & Setup' },
                   { value: 'story', label: 'Story' },
-                  { value: 'media', label: 'Media' },
+                  ...(isMediaUser ? [{ value: 'media', label: 'Media' }] : [{ value: 'media', label: 'Media' }]),
                 ].map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value}
                     className="rounded-none px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-500 hover:text-gray-900">
@@ -294,22 +280,11 @@ export default function Profile() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Fan Preferences</CardTitle>
-                  <CardDescription>Follow drivers, teams, tracks, and series.</CardDescription>
+                  <CardTitle className="text-base">Follows</CardTitle>
+                  <CardDescription>Drivers, teams, tracks, and series you follow.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <FavoritesTab formData={formData} drivers={drivers} teams={teams} series={series} tracks={tracks} toggleFavorite={toggleFavorite} />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader><CardTitle className="text-base">Preferences</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <Switch id="newsletter_subscriber" checked={formData.newsletter_subscriber || false}
-                      onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })} />
-                    <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm">Subscribe to the Index46 newsletter</Label>
-                  </div>
+                  <FavoritesTab formData={formData} />
                 </CardContent>
               </Card>
 
@@ -322,6 +297,7 @@ export default function Profile() {
 
             {/* ── My Entities Tab ──────────────────────────────────────────── */}
             <TabsContent value="my_entities" className="space-y-5">
+              <p className="text-sm text-gray-500 px-1">Full access management — set your primary entity, manage collaborators, track claim requests, and accept pending invitations.</p>
 
               {/* Fan mode — no collaborations, no invitations */}
               {!hasCollaborations && invitations.length === 0 && (
@@ -637,6 +613,16 @@ export default function Profile() {
 
             {/* ── Media Tab ─────────────────────────────────────────────────── */}
             <TabsContent value="media" className="space-y-5">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Media Profile</CardTitle>
+                  <CardDescription>Your media role, portfolio links, and coverage preferences.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MediaProfileTab user={user} />
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Media Contributor Access</CardTitle>
