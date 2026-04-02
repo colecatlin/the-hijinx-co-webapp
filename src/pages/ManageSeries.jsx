@@ -64,11 +64,11 @@ export default function ManageSeries() {
   const navigate = useNavigate();
 
   const handleNavigateToDriver = (driver) => {
-    navigate(createPageUrl(`ManageDrivers?driverId=${driver.id}`));
+    navigate('/race-core/drivers/' + driver.id);
   };
 
   const handleNavigateToTeam = (team) => {
-    navigate(createPageUrl(`ManageTeams?teamId=${team.id}`));
+    navigate('/race-core/teams/' + team.id);
   };
 
   const { data: series = [], isLoading } = useQuery({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +14,13 @@ import { ExternalLink, Plus, CheckCircle2 } from 'lucide-react';
 
 const ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series', 'Event'];
 
-const MANAGEMENT_PAGE = {
-  Driver: 'ManageDrivers',
-  Team:   'ManageTeams',
-  Track:  'ManageTracks',
-  Series: 'ManageSeries',
-  Event:  'ManageEvents',
+// Canonical Race Core editor routes — post-create handoff destination
+const RACE_CORE_ROUTE = {
+  Driver: (id) => `/race-core/drivers/${id}`,
+  Team:   (id) => `/race-core/teams/${id}`,
+  Track:  (id) => `/race-core/tracks/${id}`,
+  Series: (id) => `/race-core/series/${id}`,
+  Event:  (id) => `/race-core/events/${id}`,
 };
 
 const INPUT_CLS    = 'bg-[#1A1A1A] border-gray-700 text-white text-sm h-8';
@@ -299,6 +301,7 @@ export default function RaceCoreQuickCreate({
   seriesList = [],
   onCreated,
 }) {
+  const navigate = useNavigate();
   const [entityType, setEntityType] = useState(initialEntityType);
   const [form, setForm] = useState(() => defaultForm(initialEntityType));
   const [saving, setSaving] = useState(false);
@@ -412,29 +415,30 @@ export default function RaceCoreQuickCreate({
               </div>
             </div>
             <p className="text-xs text-gray-500">
-              This {entityType.toLowerCase()} is immediately available for selection in Race Core.
+              <strong>{displayName}</strong> is immediately available for selection in Race Core.
+              Open the full editor to complete operational setup.
             </p>
-            <a
-              href={createPageUrl(MANAGEMENT_PAGE[entityType])}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" /> Complete profile in Management
-            </a>
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-2 pt-1 flex-wrap">
+              <Button
+                size="sm"
+                onClick={() => { handleClose(); navigate(RACE_CORE_ROUTE[entityType](created.id)); }}
+                className="bg-blue-700 hover:bg-blue-600 text-xs"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" /> Open Full Editor
+              </Button>
               <Button
                 size="sm"
                 onClick={() => { setCreated(null); setForm(defaultForm(entityType)); }}
-                className="bg-blue-700 hover:bg-blue-600 text-xs"
+                variant="outline"
+                className="border-gray-700 text-gray-300 text-xs"
               >
                 Create Another {entityType}
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 onClick={handleClose}
-                className="border-gray-700 text-gray-300 text-xs"
+                className="text-gray-500 text-xs"
               >
                 Done
               </Button>
