@@ -5,26 +5,28 @@
  * level: 'operational' | 'incomplete' | 'public_ready'
  */
 
-function evaluate(record, required, recommended) {
+function evaluate(record, required, recommended, publicReadyFn) {
   if (!record) return { level: 'incomplete', missingRequired: [], missingRecommended: [], badge: 'Incomplete', nextSteps: [] };
 
   const missingRequired = required.filter(({ key }) => !record[key]);
   const missingRecommended = recommended.filter(({ key }) => !record[key]);
 
+  const isPublicReady = publicReadyFn
+    ? publicReadyFn(record)
+    : record.visibility_status === 'live';
+
   let level;
   if (missingRequired.length > 0) {
     level = 'incomplete';
-  } else if (record.visibility_status !== 'live') {
-    level = 'operational'; // operationally usable, not yet public
-  } else if (missingRecommended.length > 0) {
-    level = 'operational'; // live but missing recommended media/copy
+  } else if (!isPublicReady || missingRecommended.length > 0) {
+    level = 'operational';
   } else {
     level = 'public_ready';
   }
 
   const badges = {
     incomplete: 'Incomplete',
-    operational: record.visibility_status === 'live' ? 'Missing Media' : 'Needs Profile Setup',
+    operational: isPublicReady ? 'Missing Media' : 'Needs Profile Setup',
     public_ready: 'Public Ready',
   };
 
@@ -44,7 +46,6 @@ export function checkDriverCompleteness(driver) {
       { key: 'last_name', label: 'Last name' },
       { key: 'primary_discipline', label: 'Primary discipline' },
       { key: 'racing_status', label: 'Racing status' },
-      { key: 'visibility_status', label: 'Visibility status' },
     ],
     [
       { key: 'profile_image_url', label: 'Profile image' },
@@ -60,7 +61,6 @@ export function checkTeamCompleteness(team) {
       { key: 'name', label: 'Name' },
       { key: 'primary_discipline', label: 'Primary discipline' },
       { key: 'racing_status', label: 'Racing status' },
-      { key: 'visibility_status', label: 'Visibility status' },
     ],
     [
       { key: 'logo_url', label: 'Logo' },
@@ -77,7 +77,6 @@ export function checkTrackCompleteness(track) {
       { key: 'track_type', label: 'Track type' },
       { key: 'surface_type', label: 'Surface type' },
       { key: 'operational_status', label: 'Operational status' },
-      { key: 'visibility_status', label: 'Visibility status' },
     ],
     [
       { key: 'image_url', label: 'Track image' },
@@ -93,7 +92,6 @@ export function checkSeriesCompleteness(series) {
       { key: 'name', label: 'Name' },
       { key: 'discipline', label: 'Discipline' },
       { key: 'operational_status', label: 'Operational status' },
-      { key: 'visibility_status', label: 'Visibility status' },
     ],
     [
       { key: 'logo_url', label: 'Logo' },
@@ -109,12 +107,12 @@ export function checkEventCompleteness(event) {
       { key: 'name', label: 'Name' },
       { key: 'event_date', label: 'Event date' },
       { key: 'status', label: 'Status' },
-      { key: 'public_status', label: 'Public status' },
     ],
     [
       { key: 'track_id', label: 'Track' },
       { key: 'series_id', label: 'Series' },
       { key: 'event_cover_image_url', label: 'Cover image' },
-    ]
+    ],
+    (ev) => ['published', 'live', 'completed'].includes(ev.public_status)
   );
 }
