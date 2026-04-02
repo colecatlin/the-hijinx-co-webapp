@@ -226,6 +226,13 @@ export default function RegisterEntityFlow({ user }) {
 
     await queryClient.invalidateQueries();
     setResult(res.data);
+
+    // Drivers go straight into the profile setup flow
+    if (entityType === 'Driver') {
+      navigate(`/DriverProfileSetup?driver_id=${res.data.entity_id}&new=1`);
+      return;
+    }
+
     setStep(3);
     setLoading(false);
   };

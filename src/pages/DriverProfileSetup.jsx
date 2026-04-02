@@ -7,30 +7,31 @@ import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
-
-const SOCIAL_FIELDS = [
-  { key: 'instagram_url', label: 'Instagram' },
-  { key: 'x_url', label: 'X / Twitter' },
-  { key: 'tiktok_url', label: 'TikTok' },
-  { key: 'youtube_url', label: 'YouTube' },
-  { key: 'facebook_url', label: 'Facebook' },
-];
+import { CheckCircle2, Loader2, ExternalLink, Copy, Flag } from 'lucide-react';
 
 export default function DriverProfileSetup() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
   const driverIdParam = urlParams.get('driver_id');
+  const isNew = urlParams.get('new') === '1';
+
+  const [form, setForm] = useState({
+    profile_image_url: '',
+    tagline: '',
+    bio: '',
+    instagram_url: '',
+    website_url: '',
+  });
+  const [published, setPublished] = useState(false);
+  const [publishedDriver, setPublishedDriver] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  // Resolve driver — by URL param or user's primary entity
   const driverId = driverIdParam || user?.primary_entity_id;
 
   const { data: drivers = [], isLoading } = useQuery({
@@ -43,48 +44,52 @@ export default function DriverProfileSetup() {
 
   const driver = drivers[0] || null;
 
-  const [form, setForm] = useState({
-    bio: '',
-    tagline: '',
-    profile_image_url: '',
-    hero_image_url: '',
-    website_url: '',
-    instagram_url: '',
-    x_url: '',
-    tiktok_url: '',
-    youtube_url: '',
-    facebook_url: '',
-    visibility_status: 'draft',
-  });
-
   useEffect(() => {
     if (driver) {
       setForm({
-        bio: driver.bio || '',
-        tagline: driver.tagline || '',
         profile_image_url: driver.profile_image_url || '',
-        hero_image_url: driver.hero_image_url || '',
-        website_url: driver.website_url || '',
+        tagline: driver.tagline || '',
+        bio: driver.bio || '',
         instagram_url: driver.instagram_url || '',
-        x_url: driver.x_url || '',
-        tiktok_url: driver.tiktok_url || '',
-        youtube_url: driver.youtube_url || '',
-        facebook_url: driver.facebook_url || '',
-        visibility_status: driver.visibility_status || 'draft',
+        website_url: driver.website_url || '',
       });
+      if (driver.visibility_status === 'live') setPublished(true);
     }
   }, [driver]);
 
-  const mutation = useMutation({
-    mutationFn: () => base44.entities.Driver.update(driver.id, form),
-    onSuccess: () => {
+  const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const saveMutation = useMutation({
+    mutationFn: (extraFields = {}) =>
+      base44.entities.Driver.update(driver.id, { ...form, ...extraFields }),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['driver_setup', driverId] });
-      toast.success('Profile saved!');
+      if (variables?.visibility_status === 'live') {
+        setPublishedDriver(driver);
+        setPublished(true);
+      }
     },
   });
 
-  const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const handlePublish = () => {
+    saveMutation.mutate({ visibility_status: 'live' });
+  };
 
+  const handleSkip = () => {
+    navigate(createPageUrl('MyDashboard'));
+  };
+
+  const profileUrl = driver
+    ? `${window.location.origin}/drivers/${driver.slug || driver.id}`
+    : '';
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(profileUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (!user || isLoading) {
     return (
       <PageShell className="bg-gray-50 min-h-screen flex items-center justify-center">
@@ -106,115 +111,151 @@ export default function DriverProfileSetup() {
     );
   }
 
-  return (
-    <PageShell className="bg-gray-50 min-h-screen">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(createPageUrl('MyDashboard'))}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <ArrowLeft className="w-4 h-4 text-gray-500" />
-          </button>
+  // ── Success State ──────────────────────────────────────────────────────────
+  if (published && publishedDriver) {
+    return (
+      <PageShell className="bg-gray-50 min-h-screen">
+        <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Complete Your Driver Profile</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {driver.first_name} {driver.last_name} · Add your story, photo, and social links
+            <h1 className="text-2xl font-bold text-gray-900">Your driver profile is live</h1>
+            <p className="text-gray-500 text-sm mt-2">
+              {driver.first_name} {driver.last_name} is now visible on Index46.
             </p>
           </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6">
-
-          {/* Bio */}
-          <div className="space-y-2">
-            <Label>About You</Label>
-            <textarea
-              value={form.bio}
-              onChange={e => set('bio', e.target.value)}
-              placeholder="Tell your story — where you started, what you drive, where you're headed."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
-              rows={4}
-            />
-          </div>
-
-          {/* Tagline */}
-          <div className="space-y-2">
-            <Label>Tagline <span className="text-gray-400 font-normal text-xs ml-1">short headline</span></Label>
-            <Input value={form.tagline} onChange={e => set('tagline', e.target.value)}
-              placeholder="e.g. Off-road racer from Phoenix, AZ" />
-          </div>
-
-          {/* Profile Image */}
-          <div className="space-y-2">
-            <Label>Profile Photo URL</Label>
-            <Input value={form.profile_image_url} onChange={e => set('profile_image_url', e.target.value)}
-              placeholder="https://..." />
-            {form.profile_image_url && (
-              <img src={form.profile_image_url} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-200 mt-2" />
-            )}
-          </div>
-
-          {/* Hero Image */}
-          <div className="space-y-2">
-            <Label>Hero / Banner Image URL <span className="text-gray-400 font-normal text-xs ml-1">optional</span></Label>
-            <Input value={form.hero_image_url} onChange={e => set('hero_image_url', e.target.value)}
-              placeholder="https://..." />
-          </div>
-
-          {/* Website */}
-          <div className="space-y-2">
-            <Label>Website <span className="text-gray-400 font-normal text-xs ml-1">optional</span></Label>
-            <Input value={form.website_url} onChange={e => set('website_url', e.target.value)}
-              placeholder="https://yoursite.com" />
-          </div>
-
-          {/* Social */}
-          <div className="space-y-3">
-            <Label>Social Links <span className="text-gray-400 font-normal text-xs ml-1">optional</span></Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {SOCIAL_FIELDS.map(({ key, label }) => (
-                <div key={key}>
-                  <label className="text-xs text-gray-500 mb-1 block">{label}</label>
-                  <Input value={form[key]} onChange={e => set(key, e.target.value)} placeholder="URL or handle" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Visibility */}
-          <div className="space-y-2">
-            <Label>Profile Visibility</Label>
-            <Select value={form.visibility_status} onValueChange={v => set('visibility_status', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft — only visible to you</SelectItem>
-                <SelectItem value="live">Live — visible to the public</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-gray-100">
+          <div className="flex flex-col gap-3">
             <Button
-              onClick={() => mutation.mutate()}
-              disabled={mutation.isPending || !driver}
-              className="bg-[#232323] hover:bg-black text-white flex-1 sm:flex-none gap-2"
+              className="bg-[#232323] hover:bg-black text-white gap-2 w-full"
+              onClick={() => navigate(`/drivers/${driver.slug || driver.id}`)}
             >
-              {mutation.isPending ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
-              ) : mutation.isSuccess ? (
-                <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              ) : 'Save Profile'}
+              <ExternalLink className="w-4 h-4" /> View Profile
             </Button>
-            <Button variant="outline" onClick={() => navigate(createPageUrl('MyDashboard'))}>
+            <Button variant="outline" className="gap-2 w-full" onClick={handleCopy}>
+              <Copy className="w-4 h-4" />
+              {copied ? 'Copied!' : 'Copy Profile Link'}
+            </Button>
+            <Button variant="ghost" className="w-full text-gray-500 text-sm"
+              onClick={() => navigate(createPageUrl('MyDashboard'))}>
               Back to Dashboard
             </Button>
           </div>
         </div>
+      </PageShell>
+    );
+  }
 
+  // ── Setup Form ─────────────────────────────────────────────────────────────
+  return (
+    <PageShell className="bg-gray-50 min-h-screen">
+      <div className="max-w-xl mx-auto px-4 py-10">
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold mb-4">
+            <Flag className="w-3.5 h-3.5" />
+            {isNew ? 'Welcome to Index46!' : 'Complete Your Profile'}
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Set up your driver profile</h1>
+          <p className="text-gray-500 text-sm mt-2">
+            {driver.first_name} {driver.last_name} — add the basics so fans and teams can find you.
+          </p>
+        </div>
+
+        <div className="space-y-5">
+
+          {/* Section: Identity */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Identity</h2>
+
+            <div className="space-y-2">
+              <Label>Profile Photo <span className="text-gray-400 font-normal text-xs">URL</span></Label>
+              <Input
+                value={form.profile_image_url}
+                onChange={e => set('profile_image_url', e.target.value)}
+                placeholder="https://..."
+              />
+              {form.profile_image_url && (
+                <img
+                  src={form.profile_image_url}
+                  alt="Preview"
+                  className="w-14 h-14 rounded-full object-cover border border-gray-200"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Section: About */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">About</h2>
+
+            <div className="space-y-2">
+              <Label>Tagline <span className="text-gray-400 font-normal text-xs">one line</span></Label>
+              <Input
+                value={form.tagline}
+                onChange={e => set('tagline', e.target.value)}
+                placeholder="e.g. Off-road racer from Phoenix, AZ"
+                maxLength={100}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Bio <span className="text-gray-400 font-normal text-xs">your story</span></Label>
+              <textarea
+                value={form.bio}
+                onChange={e => set('bio', e.target.value)}
+                placeholder="Tell your story — where you started, what you drive, where you're headed."
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
+                rows={4}
+              />
+            </div>
+          </div>
+
+          {/* Section: Links */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Links <span className="text-gray-300 font-normal normal-case tracking-normal">optional</span></h2>
+
+            <div className="space-y-2">
+              <Label>Instagram</Label>
+              <Input
+                value={form.instagram_url}
+                onChange={e => set('instagram_url', e.target.value)}
+                placeholder="https://instagram.com/yourhandle"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Website</Label>
+              <Input
+                value={form.website_url}
+                onChange={e => set('website_url', e.target.value)}
+                placeholder="https://yoursite.com"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-3 pt-2">
+            <Button
+              onClick={handlePublish}
+              disabled={saveMutation.isPending}
+              className="bg-[#232323] hover:bg-black text-white w-full gap-2 h-11 text-sm font-semibold"
+            >
+              {saveMutation.isPending
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing...</>
+                : <><CheckCircle2 className="w-4 h-4" /> Publish Profile</>}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-sm text-gray-400 hover:text-gray-700"
+              onClick={handleSkip}
+            >
+              Finish later
+            </Button>
+          </div>
+
+        </div>
       </div>
     </PageShell>
   );
