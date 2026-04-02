@@ -9,9 +9,9 @@ import { base44 } from '@/api/base44Client';
 
 const FALLBACK_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/db194cd55_501757068_24217767807816436_3945910434470038974_n.jpg';
 
-// Motorsports action images — used as fallbacks when no entity-specific image exists
-const MOTORSPORTS_BG_1 = 'https://images.unsplash.com/photo-1549317661-bd32c8ce0729?w=1600&q=80&fit=crop'; // racing pit crew action
-const MOTORSPORTS_BG_2 = 'https://images.unsplash.com/photo-1612194850099-ce09b85aeae8?w=1600&q=80&fit=crop'; // motorsports track
+// Motorsports background images — confirmed stable assets
+const MOTORSPORTS_BG_1 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80&fit=crop&auto=format'; // motorsports racing
+const MOTORSPORTS_BG_2 = 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1600&q=80&fit=crop&auto=format'; // race track aerial
 
 const BRAND_SLIDES = [
   {
@@ -71,11 +71,14 @@ export default function HomepageHero({ stats: liveStats, featuredDriver = null, 
   const [activeSlide, setActiveSlide] = useState(0);
   const [paused, setPaused]         = useState(false);
 
+  // Compute slides before callbacks so advance() captures a stable length via useMemo
+  const SLIDES = React.useMemo(() => buildSlides(featuredDriver, featuredStory), [featuredDriver, featuredStory]);
+
   useEffect(() => { setMounted(true); }, []);
 
   const advance = useCallback(() => {
     setActiveSlide(i => (i + 1) % SLIDES.length);
-  }, []);
+  }, [SLIDES.length]);
 
   useEffect(() => {
     if (paused) return;
@@ -89,8 +92,6 @@ export default function HomepageHero({ stats: liveStats, featuredDriver = null, 
   });
 
   const globalBg = heroSettings?.[0]?.image_url || FALLBACK_BG;
-
-  const SLIDES = buildSlides(featuredDriver, featuredStory);
   const safeIndex = activeSlide >= SLIDES.length ? 0 : activeSlide;
   const slide = SLIDES[safeIndex];
   const bg_image = slide?.bgImage || globalBg;
