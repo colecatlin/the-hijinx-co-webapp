@@ -1,0 +1,98 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "User's first name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "User's last name"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "User's public display name/handle"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "User's date of birth"
+    },
+    "city": {
+      "type": "string",
+      "description": "User's city"
+    },
+    "state": {
+      "type": "string",
+      "description": "User's state/region"
+    },
+    "country": {
+      "type": "string",
+      "description": "User's country"
+    },
+    "newsletter_subscriber": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user is subscribed to the newsletter"
+    },
+    "favorite_drivers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorited driver IDs"
+    },
+    "favorite_teams": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorited team IDs"
+    },
+    "favorite_series": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorited series IDs"
+    },
+    "favorite_tracks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorited track IDs"
+    },
+    "primary_entity_type": {
+      "type": "string",
+      "description": "Primary entity type"
+    },
+    "primary_entity_id": {
+      "type": "string",
+      "description": "Primary entity ID"
+    },
+    "workspace_access": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Workspace access grants: media_contributor, editorial_writer, etc."
+    },
+    "media_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Media roles: writer, photographer, videographer, media_member, contributor, editor, managing_editor, credential_reviewer, outlet_admin"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed or dismissed first-time onboarding"
+    }
+  },
+  "required": []
+}

@@ -19,6 +19,7 @@ import {
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
+import OnboardingIntercept from '@/components/onboarding/OnboardingIntercept';
 import PendingClaimsNotice from '@/components/onboarding/PendingClaimsNotice';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
@@ -139,6 +140,8 @@ export default function MyDashboard() {
   const queryClient = useQueryClient();
   const [settingPrimary, setSettingPrimary] = React.useState(false);
 
+  const [onboardingDismissed, setOnboardingDismissed] = React.useState(false);
+
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -200,6 +203,19 @@ export default function MyDashboard() {
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
     return null;
+  }
+
+  // First-time onboarding intercept — only for non-admin, zero-entity, incomplete users
+  const showOnboarding =
+    !isLoading &&
+    !!user &&
+    user.role !== 'admin' &&
+    resolvedEntities.length === 0 &&
+    !user.onboarding_complete &&
+    !onboardingDismissed;
+
+  if (showOnboarding) {
+    return <OnboardingIntercept onSkip={() => setOnboardingDismissed(true)} />;
   }
 
   const welcomeName = user?.full_name || user?.email || '';
