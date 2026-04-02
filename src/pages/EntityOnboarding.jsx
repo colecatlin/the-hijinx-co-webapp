@@ -10,9 +10,9 @@ import LinkEntityFlow from '@/components/onboarding/LinkEntityFlow';
 import { Plus, Search, KeyRound } from 'lucide-react';
 
 const MODES = {
-  new: { label: 'Register New', Icon: Plus, description: 'Create a new entity and become the owner.' },
+  new: { label: 'Create Profile', Icon: Plus, description: 'Register and become the profile owner.' },
   claim: { label: 'Claim Existing', Icon: Search, description: 'Request ownership of an existing profile.' },
-  link: { label: 'Link with Code', Icon: KeyRound, description: 'Enter an access code to join an entity.' },
+  link: { label: 'Join with Code', Icon: KeyRound, description: 'Enter an access code to join a team, track, or series.' },
 };
 
 export default function EntityOnboarding() {
@@ -40,8 +40,10 @@ export default function EntityOnboarding() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Entity Onboarding</h1>
-          <p className="text-sm text-gray-500 mt-1">Get your place in the system as a driver, team, track, or series.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {mode === 'new' ? 'Set Up Your Profile' : mode === 'claim' ? 'Claim Your Profile' : 'Join with Access Code'}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Get on the platform as a driver, team, track, or series.</p>
         </div>
 
         {/* Mode tabs */}

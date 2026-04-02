@@ -20,6 +20,7 @@ import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } f
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
 import OnboardingIntercept from '@/components/onboarding/OnboardingIntercept';
+import DriverCompletionPrompt from '@/components/mydashboard/DriverCompletionPrompt';
 import PendingClaimsNotice from '@/components/onboarding/PendingClaimsNotice';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
@@ -232,6 +233,11 @@ export default function MyDashboard() {
             buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
             buildEditorUrl={buildEditorUrl}
           />
+
+          {/* Driver profile completion prompt — shown to driver owners with incomplete profiles */}
+          {!isLoading && user && user.primary_entity_type === 'Driver' && user.primary_entity_id && (
+            <DriverCompletionPrompt user={user} />
+          )}
 
           {/* Pending claims + invitations — shown for all users, fan or entity */}
           {user && !isLoading && <PendingAccessSection user={user} />}

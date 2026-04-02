@@ -55,22 +55,19 @@ function DriverForm({ data, onChange }) {
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-gray-700 mb-1 block">Car Number</label>
-        <Input value={data.primary_number || ''} onChange={e => onChange({ ...data, primary_number: e.target.value })} placeholder="e.g. 48" />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-medium text-gray-700 mb-1 block">Hometown City</label>
-          <Input value={data.hometown_city || ''} onChange={e => onChange({ ...data, hometown_city: e.target.value })} placeholder="City" />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-gray-700 mb-1 block">Hometown State</label>
-          <Input value={data.hometown_state || ''} onChange={e => onChange({ ...data, hometown_state: e.target.value })} placeholder="State" />
-        </div>
+        <label className="text-xs font-medium text-gray-700 mb-1 block">Discipline *</label>
+        <Select value={data.primary_discipline || ''} onValueChange={v => onChange({ ...data, primary_discipline: v })}>
+          <SelectTrigger><SelectValue placeholder="What do you race?" /></SelectTrigger>
+          <SelectContent>
+            {['Off Road','Snowmobile','Asphalt Oval','Road Racing','Rallycross','Drag Racing','Mixed'].map(d => (
+              <SelectItem key={d} value={d}>{d}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
-        <label className="text-xs font-medium text-gray-700 mb-1 block">Contact Email</label>
-        <Input value={data.contact_email || ''} onChange={e => onChange({ ...data, contact_email: e.target.value })} placeholder="contact@example.com" type="email" />
+        <label className="text-xs font-medium text-gray-700 mb-1 block">Car / Bib Number <span className="text-gray-400 font-normal">(optional)</span></label>
+        <Input value={data.primary_number || ''} onChange={e => onChange({ ...data, primary_number: e.target.value })} placeholder="e.g. 48" />
       </div>
     </div>
   );
@@ -185,7 +182,7 @@ export default function RegisterEntityFlow({ user }) {
   const [result, setResult] = useState(null);
 
   const isValid = () => {
-    if (entityType === 'Driver') return !!(formData.first_name && formData.last_name);
+    if (entityType === 'Driver') return !!(formData.first_name && formData.last_name && formData.primary_discipline);
     if (entityType === 'Team') return !!formData.name;
     if (entityType === 'Track') return !!(formData.name && formData.location_city && formData.location_country);
     if (entityType === 'Series') return !!formData.name;
@@ -234,25 +231,47 @@ export default function RegisterEntityFlow({ user }) {
   };
 
   if (step === 3 && result) {
+    const isDriver = entityType === 'Driver';
     return (
       <div className="text-center py-10 px-4 space-y-4">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-8 h-8 text-green-600" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-900">Entity Created!</h3>
+          <h3 className="text-xl font-bold text-gray-900">
+            {isDriver ? "Your driver profile is live!" : "Profile Created!"}
+          </h3>
           <p className="text-gray-500 text-sm mt-1">
-            <strong>{result.entity_name}</strong> has been registered and you are now the owner.
+            <strong>{result.entity_name}</strong> has been added to the platform.
           </p>
+          {isDriver && (
+            <p className="text-gray-400 text-xs mt-2 max-w-xs mx-auto">
+              Add your photo, bio, and social links so fans and teams can find you.
+            </p>
+          )}
         </div>
         {(entityType === 'Track' || entityType === 'Series') && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block">
             Track and Series entries are pending admin review before appearing publicly.
           </p>
         )}
-        <Button onClick={() => navigate(createPageUrl('MyDashboard') + '?access_updated=1')} className="bg-[#232323] hover:bg-black text-white">
-          Go to Dashboard
-        </Button>
+        <div className="flex flex-col items-center gap-2">
+          {isDriver && (
+            <Button
+              onClick={() => navigate(createPageUrl('DriverProfileSetup') + `?driver_id=${result.entity_id}`)}
+              className="bg-[#232323] hover:bg-black text-white w-full max-w-xs"
+            >
+              Complete Your Profile →
+            </Button>
+          )}
+          <Button
+            variant={isDriver ? 'outline' : 'default'}
+            onClick={() => navigate(createPageUrl('MyDashboard') + '?access_updated=1')}
+            className={`w-full max-w-xs ${!isDriver ? 'bg-[#232323] hover:bg-black text-white' : ''}`}
+          >
+            {isDriver ? 'Skip for now' : 'Go to Dashboard'}
+          </Button>
+        </div>
       </div>
     );
   }
