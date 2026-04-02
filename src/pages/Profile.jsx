@@ -187,9 +187,9 @@ export default function Profile() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">Profile</p>
-            <h1 className="text-2xl font-bold text-gray-900">Account & Access</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Settings, entity access, and preferences</p>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">Settings</p>
+            <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Manage your account, access, and profile</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link to={createPageUrl('MyDashboard')}>
@@ -273,15 +273,53 @@ export default function Profile() {
 
             {/* ── Account Tab ──────────────────────────────────────────────── */}
             <TabsContent value="general" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Account Details</CardTitle>
-                  <CardDescription>Update your name, location, and basic info.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <GeneralTab user={user} formData={formData} setFormData={setFormData} />
-                </CardContent>
-              </Card>
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Personal Information</h2>
+                  <Card>
+                    <CardContent className="pt-5">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-1">First Name</label>
+                            <input
+                              value={formData.first_name || ''}
+                              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-1">Last Name</label>
+                            <input
+                              value={formData.last_name || ''}
+                              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 block mb-1">Email</label>
+                          <input
+                            value={user?.email || ''}
+                            disabled
+                            className="flex h-9 w-full rounded-md border border-input bg-gray-100 px-3 py-1 text-sm text-gray-500"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">Email is managed by the platform and cannot be changed here.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div>
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Your Role on HIJINX</h2>
+                  <Card>
+                    <CardContent className="pt-5">
+                      <GeneralTab user={user} formData={formData} setFormData={setFormData} roleOnly />
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
 
               <Card>
                 <CardHeader>
