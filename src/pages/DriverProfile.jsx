@@ -371,14 +371,7 @@ export default function DriverProfile() {
                         <div className="font-semibold text-[#232323] text-sm">{yearsLabel}</div>
                       </div>
                     )}
-                    {driver.date_of_birth && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Age</div>
-                        <div className="font-semibold text-[#232323] text-sm">
-                          {new Date().getFullYear() - new Date(driver.date_of_birth).getFullYear()}
-                        </div>
-                      </div>
-                    )}
+
                     {driver.manufacturer && (
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Manufacturer</div>
@@ -510,85 +503,59 @@ export default function DriverProfile() {
         {/* ── SCHEDULE & RESULTS TAB ─────────────────────── */}
         {activeTab === 'schedule' && (
           <div className="pb-12 space-y-8">
-            {/* Event participation */}
-            <div>
-              <h2 className="text-2xl font-black text-[#232323] mb-6">Event Participation</h2>
-              {entries.length === 0 ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>No registered events found.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {upcomingEntries.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">Upcoming</h3>
-                      <div className="space-y-3">
-                        {upcomingEntries.map(({ entry, event, track }) => event && (
-                          <Link key={entry.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                            className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="font-semibold text-[#232323]">{event.name}</h4>
-                                  {event.status === 'Live' && <Badge className="bg-red-500 text-white text-xs">Live</Badge>}
-                                </div>
-                                <p className="text-sm text-gray-500">{track?.name || 'N/A'} · {safeDateFormat(event.event_date)}</p>
-                              </div>
-                              <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <Badge variant="outline" className="text-xs">{entry.entry_status || 'Registered'}</Badge>
-                              {entry.payment_status === 'Unpaid' && <Badge className="bg-orange-100 text-orange-800 text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Payment Pending</Badge>}
-                              {entry.payment_status === 'Paid' && <Badge className="bg-green-100 text-green-800 text-xs"><CheckCircle className="w-3 h-3 mr-1" />Paid</Badge>}
-                            </div>
-                          </Link>
-                        ))}
+            {upcomingEntries.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-black text-[#232323] mb-4">Upcoming</h2>
+                <div className="space-y-3">
+                  {upcomingEntries.map(({ entry, event, track }) => event && (
+                    <Link key={entry.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                      className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                            {event.status === 'Live' && <Badge className="bg-red-500 text-white text-xs">Live</Badge>}
+                          </div>
+                          <p className="text-sm text-gray-500">{track?.name} · {safeDateFormat(event.event_date)}</p>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
                       </div>
-                    </div>
-                  )}
-                  {pastEntries.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-3">Past Events</h3>
-                      <div className="space-y-3">
-                        {pastEntries.map(({ entry, event, track, resultData }) => event && (
-                          <Link key={entry.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                            className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="font-semibold text-[#232323]">{event.name}</h4>
-                                <p className="text-sm text-gray-500">{track?.name || 'N/A'} · {safeDateFormat(event.event_date)}</p>
-                              </div>
-                              <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
-                            </div>
-                            {resultData?.position && (
-                              <Badge className="mt-2 bg-blue-100 text-blue-800 text-xs">Finished P{resultData.position}</Badge>
-                            )}
-                          </Link>
-                        ))}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            {pastEntries.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-black text-[#232323] mb-4">Past Events</h2>
+                <div className="space-y-3">
+                  {pastEntries.map(({ entry, event, track, resultData }) => event && (
+                    <Link key={entry.id} to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                      className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold text-[#232323]">{event.name}</h4>
+                          <p className="text-sm text-gray-500">{track?.name} · {safeDateFormat(event.event_date)}</p>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
                       </div>
-                    </div>
-                  )}
+                      {resultData?.position && (
+                        <Badge className="mt-2 bg-blue-100 text-blue-800 text-xs">Finished P{resultData.position}</Badge>
+                      )}
+                    </Link>
+                  ))}
                 </div>
-              )}
-            </div>
-
-            {/* Official results table */}
-            <div>
-              <h2 className="text-2xl font-black text-[#232323] mb-6">Official Results</h2>
-              {officialResults.length === 0 ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-500">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" /><p>No official results yet.</p>
-                </div>
-              ) : (
+              </div>
+            )}
+            {officialResults.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-black text-[#232323] mb-4">Official Results</h2>
                 <div className="overflow-x-auto border border-gray-200 rounded-lg">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        {['Event', 'Session', 'Finish', 'Pts'].map(h => (
-                          <th key={h} className={`py-3 px-4 font-semibold text-gray-600 ${h === 'Pts' ? 'text-right' : 'text-left'}`}>{h}</th>
-                        ))}
-                      </tr>
+                      <tr>{['Event','Session','Finish','Pts'].map(h => (
+                        <th key={h} className={`py-3 px-4 font-semibold text-gray-600 ${h==='Pts'?'text-right':'text-left'}`}>{h}</th>
+                      ))}</tr>
                     </thead>
                     <tbody>
                       {officialResults.map(result => {
@@ -596,9 +563,7 @@ export default function DriverProfile() {
                         const event = eventsForEntries.find(e => e.id === session?.event_id);
                         return (
                           <tr key={result.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4">
-                              {event ? <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="font-medium hover:underline">{event.name}</Link> : '—'}
-                            </td>
+                            <td className="py-3 px-4">{event ? <Link to={`${createPageUrl('EventProfile')}?id=${event.id}`} className="font-medium hover:underline">{event.name}</Link> : '—'}</td>
                             <td className="py-3 px-4 text-gray-500">{session?.name || '—'}</td>
                             <td className="py-3 px-4 font-semibold">{result.position ? `P${result.position}` : '—'}</td>
                             <td className="py-3 px-4 text-right font-semibold">{result.points ?? '—'}</td>
@@ -608,31 +573,19 @@ export default function DriverProfile() {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-
-            {/* Standings */}
+              </div>
+            )}
             <div>
-              <h2 className="text-2xl font-black text-[#232323] mb-6">Standings & Rankings</h2>
+              <h2 className="text-2xl font-black text-[#232323] mb-4">Standings & Rankings</h2>
               <ResultsPanel driverId={driver.id} />
             </div>
-
-            {/* Schedule */}
             <div>
-              <h2 className="text-2xl font-black text-[#232323] mb-6">Race Schedule</h2>
-              <ScheduleSection
-                entityType="Driver"
-                entityId={driver.id}
-                entityName={fullName}
-                calendarId={driver.calendar_id}
-                onCalendarCreated={handleCalendarCreated}
-                isOwner={user?.role === 'admin'}
-              />
+              <h2 className="text-2xl font-black text-[#232323] mb-4">Race Schedule</h2>
+              <ScheduleSection entityType="Driver" entityId={driver.id} entityName={fullName}
+                calendarId={driver.calendar_id} onCalendarCreated={handleCalendarCreated} isOwner={user?.role === 'admin'} />
             </div>
           </div>
         )}
-
-
 
         {/* ── MEDIA TAB ──────────────────────────────────── */}
         {activeTab === 'media' && (
