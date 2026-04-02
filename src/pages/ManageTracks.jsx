@@ -103,54 +103,11 @@ export default function ManageTracks() {
     }
   };
 
-  if (showForm) {
-    return <TrackForm onClose={() => setShowForm(false)} />;
+  // showForm is now replaced by navigating to Race Core canonical route
+  if (false) {
   }
 
-  if (selectedTrackForEdit) {
-    return (
-      <ManagementLayout currentPage="ManageTracks">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedTrackForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedTrackForEdit.name}</h1>
-              <p className="text-gray-600">Manage all track data</p>
-            </div>
-          </div>
-
-          <Tabs defaultValue="core" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="series">Series</TabsTrigger>
-              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <TrackCoreDetailsSection
-                trackId={selectedTrackForEdit.id}
-                isReadOnly={!canEditTrackManagement}
-              />
-            </TabsContent>
-            <TabsContent value="series" className="mt-6">
-              <TrackSeriesSection trackId={selectedTrackForEdit.id} trackName={selectedTrackForEdit.name} />
-            </TabsContent>
-            {isAdmin && (
-              <TabsContent value="override" className="mt-6">
-                <AdminOverridePanel
-                  entityType="Track"
-                  entityId={selectedTrackForEdit.id}
-                  entityRecord={editingTrackRecord}
-                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['tracks'] })}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // Edit now routes to canonical /race-core/tracks/:id — this block is no longer reached
 
   return (
     <ManagementLayout currentPage="ManageTracks">
@@ -172,7 +129,7 @@ export default function ManageTracks() {
       <ManagementShell
         title="Tracks"
         subtitle={`${tracks.length} total tracks`}
-        actions={activeTab === 'data' ? <Button onClick={() => setShowForm(true)} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button> : undefined}
+        actions={activeTab === 'data' ? <Button onClick={() => navigate('/race-core/tracks/new')} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
@@ -198,7 +155,7 @@ export default function ManageTracks() {
                 <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.operational_status === 'Seasonal').length}</p>
               </div>
             </div>
-            <Button onClick={() => setShowForm(true)} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+            <Button onClick={() => navigate('/race-core/tracks/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Track
             </Button>
@@ -309,7 +266,7 @@ export default function ManageTracks() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedTrackForEdit(track)}
+                          onClick={() => navigate('/race-core/tracks/' + track.id)}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>

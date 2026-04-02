@@ -31,6 +31,11 @@ import { DriverProfileRouteWrapper } from './pages/DriverProfile';
 import { SeriesDetailRouteWrapper } from './pages/SeriesDetail';
 import ClaimsCenter from './pages/ClaimsCenter';
 import ChampImportAdmin from './pages/ChampImportAdmin';
+import RaceCoreDriverEditor from './pages/RaceCoreDriverEditor';
+import RaceCoreTeamEditor from './pages/RaceCoreTeamEditor';
+import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
+import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
+import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -108,6 +113,12 @@ const AuthenticatedApp = () => {
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/management/champ-import" element={<LayoutWrapper currentPageName="ChampImportAdmin"><ChampImportAdmin /></LayoutWrapper>} />
+      {/* Race Core canonical editor routes */}
+      <Route path="/race-core/drivers/:id" element={<LayoutWrapper currentPageName="RaceCoreDriverEditor"><RaceCoreDriverEditor /></LayoutWrapper>} />
+      <Route path="/race-core/teams/:id" element={<LayoutWrapper currentPageName="RaceCoreTeamEditor"><RaceCoreTeamEditor /></LayoutWrapper>} />
+      <Route path="/race-core/tracks/:id" element={<LayoutWrapper currentPageName="RaceCoreTrackEditor"><RaceCoreTrackEditor /></LayoutWrapper>} />
+      <Route path="/race-core/series/:id" element={<LayoutWrapper currentPageName="RaceCoreSeriesEditor"><RaceCoreSeriesEditor /></LayoutWrapper>} />
+      <Route path="/race-core/events/:id" element={<LayoutWrapper currentPageName="RaceCoreEventEditor"><RaceCoreEventEditor /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />

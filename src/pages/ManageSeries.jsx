@@ -131,12 +131,11 @@ export default function ManageSeries() {
   };
 
   const handleEdit = (s) => {
-    setSelectedSeriesForEdit(s);
+    navigate('/race-core/series/' + s.id);
   };
 
   const handleAdd = () => {
-    setEditingSeries(null);
-    setShowForm(true);
+    navigate('/race-core/series/new');
   };
 
   const handleExport = () => {
@@ -179,115 +178,8 @@ export default function ManageSeries() {
     e.target.value = '';
   };
 
-  if (showForm) {
-    if (!editingSeries) {
-      return (
-        <ManagementLayout currentPage="ManageSeries">
-          <CreateSeriesForm
-            onClose={() => {
-              setShowForm(false);
-              setEditingSeries(null);
-            }}
-            onSeriesCreated={(newSeries) => {
-              setShowForm(false);
-              setEditingSeries(null);
-              setSelectedSeriesForEdit(newSeries);
-            }}
-          />
-        </ManagementLayout>
-        );
-        }
-
-        return (
-        <ManagementLayout currentPage="ManageSeries">
-        <SeriesForm
-          series={editingSeries}
-          onClose={() => {
-            setShowForm(false);
-            setEditingSeries(null);
-          }}
-        />
-        </ManagementLayout>
-    );
-  }
-
-  if (selectedSeriesForEdit) {
-    return (
-      <ManagementLayout currentPage="ManageSeries">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedSeriesForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedSeriesForEdit.name}</h1>
-              <p className="text-gray-600">Manage all series data</p>
-            </div>
-          </div>
-
-          <Tabs defaultValue="core" className="w-full">
-            <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-lg">
-              <TabsTrigger value="core" className="text-xs">Core</TabsTrigger>
-              <TabsTrigger value="format" className="text-xs">Format</TabsTrigger>
-              <TabsTrigger value="classes" className="text-xs">Classes</TabsTrigger>
-              <TabsTrigger value="calendar" className="text-xs">Calendar</TabsTrigger>
-              <TabsTrigger value="media" className="text-xs">Media</TabsTrigger>
-              <TabsTrigger value="governance" className="text-xs">Governance</TabsTrigger>
-              <TabsTrigger value="teams" className="text-xs">Teams</TabsTrigger>
-              <TabsTrigger value="drivers" className="text-xs">Drivers</TabsTrigger>
-              <TabsTrigger value="tracks" className="text-xs">Tracks</TabsTrigger>
-              {isAdmin && <TabsTrigger value="override" className="text-xs">⚙ Override</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <SeriesCoreDetailsSection
-                seriesId={selectedSeriesForEdit.id}
-                isReadOnly={!canEditSeriesManagement}
-              />
-            </TabsContent>
-            <TabsContent value="format" className="mt-6">
-              <SeriesFormatSection seriesId={selectedSeriesForEdit.id} />
-            </TabsContent>
-            <TabsContent value="classes" className="mt-6">
-              <SeriesClassesSection seriesId={selectedSeriesForEdit.id} userRole="admin" />
-            </TabsContent>
-            <TabsContent value="calendar" className="mt-6">
-              <SeriesEventsSection seriesId={selectedSeriesForEdit.id} series={selectedSeriesForEdit} />
-            </TabsContent>
-            <TabsContent value="media" className="mt-6">
-              <SeriesMediaSection seriesId={selectedSeriesForEdit.id} />
-            </TabsContent>
-            <TabsContent value="governance" className="mt-6">
-              <SeriesGovernanceSection seriesId={selectedSeriesForEdit.id} />
-            </TabsContent>
-            <TabsContent value="teams" className="mt-6">
-              <SeriesTeamsSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
-            </TabsContent>
-            <TabsContent value="drivers" className="mt-6">
-              <SeriesDriversSection
-                seriesId={selectedSeriesForEdit.id}
-                seriesName={selectedSeriesForEdit.name}
-                onNavigateToDriver={handleNavigateToDriver}
-                onNavigateToTeam={handleNavigateToTeam}
-              />
-            </TabsContent>
-            <TabsContent value="tracks" className="mt-6">
-              <SeriesTracksSection seriesId={selectedSeriesForEdit.id} seriesName={selectedSeriesForEdit.name} />
-            </TabsContent>
-            {isAdmin && (
-              <TabsContent value="override" className="mt-6">
-                <AdminOverridePanel
-                  entityType="Series"
-                  entityId={selectedSeriesForEdit.id}
-                  entityRecord={editingSeriesRecord}
-                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['series'] })}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // Create/edit now routes to /race-core/series/:id — showForm/selectedSeriesForEdit replaced
+  // selectedSeriesForEdit detail view replaced by Race Core canonical editor
 
   return (
     <ManagementLayout currentPage="ManageSeries">

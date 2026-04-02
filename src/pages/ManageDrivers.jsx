@@ -266,7 +266,7 @@ export default function ManageDrivers() {
   };
 
   const handleEdit = (driver) => {
-    setSelectedDriverForEdit(driver);
+    navigate('/race-core/drivers/' + driver.id);
   };
 
   const handleDelete = async (driver) => {
@@ -335,85 +335,7 @@ export default function ManageDrivers() {
     return <DriverForm driver={editingDriver} onClose={handleFormClose} />;
   }
 
-  if (selectedDriverForEdit) {
-    return (
-      <ManagementLayout currentPage="ManageDrivers">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedDriverForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">
-                {selectedDriverForEdit.first_name} {selectedDriverForEdit.last_name}
-              </h1>
-              <p className="text-gray-600">Manage all driver data</p>
-            </div>
-          </div>
-
-          <Tabs defaultValue="core" className="mt-6">
-            <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="branding">Branding</TabsTrigger>
-              <TabsTrigger value="career">Career History</TabsTrigger>
-              <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
-              <TabsTrigger value="programs">Programs</TabsTrigger>
-              <TabsTrigger value="results">Race Results</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="stats">Stats</TabsTrigger>
-              <TabsTrigger value="access">Access</TabsTrigger>
-              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <DriverCoreDetailsSection
-                driverId={selectedDriverForEdit.id}
-                onSaveSuccess={handleSaveSuccess}
-                isReadOnly={!canEditDriverManagement}
-                isAdmin={isAdmin}
-              />
-            </TabsContent>
-            <TabsContent value="branding" className="mt-6">
-              <DriverBrandingSection driverId={selectedDriverForEdit.id} driver={selectedDriverForEdit} onSaveSuccess={handleSaveSuccess} />
-            </TabsContent>
-            <TabsContent value="career" className="mt-6">
-              <DriverCareerManager driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            <TabsContent value="sponsors" className="mt-6">
-              <DriverSponsorManager driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            <TabsContent value="programs" className="mt-6">
-              <DriverProgramsList driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            <TabsContent value="results" className="mt-6">
-              <div className="space-y-6">
-                <DriverResultsSection driverId={selectedDriverForEdit.id} />
-                <DriverClaimsDisplay driverId={selectedDriverForEdit.id} />
-              </div>
-            </TabsContent>
-            <TabsContent value="media" className="mt-6">
-              <DriverMediaSection driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            <TabsContent value="stats" className="mt-6">
-              <DriverStatsManagement driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            <TabsContent value="access" className="mt-6">
-              <DriverAccessSection driverId={selectedDriverForEdit.id} />
-            </TabsContent>
-            {isAdmin && (
-              <TabsContent value="override" className="mt-6">
-                <AdminOverridePanel
-                  entityType="Driver"
-                  entityId={selectedDriverForEdit.id}
-                  entityRecord={editingDriverRecord}
-                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['drivers', 'all'] })}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // Edit now routes to canonical /race-core/drivers/:id — this block is no longer reached
 
   return (
     <ManagementLayout currentPage="ManageDrivers">
@@ -427,7 +349,7 @@ export default function ManageDrivers() {
           <Button variant="outline" onClick={() => document.getElementById('import-drivers').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
           <Button onClick={async () => { setBackfillingIds(true); try { const res = await base44.functions.invoke('assignDriverNumericIds'); toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`); queryClient.invalidateQueries({ queryKey: ['drivers'] }); } catch (e) { toast.error('Failed to assign IDs: ' + e.message); } finally { setBackfillingIds(false); } }} disabled={backfillingIds} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Hash className="w-4 h-4 mr-2" />{backfillingIds ? 'Assigning...' : 'Assign IDs'}</Button>
           <Button onClick={() => setShowDuplicateFinder(true)} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"><AlertCircle className="w-4 h-4 mr-2" />Find Duplicates</Button>
-          <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', racing_status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
+          <Button onClick={() => navigate('/race-core/drivers/new')} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -458,7 +380,7 @@ export default function ManageDrivers() {
                 <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.racing_status === 'Part Time').length}</p>
               </div>
             </div>
-            <Button onClick={() => setSelectedDriverForEdit({ id: 'new', first_name: '', last_name: '', date_of_birth: '', nationality: '', hometown_city: '', hometown_country: '', primary_number: '', primary_discipline: '', racing_status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+            <Button onClick={() => navigate('/race-core/drivers/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Driver
             </Button>
@@ -696,7 +618,7 @@ export default function ManageDrivers() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedDriverForEdit(driver)}
+                          onClick={() => handleEdit(driver)}
                           title="Manage driver details"
                         >
                           <Pencil className="w-4 h-4" />

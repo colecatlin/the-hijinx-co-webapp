@@ -120,7 +120,7 @@ export default function ManageTeams() {
   });;
 
   const handleEdit = (team) => {
-    setSelectedTeamForEdit(team);
+    navigate('/race-core/teams/' + team.id);
   };
 
   const handleDelete = async (team) => {
@@ -191,93 +191,7 @@ export default function ManageTeams() {
     return <TeamForm team={editingTeam} onClose={handleFormClose} />;
   }
 
-  if (selectedTeamForEdit) {
-    const isNewTeam = selectedTeamForEdit.id === 'new';
-    // If we only have an id (e.g. deep-link), look up the full team from the loaded list
-    const fullTeam = selectedTeamForEdit.name
-      ? selectedTeamForEdit
-      : (teams.find(t => t.id === selectedTeamForEdit.id) || selectedTeamForEdit);
-    const hasCoreDetails = fullTeam.name && fullTeam.headquarters_city;
-    const tabsLocked = isNewTeam || !hasCoreDetails;
-
-    return (
-      <ManagementLayout currentPage="ManageTeams">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedTeamForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedTeamForEdit.name || 'New Team'}</h1>
-              <p className="text-gray-600">Manage all team data</p>
-            </div>
-          </div>
-
-          {tabsLocked && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-              Complete the core details first to unlock other sections
-            </div>
-          )}
-
-          <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-9">
-              <TabsTrigger value="core">Core</TabsTrigger>
-              <TabsTrigger value="programs" disabled={tabsLocked}>Programs</TabsTrigger>
-              <TabsTrigger value="vehicles" disabled={tabsLocked}>Vehicles</TabsTrigger>
-              <TabsTrigger value="roster" disabled={tabsLocked}>Roster</TabsTrigger>
-              <TabsTrigger value="performance" disabled={tabsLocked}>Performance</TabsTrigger>
-              <TabsTrigger value="partners" disabled={tabsLocked}>Partners</TabsTrigger>
-              <TabsTrigger value="media" disabled={tabsLocked}>Media</TabsTrigger>
-              <TabsTrigger value="operations" disabled={tabsLocked}>Operations</TabsTrigger>
-              <TabsTrigger value="community" disabled={tabsLocked}>Community</TabsTrigger>
-              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <TeamCoreDetailsSection
-                teamId={selectedTeamForEdit.id}
-                onTeamCreated={(newTeam) => setSelectedTeamForEdit(newTeam)}
-                isReadOnly={!canEditTeamManagement}
-              />
-            </TabsContent>
-            <TabsContent value="programs" className="mt-6">
-              <TeamProgramsSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="vehicles" className="mt-6">
-              <TeamVehiclesSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="roster" className="mt-6">
-              <TeamRosterSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="performance" className="mt-6">
-              <TeamPerformanceSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="partners" className="mt-6">
-              <TeamPartnersSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="media" className="mt-6">
-              <TeamMediaSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="operations" className="mt-6">
-              <TeamOperationsSection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            <TabsContent value="community" className="mt-6">
-              <TeamCommunitySection teamId={selectedTeamForEdit.id} />
-            </TabsContent>
-            {isAdmin && (
-              <TabsContent value="override" className="mt-6">
-                <AdminOverridePanel
-                  entityType="Team"
-                  entityId={selectedTeamForEdit.id}
-                  entityRecord={editingTeamRecord}
-                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['teams'] })}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // Edit now routes to canonical /race-core/teams/:id — this block is no longer reached
 
   return (
     <ManagementLayout currentPage="ManageTeams">
@@ -291,7 +205,7 @@ export default function ManageTeams() {
           <Button variant="outline" onClick={() => document.getElementById('import-teams').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
           <Button onClick={handleNascarImport} disabled={importing} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Sparkles className="w-4 h-4 mr-2" />{importing ? 'Importing...' : 'NASCAR Import'}</Button>
           <Button onClick={handleEnrich} disabled={enriching} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50"><Sparkles className="w-4 h-4 mr-2" />{enriching ? 'Enriching...' : 'AI Enrich'}</Button>
-          <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', racing_status: 'Active' })} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
+          <Button onClick={() => navigate('/race-core/teams/new')} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Team</Button>
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -318,7 +232,7 @@ export default function ManageTeams() {
                 <p className="text-2xl font-bold text-gray-500">{teams.filter(t => t.racing_status !== 'Active').length}</p>
               </div>
             </div>
-            <Button onClick={() => setSelectedTeamForEdit({ id: 'new', name: '', slug: '', headquarters_city: '', headquarters_state: '', primary_discipline: '', racing_status: 'Active' })} className="w-full bg-[#232323] hover:bg-[#1A3249]">
+            <Button onClick={() => navigate('/race-core/teams/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Team
             </Button>
