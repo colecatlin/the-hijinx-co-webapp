@@ -28,6 +28,7 @@ import TeamOperationsSection from '@/components/management/TeamManagement/TeamOp
 import TeamCommunitySection from '@/components/management/TeamManagement/TeamCommunitySection';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 import AdminOverridePanel from '@/components/management/AdminOverridePanel';
+import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
 
 export default function ManageTeams() {
   const navigate = useNavigate();
@@ -229,6 +230,7 @@ export default function ManageTeams() {
                 <p className="text-2xl font-bold text-gray-500">{teams.filter(t => t.racing_status !== 'Active').length}</p>
               </div>
             </div>
+            <ProfileTasksSummary entityType="Team" records={teams} />
             <Button onClick={() => navigate('/race-core/teams/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Team

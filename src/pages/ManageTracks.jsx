@@ -20,6 +20,7 @@ import ActivityTab from '@/components/management/ActivityTab';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 import AdminOverridePanel from '@/components/management/AdminOverridePanel';
 import PublishTab from '@/components/management/PublishTab';
+import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
 
 export default function ManageTracks() {
   const navigate = useNavigate();
@@ -153,6 +154,7 @@ export default function ManageTracks() {
                 <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.operational_status === 'Seasonal').length}</p>
               </div>
             </div>
+            <ProfileTasksSummary entityType="Track" records={tracks} />
             <Button onClick={() => navigate('/race-core/tracks/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Track

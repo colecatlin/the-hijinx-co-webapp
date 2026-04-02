@@ -30,6 +30,7 @@ import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesT
 import { useNavigate } from 'react-router-dom';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 import AdminOverridePanel from '@/components/management/AdminOverridePanel';
+import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
 
 export default function ManageSeries() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -233,6 +234,7 @@ export default function ManageSeries() {
                 <p className="text-2xl font-bold text-gray-500">{series.filter(s => s.operational_status !== 'Active').length}</p>
               </div>
             </div>
+            <ProfileTasksSummary entityType="Series" records={series} />
             <Button onClick={handleAdd} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Series

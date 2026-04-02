@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import ProfileCompletenessIndicator from '@/components/system/ProfileCompletenessIndicator';
+import ProfileHandoffBanner from '@/components/system/ProfileHandoffBanner';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
@@ -70,9 +72,14 @@ export default function RaceCoreDriverEditor() {
           <div className="flex-1">
             <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Drivers</p>
             <h1 className="text-4xl font-black mb-1">{driverName}</h1>
-            <p className="text-gray-500 text-sm">{isNew ? 'Create a new driver profile' : 'Manage all driver data'}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-gray-500 text-sm">{isNew ? 'Create a new driver profile' : 'Manage all driver data'}</p>
+              {!isNew && driver && <ProfileCompletenessIndicator entityType="Driver" record={driver} />}
+            </div>
           </div>
         </div>
+
+        {!isNew && driver && <ProfileHandoffBanner entityType="Driver" entityId={id} record={driver} />}
 
         <Tabs defaultValue="core" className="mt-6">
           <TabsList className="flex-wrap h-auto gap-1">

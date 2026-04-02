@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import ProfileCompletenessIndicator from '@/components/system/ProfileCompletenessIndicator';
+import ProfileHandoffBanner from '@/components/system/ProfileHandoffBanner';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
@@ -65,7 +67,10 @@ export default function RaceCoreTeamEditor() {
           <div className="flex-1">
             <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Teams</p>
             <h1 className="text-4xl font-black mb-1">{team?.name || 'New Team'}</h1>
-            <p className="text-gray-500 text-sm">{isNew ? 'Create a new team' : 'Manage all team data'}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-gray-500 text-sm">{isNew ? 'Create a new team' : 'Manage all team data'}</p>
+              {!isNew && team && <ProfileCompletenessIndicator entityType="Team" record={team} />}
+            </div>
           </div>
         </div>
 
@@ -74,6 +79,8 @@ export default function RaceCoreTeamEditor() {
             Complete core details first to unlock all sections
           </div>
         )}
+
+        {!isNew && team && <ProfileHandoffBanner entityType="Team" entityId={id} record={team} />}
 
         <Tabs defaultValue="core" className="w-full">
           <TabsList className="grid w-full grid-cols-9">

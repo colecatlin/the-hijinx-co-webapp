@@ -35,6 +35,7 @@ import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { toast } from 'sonner';
 import { useEntityEditPermission } from '@/components/access/entityEditPermission';
 import AdminOverridePanel from '@/components/management/AdminOverridePanel';
+import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
 
 export default function ManageDrivers() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -377,6 +378,7 @@ export default function ManageDrivers() {
                 <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.racing_status === 'Part Time').length}</p>
               </div>
             </div>
+            <ProfileTasksSummary entityType="Driver" records={drivers} />
             <Button onClick={() => navigate('/race-core/drivers/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
               <Plus className="w-4 h-4 mr-2" />
               Add Driver

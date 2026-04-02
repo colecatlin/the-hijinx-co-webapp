@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import ProfileCompletenessIndicator from '@/components/system/ProfileCompletenessIndicator';
+import ProfileHandoffBanner from '@/components/system/ProfileHandoffBanner';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
@@ -50,9 +52,14 @@ export default function RaceCoreTrackEditor() {
           <div className="flex-1">
             <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Tracks</p>
             <h1 className="text-4xl font-black mb-1">{track?.name || 'New Track'}</h1>
-            <p className="text-gray-500 text-sm">{isNew ? 'Create a new track' : 'Manage all track data'}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-gray-500 text-sm">{isNew ? 'Create a new track' : 'Manage all track data'}</p>
+              {!isNew && track && <ProfileCompletenessIndicator entityType="Track" record={track} />}
+            </div>
           </div>
         </div>
+
+        {!isNew && track && <ProfileHandoffBanner entityType="Track" entityId={id} record={track} />}
 
         <Tabs defaultValue="core" className="mt-6">
           <TabsList>
