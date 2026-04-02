@@ -9,7 +9,7 @@ export default function ManagementSidebar({ onNavigate }) {
   const location = useLocation();
   const [query, setQuery] = useState('');
   // Sections open by default — most-used groups
-  const DEFAULT_OPEN = new Set(['Entity Profiles', 'Editorial', 'Claims & Access', 'Race Core Records']);
+  const DEFAULT_OPEN = new Set(['Content / Editorial', 'People / Access', 'Core Entity Oversight', 'Race Core Records']);
   const [expandedSections, setExpandedSections] = useState(
     MANAGEMENT_SECTIONS.reduce((acc, section) => ({
       ...acc,

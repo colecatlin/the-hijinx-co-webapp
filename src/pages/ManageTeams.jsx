@@ -51,12 +51,12 @@ export default function ManageTeams() {
   const { canEditManagement: canEditTeamManagement } =
     useEntityEditPermission('Team', selectedTeamForEdit?.id, editingTeamRecord);
 
-  // Support deep-link: ?teamId=xxx opens that team directly
+  // Deep-link: ?teamId=xxx → route directly to Race Core canonical editor
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const teamId = params.get('teamId');
     if (teamId) {
-      setSelectedTeamForEdit({ id: teamId });
+      navigate('/race-core/teams/' + teamId);
     }
   }, []);
 
@@ -187,10 +187,7 @@ export default function ManageTeams() {
     e.target.value = '';
   };
 
-  if (showForm) {
-    return <TeamForm team={editingTeam} onClose={handleFormClose} />;
-  }
-
+  // showForm / TeamForm path replaced by canonical /race-core/teams/new route
   // Edit now routes to canonical /race-core/teams/:id — this block is no longer reached
 
   return (

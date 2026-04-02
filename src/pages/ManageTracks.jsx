@@ -103,9 +103,7 @@ export default function ManageTracks() {
     }
   };
 
-  // showForm is now replaced by navigating to Race Core canonical route
-  if (false) {
-  }
+  // 'Add Track' now routes to /race-core/tracks/new — no showForm logic needed
 
   // Edit now routes to canonical /race-core/tracks/:id — this block is no longer reached
 

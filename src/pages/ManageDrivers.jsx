@@ -69,12 +69,12 @@ export default function ManageDrivers() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
-  // Support deep-link: ?driverId=xxx opens that driver directly
+  // Deep-link: ?driverId=xxx → route directly to Race Core canonical editor
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const driverId = params.get('driverId');
     if (driverId) {
-      setSelectedDriverForEdit({ id: driverId });
+      navigate('/race-core/drivers/' + driverId);
     }
   }, []);
 
@@ -331,10 +331,7 @@ export default function ManageDrivers() {
     e.target.value = '';
   };
 
-  if (showForm) {
-    return <DriverForm driver={editingDriver} onClose={handleFormClose} />;
-  }
-
+  // showForm / DriverForm path replaced by canonical /race-core/drivers/new route
   // Edit now routes to canonical /race-core/drivers/:id — this block is no longer reached
 
   return (

@@ -86,7 +86,7 @@ export default function Management() {
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
-        <ManagementShell title="Management" subtitle="Platform control center — profiles, content, and admin tools" maxWidth="max-w-5xl">
+        <ManagementShell title="Management" subtitle="Admin oversight — moderation, diagnostics, access control, and platform tools" maxWidth="max-w-5xl">
 
           {/* Platform stats */}
           <StatsBar />
@@ -116,8 +116,9 @@ export default function Management() {
                 { label: 'Review Queue', to: createPageUrl('management/editorial/review-queue'), icon: ListChecks },
                 { label: 'Driver Claims', to: createPageUrl('ManageDriverClaims'), icon: FileTextIcon },
                 { label: 'Access Mgmt', to: createPageUrl('ManageAccess'), icon: Handshake },
-                { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
+                { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
                 { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
+                { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
               ].map(({ label, to, icon: Icon }) => (
                 <Link key={label} to={to}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
