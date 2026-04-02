@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils';
 import PersonIdentityStep from './PersonIdentityStep';
-import { User, Users, MapPin, Trophy, Heart, Search, Plus, ArrowRight, Gauge } from 'lucide-react';
+import MediaOnboardingFlow from './MediaOnboardingFlow';
+import { User, Users, MapPin, Trophy, Heart, Search, ArrowRight, Gauge, Camera } from 'lucide-react';
 
 const ENTITY_OPTIONS = [
   { icon: User, label: "I'm a driver", description: "Create or claim your driver profile", mode: 'new', type: 'Driver' },
@@ -20,9 +21,15 @@ export default function OnboardingIntercept({ user, onSkip }) {
   const hasIdentity = !!(user?.first_name?.trim() && user?.last_name?.trim());
   const [step, setStep] = useState(hasIdentity ? 'intent' : 'identity');
   const [skipping, setSkipping] = useState(false);
+  const [updatedUser, setUpdatedUser] = useState(user);
 
-  const handleIdentityComplete = () => {
+  const handleIdentityComplete = (data) => {
+    setUpdatedUser(prev => ({ ...prev, ...data }));
     setStep('intent');
+  };
+
+  const handleMediaBranch = () => {
+    setStep('media');
   };
 
   const handleEntityOption = async (mode, type) => {
@@ -66,10 +73,12 @@ export default function OnboardingIntercept({ user, onSkip }) {
         </div>
 
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className={`w-2 h-2 rounded-full transition-colors ${step === 'identity' ? 'bg-[#232323]' : 'bg-gray-300'}`} />
-          <div className={`w-2 h-2 rounded-full transition-colors ${step === 'intent' ? 'bg-[#232323]' : 'bg-gray-200'}`} />
-        </div>
+        {step !== 'media' && (
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className={`w-2 h-2 rounded-full transition-colors ${step === 'identity' ? 'bg-[#232323]' : 'bg-gray-300'}`} />
+            <div className={`w-2 h-2 rounded-full transition-colors ${step === 'intent' ? 'bg-[#232323]' : 'bg-gray-200'}`} />
+          </div>
+        )}
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
 
@@ -99,7 +108,7 @@ export default function OnboardingIntercept({ user, onSkip }) {
                   </button>
                 ))}
 
-                {/* Claim existing — secondary option */}
+                {/* Claim existing */}
                 <button
                   onClick={handleClaimExisting}
                   className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-900 hover:shadow-sm transition-all group text-left"
@@ -112,6 +121,21 @@ export default function OnboardingIntercept({ user, onSkip }) {
                     <div className="text-xs text-gray-500 mt-0.5">Find a profile already in the system and request ownership</div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-700 transition-colors flex-shrink-0" />
+                </button>
+
+                {/* Media / Creator branch */}
+                <button
+                  onClick={handleMediaBranch}
+                  className="w-full flex items-center gap-4 p-4 bg-white border border-blue-200 rounded-xl hover:border-blue-500 hover:shadow-sm transition-all group text-left"
+                >
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                    <Camera className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm text-gray-900">I'm a media creator / journalist</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Photographer, videographer, writer, outlet, content creator</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-colors flex-shrink-0" />
                 </button>
               </div>
 
@@ -135,6 +159,11 @@ export default function OnboardingIntercept({ user, onSkip }) {
                 <p className="text-xs text-gray-400">You can always set up your profile later from your dashboard.</p>
               </div>
             </div>
+          )}
+
+          {/* Layer 3 — Media Onboarding Flow */}
+          {step === 'media' && (
+            <MediaOnboardingFlow user={updatedUser} />
           )}
         </div>
 

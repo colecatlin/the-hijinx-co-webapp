@@ -92,6 +92,73 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the user has completed or dismissed first-time onboarding"
+    },
+    "role_interest_category": {
+      "type": "string",
+      "enum": [
+        "Competitor",
+        "Team / Organization",
+        "Venue / Series Operator",
+        "Media / Creator",
+        "Crew / Industry",
+        "Fan / Supporter"
+      ],
+      "description": "Broad category of the user's role interest \u2014 intent only, grants no authority"
+    },
+    "role_interest": {
+      "type": "string",
+      "description": "Specific role within their category \u2014 intent only, grants no authority"
+    },
+    "media_outlet_name": {
+      "type": "string",
+      "description": "Name of the media outlet the user is associated with"
+    },
+    "portfolio_url": {
+      "type": "string",
+      "description": "URL to the user's media portfolio"
+    },
+    "instagram_url": {
+      "type": "string",
+      "description": "User's Instagram profile URL"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "User's personal or professional website URL"
+    },
+    "media_specialties": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Photo",
+          "Video",
+          "Writing",
+          "Social Content",
+          "Publication / Outlet"
+        ]
+      },
+      "description": "Types of media work the user specializes in"
+    },
+    "disciplines_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Racing disciplines the user covers or follows (media/fan intent)"
+    },
+    "series_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Racing series the user covers or follows (media/fan intent)"
+    },
+    "regions_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Geographic regions the user covers or follows (media/fan intent)"
     }
   },
   "required": []

@@ -19,6 +19,7 @@ import {
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
 import OnboardingEntryCards from '@/components/onboarding/OnboardingEntryCards';
+import MediaDashboardPrompts from '@/components/mydashboard/MediaDashboardPrompts';
 import OnboardingIntercept from '@/components/onboarding/OnboardingIntercept';
 import DriverCompletionPrompt from '@/components/mydashboard/DriverCompletionPrompt';
 import PendingClaimsNotice from '@/components/onboarding/PendingClaimsNotice';
@@ -342,6 +343,11 @@ export default function MyDashboard() {
               buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
               buildEditorUrl={buildEditorUrl}
             />
+          )}
+
+          {/* Media-specific prompts — shown for users who self-identified as Media / Creator */}
+          {!isLoading && user?.role_interest_category === 'Media / Creator' && (
+            <MediaDashboardPrompts user={user} />
           )}
 
           {/* Media Portal card — shown for fans and media users */}
