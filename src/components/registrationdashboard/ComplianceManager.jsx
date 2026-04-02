@@ -293,7 +293,23 @@ export default function ComplianceManager({
     return Array.from(names);
   }, [complianceData.entriesMap]);
 
-  // Must be declared before any early returns (Rules of Hooks)
+  // Load current user's entry — must be declared before myComplianceStatus useMemo
+  const { data: myEntry } = useQuery({
+    queryKey: ['myEntry', currentUser?.id, selectedEvent?.id],
+    queryFn: async () => {
+      if (!currentUser?.id || !selectedEvent?.id) return null;
+      const myDrivers = await base44.entities.Driver.filter({ owner_user_id: currentUser.id });
+      if (myDrivers.length === 0) return null;
+      const driverEntries = await base44.entities.Entry.filter({
+        event_id: selectedEvent.id,
+        driver_id: myDrivers[0].id,
+      });
+      return driverEntries.length > 0 ? driverEntries[0] : null;
+    },
+    enabled: !!currentUser?.id && !!selectedEvent?.id,
+    ...DQ,
+  });
+
   const myComplianceStatus = useMemo(() => {
     if (!myEntry) return null;
     return complianceData.entriesMap.get(myEntry.id) || null;
@@ -344,23 +360,6 @@ export default function ComplianceManager({
     setAssigningTransponder(false);
     toast.success('Transponder assigned');
   };
-
-  // Load current user's entry
-  const { data: myEntry } = useQuery({
-    queryKey: ['myEntry', currentUser?.id, selectedEvent?.id],
-    queryFn: async () => {
-      if (!currentUser?.id || !selectedEvent?.id) return null;
-      const myDrivers = await base44.entities.Driver.filter({ owner_user_id: currentUser.id });
-      if (myDrivers.length === 0) return null;
-      const driverEntries = await base44.entities.Entry.filter({
-        event_id: selectedEvent.id,
-        driver_id: myDrivers[0].id,
-      });
-      return driverEntries.length > 0 ? driverEntries[0] : null;
-    },
-    enabled: !!currentUser?.id && !!selectedEvent?.id,
-    ...DQ,
-  });
 
   if (!selectedEvent) {
     return (
