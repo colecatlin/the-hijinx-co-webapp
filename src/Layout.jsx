@@ -37,8 +37,8 @@ const navItems = [
     { name: 'Media Portal', page: 'MediaPortal' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
-  { name: 'Creative', page: 'CreativeServices' },
   { name: 'More', page: null, sub: [
+    { name: 'Creative', page: 'CreativeServices' },
     { name: 'Tech', page: 'TechHome' },
     { name: 'Learning', page: 'Learning' },
     { name: 'Hospitality', page: 'Hospitality' },
@@ -161,7 +161,7 @@ export default function Layout({ children, currentPageName }) {
                     >
                       <Link
                         to={createPageUrl(item.page)}
-                        className={`flex items-center gap-1 px-3 py-3 text-xs font-medium tracking-wide uppercase transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-3 text-sm font-medium tracking-wide uppercase transition-colors ${
                           isActive(item.page)
                             ? 'text-[#232323] border-b-2 border-[#232323]'
                             : 'text-gray-600 hover:text-[#232323]'
