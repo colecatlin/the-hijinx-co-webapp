@@ -15,9 +15,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import {
-  MapPin, ExternalLink, TrendingUp, Camera, Calendar, Share2, Home,
-  GitCompare, Flag, AlertCircle, CheckCircle, AlertTriangle, Globe,
-  Instagram, Youtube, User, Trophy
+  MapPin, ExternalLink, Calendar, Home,
+  AlertCircle, CheckCircle, AlertTriangle, Globe,
+  Instagram, User
 } from 'lucide-react';
 import CareerStatusTag from '@/components/competition/CareerStatusTag';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
@@ -38,7 +38,7 @@ import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 import DriverCareerTab from '@/components/drivers/DriverCareerTab';
 import DriverSponsorsTab from '@/components/drivers/DriverSponsorsTab';
-import DriverScorePlaceholder from '@/components/drivers/DriverScorePlaceholder';
+
 
 const DQ = applyDefaultQueryOptions();
 
@@ -84,10 +84,8 @@ const TABS = [
   { id: 'overview',  label: 'Overview' },
   { id: 'career',    label: 'Career' },
   { id: 'schedule',  label: 'Schedule & Results' },
-  { id: 'insights',  label: 'Insights' },
   { id: 'media',     label: 'Media' },
   { id: 'sponsors',  label: 'Sponsors' },
-
 ];
 
 export default function DriverProfile() {
@@ -222,8 +220,7 @@ export default function DriverProfile() {
       return { entry, event, track, resultData };
     });
 
-  const hasSocials = driver.website_url || driver.instagram_url || driver.facebook_url || driver.tiktok_url || driver.x_url || driver.youtube_url
-    || media?.instagram || media?.facebook || media?.tiktok || media?.x || media?.youtube || media?.website;
+
 
   const yearsLabel = driver.years_active_start
     ? `${driver.years_active_start} – ${driver.years_active_end || 'Present'}`
@@ -233,12 +230,7 @@ export default function DriverProfile() {
     await base44.functions.invoke('saveEntityCalendarId', { entityType: 'Driver', entityId: driver.id, calendarId });
   };
 
-  const searchDriverPhotos = async () => {
-    try {
-      const response = await base44.functions.invoke('searchDriverPhotos', { firstName: driver.first_name, lastName: driver.last_name });
-      return response.data?.images || [];
-    } catch { return []; }
-  };
+
 
   return (
     <PageShell className="bg-white">
@@ -398,10 +390,12 @@ export default function DriverProfile() {
               )}
 
               {/* Stats */}
-              <div>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Performance Stats</h2>
-                <StatsSection driver={driver} results={results} sessions={sessions} events={eventsForEntries} />
-              </div>
+              {results.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Performance</h2>
+                  <StatsSection driver={driver} results={results} sessions={sessions} events={eventsForEntries} />
+                </div>
+              )}
 
               {/* Programs timeline preview */}
               {programs.length > 0 && (
@@ -414,22 +408,26 @@ export default function DriverProfile() {
                 </div>
               )}
 
-              {/* Score placeholder */}
-              <DriverScorePlaceholder />
+              {/* Media Gallery */}
+              {media?.gallery_urls?.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Gallery</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {media.gallery_urls.slice(0, 6).map((url, i) => (
+                      <img key={i} src={url} alt={`${fullName} gallery`}
+                        className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Profile image / portrait */}
-              {profileImg ? (
+              {/* Profile image */}
+              {profileImg && (
                 <div className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
                   <img src={profileImg} alt={fullName} className="w-full object-cover max-h-[360px]" />
-                </div>
-              ) : (
-                <div className="border border-gray-100 rounded-xl p-6 bg-gray-50">
-                  <Button onClick={searchDriverPhotos} className="w-full bg-[#232323] hover:bg-[#111]">
-                    <Camera className="w-4 h-4 mr-2" />Search for Photos
-                  </Button>
                 </div>
               )}
 
@@ -461,21 +459,17 @@ export default function DriverProfile() {
                 </div>
               )}
 
-              {/* Socials */}
-              {hasSocials && (
+              {/* Links */}
+              {(driver.website_url || driver.instagram_url) && (
                 <div className="border border-gray-200 rounded-xl p-4">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3">Connect</div>
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3">Links</div>
                   <div className="space-y-2">
-                    {(driver.website_url || media?.website) && (
-                      <SocialLink href={driver.website_url || media?.website} icon={Globe} label="Website" />
+                    {driver.website_url && (
+                      <SocialLink href={driver.website_url} icon={Globe} label="Website" />
                     )}
-                    {(driver.instagram_url || media?.instagram) && (
-                      <SocialLink href={driver.instagram_url || `https://instagram.com/${media?.instagram}`} icon={Instagram} label="Instagram" />
+                    {driver.instagram_url && (
+                      <SocialLink href={driver.instagram_url} icon={Instagram} label="Instagram" />
                     )}
-                    {(driver.youtube_url || media?.youtube) && (
-                      <SocialLink href={driver.youtube_url || media?.youtube} icon={Youtube} label="YouTube" />
-                    )}
-                    <SocialIconsDisplay media={media} />
                   </div>
                 </div>
               )}
@@ -638,13 +632,7 @@ export default function DriverProfile() {
           </div>
         )}
 
-        {/* ── INSIGHTS TAB ───────────────────────────────── */}
-        {activeTab === 'insights' && (
-          <div className="pb-12 space-y-8">
-            <h2 className="text-2xl font-black text-[#232323] mb-2">Performance Insights</h2>
-            <DriverScorePlaceholder />
-          </div>
-        )}
+
 
         {/* ── MEDIA TAB ──────────────────────────────────── */}
         {activeTab === 'media' && (
