@@ -42,8 +42,11 @@ Deno.serve(async (req) => {
     return Response.json({ error: `Unsupported entity type: ${entity_type}` }, { status: 400 });
   }
 
-  // Create the entity record
-  const entityRecord = await base44.asServiceRole.entities[entity_type].create(payload);
+  // Create the entity record — include owner_user_id on the entity itself
+  const entityRecord = await base44.asServiceRole.entities[entity_type].create({
+    ...payload,
+    owner_user_id: user.id,
+  });
 
   const entityId = entityRecord.id;
   const entityName = getEntityName(entity_type, entityRecord);

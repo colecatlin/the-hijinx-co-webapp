@@ -7,12 +7,11 @@ import PageShell from '@/components/shared/PageShell';
 import RegisterEntityFlow from '@/components/onboarding/RegisterEntityFlow';
 import ClaimEntityFlow from '@/components/onboarding/ClaimEntityFlow';
 import LinkEntityFlow from '@/components/onboarding/LinkEntityFlow';
-import { Plus, Search, KeyRound } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 
 const MODES = {
   new: { label: 'Create Profile', Icon: Plus, description: 'Register and become the profile owner.' },
   claim: { label: 'Claim Existing', Icon: Search, description: 'Request ownership of an existing profile.' },
-  link: { label: 'Join with Code', Icon: KeyRound, description: 'Enter an access code to join a team, track, or series.' },
 };
 
 export default function EntityOnboarding() {
@@ -66,7 +65,6 @@ export default function EntityOnboarding() {
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           {mode === 'new' && <RegisterEntityFlow user={user} />}
           {mode === 'claim' && <ClaimEntityFlow user={user} />}
-          {mode === 'link' && <LinkEntityFlow user={user} />}
         </div>
 
         <div className="mt-4 text-center">

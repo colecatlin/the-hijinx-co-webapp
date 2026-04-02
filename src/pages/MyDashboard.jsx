@@ -216,7 +216,7 @@ export default function MyDashboard() {
     !onboardingDismissed;
 
   if (showOnboarding) {
-    return <OnboardingIntercept onSkip={() => setOnboardingDismissed(true)} />;
+    return <OnboardingIntercept user={user} onSkip={() => setOnboardingDismissed(true)} />;
   }
 
   const welcomeName = user?.full_name || user?.email || '';

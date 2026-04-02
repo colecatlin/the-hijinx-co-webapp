@@ -3,28 +3,44 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils';
-import { User, Users, MapPin, Trophy, ArrowRight, Gauge } from 'lucide-react';
+import PersonIdentityStep from './PersonIdentityStep';
+import { User, Users, MapPin, Trophy, Heart, Search, Plus, ArrowRight, Gauge } from 'lucide-react';
 
-const OPTIONS = [
-  { icon: User, label: "I'm a driver", description: "Set up your racing profile", href: createPageUrl('EntityOnboarding') + '?mode=new&type=Driver' },
-  { icon: Users, label: "I run a team", description: "Manage your team's presence", href: createPageUrl('EntityOnboarding') + '?mode=new&type=Team' },
-  { icon: MapPin, label: "I operate a track", description: "Manage your venue and events", href: createPageUrl('EntityOnboarding') + '?mode=new&type=Track' },
-  { icon: Trophy, label: "I run a series", description: "Oversee your racing series", href: createPageUrl('EntityOnboarding') + '?mode=new&type=Series' },
+const ENTITY_OPTIONS = [
+  { icon: User, label: "I'm a driver", description: "Create or claim your driver profile", mode: 'new', type: 'Driver' },
+  { icon: Users, label: "I run a team", description: "Manage your team's presence", mode: 'new', type: 'Team' },
+  { icon: MapPin, label: "I operate a track", description: "Manage your venue and events", mode: 'new', type: 'Track' },
+  { icon: Trophy, label: "I run a series", description: "Oversee your racing series", mode: 'new', type: 'Series' },
 ];
 
-export default function OnboardingIntercept({ onSkip }) {
+export default function OnboardingIntercept({ user, onSkip }) {
   const navigate = useNavigate();
+
+  // Layer 1 is satisfied if user already has both names, or after PersonIdentityStep completes
+  const hasIdentity = !!(user?.first_name?.trim() && user?.last_name?.trim());
+  const [step, setStep] = useState(hasIdentity ? 'intent' : 'identity');
   const [skipping, setSkipping] = useState(false);
 
-  const handleSkip = async () => {
-    setSkipping(true);
-    await base44.auth.updateMe({ onboarding_complete: true }).catch(() => {});
-    onSkip();
+  const handleIdentityComplete = () => {
+    setStep('intent');
   };
 
-  const handleOption = async (href) => {
+  const handleEntityOption = async (mode, type) => {
     await base44.auth.updateMe({ onboarding_complete: true }).catch(() => {});
-    navigate(href);
+    const url = `${createPageUrl('EntityOnboarding')}?mode=${mode}${type ? `&type=${type}` : ''}`;
+    navigate(url);
+  };
+
+  const handleClaimExisting = async () => {
+    await base44.auth.updateMe({ onboarding_complete: true }).catch(() => {});
+    navigate(`${createPageUrl('EntityOnboarding')}?mode=claim`);
+  };
+
+  const handleFan = async () => {
+    setSkipping(true);
+    await base44.auth.updateMe({ onboarding_complete: true }).catch(() => {});
+    setSkipping(false);
+    onSkip();
   };
 
   return (
@@ -37,48 +53,89 @@ export default function OnboardingIntercept({ onSkip }) {
             <Gauge className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Welcome to Index46</h1>
-          <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
-            Tell us how you're here so we can point you in the right direction.
-          </p>
+          {step === 'identity' && (
+            <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
+              Let's start with who you are.
+            </p>
+          )}
+          {step === 'intent' && (
+            <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
+              Tell us how you're here so we can point you in the right direction.
+            </p>
+          )}
         </div>
 
-        {/* Options */}
-        <div className="space-y-3 mb-6">
-          {OPTIONS.map(({ icon: Icon, label, description, href }) => (
-            <button
-              key={label}
-              onClick={() => handleOption(href)}
-              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-900 hover:shadow-sm transition-all group text-left"
-            >
-              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 transition-colors">
-                <Icon className="w-5 h-5 text-gray-700" />
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className={`w-2 h-2 rounded-full transition-colors ${step === 'identity' ? 'bg-[#232323]' : 'bg-gray-300'}`} />
+          <div className={`w-2 h-2 rounded-full transition-colors ${step === 'intent' ? 'bg-[#232323]' : 'bg-gray-200'}`} />
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+
+          {/* Layer 1 — Person Identity */}
+          {step === 'identity' && (
+            <PersonIdentityStep user={user} onComplete={handleIdentityComplete} />
+          )}
+
+          {/* Layer 2 — Entity Intent */}
+          {step === 'intent' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {ENTITY_OPTIONS.map(({ icon: Icon, label, description, mode, type }) => (
+                  <button
+                    key={type}
+                    onClick={() => handleEntityOption(mode, type)}
+                    className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-900 hover:shadow-sm transition-all group text-left"
+                  >
+                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 transition-colors">
+                      <Icon className="w-5 h-5 text-gray-700" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-gray-900">{label}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{description}</div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-700 transition-colors flex-shrink-0" />
+                  </button>
+                ))}
+
+                {/* Claim existing — secondary option */}
+                <button
+                  onClick={handleClaimExisting}
+                  className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-900 hover:shadow-sm transition-all group text-left"
+                >
+                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-amber-100 transition-colors">
+                    <Search className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm text-gray-900">Claim an existing profile</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Find a profile already in the system and request ownership</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-700 transition-colors flex-shrink-0" />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-gray-900">{label}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{description}</div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+                <div className="relative flex justify-center"><span className="px-3 bg-white text-xs text-gray-400">or</span></div>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-700 transition-colors flex-shrink-0" />
-            </button>
-          ))}
-        </div>
 
-        {/* Divider */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-          <div className="relative flex justify-center"><span className="px-3 bg-gray-50 text-xs text-gray-400">or</span></div>
-        </div>
-
-        {/* Skip */}
-        <div className="text-center space-y-2">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleSkip}
-            disabled={skipping}
-          >
-            {skipping ? 'Loading...' : 'Take me to the good stuff →'}
-          </Button>
-          <p className="text-xs text-gray-400">You can always set up your profile later from your dashboard.</p>
+              {/* Fan path */}
+              <div className="text-center space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={handleFan}
+                  disabled={skipping}
+                >
+                  <Heart className="w-4 h-4 text-gray-400" />
+                  {skipping ? 'Loading...' : "I'm just a fan — take me to the good stuff"}
+                </Button>
+                <p className="text-xs text-gray-400">You can always set up your profile later from your dashboard.</p>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
