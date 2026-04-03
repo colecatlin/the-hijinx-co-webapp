@@ -6,145 +6,215 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 
-const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1200&q=80&fit=crop';
+const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=90&fit=crop';
 
 function safeDate(d) {
   if (!d) return null;
   const p = new Date(d);
-  return isNaN(p) ? null : format(p, 'MMM d, yyyy');
+  return isNaN(p) ? null : format(p, 'MMM d, yyyy').toUpperCase();
 }
 
-export default function OutletSection({ featuredStory, supportingStories = [] }) {
-  return (
-    <section className="bg-[#111111] py-16 md:py-24 border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6">
+// Paper texture grain
+const paperGrain = {
+  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+  backgroundSize: '256px 256px',
+};
 
-        {/* Header */}
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-[2px] bg-[#00FFDA]" />
-              <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">The Outlet</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+export default function OutletSection({ featuredStory, supportingStories = [] }) {
+  const hasSupporting = supportingStories.length > 0;
+
+  return (
+    <section
+      className="py-16 md:py-24 relative overflow-hidden"
+      style={{ background: '#F5F0E8' }}
+    >
+      {/* Paper grain overlay */}
+      <div className="absolute inset-0 opacity-[0.18] pointer-events-none" style={paperGrain} />
+
+      <div className="relative max-w-7xl mx-auto px-6">
+
+        {/* ── MASTHEAD ── */}
+        <div className="border-b-2 border-black pb-4 mb-10 flex items-end justify-between">
+          <div className="flex items-end gap-6">
+            {/* Volume marker */}
+            <span className="font-mono text-[9px] tracking-[0.5em] text-black/40 uppercase font-bold self-end pb-0.5">
+              The Outlet — Vol. 01
+            </span>
+            <h2
+              className="text-5xl md:text-7xl font-black text-black tracking-[-0.03em] leading-none"
+              style={{ fontStyle: 'italic' }}
+            >
               Editorial.
             </h2>
           </div>
           <Link
             to={createPageUrl('OutletHome')}
-            className="hidden md:flex items-center gap-1.5 font-mono text-[9px] tracking-[0.3em] text-white/40 hover:text-[#00FFDA] transition-colors uppercase font-bold"
+            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/40 hover:text-black transition-colors uppercase font-bold pb-1"
           >
             All Stories <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* ── MAIN EDITORIAL GRID ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
 
-          {/* Featured story — large */}
+          {/* ── FEATURED STORY ── */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="lg:col-span-2"
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7 }}
+            className="lg:col-span-7 lg:border-r-2 border-black lg:pr-8"
           >
             <Link
               to={featuredStory ? getOutletStoryUrl(featuredStory) : createPageUrl('OutletHome')}
-              className="group relative flex flex-col justify-end min-h-[480px] overflow-hidden block"
-              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+              className="group block"
             >
-              <img
-                src={featuredStory?.cover_image || PLACEHOLDER_BG}
-                alt={featuredStory?.title || 'The Outlet'}
-                className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-75 group-hover:scale-105 transition-all duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#00FFDA]/80 to-transparent" />
-
-              <div className="relative p-7 md:p-10">
+              {/* Feature image */}
+              <div className="relative overflow-hidden mb-5" style={{ height: 360 }}>
+                <img
+                  src={featuredStory?.cover_image || PLACEHOLDER_BG}
+                  alt={featuredStory?.title || 'The Outlet'}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700"
+                  style={{ filter: 'contrast(1.08) saturate(0.9)' }}
+                />
+                {/* Dark overlay bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                {/* Category tag — overlaid on image */}
                 {featuredStory?.primary_category && (
-                  <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold block mb-3">
-                    {featuredStory.primary_category}
-                  </span>
+                  <div className="absolute top-4 left-4">
+                    <span
+                      className="font-mono text-[8px] tracking-[0.4em] text-white uppercase font-bold px-2 py-1"
+                      style={{ background: 'rgba(0,0,0,0.75)' }}
+                    >
+                      {featuredStory.primary_category}
+                    </span>
+                  </div>
                 )}
-                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight mb-3 group-hover:text-[#00FFDA] transition-colors duration-300">
-                  {featuredStory?.title || 'Latest from The Outlet'}
-                </h3>
-                {featuredStory?.subtitle && (
-                  <p className="text-white/50 text-sm leading-relaxed mb-5 max-w-md line-clamp-2">
-                    {featuredStory.subtitle}
-                  </p>
-                )}
-                <div className="flex items-center gap-4">
-                  {safeDate(featuredStory?.published_date) && (
-                    <span className="font-mono text-[9px] text-white/30">{safeDate(featuredStory.published_date)}</span>
-                  )}
-                  <span className="flex items-center gap-1.5 text-xs font-black text-[#00FFDA] uppercase tracking-wider group-hover:gap-3 transition-all">
-                    Read Story <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
               </div>
+
+              {/* Metadata line */}
+              <div className="flex items-center gap-4 mb-3">
+                {safeDate(featuredStory?.published_date) && (
+                  <span className="font-mono text-[9px] text-black/40 tracking-[0.25em]">
+                    {safeDate(featuredStory.published_date)}
+                  </span>
+                )}
+                {featuredStory?.author && (
+                  <>
+                    <span className="text-black/20 text-xs">—</span>
+                    <span className="font-mono text-[9px] text-black/40 tracking-[0.15em] uppercase">
+                      {featuredStory.author}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Headline */}
+              <h3
+                className="text-3xl md:text-4xl font-black text-black tracking-tight leading-[1.05] mb-3 group-hover:opacity-70 transition-opacity"
+                style={{ maxWidth: '90%' }}
+              >
+                {featuredStory?.title || 'Latest from The Outlet'}
+              </h3>
+
+              {featuredStory?.subtitle && (
+                <p className="text-black/50 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
+                  {featuredStory.subtitle}
+                </p>
+              )}
+
+              {/* Read CTA */}
+              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-black uppercase font-bold border-b border-black pb-0.5 group-hover:opacity-50 transition-opacity">
+                Read Story <ArrowRight className="w-3 h-3" />
+              </span>
             </Link>
           </motion.div>
 
-          {/* Supporting stories */}
-          <div className="flex flex-col gap-3">
-            {supportingStories.length > 0 ? supportingStories.map((story, i) => (
-              <motion.div
-                key={story.id}
-                initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex-1"
-              >
-                <Link
-                  to={getOutletStoryUrl(story)}
-                  className="group flex gap-4 h-full min-h-[130px] overflow-hidden transition-all duration-200 block"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          {/* ── SUPPORTING STORIES — offset/collage ── */}
+          <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t-2 border-black lg:border-t-0 mt-8 lg:mt-0">
+
+            {/* Section rule label */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex-1 h-[1px] bg-black/15" />
+              <span className="font-mono text-[8px] tracking-[0.5em] text-black/35 uppercase">More Stories</span>
+            </div>
+
+            <div className="space-y-0">
+              {(hasSupporting ? supportingStories.slice(0, 3) : [null, null, null]).map((story, i) => (
+                <motion.div
+                  key={story?.id || i}
+                  initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
+                  // Intentional offset — every other card shifts slightly right
+                  style={{ marginLeft: i % 2 === 1 ? 16 : 0 }}
+                  className={`border-b border-black/12 ${i === 0 ? 'border-t border-black/12' : ''}`}
                 >
-                  {story.cover_image && (
-                    <div className="w-24 flex-shrink-0 overflow-hidden">
-                      <img
-                        src={story.cover_image}
-                        alt={story.title}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                      />
+                  {story ? (
+                    <Link
+                      to={getOutletStoryUrl(story)}
+                      className="group flex gap-4 py-4 items-start"
+                    >
+                      {/* Story number */}
+                      <span
+                        className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5"
+                      >
+                        0{i + 1}
+                      </span>
+
+                      {/* Text */}
+                      <div className="flex-1 min-w-0">
+                        {story.primary_category && (
+                          <span className="font-mono text-[8px] tracking-[0.35em] text-black/40 uppercase font-bold block mb-1">
+                            {story.primary_category}
+                          </span>
+                        )}
+                        <h4 className="text-base font-black text-black tracking-tight leading-snug group-hover:opacity-50 transition-opacity line-clamp-2">
+                          {story.title}
+                        </h4>
+                        {safeDate(story.published_date) && (
+                          <span className="font-mono text-[8px] text-black/30 mt-1.5 block tracking-[0.2em]">
+                            {safeDate(story.published_date)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Thumbnail — only if image exists */}
+                      {story.cover_image && (
+                        <div
+                          className="flex-shrink-0 overflow-hidden"
+                          style={{ width: 64, height: 64, filter: 'contrast(1.05) saturate(0.8)' }}
+                        >
+                          <img
+                            src={story.cover_image}
+                            alt={story.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
+                    </Link>
+                  ) : (
+                    // Skeleton placeholder
+                    <div className="py-4 flex gap-4 items-start">
+                      <span className="font-mono text-[9px] text-black/15 w-5">0{i + 1}</span>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-2 bg-black/8 rounded w-1/4" />
+                        <div className="h-4 bg-black/8 rounded w-3/4" />
+                        <div className="h-4 bg-black/8 rounded w-1/2" />
+                      </div>
                     </div>
                   )}
-                  <div className="p-4 flex flex-col justify-center min-w-0">
-                    {story.primary_category && (
-                      <span className="font-mono text-[8px] tracking-[0.3em] text-[#00FFDA] uppercase font-bold mb-1">
-                        {story.primary_category}
-                      </span>
-                    )}
-                    <h4 className="text-sm font-bold text-white/90 group-hover:text-white transition-colors tracking-tight leading-snug line-clamp-2">
-                      {story.title}
-                    </h4>
-                    {safeDate(story.published_date) && (
-                      <span className="font-mono text-[8px] text-white/25 mt-2">{safeDate(story.published_date)}</span>
-                    )}
-                  </div>
-                </Link>
-              </motion.div>
-            )) : (
-              /* Placeholder if no stories */
-              [1,2,3].map(i => (
-                <div key={i} className="flex-1 min-h-[130px]"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                  <div className="p-4 h-full flex flex-col justify-center">
-                    <div className="w-12 h-[1px] bg-[#00FFDA]/30 mb-3" />
-                    <div className="h-3 bg-white/5 rounded mb-2 w-3/4" />
-                    <div className="h-3 bg-white/5 rounded w-1/2" />
-                  </div>
-                </div>
-              ))
-            )}
+                </motion.div>
+              ))}
+            </div>
 
+            {/* All stories link */}
             <Link
               to={createPageUrl('OutletHome')}
-              className="flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#00FFDA] transition-colors uppercase mt-1"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-black/40 hover:text-black transition-colors uppercase font-bold"
             >
               Explore The Outlet <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+
         </div>
       </div>
     </section>
