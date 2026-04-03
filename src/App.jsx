@@ -38,6 +38,7 @@ import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
 import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 import DriverProfileSetup from './pages/DriverProfileSetup';
 import ManageProducts from './pages/ManageProducts';
+import ManageInvoices from './pages/ManageInvoices';
 import ProductDetail from './pages/ProductDetail';
 import DigitalDownloads from './pages/DigitalDownloads';
 
@@ -125,6 +126,7 @@ const AuthenticatedApp = () => {
       <Route path="/race-core/events/:id" element={<LayoutWrapper currentPageName="RaceCoreEventEditor"><RaceCoreEventEditor /></LayoutWrapper>} />
       <Route path="/DriverProfileSetup" element={<LayoutWrapper currentPageName="DriverProfileSetup"><DriverProfileSetup /></LayoutWrapper>} />
       <Route path="/management/products" element={<LayoutWrapper currentPageName="ManageProducts"><ManageProducts /></LayoutWrapper>} />
+      <Route path="/management/invoices" element={<LayoutWrapper currentPageName="ManageInvoices"><ManageInvoices /></LayoutWrapper>} />
       <Route path="/product/:slug" element={<LayoutWrapper currentPageName="ProductDetail"><ProductDetail /></LayoutWrapper>} />
       <Route path="/digital-downloads" element={<LayoutWrapper currentPageName="DigitalDownloads"><DigitalDownloads /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={

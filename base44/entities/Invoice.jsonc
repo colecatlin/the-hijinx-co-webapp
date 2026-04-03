@@ -1,0 +1,114 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "invoice_number": {
+      "type": "string",
+      "description": "Human-readable invoice number e.g. INV-2026-001"
+    },
+    "invoice_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "issued",
+        "paid",
+        "void",
+        "overdue"
+      ],
+      "default": "draft"
+    },
+    "invoice_type": {
+      "type": "string",
+      "enum": [
+        "registration",
+        "operational",
+        "credential",
+        "service",
+        "other"
+      ]
+    },
+    "issuing_entity_type": {
+      "type": "string",
+      "enum": [
+        "Track",
+        "Series",
+        "Admin"
+      ]
+    },
+    "issuing_entity_id": {
+      "type": "string"
+    },
+    "issuing_entity_name": {
+      "type": "string",
+      "description": "Snapshot of issuer name"
+    },
+    "recipient_entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Team",
+        "Track",
+        "Series",
+        "MediaOrganization",
+        "Other"
+      ]
+    },
+    "recipient_entity_id": {
+      "type": "string"
+    },
+    "recipient_name_snapshot": {
+      "type": "string"
+    },
+    "recipient_email": {
+      "type": "string"
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "tax_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "external_payment_reference": {
+      "type": "string"
+    },
+    "stripe_invoice_id": {
+      "type": "string",
+      "description": "Reserved for future Stripe sync"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional linked event"
+    }
+  },
+  "required": [
+    "invoice_number",
+    "invoice_status",
+    "invoice_type",
+    "recipient_name_snapshot",
+    "total_amount",
+    "currency"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "InvoiceLine",
+  "type": "object",
+  "properties": {
+    "invoice_id": {
+      "type": "string"
+    },
+    "line_type": {
+      "type": "string",
+      "enum": [
+        "driver_registration",
+        "team_registration",
+        "credential_fee",
+        "paddock_fee",
+        "service_charge",
+        "operational_fee",
+        "other"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "unit_price": {
+      "type": "number"
+    },
+    "line_total": {
+      "type": "number"
+    },
+    "linked_entity_type": {
+      "type": "string"
+    },
+    "linked_entity_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "invoice_id",
+    "line_type",
+    "description",
+    "quantity",
+    "unit_price",
+    "line_total"
+  ]
+}
