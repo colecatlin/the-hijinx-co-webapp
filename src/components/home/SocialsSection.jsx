@@ -69,10 +69,10 @@ export default function SocialsSection({ media = [] }) {
               <img
                 src={src}
                 alt=""
-                className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-500"
-                style={{ filter: 'contrast(1.1) saturate(0.85)' }}
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500"
+                style={{ filter: 'contrast(1.1) saturate(0.85) brightness(0.9)' }}
               />
-              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300" />
+              <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-all duration-300" />
               {i === 0 && (
                 <div className="absolute bottom-4 left-4">
                   <div className="flex items-center gap-2 px-3 py-1.5"

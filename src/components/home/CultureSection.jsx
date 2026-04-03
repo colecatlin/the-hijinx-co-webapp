@@ -153,14 +153,14 @@ export default function CultureSection() {
             style={{ height: 200 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1540747913346-19212a4c1ba5?w=700&q=90&fit=crop"
+              src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=700&q=90&fit=crop"
                 alt="Community"
-                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
-                style={{ filter: 'contrast(1.1) saturate(0.8)' }}
+                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                style={{ filter: 'contrast(1.15) saturate(0.75) brightness(0.85)' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute bottom-4 left-4">
-              <span className="font-mono text-[8px] tracking-[0.35em] text-white/45 uppercase">Community</span>
+              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Community</span>
             </div>
             <div className="absolute inset-0 border border-white/[0.04]" />
           </motion.div>
@@ -174,12 +174,12 @@ export default function CultureSection() {
             <img
               src="https://images.unsplash.com/photo-1591445645563-8c748b56dc5e?w=600&q=90&fit=crop"
                 alt="Garage"
-                className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-95 group-hover:scale-105 transition-all duration-700"
-                style={{ filter: 'contrast(1.12) saturate(0.75)' }}
+                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                style={{ filter: 'contrast(1.2) saturate(0.7) brightness(0.88)' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute bottom-4 left-4">
-              <span className="font-mono text-[8px] tracking-[0.35em] text-white/45 uppercase">Garage</span>
+              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Garage</span>
             </div>
             <div className="absolute inset-0 border border-white/[0.04]" />
           </motion.div>

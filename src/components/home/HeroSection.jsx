@@ -16,7 +16,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1800&q=90&fit=crop',
     headline: ['The story of', 'motorsports.'],
     sub: 'Grassroots to national. Every race. Every driver.',
     cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
@@ -24,7 +24,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1800&q=90&fit=crop',
     headline: ['Where culture', 'meets competition.'],
     sub: 'Style, speed, and everything in between.',
     cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
@@ -32,7 +32,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1800&q=90&fit=crop',
     headline: ['Race day lives', 'here.'],
     sub: 'Results, standings, registration — all on INDEX46.',
     cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },
@@ -70,7 +70,7 @@ export default function HeroSection({ stats = {} }) {
   return (
     <section
       className="relative w-full overflow-hidden"
-      style={{ height: 'calc(100vh - 112px)', minHeight: 520, maxHeight: 780 }}
+      style={{ height: 'calc(100vh - 112px)', minHeight: 480, maxHeight: 640 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -120,7 +120,7 @@ export default function HeroSection({ stats = {} }) {
       </AnimatePresence>
 
       {/* Content — glass card */}
-      <div className="relative z-10 h-full flex items-center">
+      <div className="relative z-10 h-full flex items-center pb-14">
         <div className="w-full max-w-7xl mx-auto px-6">
           <AnimatePresence mode="wait">
             <motion.div

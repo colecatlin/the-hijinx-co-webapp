@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 
-const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1400&q=90&fit=crop';
+const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1612825173281-9a193378527e?w=1400&q=90&fit=crop';
 
 function safeDate(d) {
   if (!d) return null;
