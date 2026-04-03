@@ -1,91 +1,98 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const AUDIENCE = [
-  { label: 'Drivers', desc: 'Claim your profile. Own your story.' },
-  { label: 'Media',   desc: 'Get credentialed. Tell the story.' },
-  { label: 'Creators', desc: 'Build with the culture.' },
-  { label: 'Fans',    desc: 'Follow the action.' },
-];
-
 export default function GetInvolvedCTA() {
-  return (
-    <section className="bg-[#111111] py-20 md:py-32 border-t border-white/5 overflow-hidden">
-      <div className="max-w-4xl mx-auto px-6 text-center">
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    try {
+      await base44.entities.NewsletterSubscriber.create({ email, source: 'homepage_cta' });
+    } catch (_) {}
+    setSubmitted(true);
+    setLoading(false);
+  };
+
+  return (
+    <section className="bg-[#111111] py-12 md:py-16 border-t border-white/5 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.7 }}
-          className="relative p-10 md:p-16 overflow-hidden"
+          initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="relative overflow-hidden"
           style={{
             background: 'rgba(0,255,218,0.04)',
             border: '1px solid rgba(0,255,218,0.12)',
             backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
           }}
         >
           {/* Ambient glow */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[500px] h-[200px] rounded-full blur-[80px]"
-              style={{ background: 'rgba(0,255,218,0.12)' }} />
-            <div className="absolute bottom-[-40px] right-0 w-[300px] h-[200px] rounded-full blur-[80px]"
-              style={{ background: 'rgba(255,107,53,0.08)' }} />
-          </div>
+          <div className="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[600px] h-[200px] rounded-full blur-[100px] pointer-events-none"
+            style={{ background: 'rgba(0,255,218,0.1)' }} />
           <div className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{ background: 'linear-gradient(90deg, transparent, #00FFDA80, transparent)' }} />
+            style={{ background: 'linear-gradient(90deg, transparent, #00FFDA70, transparent)' }} />
 
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-12 h-12 flex items-center justify-center"
-              style={{ background: 'rgba(0,255,218,0.1)', border: '1px solid rgba(0,255,218,0.2)' }}>
-              <Zap className="w-5 h-5 text-[#00FFDA]" />
+          <div className="relative px-8 py-10 md:px-14 md:py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+
+            {/* Left — copy */}
+            <div className="flex-1 min-w-0">
+              <span className="font-mono text-[9px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold block mb-3">
+                Get Involved
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-[1.0] mb-2">
+                Your world.<br />
+                <span className="text-[#00FFDA]">Welcome in.</span>
+              </h2>
+              <p className="text-white/35 text-sm leading-relaxed max-w-xs">
+                Race, shoot, create, or follow — get inside access when you join.
+              </p>
             </div>
-          </div>
 
-          {/* Headline */}
-          <div className="relative">
-            <span className="font-mono text-[9px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold block mb-5">
-              Get Involved
-            </span>
-            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-[0.9] mb-6">
-              Your world.
-              <br />
-              <span className="text-[#00FFDA]">Welcome in.</span>
-            </h2>
-            <p className="text-white/40 text-base md:text-lg leading-relaxed max-w-md mx-auto mb-10">
-              Whether you race, shoot, create, or follow — HIJINX is built for you.
-            </p>
-
-            {/* Audience pills */}
-            <div className="flex flex-wrap justify-center gap-3 mb-10">
-              {AUDIENCE.map(a => (
-                <div key={a.label} className="px-4 py-2 text-center"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="text-xs font-bold text-white tracking-wide">{a.label}</div>
-                  <div className="text-[10px] text-white/30 mt-0.5">{a.desc}</div>
+            {/* Right — email capture + join */}
+            <div className="flex-shrink-0 w-full md:w-auto md:min-w-[340px]">
+              {submitted ? (
+                <div className="flex items-center gap-3 py-4">
+                  <div className="w-2 h-2 rounded-full bg-[#00FFDA]" />
+                  <span className="font-mono text-sm text-[#00FFDA] tracking-wide">You're in. See you inside.</span>
                 </div>
-              ))}
-            </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="flex-1 min-w-0 px-4 py-3 text-sm text-white bg-white/[0.06] border border-white/10 focus:outline-none focus:border-[#00FFDA]/50 placeholder:text-white/20 transition-colors"
+                    style={{ borderRadius: 2 }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-shrink-0 px-5 py-3 text-xs font-black tracking-wider uppercase flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                    style={{ background: '#00FFDA', color: '#0A0A0A', borderRadius: 2 }}
+                  >
+                    {loading ? '...' : <><span>Join</span><ArrowRight className="w-3.5 h-3.5" /></>}
+                  </button>
+                </form>
+              )}
 
-            {/* CTAs */}
-            <div className="flex flex-wrap justify-center gap-3">
+              {/* Secondary — create account */}
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-black tracking-wider uppercase transition-all duration-200 hover:gap-3"
-                style={{ background: '#00FFDA', color: '#0A0A0A' }}
+                className="mt-3 font-mono text-[9px] tracking-[0.3em] text-white/25 hover:text-white/60 transition-colors uppercase"
               >
-                Join HIJINX <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                Already have an account? Sign in →
               </button>
-              <Link
-                to={createPageUrl('MotorsportsHome')}
-                className="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold tracking-wide uppercase border border-white/15 text-white/60 hover:border-white/30 hover:text-white transition-all duration-200"
-              >
-                Explore First
-              </Link>
             </div>
+
           </div>
         </motion.div>
       </div>
