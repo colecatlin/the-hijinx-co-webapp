@@ -3,29 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
-
-function ProductCard({ product }) {
-  return (
-    <Link to={`/product/${product.slug || product.id}`} className="group block">
-      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-        <div className="aspect-square bg-gray-50 overflow-hidden">
-          {product.cover_image_url
-            ? <img src={product.cover_image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            : <div className="w-full h-full flex items-center justify-center"><Download className="w-10 h-10 text-gray-300" /></div>
-          }
-        </div>
-        <div className="p-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{product.category}</p>
-          <h3 className="font-semibold text-gray-900 group-hover:text-gray-600 transition-colors line-clamp-1">{product.name}</h3>
-          {product.short_description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.short_description}</p>}
-          <p className="mt-3 font-bold text-gray-900">${product.price?.toFixed(2)}</p>
-        </div>
-      </div>
-    </Link>
-  );
-}
+import ProductCard from '@/components/products/ProductCard';
 
 export default function DigitalDownloads() {
   const { data: products = [], isLoading } = useQuery({
