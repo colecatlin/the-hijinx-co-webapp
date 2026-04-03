@@ -1,0 +1,37 @@
+{
+  "name": "DigitalEntitlement",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "access_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "download_url": {
+      "type": "string"
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "product_id",
+    "order_id",
+    "download_url",
+    "granted_at"
+  ]
+}

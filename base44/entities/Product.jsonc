@@ -1,0 +1,80 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft",
+        "inactive"
+      ],
+      "default": "draft"
+    },
+    "description": {
+      "type": "string"
+    },
+    "short_description": {
+      "type": "string"
+    },
+    "cover_image_url": {
+      "type": "string"
+    },
+    "gallery_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "external_fulfillment_url": {
+      "type": "string"
+    },
+    "digital_asset_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "product_type",
+    "status",
+    "price",
+    "currency",
+    "category"
+  ]
+}

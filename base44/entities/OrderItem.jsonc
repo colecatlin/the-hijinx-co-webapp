@@ -1,0 +1,43 @@
+{
+  "name": "OrderItem",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name_snapshot": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital"
+      ]
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "unit_price": {
+      "type": "number"
+    },
+    "line_total": {
+      "type": "number"
+    },
+    "variant_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "order_id",
+    "product_id",
+    "product_name_snapshot",
+    "product_type",
+    "quantity",
+    "unit_price",
+    "line_total"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "order_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "fulfilled",
+        "canceled",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "payment_provider": {
+      "type": "string"
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "fulfillment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "fulfilled",
+        "partially_fulfilled",
+        "not_applicable"
+      ],
+      "default": "pending"
+    },
+    "order_type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital",
+        "mixed"
+      ]
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "email",
+    "total_amount",
+    "currency",
+    "order_type"
+  ]
+}
