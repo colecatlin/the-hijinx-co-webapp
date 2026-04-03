@@ -9,9 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Edit, Trash2, Send, CheckCircle, XCircle, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Send, CheckCircle, XCircle, FileText, ChevronDown, ChevronUp, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,7 +48,7 @@ function generateInvoiceNumber() {
   return `INV-${now.getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
 }
 
-// ─── Line Item Form ───────────────────────────────────────────────────────────
+// ─── Line Item Row ────────────────────────────────────────────────────────────
 
 function LineItemRow({ line, onChange, onRemove }) {
   const handleChange = (k, v) => {
@@ -91,9 +90,60 @@ function LineItemRow({ line, onChange, onRemove }) {
   );
 }
 
+// ─── Mark Paid Dialog ─────────────────────────────────────────────────────────
+
+function MarkPaidDialog({ open, onClose, onConfirm, isPending }) {
+  const [ref, setRef] = useState('');
+  const [stripeId, setStripeId] = useState('');
+  const [method, setMethod] = useState('manual');
+
+  const handleConfirm = () => {
+    onConfirm({ payment_reference: ref, stripe_invoice_id: stripeId, payment_method: method });
+    setRef(''); setStripeId(''); setMethod('manual');
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>Mark Invoice Paid</DialogTitle></DialogHeader>
+        <div className="space-y-4 mt-2">
+          <div>
+            <Label>Payment Method</Label>
+            <Select value={method} onValueChange={setMethod}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="manual">Manual / Cash / Check</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="stripe">Stripe</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Payment Reference <span className="text-gray-400">(optional)</span></Label>
+            <Input value={ref} onChange={e => setRef(e.target.value)} placeholder="Check #, transfer ID, etc." />
+          </div>
+          {method === 'stripe' && (
+            <div>
+              <Label>Stripe Invoice ID <span className="text-gray-400">(optional)</span></Label>
+              <Input value={stripeId} onChange={e => setStripeId(e.target.value)} placeholder="in_xxxxx" />
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleConfirm} disabled={isPending} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+              <CheckCircle className="w-4 h-4" />{isPending ? 'Saving…' : 'Confirm Paid'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Invoice Detail Panel ─────────────────────────────────────────────────────
 
-function InvoiceDetail({ invoice, onClose, onStatusChange }) {
+function InvoiceDetail({ invoice, onStatusChange, onMarkPaid }) {
   const queryClient = useQueryClient();
 
   const { data: lines = [] } = useQuery({
@@ -101,7 +151,6 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
     queryFn: () => base44.entities.InvoiceLine.filter({ invoice_id: invoice.id }),
   });
 
-  const [newLines, setNewLines] = useState([]);
   const [addingLine, setAddingLine] = useState(false);
   const [draftLine, setDraftLine] = useState(EMPTY_LINE);
 
@@ -124,19 +173,18 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
     },
   });
 
-  const allLines = [...lines, ...newLines];
-  const subtotal = allLines.reduce((s, l) => s + parseFloat(l.line_total || 0), 0);
+  const subtotal = lines.reduce((s, l) => s + parseFloat(l.line_total || 0), 0);
 
   const statusActions = {
-    draft:   [{ label: 'Issue Invoice', status: 'issued', icon: Send, color: 'bg-blue-600 hover:bg-blue-700 text-white' }],
+    draft:   [{ label: 'Issue Invoice', status: 'issued', icon: Send, color: 'bg-blue-600 hover:bg-blue-700 text-white', isPaid: false }],
     issued:  [
-      { label: 'Mark Paid', status: 'paid', icon: CheckCircle, color: 'bg-green-600 hover:bg-green-700 text-white' },
-      { label: 'Mark Overdue', status: 'overdue', icon: null, color: 'bg-orange-500 hover:bg-orange-600 text-white' },
-      { label: 'Void', status: 'void', icon: XCircle, color: 'bg-red-500 hover:bg-red-600 text-white' },
+      { label: 'Mark Paid', status: 'paid', icon: CheckCircle, color: 'bg-green-600 hover:bg-green-700 text-white', isPaid: true },
+      { label: 'Mark Overdue', status: 'overdue', icon: null, color: 'bg-orange-500 hover:bg-orange-600 text-white', isPaid: false },
+      { label: 'Void', status: 'void', icon: XCircle, color: 'bg-red-500 hover:bg-red-600 text-white', isPaid: false },
     ],
     overdue: [
-      { label: 'Mark Paid', status: 'paid', icon: CheckCircle, color: 'bg-green-600 hover:bg-green-700 text-white' },
-      { label: 'Void', status: 'void', icon: XCircle, color: 'bg-red-500 hover:bg-red-600 text-white' },
+      { label: 'Mark Paid', status: 'paid', icon: CheckCircle, color: 'bg-green-600 hover:bg-green-700 text-white', isPaid: true },
+      { label: 'Void', status: 'void', icon: XCircle, color: 'bg-red-500 hover:bg-red-600 text-white', isPaid: false },
     ],
     paid: [], void: [],
   };
@@ -162,7 +210,7 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
             const Icon = a.icon;
             return (
               <Button key={a.status} size="sm" className={`gap-1.5 text-xs ${a.color}`}
-                onClick={() => onStatusChange(invoice.id, a.status)}>
+                onClick={() => a.isPaid ? onMarkPaid(invoice) : onStatusChange(invoice.id, a.status)}>
                 {Icon && <Icon className="w-3.5 h-3.5" />} {a.label}
               </Button>
             );
@@ -200,7 +248,6 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
           )}
         </div>
 
-        {/* Column headers */}
         <div className="grid grid-cols-12 gap-2 text-xs text-gray-400 font-medium mb-1 px-0.5">
           <div className="col-span-3">Type</div>
           <div className="col-span-4">Description</div>
@@ -210,7 +257,7 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
           <div className="col-span-1" />
         </div>
 
-        {allLines.length === 0 && !addingLine && (
+        {lines.length === 0 && !addingLine && (
           <p className="text-xs text-gray-400 py-3">No line items yet.</p>
         )}
 
@@ -264,6 +311,19 @@ function InvoiceDetail({ invoice, onClose, onStatusChange }) {
           {invoice.notes}
         </div>
       )}
+
+      {/* Payment record — visible when paid */}
+      {invoice.invoice_status === 'paid' && (
+        <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3 text-xs space-y-1">
+          <div className="flex items-center gap-2 font-semibold text-green-700 mb-1">
+            <CreditCard className="w-3.5 h-3.5" /> Payment Record
+          </div>
+          {invoice.paid_at && <p className="text-green-600">Paid: {new Date(invoice.paid_at).toLocaleString()}</p>}
+          {invoice.payment_provider && <p className="text-gray-500">Method: {invoice.payment_provider}</p>}
+          {invoice.external_payment_reference && <p className="text-gray-500">Ref: {invoice.external_payment_reference}</p>}
+          {invoice.stripe_invoice_id && <p className="text-gray-400">Stripe ID: {invoice.stripe_invoice_id}</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -274,6 +334,7 @@ export default function ManageInvoices() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [detailInvoice, setDetailInvoice] = useState(null);
+  const [markPaidTarget, setMarkPaidTarget] = useState(null);
   const [form, setForm] = useState({ ...EMPTY_INVOICE, invoice_number: generateInvoiceNumber() });
   const [filter, setFilter] = useState('all');
 
@@ -293,10 +354,36 @@ export default function ManageInvoices() {
     onError: (e) => toast.error(e.message),
   });
 
+  const markPaid = useMutation({
+    mutationFn: ({ id, payment_reference, stripe_invoice_id, payment_method }) =>
+      base44.entities.Invoice.update(id, {
+        invoice_status: 'paid',
+        paid_at: new Date().toISOString(),
+        payment_provider: payment_method,
+        external_payment_reference: payment_reference || undefined,
+        stripe_invoice_id: stripe_invoice_id || undefined,
+      }),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries(['invoices']);
+      if (detailInvoice?.id === vars.id) {
+        setDetailInvoice(inv => ({
+          ...inv,
+          invoice_status: 'paid',
+          paid_at: new Date().toISOString(),
+          payment_provider: vars.payment_method,
+          external_payment_reference: vars.payment_reference,
+          stripe_invoice_id: vars.stripe_invoice_id,
+        }));
+      }
+      setMarkPaidTarget(null);
+      toast.success('Invoice marked paid');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const updateStatus = (id, status) => {
     const extra = {};
     if (status === 'issued') extra.issued_at = new Date().toISOString();
-    if (status === 'paid') extra.paid_at = new Date().toISOString();
     base44.entities.Invoice.update(id, { invoice_status: status, ...extra }).then(() => {
       queryClient.invalidateQueries(['invoices']);
       if (detailInvoice?.id === id) setDetailInvoice(inv => ({ ...inv, invoice_status: status, ...extra }));
@@ -323,7 +410,7 @@ export default function ManageInvoices() {
     draft: invoices.filter(i => i.invoice_status === 'draft').length,
     issued: invoices.filter(i => i.invoice_status === 'issued').length,
     paid: invoices.filter(i => i.invoice_status === 'paid').length,
-    totalBilled: invoices.filter(i => ['issued','paid'].includes(i.invoice_status)).reduce((s, i) => s + (i.total_amount || 0), 0),
+    totalBilled: invoices.filter(i => ['issued', 'paid'].includes(i.invoice_status)).reduce((s, i) => s + (i.total_amount || 0), 0),
   }), [invoices]);
 
   return (
@@ -405,11 +492,20 @@ export default function ManageInvoices() {
           <div className="mt-4 bg-white border border-gray-200 rounded-xl p-6">
             <InvoiceDetail
               invoice={detailInvoice}
-              onClose={() => setDetailInvoice(null)}
               onStatusChange={updateStatus}
+              onMarkPaid={(inv) => setMarkPaidTarget(inv)}
             />
           </div>
         )}
+
+        <MarkPaidDialog
+          open={!!markPaidTarget}
+          onClose={() => setMarkPaidTarget(null)}
+          isPending={markPaid.isPending}
+          onConfirm={({ payment_reference, stripe_invoice_id, payment_method }) =>
+            markPaid.mutate({ id: markPaidTarget?.id, payment_reference, stripe_invoice_id, payment_method })
+          }
+        />
       </div>
 
       {/* Create Invoice Dialog */}
