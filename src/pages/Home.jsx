@@ -11,7 +11,7 @@ import ApparelSection from '@/components/home/ApparelSection';
 import RaceCoreSection from '@/components/home/RaceCoreSection';
 import SocialsSection from '@/components/home/SocialsSection';
 import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
-import Footer from '@/components/shared/Footer';
+
 
 export default function Home() {
   const { data: hpResult, isLoading } = useQuery({
@@ -54,7 +54,7 @@ export default function Home() {
 
       <GetInvolvedCTA />
 
-      <Footer />
+
     </div>
   );
 }
