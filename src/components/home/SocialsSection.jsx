@@ -4,10 +4,10 @@ import { ArrowRight, Instagram, Twitter } from 'lucide-react';
 
 const GRID_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=90&fit=crop',
-  'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=600&q=90&fit=crop',
-  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=90&fit=crop',
-  'https://images.unsplash.com/photo-1540747913346-19212a4c1ba5?w=600&q=90&fit=crop',
+  'https://images.unsplash.com/photo-1541348260-f05de38b0f68?w=600&q=90&fit=crop',
   'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=90&fit=crop',
+  'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&q=90&fit=crop',
+  'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=90&fit=crop',
   'https://images.unsplash.com/photo-1591445645563-8c748b56dc5e?w=600&q=90&fit=crop',
 ];
 

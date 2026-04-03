@@ -7,8 +7,8 @@ import { createPageUrl } from '@/components/utils';
 // Slide 1 = video. Slides 2+ = image-based.
 const SLIDES = [
   {
-    type: 'video',
-    videoSrc: 'https://videos.pexels.com/video-files/3792197/3792197-hd_1920_1080_25fps.mp4',
+    type: 'image',
+    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop',
     headline: ['Built for the', 'ones who race.'],
     sub: 'Media. Motorsports. Culture. All in one place.',
     cta1: { label: 'Enter the Outlet', to: createPageUrl('OutletHome') },
@@ -16,7 +16,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1541348260-f05de38b0f68?w=1800&q=90&fit=crop',
     headline: ['The story of', 'motorsports.'],
     sub: 'Grassroots to national. Every race. Every driver.',
     cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
@@ -120,7 +120,7 @@ export default function HeroSection({ stats = {} }) {
       </AnimatePresence>
 
       {/* Content — glass card */}
-      <div className="relative z-10 h-full flex items-center pb-14">
+      <div className="relative z-10 h-full flex items-end pb-20">
         <div className="w-full max-w-7xl mx-auto px-6">
           <AnimatePresence mode="wait">
             <motion.div

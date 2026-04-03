@@ -44,7 +44,7 @@ export default function CultureSection() {
             style={{ height: 480 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1400&q=90&fit=crop"
+              src="https://images.unsplash.com/photo-1541348260-f05de38b0f68?w=1400&q=90&fit=crop"
               alt="Racing"
               className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-1000"
               style={{ filter: 'contrast(1.15) saturate(0.7)' }}
@@ -153,7 +153,7 @@ export default function CultureSection() {
             style={{ height: 200 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=700&q=90&fit=crop"
+              src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=700&q=90&fit=crop"
                 alt="Community"
                 className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                 style={{ filter: 'contrast(1.15) saturate(0.75) brightness(0.85)' }}
