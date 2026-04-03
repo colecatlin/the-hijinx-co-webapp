@@ -1,0 +1,184 @@
+{
+  "name": "OutletStory",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Headline of the story"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Subheadline or deck"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full story body in HTML/markdown"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author name"
+    },
+    "author_title": {
+      "type": "string",
+      "description": "Author title or role"
+    },
+    "photo_credit": {
+      "type": "string",
+      "description": "Photo credit person or company"
+    },
+    "primary_category": {
+      "type": "string",
+      "enum": [
+        "Racing",
+        "Business",
+        "Culture",
+        "Tech",
+        "Media",
+        "Marketplace"
+      ],
+      "description": "Primary story category"
+    },
+    "sub_category": {
+      "type": "string",
+      "enum": [
+        "Race Reports",
+        "Results",
+        "Standings",
+        "Championship Watch",
+        "Track Profiles",
+        "Sponsorship",
+        "Industry",
+        "Deals",
+        "Ownership",
+        "Expansion",
+        "Grassroots",
+        "Legacy",
+        "Fan Experience",
+        "Opinion",
+        "Letters",
+        "Engineering",
+        "Data",
+        "Setup",
+        "Safety",
+        "Rules",
+        "Photo Essays",
+        "Film Room",
+        "Behind The Lens",
+        "Broadcast",
+        "Creator Spotlight",
+        "Classifieds",
+        "Rent A Ride",
+        "Auctions",
+        "Gear",
+        "Builds"
+      ],
+      "description": "Sub-category dependent on primary category"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Story tags"
+    },
+    "cover_image": {
+      "type": "string",
+      "description": "Cover image URL"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional image URLs"
+    },
+    "location_city": {
+      "type": "string",
+      "description": "Dateline city"
+    },
+    "location_state": {
+      "type": "string",
+      "description": "Dateline state or region"
+    },
+    "location_country": {
+      "type": "string",
+      "description": "Dateline country"
+    },
+    "issue_id": {
+      "type": "string",
+      "description": "Associated issue ID"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured story flag"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "published",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Story status"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Publication date"
+    },
+    "scheduled_publish_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled date and time to publish"
+    },
+    "author_user_id": {
+      "type": "string",
+      "description": "User ID of the author \u2014 for contributor attribution"
+    },
+    "author_media_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the author \u2014 for public profile linking"
+    },
+    "author_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID \u2014 for outlet attribution on public pages"
+    },
+    "story_source": {
+      "type": "string",
+      "enum": [
+        "editorial",
+        "fan_submission",
+        "contributor_submission",
+        "verified_writer_direct",
+        "story_radar_draft"
+      ],
+      "default": "editorial",
+      "description": "How this story entered the system"
+    },
+    "source_submission_id": {
+      "type": "string",
+      "description": "StorySubmission ID this draft was converted from"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Optional: linked Driver ID \u2014 used to surface story on driver profile"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional: linked Event ID \u2014 used to surface story on event page"
+    }
+  },
+  "required": [
+    "title",
+    "primary_category",
+    "sub_category",
+    "status"
+  ]
+}

@@ -67,6 +67,29 @@ export default function EventProfile() {
   const canViewDraft  = user?.role === 'admin' && event?.status === 'Draft';
   const isAdmin = user?.role === 'admin';
 
+  const { data: eventStories = [] } = useQuery({
+    queryKey: ['eventStories', event?.id],
+    queryFn: () => base44.entities.OutletStory.filter({ event_id: event.id, status: 'published' }, '-published_date', 4),
+    enabled: !!event?.id,
+  });
+
+  const { data: eventEntries = [] } = useQuery({
+    queryKey: ['eventEntries', event?.id],
+    queryFn: () => base44.entities.Entry.filter({ event_id: event.id }, '-created_date', 50),
+    enabled: !!event?.id,
+  });
+
+  const { data: eventDrivers = [] } = useQuery({
+    queryKey: ['eventDrivers', event?.id],
+    queryFn: async () => {
+      const driverIds = [...new Set(eventEntries.map(e => e.driver_id).filter(Boolean))];
+      if (!driverIds.length) return [];
+      const all = await base44.entities.Driver.list();
+      return all.filter(d => driverIds.includes(d.id));
+    },
+    enabled: eventEntries.length > 0,
+  });
+
   useEffect(() => {
     if (event) Analytics.profileViewEvent(event.id, event.name, event.status);
   }, [event?.id]);
@@ -228,6 +251,48 @@ export default function EventProfile() {
                 </div>
               </div>
             </div>
+
+            {/* Drivers */}
+            {eventDrivers.length > 0 && (
+              <section className="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 className="text-lg font-bold text-[#232323] mb-4">Drivers</h2>
+                <div className="flex flex-wrap gap-2">
+                  {eventDrivers.map(d => (
+                    <Link
+                      key={d.id}
+                      to={`/drivers/${d.canonical_slug || d.slug || d.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-[#232323] hover:border-[#00FFDA] hover:shadow-sm transition-all"
+                    >
+                      {d.primary_number && <span className="text-[#00FFDA] font-bold text-xs">#{d.primary_number}</span>}
+                      {d.first_name} {d.last_name}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Stories */}
+            {eventStories.length > 0 && (
+              <section className="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 className="text-lg font-bold text-[#232323] mb-4">Stories</h2>
+                <div className="space-y-3">
+                  {eventStories.map(s => (
+                    <Link key={s.id} to={`/story/${s.slug}`}
+                      className="flex items-start gap-3 p-3 border border-gray-100 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all group">
+                      {s.cover_image && (
+                        <img src={s.cover_image} alt={s.title} className="w-16 h-12 object-cover rounded flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#232323] group-hover:underline leading-snug line-clamp-2">{s.title}</p>
+                        {s.published_date && (
+                          <p className="text-xs text-gray-400 mt-1">{format(new Date(s.published_date), 'MMM d, yyyy')}</p>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Classes */}
             {classes.length > 0 && (

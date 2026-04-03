@@ -162,6 +162,12 @@ export default function DriverProfile() {
     ...DQ,
   });
 
+  const { data: driverStories = [] } = useQuery({
+    queryKey: ['driverStories', driver?.id],
+    queryFn: () => base44.entities.OutletStory.filter({ driver_id: driver.id, status: 'published' }, '-published_date', 4),
+    enabled: !!driver?.id,
+  });
+
   if (!driverSlug) {
     return (
       <PageShell className="bg-white">

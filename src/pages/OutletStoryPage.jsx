@@ -8,7 +8,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Tag } from 'lucide-react';
+import { ArrowLeft, MapPin, Tag, User, Calendar } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import AdvertisementCard from '@/components/outlet/AdvertisementCard';
@@ -52,6 +52,18 @@ export default function OutletStoryPage() {
 
   const story = storyBySlug || storyById || null;
   const isLoading = slugParam ? loadingBySlug : loadingById;
+
+  const { data: linkedDriver } = useQuery({
+    queryKey: ['storyDriver', story?.driver_id],
+    queryFn: () => base44.entities.Driver.filter({ id: story.driver_id }).then(r => r[0] || null),
+    enabled: !!story?.driver_id,
+  });
+
+  const { data: linkedEvent } = useQuery({
+    queryKey: ['storyEvent', story?.event_id],
+    queryFn: () => base44.entities.Event.filter({ id: story.event_id }).then(r => r[0] || null),
+    enabled: !!story?.event_id,
+  });
 
   const { data: ads = [] } = useQuery({
     queryKey: ['advertisements'],
@@ -142,6 +154,30 @@ export default function OutletStoryPage() {
 
           {story.subtitle && (
             <p className="text-lg text-gray-500 mt-4">{story.subtitle}</p>
+          )}
+
+          {/* Context links — driver / event */}
+          {(linkedDriver || linkedEvent) && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {linkedDriver && (
+                <Link
+                  to={`/drivers/${linkedDriver.canonical_slug || linkedDriver.slug || linkedDriver.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                >
+                  <User className="w-3 h-3" />
+                  Featuring {linkedDriver.first_name} {linkedDriver.last_name}
+                </Link>
+              )}
+              {linkedEvent && (
+                <Link
+                  to={`${createPageUrl('EventProfile')}?id=${linkedEvent.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                >
+                  <Calendar className="w-3 h-3" />
+                  From {linkedEvent.name}
+                </Link>
+              )}
+            </div>
           )}
 
           <div className="mt-6 pb-8 border-b border-gray-200">
