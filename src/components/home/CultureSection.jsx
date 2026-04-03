@@ -46,7 +46,8 @@ export default function CultureSection() {
             <img
               src="https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1400&q=90&fit=crop"
               alt="Racing"
-              className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-95 group-hover:scale-[1.03] transition-all duration-1000"
+              className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-1000"
+              style={{ filter: 'contrast(1.15) saturate(0.7)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/20 to-transparent" />
             {/* Grain */}
@@ -152,9 +153,10 @@ export default function CultureSection() {
             style={{ height: 200 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1540747913346-19212a4c1ba5?w=700&q=85&fit=crop"
-              alt="Community"
-              className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+              src="https://images.unsplash.com/photo-1540747913346-19212a4c1ba5?w=700&q=90&fit=crop"
+                alt="Community"
+                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
+                style={{ filter: 'contrast(1.1) saturate(0.8)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-4 left-4">
@@ -170,9 +172,10 @@ export default function CultureSection() {
             style={{ height: 200, marginTop: 0 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1591445645563-8c748b56dc5e?w=600&q=85&fit=crop"
-              alt="Garage"
-              className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+              src="https://images.unsplash.com/photo-1591445645563-8c748b56dc5e?w=600&q=90&fit=crop"
+                alt="Garage"
+                className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-95 group-hover:scale-105 transition-all duration-700"
+                style={{ filter: 'contrast(1.12) saturate(0.75)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-4 left-4">

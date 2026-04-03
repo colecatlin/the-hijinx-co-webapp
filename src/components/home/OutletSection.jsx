@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 
-const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=90&fit=crop';
+const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1400&q=90&fit=crop';
 
 function safeDate(d) {
   if (!d) return null;
@@ -74,7 +74,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   src={featuredStory?.cover_image || PLACEHOLDER_BG}
                   alt={featuredStory?.title || 'The Outlet'}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700"
-                  style={{ filter: 'contrast(1.08) saturate(0.9)' }}
+                  style={{ filter: 'contrast(1.15) saturate(0.75) brightness(0.92)' }}
                 />
                 {/* Dark overlay bottom */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />

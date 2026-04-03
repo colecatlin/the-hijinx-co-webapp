@@ -4,7 +4,7 @@ import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
 
-const APPAREL_BG = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1400&q=85&fit=crop';
+const APPAREL_BG = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1400&q=90&fit=crop';
 const DROPS = [
   { label: 'Race Day', tag: 'New Season', sub: 'Built for the track and everywhere else.' },
   { label: 'Heritage Series', tag: 'Limited', sub: 'Rooted in motorsports culture.' },
@@ -40,7 +40,8 @@ export default function ApparelSection({ products = [] }) {
               <img
                 src={featuredProduct?.cover_image_url || APPAREL_BG}
                 alt="HIJINX Apparel"
-                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-[1.03] transition-all duration-700"
+                className="absolute inset-0 w-full h-full object-cover opacity-65 group-hover:opacity-85 group-hover:scale-[1.03] transition-all duration-700"
+                style={{ filter: 'contrast(1.12) saturate(0.85)' }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
               <div className="absolute top-0 left-0 right-0 h-[2px]"

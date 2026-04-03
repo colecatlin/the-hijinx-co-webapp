@@ -16,7 +16,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1800&q=85&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1800&q=90&fit=crop',
     headline: ['The story of', 'motorsports.'],
     sub: 'Grassroots to national. Every race. Every driver.',
     cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
@@ -24,7 +24,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=85&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1800&q=90&fit=crop',
     headline: ['Where culture', 'meets competition.'],
     sub: 'Style, speed, and everything in between.',
     cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
@@ -32,7 +32,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1540747913346-19212a4c1ba5?w=1800&q=85&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop',
     headline: ['Race day lives', 'here.'],
     sub: 'Results, standings, registration — all on INDEX46.',
     cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },
