@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Instagram, Youtube, Linkedin, Facebook, Twitter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -22,19 +22,27 @@ const ThreadsIcon = ({ className, style }) => (
   </svg>
 );
 
+const DEFAULT_HASHTAGS = [
+  '#hijinx', '#motorsports', '#racing', '#hijinxco',
+  '#grassrootsracing', '#racinglife', '#index46',
+  '#theoutlet', '#racecommunity', '#chaosonthetracks'
+];
+
 const SOCIAL_CONFIG = [
-  { key: 'social_instagram_url', label: 'Instagram', icon: Instagram, color: '#E1306C' },
-  { key: 'social_x_url', label: 'X / Twitter', icon: Twitter, color: '#1DA1F2' },
-  { key: 'social_tiktok_url', label: 'TikTok', icon: TikTokIcon, color: '#69C9D0' },
-  { key: 'social_youtube_url', label: 'YouTube', icon: Youtube, color: '#FF0000' },
-  { key: 'social_facebook_url', label: 'Facebook', icon: Facebook, color: '#1877F2' },
-  { key: 'social_discord_url', label: 'Discord', icon: DiscordIcon, color: '#5865F2' },
-  { key: 'social_threads_url', label: 'Threads', icon: ThreadsIcon, color: '#AAAAAA' },
-  { key: 'social_linkedin_url', label: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
-  { key: 'social_snapchat_url', label: 'Snapchat', icon: null, label2: '👻', color: '#FFFC00' },
+  { key: 'social_instagram_url', handleKey: 'social_instagram_handle', label: 'Instagram', icon: Instagram, color: '#E1306C' },
+  { key: 'social_x_url', handleKey: 'social_x_handle', label: 'X / Twitter', icon: Twitter, color: '#1DA1F2' },
+  { key: 'social_tiktok_url', handleKey: 'social_tiktok_handle', label: 'TikTok', icon: TikTokIcon, color: '#69C9D0' },
+  { key: 'social_youtube_url', handleKey: 'social_youtube_handle', label: 'YouTube', icon: Youtube, color: '#FF0000' },
+  { key: 'social_facebook_url', handleKey: 'social_facebook_handle', label: 'Facebook', icon: Facebook, color: '#1877F2' },
+  { key: 'social_discord_url', handleKey: 'social_discord_handle', label: 'Discord', icon: DiscordIcon, color: '#5865F2' },
+  { key: 'social_threads_url', handleKey: 'social_threads_handle', label: 'Threads', icon: ThreadsIcon, color: '#AAAAAA' },
+  { key: 'social_linkedin_url', handleKey: 'social_linkedin_handle', label: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
+  { key: 'social_snapchat_url', handleKey: 'social_snapchat_handle', label: 'Snapchat', icon: null, label2: '👻', color: '#FFFC00' },
 ];
 
 export default function SocialsSection() {
+  const [copied, setCopied] = useState(false);
+
   const { data: allSettings = [] } = useQuery({
     queryKey: ['homepageSettings'],
     queryFn: () => base44.entities.HomepageSettings.list(),
@@ -43,6 +51,13 @@ export default function SocialsSection() {
 
   const singleton = allSettings.find(s => s.active) || {};
   const activeSocials = SOCIAL_CONFIG.filter(s => singleton[s.key]);
+  const hashtags = singleton.social_hashtags?.length > 0 ? singleton.social_hashtags : DEFAULT_HASHTAGS;
+
+  const handleCopyHashtags = () => {
+    navigator.clipboard.writeText(hashtags.join(' '));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (activeSocials.length === 0) return null;
 
@@ -72,7 +87,7 @@ export default function SocialsSection() {
 
         {/* Social links grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {activeSocials.map(({ key, label, icon: Icon, label2, color }, i) => (
+          {activeSocials.map(({ key, handleKey, label, icon: Icon, label2, color }, i) => (
             <motion.a
               key={key}
               href={singleton[key]}
@@ -107,14 +122,42 @@ export default function SocialsSection() {
 
               <div className="min-w-0">
                 <p className="text-white font-bold text-sm leading-none mb-1">{label}</p>
-                <p className="font-mono text-[9px] tracking-[0.2em] text-white/30 uppercase truncate">
-                  {singleton[key].replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
-                </p>
+                {singleton[handleKey] ? (
+                  <p className="font-mono text-[9px] tracking-[0.15em] text-white/50 truncate">{singleton[handleKey]}</p>
+                ) : (
+                  <p className="font-mono text-[9px] tracking-[0.2em] text-white/30 uppercase truncate">
+                    {singleton[key].replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
+                  </p>
+                )}
               </div>
 
               <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/60 ml-auto flex-shrink-0 transition-colors" />
             </motion.a>
           ))}
+        </div>
+
+        {/* Hashtag section */}
+        <div className="mt-10 border border-white/[0.07] p-6" style={{ background: 'rgba(255,255,255,0.02)' }}>
+          <div className="mb-4">
+            <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-1">Tag Us In Your Posts</p>
+            <p className="text-white/40 text-xs">Copy these hashtags to connect with the HIJINX community.</p>
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-5">
+            {hashtags.map((tag) => (
+              <span key={tag} className="font-mono text-sm text-white/70 select-all">{tag}</span>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCopyHashtags}
+              className="px-4 py-2 text-xs font-bold border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
+            >
+              {copied ? '✓ Copied!' : 'Copy All'}
+            </button>
+            <button className="px-4 py-2 text-xs font-bold border border-[#FF6B35]/40 text-[#FF6B35] hover:border-[#FF6B35] transition-all">
+              Hashtag Library
+            </button>
+          </div>
         </div>
 
       </div>

@@ -136,37 +136,81 @@
       "type": "string",
       "description": "Instagram profile URL"
     },
+    "social_instagram_handle": {
+      "type": "string",
+      "description": "Instagram handle (e.g. @hijinxco)"
+    },
     "social_x_url": {
       "type": "string",
       "description": "X (Twitter) profile URL"
+    },
+    "social_x_handle": {
+      "type": "string",
+      "description": "X handle (e.g. @hijinxco)"
     },
     "social_facebook_url": {
       "type": "string",
       "description": "Facebook page URL"
     },
+    "social_facebook_handle": {
+      "type": "string",
+      "description": "Facebook page name or handle"
+    },
     "social_youtube_url": {
       "type": "string",
       "description": "YouTube channel URL"
+    },
+    "social_youtube_handle": {
+      "type": "string",
+      "description": "YouTube channel name or handle"
     },
     "social_tiktok_url": {
       "type": "string",
       "description": "TikTok profile URL"
     },
+    "social_tiktok_handle": {
+      "type": "string",
+      "description": "TikTok handle (e.g. @hijinxco)"
+    },
     "social_linkedin_url": {
       "type": "string",
       "description": "LinkedIn page URL"
+    },
+    "social_linkedin_handle": {
+      "type": "string",
+      "description": "LinkedIn company name or page handle"
     },
     "social_threads_url": {
       "type": "string",
       "description": "Threads profile URL"
     },
+    "social_threads_handle": {
+      "type": "string",
+      "description": "Threads handle (e.g. @hijinxco)"
+    },
     "social_snapchat_url": {
       "type": "string",
       "description": "Snapchat profile URL"
     },
+    "social_snapchat_handle": {
+      "type": "string",
+      "description": "Snapchat username"
+    },
     "social_discord_url": {
       "type": "string",
       "description": "Discord server invite URL"
+    },
+    "social_discord_handle": {
+      "type": "string",
+      "description": "Discord server name or community tag"
+    },
+    "social_hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "List of recommended community hashtags (e.g. #hijinx, #motorsports)"
     }
   },
   "required": []
