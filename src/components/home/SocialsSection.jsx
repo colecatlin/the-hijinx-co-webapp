@@ -117,19 +117,6 @@ export default function SocialsSection() {
           ))}
         </div>
 
-        {/* Primary CTA */}
-        <div className="mt-8 flex items-center justify-center">
-          <a
-            href={singleton[primary.key]}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 py-3 px-6 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#FF6B35] transition-colors uppercase"
-            style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            {Icon && <Icon className="w-3 h-3" />}
-            Follow HIJINX on {primary.label} <ArrowRight className="w-3 h-3" />
-          </a>
-        </div>
       </div>
     </section>
   );
