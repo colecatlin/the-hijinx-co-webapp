@@ -28,7 +28,7 @@ export default function ApparelSection({ products = [] }) {
 
           {/* Dominant lifestyle card */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+            initial={{ y: 24 }} whileInView={{ y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.65 }}
             className="lg:col-span-2"
           >
@@ -85,7 +85,7 @@ export default function ApparelSection({ products = [] }) {
             {DROPS.map((drop, i) => (
               <motion.div
                 key={drop.label}
-                initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
+                initial={{ x: 20 }} whileInView={{ x: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
                 className="flex-1"
               >

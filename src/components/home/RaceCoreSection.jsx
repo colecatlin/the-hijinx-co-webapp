@@ -19,7 +19,7 @@ export default function RaceCoreSection({ stats }) {
 
           {/* Left — copy */}
           <motion.div
-            initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }}
+            initial={{ x: -24 }} whileInView={{ x: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.7 }}
           >
             <div className="flex items-center gap-3 mb-8">
@@ -44,7 +44,7 @@ export default function RaceCoreSection({ stats }) {
               {PILLARS.map(({ icon: Icon, label, sub }, i) => (
                 <motion.div
                   key={label}
-                  initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ x: -16 }} whileInView={{ x: 0 }}
                   viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
                   className="flex items-center gap-4"
                 >
@@ -79,7 +79,7 @@ export default function RaceCoreSection({ stats }) {
 
           {/* Right — glass stat panel */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
+            initial={{ x: 24 }} whileInView={{ x: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }}
           >
             <div className="relative p-8 md:p-10 overflow-hidden"
