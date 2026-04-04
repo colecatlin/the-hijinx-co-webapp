@@ -40,11 +40,14 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           </span>
 
           {/* Center: THE OUTLET */}
-          <img
-            src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/e0e7460c8_OutletLogo.png"
-            alt="The Outlet"
-            className="absolute left-1/2 -translate-x-1/2 bottom-4 h-10 md:h-12 object-contain"
-          />
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex flex-col items-center gap-1">
+            <img
+              src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/e0e7460c8_OutletLogo.png"
+              alt="The Outlet"
+              className="h-12 md:h-16 object-contain"
+            />
+            <p className="font-mono text-[9px] tracking-[0.3em] text-black/45 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
+          </div>
 
           {/* Right: All Stories link */}
           <Link
