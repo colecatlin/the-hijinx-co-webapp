@@ -86,8 +86,6 @@ export default function SocialsSection() {
   };
 
 
-  if (activeSocials.length === 0) return null;
-
   return (
     <section className="bg-[#0A0A0A] py-16 md:py-24 border-t border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -110,6 +108,7 @@ export default function SocialsSection() {
         </div>
 
         {/* Social links grid */}
+        {activeSocials.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {activeSocials.map(({ key, handleKey, label, icon: Icon, label2, color }, i) => (
             <motion.a
@@ -127,12 +126,10 @@ export default function SocialsSection() {
                 border: '1px solid rgba(255,255,255,0.07)',
               }}
             >
-              {/* Color accent bar */}
               <div
                 className="absolute left-0 top-0 bottom-0 w-[3px] opacity-60 group-hover:opacity-100 transition-opacity"
                 style={{ background: color }}
               />
-
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white"
                 style={{ background: `${color}22`, border: `1px solid ${color}44` }}
@@ -143,7 +140,6 @@ export default function SocialsSection() {
                 <span className="text-sm font-bold" style={{ color }}>{label2}</span>
               )}
               </div>
-
               <div className="min-w-0">
                 <p className="text-white font-bold text-sm leading-none mb-1">{label}</p>
                 {singleton[handleKey] ? (
@@ -154,11 +150,11 @@ export default function SocialsSection() {
                   </p>
                 )}
               </div>
-
               <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/60 ml-auto flex-shrink-0 transition-colors" />
             </motion.a>
           ))}
         </div>
+        )}
 
         {/* Hashtag section */}
         <div className="mt-10">
