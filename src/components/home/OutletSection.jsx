@@ -24,7 +24,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
   return (
     <section
-      className="pt-0 pb-16 md:pb-24 relative overflow-hidden"
+      className="pt-0 pb-16 md:pb-24 relative"
       style={{ background: '#F5F0E8' }}
     >
       {/* Paper grain overlay */}
@@ -33,7 +33,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* ── MASTHEAD ── */}
-        <div className="border-b-2 border-black pb-4 mb-10 relative flex items-end justify-between">
+        <div className="border-b-2 border-black pt-20 pb-4 mb-10 relative flex items-end justify-between">
           {/* Left: Vol marker */}
           <span className="font-mono text-[9px] tracking-[0.5em] text-black/40 uppercase font-bold self-end pb-0.5">
             Editorial — Vol. 01
