@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       autoProducts,
       allPublishedEvents,
     ] = await Promise.all([
-      safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 6)),
+      safe(db.OutletStory.filter({ status: 'published' }, '-published_date', 7)),
       safe(db.Driver.filter({ featured: true }, '-created_date', 50)),
       safe(db.Team.list('-created_date', 50)),
       safe(db.Track.list('-created_date', 50)),
@@ -108,8 +108,8 @@ Deno.serve(async (req) => {
       if (override) featuredStory = override;
     }
     const featuredStories = featuredStory
-      ? [featuredStory, ...(autoStories || []).filter(s => s.id !== featuredStory.id)].slice(0, 5)
-      : (autoStories || []).slice(0, 5);
+      ? [featuredStory, ...(autoStories || []).filter(s => s.id !== featuredStory.id)].slice(0, 7)
+      : (autoStories || []).slice(0, 7);
 
     // featured_drivers / teams / tracks / series
     const featuredDrivers = resolveBucket(settings?.featured_driver_ids, autoDrivers, TARGET);

@@ -46,7 +46,7 @@ export default function Home() {
 
       <OutletSection
         featuredStory={hp.featured_story}
-        supportingStories={(hp.featured_stories || []).slice(1, 4)}
+        supportingStories={(hp.featured_stories || []).slice(1, 6)}
       />
 
       <ApparelSection products={hp.featured_products || []} />
