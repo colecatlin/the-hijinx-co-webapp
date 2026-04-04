@@ -134,39 +134,13 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             </div>
 
             <div className="space-y-0">
-              {(hasSupporting ? supportingStories.slice(0, 3) : [null, null, null]).map((story, i) => (
+              {(hasSupporting ? supportingStories.slice(0, 5) : [null, null, null, null, null]).map((story, i) => (
                 <motion.div
                   key={story?.id || i}
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
                   viewport={{ once: true, amount: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }}
-                  style={{ marginLeft: i % 2 === 1 ? 16 : 0 }}
                   className={`border-b border-black/12 ${i === 0 ? 'border-t border-black/12' : ''}`}
                 >
-                  {story ? (
-                    <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
-                      <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5">
-                        0{i + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        {story.primary_category && (
-                          <span className="font-mono text-[8px] tracking-[0.35em] text-black/40 uppercase font-bold block mb-1">
-                            {story.primary_category}
-                          </span>
-                        )}
-                        <h4 className="text-base font-black text-black tracking-tight leading-snug group-hover:opacity-50 transition-opacity line-clamp-2">
-                          {story.title}
-                        </h4>
-                        {safeDate(story.published_date) && (
-                          <span className="font-mono text-[8px] text-black/30 mt-1.5 block tracking-[0.2em]">
-                            {safeDate(story.published_date)}
-                          </span>
-                        )}
-                      </div>
-                      {story.cover_image && (
-                        <div
-                          className="flex-shrink-0 overflow-hidden"
-                          style={{ width: 64, height: 64, filter: 'contrast(1.05) saturate(0.8)' }}
-                        >
                           <img
                             src={story.cover_image}
                             alt={story.title}
