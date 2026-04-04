@@ -120,7 +120,7 @@ export default function HeroSection({ stats = {} }) {
       </AnimatePresence>
 
       {/* Content — glass card */}
-      <div className="relative z-10 h-full flex items-end pb-20">
+      <div className="relative z-10 h-full flex items-center pb-8" style={{ paddingTop: '3rem' }}>
         <div className="w-full max-w-7xl mx-auto px-6">
           <AnimatePresence mode="wait">
             <motion.div

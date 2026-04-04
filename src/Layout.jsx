@@ -91,7 +91,7 @@ export default function Layout({ children, currentPageName }) {
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen">
         <div className="sticky top-0 z-50">
-          <AnnouncementBar />
+          {currentPageName !== 'Home' && <AnnouncementBar />}
           <header
             className={`transition-all duration-300 ${
               scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'

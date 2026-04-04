@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 
-const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1612825173281-9a193378527e?w=1400&q=90&fit=crop';
+const PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1400&q=90&fit=crop';
 
 function safeDate(d) {
   if (!d) return null;
@@ -25,7 +25,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
   return (
     <section
-      className="py-16 md:py-24 relative overflow-hidden"
+      className="pt-0 pb-16 md:pb-24 relative overflow-hidden"
       style={{ background: '#F5F0E8' }}
     >
       {/* Paper grain overlay */}

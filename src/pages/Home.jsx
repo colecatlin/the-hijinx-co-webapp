@@ -41,6 +41,9 @@ export default function Home() {
 
       <CultureSection />
 
+      {/* Transition bridge: dark → editorial cream */}
+      <div style={{ height: 64, background: 'linear-gradient(to bottom, #0A0A0A, #F5F0E8)', marginTop: 0 }} />
+
       <OutletSection
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 4)}

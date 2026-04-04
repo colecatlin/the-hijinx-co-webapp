@@ -93,7 +93,7 @@ export default function RaceCoreSection({ stats }) {
                 Platform Stats
               </div>
 
-              {stats ? (
+              {stats && stats.driver_count > 50 ? (
                 <div className="grid grid-cols-2 gap-6">
                   {[
                     { value: stats.driver_count, label: 'Driver Profiles' },
@@ -112,11 +112,16 @@ export default function RaceCoreSection({ stats }) {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-5">
-                  {['Driver Profiles', 'Series Tracked', 'Tracks', 'Events'].map(label => (
-                    <div key={label} className="border-l-2 border-[#00FFDA]/20 pl-4">
-                      <div className="h-7 bg-white/5 rounded w-1/3 mb-1" />
-                      <div className="h-2 bg-white/5 rounded w-1/2" />
+                <div className="space-y-4">
+                  {[
+                    { label: 'Driver Profiles', desc: 'Verified athlete records across disciplines' },
+                    { label: 'Live Results', desc: 'Race data published in real time' },
+                    { label: 'Series & Classes', desc: 'National to grassroots coverage' },
+                    { label: 'Events Tracked', desc: 'From registration to final results' },
+                  ].map(item => (
+                    <div key={item.label} className="border-l-2 border-[#00FFDA]/25 pl-4">
+                      <div className="text-sm font-bold text-white mb-0.5">{item.label}</div>
+                      <div className="text-xs text-white/35">{item.desc}</div>
                     </div>
                   ))}
                 </div>

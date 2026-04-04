@@ -24,8 +24,8 @@ export default function CultureSection() {
 
         {/* Section label */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-6 h-[2px] bg-[#FF6B35]" />
-          <span className="font-mono text-[10px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold">
+          <div className="w-6 h-[2px] bg-[#00FFDA]" />
+          <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">
             Culture
           </span>
         </div>
