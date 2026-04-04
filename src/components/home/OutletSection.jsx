@@ -143,8 +143,8 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   className={`border-b border-black/12 ${i === 0 ? 'border-t border-black/12' : ''}`}
                 >
                   {story ? (
-                    <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
-                      <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5">
+                    <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-center">
+                      <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold flex-shrink-0 w-5">
                         0{i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
