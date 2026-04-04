@@ -170,11 +170,13 @@ export default function SocialsSection() {
         >
           <div>
             <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-2">Tag Us In Your Posts</p>
-            <div className="flex flex-wrap gap-2">
-              {['#hijinx', '#motorsports', '#raceday', '#grassrootsracing', '#weartheculture', '#index46'].map(tag => (
-                <span key={tag} className="font-mono text-sm text-white/50">{tag}</span>
+            <p className="text-white/40 text-xs leading-relaxed max-w-sm mb-4">
+              The HIJINX Hashtag Library is a curated collection of community tags — organized by theme — so your content reaches the right audience. Use these core tags on every post:
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {['#hijinx', '#inmotionwithpurpose', '#thehijinxco', '#inmotion', '#withpurpose'].map(tag => (
+                <span key={tag} className="font-mono text-sm text-white/60">{tag}</span>
               ))}
-              <span className="font-mono text-sm text-white/20">+ more</span>
             </div>
           </div>
           <Link
