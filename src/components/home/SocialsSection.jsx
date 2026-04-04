@@ -61,9 +61,6 @@ export default function SocialsSection() {
 
   if (activeSocials.length === 0) return null;
 
-  const primary = activeSocials[0];
-  const Icon = primary.icon;
-
   return (
     <section className="bg-[#0A0A0A] py-16 md:py-24 border-t border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
