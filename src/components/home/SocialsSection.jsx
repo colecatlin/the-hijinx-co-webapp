@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Instagram, Youtube, Linkedin, Facebook, Twitter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -156,72 +157,25 @@ export default function SocialsSection() {
         </div>
         )}
 
-        {/* Hashtag section */}
-        <div className="mt-10">
-          <div className="mb-6 flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-1">Tag Us In Your Posts</p>
-              <p className="text-white/40 text-xs">Select the hashtags you want, then copy them all at once.</p>
+        {/* Hashtag glimpse */}
+        <div className="mt-10 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <div>
+            <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-2">Tag Us In Your Posts</p>
+            <div className="flex flex-wrap gap-2">
+              {['#hijinx', '#motorsports', '#raceday', '#grassrootsracing', '#weartheculture', '#index46'].map(tag => (
+                <span key={tag} className="font-mono text-sm text-white/50">{tag}</span>
+              ))}
+              <span className="font-mono text-sm text-white/20">+ more</span>
             </div>
-            <button
-              onClick={handleCopySelected}
-              disabled={selected.length === 0}
-              className={`px-4 py-2 text-xs font-bold border transition-all flex-shrink-0 ${
-                selected.length > 0
-                  ? 'border-[#FF6B35] text-[#FF6B35] hover:bg-[#FF6B35]/10'
-                  : 'border-white/10 text-white/20 cursor-not-allowed'
-              }`}
-            >
-              {copied ? '✓ Copied!' : `Copy Selected${selected.length > 0 ? ` (${selected.length})` : ''}`}
-            </button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {HASHTAG_THEMES.map((theme, i) => (
-              <motion.div
-                key={theme.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.4 }}
-                className="p-5 flex flex-col gap-3"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                }}
-              >
-                <p className="font-mono text-[9px] tracking-[0.3em] text-[#FF6B35] uppercase font-bold">{theme.title}</p>
-                <div className="flex flex-col gap-2">
-                  {theme.hashtags.map(tag => (
-                    <label key={tag} className="flex items-center gap-3 cursor-pointer group">
-                      <div
-                        onClick={() => toggleHashtag(tag)}
-                        className={`w-4 h-4 flex-shrink-0 border flex items-center justify-center transition-all ${
-                          selected.includes(tag)
-                            ? 'border-[#FF6B35] bg-[#FF6B35]'
-                            : 'border-white/20 group-hover:border-white/40'
-                        }`}
-                      >
-                        {selected.includes(tag) && (
-                          <svg className="w-2.5 h-2.5 text-black" fill="none" viewBox="0 0 10 10">
-                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                      </div>
-                      <span
-                        onClick={() => toggleHashtag(tag)}
-                        className={`font-mono text-sm transition-colors ${
-                          selected.includes(tag) ? 'text-white' : 'text-white/50 group-hover:text-white/70'
-                        }`}
-                      >
-                        {tag}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <Link
+            to="/hashtag-library"
+            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border border-[#FF6B35] text-[#FF6B35] text-xs font-bold hover:bg-[#FF6B35]/10 transition-colors"
+          >
+            Browse Hashtag Library <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
       </div>
