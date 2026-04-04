@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Instagram, Twitter } from 'lucide-react';
+import { ArrowRight, Instagram } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const GRID_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=90&fit=crop',
@@ -11,7 +13,26 @@ const GRID_IMAGES = [
   'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&q=90&fit=crop',
 ];
 
+const SOCIAL_LABELS = [
+  { key: 'social_instagram_url', label: 'Instagram' },
+  { key: 'social_x_url', label: 'X' },
+  { key: 'social_tiktok_url', label: 'TikTok' },
+  { key: 'social_youtube_url', label: 'YouTube' },
+  { key: 'social_facebook_url', label: 'Facebook' },
+  { key: 'social_threads_url', label: 'Threads' },
+];
+
 export default function SocialsSection({ media = [] }) {
+  const { data: allSettings = [] } = useQuery({
+    queryKey: ['homepageSettings'],
+    queryFn: () => base44.entities.HomepageSettings.list(),
+    staleTime: 10 * 60 * 1000,
+  });
+  const singleton = allSettings.find(s => s.active) || {};
+  const socialLinks = SOCIAL_LABELS.filter(s => singleton[s.key]);
+  const instagramUrl = singleton.social_instagram_url || 'https://instagram.com';
+  const primarySocial = socialLinks[0] || { key: 'social_instagram_url', label: 'Instagram', url: instagramUrl };
+
   // Use uploaded media URLs if available, else fall back to placeholder grid
   const gridItems = media.length >= 4
     ? media.slice(0, 6).map(m => m.url || m.file_url || null).filter(Boolean)
@@ -33,24 +54,21 @@ export default function SocialsSection({ media = [] }) {
               Follow the chaos.
             </h2>
           </div>
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#FF6B35] transition-colors uppercase font-bold"
-            >
-              <Instagram className="w-3.5 h-3.5" /> Instagram
-            </a>
-            <a
-              href="https://x.com"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#FF6B35] transition-colors uppercase font-bold"
-            >
-              <Twitter className="w-3.5 h-3.5" /> X
-            </a>
-          </div>
+          {socialLinks.length > 0 && (
+            <div className="hidden md:flex items-center gap-4">
+              {socialLinks.slice(0, 3).map(({ key, label }) => (
+                <a
+                  key={key}
+                  href={singleton[key]}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#FF6B35] transition-colors uppercase font-bold"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Image grid */}
@@ -88,7 +106,7 @@ export default function SocialsSection({ media = [] }) {
 
         <div className="mt-6 flex items-center justify-center">
           <a
-            href="https://instagram.com"
+            href={singleton[primarySocial.key] || instagramUrl}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 py-3 px-6 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#FF6B35] transition-colors uppercase"
