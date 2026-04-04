@@ -134,7 +134,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             </div>
 
             <div className="space-y-0">
-              {(hasSupporting ? supportingStories.slice(0, 3) : [null, null, null]).map((story, i) => (
+              {(hasSupporting ? supportingStories.slice(0, 5) : [null, null, null, null, null]).map((story, i) => (
                 <motion.div
                   key={story?.id || i}
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
@@ -145,7 +145,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   {story ? (
                     <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
                       <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5">
-                        0{i + 1}
+                        {i < 9 ? `0${i + 1}` : i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         {story.primary_category && (
