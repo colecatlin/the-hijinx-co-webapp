@@ -22,10 +22,31 @@ const ThreadsIcon = ({ className, style }) => (
   </svg>
 );
 
-const DEFAULT_HASHTAGS = [
-  '#hijinx', '#motorsports', '#racing', '#hijinxco',
-  '#grassrootsracing', '#racinglife', '#index46',
-  '#theoutlet', '#racecommunity', '#chaosonthetracks'
+const HASHTAG_THEMES = [
+  {
+    title: 'HIJINX Associated',
+    hashtags: ['#hijinx', '#inmotionwithpurpose', '#thehijinxco', '#inmotion', '#withpurpose'],
+  },
+  {
+    title: 'Motorsports Culture',
+    hashtags: ['#motorsports', '#racinglife', '#grassrootsracing', '#racingcommunity', '#itsracingtime'],
+  },
+  {
+    title: 'INDEX46 Directory',
+    hashtags: ['#index46', '#drivers', '#teams', '#tracks', '#series'],
+  },
+  {
+    title: 'The Outlet',
+    hashtags: ['#theoutlet', '#motorsportsmedia', '#racingstories', '#racingculture', '#pitlanelive'],
+  },
+  {
+    title: 'Apparel & Lifestyle',
+    hashtags: ['#hijinxapparel', '#weartheculture', '#racingstyle', '#paddocklife', '#garagestyle'],
+  },
+  {
+    title: 'Race Day',
+    hashtags: ['#raceday', '#flagtoflag', '#chaosonthetracks', '#greenwhitecheckered', '#postrace'],
+  },
 ];
 
 const SOCIAL_CONFIG = [
@@ -42,6 +63,7 @@ const SOCIAL_CONFIG = [
 
 export default function SocialsSection() {
   const [copied, setCopied] = useState(false);
+  const [selected, setSelected] = useState([]);
 
   const { data: allSettings = [] } = useQuery({
     queryKey: ['homepageSettings'],
@@ -51,13 +73,18 @@ export default function SocialsSection() {
 
   const singleton = allSettings.find(s => s.active) || {};
   const activeSocials = SOCIAL_CONFIG.filter(s => singleton[s.key]);
-  const hashtags = singleton.social_hashtags?.length > 0 ? singleton.social_hashtags : DEFAULT_HASHTAGS;
 
-  const handleCopyHashtags = () => {
-    navigator.clipboard.writeText(hashtags.join(' '));
+  const toggleHashtag = (tag) => {
+    setSelected(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const handleCopySelected = () => {
+    if (selected.length === 0) return;
+    navigator.clipboard.writeText(selected.join(' '));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
 
   if (activeSocials.length === 0) return null;
 
@@ -134,26 +161,70 @@ export default function SocialsSection() {
         </div>
 
         {/* Hashtag section */}
-        <div className="mt-10 border border-white/[0.07] p-6" style={{ background: 'rgba(255,255,255,0.02)' }}>
-          <div className="mb-4">
-            <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-1">Tag Us In Your Posts</p>
-            <p className="text-white/40 text-xs">Copy these hashtags to connect with the HIJINX community.</p>
-          </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-5">
-            {hashtags.map((tag) => (
-              <span key={tag} className="font-mono text-sm text-white/70 select-all">{tag}</span>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
+        <div className="mt-10">
+          <div className="mb-6 flex items-end justify-between">
+            <div>
+              <p className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold mb-1">Tag Us In Your Posts</p>
+              <p className="text-white/40 text-xs">Select the hashtags you want, then copy them all at once.</p>
+            </div>
             <button
-              onClick={handleCopyHashtags}
-              className="px-4 py-2 text-xs font-bold border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
+              onClick={handleCopySelected}
+              disabled={selected.length === 0}
+              className={`px-4 py-2 text-xs font-bold border transition-all flex-shrink-0 ${
+                selected.length > 0
+                  ? 'border-[#FF6B35] text-[#FF6B35] hover:bg-[#FF6B35]/10'
+                  : 'border-white/10 text-white/20 cursor-not-allowed'
+              }`}
             >
-              {copied ? '✓ Copied!' : 'Copy All'}
+              {copied ? '✓ Copied!' : `Copy Selected${selected.length > 0 ? ` (${selected.length})` : ''}`}
             </button>
-            <button className="px-4 py-2 text-xs font-bold border border-[#FF6B35]/40 text-[#FF6B35] hover:border-[#FF6B35] transition-all">
-              Hashtag Library
-            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {HASHTAG_THEMES.map((theme, i) => (
+              <motion.div
+                key={theme.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.4 }}
+                className="p-5 flex flex-col gap-3"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                }}
+              >
+                <p className="font-mono text-[9px] tracking-[0.3em] text-[#FF6B35] uppercase font-bold">{theme.title}</p>
+                <div className="flex flex-col gap-2">
+                  {theme.hashtags.map(tag => (
+                    <label key={tag} className="flex items-center gap-3 cursor-pointer group">
+                      <div
+                        onClick={() => toggleHashtag(tag)}
+                        className={`w-4 h-4 flex-shrink-0 border flex items-center justify-center transition-all ${
+                          selected.includes(tag)
+                            ? 'border-[#FF6B35] bg-[#FF6B35]'
+                            : 'border-white/20 group-hover:border-white/40'
+                        }`}
+                      >
+                        {selected.includes(tag) && (
+                          <svg className="w-2.5 h-2.5 text-black" fill="none" viewBox="0 0 10 10">
+                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <span
+                        onClick={() => toggleHashtag(tag)}
+                        className={`font-mono text-sm transition-colors ${
+                          selected.includes(tag) ? 'text-white' : 'text-white/50 group-hover:text-white/70'
+                        }`}
+                      >
+                        {tag}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
 
