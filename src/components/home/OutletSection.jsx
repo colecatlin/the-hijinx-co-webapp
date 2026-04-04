@@ -134,7 +134,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             </div>
 
             <div className="space-y-0">
-              {(hasSupporting ? supportingStories.slice(0, 5) : [null, null, null, null, null]).map((story, i) => (
+              {(hasSupporting ? supportingStories.slice(0, 3) : [null, null, null]).map((story, i) => (
                 <motion.div
                   key={story?.id || i}
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
