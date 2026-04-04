@@ -20,6 +20,7 @@ const SOCIAL_FIELDS = [
   { key: 'social_linkedin_url', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/hijinxco' },
   { key: 'social_threads_url', label: 'Threads', placeholder: 'https://threads.net/@hijinxco' },
   { key: 'social_snapchat_url', label: 'Snapchat', placeholder: 'https://snapchat.com/add/hijinxco' },
+  { key: 'social_discord_url', label: 'Discord', placeholder: 'https://discord.gg/hijinxco' },
 ];
 
 const SECTIONS = [

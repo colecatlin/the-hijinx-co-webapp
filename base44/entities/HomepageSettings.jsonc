@@ -1,0 +1,173 @@
+{
+  "name": "HomepageSettings",
+  "type": "object",
+  "description": "Homepage configuration \u2014 image settings (key/image_url) and editorial override settings (active=true singleton)",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Section key for image background records (e.g. apparel_bg)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label for image background records"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Background image URL for a section"
+    },
+    "active": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this is the active editorial settings singleton record"
+    },
+    "homepage_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "editorial",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "featured_story_id": {
+      "type": "string"
+    },
+    "featured_driver_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "featured_track_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "featured_series_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "featured_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "featured_media_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "featured_product_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "spotlight_driver_id": {
+      "type": "string"
+    },
+    "spotlight_event_id": {
+      "type": "string"
+    },
+    "ticker_override_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "hero_ticker_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "spotlight_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "featured_entities_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "activity_feed_mode": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "mixed"
+      ],
+      "default": "auto"
+    },
+    "updated_by_user_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "social_instagram_url": {
+      "type": "string",
+      "description": "Instagram profile URL"
+    },
+    "social_x_url": {
+      "type": "string",
+      "description": "X (Twitter) profile URL"
+    },
+    "social_facebook_url": {
+      "type": "string",
+      "description": "Facebook page URL"
+    },
+    "social_youtube_url": {
+      "type": "string",
+      "description": "YouTube channel URL"
+    },
+    "social_tiktok_url": {
+      "type": "string",
+      "description": "TikTok profile URL"
+    },
+    "social_linkedin_url": {
+      "type": "string",
+      "description": "LinkedIn page URL"
+    },
+    "social_threads_url": {
+      "type": "string",
+      "description": "Threads profile URL"
+    },
+    "social_snapchat_url": {
+      "type": "string",
+      "description": "Snapchat profile URL"
+    },
+    "social_discord_url": {
+      "type": "string",
+      "description": "Discord server invite URL"
+    }
+  },
+  "required": []
+}

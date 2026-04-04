@@ -10,6 +10,7 @@ const SOCIAL_CONFIG = [
   { key: 'social_tiktok_url', label: 'TikTok', icon: null, label2: 'TT', color: '#69C9D0' },
   { key: 'social_youtube_url', label: 'YouTube', icon: Youtube, color: '#FF0000' },
   { key: 'social_facebook_url', label: 'Facebook', icon: Facebook, color: '#1877F2' },
+  { key: 'social_discord_url', label: 'Discord', icon: null, label2: '💬', color: '#5865F2' },
   { key: 'social_threads_url', label: 'Threads', icon: null, label2: '@', color: '#fff' },
   { key: 'social_linkedin_url', label: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
   { key: 'social_snapchat_url', label: 'Snapchat', icon: null, label2: '👻', color: '#FFFC00' },
