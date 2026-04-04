@@ -40,7 +40,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           </span>
 
           {/* Center: THE OUTLET */}
-          <h2 className="absolute left-1/2 -translate-x-1/2 bottom-4 text-5xl md:text-7xl font-black text-black tracking-[-0.03em] leading-none uppercase">
+          <h2 className="absolute left-1/2 -translate-x-1/2 bottom-4 text-5xl md:text-7xl font-semibold text-black tracking-[-0.03em] leading-none uppercase">
             The Outlet
           </h2>
 
