@@ -59,7 +59,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           {/* ── FEATURED STORY ── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.7 }}
+            viewport={{ once: true, amount: 0 }} transition={{ duration: 0.7 }}
             className="lg:col-span-7 lg:border-r-2 border-black lg:pr-8"
           >
             <Link
@@ -133,7 +133,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                 <motion.div
                   key={story?.id || i}
                   initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
+                  viewport={{ once: true, amount: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }}
                   style={{ marginLeft: i % 2 === 1 ? 16 : 0 }}
                   className={`border-b border-black/12 ${i === 0 ? 'border-t border-black/12' : ''}`}
                 >

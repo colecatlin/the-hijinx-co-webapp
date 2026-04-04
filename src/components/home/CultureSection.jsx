@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react';
 const fadeUp = (i) => ({
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
+  viewport: { once: true, amount: 0 },
   transition: { delay: i * 0.09, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
 });
 
