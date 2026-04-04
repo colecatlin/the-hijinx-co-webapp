@@ -172,7 +172,7 @@ export default function SocialsSection() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="font-mono text-xs tracking-[0.35em] text-[#FF6B35] uppercase font-bold">Tag Us In Your Posts</p>
-              <p className="text-white/35 text-xs mt-1">Select your tags, then copy and paste into your post.</p>
+              <p className="text-white/35 text-xs mt-1">Find your hashtags. Stay relevant to the community you're a part of.</p>
             </div>
             {selected.length > 0 && (
               <button
