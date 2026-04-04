@@ -1,0 +1,23 @@
+{
+  "name": "HashtagAnalytic",
+  "type": "object",
+  "properties": {
+    "hashtag": {
+      "type": "string",
+      "description": "The hashtag being tracked (e.g., #hijinx)"
+    },
+    "usage_count": {
+      "type": "integer",
+      "description": "Number of times this hashtag has been copied",
+      "default": 0
+    },
+    "last_used_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last time the hashtag was copied"
+    }
+  },
+  "required": [
+    "hashtag"
+  ]
+}

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import PageShell from '@/components/shared/PageShell';
+import { Link } from 'react-router-dom';
+import { BarChart2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const HASHTAG_THEMES = [
   {
@@ -33,6 +36,24 @@ export default function HashtagLibrary() {
   const [selected, setSelected] = useState([]);
   const [copied, setCopied] = useState(false);
 
+  const trackHashtagUsage = async (tags) => {
+    for (const tag of tags) {
+      const existing = await base44.entities.HashtagAnalytic.filter({ hashtag: tag });
+      if (existing.length > 0) {
+        await base44.entities.HashtagAnalytic.update(existing[0].id, {
+          usage_count: (existing[0].usage_count || 0) + 1,
+          last_used_date: new Date().toISOString(),
+        });
+      } else {
+        await base44.entities.HashtagAnalytic.create({
+          hashtag: tag,
+          usage_count: 1,
+          last_used_date: new Date().toISOString(),
+        });
+      }
+    }
+  };
+
   const toggleHashtag = (tag) => {
     setSelected(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
@@ -42,6 +63,7 @@ export default function HashtagLibrary() {
     navigator.clipboard.writeText(selected.join(' '));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    trackHashtagUsage(selected);
   };
 
   const handleSelectAll = () => {
@@ -81,6 +103,12 @@ export default function HashtagLibrary() {
             {allSelected ? 'Deselect All' : 'Select All'}
           </button>
           <div className="flex items-center gap-3">
+            <Link
+              to="/hashtag-analytics"
+              className="flex items-center gap-1.5 text-[10px] font-mono text-white/40 hover:text-white transition-colors"
+            >
+              <BarChart2 className="w-3 h-3" /> Analytics
+            </Link>
             {selected.length > 0 && (
               <span className="font-mono text-[10px] text-white/30">{selected.length} selected</span>
             )}
