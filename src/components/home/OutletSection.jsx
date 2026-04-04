@@ -21,6 +21,7 @@ const paperGrain = {
 
 export default function OutletSection({ featuredStory, supportingStories = [] }) {
   const hasSupporting = supportingStories.length > 0;
+  const displayStories = hasSupporting ? supportingStories.slice(0, 5) : [null, null, null, null, null];
 
   return (
     <section
@@ -34,12 +35,10 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
         {/* ── MASTHEAD ── */}
         <div className="border-b-2 border-black pt-20 pb-4 mb-10 relative flex items-end justify-between">
-          {/* Left: Vol marker */}
           <span className="font-mono text-[9px] tracking-[0.5em] text-black/40 uppercase font-bold self-end pb-0.5">
             Editorial — Vol. 01
           </span>
 
-          {/* Center: THE OUTLET */}
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex flex-col items-center gap-1">
             <img
               src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/e0e7460c8_OutletLogo.png"
@@ -49,7 +48,6 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             <p className="font-mono text-[9px] tracking-[0.3em] text-black/45 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
           </div>
 
-          {/* Right: All Stories link */}
           <Link
             to={createPageUrl('OutletHome')}
             className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/40 hover:text-black transition-colors uppercase font-bold pb-1"
@@ -134,13 +132,38 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             </div>
 
             <div className="space-y-0">
-              {(hasSupporting ? supportingStories.slice(0, 5) : [null, null, null, null, null]).map((story, i) => (
+              {displayStories.map((story, i) => (
                 <motion.div
                   key={story?.id || i}
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
                   viewport={{ once: true, amount: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }}
-                  className={`border-b border-black/12 ${i === 0 ? 'border-t border-black/12' : ''}`}
+                  className={`border-b border-black/10 ${i === 0 ? 'border-t border-black/10' : ''}`}
                 >
+                  {story ? (
+                    <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
+                      <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5">
+                        0{i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        {story.primary_category && (
+                          <span className="font-mono text-[8px] tracking-[0.35em] text-black/40 uppercase font-bold block mb-1">
+                            {story.primary_category}
+                          </span>
+                        )}
+                        <h4 className="text-base font-black text-black tracking-tight leading-snug group-hover:opacity-50 transition-opacity line-clamp-2">
+                          {story.title}
+                        </h4>
+                        {safeDate(story.published_date) && (
+                          <span className="font-mono text-[8px] text-black/30 mt-1.5 block tracking-[0.2em]">
+                            {safeDate(story.published_date)}
+                          </span>
+                        )}
+                      </div>
+                      {story.cover_image && (
+                        <div
+                          className="flex-shrink-0 overflow-hidden"
+                          style={{ width: 64, height: 64, filter: 'contrast(1.05) saturate(0.8)' }}
+                        >
                           <img
                             src={story.cover_image}
                             alt={story.title}
