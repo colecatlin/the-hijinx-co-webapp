@@ -165,26 +165,60 @@ export default function SocialsSection() {
         )}
 
         {/* Hashtag glimpse */}
-        <div className="mt-10 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+        <div className="mt-10 p-6 flex flex-col gap-4"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <div>
-            <p className="font-mono text-xs tracking-[0.35em] text-[#FF6B35] uppercase font-bold mb-3">Tag Us In Your Posts</p>
-            <p className="text-white/40 text-xs leading-relaxed max-w-sm mb-4">
-              The HIJINX Hashtag Library is a curated collection of community tags — organized by theme — so your content reaches the right audience. Use these core tags on every post:
-            </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
-              {['#hijinx', '#thehijinxco', '#inmotiononpurpose', '#inmotion', '#onpurpose'].map(tag => (
-                <span key={tag} className="font-mono text-sm text-white/60">{tag}</span>
-              ))}
+          {/* Header row */}
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs tracking-[0.35em] text-[#FF6B35] uppercase font-bold">Tag Us In Your Posts</p>
+              <p className="text-white/35 text-xs mt-1">Select your tags, then copy and paste into your post.</p>
             </div>
+            {selected.length > 0 && (
+              <button
+                onClick={handleCopySelected}
+                className="flex-shrink-0 px-4 py-2 bg-[#FF6B35] text-black text-xs font-bold hover:bg-[#FF6B35]/80 transition-colors"
+              >
+                {copied ? 'Copied!' : `Copy (${selected.length})`}
+              </button>
+            )}
           </div>
-          <Link
-            to="/hashtag-library"
-            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border border-[#FF6B35] text-[#FF6B35] text-xs font-bold hover:bg-[#FF6B35]/10 transition-colors"
-          >
-            Browse Hashtag Library <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+
+          {/* Tags row */}
+          <div className="flex flex-wrap items-center gap-2">
+            {['#hijinx', '#thehijinxco', '#inmotiononpurpose', '#inmotion', '#onpurpose'].map(tag => {
+              const isSelected = selected.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => toggleHashtag(tag)}
+                  className={`font-mono text-sm px-3 py-1.5 border transition-all ${
+                    isSelected
+                      ? 'border-[#FF6B35] text-[#FF6B35] bg-[#FF6B35]/10'
+                      : 'border-white/15 text-white/50 hover:border-white/30 hover:text-white/70'
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setSelected(['#hijinx', '#thehijinxco', '#inmotiononpurpose', '#inmotion', '#onpurpose'])}
+              className="ml-auto text-[10px] font-mono text-white/30 hover:text-white/60 uppercase tracking-wider transition-colors"
+            >
+              Select All
+            </button>
+          </div>
+
+          {/* Browse link */}
+          <div className="pt-1 border-t border-white/[0.06]">
+            <Link
+              to="/hashtag-library"
+              className="inline-flex items-center gap-2 text-[#FF6B35] text-xs font-bold hover:gap-3 transition-all"
+            >
+              Browse Full Hashtag Library <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
       </div>
