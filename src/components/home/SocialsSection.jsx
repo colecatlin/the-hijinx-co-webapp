@@ -98,6 +98,12 @@ export default function SocialsSection() {
               <span className="font-mono text-[10px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold">
                 Community
               </span>
+              {/* Live pulse indicator */}
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]"
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+              />
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
               Follow the chaos.
@@ -119,6 +125,7 @@ export default function SocialsSection() {
               rel="noreferrer"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -3, scale: 1.01 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06, duration: 0.5 }}
               className="group relative flex items-center gap-4 p-5 overflow-hidden hover:border-white/20 transition-all duration-300"

@@ -42,6 +42,8 @@ export default function CultureSection() {
             {...fadeUp(0)}
             className="col-span-12 md:col-span-8 relative overflow-hidden group"
             style={{ height: 480 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
           >
             <img
               src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=90&fit=crop"
@@ -146,30 +148,34 @@ export default function CultureSection() {
             </div>
           </motion.div>
 
-          {/* Mid image — slightly taller */}
+          {/* Mid image — human element: crew/people moment */}
           <motion.div
             {...fadeUp(3)}
             className="col-span-6 md:col-span-4 relative overflow-hidden group"
             style={{ height: 200 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           >
             <img
-              src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=700&q=90&fit=crop"
-                alt="Community"
-                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                style={{ filter: 'contrast(1.15) saturate(0.75) brightness(0.85)' }}
+              src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=700&q=90&fit=crop"
+                alt="Crew"
+                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700"
+                style={{ filter: 'contrast(1.2) saturate(0.7) brightness(0.82)' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-4 left-4">
-              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Community</span>
+              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Crew</span>
             </div>
             <div className="absolute inset-0 border border-white/[0.04]" />
           </motion.div>
 
-          {/* Small image — offset, slightly shorter to break alignment */}
+          {/* Small image — offset */}
           <motion.div
             {...fadeUp(4)}
             className="col-span-6 md:col-span-3 relative overflow-hidden group"
             style={{ height: 200, marginTop: 0 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           >
             <img
               src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&q=90&fit=crop"

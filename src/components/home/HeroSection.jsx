@@ -102,7 +102,7 @@ export default function HeroSection({ stats = {} }) {
           )}
 
           {/* Overlays */}
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/62" />
           {/* Vignette */}
           <div className="absolute inset-0" style={{
             background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)'
@@ -111,13 +111,26 @@ export default function HeroSection({ stats = {} }) {
           <div className="absolute inset-x-0 top-0 h-32" style={{
             background: 'linear-gradient(to bottom, rgba(255,255,255,0.04), transparent)'
           }} />
-          {/* Grain texture */}
-          <div className="absolute inset-0 opacity-[0.04]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            backgroundSize: '128px 128px',
-          }} />
+          {/* Grain texture — animated slow pulse for life */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            animate={{ opacity: [0.04, 0.07, 0.04] }}
+            transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundSize: '128px 128px',
+            }}
+          />
         </motion.div>
       </AnimatePresence>
+
+      {/* Scanning light bar — subtle life */}
+      <motion.div
+        className="absolute inset-x-0 z-10 pointer-events-none"
+        style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,218,0.15) 50%, transparent 100%)' }}
+        animate={{ top: ['20%', '80%', '20%'] }}
+        transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut' }}
+      />
 
       {/* Content — glass card */}
       <div className="relative z-10 h-full flex items-center pb-8" style={{ paddingTop: '3rem' }}>
