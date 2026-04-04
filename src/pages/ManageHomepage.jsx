@@ -11,6 +11,17 @@ import { Loader2, Upload, ImageIcon } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
 import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
 
+const SOCIAL_FIELDS = [
+  { key: 'social_instagram_url', label: 'Instagram', placeholder: 'https://instagram.com/hijinxco' },
+  { key: 'social_x_url', label: 'X (Twitter)', placeholder: 'https://x.com/hijinxco' },
+  { key: 'social_facebook_url', label: 'Facebook', placeholder: 'https://facebook.com/hijinxco' },
+  { key: 'social_youtube_url', label: 'YouTube', placeholder: 'https://youtube.com/@hijinxco' },
+  { key: 'social_tiktok_url', label: 'TikTok', placeholder: 'https://tiktok.com/@hijinxco' },
+  { key: 'social_linkedin_url', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/hijinxco' },
+  { key: 'social_threads_url', label: 'Threads', placeholder: 'https://threads.net/@hijinxco' },
+  { key: 'social_snapchat_url', label: 'Snapchat', placeholder: 'https://snapchat.com/add/hijinxco' },
+];
+
 const SECTIONS = [
   { key: 'hero_bg', label: 'Homepage Hero Background' },
   { key: 'apparel_bg', label: 'Apparel Section Background' },
@@ -65,10 +76,11 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="editorial">Editorial</TabsTrigger>
             <TabsTrigger value="data">Images</TabsTrigger>
+            <TabsTrigger value="socials">Socials</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
@@ -101,6 +113,10 @@ export default function ManageHomepage() {
             })}
           </TabsContent>
 
+          <TabsContent value="socials" className="space-y-4">
+            <SocialsEditor settings={settings} queryClient={queryClient} />
+          </TabsContent>
+
           <TabsContent value="activity">
             <ActivityTab entityName="HomepageSettings" />
           </TabsContent>
@@ -108,7 +124,58 @@ export default function ManageHomepage() {
       </ManagementShell>
     </ManagementLayout>
   );
+}
+
+function SocialsEditor({ settings, queryClient }) {
+  const singleton = settings.find(s => s.active) || {};
+  const [values, setValues] = useState(() => {
+    const init = {};
+    SOCIAL_FIELDS.forEach(f => { init[f.key] = singleton[f.key] || ''; });
+    return init;
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const data = {};
+    SOCIAL_FIELDS.forEach(f => { data[f.key] = values[f.key] || ''; });
+    if (singleton.id) {
+      await base44.entities.HomepageSettings.update(singleton.id, data);
+    } else {
+      await base44.entities.HomepageSettings.create({ ...data, active: true });
     }
+    queryClient.invalidateQueries({ queryKey: ['homepageSettings'] });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-5">
+      <div>
+        <h2 className="text-lg font-bold">Platform Social Links</h2>
+        <p className="text-sm text-gray-500 mt-1">These will appear in the site footer for all visitors.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {SOCIAL_FIELDS.map(({ key, label, placeholder }) => (
+          <div key={key} className="space-y-1">
+            <Label>{label}</Label>
+            <Input
+              value={values[key]}
+              onChange={e => setValues(v => ({ ...v, [key]: e.target.value }))}
+              placeholder={placeholder}
+            />
+          </div>
+        ))}
+      </div>
+      <Button onClick={handleSave} disabled={saving} className="bg-[#232323] text-white">
+        {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+        {saved ? 'Saved!' : 'Save Social Links'}
+      </Button>
+    </div>
+  );
+}
 
 function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }) {
   const [urlInput, setUrlInput] = useState(currentUrl);
@@ -121,7 +188,6 @@ function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }
     <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-5">
       <h2 className="text-lg font-bold">{label}</h2>
 
-      {/* Preview */}
       <div className="w-full h-48 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
         {currentUrl ? (
           <img src={currentUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -133,7 +199,6 @@ function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }
         )}
       </div>
 
-      {/* Upload file */}
       <div className="space-y-1">
         <Label>Upload Image</Label>
         <label className="flex items-center gap-2 cursor-pointer border border-dashed border-gray-300 rounded px-4 py-3 hover:border-gray-500 transition-colors">
@@ -149,7 +214,6 @@ function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }
         </label>
       </div>
 
-      {/* Or paste URL */}
       <div className="space-y-1">
         <Label>Or paste image URL</Label>
         <div className="flex gap-2">
