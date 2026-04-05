@@ -24,6 +24,16 @@ export default function EventsSection() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const seriesIds = [...new Set(events.map(e => e.series_id).filter(Boolean))];
+  const { data: seriesList = [] } = useQuery({
+    queryKey: ['homepageEventSeries', seriesIds.join(',')],
+    queryFn: () => Promise.all(seriesIds.map(id => base44.entities.Series.filter({ id }, '-created_date', 1).then(r => r[0]).catch(() => null))).then(r => r.filter(Boolean)),
+    enabled: seriesIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const seriesMap = Object.fromEntries(seriesList.map(s => [s.id, s]));
+
   const today = new Date().toISOString().split('T')[0];
   const upcoming = events.filter(e => e.event_date >= today).slice(0, 6);
   const displayEvents = upcoming.length > 0 ? upcoming : events.slice(0, 6);
@@ -99,10 +109,10 @@ export default function EventsSection() {
                             </span>
                           </div>
                         )}
-                        {(event.series_name) && (
+                        {event.series_id && seriesMap[event.series_id]?.discipline && (
                           <div className="px-2 py-0.5" style={{ background: 'rgba(0,0,0,0.7)' }}>
                             <span className="font-mono text-[8px] text-white/80 tracking-wider uppercase">
-                              {event.series_name}
+                              {seriesMap[event.series_id].discipline}
                             </span>
                           </div>
                         )}
@@ -118,9 +128,9 @@ export default function EventsSection() {
                           {formatEventDate(event.event_date)}
                         </span>
                       )}
-                      {event.series_name && (
+                      {event.series_id && seriesMap[event.series_id]?.discipline && (
                         <span className="font-mono text-[8px] text-black/40 tracking-wider uppercase">
-                          {event.series_name}
+                          {seriesMap[event.series_id].discipline}
                         </span>
                       )}
                     </div>
@@ -128,6 +138,11 @@ export default function EventsSection() {
 
                   {/* Content */}
                   <div className="p-4 flex flex-col flex-1">
+                    {event.series_name && (
+                      <span className="font-mono text-[8px] tracking-[0.4em] text-black/35 uppercase font-bold mb-1.5 block">
+                        {event.series_name}
+                      </span>
+                    )}
                     <h3 className="text-sm font-black text-black tracking-tight leading-snug mb-2 group-hover:opacity-50 transition-opacity">
                       {event.name}
                     </h3>
