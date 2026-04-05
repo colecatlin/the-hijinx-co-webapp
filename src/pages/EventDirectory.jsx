@@ -12,6 +12,7 @@ import { createPageUrl } from '@/components/utils';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isEventPublic } from '@/components/system/publishHelpers';
+import { resolveEventClassification, buildClassificationMaps } from '@/components/utils/eventClassification';
 
 function DaysUntilBadge({ eventDate, status }) {
   if (!eventDate || status === 'completed' || status === 'cancelled') return null;
@@ -48,14 +49,31 @@ export default function EventDirectory() {
   const isLoading = false;
   const completedLoading = false;
 
-  const { data: seriesMap = {} } = useQuery({
+  const { data: allSeriesList = [] } = useQuery({
     queryKey: ['series'],
-    queryFn: async () => {
-      const allSeries = await base44.entities.Series.list();
-      return Object.fromEntries(allSeries.map(s => [s.name, s]));
-    },
+    queryFn: () => base44.entities.Series.list(),
     staleTime: 10 * 60 * 1000,
   });
+  const seriesById = useMemo(() => Object.fromEntries(allSeriesList.map(s => [s.id, s])), [allSeriesList]);
+  // legacy name map for existing series filter
+  const seriesMap = useMemo(() => Object.fromEntries(allSeriesList.map(s => [s.name, s])), [allSeriesList]);
+
+  const { data: disciplines = [] } = useQuery({
+    queryKey: ['disciplines'],
+    queryFn: () => base44.entities.Discipline.list('sort_order'),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: formats = [] } = useQuery({
+    queryKey: ['formats'],
+    queryFn: () => base44.entities.Format.list(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { disciplineById, disciplineByName, formatById } = useMemo(
+    () => buildClassificationMaps(disciplines, formats),
+    [disciplines, formats]
+  );
 
   const { data: allResults = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results-all'],
@@ -288,28 +306,52 @@ export default function EventDirectory() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredUpcomingEvents.map(event => (
-                  <Link 
-                    key={event.id} 
-                    to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                       <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
-                     </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      {event.series_name && (
-                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">{event.series_name}</div>
+                {filteredUpcomingEvents.map(event => {
+                  const cls = resolveEventClassification(event, seriesById, disciplineById, disciplineByName, formatById);
+                  const seriesRecord = seriesById[event.series_id];
+                  return (
+                    <Link
+                      key={event.id}
+                      to={`${createPageUrl('EventProfile')}?id=${event.id}`}
+                      className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow relative overflow-hidden"
+                    >
+                      {cls.disciplineColor && (
+                        <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: cls.disciplineColor }} />
                       )}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Calendar className="w-4 h-4" />
-                        {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
-                        {event.round_number && seriesMap[event.series]?.uses_rounds && <span className="text-gray-400">&middot; Rd {event.round_number}</span>}
-                        <DaysUntilBadge eventDate={event.event_date} status={event.status} />
+                      <div className="mb-3 mt-1">
+                        <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
+                        {event.series_name && (
+                          <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mt-0.5">{event.series_name}</div>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Calendar className="w-4 h-4" />
+                          {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
+                          {event.round_number && seriesRecord?.uses_rounds && <span className="text-gray-400">&middot; Rd {event.round_number}</span>}
+                          <DaysUntilBadge eventDate={event.event_date} status={event.status} />
+                        </div>
+                      </div>
+                      {(cls.disciplineName || cls.formatName) && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {cls.disciplineName && (
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                              style={{ backgroundColor: cls.disciplineColor }}
+                            >
+                              {cls.disciplineName}
+                            </span>
+                          )}
+                          {cls.formatName && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                              {cls.formatName}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             )}
 

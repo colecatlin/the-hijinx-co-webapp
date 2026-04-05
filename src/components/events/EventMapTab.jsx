@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { resolveEventClassification, buildClassificationMaps } from '@/components/utils/eventClassification';
 import { createPageUrl } from '@/components/utils';
 import { MapPin, Navigation, Calendar, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,61 +11,7 @@ import { isEventPublic } from '@/components/system/publishHelpers';
 
 const RADIUS_MI = 150;
 
-const FALLBACK_COLORS = {
-  'Stock Car':    '#EF4444',
-  'Off Road':     '#1E3A5F',
-  'Dirt Oval':    '#A16207',
-  'Snowmobile':   '#6366F1',
-  'Dirt Bike':    '#8B5CF6',
-  'Open Wheel':   '#9333EA',
-  'Sports Car':   '#16A34A',
-  'Touring Car':  '#0D9488',
-  'Rally':        '#CA8A04',
-  'Drag':         '#EC4899',
-  'Motorcycle':   '#3B82F6',
-  'Karting':      '#06B6D4',
-  'Water':        '#0EA5E9',
-  'Alternative':  '#84CC16',
-};
-const DEFAULT_COLOR = '#6B7280';
 
-/**
- * Step 3: Canonical discipline resolution.
- * Priority:
- *   1. series.discipline_id → Discipline entity (by id)
- *   2. series.discipline string → Discipline entity (by name match)
- *   3. FALLBACK_COLORS hardcoded map
- *   4. DEFAULT_COLOR gray
- * Returns { color, name, disciplineId } for use in rendering and future filtering.
- */
-function resolveSeriesDiscipline(series, disciplineById, disciplineByName) {
-  if (!series) return { color: DEFAULT_COLOR, name: null, disciplineId: null };
-
-  // Path 1: canonical id → Discipline entity
-  if (series.discipline_id && disciplineById[series.discipline_id]) {
-    const d = disciplineById[series.discipline_id];
-    return { color: d.color_code || DEFAULT_COLOR, name: d.name, disciplineId: d.id };
-  }
-
-  // Path 2: legacy discipline string → Discipline entity by name
-  if (series.discipline && disciplineByName[series.discipline]) {
-    const d = disciplineByName[series.discipline];
-    return { color: d.color_code || DEFAULT_COLOR, name: d.name, disciplineId: d.id };
-  }
-
-  // Path 3: legacy hardcoded fallback
-  if (series.discipline && FALLBACK_COLORS[series.discipline]) {
-    return { color: FALLBACK_COLORS[series.discipline], name: series.discipline, disciplineId: null };
-  }
-
-  // Path 4: default
-  return { color: DEFAULT_COLOR, name: series.discipline || null, disciplineId: null };
-}
-
-function getDisciplineColor(discipline, colorMap) {
-  if (colorMap && colorMap[discipline]) return colorMap[discipline];
-  return FALLBACK_COLORS[discipline] || DEFAULT_COLOR;
-}
 
 function haversineDistance(lat1, lng1, lat2, lng2) {
   const R = 3958.8;
@@ -118,26 +65,22 @@ export default function EventMapTab() {
   });
   const allSeries = Array.isArray(allSeriesRaw) ? allSeriesRaw : [];
 
-  const { data: disciplineColorRecords = [] } = useQuery({
+  const { data: disciplines = [] } = useQuery({
     queryKey: ['disciplines'],
     queryFn: () => base44.entities.Discipline.list('sort_order'),
     staleTime: 5 * 60 * 1000,
   });
 
-  // Legacy name→color map (kept for any remaining direct usages)
-  const disciplineColorMap = useMemo(
-    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.name, r.color_code])),
-    [disciplineColorRecords]
-  );
+  const { data: formats = [] } = useQuery({
+    queryKey: ['formats'],
+    queryFn: () => base44.entities.Format.list(),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Step 3: canonical lookup maps
-  const disciplineById = useMemo(
-    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.id, r])),
-    [disciplineColorRecords]
-  );
-  const disciplineByName = useMemo(
-    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.name, r])),
-    [disciplineColorRecords]
+  // Canonical classification maps — Step 5
+  const { disciplineById, disciplineByName, formatById } = useMemo(
+    () => buildClassificationMaps(disciplines, formats),
+    [disciplines, formats]
   );
 
   const trackMap = useMemo(
@@ -213,18 +156,18 @@ export default function EventMapTab() {
       .sort((a, b) => a._distance - b._distance);
   }, [mappableEvents, userLocation, trackMap, geocodedCoords]);
 
-  // Step 3: Unique disciplines for legend — resolved via canonical path
+  // Step 5: Unique disciplines for legend — via canonical resolver
   const activeDisciplines = useMemo(() => {
     const seen = new Map(); // name → color
     mappableEvents.forEach((e) => {
       const series = seriesMap[e.series_id];
-      const resolved = resolveSeriesDiscipline(series, disciplineById, disciplineByName);
-      if (resolved.name && !seen.has(resolved.name)) {
-        seen.set(resolved.name, resolved.color);
+      const cls = resolveEventClassification(e, seriesMap, disciplineById, disciplineByName, formatById);
+      if (cls.disciplineName && !seen.has(cls.disciplineName)) {
+        seen.set(cls.disciplineName, cls.disciplineColor);
       }
     });
     return [...seen.entries()].map(([name, color]) => ({ name, color })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [mappableEvents, seriesMap, disciplineById, disciplineByName]);
+  }, [mappableEvents, seriesMap, disciplineById, disciplineByName, formatById]);
 
   // Initialize Google Map
   useEffect(() => {
@@ -280,9 +223,8 @@ export default function EventMapTab() {
     displayEvents.forEach((event) => {
       const coords = getEventCoords(event, trackMap, geocodedCoords);
       if (!coords) return;
-      const series = seriesMap[event.series_id];
-      // Step 3: resolve via canonical path
-      const { color } = resolveSeriesDiscipline(series, disciplineById, disciplineByName);
+      // Step 5: canonical resolver
+      const { disciplineColor: color } = resolveEventClassification(event, seriesMap, disciplineById, disciplineByName, formatById);
 
       const marker = new window.google.maps.Marker({
         position: { lat: coords.lat, lng: coords.lng },
@@ -362,8 +304,10 @@ export default function EventMapTab() {
   };
 
   const selectedTrack = selectedEvent ? trackMap[selectedEvent.track_id] : null;
-  const selectedSeries = selectedEvent ? seriesMap[selectedEvent.series_id] : null;
   const selectedCoords = selectedEvent ? getEventCoords(selectedEvent, trackMap, geocodedCoords) : null;
+  const selectedClassification = selectedEvent
+    ? resolveEventClassification(selectedEvent, seriesMap, disciplineById, disciplineByName, formatById)
+    : null;
 
   const listEvents = userLocation ? displayEvents : mappableEvents;
 
@@ -436,10 +380,9 @@ export default function EventMapTab() {
             >
               <X className="w-4 h-4" />
             </button>
-            {/* Discipline color bar — Step 3: canonical resolution */}
             <div
               className="absolute top-0 left-0 right-0 h-1 rounded-t-lg"
-              style={{ backgroundColor: resolveSeriesDiscipline(selectedSeries, disciplineById, disciplineByName).color }}
+              style={{ backgroundColor: selectedClassification?.disciplineColor }}
             />
             <p className="font-bold text-sm leading-snug pr-6 mt-1">{selectedEvent.name}</p>
             {selectedEvent.series_name && (
@@ -447,17 +390,21 @@ export default function EventMapTab() {
                 {selectedEvent.series_name}
               </p>
             )}
-            {(() => {
-              const resolved = resolveSeriesDiscipline(selectedSeries, disciplineById, disciplineByName);
-              return resolved.name ? (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {selectedClassification?.disciplineName && (
                 <span
-                  className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                  style={{ backgroundColor: resolved.color }}
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                  style={{ backgroundColor: selectedClassification.disciplineColor }}
                 >
-                  {resolved.name}
+                  {selectedClassification.disciplineName}
                 </span>
-              ) : null;
-            })()}
+              )}
+              {selectedClassification?.formatName && (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                  {selectedClassification.formatName}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
               <Calendar className="w-3.5 h-3.5" />
               {selectedEvent.event_date
@@ -494,16 +441,14 @@ export default function EventMapTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
           {listEvents.slice(0, 12).map((event) => {
             const t = trackMap[event.track_id];
-            const series = seriesMap[event.series_id];
-            // Step 3: canonical resolution
-            const { color, name: disciplineName } = resolveSeriesDiscipline(series, disciplineById, disciplineByName);
+            const cls = resolveEventClassification(event, seriesMap, disciplineById, disciplineByName, formatById);
             return (
               <Link
                 key={event.id}
                 to={`${createPageUrl('EventProfile')}?id=${event.id}`}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: cls.disciplineColor }} />
                 <p className="font-bold text-sm leading-snug mt-1">{event.name}</p>
                 {event.series_name && (
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">
@@ -525,14 +470,21 @@ export default function EventMapTab() {
                     ~{Math.round(event._distance)} mi away
                   </p>
                 )}
-                {disciplineName && (
-                  <span
-                    className="inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                    style={{ backgroundColor: color }}
-                  >
-                    {disciplineName}
-                  </span>
-                )}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {cls.disciplineName && (
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: cls.disciplineColor }}
+                    >
+                      {cls.disciplineName}
+                    </span>
+                  )}
+                  {cls.formatName && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                      {cls.formatName}
+                    </span>
+                  )}
+                </div>
               </Link>
             );
           })}
