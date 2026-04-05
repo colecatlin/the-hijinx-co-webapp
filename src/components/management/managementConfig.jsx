@@ -23,7 +23,7 @@ export const MANAGEMENT_SECTIONS = [
     description: 'Site settings, homepage, announcements, and platform controls',
     items: [
       { name: 'Homepage Settings', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
-      { name: 'Discipline Management', page: 'management/discipline-colors', icon: Palette, description: 'Manage discipline colors for map pins' },
+      { name: 'Discipline Management', page: 'management/discipline', icon: Palette, description: 'Manage discipline colors for map pins' },, description: 'Manage discipline colors for map pins' },
       { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
       { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries and placements' },
       { name: 'Analytics', page: 'AnalyticsDashboard', icon: LineChart, description: 'View platform insights and data trends' },
