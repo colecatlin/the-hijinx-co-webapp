@@ -77,11 +77,12 @@ export default function EventMapTab() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: allSeries = [] } = useQuery({
+  const { data: allSeriesRaw } = useQuery({
     queryKey: ['series'],
     queryFn: () => base44.entities.Series.list(),
     staleTime: 10 * 60 * 1000,
   });
+  const allSeries = Array.isArray(allSeriesRaw) ? allSeriesRaw : [];
 
   const trackMap = useMemo(
     () => Object.fromEntries(allTracks.map((t) => [t.id, t])),
