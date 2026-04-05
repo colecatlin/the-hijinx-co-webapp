@@ -53,12 +53,20 @@ export default function EventsSection() {
               Events
             </span>
           </div>
-          <Link
-            to={createPageUrl('EventDirectory')}
-            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/40 hover:text-black transition-colors uppercase"
-          >
-            All Events <ArrowRight className="w-3 h-3" />
-          </Link>
+          <div className="hidden md:flex flex-col items-end gap-2">
+            <Link
+              to={createPageUrl('EventDirectory')}
+              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/40 hover:text-black transition-colors uppercase"
+            >
+              All Events <ArrowRight className="w-3 h-3" />
+            </Link>
+            <Link
+              to={`${createPageUrl('EventDirectory')}?tab=map`}
+              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/60 hover:text-black transition-colors uppercase font-bold border-b border-black/20 hover:border-black pb-0.5"
+            >
+              Events Near Me <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
 
         {/* Headline */}

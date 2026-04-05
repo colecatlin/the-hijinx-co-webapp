@@ -22,6 +22,14 @@
       "type": "string",
       "description": "Country"
     },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude coordinate (from Google Places)"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude coordinate (from Google Places)"
+    },
     "track_type": {
       "type": "string",
       "enum": [

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import LocationFields from '@/components/shared/LocationFields';
+import GooglePlacesLocationPicker from '@/components/shared/GooglePlacesLocationPicker';
 import { useSlugField } from '@/hooks/useSlugField';
 
 export default function TrackForm({ track, onClose }) {
@@ -121,6 +122,28 @@ export default function TrackForm({ track, onClose }) {
               <p className="text-xs text-gray-400 mt-1">Used in public URLs · auto-fills from name</p>
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Search Location (auto-fills coordinates)</label>
+            <GooglePlacesLocationPicker
+              placeholder="Search track address or city..."
+              onLocationSelect={(loc) => {
+                setFormData(prev => ({
+                  ...prev,
+                  location_city: loc.city || prev.location_city,
+                  location_state: loc.state || prev.location_state,
+                  location_country: loc.country || prev.location_country,
+                  latitude: loc.latitude,
+                  longitude: loc.longitude,
+                }));
+              }}
+            />
+            {formData.latitude && formData.longitude && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ Coordinates set: {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
+              </p>
+            )}
+          </div>
 
           <LocationFields
             cityValue={formData.location_city}

@@ -5,7 +5,8 @@ import PageShell from '@/components/shared/PageShell';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Calendar, Trophy, Medal, Flag, Layers } from 'lucide-react';
+import { Search, Calendar, Trophy, Medal, Flag, Layers, Map } from 'lucide-react';
+import EventMapTab from '@/components/events/EventMapTab';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
@@ -22,10 +23,11 @@ function DaysUntilBadge({ eventDate, status }) {
 }
 
 export default function EventDirectory() {
+  const urlParams = new URLSearchParams(window.location.search);
   const [searchQuery, setSearchQuery] = useState('');
   const [seriesFilter, setSeriesFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState(urlParams.get('tab') || 'upcoming');
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -271,6 +273,12 @@ export default function EventDirectory() {
             >
               Results
             </TabsTrigger>
+            <TabsTrigger
+              value="map"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-400 px-4 pb-3 text-sm font-medium flex items-center gap-1.5"
+            >
+              <Map className="w-3.5 h-3.5" /> Events Near Me
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming">
@@ -329,6 +337,10 @@ export default function EventDirectory() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="map">
+            <EventMapTab />
           </TabsContent>
         </Tabs>
       </div>
