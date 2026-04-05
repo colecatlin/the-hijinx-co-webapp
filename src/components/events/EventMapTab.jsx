@@ -10,8 +10,30 @@ import { isEventPublic } from '@/components/system/publishHelpers';
 
 const RADIUS_MI = 150;
 
+const DISCIPLINE_COLORS = {
+  'Stock Car':    '#EF4444',
+  'Off Road':     '#F97316',
+  'Dirt Oval':    '#A16207',
+  'Snowmobile':   '#6366F1',
+  'Dirt Bike':    '#8B5CF6',
+  'Open Wheel':   '#9333EA',
+  'Sports Car':   '#16A34A',
+  'Touring Car':  '#0D9488',
+  'Rally':        '#CA8A04',
+  'Drag':         '#EC4899',
+  'Motorcycle':   '#3B82F6',
+  'Karting':      '#06B6D4',
+  'Water':        '#0EA5E9',
+  'Alternative':  '#84CC16',
+};
+const DEFAULT_COLOR = '#6B7280';
+
+function getDisciplineColor(discipline) {
+  return DISCIPLINE_COLORS[discipline] || DEFAULT_COLOR;
+}
+
 function haversineDistance(lat1, lng1, lat2, lng2) {
-  const R = 3958.8; // miles
+  const R = 3958.8;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -22,17 +44,26 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+function getEventCoords(event, trackMap, geocodedCoords) {
+  const track = trackMap[event.track_id];
+  if (track?.latitude && track?.longitude) return { lat: track.latitude, lng: track.longitude };
+  return geocodedCoords[event.id] || null;
+}
+
 export default function EventMapTab() {
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
   const markersRef = useRef([]);
   const searchInputRef = useRef(null);
   const autocompleteRef = useRef(null);
+  const geocoderRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
   const [locationLabel, setLocationLabel] = useState('');
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [geocodedCoords, setGeocodedCoords] = useState({});
+  const [mapsReady, setMapsReady] = useState(false);
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events-all'],
@@ -46,14 +77,25 @@ export default function EventMapTab() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+    staleTime: 10 * 60 * 1000,
+  });
+
   const trackMap = useMemo(
     () => Object.fromEntries(allTracks.map((t) => [t.id, t])),
     [allTracks]
   );
 
+  const seriesMap = useMemo(
+    () => Object.fromEntries(allSeries.map((s) => [s.id, s])),
+    [allSeries]
+  );
+
   const today = new Date().toISOString().split('T')[0];
 
-  const upcomingEvents = useMemo(
+  const upcomingPublicEvents = useMemo(
     () =>
       allEvents.filter(
         (e) =>
@@ -64,33 +106,65 @@ export default function EventMapTab() {
     [allEvents, today]
   );
 
-  // Events that have a track with coordinates
+  // Events that have coordinates (from track or geocoded)
   const mappableEvents = useMemo(
     () =>
-      upcomingEvents.filter((e) => {
-        const t = trackMap[e.track_id];
-        return t?.latitude && t?.longitude;
-      }),
-    [upcomingEvents, trackMap]
+      upcomingPublicEvents.filter(
+        (e) => !!getEventCoords(e, trackMap, geocodedCoords)
+      ),
+    [upcomingPublicEvents, trackMap, geocodedCoords]
   );
 
-  // Events filtered by proximity (if location set)
-  const nearbyEvents = useMemo(() => {
+  // Events that still need geocoding (have location_note, no track coords, not yet done)
+  const eventsNeedingGeocode = useMemo(
+    () =>
+      upcomingPublicEvents.filter((e) => {
+        const track = trackMap[e.track_id];
+        const hasTrackCoords = track?.latitude && track?.longitude;
+        return !hasTrackCoords && e.location_note && !geocodedCoords[e.id];
+      }),
+    [upcomingPublicEvents, trackMap, geocodedCoords]
+  );
+
+  // Geocode events that have a location_note but no track coords
+  useEffect(() => {
+    if (!mapsReady || eventsNeedingGeocode.length === 0) return;
+    if (!geocoderRef.current) geocoderRef.current = new window.google.maps.Geocoder();
+    eventsNeedingGeocode.forEach((event) => {
+      geocoderRef.current.geocode({ address: event.location_note }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const loc = results[0].geometry.location;
+          setGeocodedCoords((prev) => ({
+            ...prev,
+            [event.id]: { lat: loc.lat(), lng: loc.lng() },
+          }));
+        }
+      });
+    });
+  }, [mapsReady, eventsNeedingGeocode.length]);
+
+  // Events filtered by proximity when location is set
+  const displayEvents = useMemo(() => {
     if (!userLocation) return mappableEvents;
     return mappableEvents
       .map((e) => {
-        const t = trackMap[e.track_id];
-        const dist = haversineDistance(
-          userLocation.lat,
-          userLocation.lng,
-          t.latitude,
-          t.longitude
-        );
+        const coords = getEventCoords(e, trackMap, geocodedCoords);
+        const dist = haversineDistance(userLocation.lat, userLocation.lng, coords.lat, coords.lng);
         return { ...e, _distance: dist };
       })
       .filter((e) => e._distance <= RADIUS_MI)
       .sort((a, b) => a._distance - b._distance);
-  }, [mappableEvents, userLocation, trackMap]);
+  }, [mappableEvents, userLocation, trackMap, geocodedCoords]);
+
+  // Unique disciplines for legend
+  const activeDisciplines = useMemo(() => {
+    const disciplines = new Set();
+    mappableEvents.forEach((e) => {
+      const series = seriesMap[e.series_id];
+      if (series?.discipline) disciplines.add(series.discipline);
+    });
+    return [...disciplines].sort();
+  }, [mappableEvents, seriesMap]);
 
   // Initialize Google Map
   useEffect(() => {
@@ -110,7 +184,6 @@ export default function EventMapTab() {
           ],
         });
 
-        // Init autocomplete on search input
         if (searchInputRef.current) {
           const ac = new window.google.maps.places.Autocomplete(searchInputRef.current, {
             types: ['geocode'],
@@ -128,6 +201,8 @@ export default function EventMapTab() {
             googleMapRef.current.setZoom(8);
           });
         }
+
+        setMapsReady(true);
       } else if (attempts > 30) {
         clearInterval(interval);
       }
@@ -135,26 +210,27 @@ export default function EventMapTab() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update markers whenever nearby events change
+  // Update markers whenever display events, series, or geocoded coords change
   useEffect(() => {
     if (!googleMapRef.current) return;
 
-    // Clear existing markers
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    nearbyEvents.forEach((event) => {
-      const track = trackMap[event.track_id];
-      if (!track?.latitude || !track?.longitude) return;
+    displayEvents.forEach((event) => {
+      const coords = getEventCoords(event, trackMap, geocodedCoords);
+      if (!coords) return;
+      const series = seriesMap[event.series_id];
+      const color = getDisciplineColor(series?.discipline);
 
       const marker = new window.google.maps.Marker({
-        position: { lat: track.latitude, lng: track.longitude },
+        position: { lat: coords.lat, lng: coords.lng },
         map: googleMapRef.current,
         title: event.name,
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: 9,
-          fillColor: '#0A0A0A',
+          fillColor: color,
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2,
@@ -163,13 +239,12 @@ export default function EventMapTab() {
 
       marker.addListener('click', () => {
         setSelectedEvent(event);
-        googleMapRef.current.panTo({ lat: track.latitude, lng: track.longitude });
+        googleMapRef.current.panTo({ lat: coords.lat, lng: coords.lng });
       });
 
       markersRef.current.push(marker);
     });
 
-    // Add user location marker
     if (userLocation) {
       const userMarker = new window.google.maps.Marker({
         position: userLocation,
@@ -187,7 +262,7 @@ export default function EventMapTab() {
       });
       markersRef.current.push(userMarker);
     }
-  }, [nearbyEvents, userLocation, trackMap]);
+  }, [displayEvents, userLocation, seriesMap, geocodedCoords]);
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
@@ -225,7 +300,11 @@ export default function EventMapTab() {
     }
   };
 
-  const track = selectedEvent ? trackMap[selectedEvent.track_id] : null;
+  const selectedTrack = selectedEvent ? trackMap[selectedEvent.track_id] : null;
+  const selectedSeries = selectedEvent ? seriesMap[selectedEvent.series_id] : null;
+  const selectedCoords = selectedEvent ? getEventCoords(selectedEvent, trackMap, geocodedCoords) : null;
+
+  const listEvents = userLocation ? displayEvents : mappableEvents;
 
   return (
     <div className="space-y-4">
@@ -256,28 +335,38 @@ export default function EventMapTab() {
         )}
       </div>
 
-      {locationError && (
-        <p className="text-sm text-red-500">{locationError}</p>
-      )}
+      {locationError && <p className="text-sm text-red-500">{locationError}</p>}
 
-      {userLocation && (
+      {userLocation ? (
         <p className="text-sm text-gray-500">
           Showing events within <strong>{RADIUS_MI} miles</strong> of{' '}
-          <strong>{locationLabel}</strong> — {nearbyEvents.length} found
+          <strong>{locationLabel}</strong> — {displayEvents.length} found
         </p>
-      )}
-
-      {!userLocation && mappableEvents.length > 0 && (
+      ) : mappableEvents.length > 0 ? (
         <p className="text-sm text-gray-400">
           {mappableEvents.length} upcoming events on map. Search a location or use your location to filter nearby.
         </p>
+      ) : null}
+
+      {/* Discipline legend */}
+      {activeDisciplines.length > 0 && (
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {activeDisciplines.map((discipline) => (
+            <div key={discipline} className="flex items-center gap-1.5">
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: getDisciplineColor(discipline) }}
+              />
+              <span className="text-xs text-gray-600 font-medium">{discipline}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Map */}
       <div className="relative rounded-lg overflow-hidden border border-gray-200" style={{ height: 480 }}>
         <div ref={mapRef} className="w-full h-full" />
 
-        {/* Selected event popup */}
         {selectedEvent && (
           <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-200 p-4">
             <button
@@ -286,11 +375,24 @@ export default function EventMapTab() {
             >
               <X className="w-4 h-4" />
             </button>
-            <p className="font-bold text-sm leading-snug pr-6">{selectedEvent.name}</p>
+            {/* Discipline color bar */}
+            <div
+              className="absolute top-0 left-0 right-0 h-1 rounded-t-lg"
+              style={{ backgroundColor: getDisciplineColor(selectedSeries?.discipline) }}
+            />
+            <p className="font-bold text-sm leading-snug pr-6 mt-1">{selectedEvent.name}</p>
             {selectedEvent.series_name && (
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mt-0.5">
                 {selectedEvent.series_name}
               </p>
+            )}
+            {selectedSeries?.discipline && (
+              <span
+                className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                style={{ backgroundColor: getDisciplineColor(selectedSeries.discipline) }}
+              >
+                {selectedSeries.discipline}
+              </span>
             )}
             <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
               <Calendar className="w-3.5 h-3.5" />
@@ -298,12 +400,12 @@ export default function EventMapTab() {
                 ? format(parseISO(selectedEvent.event_date), 'MMM d, yyyy')
                 : 'TBA'}
             </div>
-            {track && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-                <MapPin className="w-3.5 h-3.5" />
-                {[track.location_city, track.location_state].filter(Boolean).join(', ')}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {selectedTrack
+                ? [selectedTrack.location_city, selectedTrack.location_state].filter(Boolean).join(', ')
+                : selectedEvent.location_note || 'TBA'}
+            </div>
             {selectedEvent._distance !== undefined && (
               <p className="text-xs text-blue-600 font-medium mt-1">
                 ~{Math.round(selectedEvent._distance)} miles away
@@ -319,22 +421,25 @@ export default function EventMapTab() {
         )}
       </div>
 
-      {/* Events list below map */}
-      {nearbyEvents.length === 0 && userLocation ? (
+      {/* Events list */}
+      {listEvents.length === 0 && userLocation ? (
         <div className="text-center py-8 text-gray-400 text-sm">
           No upcoming events found within {RADIUS_MI} miles. Try expanding your search.
         </div>
-      ) : (
+      ) : listEvents.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
-          {(userLocation ? nearbyEvents : mappableEvents).slice(0, 9).map((event) => {
+          {listEvents.slice(0, 12).map((event) => {
             const t = trackMap[event.track_id];
+            const series = seriesMap[event.series_id];
+            const color = getDisciplineColor(series?.discipline);
             return (
               <Link
                 key={event.id}
                 to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative overflow-hidden"
               >
-                <p className="font-bold text-sm leading-snug">{event.name}</p>
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+                <p className="font-bold text-sm leading-snug mt-1">{event.name}</p>
                 {event.series_name && (
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">
                     {event.series_name}
@@ -344,26 +449,32 @@ export default function EventMapTab() {
                   <Calendar className="w-3.5 h-3.5" />
                   {event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'TBA'}
                 </div>
-                {t && (
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {[t.location_city, t.location_state].filter(Boolean).join(', ')}
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {t
+                    ? [t.location_city, t.location_state].filter(Boolean).join(', ')
+                    : event.location_note || 'TBA'}
+                </div>
                 {event._distance !== undefined && (
                   <p className="text-xs text-blue-600 font-medium mt-1">
                     ~{Math.round(event._distance)} mi away
                   </p>
                 )}
+                {series?.discipline && (
+                  <span
+                    className="inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                    style={{ backgroundColor: color }}
+                  >
+                    {series.discipline}
+                  </span>
+                )}
               </Link>
             );
           })}
         </div>
-      )}
-
-      {mappableEvents.length === 0 && (
+      ) : (
         <div className="text-center py-12 text-gray-400 text-sm">
-          No events with map coordinates yet. Tracks need latitude/longitude set to appear on the map.
+          No events with location data found. Events need a linked track with coordinates or a location note to appear on the map.
         </div>
       )}
     </div>
