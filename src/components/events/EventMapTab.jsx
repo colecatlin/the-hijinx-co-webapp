@@ -32,7 +32,14 @@ function getEventCoords(event, trackMap, geocodedCoords) {
   return geocodedCoords[event.id] || null;
 }
 
-export default function EventMapTab() {
+export default function EventMapTab({
+  disciplineFilter: disciplineFilterProp,
+  formatFilter: formatFilterProp,
+  onDisciplineChange,
+  onFormatChange,
+  disciplines: disciplinesProp,
+  formats: formatsProp,
+}) {
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
   const markersRef = useRef([]);
@@ -46,8 +53,6 @@ export default function EventMapTab() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [geocodedCoords, setGeocodedCoords] = useState({});
   const [mapsReady, setMapsReady] = useState(false);
-  const [disciplineFilter, setDisciplineFilter] = useState('all');
-  const [formatFilter, setFormatFilter] = useState('all');
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events-all'],
@@ -68,17 +73,27 @@ export default function EventMapTab() {
   });
   const allSeries = Array.isArray(allSeriesRaw) ? allSeriesRaw : [];
 
-  const { data: disciplines = [] } = useQuery({
+  const { data: disciplinesFetched = [] } = useQuery({
     queryKey: ['disciplines'],
     queryFn: () => base44.entities.Discipline.list('sort_order'),
     staleTime: 5 * 60 * 1000,
+    enabled: !disciplinesProp,
   });
+  const disciplines = disciplinesProp ?? disciplinesFetched;
 
-  const { data: formats = [] } = useQuery({
+  const { data: formatsFetched = [] } = useQuery({
     queryKey: ['formats'],
     queryFn: () => base44.entities.Format.list(),
     staleTime: 5 * 60 * 1000,
+    enabled: !formatsProp,
   });
+  const formats = formatsProp ?? formatsFetched;
+
+  // Use props if provided (URL-owned by parent), else internal state
+  const disciplineFilter = disciplineFilterProp ?? 'all';
+  const formatFilter = formatFilterProp ?? 'all';
+  const setDisciplineFilter = onDisciplineChange ?? (() => {});
+  const setFormatFilter = onFormatChange ?? (() => {});
 
   // Canonical classification maps
   const { disciplineById, disciplineByName, formatById } = useMemo(
@@ -86,19 +101,13 @@ export default function EventMapTab() {
     [disciplines, formats]
   );
 
-  // Dependent format options
+  // Dependent format options (read-only when controlled by parent)
   const availableFormats = useMemo(() => {
     if (disciplineFilter === 'all') return formats.filter(f => f.is_active !== false);
     return formats.filter(f => f.discipline_id === disciplineFilter && f.is_active !== false);
   }, [formats, disciplineFilter]);
 
-  const resolvedFormatFilter = useMemo(() => {
-    if (formatFilter === 'all') return 'all';
-    const fmt = formats.find(f => f.id === formatFilter);
-    if (!fmt) return 'all';
-    if (disciplineFilter !== 'all' && fmt.discipline_id !== disciplineFilter) return 'all';
-    return formatFilter;
-  }, [formatFilter, formats, disciplineFilter]);
+  const resolvedFormatFilter = formatFilter;
 
   const trackMap = useMemo(
     () => Object.fromEntries(allTracks.map((t) => [t.id, t])),
@@ -383,7 +392,7 @@ export default function EventMapTab() {
 
       {/* Classification filters */}
       <div className="flex flex-wrap gap-2">
-        <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }}>
+        <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }} disabled={!!disciplineFilterProp && !onDisciplineChange}>
           <SelectTrigger className="h-8 text-xs w-40">
             <SelectValue placeholder="Discipline" />
           </SelectTrigger>

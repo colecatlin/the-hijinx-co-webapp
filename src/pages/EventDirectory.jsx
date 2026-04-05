@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Calendar, Trophy, Medal, Flag, Layers, Map } from 'lucide-react';
 import EventMapTab from '@/components/events/EventMapTab';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,12 +24,47 @@ function DaysUntilBadge({ eventDate, status }) {
 }
 
 export default function EventDirectory() {
-  const urlParams = new URLSearchParams(window.location.search);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [disciplineFilter, setDisciplineFilter] = useState('all');
-  const [formatFilter, setFormatFilter] = useState('all');
+  const [disciplineFilter, setDisciplineFilter] = useState(searchParams.get('discipline') || 'all');
+  const [formatFilter, setFormatFilter] = useState(searchParams.get('format') || 'all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState(urlParams.get('tab') || 'upcoming');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'upcoming');
+
+  // Sync filter state → URL
+  const updateUrl = (tab, discipline, format) => {
+    const params = {};
+    if (tab && tab !== 'upcoming') params.tab = tab;
+    if (discipline && discipline !== 'all') params.discipline = discipline;
+    if (format && format !== 'all') params.format = format;
+    setSearchParams(params, { replace: true });
+  };
+
+  const handleDisciplineChange = (v) => {
+    setDisciplineFilter(v);
+    setFormatFilter('all');
+    updateUrl(activeTab, v, 'all');
+  };
+
+  const handleFormatChange = (v) => {
+    setFormatFilter(v);
+    updateUrl(activeTab, disciplineFilter, v);
+  };
+
+  const handleTabChange = (v) => {
+    setActiveTab(v);
+    updateUrl(v, disciplineFilter, formatFilter);
+  };
+
+  // Sync URL → filter state on browser back/forward
+  useEffect(() => {
+    const d = searchParams.get('discipline') || 'all';
+    const f = searchParams.get('format') || 'all';
+    const t = searchParams.get('tab') || 'upcoming';
+    setDisciplineFilter(d);
+    setFormatFilter(f);
+    setActiveTab(t);
+  }, [searchParams]);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -85,20 +120,26 @@ export default function EventDirectory() {
     return map;
   }, [allEventsList, seriesById, disciplineById, disciplineByName, formatById]);
 
-  // Dependent format options: if a discipline is selected, only show its formats
-  const availableFormats = useMemo(() => {
-    if (disciplineFilter === 'all') return formats.filter(f => f.is_active !== false);
-    return formats.filter(f => f.discipline_id === disciplineFilter && f.is_active !== false);
-  }, [formats, disciplineFilter]);
+  // Validate discipline filter against loaded records (ignore invalid/inactive from stale URL)
+  const validatedDisciplineFilter = useMemo(() => {
+    if (disciplineFilter === 'all') return 'all';
+    const d = disciplines.find(d => d.id === disciplineFilter && d.is_active !== false);
+    return d ? disciplineFilter : 'all';
+  }, [disciplineFilter, disciplines]);
 
-  // Auto-clear format filter when it no longer belongs to the selected discipline
+  // Dependent format options
+  const availableFormats = useMemo(() => {
+    if (validatedDisciplineFilter === 'all') return formats.filter(f => f.is_active !== false);
+    return formats.filter(f => f.discipline_id === validatedDisciplineFilter && f.is_active !== false);
+  }, [formats, validatedDisciplineFilter]);
+
   const resolvedFormatFilter = useMemo(() => {
     if (formatFilter === 'all') return 'all';
-    const fmt = formats.find(f => f.id === formatFilter);
+    const fmt = formats.find(f => f.id === formatFilter && f.is_active !== false);
     if (!fmt) return 'all';
-    if (disciplineFilter !== 'all' && fmt.discipline_id !== disciplineFilter) return 'all';
+    if (validatedDisciplineFilter !== 'all' && fmt.discipline_id !== validatedDisciplineFilter) return 'all';
     return formatFilter;
-  }, [formatFilter, formats, disciplineFilter]);
+  }, [formatFilter, formats, validatedDisciplineFilter]);
 
   const { data: allResults = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results-all'],
@@ -160,7 +201,7 @@ export default function EventDirectory() {
     const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
     const cls = classificationByEventId[event.id];
-    const matchesDiscipline = disciplineFilter === 'all' || cls?.disciplineId === disciplineFilter;
+    const matchesDiscipline = validatedDisciplineFilter === 'all' || cls?.disciplineId === validatedDisciplineFilter;
     const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
     return matchesSearch && matchesStatus && matchesDiscipline && matchesFormat;
   });
@@ -169,7 +210,7 @@ export default function EventDirectory() {
     .sort((a, b) => (b.event_date || '').localeCompare(a.event_date || ''))
     .filter(event => {
       const cls = classificationByEventId[event.id];
-      const matchesDiscipline = disciplineFilter === 'all' || cls?.disciplineId === disciplineFilter;
+      const matchesDiscipline = validatedDisciplineFilter === 'all' || cls?.disciplineId === validatedDisciplineFilter;
       const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
       if (!matchesDiscipline || !matchesFormat) return false;
       if (!searchQuery) return true;
@@ -284,7 +325,7 @@ export default function EventDirectory() {
               className="pl-10"
             />
           </div>
-          <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }}>
+          <Select value={validatedDisciplineFilter} onValueChange={handleDisciplineChange}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Discipline" />
             </SelectTrigger>
@@ -300,7 +341,7 @@ export default function EventDirectory() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={resolvedFormatFilter} onValueChange={setFormatFilter} disabled={availableFormats.length === 0}>
+          <Select value={resolvedFormatFilter} onValueChange={handleFormatChange} disabled={availableFormats.length === 0}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Format" />
             </SelectTrigger>
@@ -325,7 +366,7 @@ export default function EventDirectory() {
           )}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="mb-8 bg-transparent border-b border-gray-200 rounded-none w-full justify-start gap-0 h-auto p-0">
             <TabsTrigger
               value="upcoming"
@@ -430,7 +471,14 @@ export default function EventDirectory() {
           </TabsContent>
 
           <TabsContent value="map">
-            <EventMapTab />
+            <EventMapTab
+              disciplineFilter={validatedDisciplineFilter}
+              formatFilter={resolvedFormatFilter}
+              onDisciplineChange={handleDisciplineChange}
+              onFormatChange={handleFormatChange}
+              disciplines={disciplines}
+              formats={formats}
+            />
           </TabsContent>
         </Tabs>
       </div>
