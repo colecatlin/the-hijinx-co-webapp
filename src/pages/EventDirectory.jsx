@@ -26,7 +26,8 @@ function DaysUntilBadge({ eventDate, status }) {
 export default function EventDirectory() {
   const urlParams = new URLSearchParams(window.location.search);
   const [searchQuery, setSearchQuery] = useState('');
-  const [seriesFilter, setSeriesFilter] = useState('all');
+  const [disciplineFilter, setDisciplineFilter] = useState('all');
+  const [formatFilter, setFormatFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState(urlParams.get('tab') || 'upcoming');
 
@@ -74,6 +75,30 @@ export default function EventDirectory() {
     () => buildClassificationMaps(disciplines, formats),
     [disciplines, formats]
   );
+
+  // Pre-resolve classification for every event — used by filters and cards
+  const classificationByEventId = useMemo(() => {
+    const map = {};
+    for (const e of allEventsList) {
+      map[e.id] = resolveEventClassification(e, seriesById, disciplineById, disciplineByName, formatById);
+    }
+    return map;
+  }, [allEventsList, seriesById, disciplineById, disciplineByName, formatById]);
+
+  // Dependent format options: if a discipline is selected, only show its formats
+  const availableFormats = useMemo(() => {
+    if (disciplineFilter === 'all') return formats.filter(f => f.is_active !== false);
+    return formats.filter(f => f.discipline_id === disciplineFilter && f.is_active !== false);
+  }, [formats, disciplineFilter]);
+
+  // Auto-clear format filter when it no longer belongs to the selected discipline
+  const resolvedFormatFilter = useMemo(() => {
+    if (formatFilter === 'all') return 'all';
+    const fmt = formats.find(f => f.id === formatFilter);
+    if (!fmt) return 'all';
+    if (disciplineFilter !== 'all' && fmt.discipline_id !== disciplineFilter) return 'all';
+    return formatFilter;
+  }, [formatFilter, formats, disciplineFilter]);
 
   const { data: allResults = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results-all'],
@@ -131,24 +156,31 @@ export default function EventDirectory() {
     return map;
   }, [completedEvents, allResults, drivers]);
 
-  const filteredUpcomingEvents = upcomingEvents
-    .filter(event => {
-      const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSeries = seriesFilter === 'all' || event.series === seriesFilter;
-      const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
-      return matchesSearch && matchesSeries && matchesStatus;
-    });
-
-  const filteredCompletedEvents = [...completedEvents].sort((a, b) => (b.event_date || '').localeCompare(a.event_date || '')).filter(event => {
-    if (!searchQuery) return true;
-    const term = searchQuery.toLowerCase();
-    if (event.name?.toLowerCase().includes(term)) return true;
-    if (event.series?.toLowerCase().includes(term)) return true;
-    const podium = podiumByEvent[event.id] || [];
-    return podium.some(p => p.name?.toLowerCase().includes(term));
+  const filteredUpcomingEvents = upcomingEvents.filter(event => {
+    const matchesSearch = event.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+    const cls = classificationByEventId[event.id];
+    const matchesDiscipline = disciplineFilter === 'all' || cls?.disciplineId === disciplineFilter;
+    const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
+    return matchesSearch && matchesStatus && matchesDiscipline && matchesFormat;
   });
 
-  const uniqueSeries = [...new Set([...upcomingEvents, ...completedEvents].map(e => e.series).filter(Boolean))];
+  const filteredCompletedEvents = [...completedEvents]
+    .sort((a, b) => (b.event_date || '').localeCompare(a.event_date || ''))
+    .filter(event => {
+      const cls = classificationByEventId[event.id];
+      const matchesDiscipline = disciplineFilter === 'all' || cls?.disciplineId === disciplineFilter;
+      const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
+      if (!matchesDiscipline || !matchesFormat) return false;
+      if (!searchQuery) return true;
+      const term = searchQuery.toLowerCase();
+      if (event.name?.toLowerCase().includes(term)) return true;
+      if (event.series?.toLowerCase().includes(term)) return true;
+      const podium = podiumByEvent[event.id] || [];
+      return podium.some(p => p.name?.toLowerCase().includes(term));
+    });
+
+
 
   const positionIcon = (pos) => {
     if (pos === 1) return <Trophy className="w-3.5 h-3.5 text-yellow-500" />;
@@ -242,8 +274,8 @@ export default function EventDirectory() {
           <p className="text-gray-600">Browse racing events and schedules</p>
         </div>
 
-        <div className="flex gap-4 mb-8">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap gap-3 mb-8">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search events..."
@@ -252,20 +284,36 @@ export default function EventDirectory() {
               className="pl-10"
             />
           </div>
-          <Select value={seriesFilter} onValueChange={setSeriesFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Series" />
+          <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Discipline" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Series</SelectItem>
-              {uniqueSeries.map(series => (
-                <SelectItem key={series} value={series}>{series}</SelectItem>
+              <SelectItem value="all">All Disciplines</SelectItem>
+              {disciplines.filter(d => d.is_active !== false).map(d => (
+                <SelectItem key={d.id} value={d.id}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color_code }} />
+                    {d.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={resolvedFormatFilter} onValueChange={setFormatFilter} disabled={availableFormats.length === 0}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Format" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Formats</SelectItem>
+              {availableFormats.map(f => (
+                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           {activeTab === 'upcoming' && (
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -307,7 +355,7 @@ export default function EventDirectory() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredUpcomingEvents.map(event => {
-                  const cls = resolveEventClassification(event, seriesById, disciplineById, disciplineByName, formatById);
+                  const cls = classificationByEventId[event.id] || {};
                   const seriesRecord = seriesById[event.series_id];
                   return (
                     <Link

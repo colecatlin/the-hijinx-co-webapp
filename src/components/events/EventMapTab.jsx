@@ -4,8 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { resolveEventClassification, buildClassificationMaps } from '@/components/utils/eventClassification';
 import { createPageUrl } from '@/components/utils';
-import { MapPin, Navigation, Calendar, X } from 'lucide-react';
+import { MapPin, Navigation, Calendar, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, parseISO } from 'date-fns';
 import { isEventPublic } from '@/components/system/publishHelpers';
 
@@ -45,6 +46,8 @@ export default function EventMapTab() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [geocodedCoords, setGeocodedCoords] = useState({});
   const [mapsReady, setMapsReady] = useState(false);
+  const [disciplineFilter, setDisciplineFilter] = useState('all');
+  const [formatFilter, setFormatFilter] = useState('all');
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events-all'],
@@ -77,11 +80,25 @@ export default function EventMapTab() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Canonical classification maps — Step 5
+  // Canonical classification maps
   const { disciplineById, disciplineByName, formatById } = useMemo(
     () => buildClassificationMaps(disciplines, formats),
     [disciplines, formats]
   );
+
+  // Dependent format options
+  const availableFormats = useMemo(() => {
+    if (disciplineFilter === 'all') return formats.filter(f => f.is_active !== false);
+    return formats.filter(f => f.discipline_id === disciplineFilter && f.is_active !== false);
+  }, [formats, disciplineFilter]);
+
+  const resolvedFormatFilter = useMemo(() => {
+    if (formatFilter === 'all') return 'all';
+    const fmt = formats.find(f => f.id === formatFilter);
+    if (!fmt) return 'all';
+    if (disciplineFilter !== 'all' && fmt.discipline_id !== disciplineFilter) return 'all';
+    return formatFilter;
+  }, [formatFilter, formats, disciplineFilter]);
 
   const trackMap = useMemo(
     () => Object.fromEntries(allTracks.map((t) => [t.id, t])),
@@ -106,13 +123,26 @@ export default function EventMapTab() {
     [allEvents, today]
   );
 
-  // Events that have coordinates (from track or geocoded)
+  // Pre-resolve classification for filtering
+  const classificationByEventId = useMemo(() => {
+    const map = {};
+    for (const e of upcomingPublicEvents) {
+      map[e.id] = resolveEventClassification(e, seriesMap, disciplineById, disciplineByName, formatById);
+    }
+    return map;
+  }, [upcomingPublicEvents, seriesMap, disciplineById, disciplineByName, formatById]);
+
+  // Events that have coordinates AND pass classification filters
   const mappableEvents = useMemo(
     () =>
-      upcomingPublicEvents.filter(
-        (e) => !!getEventCoords(e, trackMap, geocodedCoords)
-      ),
-    [upcomingPublicEvents, trackMap, geocodedCoords]
+      upcomingPublicEvents.filter((e) => {
+        if (!getEventCoords(e, trackMap, geocodedCoords)) return false;
+        const cls = classificationByEventId[e.id];
+        if (disciplineFilter !== 'all' && cls?.disciplineId !== disciplineFilter) return false;
+        if (resolvedFormatFilter !== 'all' && cls?.formatId !== resolvedFormatFilter) return false;
+        return true;
+      }),
+    [upcomingPublicEvents, trackMap, geocodedCoords, classificationByEventId, disciplineFilter, resolvedFormatFilter]
   );
 
   // Events that still need geocoding (have location_note, no track coords, not yet done)
@@ -156,18 +186,17 @@ export default function EventMapTab() {
       .sort((a, b) => a._distance - b._distance);
   }, [mappableEvents, userLocation, trackMap, geocodedCoords]);
 
-  // Step 5: Unique disciplines for legend — via canonical resolver
+  // Unique disciplines for legend — derived from filtered mappable events
   const activeDisciplines = useMemo(() => {
-    const seen = new Map(); // name → color
+    const seen = new Map();
     mappableEvents.forEach((e) => {
-      const series = seriesMap[e.series_id];
-      const cls = resolveEventClassification(e, seriesMap, disciplineById, disciplineByName, formatById);
-      if (cls.disciplineName && !seen.has(cls.disciplineName)) {
+      const cls = classificationByEventId[e.id];
+      if (cls?.disciplineName && !seen.has(cls.disciplineName)) {
         seen.set(cls.disciplineName, cls.disciplineColor);
       }
     });
     return [...seen.entries()].map(([name, color]) => ({ name, color })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [mappableEvents, seriesMap, disciplineById, disciplineByName, formatById]);
+  }, [mappableEvents, classificationByEventId]);
 
   // Initialize Google Map
   useEffect(() => {
@@ -223,8 +252,7 @@ export default function EventMapTab() {
     displayEvents.forEach((event) => {
       const coords = getEventCoords(event, trackMap, geocodedCoords);
       if (!coords) return;
-      // Step 5: canonical resolver
-      const { disciplineColor: color } = resolveEventClassification(event, seriesMap, disciplineById, disciplineByName, formatById);
+      const { disciplineColor: color } = classificationByEventId[event.id] || {};
 
       const marker = new window.google.maps.Marker({
         position: { lat: coords.lat, lng: coords.lng },
@@ -353,15 +381,51 @@ export default function EventMapTab() {
         </p>
       ) : null}
 
-      {/* Discipline legend — Step 3: uses canonical resolved colors */}
+      {/* Classification filters */}
+      <div className="flex flex-wrap gap-2">
+        <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }}>
+          <SelectTrigger className="h-8 text-xs w-40">
+            <SelectValue placeholder="Discipline" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Disciplines</SelectItem>
+            {disciplines.filter(d => d.is_active !== false).map(d => (
+              <SelectItem key={d.id} value={d.id}>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color_code }} />
+                  {d.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={resolvedFormatFilter} onValueChange={setFormatFilter} disabled={availableFormats.length === 0}>
+          <SelectTrigger className="h-8 text-xs w-36">
+            <SelectValue placeholder="Format" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Formats</SelectItem>
+            {availableFormats.map(f => (
+              <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(disciplineFilter !== 'all' || resolvedFormatFilter !== 'all') && (
+          <button
+            onClick={() => { setDisciplineFilter('all'); setFormatFilter('all'); }}
+            className="h-8 px-3 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-gray-50 flex items-center gap-1"
+          >
+            <X className="w-3 h-3" /> Clear
+          </button>
+        )}
+      </div>
+
+      {/* Discipline legend */}
       {activeDisciplines.length > 0 && (
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {activeDisciplines.map(({ name, color }) => (
             <div key={name} className="flex items-center gap-1.5">
-              <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: color }}
-              />
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
               <span className="text-xs text-gray-600 font-medium">{name}</span>
             </div>
           ))}
@@ -441,7 +505,7 @@ export default function EventMapTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
           {listEvents.slice(0, 12).map((event) => {
             const t = trackMap[event.track_id];
-            const cls = resolveEventClassification(event, seriesMap, disciplineById, disciplineByName, formatById);
+            const cls = classificationByEventId[event.id] || {};
             return (
               <Link
                 key={event.id}
