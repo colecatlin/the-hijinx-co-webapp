@@ -91,17 +91,26 @@ export default function EventsSection() {
                         style={{ filter: 'contrast(1.1) saturate(0.75)' }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      {event.event_date && (
-                        <div className="absolute top-3 left-3 px-2 py-0.5" style={{ background: '#0A0A0A' }}>
-                          <span className="font-mono text-[9px] font-black text-white tracking-wider">
-                            {formatEventDate(event.event_date)}
-                          </span>
-                        </div>
-                      )}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                        {event.event_date && (
+                          <div className="px-2 py-0.5" style={{ background: '#0A0A0A' }}>
+                            <span className="font-mono text-[9px] font-black text-white tracking-wider">
+                              {formatEventDate(event.event_date)}
+                            </span>
+                          </div>
+                        )}
+                        {(event.series_name) && (
+                          <div className="px-2 py-0.5" style={{ background: 'rgba(0,0,0,0.7)' }}>
+                            <span className="font-mono text-[8px] text-white/80 tracking-wider uppercase">
+                              {event.series_name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div
-                      className="flex items-center px-4"
+                      className="flex items-center justify-between px-4"
                       style={{ height: 52, background: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}
                     >
                       {event.event_date && (
@@ -109,30 +118,30 @@ export default function EventsSection() {
                           {formatEventDate(event.event_date)}
                         </span>
                       )}
+                      {event.series_name && (
+                        <span className="font-mono text-[8px] text-black/40 tracking-wider uppercase">
+                          {event.series_name}
+                        </span>
+                      )}
                     </div>
                   )}
 
                   {/* Content */}
                   <div className="p-4 flex flex-col flex-1">
-                    {event.series_name && (
-                      <span className="font-mono text-[8px] tracking-[0.4em] text-black/35 uppercase font-bold mb-1.5 block">
-                        {event.series_name}
-                      </span>
-                    )}
-                    <h3 className="text-sm font-black text-black tracking-tight leading-snug mb-3 group-hover:opacity-50 transition-opacity line-clamp-2">
+                    <h3 className="text-sm font-black text-black tracking-tight leading-snug mb-2 group-hover:opacity-50 transition-opacity">
                       {event.name}
                     </h3>
 
-                    <div className="mt-auto flex items-center justify-between">
+                    <div className="mt-auto flex items-start justify-between gap-2">
                       {(event.location_note || event.season) && (
-                        <div className="flex items-center gap-1.5 text-black/30">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="font-mono text-[8px] tracking-wide truncate max-w-[140px]">
+                        <div className="flex items-start gap-1.5 text-black/40 min-w-0">
+                          <MapPin className="w-3 h-3 flex-shrink-0 mt-px" />
+                          <span className="font-mono text-[8px] tracking-wide leading-relaxed">
                             {event.location_note || event.season}
                           </span>
                         </div>
                       )}
-                      <ArrowRight className="w-3 h-3 text-black/20 group-hover:text-black group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                      <ArrowRight className="w-3 h-3 text-black/20 group-hover:text-black group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-px" />
                     </div>
                   </div>
 
