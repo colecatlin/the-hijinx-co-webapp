@@ -86,13 +86,13 @@ export default function EventMapTab() {
   const allSeries = Array.isArray(allSeriesRaw) ? allSeriesRaw : [];
 
   const { data: disciplineColorRecords = [] } = useQuery({
-    queryKey: ['disciplineColors'],
-    queryFn: () => base44.entities.DisciplineColor.list(),
+    queryKey: ['disciplines'],
+    queryFn: () => base44.entities.Discipline.list('sort_order'),
     staleTime: 5 * 60 * 1000,
   });
 
   const disciplineColorMap = useMemo(
-    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.discipline, r.color_code])),
+    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.name, r.color_code])),
     [disciplineColorRecords]
   );
 
