@@ -36,7 +36,11 @@
         "Water",
         "Alternative"
       ],
-      "description": "Racing discipline"
+      "description": "Racing discipline (legacy string \u2014 kept for backward compatibility)"
+    },
+    "discipline_id": {
+      "type": "string",
+      "description": "Reference to canonical Discipline entity (Step 2 relational field)"
     },
     "geographic_scope": {
       "type": "string",

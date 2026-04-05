@@ -138,7 +138,7 @@ const AuthenticatedApp = () => {
       <Route path="/digital-downloads" element={<LayoutWrapper currentPageName="DigitalDownloads"><DigitalDownloads /></LayoutWrapper>} />
       <Route path="/hashtag-library" element={<LayoutWrapper currentPageName="HashtagLibrary"><HashtagLibrary /></LayoutWrapper>} />
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
-      <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} /> currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
+      <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />"ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />

@@ -20,6 +20,13 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
     enabled: !!seriesId,
   });
 
+  const { data: disciplines = [] } = useQuery({
+    queryKey: ['disciplines'],
+    queryFn: () => base44.entities.Discipline.list('sort_order'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const activeDisciplines = disciplines.filter(d => d.is_active !== false);
+
   useEffect(() => {
     if (seriesRecord) {
       setFormData(seriesRecord);
@@ -102,16 +109,50 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
 
         <div>
           <label className="text-sm font-medium">Discipline</label>
-          <Select value={formData.discipline || ''} onValueChange={(value) => setFormData({ ...formData, discipline: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select discipline" />
-            </SelectTrigger>
-            <SelectContent>
-              {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {activeDisciplines.length > 0 ? (
+            <div className="space-y-2">
+              <Select
+                value={formData.discipline_id || ''}
+                onValueChange={(val) => {
+                  const disc = activeDisciplines.find(d => d.id === val);
+                  setFormData(prev => ({
+                    ...prev,
+                    discipline_id: val,
+                    discipline: disc?.name || prev.discipline,
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select canonical discipline" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeDisciplines.map(d => (
+                    <SelectItem key={d.id} value={d.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full inline-block flex-shrink-0" style={{ backgroundColor: d.color_code }} />
+                        {d.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.discipline && !formData.discipline_id && (
+                <p className="text-xs text-amber-600">⚠ Legacy value "{formData.discipline}" — select above to link it to a canonical Discipline.</p>
+              )}
+              {formData.discipline_id && (
+                <p className="text-xs text-gray-400">Legacy field in sync: <span className="font-mono">{formData.discipline}</span></p>
+              )}
+            </div>
+          ) : (
+            <Select value={formData.discipline || ''} onValueChange={(value) => setFormData({ ...formData, discipline: value })}>
+              <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
+              <SelectContent>
+                {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <div>

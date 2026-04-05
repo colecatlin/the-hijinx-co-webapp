@@ -73,7 +73,7 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Site Settings',
     items: [
       { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
-      { name: 'Discipline Management', page: 'management/discipline', icon: Palette, description: 'Manage discipline colors for map pins' }, 'Manage discipline colors for map pins' },
+      { name: 'Discipline Management', page: 'management/discipline', icon: Palette, description: 'Manage discipline colors for map pins' }, colors for map pins' },
     ]
   }
 ];

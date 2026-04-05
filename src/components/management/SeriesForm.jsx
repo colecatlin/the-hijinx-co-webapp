@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -11,10 +12,18 @@ import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 export default function SeriesForm({ series, onClose, onSeriesCreated }) {
   const { slug, syncSlugFromSource, setSlugManually } = useSlugField(series?.slug || '');
 
+  const { data: disciplines = [] } = useQuery({
+    queryKey: ['disciplines'],
+    queryFn: () => base44.entities.Discipline.list('sort_order'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const activeDisciplines = disciplines.filter(d => d.is_active !== false);
+
   const [formData, setFormData] = useState({
     name: series?.name || '',
     governing_body: series?.governing_body || '',
-    discipline: series?.discipline || 'Mixed',
+    discipline: series?.discipline || 'Off Road',
+    discipline_id: series?.discipline_id || '',
     founded_year: series?.founded_year || new Date().getFullYear(),
     operational_status: series?.operational_status || 'Active',
     description_summary: series?.description_summary || '',
@@ -93,27 +102,40 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
 
           <div>
             <label className="block text-sm font-medium mb-2">Discipline *</label>
-            <Select value={formData.discipline} onValueChange={(val) => handleChange('discipline', val)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Stock Car">Stock Car</SelectItem>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Dirt Oval">Dirt Oval</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Dirt Bike">Dirt Bike</SelectItem>
-                <SelectItem value="Open Wheel">Open Wheel</SelectItem>
-                <SelectItem value="Sports Car">Sports Car</SelectItem>
-                <SelectItem value="Touring Car">Touring Car</SelectItem>
-                <SelectItem value="Rally">Rally</SelectItem>
-                <SelectItem value="Drag">Drag</SelectItem>
-                <SelectItem value="Motorcycle">Motorcycle</SelectItem>
-                <SelectItem value="Karting">Karting</SelectItem>
-                <SelectItem value="Water">Water</SelectItem>
-                <SelectItem value="Alternative">Alternative</SelectItem>
-              </SelectContent>
-            </Select>
+            {activeDisciplines.length > 0 ? (
+              <Select
+                value={formData.discipline_id || ''}
+                onValueChange={(val) => {
+                  const disc = activeDisciplines.find(d => d.id === val);
+                  setFormData(prev => ({
+                    ...prev,
+                    discipline_id: val,
+                    discipline: disc?.name || prev.discipline,
+                  }));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
+                <SelectContent>
+                  {activeDisciplines.map(d => (
+                    <SelectItem key={d.id} value={d.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: d.color_code }} />
+                        {d.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Select value={formData.discipline} onValueChange={(val) => handleChange('discipline', val)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div>
