@@ -1,4 +1,4 @@
-import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, ClipboardCheck, Radar, Sparkles, Activity, TrendingUp, Map } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, ClipboardCheck, Radar, Sparkles, Activity, TrendingUp, Map, Palette } from 'lucide-react';
 
 export const DASHBOARD_ITEM = {
   name: 'Dashboard',
@@ -73,6 +73,7 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Site Settings',
     items: [
       { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
+      { name: 'Discipline Colors', page: 'management/discipline-colors', icon: Palette, description: 'Manage map pin colors for racing disciplines' },
     ]
   }
 ];

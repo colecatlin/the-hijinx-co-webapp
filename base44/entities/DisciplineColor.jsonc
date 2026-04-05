@@ -1,0 +1,18 @@
+{
+  "name": "DisciplineColor",
+  "type": "object",
+  "properties": {
+    "discipline": {
+      "type": "string",
+      "description": "Name of the racing discipline (e.g., 'Off Road', 'Stock Car')"
+    },
+    "color_code": {
+      "type": "string",
+      "description": "Hexadecimal color code for map pins (e.g., '#1E3A5F')"
+    }
+  },
+  "required": [
+    "discipline",
+    "color_code"
+  ]
+}

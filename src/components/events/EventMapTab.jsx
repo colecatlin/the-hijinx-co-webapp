@@ -10,7 +10,7 @@ import { isEventPublic } from '@/components/system/publishHelpers';
 
 const RADIUS_MI = 150;
 
-const DISCIPLINE_COLORS = {
+const FALLBACK_COLORS = {
   'Stock Car':    '#EF4444',
   'Off Road':     '#1E3A5F',
   'Dirt Oval':    '#A16207',
@@ -28,8 +28,9 @@ const DISCIPLINE_COLORS = {
 };
 const DEFAULT_COLOR = '#6B7280';
 
-function getDisciplineColor(discipline) {
-  return DISCIPLINE_COLORS[discipline] || DEFAULT_COLOR;
+function getDisciplineColor(discipline, colorMap) {
+  if (colorMap && colorMap[discipline]) return colorMap[discipline];
+  return FALLBACK_COLORS[discipline] || DEFAULT_COLOR;
 }
 
 function haversineDistance(lat1, lng1, lat2, lng2) {
@@ -83,6 +84,17 @@ export default function EventMapTab() {
     staleTime: 10 * 60 * 1000,
   });
   const allSeries = Array.isArray(allSeriesRaw) ? allSeriesRaw : [];
+
+  const { data: disciplineColorRecords = [] } = useQuery({
+    queryKey: ['disciplineColors'],
+    queryFn: () => base44.entities.DisciplineColor.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const disciplineColorMap = useMemo(
+    () => Object.fromEntries(disciplineColorRecords.map((r) => [r.discipline, r.color_code])),
+    [disciplineColorRecords]
+  );
 
   const trackMap = useMemo(
     () => Object.fromEntries(allTracks.map((t) => [t.id, t])),
@@ -222,7 +234,7 @@ export default function EventMapTab() {
       const coords = getEventCoords(event, trackMap, geocodedCoords);
       if (!coords) return;
       const series = seriesMap[event.series_id];
-      const color = getDisciplineColor(series?.discipline);
+      const color = getDisciplineColor(series?.discipline, disciplineColorMap);
 
       const marker = new window.google.maps.Marker({
         position: { lat: coords.lat, lng: coords.lng },
@@ -356,7 +368,7 @@ export default function EventMapTab() {
             <div key={discipline} className="flex items-center gap-1.5">
               <div
                 className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: getDisciplineColor(discipline) }}
+                style={{ backgroundColor: getDisciplineColor(discipline, disciplineColorMap) }}
               />
               <span className="text-xs text-gray-600 font-medium">{discipline}</span>
             </div>
@@ -432,7 +444,7 @@ export default function EventMapTab() {
           {listEvents.slice(0, 12).map((event) => {
             const t = trackMap[event.track_id];
             const series = seriesMap[event.series_id];
-            const color = getDisciplineColor(series?.discipline);
+            const color = getDisciplineColor(series?.discipline, disciplineColorMap);
             return (
               <Link
                 key={event.id}

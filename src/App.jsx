@@ -45,6 +45,7 @@ import ProductDetail from './pages/ProductDetail';
 import DigitalDownloads from './pages/DigitalDownloads';
 import HashtagLibrary from './pages/HashtagLibrary';
 import HashtagAnalytics from './pages/HashtagAnalytics';
+import ManageDisciplineColors from './pages/ManageDisciplineColors';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -137,6 +138,7 @@ const AuthenticatedApp = () => {
       <Route path="/digital-downloads" element={<LayoutWrapper currentPageName="DigitalDownloads"><DigitalDownloads /></LayoutWrapper>} />
       <Route path="/hashtag-library" element={<LayoutWrapper currentPageName="HashtagLibrary"><HashtagLibrary /></LayoutWrapper>} />
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
+      <Route path="/management/discipline-colors" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
