@@ -8,6 +8,7 @@ import HeroSection from '@/components/home/HeroSection';
 import CultureSection from '@/components/home/CultureSection';
 import OutletSection from '@/components/home/OutletSection';
 import ApparelSection from '@/components/home/ApparelSection';
+import EventsSection from '@/components/home/EventsSection';
 import RaceCoreSection from '@/components/home/RaceCoreSection';
 import SocialsSection from '@/components/home/SocialsSection';
 import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
@@ -50,6 +51,8 @@ export default function Home() {
       />
 
       <ApparelSection products={hp.featured_products || []} />
+
+      <EventsSection />
 
       <RaceCoreSection stats={hp.hero_stats} />
 
