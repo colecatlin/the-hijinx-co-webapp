@@ -27,6 +27,12 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
   });
   const activeDisciplines = disciplines.filter(d => d.is_active !== false);
 
+  const { data: formats = [] } = useQuery({
+    queryKey: ['formats'],
+    queryFn: () => base44.entities.Format.list('sort_order'),
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (seriesRecord) {
       setFormData(seriesRecord);
@@ -154,6 +160,29 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
             </Select>
           )}
         </div>
+
+        {formData.discipline_id && (() => {
+          const disciplineFormats = formats.filter(f => f.discipline_id === formData.discipline_id && f.is_active !== false);
+          return disciplineFormats.length > 0 ? (
+            <div>
+              <label className="text-sm font-medium">Format</label>
+              <Select
+                value={formData.format_id || ''}
+                onValueChange={(val) => setFormData(prev => ({ ...prev, format_id: val || '' }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select format (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {disciplineFormats.map(f => (
+                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-400 mt-1">Formats are filtered by the selected Discipline.</p>
+            </div>
+          ) : null;
+        })()}
 
         <div>
           <label className="text-sm font-medium">Description</label>

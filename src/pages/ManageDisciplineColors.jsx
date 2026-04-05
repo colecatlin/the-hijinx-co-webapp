@@ -3,12 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, AlertTriangle, Save, X, Eye, EyeOff, GripVertical, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import FormatManagement from '@/components/management/FormatManagement';
 
 function slugify(str) {
   return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 export default function ManageDisciplineColors() {
+  const [activeTab, setActiveTab] = useState('disciplines');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), retry: false });
@@ -102,13 +104,35 @@ export default function ManageDisciplineColors() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#232323]">Discipline Management</h1>
+        <h1 className="text-2xl font-bold text-[#232323]">Classification Management</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Manage the canonical list of racing disciplines. These drive map pin colors, badges, and future classification features.
+          Manage the canonical classification hierarchy: Disciplines (top level) and Formats (second level).
         </p>
       </div>
 
-      {/* Add new discipline */}
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        {[{id: 'disciplines', label: 'Disciplines'}, {id: 'formats', label: 'Formats'}].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? 'border-[#232323] text-[#232323]'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'formats' ? (
+        <FormatManagement />
+      ) : (
+        <>
+
+        {/* Add new discipline */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">Add Discipline</h2>
         <div className="flex flex-col sm:flex-row gap-3 mb-2">
@@ -271,6 +295,8 @@ export default function ManageDisciplineColors() {
           <AlertTriangle className="w-3.5 h-3.5" />
           {duplicateColors.size} duplicate color code{duplicateColors.size > 1 ? 's' : ''} detected — each discipline should have a unique color.
         </p>
+      )}
+        </>
       )}
     </div>
   );

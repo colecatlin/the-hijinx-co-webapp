@@ -19,11 +19,18 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
   });
   const activeDisciplines = disciplines.filter(d => d.is_active !== false);
 
+  const { data: formats = [] } = useQuery({
+    queryKey: ['formats'],
+    queryFn: () => base44.entities.Format.list('sort_order'),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [formData, setFormData] = useState({
     name: series?.name || '',
     governing_body: series?.governing_body || '',
     discipline: series?.discipline || 'Off Road',
     discipline_id: series?.discipline_id || '',
+    format_id: series?.format_id || '',
     founded_year: series?.founded_year || new Date().getFullYear(),
     operational_status: series?.operational_status || 'Active',
     description_summary: series?.description_summary || '',
@@ -111,6 +118,7 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
                     ...prev,
                     discipline_id: val,
                     discipline: disc?.name || prev.discipline,
+                    format_id: '', // reset format when discipline changes
                   }));
                 }}
               >
@@ -137,6 +145,27 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
               </Select>
             )}
           </div>
+
+          {formData.discipline_id && (() => {
+            const disciplineFormats = formats.filter(f => f.discipline_id === formData.discipline_id && f.is_active !== false);
+            return disciplineFormats.length > 0 ? (
+              <div>
+                <label className="block text-sm font-medium mb-2">Format</label>
+                <Select
+                  value={formData.format_id || ''}
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, format_id: val || '' }))}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select format (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    {disciplineFormats.map(f => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-400 mt-1">Formats are filtered by the selected Discipline.</p>
+              </div>
+            ) : null;
+          })()}
 
           <div>
             <label className="block text-sm font-medium mb-2">Competition Level *</label>

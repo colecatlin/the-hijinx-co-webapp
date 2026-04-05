@@ -42,6 +42,10 @@
       "type": "string",
       "description": "Reference to canonical Discipline entity (Step 2 relational field)"
     },
+    "format_id": {
+      "type": "string",
+      "description": "Reference to canonical Format entity (Step 4 relational field \u2014 must belong to the selected Discipline)"
+    },
     "geographic_scope": {
       "type": "string",
       "enum": [
