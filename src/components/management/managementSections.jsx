@@ -21,6 +21,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Results', page: 'ManageResults', icon: Award, description: 'Manage race results and standings' },
       { name: 'Points Config', page: 'ManagePointsConfig', icon: Trophy, description: 'Link Google Sheets for automated standings calculation' },
       { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review driver-submitted results' },
+      { name: 'Discipline Colors', page: 'management/discipline-colors', icon: Palette, description: 'Manage map pin colors for racing disciplines' },
     ]
   },
   {
@@ -73,7 +74,6 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Site Settings',
     items: [
       { name: 'Homepage', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
-      { name: 'Discipline Colors', page: 'management/discipline-colors', icon: Palette, description: 'Manage map pin colors for racing disciplines' },
     ]
   }
 ];
