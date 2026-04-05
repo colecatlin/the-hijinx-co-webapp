@@ -12,7 +12,7 @@ const RADIUS_MI = 150;
 
 const DISCIPLINE_COLORS = {
   'Stock Car':    '#EF4444',
-  'Off Road':     '#F97316',
+  'Off Road':     '#1E3A5F',
   'Dirt Oval':    '#A16207',
   'Snowmobile':   '#6366F1',
   'Dirt Bike':    '#8B5CF6',
