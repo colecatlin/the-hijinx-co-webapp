@@ -24,7 +24,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo--EXF9shcTO0?w=1800&q=90&fit=crop',
     headline: ['Still', 'chasing it.'],
     sub: 'Early mornings. Late nights. The grind has its own culture.',
     cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
