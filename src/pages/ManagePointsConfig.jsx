@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Trophy, Settings2, ChevronRight, Zap } from 'lucide-react';
+import { Plus, Edit2, Trash2, Archive, CheckCircle2, AlertCircle } from 'lucide-react';
 
 function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, seriesClasses, rulesets, onSave }) {
   const [form, setForm] = useState({
@@ -95,41 +95,41 @@ function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, se
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0d0d0d] border border-[#f5ff00]/20 max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#f5ff00] via-[#ffd700] to-[#f5ff00]" />
+      <DialogContent className="bg-gray-900 border-gray-700 max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white text-lg font-black tracking-tight">{rulesetId ? '✏️ Edit Rule Set' : '⚡ New Points Rule Set'}</DialogTitle>
+          <DialogTitle className="text-white">{rulesetId ? 'Edit Rule Set' : 'New Points Rule Set'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {validationError && (
-            <Alert className="bg-red-500/10 border-red-500">
-              <AlertCircle className="h-4 w-4 text-red-400" />
-              <AlertDescription className="text-red-400 text-sm">{validationError}</AlertDescription>
+            <Alert className="bg-red-500/10 border-red-600">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-600 text-sm">{validationError}</AlertDescription>
             </Alert>
           )}
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Name *</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white focus:border-[#f5ff00]" placeholder="e.g. 2026 Stock Points" />
+            <label className="text-xs text-gray-400 block">Name *</label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026 Stock Points" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Series</label>
+              <label className="text-xs text-gray-400 block">Series</label>
               <Select value={form.series_id} onValueChange={(v) => setForm({ ...form, series_id: v })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white"><SelectValue placeholder="Select series" /></SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#f5ff00]/30">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Select series" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>None</SelectItem>
                   {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Track</label>
+              <label className="text-xs text-gray-400 block">Track</label>
               <Select value={form.track_id} onValueChange={(v) => setForm({ ...form, track_id: v })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white"><SelectValue placeholder="Select track" /></SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#f5ff00]/30">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="Select track" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>None</SelectItem>
                   {tracks.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                 </SelectContent>
@@ -139,51 +139,53 @@ function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, se
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Class</label>
+              <label className="text-xs text-gray-400 block">Class</label>
               <Select value={form.series_class_id || ''} onValueChange={(v) => setForm({ ...form, series_class_id: v || null })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#f5ff00]/30">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue placeholder="All classes" /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>All classes</SelectItem>
                   {seriesClasses.map(c => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Season</label>
-              <Input value={form.season || ''} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white focus:border-[#f5ff00]" placeholder="e.g. 2026" />
+              <label className="text-xs text-gray-400 block">Season</label>
+              <Input value={form.season || ''} onChange={(e) => setForm({ ...form, season: e.target.value })} className="bg-gray-800 border-gray-700 text-white" placeholder="e.g. 2026" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Status</label>
+              <label className="text-xs text-gray-400 block">Status</label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#f5ff00]/30">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Priority</label>
-              <Input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white focus:border-[#f5ff00]" />
+              <label className="text-xs text-gray-400 block">Priority</label>
+              <Input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })} className="bg-gray-800 border-gray-700 text-white" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Applies to Session Types</label>
+            <label className="text-xs text-gray-400 block">Applies to Session Types</label>
             <div className="flex flex-wrap gap-2">
               {sessionTypeOptions.map(type => (
-                <label key={type} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                <label key={type} className="flex items-center gap-2 text-sm text-gray-400">
                   <input type="checkbox" checked={form.applies_to_session_types.includes(type)} onChange={(e) => {
                     if (e.target.checked) {
                       setForm({ ...form, applies_to_session_types: [...form.applies_to_session_types, type] });
                     } else {
                       setForm({ ...form, applies_to_session_types: form.applies_to_session_types.filter(t => t !== type) });
                     }
-                  }} className="accent-[#f5ff00]" />
+                  }} className="rounded" />
                   {type}
                 </label>
               ))}
@@ -191,34 +193,34 @@ function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, se
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Points Table JSON *</label>
-            <Textarea value={form.points_table_json} onChange={(e) => setForm({ ...form, points_table_json: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-green-400 font-mono text-xs min-h-[100px] focus:border-[#f5ff00]" placeholder='{"positions": {"1": 50, "2": 45}, "default": 0}' />
+            <label className="text-xs text-gray-400 block">Points Table JSON *</label>
+            <Textarea value={form.points_table_json} onChange={(e) => setForm({ ...form, points_table_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[100px]" placeholder='{"positions": {"1": 50, "2": 45}, "default": 0}' />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Bonus Rules JSON <span className="text-gray-600 normal-case font-normal">(optional)</span></label>
-            <Textarea value={form.bonus_rules_json} onChange={(e) => setForm({ ...form, bonus_rules_json: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-green-400 font-mono text-xs min-h-[60px] focus:border-[#f5ff00]" placeholder='{"fastest_lap": 1, "most_laps_led": 1, "pole": 1}' />
+            <label className="text-xs text-gray-400 block">Bonus Rules JSON (optional)</label>
+            <Textarea value={form.bonus_rules_json} onChange={(e) => setForm({ ...form, bonus_rules_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='{"fastest_lap": 1, "most_laps_led": 1, "pole": 1}' />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Drop Rounds JSON <span className="text-gray-600 normal-case font-normal">(optional)</span></label>
-            <Textarea value={form.drop_rounds_json} onChange={(e) => setForm({ ...form, drop_rounds_json: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-green-400 font-mono text-xs min-h-[60px] focus:border-[#f5ff00]" placeholder='{"enabled": true, "drop_count": 1}' />
+            <label className="text-xs text-gray-400 block">Drop Rounds JSON (optional)</label>
+            <Textarea value={form.drop_rounds_json} onChange={(e) => setForm({ ...form, drop_rounds_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='{"enabled": true, "drop_count": 1}' />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Tiebreaker Order JSON <span className="text-gray-600 normal-case font-normal">(optional)</span></label>
-            <Textarea value={form.tiebreaker_order_json} onChange={(e) => setForm({ ...form, tiebreaker_order_json: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-green-400 font-mono text-xs min-h-[60px] focus:border-[#f5ff00]" placeholder='["wins", "seconds", "thirds", "best_finish", "most_starts"]' />
+            <label className="text-xs text-gray-400 block">Tiebreaker Order JSON (optional)</label>
+            <Textarea value={form.tiebreaker_order_json} onChange={(e) => setForm({ ...form, tiebreaker_order_json: e.target.value })} className="bg-gray-800 border-gray-700 text-white font-mono text-xs min-h-[60px]" placeholder='["wins", "seconds", "thirds", "best_finish", "most_starts"]' />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-[#f5ff00] font-bold uppercase tracking-widest block">Notes</label>
-            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="bg-[#1a1a1a] border-[#f5ff00]/30 text-white text-sm focus:border-[#f5ff00]" rows={2} />
+            <label className="text-xs text-gray-400 block">Notes</label>
+            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="bg-gray-800 border-gray-700 text-white text-sm" rows={2} />
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-white/20 text-gray-400 hover:bg-white/10">Cancel</Button>
-          <Button onClick={handleSave} className="bg-[#f5ff00] text-black font-bold hover:bg-[#e6f000]">Save Rule Set</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Save Rule Set</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -336,226 +338,156 @@ export default function ManagePointsConfig() {
   }, [configs]);
 
   if (!isAdmin) {
-    return <div className="p-6 text-center text-gray-400 bg-[#080808] min-h-screen flex items-center justify-center"><span className="text-lg">🔒 Admin access required.</span></div>;
+    return <div className="p-6 text-center text-gray-400">Admin access required.</div>;
   }
 
   return (
-    <div className="bg-[#080808] min-h-screen">
-
-      {/* ── PAGE HEADER ── */}
-      <div className="border-b border-white/10 bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-[#f5ff00] flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-black" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">Points Configuration</h1>
-                <p className="text-xs text-gray-500 mt-0.5 uppercase tracking-widest">Championship Points Engine</p>
-              </div>
-            </div>
-            <Button
-              onClick={() => { setEditingId(null); setOpenDialog(true); }}
-              className="bg-[#f5ff00] text-black font-bold hover:bg-[#e6f000] h-10 px-5 gap-2"
-            >
-              <Plus className="w-4 h-4" /> New Rule Set
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-white">Points Configuration</h1>
+        <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" /> New Ruleset
+        </Button>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-12">
-
-        {/* ══ PART 1: POINTS RULE SETS ══ */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-[#f5ff00] text-xs font-black uppercase tracking-[0.2em]">Part 01</span>
-              <ChevronRight className="w-3 h-3 text-[#f5ff00]" />
-            </div>
-            <h2 className="text-xl font-black text-white tracking-tight">Points Rule Sets</h2>
-            <div className="flex-1 h-px bg-gradient-to-r from-[#f5ff00]/30 to-transparent" />
-            <Badge className="bg-[#f5ff00]/10 text-[#f5ff00] border border-[#f5ff00]/30 text-xs font-bold">{rulesets.length} sets</Badge>
-          </div>
-
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+      {/* Points RuleSets Section */}
+      <div>
+        <h2 className="text-xl font-bold text-white mb-4">Points Rule Sets</h2>
+        
+        {/* Rulesets Table */}
+        <Card className="bg-gray-900 border-gray-700 mb-6">
+          <CardContent className="pt-6">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 bg-white/5">
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Name</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Series / Track</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Class</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Season</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Session Types</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Priority</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="text-[#f5ff00] text-xs font-bold uppercase tracking-wider text-right">Actions</TableHead>
+                  <TableRow className="border-gray-700">
+                    <TableHead className="text-gray-400">Name</TableHead>
+                    <TableHead className="text-gray-400">Series / Track</TableHead>
+                    <TableHead className="text-gray-400">Class</TableHead>
+                    <TableHead className="text-gray-400">Season</TableHead>
+                    <TableHead className="text-gray-400">Session Types</TableHead>
+                    <TableHead className="text-gray-400">Priority</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rulesets.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12">
-                        <div className="flex flex-col items-center gap-2">
-                          <Zap className="w-8 h-8 text-[#f5ff00]/20" />
-                          <p className="text-gray-600 text-sm">No rule sets yet — create your first one</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : rulesets.map((rs) => (
-                    <TableRow key={rs.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                      <TableCell className="text-white font-semibold">{rs.name}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                  {rulesets.map((rs) => (
+                    <TableRow key={rs.id} className="border-gray-700 hover:bg-gray-800">
+                      <TableCell className="text-white font-medium">{rs.name}</TableCell>
+                      <TableCell className="text-gray-400">
                         {rs.series_id ? series.find(s => s.id === rs.series_id)?.name : tracks.find(t => t.id === rs.track_id)?.name || '—'}
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">{rs.series_class_id ? seriesClasses.find(c => c.id === rs.series_class_id)?.class_name : '—'}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{rs.season || '—'}</TableCell>
+                      <TableCell className="text-gray-400">{rs.series_class_id ? seriesClasses.find(c => c.id === rs.series_class_id)?.class_name : '—'}</TableCell>
+                      <TableCell className="text-gray-400">{rs.season || '—'}</TableCell>
+                      <TableCell className="text-gray-400 text-xs">{(rs.applies_to_session_types || []).join(', ') || '—'}</TableCell>
+                      <TableCell className="text-gray-400">{rs.priority || 0}</TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {(rs.applies_to_session_types || []).map(t => (
-                            <span key={t} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-gray-300">{t}</span>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-[#f5ff00] font-black text-sm">{rs.priority || 0}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={rs.status === 'active'
-                          ? 'bg-[#f5ff00]/20 text-[#f5ff00] border border-[#f5ff00]/40 font-bold'
-                          : 'bg-white/5 text-gray-500 border border-white/10'
-                        }>
+                        <Badge className={rs.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
                           {rs.status || 'draft'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="icon" variant="ghost" onClick={() => { setEditingId(rs.id); setOpenDialog(true); }} className="text-gray-400 hover:text-white hover:bg-white/10 h-8 w-8">
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => updateRulesetMutation.mutate({ id: rs.id, data: { status: rs.status === 'active' ? 'draft' : 'active' } })} className={rs.status === 'active' ? 'text-orange-400 hover:bg-orange-400/10 h-8 w-8' : 'text-[#f5ff00] hover:bg-[#f5ff00]/10 h-8 w-8'}>
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(rs)} className="text-red-500 hover:bg-red-500/10 h-8 w-8">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                      <TableCell className="text-right space-x-1">
+                        <Button size="icon" variant="ghost" onClick={() => { setEditingId(rs.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => updateRulesetMutation.mutate({ id: rs.id, data: { status: rs.status === 'active' ? 'draft' : 'active' } })} className={rs.status === 'active' ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}>
+                          <CheckCircle2 className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(rs)} className="text-red-400 hover:text-red-300">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* ══ PART 2: LEGACY CONFIGS ══ */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-cyan-400 text-xs font-black uppercase tracking-[0.2em]">Part 02</span>
-              <ChevronRight className="w-3 h-3 text-cyan-400" />
-            </div>
-            <h2 className="text-xl font-black text-white tracking-tight">Legacy Configs</h2>
-            <div className="flex-1 h-px bg-gradient-to-r from-cyan-400/30 to-transparent" />
-            <Badge className="bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 text-xs font-bold">{filteredConfigs.length} configs</Badge>
-          </div>
-
-          {/* Filters */}
-          <div className="grid grid-cols-2 gap-4 mb-4 p-4 rounded-xl bg-white/5 border border-white/10">
+      {/* Filters */}
+      <Card className="bg-gray-900 border-gray-700">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-cyan-400 font-bold uppercase tracking-widest block mb-2">Filter by Series</label>
+              <label className="text-xs text-gray-400 block mb-2">Series</label>
               <Select value={filters.series_id} onValueChange={(v) => setFilters({ ...filters, series_id: v })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-cyan-400/30 text-white">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                   <SelectValue placeholder="All Series" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/10">
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>All Series</SelectItem>
                   {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-cyan-400 font-bold uppercase tracking-widest block mb-2">Filter by Season</label>
+              <label className="text-xs text-gray-400 block mb-2">Season</label>
               <Select value={filters.season} onValueChange={(v) => setFilters({ ...filters, season: v })}>
-                <SelectTrigger className="bg-[#1a1a1a] border-cyan-400/30 text-white">
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                   <SelectValue placeholder="All Seasons" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/10">
+                <SelectContent className="bg-gray-800 border-gray-700">
                   <SelectItem value={null}>All Seasons</SelectItem>
                   {uniqueSeasons.map(year => <SelectItem key={year} value={year}>{year}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="rounded-xl border border-white/10 overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/10 bg-white/5">
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Name</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Series</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Class</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Season</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Event</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Priority</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="text-cyan-400 text-xs font-bold uppercase tracking-wider text-right">Actions</TableHead>
+      {/* Table */}
+      <Card className="bg-gray-900 border-gray-700">
+        <CardContent className="pt-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-400">Name</TableHead>
+                  <TableHead className="text-gray-400">Series</TableHead>
+                  <TableHead className="text-gray-400">Class</TableHead>
+                  <TableHead className="text-gray-400">Season</TableHead>
+                  <TableHead className="text-gray-400">Event</TableHead>
+                  <TableHead className="text-gray-400">Priority</TableHead>
+                  <TableHead className="text-gray-400">Status</TableHead>
+                  <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredConfigs.map((config) => (
+                  <TableRow key={config.id} className="border-gray-700 hover:bg-gray-800">
+                    <TableCell className="text-white font-medium">{config.name}</TableCell>
+                    <TableCell className="text-gray-400">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
+                    <TableCell className="text-gray-400">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.season || '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.event_id ? events.find(e => e.id === config.event_id)?.name || config.event_id : '—'}</TableCell>
+                    <TableCell className="text-gray-400">{config.priority || 0}</TableCell>
+                    <TableCell>
+                      <Badge className={config.status === 'active' || config.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                        {config.status === 'active' || config.is_active ? 'Active' : config.status || 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditingId(config.id); setOpenDialog(true); }} className="text-blue-400 hover:text-blue-300">
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => updateMutation.mutate({ id: config.id, data: { is_active: !config.is_active } })} className={config.is_active ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}>
+                        <CheckCircle2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(config)} className="text-red-400 hover:text-red-300">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredConfigs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12">
-                        <div className="flex flex-col items-center gap-2">
-                          <Settings2 className="w-8 h-8 text-cyan-400/20" />
-                          <p className="text-gray-600 text-sm">No legacy configs found</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredConfigs.map((config) => (
-                    <TableRow key={config.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                      <TableCell className="text-white font-semibold">{config.name}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{series.find(s => s.id === config.series_id)?.name || config.series_id}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{config.series_class_id ? seriesClasses.find(c => c.id === config.series_class_id)?.class_name : '—'}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{config.season || '—'}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{config.event_id ? events.find(e => e.id === config.event_id)?.name || config.event_id : '—'}</TableCell>
-                      <TableCell>
-                        <span className="text-cyan-400 font-black text-sm">{config.priority || 0}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={config.status === 'active' || config.is_active
-                          ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40 font-bold'
-                          : 'bg-white/5 text-gray-500 border border-white/10'
-                        }>
-                          {config.status === 'active' || config.is_active ? 'Active' : config.status || 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="icon" variant="ghost" onClick={() => { setEditingId(config.id); setOpenDialog(true); }} className="text-gray-400 hover:text-white hover:bg-white/10 h-8 w-8">
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => updateMutation.mutate({ id: config.id, data: { is_active: !config.is_active } })} className={config.is_active ? 'text-orange-400 hover:bg-orange-400/10 h-8 w-8' : 'text-cyan-400 hover:bg-cyan-400/10 h-8 w-8'}>
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => setDeleteWarning(config)} className="text-red-500 hover:bg-red-500/10 h-8 w-8">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </section>
-
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Editor Dialog */}
       {editingId ? (
@@ -589,22 +521,21 @@ export default function ManagePointsConfig() {
       {/* Delete Warning */}
       {deleteWarning && (
         <AlertDialog open={!!deleteWarning} onOpenChange={() => setDeleteWarning(null)}>
-          <AlertDialogContent className="bg-[#0d0d0d] border border-red-500/30">
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white font-black">⚠️ Delete Ruleset?</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">Delete Ruleset?</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-400">
-                Are you sure you want to delete <span className="text-white font-semibold">"{deleteWarning.name}"</span>? This cannot be undone.
+                Are you sure you want to delete "{deleteWarning.name}"? This cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogCancel className="border-white/20 text-gray-400 hover:bg-white/10">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
               if (deleteWarning.points_table_json !== undefined) {
                 deleteRulesetMutation.mutate(deleteWarning.id);
               } else {
                 deleteMutation.mutate(deleteWarning.id);
               }
-            }} className="bg-red-600 hover:bg-red-700 font-bold">Delete</AlertDialogAction>
+            }} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
           </AlertDialogContent>
         </AlertDialog>
       )}
