@@ -37,31 +37,32 @@ const footerLinks = [
 export default function Footer() {
   const [reportOpen, setReportOpen] = useState(false);
   return (
-    <footer className="bg-[#232323] text-[#FFF8F5]">
+    <footer style={{ background: '#F5F0E8', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <h3 className="text-2xl font-black tracking-tight text-[#FFF8F5]">HIJINX</h3>
-            <p className="text-[#FFF8F5] text-sm mt-3 max-w-xs leading-relaxed opacity-80">
+            <h3 className="text-2xl font-black tracking-tight text-[#0A0A0A]">HIJINX</h3>
+            <p className="text-sm mt-3 max-w-xs leading-relaxed" style={{ color: 'rgba(10,10,10,0.6)' }}>
               A multi-vertical platform building at the intersection of media, motorsports, and culture.
             </p>
             <div className="mt-6">
-              <p className="font-mono text-xs text-[#FFF8F5] tracking-[0.15em] mb-3 opacity-60">STAY UPDATED</p>
-              <NewsletterSignup source="footer" dark />
+              <p className="font-mono text-xs tracking-[0.15em] mb-3" style={{ color: 'rgba(10,10,10,0.5)' }}>STAY UPDATED</p>
+              <NewsletterSignup source="footer" />
             </div>
           </div>
 
           {/* Link Columns */}
           {footerLinks.map((col) => (
             <div key={col.label}>
-              <p className="font-mono text-xs tracking-[0.2em] text-[#FFF8F5] opacity-60 mb-4">{col.label.toUpperCase()}</p>
+              <p className="font-mono text-xs tracking-[0.2em] mb-4" style={{ color: 'rgba(10,10,10,0.5)' }}>{col.label.toUpperCase()}</p>
               <ul className="space-y-3">
                 {col.links.map((link) => (
                   <li key={link.name}>
                     <Link
                       to={createPageUrl(link.page)}
-                      className="text-sm text-[#FFF8F5] hover:text-[#00FFDA] transition-colors"
+                      className="text-sm transition-colors hover:text-[#009980]"
+                      style={{ color: 'rgba(10,10,10,0.7)' }}
                     >
                       {link.name}
                     </Link>
@@ -73,18 +74,19 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
+        <div className="mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4" style={{ borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+          <p className="font-mono text-xs" style={{ color: 'rgba(10,10,10,0.4)' }}>
             © {new Date().getFullYear()} The Hijinx Co LLC. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setReportOpen(true)}
-              className="font-mono text-xs text-[#FFF8F5] opacity-50 hover:opacity-100 transition-opacity underline underline-offset-2"
+              className="font-mono text-xs underline underline-offset-2 transition-colors hover:text-[#0A0A0A]"
+              style={{ color: 'rgba(10,10,10,0.4)' }}
             >
               Report an Issue
             </button>
-            <p className="font-mono text-xs text-[#FFF8F5] opacity-60">
+            <p className="font-mono text-xs" style={{ color: 'rgba(10,10,10,0.4)' }}>
               Built on purpose.
             </p>
           </div>
