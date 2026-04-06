@@ -393,7 +393,7 @@ export default function EventMapTab({
       {/* Classification filters */}
       <div className="flex flex-wrap gap-2">
         <Select value={disciplineFilter} onValueChange={(v) => { setDisciplineFilter(v); setFormatFilter('all'); }} disabled={!!disciplineFilterProp && !onDisciplineChange}>
-          <SelectTrigger className="h-8 text-xs w-40">
+          <SelectTrigger className="h-9 text-xs flex-1 min-w-[130px]">
             <SelectValue placeholder="Discipline" />
           </SelectTrigger>
           <SelectContent>
@@ -409,7 +409,7 @@ export default function EventMapTab({
           </SelectContent>
         </Select>
         <Select value={resolvedFormatFilter} onValueChange={setFormatFilter} disabled={availableFormats.length === 0}>
-          <SelectTrigger className="h-8 text-xs w-36">
+          <SelectTrigger className="h-9 text-xs flex-1 min-w-[120px]">
             <SelectValue placeholder="Format" />
           </SelectTrigger>
           <SelectContent>
@@ -442,7 +442,7 @@ export default function EventMapTab({
       )}
 
       {/* Map */}
-      <div className="relative rounded-lg overflow-hidden border border-gray-200" style={{ height: 480 }}>
+      <div className="relative rounded-lg overflow-hidden border border-gray-200 h-72 sm:h-96 md:h-[480px]">
         <div ref={mapRef} className="w-full h-full" />
 
         {selectedEvent && (

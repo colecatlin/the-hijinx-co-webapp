@@ -309,14 +309,14 @@ export default function EventDirectory() {
 
   return (
     <PageShell>
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Events</h1>
+      <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-black mb-2">Events</h1>
           <p className="text-gray-600">Browse racing events and schedules</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-8">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
+          <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search events..."
@@ -326,7 +326,7 @@ export default function EventDirectory() {
             />
           </div>
           <Select value={validatedDisciplineFilter} onValueChange={handleDisciplineChange}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="flex-1 min-w-[140px]">
               <SelectValue placeholder="Discipline" />
             </SelectTrigger>
             <SelectContent>
@@ -342,7 +342,7 @@ export default function EventDirectory() {
             </SelectContent>
           </Select>
           <Select value={resolvedFormatFilter} onValueChange={handleFormatChange} disabled={availableFormats.length === 0}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="flex-1 min-w-[130px]">
               <SelectValue placeholder="Format" />
             </SelectTrigger>
             <SelectContent>
@@ -354,7 +354,7 @@ export default function EventDirectory() {
           </Select>
           {activeTab === 'upcoming' && (
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="flex-1 min-w-[120px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -382,9 +382,11 @@ export default function EventDirectory() {
             </TabsTrigger>
             <TabsTrigger
               value="map"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-400 px-4 pb-3 text-sm font-medium flex items-center gap-1.5"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-400 px-3 md:px-4 pb-3 text-sm font-medium flex items-center gap-1.5"
             >
-              <Map className="w-3.5 h-3.5" /> Events Near Me
+              <Map className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Events Near Me</span>
+              <span className="sm:hidden">Near Me</span>
             </TabsTrigger>
           </TabsList>
 
