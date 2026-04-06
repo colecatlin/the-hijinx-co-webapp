@@ -8,7 +8,7 @@ import { createPageUrl } from '@/components/utils';
 const SLIDES = [
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=1800&q=90&fit=crop',
     headline: ['In motion.', 'On purpose.'],
     sub: 'Built for the ones who race, grind, and never stop chasing it.',
     cta1: { label: 'Enter the Outlet', to: createPageUrl('OutletHome') },
@@ -16,7 +16,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
     headline: ["You're going", 'to lose.'],
     sub: 'That\'s part of it. We cover the whole story — not just the podium.',
     cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
@@ -24,7 +24,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1800&q=90&fit=crop',
     headline: ['Still', 'chasing it.'],
     sub: 'Early mornings. Late nights. The grind has its own culture.',
     cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
@@ -32,7 +32,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1529720317453-c8da503f2051?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1590650046871-92c887180603?w=1800&q=90&fit=crop',
     headline: ['This is', 'HIJINX.'],
     sub: 'Media. Motorsports. Culture. All in one place.',
     cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },
