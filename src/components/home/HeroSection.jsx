@@ -9,34 +9,34 @@ const SLIDES = [
   {
     type: 'image',
     bg: 'https://images.unsplash.com/photo-1660337288537-71ae329ba2f0?w=1800&q=90&fit=crop',
-    headline: ['In motion.', 'On purpose.'],
-    sub: 'Built for the ones who race, grind, and never stop chasing it.',
-    cta1: { label: 'Enter the Outlet', to: createPageUrl('OutletHome') },
-    cta2: { label: 'Explore INDEX46', to: createPageUrl('MotorsportsHome') },
+    headline: ['IN MOTION.', 'ON PURPOSE.'],
+    sub: 'Not just moving, moving with intent.',
+    cta1: { label: 'Enter HIJINX', to: createPageUrl('OutletHome') },
+    cta2: null,
   },
   {
     type: 'image',
     bg: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
-    headline: ["You're going", 'to lose.'],
-    sub: 'That\'s part of it. We cover the whole story — not just the podium.',
-    cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
-    cta2: { label: 'Driver Directory', to: createPageUrl('DriverDirectory') },
+    headline: ["YOU'RE GOING", 'TO LOSE.'],
+    sub: 'That\'s where everything is built.',
+    cta1: { label: 'Keep Going', to: createPageUrl('OutletHome') },
+    cta2: null,
   },
   {
     type: 'image',
     bg: 'https://images.unsplash.com/photo-PQhq3qLebmc?w=1800&q=90&fit=crop',
-    headline: ['Still', 'chasing it.'],
-    sub: 'Early mornings. Late nights. The grind has its own culture.',
-    cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
-    cta2: { label: 'Learn More', to: createPageUrl('About') },
+    headline: ['STILL', 'CHASING IT.'],
+    sub: 'Every day, every rep, every move.',
+    cta1: { label: 'Join The Movement', to: createPageUrl('ApparelHome') },
+    cta2: null,
   },
   {
     type: 'image',
     bg: 'https://images.unsplash.com/photo-BMwgfEpmFN8?w=1800&q=90&fit=crop',
-    headline: ['This is', 'HIJINX.'],
-    sub: 'Media. Motorsports. Culture. All in one place.',
-    cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },
-    cta2: { label: 'Register Now', to: createPageUrl('Registration') },
+    headline: ['THIS IS', 'HIJINX.'],
+    sub: 'For those who don\'t sit still.',
+    cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
+    cta2: { label: 'Explore Race Core', to: createPageUrl('MotorsportsHome') },
   },
 ];
 
@@ -182,13 +182,15 @@ export default function HeroSection({ stats = {} }) {
                 >
                   {slide.cta1.label} <ArrowRight className="w-3 h-3" />
                 </Link>
-                <Link
-                  to={slide.cta2.to}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
-                  style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
-                >
-                  {slide.cta2.label}
-                </Link>
+                {slide.cta2 && (
+                  <Link
+                    to={slide.cta2.to}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
+                    style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
+                  >
+                    {slide.cta2.label}
+                  </Link>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
