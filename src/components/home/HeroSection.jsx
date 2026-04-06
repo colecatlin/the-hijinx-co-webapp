@@ -8,7 +8,7 @@ import { createPageUrl } from '@/components/utils';
 const SLIDES = [
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1504707748692-419802cf939d?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1660337288537-71ae329ba2f0?w=1800&q=90&fit=crop',
     headline: ['In motion.', 'On purpose.'],
     sub: 'Built for the ones who race, grind, and never stop chasing it.',
     cta1: { label: 'Enter the Outlet', to: createPageUrl('OutletHome') },
