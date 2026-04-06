@@ -5,7 +5,7 @@ import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
 import HeroSection from '@/components/home/HeroSection';
-import CultureSection from '@/components/home/CultureSection';
+import CultureGrid from '@/components/home/CultureGrid';
 import OutletSection from '@/components/home/OutletSection';
 import ApparelSection from '@/components/home/ApparelSection';
 import EventsSection from '@/components/home/EventsSection';
@@ -40,7 +40,7 @@ export default function Home() {
         stats={hp.hero_stats}
       />
 
-      <CultureSection />
+      <CultureGrid />
 
       {/* Transition bridge: dark → editorial cream */}
       <div style={{ height: 64, background: 'linear-gradient(to bottom, #0A0A0A, #F5F0E8)', marginTop: 0 }} />
