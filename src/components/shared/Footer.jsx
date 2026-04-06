@@ -37,7 +37,7 @@ const footerLinks = [
 export default function Footer() {
   const [reportOpen, setReportOpen] = useState(false);
   return (
-    <footer style={{ background: '#F5F0E8', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+    <footer style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-8">
           {/* Brand */}
