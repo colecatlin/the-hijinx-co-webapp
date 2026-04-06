@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Cpu, Shield, Zap } from 'lucide-react';
 
 const PILLARS = [
-  { icon: Cpu,    label: 'Verified Results',   sub: 'Race data you can trust.' },
-  { icon: Shield, label: 'Real Profiles',       sub: 'Athletes, not aliases.' },
-  { icon: Zap,    label: 'Live Tracking',       sub: 'The season as it happens.' },
+  { icon: Cpu,    label: 'Verified Results',      sub: 'Race data you can trust. Published the moment it\'s official.' },
+  { icon: Shield, label: 'Real Athlete Profiles', sub: 'Every driver, team, and series — verified, not anonymous.' },
+  { icon: Zap,    label: 'Season in Real Time',   sub: 'Registration to final results. The full picture.' },
 ];
 
 export default function RaceCoreSection({ stats }) {
@@ -30,14 +30,13 @@ export default function RaceCoreSection({ stats }) {
             </div>
 
             <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-[0.92] mb-6">
-              The Engine
-              <br />
-              <span className="text-[#00FFDA]">Behind It.</span>
+              The system<br />
+              <span className="text-[#00FFDA]">powering racing.</span>
             </h2>
 
             <p className="text-white/40 text-base leading-relaxed mb-10 max-w-md">
-              Race Core is the infrastructure beneath everything. Real data. Verified results.
-              The racing world — structured, searchable, and alive.
+              INDEX46 is the data infrastructure beneath modern motorsports. Real results.
+              Verified athletes. Every series, from grassroots to national — structured, searchable, and growing.
             </p>
 
             <div className="flex flex-col gap-4 mb-10">

@@ -44,14 +44,14 @@ export default function GetInvolvedCTA() {
             {/* Left — copy */}
             <div className="flex-1 min-w-0">
               <span className="font-mono text-[9px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold block mb-3">
-                Get Involved
+                Join the Movement
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-[1.0] mb-2">
-                Your world.<br />
-                <span className="text-[#00FFDA]">Welcome in.</span>
+                Get inside.<br />
+                <span className="text-[#00FFDA]">Be part of it.</span>
               </h2>
               <p className="text-white/35 text-sm leading-relaxed max-w-xs">
-                Race, shoot, create, or follow — get inside access when you join.
+                Race, shoot, create, or follow. Access the INDEX46 Race Core, editorial network, and community — when you join.
               </p>
             </div>
 

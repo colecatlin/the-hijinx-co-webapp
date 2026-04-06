@@ -4,11 +4,11 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
-// Slide 1 = video. Slides 2+ = image-based.
+// All slides use verified motorsports imagery
 const SLIDES = [
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1800&q=90&fit=crop',
     headline: ['Built for the', 'ones who race.'],
     sub: 'Media. Motorsports. Culture. All in one place.',
     cta1: { label: 'Enter the Outlet', to: createPageUrl('OutletHome') },
@@ -16,7 +16,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1541348260-f05de38b0f68?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
     headline: ['The story of', 'motorsports.'],
     sub: 'Grassroots to national. Every race. Every driver.',
     cta1: { label: 'Read the Outlet', to: createPageUrl('OutletHome') },
@@ -24,15 +24,15 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1590650046871-92c887180603?w=1800&q=90&fit=crop',
     headline: ['Where culture', 'meets competition.'],
-    sub: 'Style, speed, and everything in between.',
+    sub: 'Built for the track. Worn everywhere else.',
     cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
     cta2: { label: 'Learn More', to: createPageUrl('About') },
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1800&q=90&fit=crop',
     headline: ['Race day lives', 'here.'],
     sub: 'Results, standings, registration — all on INDEX46.',
     cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },

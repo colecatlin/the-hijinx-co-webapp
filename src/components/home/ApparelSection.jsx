@@ -4,9 +4,9 @@ import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
 
-const APPAREL_BG = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1400&q=90&fit=crop';
+const APPAREL_BG = 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1400&q=90&fit=crop';
 const DROPS = [
-  { label: 'Race Day', tag: 'New Season', sub: 'Built for the track and everywhere else.' },
+  { label: 'Race Day', tag: 'New Drop', sub: 'Built for the track and everywhere else.' },
   { label: 'Heritage Series', tag: 'Limited', sub: 'Rooted in motorsports culture.' },
 ];
 
@@ -54,10 +54,10 @@ export default function ApparelSection({ products = [] }) {
                   HIJINX CO.
                 </p>
                 <h3 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-none mb-2">
-                  {featuredProduct?.name || 'LIFESTYLE'}
+                  {featuredProduct?.name || 'WEAR THE'}
                   <br />
                   <span style={{ color: '#E5FF00' }}>
-                    {featuredProduct ? '' : 'APPAREL'}
+                    {featuredProduct ? '' : 'CULTURE'}
                   </span>
                 </h3>
                 {featuredProduct?.short_description && (
@@ -65,11 +65,7 @@ export default function ApparelSection({ products = [] }) {
                     {featuredProduct.short_description}
                   </p>
                 )}
-                {!featuredProduct && (
-                  <p className="text-white/40 text-sm mt-3 mb-6 tracking-widest uppercase font-light">
-                    In motion. On purpose.
-                  </p>
-                )}
+
                 <div className="inline-flex items-center gap-2.5 px-6 py-3 text-xs font-black tracking-wider uppercase transition-all duration-200 group-hover:gap-4"
                   style={{ background: '#E5FF00', color: '#0A0A0A' }}>
                   <ShoppingBag className="w-3.5 h-3.5" />

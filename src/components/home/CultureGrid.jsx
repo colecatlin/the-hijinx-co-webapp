@@ -13,7 +13,7 @@ const TILES = [
   {
     id: 'action',
     src: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=900&q=90&fit=crop',
-    label: 'Motion',
+    label: 'On Track',
     accent: '#00FFDA',
     glowColor: 'rgba(0,255,218,0.28)',
     span: 'col-span-2 row-span-2',
@@ -28,7 +28,7 @@ const TILES = [
   },
   {
     id: 'crew',
-    src: 'https://images.unsplash.com/photo-1541447270539-4df1aa6d8e0e?w=700&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=700&q=90&fit=crop',
     label: 'Crew',
     accent: '#FF2D55',
     glowColor: 'rgba(255,45,85,0.28)',
