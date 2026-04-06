@@ -32,7 +32,7 @@ const SLIDES = [
   },
   {
     type: 'image',
-    bg: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1800&q=90&fit=crop',
+    bg: 'https://images.unsplash.com/photo-BMwgfEpmFN8?w=1800&q=90&fit=crop',
     headline: ['This is', 'HIJINX.'],
     sub: 'Media. Motorsports. Culture. All in one place.',
     cta1: { label: 'View Events', to: createPageUrl('EventDirectory') },
