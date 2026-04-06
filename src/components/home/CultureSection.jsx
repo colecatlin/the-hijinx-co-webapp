@@ -26,10 +26,10 @@ export default function CultureSection() {
             style={{ minHeight: 480 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1000&q=90&fit=crop"
+              src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=900&q=90&fit=crop"
               alt="Culture"
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-1000 ease-out"
-              style={{ filter: 'contrast(1.1) saturate(0.65) brightness(0.75)' }}
+              style={{ filter: 'contrast(1.15) saturate(0.5) brightness(0.65)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
@@ -65,10 +65,10 @@ export default function CultureSection() {
             style={{ minHeight: 480 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=700&q=90&fit=crop"
+              src="https://images.unsplash.com/photo-1541447270539-4df1aa6d8e0e?w=700&q=90&fit=crop"
               alt="On Track"
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-1000 ease-out"
-              style={{ filter: 'contrast(1.1) saturate(0.7) brightness(0.8)' }}
+              style={{ filter: 'contrast(1.15) saturate(0.5) brightness(0.7)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="relative h-full flex flex-col justify-end p-5" style={{ minHeight: 480 }}>
@@ -86,10 +86,10 @@ export default function CultureSection() {
               style={{ minHeight: 230 }}
             >
               <img
-                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=700&q=90&fit=crop"
-                alt="Media"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-1000 ease-out"
-                style={{ filter: 'contrast(1.1) saturate(0.65) brightness(0.75)' }}
+                src="https://images.unsplash.com/photo-1524069290683-0457abfe42c3?w=700&q=90&fit=crop"
+              alt="Media"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-1000 ease-out"
+              style={{ filter: 'contrast(1.1) saturate(0.5) brightness(0.65)' }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="relative h-full flex flex-col justify-end p-5" style={{ minHeight: 230 }}>
@@ -105,10 +105,10 @@ export default function CultureSection() {
             >
               {/* Subtle helmet/gear image */}
               <img
-                src="https://images.unsplash.com/photo-1541447270539-4df1aa6d8e0e?w=700&q=90&fit=crop"
-                alt="Gear"
-                className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-700"
-                style={{ filter: 'saturate(0)' }}
+                src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=700&q=90&fit=crop"
+              alt="Gear"
+              className="absolute inset-0 w-full h-full object-cover opacity-15 group-hover:opacity-25 transition-opacity duration-700"
+              style={{ filter: 'saturate(0)' }}
               />
               <div className="relative h-full flex flex-col justify-between p-6" style={{ minHeight: 230 }}>
                 <span className="text-[10px] font-bold tracking-[0.35em] text-white/40 uppercase">Editorial</span>
