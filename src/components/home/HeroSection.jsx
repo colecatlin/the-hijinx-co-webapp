@@ -48,6 +48,16 @@ export default function HeroSection({ stats = {} }) {
   const videoRef = useRef(null);
   const timerRef = useRef(null);
 
+  // Preload all slide images on mount
+  useEffect(() => {
+    SLIDES.forEach((slide) => {
+      if (slide.type === 'image') {
+        const img = new Image();
+        img.src = slide.bg;
+      }
+    });
+  }, []);
+
   const go = (idx) => setCurrent((idx + SLIDES.length) % SLIDES.length);
   const next = () => go(current + 1);
   const prev = () => go(current - 1);
