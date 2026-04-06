@@ -103,13 +103,10 @@ function ImageTile({ tile }) {
 export default function CultureGrid() {
   return (
     <section
-      style={{ background: 'linear-gradient(180deg, #F5F7FA 0%, #E9EEF3 100%)' }}
+      style={{ background: '#F5F0E8' }}
       className="py-20 md:py-28 overflow-hidden"
     >
-      {/* Top neon edge — separates from dark hero above */}
-      <div className="h-[2px] w-full mb-0" style={{ background: 'linear-gradient(90deg, transparent 0%, #00FFDA44 30%, #00FFDA22 70%, transparent 100%)' }} />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
         {/* Section label */}
         <div className="flex items-center gap-3 mb-10">

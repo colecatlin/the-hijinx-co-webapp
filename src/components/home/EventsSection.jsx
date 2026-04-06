@@ -39,7 +39,7 @@ export default function EventsSection() {
   const displayEvents = upcoming.length > 0 ? upcoming : events.slice(0, 6);
 
   return (
-    <section className="relative py-16 md:py-20 overflow-hidden" style={{ background: '#F5F0E8' }}>
+    <section className="relative pt-16 md:pt-20 pb-20 md:pb-28 overflow-hidden" style={{ background: '#F5F0E8' }}>
       {/* Paper grain */}
       <div className="absolute inset-0 opacity-[0.12] pointer-events-none" style={paperGrain} />
 

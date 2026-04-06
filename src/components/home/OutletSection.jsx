@@ -25,7 +25,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
   return (
     <section
-      className="pt-0 pb-16 md:pb-24 relative"
+      className="pt-10 md:pt-14 pb-16 md:pb-24 relative"
       style={{ background: '#F5F0E8' }}
     >
       {/* Paper grain overlay */}
