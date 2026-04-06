@@ -18,7 +18,6 @@ const navItems = [
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
     { name: 'Submit a Story', page: 'OutletSubmit' },
-    { name: 'Advertise', page: 'OutletAdvertising' },
   ]},
   { name: 'INDEX46', page: 'MotorsportsHome', sub: [
     { name: '— Directory —', page: null, disabled: true },
