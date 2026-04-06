@@ -12,7 +12,7 @@ const GRAIN_STYLE = {
 const TILES = [
   {
     id: 'action',
-    src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1504707748692-419802426b18?w=900&q=90&fit=crop',
     label: 'Motion',
     accent: '#00FFDA',
     glowColor: 'rgba(0,255,218,0.28)',
@@ -20,7 +20,7 @@ const TILES = [
   },
   {
     id: 'garage',
-    src: 'https://images.unsplash.com/photo-1590650046871-92c887180603?w=700&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=700&q=90&fit=crop',
     label: 'Built',
     accent: '#FF6B00',
     glowColor: 'rgba(255,107,0,0.28)',
@@ -28,7 +28,7 @@ const TILES = [
   },
   {
     id: 'crew',
-    src: 'https://images.unsplash.com/photo-1541447270539-4df1aa6d8e0e?w=700&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=700&q=90&fit=crop',
     label: 'Crew',
     accent: '#FF2D55',
     glowColor: 'rgba(255,45,85,0.28)',
@@ -36,7 +36,7 @@ const TILES = [
   },
   {
     id: 'apparel',
-    src: 'https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=700&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=700&q=90&fit=crop',
     label: 'Worn',
     accent: '#E5FF00',
     glowColor: 'rgba(229,255,0,0.28)',
@@ -44,7 +44,7 @@ const TILES = [
   },
   {
     id: 'pit',
-    src: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=700&q=90&fit=crop',
+    src: 'https://images.unsplash.com/photo-1547744152-14d985cb937f?w=700&q=90&fit=crop',
     label: 'Behind the Scenes',
     accent: '#00FFDA',
     glowColor: 'rgba(0,255,218,0.28)',
