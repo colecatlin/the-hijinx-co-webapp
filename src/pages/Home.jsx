@@ -50,15 +50,13 @@ export default function Home() {
         supportingStories={(hp.featured_stories || []).slice(1, 6)}
       />
 
-      {/* Editorial cream → dark apparel bridge */}
-      <div style={{ height: 56, background: 'linear-gradient(to bottom, #F5F0E8, #0A0A0A)' }} />
+      {/* Hard cut: editorial → apparel — intentional chapter shift */}
 
       <ApparelSection products={hp.featured_products || []} />
 
       <EventsSection />
 
-      {/* Editorial cream → dark Race Core bridge */}
-      <div style={{ height: 56, background: 'linear-gradient(to bottom, #F5F0E8, #111111)' }} />
+      {/* Clean break: events → race core */}
 
       <RaceCoreSection stats={hp.hero_stats} />
 
