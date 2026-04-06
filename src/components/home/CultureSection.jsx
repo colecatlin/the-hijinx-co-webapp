@@ -2,196 +2,193 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 
-const fadeUp = (i) => ({
-  initial: { y: 40 },
-  whileInView: { y: 0 },
-  viewport: { once: true, amount: 0 },
-  transition: { delay: i * 0.09, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+const fadeIn = (delay = 0) => ({
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.1 },
+  transition: { delay, duration: 0.65, ease: [0.16, 1, 0.3, 1] },
 });
-
-// Grain overlay shared style
-const grain = {
-  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-  backgroundSize: '128px 128px',
-};
 
 export default function CultureSection() {
   return (
-    <section className="bg-[#0A0A0A] py-16 md:py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <>
+      {/* ═══════════════════════════════════════════════
+          SECTION 1 — THE STATEMENT
+          Full-bleed dominant image with bold editorial copy
+      ════════════════════════════════════════════════ */}
+      <section className="relative bg-[#0A0A0A] overflow-hidden">
+        {/* Full-bleed background image */}
+        <div className="relative h-[70vh] min-h-[520px] w-full overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=90&fit=crop"
+            alt="Racing culture"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'contrast(1.2) saturate(0.6) brightness(0.55)' }}
+          />
+          {/* Strong vignette */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
 
-        {/* Section label */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-6 h-[2px] bg-[#00FFDA]" />
-          <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">
-            Culture
-          </span>
-        </div>
-
-        {/*
-          Asymmetric collage layout:
-          Row A: [dominant image 8col] [text card 4col, tall]
-          Row B: [text accent 5col, short] [image 4col] [image 3col, offset]
-        */}
-        <div className="grid grid-cols-12 gap-3 auto-rows-auto">
-
-          {/* ── DOMINANT IMAGE — leads the section ── */}
-          <motion.div
-            {...fadeUp(0)}
-            className="col-span-12 md:col-span-8 relative overflow-hidden group"
-            style={{ height: 480 }}
-            whileHover={{ scale: 1.01 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=90&fit=crop"
-              alt="Racing"
-              className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-1000"
-              style={{ filter: 'contrast(1.15) saturate(0.7)' }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/20 to-transparent" />
-            {/* Grain */}
-            <div className="absolute inset-0 opacity-[0.035]" style={grain} />
-
-            {/* Content pinned bottom-left */}
-            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-              <div>
-                <span className="font-mono text-[8px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold block mb-2">
-                  Competition
+          {/* Content */}
+          <div className="absolute inset-0 flex flex-col justify-end pb-16 px-6 md:px-16 max-w-7xl mx-auto left-0 right-0">
+            <motion.div {...fadeIn(0)}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-[2px] bg-[#00FFDA]" />
+                <span className="font-mono text-[10px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold">
+                  Culture
                 </span>
-                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-none">
-                  Born from the<br />garage.
-                </h2>
               </div>
-            </div>
-            <div className="absolute inset-0 border border-white/[0.04]" />
-          </motion.div>
+            </motion.div>
 
-          {/* ── TALL TEXT CARD — top right ── */}
-          <motion.div
-            {...fadeUp(1)}
-            className="col-span-12 md:col-span-4 relative overflow-hidden flex flex-col justify-between"
-            style={{
-              height: 480,
-              background: 'rgba(255,255,255,0.028)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
-          >
-            {/* Grain */}
-            <div className="absolute inset-0 opacity-[0.03]" style={grain} />
-            {/* Top accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[1px]"
-              style={{ background: 'linear-gradient(90deg, #00FFDA55 0%, transparent 70%)' }} />
+            <motion.h2
+              {...fadeIn(0.08)}
+              className="text-6xl sm:text-7xl md:text-[96px] font-black text-white leading-[0.9] tracking-tight mb-6 uppercase"
+            >
+              Born<br />
+              <span className="text-[#00FFDA]">from</span><br />
+              the garage.
+            </motion.h2>
 
-            <div className="relative p-7 flex flex-col h-full justify-between">
-              <span className="font-mono text-[9px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">
-                Identity
-              </span>
+            <motion.p
+              {...fadeIn(0.16)}
+              className="text-white/60 text-lg md:text-xl max-w-md leading-relaxed mb-8"
+            >
+              Where real racing lives. Not the highlight reel — the grit, the grind, and the people who make it happen.
+            </motion.p>
 
-              {/* Large number / editorial accent */}
-              <div className="py-6">
-                <div className="text-[7rem] font-black text-white/[0.04] leading-none select-none">46</div>
-              </div>
+            <motion.div {...fadeIn(0.22)} className="flex flex-wrap gap-4">
+              <Link
+                to={createPageUrl('OutletHome')}
+                className="inline-flex items-center gap-2 bg-[#00FFDA] text-black text-xs font-black uppercase tracking-widest px-6 py-3 hover:bg-white transition-colors"
+              >
+                Read The Outlet <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to={createPageUrl('DriverDirectory')}
+                className="inline-flex items-center gap-2 border border-white/30 text-white text-xs font-black uppercase tracking-widest px-6 py-3 hover:border-white transition-colors"
+              >
+                Driver Directory <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          </div>
 
-              <div>
-                <h3 className="text-2xl font-black text-white tracking-tight leading-tight mb-3">
-                  Built for the track.<br />Worn everywhere else.
-                </h3>
-                <p className="text-white/35 text-sm leading-relaxed">
-                  Where racing culture meets real life — on and off the grid.
-                </p>
-                <Link
-                  to={createPageUrl('ApparelHome')}
-                  className="mt-5 inline-flex items-center gap-2 text-[9px] font-bold tracking-[0.3em] text-[#00FFDA] uppercase hover:gap-3 transition-all"
-                >
-                  Shop Apparel <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-          </motion.div>
+          {/* Right-side stat */}
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 text-right hidden lg:block">
+            <div className="text-[120px] font-black text-white/[0.06] leading-none select-none tracking-tighter">46</div>
+          </div>
+        </div>
+      </section>
 
-          {/* ── BOTTOM ROW ── */}
+      {/* ═══════════════════════════════════════════════
+          SECTION 2 — THE GRID
+          Three bold panels: text + two images
+      ════════════════════════════════════════════════ */}
+      <section className="bg-[#0A0A0A] pb-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
 
-          {/* Accent text card — wide, short */}
-          <motion.div
-            {...fadeUp(2)}
-            className="col-span-12 md:col-span-5 relative overflow-hidden"
-            style={{
-              height: 200,
-              background: 'rgba(255,107,53,0.07)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,107,53,0.14)',
-            }}
-          >
-            <div className="absolute inset-0 opacity-[0.03]" style={grain} />
-            <div className="relative p-7 h-full flex flex-col justify-between">
-              <span className="font-mono text-[9px] tracking-[0.4em] text-[#FF6B35] uppercase font-bold">
-                Motorsports
-              </span>
-              <div className="flex items-end justify-between gap-4">
-                <h3 className="text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
-                  We document<br />what others overlook.
-                </h3>
+          {/* Top divider with label */}
+          <div className="flex items-center gap-4 py-10 border-t border-white/[0.06]">
+            <Zap className="w-4 h-4 text-[#FF6B35]" />
+            <span className="font-mono text-[10px] tracking-[0.5em] text-white/40 uppercase font-bold">
+              On &amp; Off The Grid
+            </span>
+            <div className="flex-1 h-[1px] bg-white/[0.06]" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+
+            {/* ── BIG TEXT PANEL ── */}
+            <motion.div
+              {...fadeIn(0)}
+              className="md:col-span-5 relative overflow-hidden flex flex-col justify-between"
+              style={{
+                minHeight: 420,
+                background: 'linear-gradient(135deg, rgba(255,107,53,0.12) 0%, rgba(0,0,0,0) 60%)',
+                border: '1px solid rgba(255,107,53,0.2)',
+              }}
+            >
+              <div className="p-8 md:p-10 flex flex-col h-full justify-between">
+                <div>
+                  <span className="font-mono text-[9px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold block mb-6">
+                    Motorsports
+                  </span>
+                  <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight uppercase mb-4">
+                    We document<br />what others<br />overlook.
+                  </h3>
+                  <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+                    Grassroots to professional. Every class, every series, every story worth telling.
+                  </p>
+                </div>
                 <Link
                   to={createPageUrl('OutletHome')}
-                  className="flex-shrink-0 flex items-center gap-2 text-[9px] font-bold text-[#FF6B35] uppercase tracking-wider hover:gap-3 transition-all"
+                  className="mt-8 self-start inline-flex items-center gap-2 text-[#FF6B35] text-xs font-black uppercase tracking-widest border border-[#FF6B35]/40 px-5 py-3 hover:bg-[#FF6B35] hover:text-black transition-all"
                 >
-                  Explore <ArrowRight className="w-3 h-3" />
+                  Explore Stories <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Mid image — human element: crew/people moment */}
-          <motion.div
-            {...fadeUp(3)}
-            className="col-span-6 md:col-span-4 relative overflow-hidden group"
-            style={{ height: 200 }}
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=700&q=90&fit=crop"
-                alt="Crew"
-                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700"
-                style={{ filter: 'contrast(1.2) saturate(0.7) brightness(0.82)' }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-4 left-4">
-              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Crew</span>
-            </div>
-            <div className="absolute inset-0 border border-white/[0.04]" />
-          </motion.div>
+            {/* ── IMAGE: CREW ── */}
+            <motion.div
+              {...fadeIn(0.08)}
+              className="md:col-span-4 relative overflow-hidden group"
+              style={{ minHeight: 420 }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=90&fit=crop"
+                alt="Crew at the track"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                style={{ filter: 'contrast(1.15) saturate(0.65) brightness(0.8)' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6">
+                <span className="font-mono text-[8px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold block mb-2">Crew</span>
+                <p className="text-white text-lg font-black uppercase tracking-tight leading-tight">The ones who<br />make it run.</p>
+              </div>
+              <div className="absolute inset-0 border border-white/[0.05]" />
+            </motion.div>
 
-          {/* Small image — offset */}
-          <motion.div
-            {...fadeUp(4)}
-            className="col-span-6 md:col-span-3 relative overflow-hidden group"
-            style={{ height: 200, marginTop: 0 }}
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&q=90&fit=crop"
-                alt="Garage"
-                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                style={{ filter: 'contrast(1.2) saturate(0.7) brightness(0.88)' }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-4 left-4">
-              <span className="font-mono text-[8px] tracking-[0.35em] text-white/70 uppercase">Garage</span>
-            </div>
-            <div className="absolute inset-0 border border-white/[0.04]" />
-          </motion.div>
+            {/* ── IMAGE: GARAGE + APPAREL CTA ── */}
+            <motion.div
+              {...fadeIn(0.16)}
+              className="md:col-span-3 relative overflow-hidden group flex flex-col gap-3"
+            >
+              {/* Image */}
+              <div className="relative overflow-hidden flex-1" style={{ minHeight: 260 }}>
+                <img
+                  src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&q=90&fit=crop"
+                  alt="Garage"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  style={{ filter: 'contrast(1.2) saturate(0.6) brightness(0.75)' }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-5 left-5">
+                  <span className="font-mono text-[8px] tracking-[0.4em] text-white/60 uppercase font-bold">Garage</span>
+                </div>
+                <div className="absolute inset-0 border border-white/[0.05]" />
+              </div>
 
+              {/* Apparel CTA card */}
+              <div
+                className="p-6 flex flex-col gap-3"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold">Apparel</span>
+                <p className="text-white text-sm font-bold leading-tight">Built for the track. Worn everywhere else.</p>
+                <Link
+                  to={createPageUrl('ApparelHome')}
+                  className="inline-flex items-center gap-1.5 text-[#00FFDA] text-[9px] font-black uppercase tracking-widest hover:gap-3 transition-all"
+                >
+                  Shop Now <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
