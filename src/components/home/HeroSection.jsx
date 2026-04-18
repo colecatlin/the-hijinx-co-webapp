@@ -6,6 +6,15 @@ import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+// Smart link: external URLs open in a new tab, internal use React Router
+function CtaLink({ to, className, style, children }) {
+  const isExternal = to && (to.startsWith('http://') || to.startsWith('https://'));
+  if (isExternal) {
+    return <a href={to} target="_blank" rel="noopener noreferrer" className={className} style={style}>{children}</a>;
+  }
+  return <Link to={to} className={className} style={style}>{children}</Link>;
+}
+
 // Fallback slides if no DB slides exist yet
 const FALLBACK_SLIDES = [
   {
@@ -208,22 +217,22 @@ export default function HeroSection({ stats = {} }) {
               {(slide.cta1 || slide.cta2) && (
                 <div className="flex flex-wrap gap-3">
                   {slide.cta1 && (
-                    <Link
+                    <CtaLink
                       to={slide.cta1.to}
                       className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
                       style={{ borderRadius: 2 }}
                     >
                       {slide.cta1.label} <ArrowRight className="w-3 h-3" />
-                    </Link>
+                    </CtaLink>
                   )}
                   {slide.cta2 && (
-                    <Link
+                    <CtaLink
                       to={slide.cta2.to}
                       className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
                       style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
                     >
                       {slide.cta2.label}
-                    </Link>
+                    </CtaLink>
                   )}
                 </div>
               )}
