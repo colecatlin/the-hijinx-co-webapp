@@ -219,6 +219,67 @@ function SlideRow({ slide, isFirst, isLast, isEditing, onEdit, onDelete, onMoveU
   );
 }
 
+const INTERNAL_PAGES = [
+  { label: 'Home', path: '/Home' },
+  { label: 'The Outlet', path: '/OutletHome' },
+  { label: 'Submit a Story', path: '/OutletSubmit' },
+  { label: 'INDEX46 / Motorsports', path: '/MotorsportsHome' },
+  { label: 'Driver Directory', path: '/DriverDirectory' },
+  { label: 'Team Directory', path: '/TeamDirectory' },
+  { label: 'Track Directory', path: '/TrackDirectory' },
+  { label: 'Series', path: '/SeriesHome' },
+  { label: 'Events', path: '/EventDirectory' },
+  { label: 'Registration', path: '/Registration' },
+  { label: 'Media Home', path: '/MediaHome' },
+  { label: 'Media Portal', path: '/MediaPortal' },
+  { label: 'Apparel', path: '/ApparelHome' },
+  { label: 'Creative Services', path: '/CreativeServices' },
+  { label: 'Tech', path: '/TechHome' },
+  { label: 'Learning', path: '/Learning' },
+  { label: 'Hospitality', path: '/Hospitality' },
+  { label: 'Food & Bev', path: '/FoodBeverage' },
+  { label: 'About', path: '/About' },
+  { label: 'Contact', path: '/Contact' },
+];
+
+function CtaUrlPicker({ value, onChange, label }) {
+  const isExternal = value && (value.startsWith('http://') || value.startsWith('https://'));
+  const isInternal = value && value.startsWith('/') && INTERNAL_PAGES.some(p => p.path === value);
+  const [mode, setMode] = React.useState(isExternal ? 'external' : 'page');
+
+  return (
+    <div className="space-y-1">
+      <Label>{label}</Label>
+      <div className="flex gap-2 mb-2">
+        {['page', 'external'].map(m => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => { setMode(m); onChange(''); }}
+            className={`px-3 py-1 text-xs font-medium rounded border transition-all ${mode === m ? 'bg-[#232323] text-white border-[#232323]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+          >
+            {m === 'page' ? 'Internal Page' : 'External URL'}
+          </button>
+        ))}
+      </div>
+      {mode === 'page' ? (
+        <select
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
+        >
+          <option value="">— Select a page —</option>
+          {INTERNAL_PAGES.map(p => (
+            <option key={p.path} value={p.path}>{p.label}</option>
+          ))}
+        </select>
+      ) : (
+        <Input value={value || ''} onChange={e => onChange(e.target.value)} placeholder="https://example.com" />
+      )}
+    </div>
+  );
+}
+
 function SlideForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel, onFileUpload, onCropClick }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
@@ -301,22 +362,20 @@ function SlideForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
       </div>
 
       {/* CTAs */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label>Primary CTA Label</Label>
-          <Input value={form.cta1_label} onChange={e => set('cta1_label', e.target.value)} placeholder="Enter HIJINX" />
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4 items-end">
+          <div className="space-y-1">
+            <Label>Primary CTA Label</Label>
+            <Input value={form.cta1_label} onChange={e => set('cta1_label', e.target.value)} placeholder="Enter HIJINX" />
+          </div>
+          <CtaUrlPicker value={form.cta1_url} onChange={val => set('cta1_url', val)} label="Primary CTA URL" />
         </div>
-        <div className="space-y-1">
-          <Label>Primary CTA URL</Label>
-          <Input value={form.cta1_url} onChange={e => set('cta1_url', e.target.value)} placeholder="/OutletHome" />
-        </div>
-        <div className="space-y-1">
-          <Label>Secondary CTA Label</Label>
-          <Input value={form.cta2_label} onChange={e => set('cta2_label', e.target.value)} placeholder="Optional" />
-        </div>
-        <div className="space-y-1">
-          <Label>Secondary CTA URL</Label>
-          <Input value={form.cta2_url} onChange={e => set('cta2_url', e.target.value)} placeholder="/MotorsportsHome" />
+        <div className="grid grid-cols-2 gap-4 items-end">
+          <div className="space-y-1">
+            <Label>Secondary CTA Label <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Input value={form.cta2_label} onChange={e => set('cta2_label', e.target.value)} placeholder="Optional" />
+          </div>
+          <CtaUrlPicker value={form.cta2_url} onChange={val => set('cta2_url', val)} label="Secondary CTA URL" />
         </div>
       </div>
 
