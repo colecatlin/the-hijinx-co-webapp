@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import ImageCropModal from '@/components/shared/ImageCropModal';
 import {
   Plus, Pencil, Trash2, Loader2, Upload, ChevronUp, ChevronDown,
-  ImageIcon, X, Check
+  ImageIcon, X, Check, Crop
 } from 'lucide-react';
 
 const EMPTY_SLIDE = {
@@ -29,6 +30,8 @@ export default function HeroSlideManagement() {
   const [editingId, setEditingId] = useState(null); // null = none, 'new' = new slide
   const [form, setForm] = useState(EMPTY_SLIDE);
   const [uploading, setUploading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropImageUrl, setCropImageUrl] = useState(null);
 
   const { data: slides = [], isLoading } = useQuery({
     queryKey: ['heroSlides'],
@@ -85,10 +88,23 @@ export default function HeroSlideManagement() {
   };
 
   const handleFileUpload = async (file) => {
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setForm(f => ({ ...f, background_url: file_url }));
-    setUploading(false);
+    // For images, open crop modal. For videos, upload directly.
+    if (file.type.startsWith('image/')) {
+      const objectUrl = URL.createObjectURL(file);
+      setCropImageUrl(objectUrl);
+      setCropOpen(true);
+    } else {
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm(f => ({ ...f, background_url: file_url }));
+      setUploading(false);
+    }
+  };
+
+  const handleCropSave = (croppedUrl) => {
+    setForm(f => ({ ...f, background_url: croppedUrl }));
+    if (cropImageUrl) URL.revokeObjectURL(cropImageUrl);
+    setCropImageUrl(null);
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -120,8 +136,17 @@ export default function HeroSlideManagement() {
           onSave={handleSave}
           onCancel={handleCancel}
           onFileUpload={handleFileUpload}
+          onCropClick={() => setCropOpen(true)}
         />
       )}
+
+      <ImageCropModal
+        open={cropOpen}
+        onClose={() => { setCropOpen(false); if (cropImageUrl) { URL.revokeObjectURL(cropImageUrl); setCropImageUrl(null); } }}
+        imageUrl={cropImageUrl || form.background_url}
+        onSave={handleCropSave}
+        aspectRatio={16 / 9}
+      />
 
       {/* Slide List */}
       {isLoading ? (
@@ -194,7 +219,7 @@ function SlideRow({ slide, isFirst, isLast, isEditing, onEdit, onDelete, onMoveU
   );
 }
 
-function SlideForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel, onFileUpload }) {
+function SlideForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel, onFileUpload, onCropClick }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   return (
@@ -221,11 +246,19 @@ function SlideForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
 
         {/* Preview */}
         {form.background_url && (
-          <div className="w-full h-40 bg-gray-200 rounded overflow-hidden">
+          <div className="relative w-full h-40 bg-gray-200 rounded overflow-hidden group">
             {form.media_type === 'video' ? (
               <video src={form.background_url} className="w-full h-full object-cover" muted />
             ) : (
-              <img src={form.background_url} alt="Preview" className="w-full h-full object-cover" />
+              <>
+                <img src={form.background_url} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  onClick={onCropClick}
+                  className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm font-medium"
+                >
+                  <Crop className="w-4 h-4" /> Crop & Adjust
+                </button>
+              </>
             )}
           </div>
         )}
