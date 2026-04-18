@@ -246,25 +246,26 @@ function CtaUrlPicker({ value, onChange, label }) {
   const getMode = (v) => (v && (v.startsWith('http://') || v.startsWith('https://'))) ? 'external' : 'page';
   const [mode, setMode] = React.useState(() => getMode(value));
 
-  // Sync mode when value changes externally (e.g. loading an existing slide)
   React.useEffect(() => {
     setMode(getMode(value));
   }, [value]);
 
   return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <div className="flex gap-2 mb-2">
-        {['page', 'external'].map(m => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => { setMode(m); onChange(''); }}
-            className={`px-3 py-1 text-xs font-medium rounded border transition-all ${mode === m ? 'bg-[#232323] text-white border-[#232323]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-          >
-            {m === 'page' ? 'Internal Page' : 'External URL'}
-          </button>
-        ))}
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs text-gray-500">{label}</Label>
+        <div className="flex items-center bg-gray-100 rounded-md p-0.5 text-xs">
+          {['page', 'external'].map(m => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); onChange(''); }}
+              className={`px-2.5 py-1 rounded font-medium transition-all ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              {m === 'page' ? 'Internal' : 'External'}
+            </button>
+          ))}
+        </div>
       </div>
       {mode === 'page' ? (
         <select
