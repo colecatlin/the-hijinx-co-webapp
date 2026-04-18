@@ -166,13 +166,13 @@ export default function HeroSection({ stats = {} }) {
       {/* Content — glass card */}
       <div className="relative z-10 h-full flex items-center pb-8" style={{ paddingTop: '3rem' }}>
         <div className="w-full max-w-7xl mx-auto px-6">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="max-w-2xl"
               style={{
                 background: 'rgba(10,10,10,0.45)',
