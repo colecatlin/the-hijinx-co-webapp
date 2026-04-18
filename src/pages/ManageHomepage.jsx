@@ -7,9 +7,8 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Upload, ImageIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
-import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
 import HeroSlideManagement from '@/components/management/HeroSlideManagement';
 
 const SOCIAL_FIELDS = [
@@ -24,45 +23,14 @@ const SOCIAL_FIELDS = [
   { key: 'social_discord_url', label: 'Discord', placeholder: 'https://discord.gg/hijinxco' },
 ];
 
-const SECTIONS = [
-  { key: 'hero_bg', label: 'Homepage Hero Background' },
-  { key: 'apparel_bg', label: 'Apparel Section Background' },
-];
-
 export default function ManageHomepage() {
   const queryClient = useQueryClient();
-  const [uploading, setUploading] = useState({});
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('hero');
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ['homepageSettings'],
     queryFn: () => base44.entities.HomepageSettings.list(),
   });
-
-  const upsertMutation = useMutation({
-    mutationFn: async ({ key, label, image_url }) => {
-      const existing = settings.find(s => s.key === key);
-      if (existing) {
-        return base44.entities.HomepageSettings.update(existing.id, { image_url });
-      } else {
-        return base44.entities.HomepageSettings.create({ key, label, image_url });
-      }
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['homepageSettings'] }),
-  });
-
-  const getSetting = (key) => settings.find(s => s.key === key);
-
-  const handleFileUpload = async (key, label, file) => {
-    setUploading(u => ({ ...u, [key]: true }));
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    await upsertMutation.mutateAsync({ key, label, image_url: file_url });
-    setUploading(u => ({ ...u, [key]: false }));
-  };
-
-  const handleUrlSave = async (key, label, url) => {
-    await upsertMutation.mutateAsync({ key, label, image_url: url });
-  };
 
   if (isLoading) {
     return (
@@ -76,48 +44,16 @@ export default function ManageHomepage() {
 
   return (
     <ManagementLayout currentPage="ManageHomepage">
-      <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
+      <ManagementShell title="Homepage" subtitle="Manage hero slides and platform social links" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="hero">Hero</TabsTrigger>
-            <TabsTrigger value="editorial">Editorial</TabsTrigger>
-            <TabsTrigger value="data">Images</TabsTrigger>
             <TabsTrigger value="socials">Socials</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Sections Configured</p>
-              <p className="text-2xl font-bold text-gray-900">{settings.length}</p>
-            </div>
-            <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
-          </TabsContent>
-
           <TabsContent value="hero" className="space-y-6">
             <HeroSlideManagement />
-          </TabsContent>
-
-          <TabsContent value="editorial" className="space-y-6">
-            <HomepageEditorialSettings />
-          </TabsContent>
-
-          <TabsContent value="data" className="space-y-8">
-            {SECTIONS.map(({ key, label }) => {
-              const setting = getSetting(key);
-              return (
-                <SectionEditor
-                  key={key}
-                  sectionKey={key}
-                  label={label}
-                  currentUrl={setting?.image_url || ''}
-                  uploading={!!uploading[key]}
-                  onFileUpload={(file) => handleFileUpload(key, label, file)}
-                  onUrlSave={(url) => handleUrlSave(key, label, url)}
-                />
-              );
-            })}
           </TabsContent>
 
           <TabsContent value="socials" className="space-y-4">
@@ -180,64 +116,6 @@ function SocialsEditor({ settings, queryClient }) {
         {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
         {saved ? 'Saved!' : 'Save Social Links'}
       </Button>
-    </div>
-  );
-}
-
-function SectionEditor({ label, currentUrl, uploading, onFileUpload, onUrlSave }) {
-  const [urlInput, setUrlInput] = useState(currentUrl);
-
-  React.useEffect(() => {
-    setUrlInput(currentUrl);
-  }, [currentUrl]);
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-5">
-      <h2 className="text-lg font-bold">{label}</h2>
-
-      <div className="w-full h-48 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
-        {currentUrl ? (
-          <img src={currentUrl} alt="Preview" className="w-full h-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center gap-2 text-gray-400">
-            <ImageIcon className="w-8 h-8" />
-            <span className="text-sm">No image set</span>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <Label>Upload Image</Label>
-        <label className="flex items-center gap-2 cursor-pointer border border-dashed border-gray-300 rounded px-4 py-3 hover:border-gray-500 transition-colors">
-          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-gray-500" />}
-          <span className="text-sm text-gray-600">{uploading ? 'Uploading...' : 'Choose a file to upload'}</span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => e.target.files?.[0] && onFileUpload(e.target.files[0])}
-          />
-        </label>
-      </div>
-
-      <div className="space-y-1">
-        <Label>Or paste image URL</Label>
-        <div className="flex gap-2">
-          <Input
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://..."
-          />
-          <Button
-            onClick={() => onUrlSave(urlInput)}
-            disabled={!urlInput || urlInput === currentUrl}
-            className="bg-[#232323] text-white shrink-0"
-          >
-            Save
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
