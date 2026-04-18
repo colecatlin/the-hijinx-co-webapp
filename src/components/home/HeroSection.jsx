@@ -3,40 +3,43 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
-// All slides use verified motorsports imagery
-const SLIDES = [
+// Fallback slides if no DB slides exist yet
+const FALLBACK_SLIDES = [
   {
-    type: 'image',
-    bg: 'https://images.unsplash.com/photo-1660337288537-71ae329ba2f0?w=1800&q=90&fit=crop',
-    headline: ['IN MOTION.', 'ON PURPOSE.'],
-    sub: 'Not just moving, moving with intent.',
-    cta1: { label: 'Enter HIJINX', to: createPageUrl('OutletHome') },
-    cta2: null,
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1660337288537-71ae329ba2f0?w=1800&q=90&fit=crop',
+    headline_line1: 'IN MOTION.',
+    headline_line2: 'ON PURPOSE.',
+    subtext: 'Not just moving, moving with intent.',
+    cta1_label: 'Enter HIJINX',
+    cta1_url: '/OutletHome',
+    cta2_label: null,
+    cta2_url: null,
   },
   {
-    type: 'image',
-    bg: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
-    headline: ["YOU'RE GOING", 'TO LOSE.'],
-    sub: 'That\'s where everything is built.',
-    cta1: { label: 'Keep Going', to: createPageUrl('OutletHome') },
-    cta2: null,
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
+    headline_line1: "YOU'RE GOING",
+    headline_line2: 'TO LOSE.',
+    subtext: "That's where everything is built.",
+    cta1_label: 'Keep Going',
+    cta1_url: '/OutletHome',
+    cta2_label: null,
+    cta2_url: null,
   },
   {
-    type: 'image',
-    bg: 'https://images.unsplash.com/photo-PQhq3qLebmc?w=1800&q=90&fit=crop',
-    headline: ['STILL', 'CHASING IT.'],
-    sub: 'Every day, every rep, every move.',
-    cta1: { label: 'Join The Movement', to: createPageUrl('ApparelHome') },
-    cta2: null,
-  },
-  {
-    type: 'image',
-    bg: 'https://images.unsplash.com/photo-BMwgfEpmFN8?w=1800&q=90&fit=crop',
-    headline: ['THIS IS', 'HIJINX.'],
-    sub: 'For those who don\'t sit still.',
-    cta1: { label: 'Shop Apparel', to: createPageUrl('ApparelHome') },
-    cta2: { label: 'Explore Race Core', to: createPageUrl('MotorsportsHome') },
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1558981852-426c349548ab?w=1800&q=90&fit=crop',
+    headline_line1: 'THIS IS',
+    headline_line2: 'HIJINX.',
+    subtext: "For those who don't sit still.",
+    cta1_label: 'Shop Apparel',
+    cta1_url: '/ApparelHome',
+    cta2_label: 'Explore Race Core',
+    cta2_url: '/MotorsportsHome',
   },
 ];
 
@@ -48,15 +51,23 @@ export default function HeroSection({ stats = {} }) {
   const videoRef = useRef(null);
   const timerRef = useRef(null);
 
+  const { data: dbSlides = [] } = useQuery({
+    queryKey: ['heroSlides'],
+    queryFn: () => base44.entities.HeroSlide.filter({ is_active: true }, 'sort_order'),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const SLIDES = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
+
   // Preload all slide images on mount
   useEffect(() => {
     SLIDES.forEach((slide) => {
-      if (slide.type === 'image') {
+      if ((slide.media_type || slide.type) === 'image' && (slide.background_url || slide.bg)) {
         const img = new Image();
-        img.src = slide.bg;
+        img.src = slide.background_url || slide.bg;
       }
     });
-  }, []);
+  }, [SLIDES.length]);
 
   const go = (idx) => setCurrent((idx + SLIDES.length) % SLIDES.length);
   const next = () => go(current + 1);
@@ -75,7 +86,17 @@ export default function HeroSection({ stats = {} }) {
     }
   }, [current]);
 
-  const slide = SLIDES[current];
+  const rawSlide = SLIDES[current] || SLIDES[0];
+  // Normalize DB slide shape to match render expectations
+  const slide = {
+    type: rawSlide.media_type || rawSlide.type || 'image',
+    bg: rawSlide.background_url || rawSlide.bg || '',
+    videoSrc: rawSlide.background_url || rawSlide.videoSrc || '',
+    headline: [rawSlide.headline_line1 || rawSlide.headline?.[0] || '', rawSlide.headline_line2 || rawSlide.headline?.[1] || ''].filter(Boolean),
+    sub: rawSlide.subtext || rawSlide.sub || '',
+    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : rawSlide.cta1,
+    cta2: rawSlide.cta2_label ? { label: rawSlide.cta2_label, to: rawSlide.cta2_url || '/' } : (rawSlide.cta2 || null),
+  };
 
   return (
     <section

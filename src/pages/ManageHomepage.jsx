@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Upload, ImageIcon } from 'lucide-react';
 import ActivityTab from '@/components/management/ActivityTab';
 import HomepageEditorialSettings from '@/components/management/HomepageEditorialSettings';
+import HeroSlideManagement from '@/components/management/HeroSlideManagement';
 
 const SOCIAL_FIELDS = [
   { key: 'social_instagram_url', label: 'Instagram', placeholder: 'https://instagram.com/hijinxco' },
@@ -77,8 +78,9 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage background images and visuals for homepage sections" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="editorial">Editorial</TabsTrigger>
             <TabsTrigger value="data">Images</TabsTrigger>
             <TabsTrigger value="socials">Socials</TabsTrigger>
@@ -91,6 +93,10 @@ export default function ManageHomepage() {
               <p className="text-2xl font-bold text-gray-900">{settings.length}</p>
             </div>
             <p className="text-sm text-gray-600">Manage homepage background images and visuals across {SECTIONS.length} sections.</p>
+          </TabsContent>
+
+          <TabsContent value="hero" className="space-y-6">
+            <HeroSlideManagement />
           </TabsContent>
 
           <TabsContent value="editorial" className="space-y-6">
