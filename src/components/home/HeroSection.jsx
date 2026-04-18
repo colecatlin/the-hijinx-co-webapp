@@ -94,7 +94,7 @@ export default function HeroSection({ stats = {} }) {
     videoSrc: rawSlide.background_url || rawSlide.videoSrc || '',
     headline: [rawSlide.headline_line1 || rawSlide.headline?.[0] || '', rawSlide.headline_line2 || rawSlide.headline?.[1] || ''].filter(Boolean),
     sub: rawSlide.subtext || rawSlide.sub || '',
-    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : rawSlide.cta1,
+    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : (rawSlide.cta1 || { label: 'Learn More', to: '/' }),
     cta2: rawSlide.cta2_label ? { label: rawSlide.cta2_label, to: rawSlide.cta2_url || '/' } : (rawSlide.cta2 || null),
   };
 
