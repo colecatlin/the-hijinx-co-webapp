@@ -52,7 +52,7 @@ const FALLBACK_SLIDES = [
   },
 ];
 
-const INTERVAL = 6000;
+const INTERVAL = 4000;
 
 export default function HeroSection({ stats = {} }) {
   const [current, setCurrent] = useState(0);
@@ -84,9 +84,9 @@ export default function HeroSection({ stats = {} }) {
 
   useEffect(() => {
     if (paused) return;
-    timerRef.current = setTimeout(next, INTERVAL);
-    return () => clearTimeout(timerRef.current);
-  }, [current, paused]);
+    timerRef.current = setInterval(next, INTERVAL);
+    return () => clearInterval(timerRef.current);
+  }, [paused, SLIDES.length]);
 
   // Ensure video plays when on slide 0
   useEffect(() => {
