@@ -7,6 +7,8 @@ import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
+const MAX_OUTPUT_PX = 1920;
+
 async function getCroppedImg(imageSrc, croppedAreaPixels) {
   const image = new Image();
   image.crossOrigin = 'anonymous';
@@ -16,8 +18,10 @@ async function getCroppedImg(imageSrc, croppedAreaPixels) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
+      // Cap output size to MAX_OUTPUT_PX on the longest side
+      const scale = Math.min(1, MAX_OUTPUT_PX / Math.max(croppedAreaPixels.width, croppedAreaPixels.height));
+      canvas.width = Math.round(croppedAreaPixels.width * scale);
+      canvas.height = Math.round(croppedAreaPixels.height * scale);
 
       ctx.drawImage(
         image,
@@ -27,11 +31,11 @@ async function getCroppedImg(imageSrc, croppedAreaPixels) {
         croppedAreaPixels.height,
         0,
         0,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height
+        canvas.width,
+        canvas.height
       );
 
-      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95);
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.82);
     };
     image.onerror = reject;
     image.src = imageSrc;
