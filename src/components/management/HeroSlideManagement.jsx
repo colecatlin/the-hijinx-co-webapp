@@ -243,9 +243,13 @@ const INTERNAL_PAGES = [
 ];
 
 function CtaUrlPicker({ value, onChange, label }) {
-  const isExternal = value && (value.startsWith('http://') || value.startsWith('https://'));
-  const isInternal = value && value.startsWith('/') && INTERNAL_PAGES.some(p => p.path === value);
-  const [mode, setMode] = React.useState(isExternal ? 'external' : 'page');
+  const getMode = (v) => (v && (v.startsWith('http://') || v.startsWith('https://'))) ? 'external' : 'page';
+  const [mode, setMode] = React.useState(() => getMode(value));
+
+  // Sync mode when value changes externally (e.g. loading an existing slide)
+  React.useEffect(() => {
+    setMode(getMode(value));
+  }, [value]);
 
   return (
     <div className="space-y-1">
