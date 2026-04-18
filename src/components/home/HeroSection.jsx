@@ -94,7 +94,7 @@ export default function HeroSection({ stats = {} }) {
     videoSrc: rawSlide.background_url || rawSlide.videoSrc || '',
     headline: [rawSlide.headline_line1 || rawSlide.headline?.[0] || '', rawSlide.headline_line2 || rawSlide.headline?.[1] || ''].filter(Boolean),
     sub: rawSlide.subtext || rawSlide.sub || '',
-    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : (rawSlide.cta1 || { label: 'Learn More', to: '/' }),
+    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : (rawSlide.cta1 || null),
     cta2: rawSlide.cta2_label ? { label: rawSlide.cta2_label, to: rawSlide.cta2_url || '/' } : (rawSlide.cta2 || null),
   };
 
@@ -205,24 +205,28 @@ export default function HeroSection({ stats = {} }) {
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  to={slide.cta1.to}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
-                  style={{ borderRadius: 2 }}
-                >
-                  {slide.cta1.label} <ArrowRight className="w-3 h-3" />
-                </Link>
-                {slide.cta2 && (
-                  <Link
-                    to={slide.cta2.to}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
-                    style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
-                  >
-                    {slide.cta2.label}
-                  </Link>
-                )}
-              </div>
+              {(slide.cta1 || slide.cta2) && (
+                <div className="flex flex-wrap gap-3">
+                  {slide.cta1 && (
+                    <Link
+                      to={slide.cta1.to}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
+                      style={{ borderRadius: 2 }}
+                    >
+                      {slide.cta1.label} <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
+                  {slide.cta2 && (
+                    <Link
+                      to={slide.cta2.to}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
+                      style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
+                    >
+                      {slide.cta2.label}
+                    </Link>
+                  )}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
