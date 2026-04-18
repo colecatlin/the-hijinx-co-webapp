@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import ActivityTab from '@/components/management/ActivityTab';
 import HeroSlideManagement from '@/components/management/HeroSlideManagement';
 
 const SOCIAL_FIELDS = [
@@ -46,10 +45,9 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage hero slides and platform social links" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="socials">Socials</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
           <TabsContent value="hero" className="space-y-6">
@@ -58,10 +56,6 @@ export default function ManageHomepage() {
 
           <TabsContent value="socials" className="space-y-4">
             <SocialsEditor settings={settings} queryClient={queryClient} />
-          </TabsContent>
-
-          <TabsContent value="activity">
-            <ActivityTab entityName="HomepageSettings" />
           </TabsContent>
         </Tabs>
       </ManagementShell>
