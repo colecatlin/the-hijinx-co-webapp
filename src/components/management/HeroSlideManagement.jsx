@@ -88,10 +88,10 @@ export default function HeroSlideManagement() {
   };
 
   const handleFileUpload = async (file) => {
-    // For images, open crop modal. For videos, upload directly.
+    // For images, pre-resize before opening crop modal to avoid huge decodes
     if (file.type.startsWith('image/')) {
-      const objectUrl = URL.createObjectURL(file);
-      setCropImageUrl(objectUrl);
+      const resizedUrl = await resizeForCropper(file);
+      setCropImageUrl(resizedUrl);
       setCropOpen(true);
     } else {
       setUploading(true);
@@ -100,6 +100,22 @@ export default function HeroSlideManagement() {
       setUploading(false);
     }
   };
+
+  // Resize image to max 2400px before feeding into the cropper for fast load
+  const resizeForCropper = (file) => new Promise((resolve) => {
+    const MAX = 2400;
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
+  });
 
   const handleCropSave = (croppedUrl) => {
     setForm(f => ({ ...f, background_url: croppedUrl }));
