@@ -31,13 +31,24 @@ function TileWrapper({ linkUrl, children, className, style, onMouseEnter, onMous
   return <Link to={linkUrl} {...props}>{children}</Link>;
 }
 
+function getInitials(title) {
+  return (title || '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4);
+}
+
 function ImageTile({ block, span, accentIdx }) {
   const { accent, glowColor } = ACCENTS[accentIdx % ACCENTS.length];
+  const hasImage = !!block.image_url;
+  const hasCta = !!block.link_label;
+
   return (
     <TileWrapper
       linkUrl={block.link_url}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group ${span}`}
-      style={{ minHeight: 200, transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease' }}
+      style={{
+        minHeight: 200,
+        background: hasImage ? undefined : '#1A1A1A',
+        transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
+      }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-3px)';
         e.currentTarget.style.boxShadow = `0 16px 48px ${glowColor}, 0 2px 12px rgba(0,0,0,0.12)`;
@@ -47,16 +58,29 @@ function ImageTile({ block, span, accentIdx }) {
         e.currentTarget.style.boxShadow = 'none';
       }}
     >
-      {block.image_url && (
+      {hasImage ? (
         <img
           src={block.image_url}
           alt={block.label || block.title}
           className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]"
           style={{ filter: 'contrast(1.18) saturate(0.45) brightness(0.65)' }}
         />
+      ) : (
+        /* No image — show large initials centered */
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className="font-black tracking-tight select-none"
+            style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}
+          >
+            {getInitials(block.title)}
+          </span>
+        </div>
       )}
+
       <div className="absolute inset-0 pointer-events-none opacity-60" style={GRAIN_STYLE} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/15 to-transparent" />
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/15 to-transparent" />}
+
+      {/* Hover accent bar */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: accent, boxShadow: `0 0 16px ${accent}CC` }}
@@ -65,12 +89,32 @@ function ImageTile({ block, span, accentIdx }) {
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
         style={{ background: `radial-gradient(ellipse at 50% 100%, ${accent}22 0%, transparent 65%)` }}
       />
-      <span
-        className="absolute bottom-4 left-4 text-[9px] font-bold tracking-[0.4em] uppercase transition-colors duration-300"
-        style={{ color: 'rgba(255,255,255,0.3)' }}
-      >
-        {block.label || block.title}
-      </span>
+
+      {/* If title + CTA: title top-left, CTA bottom-left */}
+      {hasCta ? (
+        <>
+          <span
+            className="absolute top-4 left-4 text-[9px] font-bold tracking-[0.4em] uppercase"
+            style={{ color: 'rgba(255,255,255,0.5)' }}
+          >
+            {block.label || block.title}
+          </span>
+          <span
+            className="absolute bottom-4 left-4 text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-colors duration-300"
+            style={{ color: accent }}
+          >
+            {block.link_label} <ArrowRight className="w-3 h-3" />
+          </span>
+        </>
+      ) : (
+        /* No CTA — just label at bottom-left */
+        <span
+          className="absolute bottom-4 left-4 text-[9px] font-bold tracking-[0.4em] uppercase transition-colors duration-300"
+          style={{ color: 'rgba(255,255,255,0.3)' }}
+        >
+          {block.label || block.title}
+        </span>
+      )}
     </TileWrapper>
   );
 }
