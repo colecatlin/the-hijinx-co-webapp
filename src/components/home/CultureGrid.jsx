@@ -131,12 +131,15 @@ export default function CultureGrid() {
   const cultureCard = dbBlocks[5];
   const editorialCard = dbBlocks[6];
 
-  // Tile spans by position index
+  // Tile spans by position index — explicit grid placement for a clean 4-col layout:
+  // Row1: [On Track x2] [Built x1] [Culture x1]
+  // Row2: [On Track x2] [Crew x1]  [Culture x1]
+  // Row3: [Worn x1] [BehindScenes x1] [Editorial x2]
   const SPANS = [
     'col-span-2 row-span-2', // On Track — large
     'col-span-1 row-span-1', // Built
     'col-span-1 row-span-1', // Crew
-    'col-span-1 row-span-2', // Worn — tall
+    'col-span-1 row-span-1', // Worn
     'col-span-1 row-span-1', // Behind the Scenes
   ];
 
@@ -153,16 +156,17 @@ export default function CultureGrid() {
 
         <div className="grid grid-cols-4 gap-2.5" style={{ gridAutoRows: '220px' }}>
 
-          {/* Image tiles 0–3 */}
-          {tiles.slice(0, 4).map((block, i) => (
-            <ImageTile key={block.id} block={block} span={SPANS[i]} accentIdx={i} />
-          ))}
+          {/* On Track (col 1-2, row 1-2) */}
+          {tiles[0] && <ImageTile key={tiles[0].id} block={tiles[0]} span={SPANS[0]} accentIdx={0} />}
 
-          {/* Culture glass card (col-span-1 row-span-2) */}
+          {/* Built (col 3, row 1) */}
+          {tiles[1] && <ImageTile key={tiles[1].id} block={tiles[1]} span={SPANS[1]} accentIdx={1} />}
+
+          {/* Culture glass card (col 4, row 1-2) — explicitly placed */}
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
-              className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
+              className="col-start-4 row-start-1 col-span-1 row-span-2 relative rounded-2xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.55)',
                 backdropFilter: 'blur(18px)',
@@ -204,14 +208,20 @@ export default function CultureGrid() {
             </TileWrapper>
           )}
 
-          {/* Image tile 4 (Behind the Scenes) */}
+          {/* Crew (col 3, row 2) */}
+          {tiles[2] && <ImageTile key={tiles[2].id} block={tiles[2]} span={SPANS[2]} accentIdx={2} />}
+
+          {/* Worn (col 1, row 3) */}
+          {tiles[3] && <ImageTile key={tiles[3].id} block={tiles[3]} span={SPANS[3]} accentIdx={3} />}
+
+          {/* Behind the Scenes (col 2, row 3) */}
           {tiles[4] && <ImageTile key={tiles[4].id} block={tiles[4]} span={SPANS[4]} accentIdx={4} />}
 
-          {/* Editorial glass card (col-span-2 row-span-1) */}
+          {/* Editorial glass card — explicitly placed col 3-4, row 3 */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
-              className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+              className="col-start-3 col-span-2 row-span-1 relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.5)',
                 backdropFilter: 'blur(18px)',
