@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import HeroSlideManagement from '@/components/management/HeroSlideManagement';
+import CultureBlockManagement from '@/components/management/CultureBlockManagement';
 
 const SOCIAL_FIELDS = [
   { key: 'social_instagram_url', label: 'Instagram', placeholder: 'https://instagram.com/hijinxco' },
@@ -25,6 +26,7 @@ const SOCIAL_FIELDS = [
 export default function ManageHomepage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('hero');
+
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ['homepageSettings'],
@@ -45,13 +47,18 @@ export default function ManageHomepage() {
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage" subtitle="Manage hero slides and platform social links" maxWidth="max-w-3xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="hero">Hero</TabsTrigger>
+            <TabsTrigger value="culture">Culture & Identity</TabsTrigger>
             <TabsTrigger value="socials">Socials</TabsTrigger>
           </TabsList>
 
           <TabsContent value="hero" className="space-y-6">
             <HeroSlideManagement />
+          </TabsContent>
+
+          <TabsContent value="culture" className="space-y-6">
+            <CultureBlockManagement />
           </TabsContent>
 
           <TabsContent value="socials" className="space-y-4">

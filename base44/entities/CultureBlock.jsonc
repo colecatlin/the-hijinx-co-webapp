@@ -1,0 +1,43 @@
+{
+  "name": "CultureBlock",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Block title displayed on the card"
+    },
+    "label": {
+      "type": "string",
+      "description": "Small label shown at the top of the block (e.g. 'Culture', 'Media')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional short description text"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Background image URL"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "URL to navigate to when block is clicked"
+    },
+    "link_label": {
+      "type": "string",
+      "description": "CTA link text (e.g. 'Shop Apparel')"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (lower = first)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this block is visible on the homepage"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}
