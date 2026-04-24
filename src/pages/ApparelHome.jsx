@@ -3,6 +3,8 @@ import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+
+const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
@@ -14,6 +16,15 @@ export default function ApparelHome() {
     queryKey: ['products'],
     queryFn: () => base44.entities.Product.filter({ status: 'active' }),
   });
+
+  const { data: settingsList = [] } = useQuery({
+    queryKey: ['homepageSettings'],
+    queryFn: () => base44.entities.HomepageSettings.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const settings = settingsList.find(s => s.active) || {};
+  const shopifyUrl = settings.apparel_shopify_url || DEFAULT_SHOPIFY;
+  const strategy = settings.apparel_link_strategy || 'shopify';
 
   const featuredProducts = products.filter(p => p.featured);
   const allActiveProducts = products.filter(p => !p.featured);
@@ -56,7 +67,7 @@ export default function ApparelHome() {
                 New Hijinx apparel and merchandise coming soon. Shop our current collection in the meantime.
               </p>
               <a
-                href="https://www.hijinxco.com"
+                href={shopifyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium hover:bg-gray-800 transition-colors"
@@ -74,7 +85,7 @@ export default function ApparelHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {featuredProducts.map((product, i) => (
                     <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-                      <ProductCard product={product} statusBadge={statusBadge} featured />
+                      <ProductCard product={product} statusBadge={statusBadge} featured shopifyUrl={shopifyUrl} strategy={strategy} />
                     </motion.div>
                   ))}
                 </div>
@@ -88,7 +99,7 @@ export default function ApparelHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {allActiveProducts.map((product, i) => (
                     <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                      <ProductCard product={product} statusBadge={statusBadge} />
+                      <ProductCard product={product} statusBadge={statusBadge} shopifyUrl={shopifyUrl} strategy={strategy} />
                     </motion.div>
                   ))}
                 </div>
@@ -108,9 +119,10 @@ export default function ApparelHome() {
   );
 }
 
-function ProductCard({ product, statusBadge, featured }) {
+function ProductCard({ product, statusBadge, featured, shopifyUrl = DEFAULT_SHOPIFY, strategy = 'shopify' }) {
   const image = product.images?.[0];
   const isUnavailable = product.status === 'sold_out' || product.status === 'coming_soon';
+  const productHref = strategy === 'internal' ? `/product/${product.slug || product.id}` : (product.external_fulfillment_url || shopifyUrl);
 
   return (
     <div className={`group border border-gray-200 hover:border-[#0A0A0A] transition-all duration-300 ${featured ? 'overflow-hidden' : ''}`}>
@@ -135,10 +147,10 @@ function ProductCard({ product, statusBadge, featured }) {
           {product.price ? (
             <span className="text-sm font-bold">${product.price.toFixed(2)}</span>
           ) : <span />}
-          {product.external_link && !isUnavailable && (
+          {!isUnavailable && (
             <a
-              href={product.external_link}
-              target="_blank"
+              href={productHref}
+              target={strategy === 'shopify' ? '_blank' : '_self'}
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium text-white bg-[#0A0A0A] px-3 py-1.5 hover:bg-gray-800 transition-colors"
             >

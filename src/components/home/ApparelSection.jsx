@@ -3,15 +3,42 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const APPAREL_BG = 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1400&q=90&fit=crop';
 const DROPS = [
   { label: 'Race Day', tag: 'New Drop', sub: 'Built for the track and everywhere else.' },
   { label: 'Heritage Series', tag: 'Limited', sub: 'Rooted in motorsports culture.' },
 ];
+const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
+
+// Polymorphic wrapper: external = <a>, internal = <Link>
+function ShopLink({ href, isExternal, className, style, children }) {
+  if (isExternal) {
+    return <a href={href} target="_blank" rel="noopener noreferrer" className={className} style={style}>{children}</a>;
+  }
+  return <Link to={href} className={className} style={style}>{children}</Link>;
+}
 
 export default function ApparelSection({ products = [] }) {
   const featuredProduct = products.find(p => p.featured) || products[0];
+
+  const { data: settingsList = [] } = useQuery({
+    queryKey: ['homepageSettings'],
+    queryFn: () => base44.entities.HomepageSettings.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const settings = settingsList.find(s => s.active) || {};
+  const shopifyUrl = settings.apparel_shopify_url || DEFAULT_SHOPIFY;
+  const ctaLabel = settings.apparel_cta_label || 'Shop HIJINX CO.';
+  const strategy = settings.apparel_link_strategy || 'shopify';
+
+  // Hero card: internal if strategy=internal AND there's a featured product, else Shopify
+  const heroIsExternal = strategy !== 'internal' || !featuredProduct;
+  const heroHref = !heroIsExternal
+    ? `/product/${featuredProduct.slug || featuredProduct.id}`
+    : shopifyUrl;
 
   return (
     <section className="bg-[#0A0A0A] py-16 md:py-24 border-t border-white/5 overflow-hidden">
@@ -32,8 +59,9 @@ export default function ApparelSection({ products = [] }) {
             viewport={{ once: true }} transition={{ duration: 0.65 }}
             className="lg:col-span-2"
           >
-            <Link
-              to={featuredProduct ? `/product/${featuredProduct.slug || featuredProduct.id}` : createPageUrl('ApparelHome')}
+            <ShopLink
+              href={heroHref}
+              isExternal={heroIsExternal}
               className="group relative flex flex-col justify-end min-h-[500px] overflow-hidden block"
               style={{ border: '1px solid rgba(255,255,255,0.06)' }}
             >
@@ -65,15 +93,14 @@ export default function ApparelSection({ products = [] }) {
                     {featuredProduct.short_description}
                   </p>
                 )}
-
                 <div className="inline-flex items-center gap-2.5 px-6 py-3 text-xs font-black tracking-wider uppercase transition-all duration-200 group-hover:gap-4"
                   style={{ background: '#E5FF00', color: '#0A0A0A' }}>
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  {featuredProduct ? 'View Product' : 'Shop HIJINX'}
+                  {ctaLabel}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
-            </Link>
+            </ShopLink>
           </motion.div>
 
           {/* Supporting drop cards */}
@@ -85,8 +112,10 @@ export default function ApparelSection({ products = [] }) {
                 viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
                 className="flex-1"
               >
-                <Link
-                  to={createPageUrl('ApparelHome')}
+                <a
+                  href={shopifyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group flex flex-col justify-between h-full min-h-[180px] p-6 md:p-8 transition-all duration-200 relative overflow-hidden block"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
@@ -103,18 +132,20 @@ export default function ApparelSection({ products = [] }) {
                     <p className="text-white/40 text-xs mt-2 leading-relaxed">{drop.sub}</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#E5FF00] group-hover:translate-x-1 transition-all mt-4" />
-                </Link>
+                </a>
               </motion.div>
             ))}
 
-            <Link
-              to={createPageUrl('ApparelHome')}
+            <a
+              href={shopifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#E5FF00] transition-colors uppercase"
               style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
               <ShoppingBag className="w-3 h-3" />
               Shop All Apparel
-            </Link>
+            </a>
           </div>
         </div>
       </div>

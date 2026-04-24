@@ -211,6 +211,25 @@
       },
       "default": [],
       "description": "List of recommended community hashtags (e.g. #hijinx, #motorsports)"
+    },
+    "apparel_shopify_url": {
+      "type": "string",
+      "description": "Shopify store URL for the apparel section (e.g. https://www.hijinxco.com)",
+      "default": "https://www.hijinxco.com"
+    },
+    "apparel_cta_label": {
+      "type": "string",
+      "description": "CTA label for the homepage apparel section (e.g. Shop HIJINX CO.)",
+      "default": "Shop HIJINX CO."
+    },
+    "apparel_link_strategy": {
+      "type": "string",
+      "enum": [
+        "shopify",
+        "internal"
+      ],
+      "default": "shopify",
+      "description": "Whether product clicks go to Shopify or internal product pages"
     }
   },
   "required": []
