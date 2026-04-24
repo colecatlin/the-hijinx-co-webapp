@@ -230,6 +230,36 @@
       ],
       "default": "shopify",
       "description": "Whether product clicks go to Shopify or internal product pages"
+    },
+    "apparel_marketing_blocks": {
+      "type": "array",
+      "description": "The two supporting marketing blocks shown beside the main hero card in the apparel section",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "description": "Small label at top (e.g. New Drop)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Block title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description text"
+          },
+          "link_url": {
+            "type": "string",
+            "description": "URL this block links to"
+          },
+          "accent_color": {
+            "type": "string",
+            "description": "Accent color hex (e.g. #E5FF00)"
+          }
+        }
+      }
     }
   },
   "required": []

@@ -7,9 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const APPAREL_BG = 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1400&q=90&fit=crop';
-const DROPS = [
-  { label: 'Race Day', tag: 'New Drop', sub: 'Built for the track and everywhere else.' },
-  { label: 'Heritage Series', tag: 'Limited', sub: 'Rooted in motorsports culture.' },
+const DEFAULT_DROPS = [
+  { tag: 'New Drop', title: 'Race Day', description: 'Built for the track and everywhere else.', link_url: '', accent_color: '#E5FF00' },
+  { tag: 'Limited', title: 'Heritage Series', description: 'Rooted in motorsports culture.', link_url: '', accent_color: '#FF6B35' },
 ];
 const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 
@@ -33,6 +33,9 @@ export default function ApparelSection({ products = [] }) {
   const shopifyUrl = settings.apparel_shopify_url || DEFAULT_SHOPIFY;
   const ctaLabel = settings.apparel_cta_label || 'Shop HIJINX CO.';
   const strategy = settings.apparel_link_strategy || 'shopify';
+  const drops = (settings.apparel_marketing_blocks && settings.apparel_marketing_blocks.length > 0)
+    ? settings.apparel_marketing_blocks
+    : DEFAULT_DROPS;
 
   // Hero card: internal if strategy=internal AND there's a featured product, else Shopify
   const heroIsExternal = strategy !== 'internal' || !featuredProduct;
@@ -105,36 +108,39 @@ export default function ApparelSection({ products = [] }) {
 
           {/* Supporting drop cards */}
           <div className="flex flex-col gap-3">
-            {DROPS.map((drop, i) => (
-              <motion.div
-                key={drop.label}
-                initial={{ x: 20 }} whileInView={{ x: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
-                className="flex-1"
-              >
-                <a
-                  href={shopifyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex flex-col justify-between h-full min-h-[180px] p-6 md:p-8 transition-all duration-200 relative overflow-hidden block"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            {drops.map((drop, i) => {
+              const accent = drop.accent_color || (i === 0 ? '#E5FF00' : '#FF6B35');
+              const href = drop.link_url || shopifyUrl;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ x: 20 }} whileInView={{ x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
+                  className="flex-1"
                 >
-                  <div className="absolute top-0 left-0 right-0 h-[1px]"
-                    style={{ background: `linear-gradient(90deg, ${i === 0 ? '#E5FF00' : '#FF6B35'}44 0%, transparent 60%)` }} />
-                  <div>
-                    <span className="font-mono text-[8px] tracking-[0.4em] uppercase font-bold"
-                      style={{ color: i === 0 ? '#E5FF00' : '#FF6B35' }}>
-                      {drop.tag}
-                    </span>
-                    <h4 className="text-lg md:text-xl font-black text-white mt-2 group-hover:text-[#E5FF00] transition-colors tracking-tight">
-                      {drop.label}
-                    </h4>
-                    <p className="text-white/40 text-xs mt-2 leading-relaxed">{drop.sub}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#E5FF00] group-hover:translate-x-1 transition-all mt-4" />
-                </a>
-              </motion.div>
-            ))}
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col justify-between h-full min-h-[180px] p-6 md:p-8 transition-all duration-200 relative overflow-hidden block"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                  >
+                    <div className="absolute top-0 left-0 right-0 h-[1px]"
+                      style={{ background: `linear-gradient(90deg, ${accent}44 0%, transparent 60%)` }} />
+                    <div>
+                      <span className="font-mono text-[8px] tracking-[0.4em] uppercase font-bold" style={{ color: accent }}>
+                        {drop.tag}
+                      </span>
+                      <h4 className="text-lg md:text-xl font-black text-white mt-2 group-hover:text-[#E5FF00] transition-colors tracking-tight">
+                        {drop.title}
+                      </h4>
+                      <p className="text-white/40 text-xs mt-2 leading-relaxed">{drop.description}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#E5FF00] group-hover:translate-x-1 transition-all mt-4" />
+                  </a>
+                </motion.div>
+              );
+            })}
 
             <a
               href={shopifyUrl}
