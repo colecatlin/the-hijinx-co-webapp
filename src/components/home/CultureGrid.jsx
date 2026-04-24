@@ -45,8 +45,6 @@ function ImageTile({ block, span, accentIdx }) {
       linkUrl={block.link_url}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group ${span}`}
       style={{
-        height: '100%',
-        minHeight: 180,
         background: hasImage ? undefined : '#1A1A1A',
         transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
       }}
@@ -201,30 +199,49 @@ export default function CultureGrid() {
           )}
         </div>
 
-        {/* Desktop: 4-column flex layout — no grid row-span, no overlap */}
-        <div className="hidden md:flex gap-2.5" style={{ height: 460 }}>
+        {/* Desktop: CSS grid with explicit pixel rows — reliable, no overlap */}
+        <div className="hidden md:grid gap-2.5" style={{
+          gridTemplateColumns: '1fr 22% 22% 26%',
+          gridTemplateRows: '220px 220px',
+        }}>
 
-          {/* Col A: On Track — full height */}
+          {/* Col A: On Track — spans both rows */}
           {tiles[0] && (
-            <div className="flex-1 min-w-0 h-full">
+            <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
               <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
             </div>
           )}
 
-          {/* Col B: Built (top) + Worn (bottom) */}
-          <div className="flex flex-col gap-2.5 h-full" style={{ width: '22%' }}>
-            {tiles[1] && <div className="flex-1 min-h-0"><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
-            {tiles[3] && <div className="flex-1 min-h-0"><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
-          </div>
+          {/* Col B top: Built */}
+          {tiles[1] && (
+            <div style={{ gridColumn: '2', gridRow: '1' }}>
+              <ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} />
+            </div>
+          )}
 
-          {/* Col C: Crew (top) + Behind the Scenes (bottom) */}
-          <div className="flex flex-col gap-2.5 h-full" style={{ width: '22%' }}>
-            {tiles[2] && <div className="flex-1 min-h-0"><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
-            {tiles[4] && <div className="flex-1 min-h-0"><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
-          </div>
+          {/* Col B bottom: Worn */}
+          {tiles[3] && (
+            <div style={{ gridColumn: '2', gridRow: '2' }}>
+              <ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} />
+            </div>
+          )}
+
+          {/* Col C top: Crew */}
+          {tiles[2] && (
+            <div style={{ gridColumn: '3', gridRow: '1' }}>
+              <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
+            </div>
+          )}
+
+          {/* Col C bottom: Behind the Scenes */}
+          {tiles[4] && (
+            <div style={{ gridColumn: '3', gridRow: '2' }}>
+              <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
+            </div>
+          )}
 
           {/* Col D: Culture glass card (top ~60%) + Editorial card (bottom ~40%) */}
-          <div className="flex flex-col gap-2.5 h-full" style={{ width: '26%' }}>
+          <div className="flex flex-col gap-2.5" style={{ gridColumn: '4', gridRow: '1 / 3' }}>
             {cultureCard && (
               <TileWrapper
                 linkUrl={cultureCard.link_url}
@@ -289,7 +306,7 @@ export default function CultureGrid() {
             )}
           </div>
 
-        </div>
+        </div>{/* end desktop grid */}
       </div>
     </section>
   );
