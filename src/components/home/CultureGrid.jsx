@@ -45,7 +45,8 @@ function ImageTile({ block, span, accentIdx }) {
       linkUrl={block.link_url}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group ${span}`}
       style={{
-        minHeight: 200,
+        height: '100%',
+        minHeight: 180,
         background: hasImage ? undefined : '#1A1A1A',
         transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
       }}
@@ -205,25 +206,25 @@ export default function CultureGrid() {
 
           {/* Col A: On Track — full height */}
           {tiles[0] && (
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 h-full">
               <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
             </div>
           )}
 
           {/* Col B: Built (top) + Worn (bottom) */}
-          <div className="flex flex-col gap-2.5" style={{ width: '22%' }}>
-            {tiles[1] && <div className="flex-1"><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
-            {tiles[3] && <div className="flex-1"><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
+          <div className="flex flex-col gap-2.5 h-full" style={{ width: '22%' }}>
+            {tiles[1] && <div className="flex-1 min-h-0"><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
+            {tiles[3] && <div className="flex-1 min-h-0"><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
           </div>
 
           {/* Col C: Crew (top) + Behind the Scenes (bottom) */}
-          <div className="flex flex-col gap-2.5" style={{ width: '22%' }}>
-            {tiles[2] && <div className="flex-1"><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
-            {tiles[4] && <div className="flex-1"><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
+          <div className="flex flex-col gap-2.5 h-full" style={{ width: '22%' }}>
+            {tiles[2] && <div className="flex-1 min-h-0"><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
+            {tiles[4] && <div className="flex-1 min-h-0"><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
           </div>
 
           {/* Col D: Culture glass card (top ~60%) + Editorial card (bottom ~40%) */}
-          <div className="flex flex-col gap-2.5" style={{ width: '26%' }}>
+          <div className="flex flex-col gap-2.5 h-full" style={{ width: '26%' }}>
             {cultureCard && (
               <TileWrapper
                 linkUrl={cultureCard.link_url}
