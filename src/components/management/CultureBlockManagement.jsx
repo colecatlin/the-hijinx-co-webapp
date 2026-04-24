@@ -252,8 +252,12 @@ function BlockRow({ block, number, isFirst, isLast, isEditing, onEdit, onDelete,
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-gray-900 truncate">{block.title}</p>
-        <p className="text-xs text-gray-400 truncate mt-0.5">{block.label || 'No label'} {block.link_url ? `→ ${block.link_url}` : ''}</p>
+        <p className="font-semibold text-sm text-gray-900 truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{block.title}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          {block.label && <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400">{block.label}</span>}
+          {block.link_label && <span className="text-[10px] text-gray-400">· CTA: <em>{block.link_label}</em></span>}
+          {!block.image_url && <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1.5 py-0.5 font-medium">No image (glass card)</span>}
+        </div>
       </div>
 
       {/* Controls */}
@@ -285,6 +289,23 @@ function BlockForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
         <h3 className="font-bold text-gray-800">{isNew ? 'New Block' : 'Edit Block'}</h3>
         <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
       </div>
+
+      {/* Live mini preview */}
+      {(form.image_url || form.title) && (
+        <div className="rounded-xl overflow-hidden" style={{ height: 160, background: form.image_url ? '#111' : 'rgba(255,255,255,0.6)', border: '1px solid rgba(0,0,0,0.08)', position: 'relative' }}>
+          {form.image_url && (
+            <img src={form.image_url} alt="Preview" className="absolute inset-0 w-full h-full object-cover" style={{ filter: 'contrast(1.18) saturate(0.45) brightness(0.65)' }} />
+          )}
+          <div className="absolute inset-0" style={{ background: form.image_url ? 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)' : undefined }} />
+          <div className="absolute top-3 left-3">
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: form.image_url ? 'rgba(255,255,255,0.5)' : '#999' }}>{form.label || form.title}</span>
+          </div>
+          <div className="absolute bottom-3 left-3 right-3">
+            <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontStyle: 'italic', fontSize: '1rem', color: form.image_url ? '#fff' : '#0A0A0A', lineHeight: 1.2, marginBottom: 4 }}>{form.title || 'Block Title'}</p>
+            {form.link_label && <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00FFDA' }}>{form.link_label} →</span>}
+          </div>
+        </div>
+      )}
 
       {/* Image */}
       <div className="space-y-3">
