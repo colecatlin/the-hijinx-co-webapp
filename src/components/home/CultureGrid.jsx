@@ -131,12 +131,9 @@ export default function CultureGrid() {
   const cultureCard = dbBlocks[5];
   const editorialCard = dbBlocks[6];
 
-  // Tile spans by position index — explicit grid placement for a clean 4-col layout:
-  // Row1: [On Track x2] [Built x1] [Culture x1]
-  // Row2: [On Track x2] [Crew x1]  [Culture x1]
-  // Row3: [Worn x1] [BehindScenes x1] [Editorial x2]
+  // Tile spans by position index — explicit grid placement for desktop 4-col layout
   const SPANS = [
-    'col-span-2 row-span-2', // On Track — large
+    'col-span-2 row-span-1 md:row-span-2', // On Track — large on desktop
     'col-span-1 row-span-1', // Built
     'col-span-1 row-span-1', // Crew
     'col-span-1 row-span-1', // Worn
@@ -144,29 +141,30 @@ export default function CultureGrid() {
   ];
 
   return (
-    <section style={{ background: '#F5F0E8' }} className="py-20 md:py-28 overflow-hidden">
+    <section style={{ background: '#F5F0E8' }} className="py-14 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
-        <div className="flex items-center gap-3 mb-10">
+        <div className="flex items-center gap-3 mb-8 md:mb-10">
           <div className="w-5 h-px" style={{ background: '#00FFDA' }} />
           <span className="text-[9px] font-bold tracking-[0.5em] uppercase" style={{ color: '#00CCAA' }}>
             HIJINX · Culture &amp; Identity
           </span>
         </div>
 
-        <div className="grid grid-cols-4 gap-2.5" style={{ gridAutoRows: '220px' }}>
+        {/* Mobile: simple 2-col stacking grid. Desktop: 4-col explicit layout */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5" style={{ gridAutoRows: '180px' }}>
 
-          {/* On Track (col 1-2, row 1-2) */}
-          {tiles[0] && <ImageTile key={tiles[0].id} block={tiles[0]} span={SPANS[0]} accentIdx={0} />}
+          {/* On Track — full width on mobile, col-span-2 row-span-2 on desktop */}
+          {tiles[0] && <ImageTile key={tiles[0].id} block={tiles[0]} span="col-span-2 row-span-1 md:row-span-2" accentIdx={0} />}
 
-          {/* Built (col 3, row 1) */}
+          {/* Built */}
           {tiles[1] && <ImageTile key={tiles[1].id} block={tiles[1]} span={SPANS[1]} accentIdx={1} />}
 
-          {/* Culture glass card (col 4, row 1-2) — explicitly placed */}
+          {/* Culture glass card — full width on mobile, explicitly placed on desktop */}
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
-              className="col-start-4 row-start-1 col-span-1 row-span-2 relative rounded-2xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
+              className="col-span-2 md:col-start-4 md:row-start-1 md:col-span-1 md:row-span-2 relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 md:p-7 group cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.55)',
                 backdropFilter: 'blur(18px)',
@@ -190,7 +188,7 @@ export default function CultureGrid() {
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#00CCAA' }}>
                   {cultureCard.label || cultureCard.title}
                 </span>
-                <h2 className="text-4xl font-black tracking-tight leading-tight mb-4" style={{ color: '#0A0A0A' }}>
+                <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-tight mb-4" style={{ color: '#0A0A0A' }}>
                   Born from<br />the garage.
                 </h2>
                 <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>
@@ -208,20 +206,20 @@ export default function CultureGrid() {
             </TileWrapper>
           )}
 
-          {/* Crew (col 3, row 2) */}
+          {/* Crew */}
           {tiles[2] && <ImageTile key={tiles[2].id} block={tiles[2]} span={SPANS[2]} accentIdx={2} />}
 
-          {/* Worn (col 1, row 3) */}
+          {/* Worn */}
           {tiles[3] && <ImageTile key={tiles[3].id} block={tiles[3]} span={SPANS[3]} accentIdx={3} />}
 
-          {/* Behind the Scenes (col 2, row 3) */}
+          {/* Behind the Scenes */}
           {tiles[4] && <ImageTile key={tiles[4].id} block={tiles[4]} span={SPANS[4]} accentIdx={4} />}
 
-          {/* Editorial glass card — explicitly placed col 3-4, row 3 */}
+          {/* Editorial glass card — full width on mobile, col 3-4 on desktop */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
-              className="col-start-3 col-span-2 row-span-1 relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+              className="col-span-2 md:col-start-3 md:col-span-2 row-span-1 relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 md:p-6 group cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.5)',
                 backdropFilter: 'blur(18px)',

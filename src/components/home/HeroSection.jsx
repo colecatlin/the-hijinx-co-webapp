@@ -110,7 +110,7 @@ export default function HeroSection({ stats = {} }) {
   return (
     <section
       className="relative w-full overflow-hidden"
-      style={{ height: 'calc(100vh - 112px)', minHeight: 480, maxHeight: 640 }}
+      style={{ height: 'calc(100vh - 112px)', minHeight: 360, maxHeight: 640 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -173,8 +173,8 @@ export default function HeroSection({ stats = {} }) {
       />
 
       {/* Content — glass card */}
-      <div className="relative z-10 h-full flex items-center pb-8" style={{ paddingTop: '3rem' }}>
-        <div className="w-full max-w-7xl mx-auto px-6">
+      <div className="relative z-10 h-full flex items-center pb-8 px-4 sm:px-6" style={{ paddingTop: '2rem' }}>
+        <div className="w-full max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -182,7 +182,7 @@ export default function HeroSection({ stats = {} }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="max-w-2xl"
+              className="w-full max-w-2xl"
               style={{
                 background: 'rgba(10,10,10,0.45)',
                 backdropFilter: 'blur(18px)',
@@ -190,11 +190,11 @@ export default function HeroSection({ stats = {} }) {
                 border: '1px solid rgba(255,255,255,0.08)',
                 boxShadow: '0 8px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
                 borderRadius: 2,
-                padding: '2rem 2.5rem',
+                padding: 'clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 5vw, 2.5rem)',
               }}
             >
               {/* Accent line */}
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-5 h-[2px] bg-[#00FFDA]" />
                 <span className="font-mono text-[9px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold">
                   HIJINX
@@ -202,24 +202,24 @@ export default function HeroSection({ stats = {} }) {
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl md:text-6xl font-black text-white leading-[1.0] tracking-tight mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white leading-[1.0] tracking-tight mb-3">
                 {slide.headline.map((line, i) => (
                   <span key={i} className="block">{line}</span>
                 ))}
               </h1>
 
               {/* Sub */}
-              <p className="text-sm md:text-base text-white/55 font-medium leading-relaxed mb-7 max-w-sm">
+              <p className="text-xs sm:text-sm md:text-base text-white/55 font-medium leading-relaxed mb-5 max-w-sm">
                 {slide.sub}
               </p>
 
               {/* CTAs */}
               {(slide.cta1 || slide.cta2) && (
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {slide.cta1 && (
                     <CtaLink
                       to={slide.cta1.to}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
+                      className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
                       style={{ borderRadius: 2 }}
                     >
                       {slide.cta1.label} <ArrowRight className="w-3 h-3" />
@@ -228,7 +228,7 @@ export default function HeroSection({ stats = {} }) {
                   {slide.cta2 && (
                     <CtaLink
                       to={slide.cta2.to}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
+                      className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
                       style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
                     >
                       {slide.cta2.label}
