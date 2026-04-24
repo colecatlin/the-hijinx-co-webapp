@@ -176,7 +176,7 @@ export default function MotorsportsHome() {
           </div>
 
           {/* RIGHT: Live stat cards */}
-          <div className="lg:col-span-2 flex flex-col gap-3">
+          <div className="lg:col-span-2 flex flex-col gap-2.5 max-w-xs w-full ml-auto">
             {stats.map((s, i) => (
               <StatCard
                 key={s.label}

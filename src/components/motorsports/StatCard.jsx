@@ -1,54 +1,73 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Users, Flag, MapPin, CalendarDays, Trophy } from 'lucide-react';
+import { Loader2, Users, Flag, MapPin, CalendarDays, ShieldCheck } from 'lucide-react';
 
 const iconMap = {
   Drivers: Users,
   Teams: Flag,
   Tracks: MapPin,
   Events: CalendarDays,
-  Results: Trophy,
+  Results: ShieldCheck,
+};
+
+const monthlyChanges = {
+  Drivers: '+1,228',
+  Teams:   '+85',
+  Tracks:  '+12',
+  Events:  '+132',
+  Results: '+18,392',
+};
+
+// Unique sparkline paths per stat for visual variety
+const sparklinePaths = {
+  Drivers: 'M2,22 6,18 10,20 14,14 18,16 22,10 26,12 30,6 34,8 38,4 42,7 46,3',
+  Teams:   'M2,20 6,22 10,17 14,19 18,13 22,15 26,10 30,12 34,7  38,9  42,5  46,7',
+  Tracks:  'M2,23 6,19 10,21 14,16 18,18 22,12 26,14 30,9  34,11 38,6  42,9  46,4',
+  Events:  'M2,21 6,17 10,19 14,13 18,15 22,9  26,11 30,7  34,9  38,5  42,8  46,3',
+  Results: 'M2,22 6,20 10,18 14,15 18,17 22,12 26,9  30,11 34,7  38,5  42,8  46,2',
 };
 
 export default function StatCard({ label, count, isLoading, delay = 0 }) {
   const Icon = iconMap[label] || Users;
+  const change = monthlyChanges[label] || '';
+  const path = sparklinePaths[label] || sparklinePaths.Drivers;
 
   return (
     <motion.div
       initial={{ x: 40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay, duration: 0.5 }}
-      className="flex items-center gap-4 px-5 py-4 rounded-xl"
+      className="flex items-center justify-between px-5 py-4 rounded-xl"
       style={{
-        background: 'rgba(10,20,20,0.72)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.10)',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.4)',
+        background: 'rgba(8,16,16,0.75)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
       }}
     >
-      <div
-        className="flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0"
-        style={{ background: 'rgba(29,161,161,0.15)', border: '1px solid rgba(29,161,161,0.3)' }}
-      >
-        <Icon className="w-5 h-5" style={{ color: '#1DA1A1' }} />
+      {/* Icon */}
+      <div className="flex-shrink-0 mr-4">
+        <Icon className="w-8 h-8 text-white/55" strokeWidth={1.25} />
       </div>
 
+      {/* Text */}
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-[9px] tracking-[0.35em] text-white/40 uppercase mb-1">{label}</div>
+        <div className="font-mono text-[9px] tracking-[0.35em] text-white/45 uppercase mb-1">{label}</div>
         {isLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-white/40" />
         ) : (
-          <div className="text-white font-black text-2xl leading-none tracking-tight">
-            {count}
-          </div>
+          <div className="text-white font-bold text-2xl leading-none tracking-tight">{count}</div>
         )}
+        <div className="text-[11px] mt-1" style={{ color: '#1DA1A1' }}>
+          {change} this month
+        </div>
       </div>
 
-      {/* Teal sparkline decoration */}
-      <svg width="60" height="28" viewBox="0 0 60 28" fill="none" className="flex-shrink-0 opacity-60">
+      {/* Sparkline */}
+      <svg width="70" height="32" viewBox="0 0 48 28" fill="none" className="flex-shrink-0 ml-3">
         <polyline
-          points="0,22 10,16 20,18 30,8 40,12 50,4 60,6"
+          points={path}
           stroke="#1DA1A1"
           strokeWidth="1.5"
           fill="none"
