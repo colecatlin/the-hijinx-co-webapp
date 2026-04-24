@@ -92,30 +92,31 @@ function ImageTile({ block, span, accentIdx }) {
       />
 
       {/* If title + CTA: title top-left, CTA bottom-left */}
-      {hasCta ? (
-        <>
+      {/* Category label — always top left */}
+      <span
+        className="absolute top-4 left-4 text-[8px] font-bold tracking-[0.45em] uppercase"
+        style={{ color: 'rgba(255,255,255,0.45)' }}
+      >
+        {block.label || block.title}
+      </span>
+
+      {/* Title — always bottom left, serif editorial */}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <h3
+          className="text-white leading-tight mb-1"
+          style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 2.2vw, 1.35rem)', fontWeight: 700 }}
+        >
+          {block.title}
+        </h3>
+        {hasCta && (
           <span
-            className="absolute top-4 left-4 text-[9px] font-bold tracking-[0.4em] uppercase"
-            style={{ color: 'rgba(255,255,255,0.5)' }}
-          >
-            {block.label || block.title}
-          </span>
-          <span
-            className="absolute bottom-4 left-4 text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-colors duration-300"
+            className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-widest uppercase transition-colors duration-300"
             style={{ color: accent }}
           >
-            {block.link_label} <ArrowRight className="w-3 h-3" />
+            {block.link_label} <ArrowRight className="w-2.5 h-2.5" />
           </span>
-        </>
-      ) : (
-        /* No CTA — just label at bottom-left */
-        <span
-          className="absolute bottom-4 left-4 text-[9px] font-bold tracking-[0.4em] uppercase transition-colors duration-300"
-          style={{ color: 'rgba(255,255,255,0.3)' }}
-        >
-          {block.label || block.title}
-        </span>
-      )}
+        )}
+      </div>
     </TileWrapper>
   );
 }
@@ -170,7 +171,7 @@ export default function CultureGrid() {
               <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="text-2xl font-black tracking-tight leading-tight mb-3" style={{ color: '#0A0A0A' }}>Born from<br />the garage.</h2>
+                <h2 className="leading-tight mb-3" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, fontStyle: 'italic', color: '#0A0A0A' }}>Born from<br />the garage.</h2>
                 <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
@@ -190,7 +191,7 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="text-xl font-black tracking-tight leading-snug" style={{ color: '#0A0A0A' }}>{editorialCard.description}</p>
+                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, fontStyle: 'italic', color: '#0A0A0A' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
                 <span className="relative inline-flex items-center gap-2 text-xs font-semibold mt-3 w-fit" style={{ color: '#8A9096' }}>
@@ -264,7 +265,7 @@ export default function CultureGrid() {
                 <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
                 <div className="relative">
                   <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
-                  <h2 className="text-3xl font-black tracking-tight leading-tight mb-4" style={{ color: '#0A0A0A' }}>Born from<br />the garage.</h2>
+                  <h2 className="leading-tight mb-4" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 900, color: '#0A0A0A', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
                   <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
                 </div>
                 {cultureCard.link_label && (
@@ -294,7 +295,7 @@ export default function CultureGrid() {
                 <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
                 <div className="relative">
                   <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
-                  <p className="text-xl font-black tracking-tight leading-snug" style={{ color: '#0A0A0A' }}>{editorialCard.description}</p>
+                  <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', fontWeight: 700, fontStyle: 'italic', color: '#0A0A0A' }}>{editorialCard.description}</p>
                 </div>
                 {editorialCard.link_label && (
                   <span className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3" style={{ color: '#8A9096' }}
