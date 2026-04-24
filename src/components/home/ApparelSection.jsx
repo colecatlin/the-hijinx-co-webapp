@@ -27,7 +27,7 @@ export default function ApparelSection({ products = [] }) {
   const { data: settingsList = [] } = useQuery({
     queryKey: ['homepageSettings'],
     queryFn: () => base44.entities.HomepageSettings.list(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
   const settings = settingsList.find(s => s.active) || {};
   const shopifyUrl = settings.apparel_shopify_url || DEFAULT_SHOPIFY;
