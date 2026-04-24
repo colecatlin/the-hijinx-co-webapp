@@ -45,6 +45,8 @@ function ImageTile({ block, span, accentIdx }) {
       linkUrl={block.link_url}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group ${span}`}
       style={{
+        display: 'block',
+        height: '100%',
         background: hasImage ? undefined : '#1A1A1A',
         transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
       }}
@@ -207,41 +209,41 @@ export default function CultureGrid() {
 
           {/* Col A: On Track — spans both rows */}
           {tiles[0] && (
-            <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
+            <div style={{ gridColumn: '1', gridRow: '1 / 3', height: '100%' }}>
               <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
             </div>
           )}
 
           {/* Col B top: Built */}
           {tiles[1] && (
-            <div style={{ gridColumn: '2', gridRow: '1' }}>
+            <div style={{ gridColumn: '2', gridRow: '1', height: '100%' }}>
               <ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} />
             </div>
           )}
 
           {/* Col B bottom: Worn */}
           {tiles[3] && (
-            <div style={{ gridColumn: '2', gridRow: '2' }}>
+            <div style={{ gridColumn: '2', gridRow: '2', height: '100%' }}>
               <ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} />
             </div>
           )}
 
           {/* Col C top: Crew */}
           {tiles[2] && (
-            <div style={{ gridColumn: '3', gridRow: '1' }}>
+            <div style={{ gridColumn: '3', gridRow: '1', height: '100%' }}>
               <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
             </div>
           )}
 
           {/* Col C bottom: Behind the Scenes */}
           {tiles[4] && (
-            <div style={{ gridColumn: '3', gridRow: '2' }}>
+            <div style={{ gridColumn: '3', gridRow: '2', height: '100%' }}>
               <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
             </div>
           )}
 
           {/* Col D: Culture glass card (top ~60%) + Editorial card (bottom ~40%) */}
-          <div className="flex flex-col gap-2.5" style={{ gridColumn: '4', gridRow: '1 / 3' }}>
+          <div className="flex flex-col gap-2.5" style={{ gridColumn: '4', gridRow: '1 / 3', height: '100%' }}>
             {cultureCard && (
               <TileWrapper
                 linkUrl={cultureCard.link_url}
