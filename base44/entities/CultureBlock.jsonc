@@ -12,7 +12,8 @@
     },
     "description": {
       "type": "string",
-      "description": "Optional short description text"
+      "maxLength": 120,
+      "description": "Optional short description text (max 120 characters)"
     },
     "image_url": {
       "type": "string",
@@ -25,6 +26,10 @@
     "link_label": {
       "type": "string",
       "description": "CTA link text (e.g. 'Shop Apparel')"
+    },
+    "accent_color": {
+      "type": "string",
+      "description": "Hex color for hover glow accent (e.g. #00FFDA)"
     },
     "sort_order": {
       "type": "number",

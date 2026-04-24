@@ -90,9 +90,17 @@ const EMPTY_BLOCK = {
   image_url: '',
   link_url: '',
   link_label: '',
+  accent_color: '#00FFDA',
   sort_order: 0,
   is_active: true,
 };
+
+const DESCRIPTION_LIMIT = 120;
+
+const ACCENT_PRESETS = [
+  '#00FFDA', '#FF6B00', '#FF2D55', '#E5FF00',
+  '#A78BFA', '#38BDF8', '#4ADE80', '#FB923C',
+];
 
 export default function CultureBlockManagement() {
   const queryClient = useQueryClient();
@@ -302,7 +310,7 @@ function BlockForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
           </div>
           <div className="absolute bottom-3 left-3 right-3">
             <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontStyle: 'italic', fontSize: '1rem', color: form.image_url ? '#fff' : '#0A0A0A', lineHeight: 1.2, marginBottom: 4 }}>{form.title || 'Block Title'}</p>
-            {form.link_label && <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00FFDA' }}>{form.link_label} →</span>}
+            {form.link_label && <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: form.accent_color || '#00FFDA' }}>{form.link_label} →</span>}
           </div>
         </div>
       )}
@@ -341,8 +349,52 @@ function BlockForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
 
       {/* Description */}
       <div className="space-y-1">
-        <Label>Description <span className="text-gray-400 font-normal">(optional)</span></Label>
-        <Input value={form.description} onChange={e => set('description', e.target.value)} placeholder="Short description text..." />
+        <div className="flex items-center justify-between">
+          <Label>Description <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <span className={`text-xs font-mono ${(form.description || '').length > DESCRIPTION_LIMIT ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+            {(form.description || '').length}/{DESCRIPTION_LIMIT}
+          </span>
+        </div>
+        <Input
+          value={form.description}
+          onChange={e => set('description', e.target.value.slice(0, DESCRIPTION_LIMIT))}
+          placeholder="Short description text..."
+          className={(form.description || '').length >= DESCRIPTION_LIMIT ? 'border-red-300 focus-visible:ring-red-300' : ''}
+        />
+        {(form.description || '').length >= DESCRIPTION_LIMIT && (
+          <p className="text-xs text-red-500">Character limit reached (120 max)</p>
+        )}
+      </div>
+
+      {/* Accent Color */}
+      <div className="space-y-2">
+        <Label>Hover Glow Color</Label>
+        <div className="flex items-center gap-3 flex-wrap">
+          {ACCENT_PRESETS.map(color => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => set('accent_color', color)}
+              className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+              style={{
+                background: color,
+                borderColor: form.accent_color === color ? '#232323' : 'transparent',
+                boxShadow: form.accent_color === color ? `0 0 0 2px white, 0 0 0 4px #232323` : 'none',
+              }}
+              title={color}
+            />
+          ))}
+          <div className="flex items-center gap-2 ml-1">
+            <input
+              type="color"
+              value={form.accent_color || '#00FFDA'}
+              onChange={e => set('accent_color', e.target.value)}
+              className="w-7 h-7 rounded cursor-pointer border border-gray-200"
+              title="Custom color"
+            />
+            <span className="text-xs font-mono text-gray-500">{form.accent_color || '#00FFDA'}</span>
+          </div>
+        </div>
       </div>
 
       {/* CTA */}
@@ -365,7 +417,7 @@ function BlockForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <Button onClick={onSave} disabled={!form.title || isSaving} className="bg-[#232323] text-white gap-2">
+        <Button onClick={onSave} disabled={!form.title || isSaving || (form.description || '').length > DESCRIPTION_LIMIT} className="bg-[#232323] text-white gap-2">
           {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
           {isNew ? 'Create Block' : 'Save Changes'}
         </Button>

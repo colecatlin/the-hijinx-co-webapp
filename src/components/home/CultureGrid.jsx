@@ -11,14 +11,22 @@ const GRAIN_STYLE = {
   backgroundSize: '128px 128px',
 };
 
-// Accent colors by sort_order position
+// Fallback accent colors if no accent_color set on block
 const ACCENTS = [
-  { accent: '#00FFDA', glowColor: 'rgba(0,255,218,0.28)' },
-  { accent: '#FF6B00', glowColor: 'rgba(255,107,0,0.28)' },
-  { accent: '#FF2D55', glowColor: 'rgba(255,45,85,0.28)' },
-  { accent: '#E5FF00', glowColor: 'rgba(229,255,0,0.28)' },
-  { accent: '#00FFDA', glowColor: 'rgba(0,255,218,0.28)' },
+  '#00FFDA', '#FF6B00', '#FF2D55', '#E5FF00', '#00FFDA',
 ];
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function getAccent(block, idx) {
+  const color = block.accent_color || ACCENTS[idx % ACCENTS.length];
+  return { accent: color, glowColor: hexToRgba(color, 0.28) };
+}
 
 function isExternal(url) {
   return url && (url.startsWith('http://') || url.startsWith('https://'));
@@ -36,7 +44,7 @@ function getInitials(title) {
 }
 
 function ImageTile({ block, span, accentIdx }) {
-  const { accent, glowColor } = ACCENTS[accentIdx % ACCENTS.length];
+  const { accent, glowColor } = getAccent(block, accentIdx);
   const hasImage = !!block.image_url;
   const hasCta = !!block.link_label;
 
@@ -258,7 +266,7 @@ export default function CultureGrid() {
                   boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
                   transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(0,255,218,0.18), 0 16px 48px rgba(0,0,0,0.1)'; }}
+                onMouseEnter={e => { const c = cultureCard.accent_color || '#00FFDA'; const rgb = c.length === 7 ? `${parseInt(c.slice(1,3),16)},${parseInt(c.slice(3,5),16)},${parseInt(c.slice(5,7),16)}` : '0,255,218'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 0 32px rgba(${rgb},0.18), 0 16px 48px rgba(0,0,0,0.1)`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.08)'; }}
               >
                 <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #00FFDA 0%, #00FFDA44 50%, transparent 100%)' }} />
@@ -288,7 +296,7 @@ export default function CultureGrid() {
                   boxShadow: '0 10px 40px rgba(0,0,0,0.07)',
                   transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.15), 0 12px 40px rgba(0,0,0,0.08)'; }}
+                onMouseEnter={e => { const c = editorialCard.accent_color || '#E5FF00'; const rgb = c.length === 7 ? `${parseInt(c.slice(1,3),16)},${parseInt(c.slice(3,5),16)},${parseInt(c.slice(5,7),16)}` : '229,255,0'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 0 28px rgba(${rgb},0.15), 0 12px 40px rgba(0,0,0,0.08)`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.07)'; }}
               >
                 <div className="absolute inset-0 pointer-events-none opacity-25" style={GRAIN_STYLE} />
