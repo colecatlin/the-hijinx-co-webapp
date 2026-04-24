@@ -131,15 +131,6 @@ export default function CultureGrid() {
   const cultureCard = dbBlocks[5];
   const editorialCard = dbBlocks[6];
 
-  // Tile spans by position index — explicit grid placement for desktop 4-col layout
-  const SPANS = [
-    'col-span-2 row-span-1 md:row-span-2', // On Track — large on desktop
-    'col-span-1 row-span-1', // Built
-    'col-span-1 row-span-1', // Crew
-    'col-span-1 row-span-1', // Worn
-    'col-span-1 row-span-1', // Behind the Scenes
-  ];
-
   return (
     <section style={{ background: '#F5F0E8' }} className="py-14 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
@@ -151,114 +142,151 @@ export default function CultureGrid() {
           </span>
         </div>
 
-        {/* Mobile: simple 2-col stacking grid. Desktop: 4-col explicit layout */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5" style={{ gridAutoRows: '180px' }}>
+        {/* 
+          Layout: flex row of 4 columns on desktop, stacked on mobile.
+          Col A: large "On Track" tile (spans full height of rows 1+2)
+          Col B+C: two rows of two smaller tiles stacked
+          Col D: "Culture" glass card (spans full height) + "Editorial" below on desktop
+          No CSS grid row-span tricks — flex-col handles height naturally with no overlap.
+        */}
 
-          {/* On Track — full width on mobile, col-span-2 row-span-2 on desktop */}
-          {tiles[0] && <ImageTile key={tiles[0].id} block={tiles[0]} span="col-span-2 row-span-1 md:row-span-2" accentIdx={0} />}
-
-          {/* Built */}
-          {tiles[1] && <ImageTile key={tiles[1].id} block={tiles[1]} span={SPANS[1]} accentIdx={1} />}
-
-          {/* Culture glass card — full width on mobile, explicitly placed on desktop */}
+        {/* Mobile: simple vertical stack of cards */}
+        <div className="flex flex-col gap-2.5 md:hidden">
+          {tiles[0] && <div style={{ height: 220 }}><ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} /></div>}
+          <div className="grid grid-cols-2 gap-2.5">
+            {tiles[1] && <div style={{ height: 180 }}><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
+            {tiles[2] && <div style={{ height: 180 }}><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
+            {tiles[3] && <div style={{ height: 180 }}><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
+            {tiles[4] && <div style={{ height: 180 }}><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
+          </div>
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
-              className="col-span-2 md:col-start-4 md:row-start-1 md:col-span-1 md:row-span-2 relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 md:p-7 group cursor-pointer"
-              style={{
-                background: 'rgba(255,255,255,0.55)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = '0 0 32px rgba(0,255,218,0.18), 0 16px 48px rgba(0,0,0,0.1)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.08)';
-              }}
+              className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
+              style={{ minHeight: 200, background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
             >
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #00FFDA 0%, #00FFDA44 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#00CCAA' }}>
-                  {cultureCard.label || cultureCard.title}
-                </span>
-                <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-tight mb-4" style={{ color: '#0A0A0A' }}>
-                  Born from<br />the garage.
-                </h2>
-                <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>
-                  {cultureCard.description}
-                </p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
+                <h2 className="text-2xl font-black tracking-tight leading-tight mb-3" style={{ color: '#0A0A0A' }}>Born from<br />the garage.</h2>
+                <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
-                <span
-                  className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 hover:gap-3 transition-all w-fit"
-                  style={{ color: '#009980', borderBottom: '1px solid rgba(0,153,128,0.35)' }}
-                >
+                <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 mt-4 w-fit" style={{ color: '#009980', borderBottom: '1px solid rgba(0,153,128,0.35)' }}>
                   {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               )}
             </TileWrapper>
           )}
-
-          {/* Crew */}
-          {tiles[2] && <ImageTile key={tiles[2].id} block={tiles[2]} span={SPANS[2]} accentIdx={2} />}
-
-          {/* Worn */}
-          {tiles[3] && <ImageTile key={tiles[3].id} block={tiles[3]} span={SPANS[3]} accentIdx={3} />}
-
-          {/* Behind the Scenes */}
-          {tiles[4] && <ImageTile key={tiles[4].id} block={tiles[4]} span={SPANS[4]} accentIdx={4} />}
-
-          {/* Editorial glass card — full width on mobile, col 3-4 on desktop */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
-              className="col-span-2 md:col-start-3 md:col-span-2 row-span-1 relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 md:p-6 group cursor-pointer"
-              style={{
-                background: 'rgba(255,255,255,0.5)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.07)',
-                transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.15), 0 12px 40px rgba(0,0,0,0.08)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.07)';
-              }}
+              className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
+              style={{ minHeight: 160, background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 10px 40px rgba(0,0,0,0.07)' }}
             >
               <div className="absolute inset-0 pointer-events-none opacity-25" style={GRAIN_STYLE} />
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>
-                  {editorialCard.label || editorialCard.title}
-                </span>
-                <p className="text-xl font-black tracking-tight leading-snug" style={{ color: '#0A0A0A' }}>
-                  {editorialCard.description}
-                </p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
+                <p className="text-xl font-black tracking-tight leading-snug" style={{ color: '#0A0A0A' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span
-                  className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3"
-                  style={{ color: '#8A9096' }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#8A9096'}
-                >
+                <span className="relative inline-flex items-center gap-2 text-xs font-semibold mt-3 w-fit" style={{ color: '#8A9096' }}>
                   {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
             </TileWrapper>
           )}
+        </div>
+
+        {/* Desktop: 4-column flex layout — no grid row-span, no overlap */}
+        <div className="hidden md:flex gap-2.5" style={{ height: 460 }}>
+
+          {/* Col A: On Track — full height */}
+          {tiles[0] && (
+            <div className="flex-1 min-w-0">
+              <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
+            </div>
+          )}
+
+          {/* Col B: Built (top) + Worn (bottom) */}
+          <div className="flex flex-col gap-2.5" style={{ width: '22%' }}>
+            {tiles[1] && <div className="flex-1"><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
+            {tiles[3] && <div className="flex-1"><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
+          </div>
+
+          {/* Col C: Crew (top) + Behind the Scenes (bottom) */}
+          <div className="flex flex-col gap-2.5" style={{ width: '22%' }}>
+            {tiles[2] && <div className="flex-1"><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
+            {tiles[4] && <div className="flex-1"><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
+          </div>
+
+          {/* Col D: Culture glass card (top ~60%) + Editorial card (bottom ~40%) */}
+          <div className="flex flex-col gap-2.5" style={{ width: '26%' }}>
+            {cultureCard && (
+              <TileWrapper
+                linkUrl={cultureCard.link_url}
+                className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
+                style={{
+                  flex: '3',
+                  background: 'rgba(255,255,255,0.55)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(0,255,218,0.18), 0 16px 48px rgba(0,0,0,0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.08)'; }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #00FFDA 0%, #00FFDA44 50%, transparent 100%)' }} />
+                <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
+                <div className="relative">
+                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
+                  <h2 className="text-3xl font-black tracking-tight leading-tight mb-4" style={{ color: '#0A0A0A' }}>Born from<br />the garage.</h2>
+                  <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
+                </div>
+                {cultureCard.link_label && (
+                  <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 hover:gap-3 transition-all w-fit" style={{ color: '#009980', borderBottom: '1px solid rgba(0,153,128,0.35)' }}>
+                    {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                )}
+              </TileWrapper>
+            )}
+            {editorialCard && (
+              <TileWrapper
+                linkUrl={editorialCard.link_url}
+                className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+                style={{
+                  flex: '2',
+                  background: 'rgba(255,255,255,0.5)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.07)',
+                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.15), 0 12px 40px rgba(0,0,0,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.07)'; }}
+              >
+                <div className="absolute inset-0 pointer-events-none opacity-25" style={GRAIN_STYLE} />
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
+                <div className="relative">
+                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
+                  <p className="text-xl font-black tracking-tight leading-snug" style={{ color: '#0A0A0A' }}>{editorialCard.description}</p>
+                </div>
+                {editorialCard.link_label && (
+                  <span className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3" style={{ color: '#8A9096' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#8A9096'}
+                  >
+                    {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
+                  </span>
+                )}
+              </TileWrapper>
+            )}
+          </div>
 
         </div>
       </div>
