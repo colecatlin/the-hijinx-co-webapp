@@ -293,25 +293,30 @@ function ChampionshipLeaderCard({ leader }) {
     <Link to={routePath}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-1 min-w-0 rounded-lg p-3 flex items-center gap-3 cursor-pointer transition-all"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
+        className="flex-1 min-w-0 rounded-lg p-3 flex flex-col cursor-pointer transition-all"
+        style={{ aspectRatio: '1/1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
       >
-        {/* Circular avatar on left */}
-        <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
-          style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
-          {leader.image
-            ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
-            : <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
-          }
-        </div>
+        {/* Class label */}
+        <div className="text-white/60 font-black text-[7px] uppercase tracking-wider mb-2">{leader.class}</div>
 
-        {/* Text on right */}
-        <div className="min-w-0 flex-1">
-          <div className="text-white/60 font-black text-[7px] uppercase tracking-wider mb-0.5">{leader.class}</div>
-          <div className="text-white font-bold text-[10px] leading-tight">
-            <span className="text-white/40">1</span> {leader.name}
+        {/* Content wrapper */}
+        <div className="flex items-center gap-2 flex-1">
+          {/* Rounded rectangle avatar */}
+          <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
+            style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
+            {leader.image
+              ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
+              : <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
+            }
           </div>
-          <div className="text-white/40 text-[9px] mt-0.5">{leader.points} pts</div>
+
+          {/* Text on right */}
+          <div className="min-w-0 flex-1">
+            <div className="text-white font-bold text-[9px] leading-tight truncate">
+              <span className="text-white/40">1</span> {leader.name}
+            </div>
+            <div className="text-white/40 text-[8px] mt-1">{leader.points} pts</div>
+          </div>
         </div>
       </motion.div>
     </Link>
