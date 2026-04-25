@@ -112,7 +112,7 @@ export default function Layout({ children, currentPageName }) {
               </Link>
 
               {/* Desktop nav — same row as logo */}
-              <nav className="hidden lg:flex flex-1 items-center">
+              <nav className="hidden lg:flex flex-1 items-center justify-center">
                 <ul className="flex items-center gap-0">
                   {navItems.map((item) => (
                     <li
