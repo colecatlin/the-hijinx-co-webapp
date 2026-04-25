@@ -255,31 +255,31 @@ function EventListItem({ event }) {
 
 const PLACEHOLDER_LEADERS = [
   { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
     class_id: 'class-prolite', class: 'Pro Lite',
     driver_id: 'driver-1', name: 'Cole Catlin', points: 412,
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
   },
   { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
     class_id: 'class-pro2', class: 'Pro 2',
     driver_id: 'driver-2', name: 'Gavin Harlen', points: 398,
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
   },
   { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
     class_id: 'class-pro4', class: 'Pro 4',
     driver_id: 'driver-3', name: 'Mason Mingus', points: 375,
     image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop'
   },
   { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
     class_id: 'class-probuggy', class: 'Pro Buggy',
     driver_id: 'driver-4', name: 'Jett Noland', points: 420,
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
   },
   { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
     class_id: 'class-modlite', class: 'Mod Lite',
     driver_id: 'driver-5', name: 'Ryan Beat', points: 355,
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
@@ -305,8 +305,13 @@ function ChampionshipLeaderCard({ leader }) {
         {/* Gradient overlay */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
 
-        {/* Class label - top */}
-        <div className="absolute top-2.5 left-2.5 text-white font-black text-[11px] uppercase tracking-wider">{leader.class}</div>
+        {/* Series logo + Class label - top */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+          {leader.series_logo && (
+            <img src={leader.series_logo} alt={leader.series_name} className="h-4 object-contain" />
+          )}
+          <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
+        </div>
 
         {/* Name + points - bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-2.5">
