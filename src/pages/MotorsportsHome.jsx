@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/motorsports/StatCard';
 import DiscoveryRows from '@/components/motorsports/DiscoveryRows';
 
-const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/3991d6e7b_Background001.png';
+const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/1c65cd6f5_background.png';
 
 const grainStyle = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")`,
