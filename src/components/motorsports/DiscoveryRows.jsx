@@ -137,19 +137,27 @@ function TrackGridCard({ track }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="relative rounded-lg overflow-hidden cursor-pointer"
-        style={{ height: '56px', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.06)' }}
+        style={{ height: '72px', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.06)' }}
       >
+        {/* Full-bleed image */}
         {img
           ? <img src={img} alt={track.name} className="absolute inset-0 w-full h-full object-cover" />
           : <div className="absolute inset-0"><Placeholder char={(track.name || 'T')[0]} /></div>
         }
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
-        <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5">
-          <div className="text-white font-bold text-[10px] leading-tight truncate">{track.name}</div>
+        {/* Gradient overlay from bottom */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.1) 100%)' }} />
+        {/* Text pinned to bottom */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-2">
+          <div
+            className="text-white font-black text-xs leading-tight"
+            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}
+          >
+            {track.name}
+          </div>
           {location && (
-            <div className="flex items-center gap-1 text-white/50 text-[8px] truncate">
-              <MapPin className="w-2 h-2 flex-shrink-0" />
-              {location}
+            <div className="flex items-center gap-1 mt-0.5" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <MapPin className="w-2 h-2 flex-shrink-0 text-white/40" />
+              <span className="text-white/40 text-[9px]">{location}</span>
             </div>
           )}
         </div>
