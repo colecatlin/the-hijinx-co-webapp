@@ -96,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
               scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
             }`}
           >
-            <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between w-full gap-8">
+            <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between w-full gap-8">
               {/* Logo: icon + wordmark */}
               <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 flex-shrink-0">
                 <img
