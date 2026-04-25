@@ -33,7 +33,7 @@ export default function StatCard({ label, count, monthlyCount, isLoading, delay 
       initial={{ x: 40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay, duration: 0.5 }}
-      className="flex items-center justify-between px-4 py-3 rounded-xl"
+      className="flex items-center justify-between px-3 py-2.5 rounded-lg"
       style={{
         background: 'rgba(255,255,255,0.04)',
         backdropFilter: 'blur(14px)',
@@ -43,27 +43,27 @@ export default function StatCard({ label, count, monthlyCount, isLoading, delay 
       }}
     >
       {/* Icon */}
-      <div className="flex-shrink-0 mr-3">
-        <Icon className="w-7 h-7 text-white/35" strokeWidth={1.25} />
+      <div className="flex-shrink-0 mr-2.5">
+        <Icon className="w-5 h-5 text-white/35" strokeWidth={1.25} />
       </div>
 
       {/* Text */}
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-[9px] tracking-[0.35em] text-white/40 uppercase mb-0.5">{label}</div>
+        <div className="font-mono text-[8px] tracking-[0.3em] text-white/40 uppercase mb-0.5">{label}</div>
         {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-white/30" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-white/30" />
         ) : (
-          <div className="text-white font-bold text-xl leading-none tracking-tight">{count}</div>
+          <div className="text-white font-bold text-base leading-none tracking-tight">{count}</div>
         )}
         {!isLoading && monthlyLabel && (
-          <div className="text-[10px] mt-0.5" style={{ color: monthlyCount === 0 ? 'rgba(255,255,255,0.25)' : '#1DA1A1' }}>
+          <div className="text-[9px] mt-0.5" style={{ color: monthlyCount === 0 ? 'rgba(255,255,255,0.25)' : '#1DA1A1' }}>
             {monthlyLabel}
           </div>
         )}
       </div>
 
       {/* Sparkline */}
-      <svg width="60" height="28" viewBox="0 0 48 28" fill="none" className="flex-shrink-0 ml-2 opacity-60">
+      <svg width="44" height="22" viewBox="0 0 48 28" fill="none" className="flex-shrink-0 ml-1.5 opacity-60">
         <polyline
           points={path}
           stroke="#1DA1A1"
