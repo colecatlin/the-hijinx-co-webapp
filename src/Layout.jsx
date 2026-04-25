@@ -96,16 +96,73 @@ export default function Layout({ children, currentPageName }) {
               scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
             }`}
           >
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center relative w-full">
-              <Link to={createPageUrl('Home')} className="flex items-center">
+            <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between w-full gap-8">
+              {/* Logo: icon + wordmark */}
+              <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 flex-shrink-0">
+                <img
+                  src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
+                  alt="HIJINX icon"
+                  className="h-7 w-auto"
+                />
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png"
                   alt="HIJINX"
-                  className="h-16"
+                  className="h-6 w-auto"
                 />
               </Link>
 
-              <div className="absolute right-6 flex items-center gap-2">
+              {/* Desktop nav — same row as logo */}
+              <nav className="hidden lg:flex flex-1 items-center">
+                <ul className="flex items-center gap-0">
+                  {navItems.map((item) => (
+                    <li
+                      key={item.name}
+                      className="relative"
+                      onMouseEnter={() => setHoveredItem(item.name)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                    >
+                      <Link
+                        to={item.page ? createPageUrl(item.page) : '#'}
+                        className={`flex items-center gap-1 px-3 py-4 text-xs font-semibold tracking-widest uppercase transition-colors ${
+                          isActive(item.page)
+                            ? 'text-[#232323] border-b-2 border-[#232323]'
+                            : 'text-gray-500 hover:text-[#232323]'
+                        }`}
+                      >
+                        {item.name}
+                        {item.sub && <ChevronDown className="w-3 h-3" />}
+                      </Link>
+
+                      {/* Sub-nav: second layer */}
+                      {item.sub && hoveredItem === item.name && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute top-full left-0 bg-white border border-gray-100 shadow-lg min-w-[180px] py-2 z-50"
+                        >
+                          {item.sub.map((sub) => (
+                            sub.disabled ? (
+                              <div key={sub.name} className="px-4 pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-100 first:border-t-0">
+                                {sub.name.replace(/^— | —$/g, '')}
+                              </div>
+                            ) : (
+                              <Link
+                                key={sub.name}
+                                to={sub.href || createPageUrl(sub.page)}
+                                className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
+                              >
+                                {sub.name}
+                              </Link>
+                            )
+                          ))}
+                        </motion.div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => setSearchOpen(true)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden lg:block"
@@ -147,58 +204,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
 
-            {/* Desktop nav */}
-            <nav className="hidden lg:block border-t border-gray-100">
-              <div className="max-w-7xl mx-auto px-6">
-                <ul className="flex items-center justify-center gap-0">
-                  {navItems.map((item) => (
-                    <li
-                      key={item.name}
-                      className="relative"
-                      onMouseEnter={() => setHoveredItem(item.name)}
-                      onMouseLeave={() => setHoveredItem(null)}
-                    >
-                      <Link
-                        to={createPageUrl(item.page)}
-                        className={`flex items-center gap-1 px-3 py-3 text-sm font-medium tracking-wide uppercase transition-colors ${
-                          isActive(item.page)
-                            ? 'text-[#232323] border-b-2 border-[#232323]'
-                            : 'text-gray-600 hover:text-[#232323]'
-                        }`}
-                      >
-                        {item.name}
-                        {item.sub && <ChevronDown className="w-3 h-3" />}
-                      </Link>
 
-                      {item.sub && hoveredItem === item.name && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          className="absolute top-full left-0 bg-white border border-gray-100 shadow-lg min-w-[180px] py-2 z-50"
-                        >
-                          {item.sub.map((sub) => (
-                            sub.disabled ? (
-                              <div key={sub.name} className="px-4 pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-100 first:border-t-0">
-                                {sub.name.replace(/^— | —$/g, '')}
-                              </div>
-                            ) : (
-                              <Link
-                                key={sub.name}
-                                to={sub.href || createPageUrl(sub.page)}
-                                className="block px-4 py-2 text-xs font-medium text-gray-600 hover:text-[#232323] hover:bg-gray-50 transition-colors"
-                              >
-                                {sub.name}
-                              </Link>
-                            )
-                          ))}
-                        </motion.div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </nav>
           </header>
         </div>
 
