@@ -115,7 +115,12 @@ function TeamCard({ team }) {
 
         {/* Text */}
         <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
-          <div className="text-white font-bold text-xs leading-tight truncate">{team.name}</div>
+          <div
+            className="text-white font-bold leading-tight"
+            style={{ fontSize: 'clamp(9px, 2.2vw, 15px)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            {team.name}
+          </div>
           {team.primary_discipline && (
             <div className="text-white/50 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
           )}
