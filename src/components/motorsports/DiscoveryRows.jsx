@@ -43,13 +43,13 @@ function SectionHeader({ label, viewAllHref }) {
 
 // ── Scroll Row ────────────────────────────────────────────────────────────────
 
-function ScrollRow({ children, isLoading }) {
+function ScrollRow({ children, isLoading, aspectRatio = '3/2' }) {
   const ref = useRef(null);
   return (
     <div ref={ref} className="flex gap-3">
       {isLoading
         ? Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio: '3/2' }} />
+            <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio }} />
           ))
         : children}
     </div>
@@ -101,13 +101,13 @@ function TeamCard({ team }) {
   const img = team.logo_url;
 
   return (
-    <Link to={`/TeamProfile?id=${team.id}`}>
+    <Link to={`/TeamProfile?id=${team.id}`} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-40 rounded-xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="w-full rounded-xl overflow-hidden cursor-pointer"
+        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="h-20 flex items-center justify-center bg-white/95 px-4">
+        <div className="flex-1 flex items-center justify-center bg-white/95 px-4">
           {img
             ? <img src={img} alt={team.name} className="w-full h-full object-contain" />
             : <span className="text-black font-black text-lg">{(team.name || 'T')[0]}</span>
@@ -323,7 +323,7 @@ export default function DiscoveryRows() {
     queryKey: ['discovery-teams'],
     queryFn: () => base44.entities.Team.list('-created_date', 20),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter(t => t.visibility_status === 'live').slice(0, 20),
+    select: (d) => d.filter(t => t.visibility_status === 'live').slice(0, 5),
   });
 
   const { data: tracks = [], isLoading: loadingTracks } = useQuery({
@@ -372,7 +372,7 @@ export default function DiscoveryRows() {
       {/* ── TOP TEAMS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory" />
-        <ScrollRow isLoading={loadingTeams}>
+        <ScrollRow isLoading={loadingTeams} aspectRatio="3/2">
           {teams.map(t => <TeamCard key={t.id} team={t} />)}
           {!loadingTeams && teams.length === 0 && (
             <span className="text-white/20 text-xs italic py-4">No teams yet</span>
