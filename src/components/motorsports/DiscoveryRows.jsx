@@ -67,7 +67,8 @@ function DriverCard({ driver }) {
     <Link to={`/drivers/${slug}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-44 h-28 rounded-xl overflow-hidden relative cursor-pointer"
+        className="flex-shrink-0 rounded-xl overflow-hidden relative cursor-pointer"
+        style={{ width: '176px', height: `${176 * (2.5/3)}px` }}
         style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Background image */}
@@ -104,10 +105,11 @@ function TeamCard({ team }) {
     <Link to={`/TeamProfile?id=${team.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-40 rounded-xl overflow-hidden cursor-pointer"
+        className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer flex flex-col"
+        style={{ width: '160px', height: `${160 * (2/3)}px` }}
         style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        <div className="h-20 flex items-center justify-center bg-white/95 px-4">
+        <div className="flex-1 flex items-center justify-center bg-white/95 px-4">
           {img
             ? <img src={img} alt={team.name} className="w-full h-full object-contain" />
             : <span className="text-black font-black text-lg">{(team.name || 'T')[0]}</span>
