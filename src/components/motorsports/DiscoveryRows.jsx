@@ -105,17 +105,16 @@ function TeamCard({ team }) {
     <Link to={`/TeamProfile?id=${team.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer flex flex-col"
-        style={{ width: '160px', height: `${160 * (2/3)}px` }}
-        style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer"
+        style={{ width: '160px', height: `${Math.round(160 * 2/3)}px`, background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="flex-1 flex items-center justify-center bg-white/95 px-4">
+        <div style={{ flex: 1 }} className="flex items-center justify-center bg-white/95 px-4">
           {img
-            ? <img src={img} alt={team.name} className="w-full h-full object-contain" />
+            ? <img src={img} alt={team.name} className="max-w-full max-h-full object-contain" />
             : <span className="text-black font-black text-lg">{(team.name || 'T')[0]}</span>
           }
         </div>
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 flex-shrink-0">
           <div className="text-white font-bold text-xs truncate">{team.name}</div>
           {team.primary_discipline && (
             <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
