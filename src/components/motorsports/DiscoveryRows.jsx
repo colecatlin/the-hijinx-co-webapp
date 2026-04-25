@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, ChevronRight, Flag, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BehindTheScenesCarousel from './BehindTheScenesCarousel';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -493,6 +494,9 @@ export default function DiscoveryRows() {
           </div>
         }
       </div>
+
+      {/* ── BEHIND THE SCENES CAROUSEL ── */}
+      <BehindTheScenesCarousel />
 
       {/* ── CTA BANNER ── */}
       <div style={rowStyle} className="pt-4 pb-8">
