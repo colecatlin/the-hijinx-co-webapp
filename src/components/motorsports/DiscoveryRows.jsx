@@ -475,15 +475,17 @@ export default function DiscoveryRows() {
         </div>
 
         {/* Series Spotlight */}
-        {(series.length > 0 || loadingSeries) && (
-          <div>
-            <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
-            {loadingSeries
-              ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
-              : series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
-            }
-          </div>
-        )}
+        <div>
+          <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
+          {loadingSeries
+            ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
+            : series.length > 0
+              ? series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
+              : <div className="h-24 rounded-xl bg-white/5 flex items-center justify-center">
+                  <span className="text-white/20 text-xs italic">No series yet</span>
+                </div>
+          }
+        </div>
       </div>
 
       {/* ── CTA BANNER ── */}
