@@ -125,7 +125,7 @@ export default function Layout({ children, currentPageName }) {
                         to={item.page ? createPageUrl(item.page) : '#'}
                         className={`flex items-center gap-1 px-3 py-4 text-sm font-semibold tracking-widest uppercase transition-colors ${
                           isActive(item.page)
-                            ? 'text-hijinx-blue border-b-2 border-hijinx-blue'
+                            ? 'text-[#232323] border-b-2 border-hijinx-blue'
                             : 'text-[#232323] hover:text-hijinx-blue'
                         }`}
                       >
