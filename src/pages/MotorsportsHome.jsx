@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/motorsports/StatCard';
 import DiscoveryRows from '@/components/motorsports/DiscoveryRows';
+import CultureSection from '@/components/motorsports/CultureSection';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/1c65cd6f5_background.png';
 
@@ -151,6 +152,9 @@ export default function MotorsportsHome() {
 
         </div>
       </div>
+
+      {/* ── CULTURE SECTION ── */}
+      <CultureSection />
 
       {/* ── DISCOVERY ROWS ── */}
       <DiscoveryRows />
