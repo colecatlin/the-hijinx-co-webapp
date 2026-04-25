@@ -99,27 +99,27 @@ function DriverCard({ driver }) {
 
 function TeamCard({ team }) {
   const img = team.logo_url;
-  const sub = team.primary_discipline || team.manufacturer || null;
 
   return (
     <Link to={`/TeamProfile?id=${team.id}`} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="w-full rounded-xl overflow-hidden cursor-pointer flex flex-col items-center justify-center gap-2 px-3 py-4"
-        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="w-full rounded-xl overflow-hidden cursor-pointer relative"
+        style={{ aspectRatio: '3/2', background: 'rgba(10,10,10,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        {/* Logo */}
-        {img && (
-          <img src={img} alt={team.name} className="w-12 h-12 object-contain flex-shrink-0" style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.15))' }} />
-        )}
-
-        {/* Name */}
-        <div className="text-white font-bold text-xs leading-tight text-center truncate w-full">{team.name}</div>
-
-        {/* Sub */}
-        {sub && (
-          <div className="text-white/40 text-[9px] text-center truncate w-full">{sub}</div>
-        )}
+        {/* Logo fills the full card */}
+        {img
+          ? <img src={img} alt={team.name} className="absolute inset-0 w-full h-full object-contain p-3" />
+          : <div className="absolute inset-0 flex items-center justify-center"><span className="text-white/20 text-3xl font-black">{(team.name || 'T')[0]}</span></div>
+        }
+        {/* Bottom gradient + name */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-2">
+          <div className="text-white font-bold text-xs leading-tight truncate">{team.name}</div>
+          {(team.primary_discipline || team.manufacturer) && (
+            <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline || team.manufacturer}</div>
+          )}
+        </div>
       </motion.div>
     </Link>
   );
