@@ -124,6 +124,40 @@ function TeamCard({ team }) {
   );
 }
 
+// ── Track Grid Card (matches event item height) ───────────────────────────────
+
+function TrackGridCard({ track }) {
+  const img = track.image_url;
+  const city = track.location_city;
+  const state = track.location_state;
+  const location = [city, state].filter(Boolean).join(', ');
+
+  return (
+    <Link to={`/TrackProfile?id=${track.id}`}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="relative rounded-lg overflow-hidden cursor-pointer"
+        style={{ height: '56px', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.06)' }}
+      >
+        {img
+          ? <img src={img} alt={track.name} className="absolute inset-0 w-full h-full object-cover" />
+          : <div className="absolute inset-0"><Placeholder char={(track.name || 'T')[0]} /></div>
+        }
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5">
+          <div className="text-white font-bold text-[10px] leading-tight truncate">{track.name}</div>
+          {location && (
+            <div className="flex items-center gap-1 text-white/50 text-[8px] truncate">
+              <MapPin className="w-2 h-2 flex-shrink-0" />
+              {location}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
 // ── Track Card ────────────────────────────────────────────────────────────────
 
 function TrackCard({ track }) {
@@ -343,12 +377,27 @@ export default function DiscoveryRows() {
         {/* Tracks */}
         <div>
           <SectionHeader label="Tracks Around the World" viewAllHref="/TrackDirectory" />
-          <ScrollRow isLoading={loadingTracks}>
-            {tracks.map(t => <TrackCard key={t.id} track={t} />)}
-            {!loadingTracks && tracks.length === 0 && (
-              <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
-            )}
-          </ScrollRow>
+          {loadingTracks ? (
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5" />)}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5" />)}
+              </div>
+            </div>
+          ) : tracks.length === 0 ? (
+            <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-3 gap-2">
+                {tracks.slice(0, 3).map(t => <TrackGridCard key={t.id} track={t} />)}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {tracks.slice(3, 5).map(t => <TrackGridCard key={t.id} track={t} />)}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Upcoming Events - list style */}
