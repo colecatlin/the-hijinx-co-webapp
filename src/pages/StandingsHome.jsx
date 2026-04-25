@@ -1,248 +1,122 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { QueryKeys } from '@/components/utils/queryKeys';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import { useMotorsportsContext } from '@/components/motorsports/useMotorsportsContext';
-import { isPublicVisible } from '@/components/core/publishModel';
-
-const DQ = applyDefaultQueryOptions();
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
-import PageShell from '@/components/shared/PageShell';
-import SectionHeader from '@/components/shared/SectionHeader';
-import EmptyState from '@/components/shared/EmptyState';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, ArrowUpDown, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 
-export default function StandingsHome() {
-  const [selectedSeries, setSelectedSeries] = useState('all');
-  const [selectedClass, setSelectedClass] = useState('all');
-  const [selectedSeason, setSelectedSeason] = useState('');
-  const [sortField, setSortField] = useState('position');
-  const [sortDir, setSortDir] = useState(1);
-
-  const { data: user } = useQuery({
-    queryKey: QueryKeys.auth.me(),
-    queryFn: () => base44.auth.me(),
-    ...DQ,
-  });
-
-  const { seasonYear, isLoading: contextLoading, error: contextError } = useMotorsportsContext();
-
-  const { data: series = [], isLoading: loadingSeries } = useQuery({
-    queryKey: QueryKeys.series.list({ status: 'active' }),
-    queryFn: () => base44.entities.Series.filter({ status: 'active' }),
-    ...DQ,
-  });
-
-  const { data: entries = [], isLoading: loadingEntries } = useQuery({
-    queryKey: ['standings'],
-    queryFn: () => base44.entities.Standings.list('-total_points', 500),
-    ...DQ,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: QueryKeys.events.list(),
-    queryFn: () => base44.entities.Event.list(),
-    ...DQ,
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: QueryKeys.sessions.listByEvent(undefined),
-    queryFn: () => base44.entities.Session.list(),
-    ...DQ,
-  });
-
-  const isAdmin = user?.role === 'admin';
-
-  const getLatestSessionStatus = (seriesId, seasonYear) => {
-    const relatedEvents = events.filter(e => e.series_id === seriesId && e.season === seasonYear);
-    const relatedSessions = sessions.filter(s => relatedEvents.some(e => e.id === s.event_id));
-    const officialOrLockedSessions = relatedSessions.filter(s => 
-      s.status === 'Official' || s.status === 'Locked'
-    );
-    return officialOrLockedSessions.length > 0;
-  };
-
-  const isStandingsPublic = (standing) => {
-    return isAdmin || getLatestSessionStatus(standing.series_id, standing.season_year);
-  };
-
-  const currentYear = new Date().getFullYear().toString();
-
-  // Derive available seasons and classes
-  const availableSeasons = useMemo(() => {
-    const s = [...new Set(entries.map(e => e.season_year).filter(Boolean))].sort((a, b) => b.localeCompare(a));
-    return s.length > 0 ? s : [currentYear];
-  }, [entries]);
-
-  const activeSeason = selectedSeason || availableSeasons[0] || currentYear;
-
-  const availableClasses = useMemo(() => {
-    let filtered = entries.filter(e => e.season_year === activeSeason);
-    if (selectedSeries !== 'all') filtered = filtered.filter(e => e.series_id === selectedSeries);
-    return ['all', ...new Set(filtered.map(e => e.class_name).filter(Boolean))];
-  }, [entries, activeSeason, selectedSeries]);
-
-  // Filter standings to only published/calculated ones (Race Core official data)
-  const filteredEntries = useMemo(() => {
-    let data = entries.filter(e => {
-      if (e.season_year !== activeSeason) return false;
-      // Show standings from seasons with official/locked sessions
-      const hasOfficialSessions = getLatestSessionStatus(e.series_id, activeSeason);
-      return isAdmin || hasOfficialSessions;
-    });
-    if (selectedSeries !== 'all') data = data.filter(e => e.series_id === selectedSeries);
-    if (selectedClass !== 'all') data = data.filter(e => e.class_name === selectedClass);
-    data.sort((a, b) => {
-      const aVal = a[sortField] ?? 0;
-      const bVal = b[sortField] ?? 0;
-      if (typeof aVal === 'string') return aVal.localeCompare(bVal) * sortDir;
-      return (aVal - bVal) * sortDir;
-    });
-    return data;
-  }, [entries, activeSeason, selectedSeries, selectedClass, sortField, sortDir, isAdmin, events, sessions]);
-
-  const toggleSort = (field) => {
-    if (sortField === field) setSortDir(d => d * -1);
-    else { setSortField(field); setSortDir(1); }
-  };
-
-  const lastUpdated = filteredEntries.length > 0
-    ? filteredEntries.reduce((latest, e) => {
-        const d = e.last_calculated || e.updated_date;
-        return d && d > latest ? d : latest;
-      }, '')
-    : null;
-
-  const SortHeader = ({ field, children }) => (
-    <th
-      className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase cursor-pointer hover:text-[#0A0A0A] select-none"
-      onClick={() => toggleSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {children}
-        {sortField === field && <ArrowUpDown className="w-3 h-3" />}
-      </span>
-    </th>
+function TopThreeDriver({ driver, position }) {
+  return (
+    <div className="flex items-center gap-2.5 py-2">
+      {/* Position + Avatar */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 flex items-center justify-center"
+          style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+          {driver.image
+            ? <img src={driver.image} alt={driver.name} className="w-full h-full object-cover object-top" />
+            : <span className="text-white/30 text-xs font-black">{driver.name[0]}</span>
+          }
+        </div>
+      </div>
+      
+      {/* Driver info */}
+      <div className="min-w-0 flex-1">
+        <div className="text-white font-bold text-xs">
+          <span className="text-white/40">{position}</span> {driver.name}
+        </div>
+        <div className="text-white/40 text-[9px]">{driver.points} pts</div>
+      </div>
+    </div>
   );
+}
+
+function SeriesLeaderboard({ series }) {
+  // Sample top 3 drivers per series/class
+  const topDrivers = [
+    { name: 'Cole Catlin', points: 412, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop' },
+    { name: 'Gavin Harlen', points: 398, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop' },
+    { name: 'Mason Mingus', points: 375, image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop' },
+  ];
 
   return (
-    <PageShell>
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
-        <SectionHeader
-          label="Motorsports"
-          title="Points Standings"
-          subtitle="Championship standings across all series and classes."
-        />
-
-        {/* Filters */}
-         <div className="flex flex-wrap gap-3 mb-8 items-center">
-          <Select value={String(activeSeason)} onValueChange={(v) => setSelectedSeason(Number(v))}>
-             <SelectTrigger className="w-32 rounded-none text-xs"><SelectValue /></SelectTrigger>
-             <SelectContent>
-               {availableSeasons.map(s => <SelectItem key={s} value={String(s)}>{s} Season</SelectItem>)}
-             </SelectContent>
-           </Select>
-
-          <Select value={selectedSeries} onValueChange={(v) => { setSelectedSeries(v); setSelectedClass('all'); }}>
-            <SelectTrigger className="w-44 rounded-none text-xs"><SelectValue placeholder="All Series" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Series</SelectItem>
-              {series.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-
-          {availableClasses.length > 1 && (
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-36 rounded-none text-xs"><SelectValue placeholder="All Classes" /></SelectTrigger>
-              <SelectContent>
-                {availableClasses.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'All Classes' : c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
+    >
+      {/* Series Info */}
+      <div
+        className="p-4 rounded-lg flex flex-col gap-3"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
+      >
+        {series.logo_url && (
+          <img src={series.logo_url} alt={series.name} className="w-12 h-12 object-contain" />
+        )}
+        <div>
+          <h3 className="text-white font-bold text-sm">{series.name}</h3>
+          {series.description && (
+            <p className="text-white/40 text-xs mt-2 line-clamp-3">{series.description}</p>
           )}
         </div>
+        <Link
+          to={`/series/${series.slug || series.id}`}
+          className="text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 mt-auto"
+        >
+          View Series <ChevronRight className="w-3 h-3" />
+        </Link>
+      </div>
 
-        {/* Last updated */}
-        {lastUpdated && (
-          <div className="flex items-center gap-1 mb-4 text-xs text-gray-400 font-mono">
-            <Clock className="w-3 h-3" />
-            Last updated: {format(new Date(lastUpdated), 'MMM d, yyyy h:mm a')}
-          </div>
-        )}
+      {/* Top 3 Drivers */}
+      <div className="lg:col-span-2 p-4 rounded-lg"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
+      >
+        <h4 className="text-white/60 font-black text-[10px] uppercase tracking-wider mb-3">Top Drivers</h4>
+        <div>
+          {topDrivers.map((driver, idx) => (
+            <TopThreeDriver key={idx} driver={driver} position={idx + 1} />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
-        {loadingEntries || loadingSeries || contextLoading ? (
-          <div className="space-y-2">
-            {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+export default function StandingsHome() {
+  const { data: series = [], isLoading } = useQuery({
+    queryKey: ['standings-series'],
+    queryFn: () => base44.entities.Series.list('-created_date', 20),
+    staleTime: 5 * 60 * 1000,
+    select: (d) => d.filter(s => s.visibility_status === 'live').slice(0, 5),
+  });
+
+  return (
+    <div className="min-h-screen bg-[#080C0C]">
+      {/* Header */}
+      <div className="px-8 md:px-12 lg:px-20 py-8 border-b border-white/10">
+        <h1 className="text-white font-black text-4xl uppercase">Championship Standings</h1>
+        <p className="text-white/50 text-sm mt-2">View top drivers across all series and classes</p>
+      </div>
+
+      {/* Content */}
+      <div className="px-8 md:px-12 lg:px-20 py-8">
+        {isLoading ? (
+          <div className="space-y-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-32 rounded-lg animate-pulse bg-white/5" />
+            ))}
           </div>
-        ) : contextError ? (
-          <EmptyState icon={Trophy} title="Error loading standings" message="Please refresh the page or try again." />
-        ) : filteredEntries.length === 0 ? (
-          <EmptyState icon={Trophy} title="Standings not yet published" message="Standings will appear here once results are finalized." />
+        ) : series.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-white/40 text-sm">No series available</p>
+          </div>
         ) : (
-          <>
-            {isAdmin && (
-              <div className="mb-4">
-                <Badge className="bg-gray-700 text-white">Internal Preview</Badge>
-              </div>
-            )}
-            <div className="overflow-x-auto border border-gray-200">
-              <table className="w-full min-w-[700px]">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <SortHeader field="position">Pos</SortHeader>
-                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Driver</th>
-                    <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Bib #</th>
-                    {selectedSeries === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Series</th>}
-                    {selectedClass === 'all' && <th className="px-4 py-3 text-left text-[10px] font-mono tracking-wider text-gray-400 uppercase">Class</th>}
-                    <SortHeader field="total_points">Pts</SortHeader>
-                    <SortHeader field="wins">Wins</SortHeader>
-                    <SortHeader field="podiums">Podiums</SortHeader>
-                    <SortHeader field="events_counted">Starts</SortHeader>
-                  </tr>
-                </thead>
-              <tbody>
-                {filteredEntries.map((entry, i) => (
-                  <tr key={entry.id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i < 3 ? 'font-medium' : ''}`}>
-                    <td className="px-4 py-3 text-sm tabular-nums">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 text-xs font-bold ${
-                        i === 0 ? 'bg-[#0A0A0A] text-white' : i < 3 ? 'bg-gray-200' : ''
-                      }`}>
-                        {entry.position}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                     {entry.driver_id ? (
-                        <Link to={createPageUrl('DriverProfile', { first: entry.first_name.toLowerCase(), last: entry.last_name.toLowerCase() })} className="text-sm font-semibold hover:underline">
-                          {entry.first_name} {entry.last_name}
-                        </Link>
-                      ) : (
-                        <span className="text-sm font-semibold">{entry.first_name} {entry.last_name}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 font-mono">{entry.bib_number || '—'}</td>
-                    {selectedSeries === 'all' && (
-                     <td className="px-4 py-3 text-xs text-gray-500">{entry.series_name}</td>
-                    )}
-                    {selectedClass === 'all' && (
-                     <td className="px-4 py-3 text-xs text-gray-500">{entry.class_name}</td>
-                    )}
-                    <td className="px-4 py-3 text-sm font-bold tabular-nums">{entry.total_points}</td>
-                    <td className="px-4 py-3 text-sm tabular-nums">{entry.wins || 0}</td>
-                    <td className="px-4 py-3 text-sm tabular-nums">{entry.podiums || 0}</td>
-                    <td className="px-4 py-3 text-sm tabular-nums">{entry.events_counted || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-          </>
+          <div>
+            {series.map(s => (
+              <SeriesLeaderboard key={s.id} series={s} />
+            ))}
+          </div>
         )}
       </div>
-    </PageShell>
+    </div>
   );
 }
