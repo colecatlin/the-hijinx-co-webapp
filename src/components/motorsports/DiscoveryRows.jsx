@@ -316,7 +316,7 @@ export default function DiscoveryRows() {
     queryKey: ['discovery-drivers'],
     queryFn: () => base44.entities.Driver.list('-created_date', 20),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter(dr => dr.visibility_status === 'live').slice(0, 20),
+    select: (d) => d.filter(dr => dr.visibility_status === 'live').slice(0, 5),
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
