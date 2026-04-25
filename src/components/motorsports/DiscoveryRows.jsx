@@ -105,19 +105,19 @@ function TeamCard({ team }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden cursor-pointer relative"
-        style={{ aspectRatio: '3/2', background: 'rgba(10,10,10,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        {/* Logo fills the full card */}
-        {img
-          ? <img src={img} alt={team.name} className="absolute inset-0 w-full h-full object-contain p-3" />
-          : <div className="absolute inset-0 flex items-center justify-center"><span className="text-white/20 text-3xl font-black">{(team.name || 'T')[0]}</span></div>
-        }
-        {/* Bottom gradient + name */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)' }} />
-        <div className="absolute bottom-0 left-0 right-0 px-3 py-2">
+        {/* Background image */}
+        {img && (
+          <img src={img} alt={team.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+
+        {/* Text */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
           <div className="text-white font-bold text-xs leading-tight truncate">{team.name}</div>
-          {(team.primary_discipline || team.manufacturer) && (
-            <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline || team.manufacturer}</div>
+          {team.primary_discipline && (
+            <div className="text-white/50 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
           )}
         </div>
       </motion.div>
