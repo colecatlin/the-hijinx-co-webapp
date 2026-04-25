@@ -264,17 +264,30 @@ const PLACEHOLDER_LEADERS = [
 function ChampionshipLeaderCard({ leader }) {
   return (
     <div
-      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
+      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2.5"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.14)' }}
     >
-      <div className="text-[#1DA1A1] font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
-      {/* Driver avatar placeholder */}
-      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-        <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
-      </div>
-      <div className="text-center">
-        <div className="text-white font-bold text-[10px] leading-tight">1 {leader.name}</div>
-        <div className="text-white/40 text-[9px] mt-0.5">{leader.points} pts</div>
+      {/* Class label */}
+      <div className="text-white/50 font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
+
+      {/* Avatar + info row */}
+      <div className="flex items-center gap-2.5">
+        {/* Circular avatar */}
+        <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
+          style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+          {leader.image
+            ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
+            : <span className="text-white/30 text-base font-black">{leader.name[0]}</span>
+          }
+        </div>
+
+        {/* Name + points */}
+        <div>
+          <div className="text-white font-bold text-[11px] leading-tight">
+            <span className="text-white/40 mr-1">1</span>{leader.name}
+          </div>
+          <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
+        </div>
       </div>
     </div>
   );
