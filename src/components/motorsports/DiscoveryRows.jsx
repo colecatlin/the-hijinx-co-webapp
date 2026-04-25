@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -126,7 +126,7 @@ function TeamCard({ team }) {
 
 // ── Track Card ────────────────────────────────────────────────────────────────
 
-function TrackCard({ track }) {
+function TrackCard({ track, cardWidth, cardHeight }) {
   const img = track.image_url;
   const city = track.location_city;
   const state = track.location_state;
@@ -136,8 +136,8 @@ function TrackCard({ track }) {
     <Link to={`/TrackProfile?id=${track.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer relative"
-        style={{ aspectRatio: '2/3', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer relative"
+        style={{ width: cardWidth || 88, height: cardHeight || 176, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Full-bleed image */}
         {img
@@ -267,6 +267,67 @@ function CTABanner() {
   );
 }
 
+// ── Tracks + Events (synced height) ──────────────────────────────────────────
+
+function TracksAndEvents({ tracks, loadingTracks, events, loadingEvents, rowStyle }) {
+  const eventsRef = useRef(null);
+  const [eventsHeight, setEventsHeight] = useState(null);
+
+  useEffect(() => {
+    const el = eventsRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setEventsHeight(entry.contentRect.height);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Each card is 1:2 (width:height), so card width = eventsHeight / 2
+  const cardHeight = eventsHeight || 320;
+  const cardWidth = cardHeight / 2;
+
+  return (
+    <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
+      {/* Tracks */}
+      <div>
+        <SectionHeader label="Tracks Around the World" viewAllHref="/TrackDirectory" />
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          {loadingTracks
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 rounded-xl animate-pulse bg-white/5"
+                  style={{ width: cardWidth, height: cardHeight }} />
+              ))
+            : tracks.length === 0
+              ? <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
+              : tracks.map(t => (
+                  <TrackCard key={t.id} track={t} cardWidth={cardWidth} cardHeight={cardHeight} />
+                ))
+          }
+        </div>
+      </div>
+
+      {/* Upcoming Events */}
+      <div ref={eventsRef}>
+        <SectionHeader label="Upcoming Events" viewAllHref="/EventDirectory" />
+        {loadingEvents
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5 mb-2" />
+            ))
+          : (
+            <div className="flex flex-col gap-2">
+              {events.map(e => <EventListItem key={e.id} event={e} />)}
+              {events.length === 0 && (
+                <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
+              )}
+            </div>
+          )
+        }
+      </div>
+    </div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function DiscoveryRows() {
@@ -339,36 +400,13 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── TRACKS + EVENTS (side by side) ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
-        {/* Tracks */}
-        <div>
-          <SectionHeader label="Tracks Around the World" viewAllHref="/TrackDirectory" />
-          <ScrollRow isLoading={loadingTracks}>
-            {tracks.map(t => <TrackCard key={t.id} track={t} />)}
-            {!loadingTracks && tracks.length === 0 && (
-              <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
-            )}
-          </ScrollRow>
-        </div>
-
-        {/* Upcoming Events - list style */}
-        <div>
-          <SectionHeader label="Upcoming Events" viewAllHref="/EventDirectory" />
-          {loadingEvents
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5 mb-2" />
-              ))
-            : (
-              <div className="flex flex-col gap-2">
-                {events.map(e => <EventListItem key={e.id} event={e} />)}
-                {events.length === 0 && (
-                  <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
-                )}
-              </div>
-            )
-          }
-        </div>
-      </div>
+      <TracksAndEvents
+        tracks={tracks}
+        loadingTracks={loadingTracks}
+        events={events}
+        loadingEvents={loadingEvents}
+        rowStyle={rowStyle}
+      />
 
       {/* ── SERIES SPOTLIGHT ── */}
       {(series.length > 0 || loadingSeries) && (
