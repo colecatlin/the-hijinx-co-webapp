@@ -326,28 +326,33 @@ function ChampionshipLeaderCard({ leader }) {
 // ── Series Spotlight ──────────────────────────────────────────────────────────
 
 function SeriesSpotlightCard({ series }) {
-  const bgImage = series.banner_url || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&h=800&fit=crop';
+  const bgImage = series.banner_url || 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=800&h=400&fit=crop';
   
   return (
     <Link to={`/series/${series.slug || series.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="rounded-lg overflow-hidden cursor-pointer transition-all h-full w-full relative"
-        style={{ aspectRatio: '1', border: '1px solid rgba(255,255,255,0.16)' }}
+        className="relative rounded-xl overflow-hidden cursor-pointer h-32"
+        style={{ border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        {/* Full-bleed race vehicle image */}
-        <img src={bgImage} alt={series.name} className="absolute inset-0 w-full h-full object-cover object-center" />
+        {/* Background image */}
+        <img src={bgImage} alt={series.name} className="absolute inset-0 w-full h-full object-cover" />
+        
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
-
-        {/* Series name */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5">
-          <div className="text-white font-bold text-[12px] leading-tight truncate">
-            {series.name}
-          </div>
-          <div className="text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
-            Explore Series <ChevronRight className="w-3 h-3" />
+        {/* Content */}
+        <div className="relative h-full flex items-center gap-4 p-4">
+          {series.logo_url && (
+            <img src={series.logo_url} alt={series.name} className="w-14 h-14 object-contain flex-shrink-0" />
+          )}
+          <div className="flex-1 min-w-0">
+            {series.description && (
+              <div className="text-white text-xs line-clamp-2 mb-2">{series.description}</div>
+            )}
+            <div className="text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+              Explore Series <ChevronRight className="w-3 h-3" />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -511,7 +516,7 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
+      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
         {/* Championship Leaders */}
         <div>
           <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
