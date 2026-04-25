@@ -301,9 +301,9 @@ function ChampionshipLeaderCard({ leader }) {
 
         {/* Avatar + text right */}
         <div className="flex items-center gap-2 flex-1">
-          {/* Rounded rectangle avatar */}
-          <div className="w-11 h-11 rounded-md overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
-            style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
+          {/* Rounded rectangle avatar 2:3 */}
+          <div className="w-10 rounded-md overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
+            style={{ aspectRatio: '2/3', border: '1px solid rgba(255,255,255,0.2)' }}>
             {leader.image
               ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
               : <span className="text-white/30 text-sm font-black">{leader.name[0]}</span>
