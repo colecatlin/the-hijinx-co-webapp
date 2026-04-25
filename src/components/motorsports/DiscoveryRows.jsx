@@ -293,30 +293,27 @@ function ChampionshipLeaderCard({ leader }) {
     <Link to={routePath}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2.5 cursor-pointer transition-all"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.14)' }}
+        className="flex-1 min-w-0 rounded-lg p-3 flex flex-col items-center gap-2 cursor-pointer transition-all"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
       >
         {/* Class label */}
-        <div className="text-white/50 font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
+        <div className="text-white/60 font-black text-[8px] uppercase tracking-wider">{leader.class}</div>
 
-        {/* Avatar + info row */}
-        <div className="flex items-center gap-2.5">
-          {/* Circular avatar */}
-          <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
-            style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
-            {leader.image
-              ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
-              : <span className="text-white/30 text-base font-black">{leader.name[0]}</span>
-            }
-          </div>
+        {/* Circular avatar */}
+        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
+          style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
+          {leader.image
+            ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
+            : <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
+          }
+        </div>
 
-          {/* Name + points */}
-          <div>
-            <div className="text-white font-bold text-[11px] leading-tight">
-              <span className="text-white/40 mr-1">1</span>{leader.name}
-            </div>
-            <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
+        {/* Name + position */}
+        <div className="text-center">
+          <div className="text-white font-bold text-[10px] leading-tight">
+            <span className="text-white/50">1</span> {leader.name}
           </div>
+          <div className="text-white/50 text-[9px] mt-1">{leader.points} pts</div>
         </div>
       </motion.div>
     </Link>
