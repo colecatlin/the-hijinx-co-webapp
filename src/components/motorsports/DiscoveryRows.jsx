@@ -46,10 +46,10 @@ function SectionHeader({ label, viewAllHref }) {
 function ScrollRow({ children, isLoading }) {
   const ref = useRef(null);
   return (
-    <div ref={ref} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+    <div ref={ref} className="flex gap-3">
       {isLoading
         ? Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-44 h-28 rounded-xl animate-pulse bg-white/5" />
+            <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio: '2/3' }} />
           ))
         : children}
     </div>
@@ -64,11 +64,11 @@ function DriverCard({ driver }) {
   const slug = driver.slug || driver.id;
 
   return (
-    <Link to={`/drivers/${slug}`}>
+    <Link to={`/drivers/${slug}`} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-44 h-28 rounded-xl overflow-hidden relative cursor-pointer"
-        style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="w-full rounded-xl overflow-hidden relative cursor-pointer"
+        style={{ aspectRatio: '2/3', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Background image */}
         {img && (
