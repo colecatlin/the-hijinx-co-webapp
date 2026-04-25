@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/motorsports/StatCard';
+import DiscoveryRows from '@/components/motorsports/DiscoveryRows';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/1c65cd6f5_background.png';
 
@@ -60,10 +61,10 @@ export default function MotorsportsHome() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050A0A]">
+    <div className="relative bg-[#050A0A]">
 
       {/* ── BACKGROUND ── */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 h-screen">
         <img
           src={BG_IMAGE}
           alt="Racing"
@@ -79,7 +80,7 @@ export default function MotorsportsHome() {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className="relative z-10 min-h-screen flex items-center px-8 md:px-12 lg:px-20 py-10">
+      <div className="relative z-10 h-screen flex items-center px-8 md:px-12 lg:px-20 py-10">
         <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
 
           {/* LEFT: Hero text + search */}
@@ -150,6 +151,9 @@ export default function MotorsportsHome() {
 
         </div>
       </div>
+
+      {/* ── DISCOVERY ROWS ── */}
+      <DiscoveryRows />
     </div>
   );
 }
