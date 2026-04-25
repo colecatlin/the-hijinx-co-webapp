@@ -104,19 +104,20 @@ function TeamCard({ team }) {
     <Link to={`/TeamProfile?id=${team.id}`} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="w-full rounded-xl overflow-hidden cursor-pointer"
-        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column' }}
+        className="w-full rounded-xl overflow-hidden cursor-pointer relative"
+        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        <div className="flex-1 flex items-center justify-center bg-white/95 px-4">
-          {img
-            ? <img src={img} alt={team.name} className="w-full h-full object-contain" />
-            : <span className="text-black font-black text-lg">{(team.name || 'T')[0]}</span>
-          }
-        </div>
-        <div className="px-3 py-2">
-          <div className="text-white font-bold text-xs truncate">{team.name}</div>
+        {/* Background image */}
+        {img && (
+          <img src={img} alt={team.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+
+        {/* Text */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
+          <div className="text-white font-bold text-xs leading-tight truncate">{team.name}</div>
           {team.primary_discipline && (
-            <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
+            <div className="text-white/50 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
           )}
         </div>
       </motion.div>
