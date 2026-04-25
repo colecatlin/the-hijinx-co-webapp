@@ -68,7 +68,7 @@ function DriverCard({ driver }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="flex-shrink-0 w-44 h-28 rounded-xl overflow-hidden relative cursor-pointer"
-        style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
+        style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Background image */}
         {img && (
@@ -105,7 +105,7 @@ function TeamCard({ team }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="flex-shrink-0 w-40 rounded-xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}
+        style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         <div className="h-20 flex items-center justify-center bg-white/95 px-4">
           {img
@@ -137,7 +137,7 @@ function TrackCard({ track }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer"
-        style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         <div className="h-24 overflow-hidden relative">
           {img
@@ -170,7 +170,7 @@ function EventListItem({ event }) {
       <motion.div
         whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
         className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors cursor-pointer"
-        style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+        style={{ border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.02)', boxShadow: '0 0 10px rgba(255,255,255,0.06)' }}
       >
         {/* Date */}
         <div className="flex-shrink-0 text-center w-14">
@@ -209,7 +209,7 @@ function SeriesSpotlightCard({ series }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="flex items-center gap-4 p-4 rounded-xl cursor-pointer"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {series.logo_url && (
           <img src={series.logo_url} alt={series.name} className="w-16 h-16 object-contain flex-shrink-0" />

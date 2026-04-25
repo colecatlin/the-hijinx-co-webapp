@@ -34,8 +34,8 @@ export default function StatCard({ label, count, monthlyCount, isLoading, delay 
         background: 'rgba(255,255,255,0.05)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 2px 20px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.35)',
+        boxShadow: '0 0 14px rgba(255,255,255,0.08), 0 2px 20px rgba(0,0,0,0.3)',
       }}
     >
       {/* Icon */}
