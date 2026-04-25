@@ -511,7 +511,7 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
+      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
         {/* Championship Leaders */}
         <div>
           <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
