@@ -293,16 +293,16 @@ function ChampionshipLeaderCard({ leader }) {
     <Link to={routePath}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-1 min-w-0 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-all"
+        className="flex-1 min-w-0 rounded-lg p-2.5 flex flex-col cursor-pointer transition-all"
         style={{ aspectRatio: '1/1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
       >
         {/* Class label */}
-        <div className="text-white/50 font-black text-[6px] uppercase tracking-wider">{leader.class}</div>
+        <div className="text-white font-black text-[7px] uppercase tracking-wider mb-2">{leader.class}</div>
 
-        {/* Image + text below */}
-        <div className="flex flex-col items-center gap-1.5">
+        {/* Avatar + text right */}
+        <div className="flex items-center gap-2 flex-1">
           {/* Rounded rectangle avatar */}
-          <div className="w-10 h-10 rounded-md overflow-hidden bg-white/10 flex items-center justify-center"
+          <div className="w-11 h-11 rounded-md overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
             style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
             {leader.image
               ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
@@ -310,8 +310,8 @@ function ChampionshipLeaderCard({ leader }) {
             }
           </div>
 
-          {/* Text below image */}
-          <div className="text-center min-w-0 w-full">
+          {/* Name + points on right */}
+          <div className="min-w-0 flex-1">
             <div className="text-white font-bold text-[8px] leading-tight truncate">
               <span className="text-white/40">1</span> {leader.name}
             </div>
