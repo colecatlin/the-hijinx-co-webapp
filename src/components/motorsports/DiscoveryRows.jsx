@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, ChevronRight, Flag } from 'lucide-react';
+import { MapPin, ChevronRight, Flag, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -305,11 +305,9 @@ function ChampionshipLeaderCard({ leader }) {
         {/* Gradient overlay */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
 
-        {/* Series logo + Class label - top */}
+        {/* Icon + Class label - top */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          {leader.series_logo && (
-            <img src={leader.series_logo} alt={leader.series_name} className="h-4 object-contain" />
-          )}
+          <Zap className="w-[13.5px] h-[13.5px] text-white" />
           <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
         </div>
 
