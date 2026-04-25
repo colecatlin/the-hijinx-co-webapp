@@ -288,35 +288,32 @@ const PLACEHOLDER_LEADERS = [
 
 function ChampionshipLeaderCard({ leader }) {
   const routePath = `/series/${leader.series_id}?class=${leader.class_id}`;
-  
+
   return (
     <Link to={routePath} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="rounded-lg p-2.5 flex flex-col cursor-pointer transition-all h-full w-full"
-        style={{ aspectRatio: '1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
+        className="rounded-lg overflow-hidden cursor-pointer transition-all h-full w-full relative"
+        style={{ aspectRatio: '1', border: '1px solid rgba(255,255,255,0.16)' }}
       >
-        {/* Class label */}
-        <div className="text-white font-black text-[7px] uppercase tracking-wider mb-2">{leader.class}</div>
+        {/* Full-bleed image */}
+        {leader.image
+          ? <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+          : <div className="absolute inset-0 bg-white/5 flex items-center justify-center"><span className="text-white/30 text-3xl font-black">{leader.name[0]}</span></div>
+        }
 
-        {/* Avatar + text right */}
-         <div className="flex items-center gap-2 flex-1">
-           {/* Rounded rectangle avatar 2:3 */}
-           <div className="w-2/5 rounded-md overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
-             style={{ aspectRatio: '2/3', border: '1px solid rgba(255,255,255,0.2)' }}>
-            {leader.image
-              ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
-              : <span className="text-white/30 text-sm font-black">{leader.name[0]}</span>
-            }
-          </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
 
-          {/* Name + points on right */}
-          <div className="min-w-0 flex-1">
-            <div className="text-white font-bold text-[8px] leading-tight truncate">
-              <span className="text-white/40">1</span> {leader.name}
-            </div>
-            <div className="text-white/40 text-[7px] mt-0.5">{leader.points} pts</div>
+        {/* Class label - top */}
+        <div className="absolute top-2.5 left-2.5 text-white font-black text-[7px] uppercase tracking-wider">{leader.class}</div>
+
+        {/* Name + points - bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+          <div className="text-white font-bold text-[8px] leading-tight truncate">
+            <span className="text-white/40">1</span> {leader.name}
           </div>
+          <div className="text-white/40 text-[7px] mt-0.5">{leader.points} pts</div>
         </div>
       </motion.div>
     </Link>
