@@ -11,12 +11,24 @@ const grainStyle = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")`,
 };
 
-function useCount(entity) {
+function useEntityStats(entityName) {
   return useQuery({
-    queryKey: ['count', entity],
-    queryFn: () => base44.entities[entity].list(null, 1),
+    queryKey: ['motorsports-stats', entityName],
+    queryFn: async () => {
+      const all = await base44.entities[entityName].list();
+      const total = Array.isArray(all) ? all.length : 0;
+
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const monthly = Array.isArray(all)
+        ? all.filter(r => r.created_date && new Date(r.created_date) >= startOfMonth).length
+        : 0;
+
+      return { total, monthly };
+    },
     staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length : 0,
   });
 }
 
@@ -24,40 +36,11 @@ export default function MotorsportsHome() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
-  const { data: drivers, isLoading: loadingDrivers } = useQuery({
-    queryKey: ['motorsports-count-drivers'],
-    queryFn: () => base44.entities.Driver.list(),
-    staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length.toLocaleString() : '—',
-  });
-
-  const { data: teams, isLoading: loadingTeams } = useQuery({
-    queryKey: ['motorsports-count-teams'],
-    queryFn: () => base44.entities.Team.list(),
-    staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length.toLocaleString() : '—',
-  });
-
-  const { data: tracks, isLoading: loadingTracks } = useQuery({
-    queryKey: ['motorsports-count-tracks'],
-    queryFn: () => base44.entities.Track.list(),
-    staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length.toLocaleString() : '—',
-  });
-
-  const { data: events, isLoading: loadingEvents } = useQuery({
-    queryKey: ['motorsports-count-events'],
-    queryFn: () => base44.entities.Event.list(),
-    staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length.toLocaleString() : '—',
-  });
-
-  const { data: results, isLoading: loadingResults } = useQuery({
-    queryKey: ['motorsports-count-results'],
-    queryFn: () => base44.entities.Results.list(),
-    staleTime: 5 * 60 * 1000,
-    select: (data) => Array.isArray(data) ? data.length.toLocaleString() : '—',
-  });
+  const { data: driverStats,  isLoading: loadingDrivers  } = useEntityStats('Driver');
+  const { data: teamStats,    isLoading: loadingTeams    } = useEntityStats('Team');
+  const { data: trackStats,   isLoading: loadingTracks   } = useEntityStats('Track');
+  const { data: eventStats,   isLoading: loadingEvents   } = useEntityStats('Event');
+  const { data: resultStats,  isLoading: loadingResults  } = useEntityStats('Results');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -69,11 +52,11 @@ export default function MotorsportsHome() {
   };
 
   const stats = [
-    { label: 'Drivers', count: drivers, isLoading: loadingDrivers },
-    { label: 'Teams',   count: teams,   isLoading: loadingTeams },
-    { label: 'Tracks',  count: tracks,  isLoading: loadingTracks },
-    { label: 'Events',  count: events,  isLoading: loadingEvents },
-    { label: 'Results', count: results, isLoading: loadingResults },
+    { label: 'Drivers', data: driverStats,  isLoading: loadingDrivers  },
+    { label: 'Teams',   data: teamStats,    isLoading: loadingTeams    },
+    { label: 'Tracks',  data: trackStats,   isLoading: loadingTracks   },
+    { label: 'Events',  data: eventStats,   isLoading: loadingEvents   },
+    { label: 'Results', data: resultStats,  isLoading: loadingResults  },
   ];
 
   return (
@@ -87,25 +70,11 @@ export default function MotorsportsHome() {
           className="w-full h-full object-cover object-center"
           style={{ filter: 'saturate(1.15) contrast(1.08)' }}
         />
-
-        {/* Heavy left dark fade */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.96) 0%, rgba(4,8,8,0.80) 38%, rgba(4,8,8,0.30) 65%, rgba(4,8,8,0.55) 100%)' }}
-        />
-
-        {/* Top-to-bottom gradient */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.6) 0%, rgba(4,8,8,0.1) 35%, rgba(4,8,8,0.5) 80%, rgba(4,8,8,0.95) 100%)' }}
-        />
-
-        {/* Teal accent streaks */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.96) 0%, rgba(4,8,8,0.80) 38%, rgba(4,8,8,0.30) 65%, rgba(4,8,8,0.55) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.6) 0%, rgba(4,8,8,0.1) 35%, rgba(4,8,8,0.5) 80%, rgba(4,8,8,0.95) 100%)' }} />
         <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: 'linear-gradient(to right, #1DA1A1, transparent)' }} />
         <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
         <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: 'linear-gradient(to left, #1DA1A1, transparent)' }} />
-
-        {/* Grain */}
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={grainStyle} />
       </div>
 
@@ -115,36 +84,26 @@ export default function MotorsportsHome() {
 
           {/* LEFT: Hero text + search */}
           <div className="lg:col-span-3 max-w-2xl">
-
-            {/* Eyebrow */}
             <div className="flex items-center gap-3 mb-6">
               <div className="w-5 h-[1px] bg-[#1DA1A1]" />
               <span className="font-mono text-[10px] tracking-[0.45em] text-[#1DA1A1] uppercase">INDEX46 · Motorsports</span>
             </div>
-
-            {/* Main headline */}
             <h1
               className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
               style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
             >
               THE WORLD<br />OF RACING.
             </h1>
-
-            {/* Teal italic line */}
             <p
               className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase mb-6 leading-tight"
               style={{ color: '#1DA1A1', textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
             >
               All in one place.
             </p>
-
-            {/* Subtext */}
             <p className="text-white/60 text-base md:text-lg leading-relaxed mb-10 max-w-md">
               Drivers. Teams. Tracks. Events. Results.<br />
               The most comprehensive motorsports data platform, built for the culture.
             </p>
-
-            {/* Search bar */}
             <form onSubmit={handleSearch} className="flex items-center gap-0 max-w-lg">
               <div
                 className="flex items-center flex-1 px-4 py-4 rounded-l-xl"
@@ -181,7 +140,8 @@ export default function MotorsportsHome() {
               <StatCard
                 key={s.label}
                 label={s.label}
-                count={s.count}
+                count={s.data?.total?.toLocaleString() ?? '—'}
+                monthlyCount={s.data?.monthly ?? null}
                 isLoading={s.isLoading}
                 delay={i * 0.08}
               />
