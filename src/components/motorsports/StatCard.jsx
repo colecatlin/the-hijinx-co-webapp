@@ -55,11 +55,7 @@ export default function StatCard({ label, count, monthlyCount, isLoading, delay 
         ) : (
           <div className="text-white font-bold text-base leading-none tracking-tight">{count}</div>
         )}
-        {!isLoading && monthlyLabel && (
-          <div className="text-[9px] mt-0.5" style={{ color: monthlyCount === 0 ? 'rgba(255,255,255,0.25)' : '#1DA1A1' }}>
-            {monthlyLabel}
-          </div>
-        )}
+
       </div>
 
       {/* Sparkline */}
