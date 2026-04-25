@@ -64,7 +64,7 @@ export default function MotorsportsHome() {
     <div className="relative bg-[#050A0A]">
 
       {/* ── BACKGROUND ── */}
-      <div className="absolute inset-0 z-0 h-screen">
+      <div className="absolute inset-0 z-0 h-[70vh]">
         <img
           src={BG_IMAGE}
           alt="Racing"
@@ -80,7 +80,7 @@ export default function MotorsportsHome() {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className="relative z-10 h-screen flex items-center px-8 md:px-12 lg:px-20 py-10">
+      <div className="relative z-10 h-[70vh] flex items-center px-8 md:px-12 lg:px-20 py-10">
         <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
 
           {/* LEFT: Hero text + search */}
