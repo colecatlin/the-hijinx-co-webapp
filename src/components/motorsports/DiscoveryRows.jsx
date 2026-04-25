@@ -286,7 +286,7 @@ function SeriesSpotlightCard({ series }) {
   return (
     <Link to={`/series/${series.slug || series.id}`}>
       <motion.div
-        whileHover={{ y: -2 }} className="px-4 py-3 rounded-xl flex items-center gap-4 cursor-pointer"
+        whileHover={{ y: -2 }} className="px-4 py-10 rounded-xl flex items-center gap-4 cursor-pointer"
 
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}>
         
