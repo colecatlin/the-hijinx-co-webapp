@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, ChevronRight, Flag, Zap } from 'lucide-react';
+import { MapPin, ChevronRight, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -254,105 +254,52 @@ function EventListItem({ event }) {
 // ── Championship Leaders ──────────────────────────────────────────────────────
 
 const PLACEHOLDER_LEADERS = [
-  { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
-    class_id: 'class-prolite', class: 'Pro Lite',
-    driver_id: 'driver-1', name: 'Cole Catlin', points: 412,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
-  },
-  { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
-    class_id: 'class-pro2', class: 'Pro 2',
-    driver_id: 'driver-2', name: 'Gavin Harlen', points: 398,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
-  },
-  { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
-    class_id: 'class-pro4', class: 'Pro 4',
-    driver_id: 'driver-3', name: 'Mason Mingus', points: 375,
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop'
-  },
-  { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
-    class_id: 'class-probuggy', class: 'Pro Buggy',
-    driver_id: 'driver-4', name: 'Jett Noland', points: 420,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
-  },
-  { 
-    series_id: 'series-ultra4', series_name: 'ULTRA4', series_logo: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png',
-    class_id: 'class-modlite', class: 'Mod Lite',
-    driver_id: 'driver-5', name: 'Ryan Beat', points: 355,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
-  },
+  { class: 'Pro Lite', name: 'Cole Catlin', points: 412 },
+  { class: 'Pro 2', name: 'Gavin Harlen', points: 398 },
+  { class: 'Pro 4', name: 'Mason Mingus', points: 375 },
+  { class: 'Pro Buggy', name: 'Jett Noland', points: 420 },
+  { class: 'Mod Lite', name: 'Ryan Beat', points: 355 },
 ];
 
 function ChampionshipLeaderCard({ leader }) {
-  const routePath = `/series/${leader.series_id}?class=${leader.class_id}`;
-
   return (
-    <Link to={routePath} className="flex-1 min-w-0">
-      <motion.div
-        whileHover={{ y: -2 }}
-        className="rounded-lg overflow-hidden cursor-pointer transition-all h-full w-full relative"
-        style={{ aspectRatio: '1', border: '1px solid rgba(255,255,255,0.16)' }}
-      >
-        {/* Full-bleed image */}
-        {leader.image
-          ? <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
-          : <div className="absolute inset-0 bg-white/5 flex items-center justify-center"><span className="text-white/30 text-3xl font-black">{leader.name[0]}</span></div>
-        }
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
-
-        {/* Icon + Class label - top */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          <Zap className="w-[13.5px] h-[13.5px] text-white" />
-          <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
-        </div>
-
-        {/* Name + points - bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5">
-          <div className="text-white font-bold text-[12px] leading-tight truncate">
-            <span className="text-white/40">1</span> {leader.name}
-          </div>
-          <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
-        </div>
-      </motion.div>
-    </Link>
+    <div
+      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
+    >
+      <div className="text-[#1DA1A1] font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
+      {/* Driver avatar placeholder */}
+      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+        <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
+      </div>
+      <div className="text-center">
+        <div className="text-white font-bold text-[10px] leading-tight">1 {leader.name}</div>
+        <div className="text-white/40 text-[9px] mt-0.5">{leader.points} pts</div>
+      </div>
+    </div>
   );
 }
 
 // ── Series Spotlight ──────────────────────────────────────────────────────────
 
 function SeriesSpotlightCard({ series }) {
-  const bgImage = series.banner_url || 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=800&h=400&fit=crop';
-  
   return (
     <Link to={`/series/${series.slug || series.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="relative rounded-xl overflow-hidden cursor-pointer h-32"
-        style={{ border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="flex items-center gap-4 p-4 rounded-xl cursor-pointer"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        {/* Background image */}
-        <img src={bgImage} alt={series.name} className="absolute inset-0 w-full h-full object-cover" />
-        
-        {/* Dark overlay */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
-
-        {/* Content */}
-        <div className="relative h-full flex items-center gap-4 p-4">
-          {series.logo_url && (
-            <img src={series.logo_url} alt={series.name} className="w-14 h-14 object-contain flex-shrink-0" />
+        {series.logo_url && (
+          <img src={series.logo_url} alt={series.name} className="w-16 h-16 object-contain flex-shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-white font-bold text-sm truncate">{series.name}</div>
+          {series.description && (
+            <div className="text-white/50 text-[10px] mt-1 line-clamp-2">{series.description}</div>
           )}
-          <div className="flex-1 min-w-0">
-            {series.description && (
-              <div className="text-white text-xs line-clamp-2 mb-2">{series.description}</div>
-            )}
-            <div className="text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-              Explore Series <ChevronRight className="w-3 h-3" />
-            </div>
+          <div className="mt-2 text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+            Explore Series <ChevronRight className="w-3 h-3" />
           </div>
         </div>
       </motion.div>
@@ -528,17 +475,15 @@ export default function DiscoveryRows() {
         </div>
 
         {/* Series Spotlight */}
-        <div>
-          <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
-          {loadingSeries
-            ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
-            : series.length > 0
-              ? series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
-              : <div className="h-24 rounded-xl bg-white/5 flex items-center justify-center">
-                  <span className="text-white/20 text-xs italic">No series yet</span>
-                </div>
-          }
-        </div>
+        {(series.length > 0 || loadingSeries) && (
+          <div>
+            <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
+            {loadingSeries
+              ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
+              : series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
+            }
+          </div>
+        )}
       </div>
 
       {/* ── CTA BANNER ── */}
