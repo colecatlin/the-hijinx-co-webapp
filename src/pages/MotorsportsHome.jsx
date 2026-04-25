@@ -38,8 +38,6 @@ export default function MotorsportsHome() {
   const navigate = useNavigate();
 
   const { data: driverStats,  isLoading: loadingDrivers  } = useEntityStats('Driver');
-  const { data: teamStats,    isLoading: loadingTeams    } = useEntityStats('Team');
-  const { data: trackStats,   isLoading: loadingTracks   } = useEntityStats('Track');
   const { data: eventStats,   isLoading: loadingEvents   } = useEntityStats('Event');
   const { data: resultStats,  isLoading: loadingResults  } = useEntityStats('Results');
 
@@ -54,8 +52,6 @@ export default function MotorsportsHome() {
 
   const stats = [
     { label: 'Drivers', data: driverStats,  isLoading: loadingDrivers  },
-    { label: 'Teams',   data: teamStats,    isLoading: loadingTeams    },
-    { label: 'Tracks',  data: trackStats,   isLoading: loadingTracks   },
     { label: 'Events',  data: eventStats,   isLoading: loadingEvents   },
     { label: 'Results', data: resultStats,  isLoading: loadingResults  },
   ];

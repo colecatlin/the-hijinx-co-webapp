@@ -2,22 +2,20 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, CalendarDays, ChevronRight } from 'lucide-react';
+import { MapPin, ChevronRight, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const glass = {
-  background: 'rgba(255,255,255,0.05)',
-  backdropFilter: 'blur(14px)',
-  WebkitBackdropFilter: 'blur(14px)',
-  border: '1px solid rgba(255,255,255,0.08)',
-};
-
-function formatDate(dateStr) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function formatDateRange(startStr, endStr) {
+  if (!startStr) return null;
+  const s = new Date(startStr);
+  const month = s.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const startDay = s.getDate();
+  if (!endStr) return `${month} ${startDay}`;
+  const e = new Date(endStr);
+  const endDay = e.getDate();
+  return `${month} ${startDay}-${endDay}`;
 }
 
 function Placeholder({ char }) {
@@ -28,56 +26,33 @@ function Placeholder({ char }) {
   );
 }
 
-// ── Horizontal scroll row ─────────────────────────────────────────────────────
+// ── Section Header ────────────────────────────────────────────────────────────
 
-function DiscoveryRow({ label, viewAllHref, children, isLoading }) {
-  const scrollRef = useRef(null);
-
+function SectionHeader({ label, viewAllHref }) {
   return (
-    <div className="py-5 px-8 md:px-12 lg:px-20" style={{ background: 'rgba(4,8,8,0.55)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-      {/* Row header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-[1px] bg-[#1DA1A1]" />
-          <span className="font-mono text-[9px] tracking-[0.4em] text-white/50 uppercase">{label}</span>
-        </div>
-        {viewAllHref && (
-          <Link to={viewAllHref} className="flex items-center gap-1 text-[10px] font-mono tracking-widest uppercase text-white/30 hover:text-[#1DA1A1] transition-colors">
-            View All <ChevronRight className="w-3 h-3" />
-          </Link>
-        )}
-      </div>
-
-      {/* Scroll container */}
-      <div
-        ref={scrollRef}
-        className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-      >
-        {isLoading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-36 h-24 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
-            ))
-          : children
-        }
-      </div>
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-white font-black text-sm uppercase tracking-widest">{label}</h2>
+      {viewAllHref && (
+        <Link to={viewAllHref} className="flex items-center gap-1 text-[11px] font-bold text-white/50 hover:text-[#1DA1A1] transition-colors uppercase tracking-wider">
+          View all <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      )}
     </div>
   );
 }
 
-// ── Card base ─────────────────────────────────────────────────────────────────
+// ── Scroll Row ────────────────────────────────────────────────────────────────
 
-function GlassCard({ to, children, className = '' }) {
+function ScrollRow({ children, isLoading }) {
+  const ref = useRef(null);
   return (
-    <Link to={to || '#'}>
-      <motion.div
-        whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(29,161,161,0.18)' }}
-        transition={{ duration: 0.18 }}
-        className={`flex-shrink-0 rounded-xl overflow-hidden cursor-pointer ${className}`}
-        style={{ ...glass }}
-      >
-        {children}
-      </motion.div>
-    </Link>
+    <div ref={ref} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+      {isLoading
+        ? Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-44 h-28 rounded-xl animate-pulse bg-white/5" />
+          ))
+        : children}
+    </div>
   );
 }
 
@@ -89,25 +64,34 @@ function DriverCard({ driver }) {
   const slug = driver.slug || driver.id;
 
   return (
-    <GlassCard to={`/drivers/${slug}`} className="w-36">
-      <div className="h-24 overflow-hidden relative">
-        {img
-          ? <img src={img} alt={name} className="w-full h-full object-cover object-top" />
-          : <Placeholder char={name[0]} />
-        }
+    <Link to={`/drivers/${slug}`}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="flex-shrink-0 w-44 h-28 rounded-xl overflow-hidden relative cursor-pointer"
+        style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
+      >
+        {/* Background image */}
+        {img && (
+          <img src={img} alt={name} className="absolute inset-0 w-full h-full object-cover object-top opacity-60" />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+
+        {/* Number */}
         {driver.primary_number && (
-          <span className="absolute top-1.5 right-1.5 font-black text-[10px] text-white/80 bg-black/40 px-1.5 py-0.5 rounded">
-            #{driver.primary_number}
-          </span>
+          <div className="absolute top-2 left-3 font-black text-white text-2xl leading-none opacity-90">
+            {driver.primary_number}
+          </div>
         )}
-      </div>
-      <div className="px-2.5 py-2">
-        <div className="text-white font-bold text-xs leading-tight truncate">{name}</div>
-        {driver.primary_discipline && (
-          <div className="text-white/40 text-[9px] truncate mt-0.5">{driver.primary_discipline}</div>
-        )}
-      </div>
-    </GlassCard>
+
+        {/* Name + class */}
+        <div className="absolute bottom-2 left-3 right-3">
+          <div className="text-white font-bold text-xs leading-tight truncate">{name}</div>
+          {driver.primary_discipline && (
+            <div className="text-white/50 text-[9px] truncate mt-0.5">{driver.primary_discipline}</div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
@@ -115,23 +99,28 @@ function DriverCard({ driver }) {
 
 function TeamCard({ team }) {
   const img = team.logo_url;
-  const slug = team.slug || team.id;
 
   return (
-    <GlassCard to={`/TeamProfile?id=${team.id}`} className="w-36">
-      <div className="h-20 overflow-hidden relative flex items-center justify-center bg-white/3">
-        {img
-          ? <img src={img} alt={team.name} className="w-full h-full object-contain p-3" />
-          : <Placeholder char={(team.name || 'T')[0]} />
-        }
-      </div>
-      <div className="px-2.5 py-2">
-        <div className="text-white font-bold text-xs leading-tight truncate">{team.name}</div>
-        {team.primary_discipline && (
-          <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
-        )}
-      </div>
-    </GlassCard>
+    <Link to={`/TeamProfile?id=${team.id}`}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="flex-shrink-0 w-40 rounded-xl overflow-hidden cursor-pointer"
+        style={{ background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}
+      >
+        <div className="h-20 flex items-center justify-center bg-white/95 px-4">
+          {img
+            ? <img src={img} alt={team.name} className="w-full h-full object-contain" />
+            : <span className="text-black font-black text-lg">{(team.name || 'T')[0]}</span>
+          }
+        </div>
+        <div className="px-3 py-2">
+          <div className="text-white font-bold text-xs truncate">{team.name}</div>
+          {team.primary_discipline && (
+            <div className="text-white/40 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
@@ -139,49 +128,140 @@ function TeamCard({ team }) {
 
 function TrackCard({ track }) {
   const img = track.image_url;
-  const location = [track.location_city, track.location_state].filter(Boolean).join(', ');
+  const city = track.location_city;
+  const state = track.location_state;
+  const location = [city, state].filter(Boolean).join(', ');
 
   return (
-    <GlassCard to={`/TrackProfile?id=${track.id}`} className="w-44">
-      <div className="h-24 overflow-hidden relative">
-        {img
-          ? <img src={img} alt={track.name} className="w-full h-full object-cover" />
-          : <Placeholder char={(track.name || 'T')[0]} />
-        }
-      </div>
-      <div className="px-2.5 py-2">
-        <div className="text-white font-bold text-xs leading-tight truncate">{track.name}</div>
-        {location && (
-          <div className="flex items-center gap-1 text-white/40 text-[9px] mt-0.5 truncate">
-            <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-            {location}
-          </div>
-        )}
-      </div>
-    </GlassCard>
+    <Link to={`/TrackProfile?id=${track.id}`}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer"
+        style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        <div className="h-24 overflow-hidden relative">
+          {img
+            ? <img src={img} alt={track.name} className="w-full h-full object-cover" />
+            : <Placeholder char={(track.name || 'T')[0]} />
+          }
+        </div>
+        <div className="px-2.5 py-2" style={{ background: 'rgba(10,10,10,0.95)' }}>
+          <div className="text-white font-bold text-xs leading-tight truncate">{track.name}</div>
+          {location && (
+            <div className="flex items-center gap-1 text-white/40 text-[9px] mt-0.5 truncate">
+              <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+              {location}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
-// ── Event Card ────────────────────────────────────────────────────────────────
+// ── Event List Row ─────────────────────────────────────────────────────────────
 
-function EventCard({ event }) {
-  const date = formatDate(event.event_date);
+function EventListItem({ event }) {
+  const dateRange = formatDateRange(event.event_date, event.end_date);
+  const [month, days] = dateRange ? dateRange.split(' ') : ['', ''];
 
   return (
-    <GlassCard to={`/EventProfile?id=${event.id}`} className="w-48">
-      <div className="px-3 pt-3 pb-2.5">
-        {date && (
-          <div className="flex items-center gap-1.5 mb-2">
-            <CalendarDays className="w-3 h-3 text-[#1DA1A1]" />
-            <span className="font-mono text-[9px] tracking-widest text-[#1DA1A1] uppercase">{date}</span>
+    <Link to={`/EventProfile?id=${event.id}`}>
+      <motion.div
+        whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+        className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors cursor-pointer"
+        style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+      >
+        {/* Date */}
+        <div className="flex-shrink-0 text-center w-14">
+          <div className="text-[#1DA1A1] font-black text-[10px] uppercase tracking-wider">{month}</div>
+          <div className="text-white font-black text-lg leading-none">{days}</div>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-8 bg-white/10 flex-shrink-0" />
+
+        {/* Event info */}
+        <div className="flex-1 min-w-0">
+          <div className="text-white font-bold text-xs leading-tight truncate">{event.name}</div>
+          {(event.location_note || '') && (
+            <div className="text-white/40 text-[9px] mt-0.5 truncate">{event.location_note}</div>
+          )}
+        </div>
+
+        {/* Class badge */}
+        {event.series_name && (
+          <div className="flex-shrink-0 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider text-white/60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+            {event.series_name.split(' ').slice(0, 2).join(' ')}
           </div>
         )}
-        <div className="text-white font-bold text-xs leading-snug line-clamp-2 mb-1">{event.name}</div>
-        {event.series_name && (
-          <div className="text-white/35 text-[9px] truncate">{event.series_name}</div>
+      </motion.div>
+    </Link>
+  );
+}
+
+// ── Series Spotlight ──────────────────────────────────────────────────────────
+
+function SeriesSpotlightCard({ series }) {
+  return (
+    <Link to={`/series/${series.slug || series.id}`}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="flex items-center gap-4 p-4 rounded-xl cursor-pointer"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        {series.logo_url && (
+          <img src={series.logo_url} alt={series.name} className="w-16 h-16 object-contain flex-shrink-0" />
         )}
+        <div className="flex-1 min-w-0">
+          <div className="text-white font-bold text-sm truncate">{series.name}</div>
+          {series.description && (
+            <div className="text-white/50 text-[10px] mt-1 line-clamp-2">{series.description}</div>
+          )}
+          <div className="mt-2 text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+            Explore Series <ChevronRight className="w-3 h-3" />
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
+// ── CTA Banner ────────────────────────────────────────────────────────────────
+
+function CTABanner() {
+  return (
+    <div className="mx-8 md:mx-12 lg:mx-20 my-6 rounded-2xl overflow-hidden relative"
+      style={{ background: 'linear-gradient(135deg, #0A0A0A 0%, #111 100%)', border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)' }} />
+      <div className="relative flex flex-col md:flex-row items-center justify-between px-8 py-8 gap-6">
+        <div>
+          <h2 className="text-white font-black text-2xl md:text-3xl uppercase leading-tight">
+            GET ON THE GRID.
+          </h2>
+          <p className="font-black italic text-[#1DA1A1] text-lg uppercase mt-1">
+            THIS IS YOUR WORLD. BE PART OF IT.
+          </p>
+          <p className="text-white/50 text-xs mt-2 max-w-sm">
+            Race Core is the center of motorsports data. Create your profile, manage your results, connect with teams, events, and more.
+          </p>
+        </div>
+        <div className="flex gap-3 flex-shrink-0">
+          <Link to="/DriverProfileSetup"
+            className="px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider text-[#050A0A] transition-all hover:brightness-110"
+            style={{ background: '#1DA1A1' }}>
+            Create Profile
+          </Link>
+          <Link to="/MotorsportsHome"
+            className="px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider text-white transition-all hover:bg-white/10"
+            style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
+            Explore First
+          </Link>
+        </div>
       </div>
-    </GlassCard>
+    </div>
   );
 }
 
@@ -216,39 +296,94 @@ export default function DiscoveryRows() {
     select: (d) => {
       const today = new Date().toISOString().split('T')[0];
       const upcoming = d.filter(e => e.event_date >= today && e.public_status !== 'archived');
-      return (upcoming.length >= 5 ? upcoming : d).slice(0, 20);
+      return (upcoming.length >= 4 ? upcoming : d).slice(0, 8);
     },
   });
 
+  const { data: series = [], isLoading: loadingSeries } = useQuery({
+    queryKey: ['discovery-series'],
+    queryFn: () => base44.entities.Series.list('-created_date', 10),
+    staleTime: 5 * 60 * 1000,
+    select: (d) => d.filter(s => s.visibility_status === 'live').slice(0, 1),
+  });
+
+  const rowStyle = {
+    borderTop: '1px solid rgba(255,255,255,0.06)',
+  };
+
   return (
-    <div className="relative z-10">
-      <DiscoveryRow label="Trending Drivers" viewAllHref="/DriverDirectory" isLoading={loadingDrivers}>
-        {drivers.map(d => <DriverCard key={d.id} driver={d} />)}
-        {!loadingDrivers && drivers.length === 0 && (
-          <span className="text-white/20 text-xs italic py-4">No drivers yet</span>
-        )}
-      </DiscoveryRow>
+    <div className="relative z-10 bg-[#080C0C]">
 
-      <DiscoveryRow label="Top Teams" viewAllHref="/TeamDirectory" isLoading={loadingTeams}>
-        {teams.map(t => <TeamCard key={t.id} team={t} />)}
-        {!loadingTeams && teams.length === 0 && (
-          <span className="text-white/20 text-xs italic py-4">No teams yet</span>
-        )}
-      </DiscoveryRow>
+      {/* ── TRENDING DRIVERS ── */}
+      <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
+        <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory" />
+        <ScrollRow isLoading={loadingDrivers}>
+          {drivers.map(d => <DriverCard key={d.id} driver={d} />)}
+          {!loadingDrivers && drivers.length === 0 && (
+            <span className="text-white/20 text-xs italic py-4">No drivers yet</span>
+          )}
+        </ScrollRow>
+      </div>
 
-      <DiscoveryRow label="Tracks Around the World" viewAllHref="/TrackDirectory" isLoading={loadingTracks}>
-        {tracks.map(t => <TrackCard key={t.id} track={t} />)}
-        {!loadingTracks && tracks.length === 0 && (
-          <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
-        )}
-      </DiscoveryRow>
+      {/* ── TOP TEAMS ── */}
+      <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
+        <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory" />
+        <ScrollRow isLoading={loadingTeams}>
+          {teams.map(t => <TeamCard key={t.id} team={t} />)}
+          {!loadingTeams && teams.length === 0 && (
+            <span className="text-white/20 text-xs italic py-4">No teams yet</span>
+          )}
+        </ScrollRow>
+      </div>
 
-      <DiscoveryRow label="Upcoming Events" viewAllHref="/EventDirectory" isLoading={loadingEvents}>
-        {events.map(e => <EventCard key={e.id} event={e} />)}
-        {!loadingEvents && events.length === 0 && (
-          <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
-        )}
-      </DiscoveryRow>
+      {/* ── TRACKS + EVENTS (side by side) ── */}
+      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
+        {/* Tracks */}
+        <div>
+          <SectionHeader label="Tracks Around the World" viewAllHref="/TrackDirectory" />
+          <ScrollRow isLoading={loadingTracks}>
+            {tracks.map(t => <TrackCard key={t.id} track={t} />)}
+            {!loadingTracks && tracks.length === 0 && (
+              <span className="text-white/20 text-xs italic py-4">No tracks yet</span>
+            )}
+          </ScrollRow>
+        </div>
+
+        {/* Upcoming Events - list style */}
+        <div>
+          <SectionHeader label="Upcoming Events" viewAllHref="/EventDirectory" />
+          {loadingEvents
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5 mb-2" />
+              ))
+            : (
+              <div className="flex flex-col gap-2">
+                {events.map(e => <EventListItem key={e.id} event={e} />)}
+                {events.length === 0 && (
+                  <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
+                )}
+              </div>
+            )
+          }
+        </div>
+      </div>
+
+      {/* ── SERIES SPOTLIGHT ── */}
+      {(series.length > 0 || loadingSeries) && (
+        <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
+          <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
+          {loadingSeries
+            ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
+            : series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
+          }
+        </div>
+      )}
+
+      {/* ── CTA BANNER ── */}
+      <div style={rowStyle} className="pt-4 pb-8">
+        <CTABanner />
+      </div>
+
     </div>
   );
 }
