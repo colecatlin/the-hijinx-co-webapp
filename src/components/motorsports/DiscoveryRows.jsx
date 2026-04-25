@@ -213,7 +213,7 @@ function EventListItem({ event }) {
     <Link to={`/EventProfile?id=${event.id}`}>
       <motion.div
         whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-        className="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors cursor-pointer"
+        className="flex items-center gap-4 px-4 py-4 rounded-lg transition-colors cursor-pointer"
         style={{ border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.02)', boxShadow: '0 0 10px rgba(255,255,255,0.06)' }}
       >
         {/* Date */}
