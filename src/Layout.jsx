@@ -123,10 +123,10 @@ export default function Layout({ children, currentPageName }) {
                     >
                       <Link
                         to={item.page ? createPageUrl(item.page) : '#'}
-                        className={`flex items-center gap-1 px-3 py-4 text-xs font-semibold tracking-widest uppercase transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-4 text-sm font-semibold tracking-widest uppercase transition-colors ${
                           isActive(item.page)
-                            ? 'text-[#232323] border-b-2 border-[#232323]'
-                            : 'text-gray-500 hover:text-[#232323]'
+                            ? 'text-hijinx-blue border-b-2 border-hijinx-blue'
+                            : 'text-[#232323] hover:text-hijinx-blue'
                         }`}
                       >
                         {item.name}
