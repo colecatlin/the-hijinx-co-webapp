@@ -306,14 +306,14 @@ function ChampionshipLeaderCard({ leader }) {
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
 
         {/* Class label - top */}
-        <div className="absolute top-2.5 left-2.5 text-white font-black text-[7px] uppercase tracking-wider">{leader.class}</div>
+        <div className="absolute top-2.5 left-2.5 text-white font-black text-[11px] uppercase tracking-wider">{leader.class}</div>
 
         {/* Name + points - bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-2.5">
-          <div className="text-white font-bold text-[8px] leading-tight truncate">
+          <div className="text-white font-bold text-[12px] leading-tight truncate">
             <span className="text-white/40">1</span> {leader.name}
           </div>
-          <div className="text-white/40 text-[7px] mt-0.5">{leader.points} pts</div>
+          <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
         </div>
       </motion.div>
     </Link>
