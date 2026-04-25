@@ -68,7 +68,7 @@ function DriverCard({ driver }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden relative cursor-pointer"
-        style={{ aspectRatio: '3/2', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        style={{ aspectRatio: '4/3', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Background image */}
         {img && (
@@ -362,7 +362,7 @@ export default function DiscoveryRows() {
       {/* ── TRENDING DRIVERS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory" />
-        <ScrollRow isLoading={loadingDrivers}>
+        <ScrollRow isLoading={loadingDrivers} aspectRatio="4/3">
           {drivers.map(d => <DriverCard key={d.id} driver={d} />)}
           {!loadingDrivers && drivers.length === 0 && (
             <span className="text-white/20 text-xs italic py-4">No drivers yet</span>
