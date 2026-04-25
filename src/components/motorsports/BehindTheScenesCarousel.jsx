@@ -48,11 +48,22 @@ export default function BehindTheScenesCarousel() {
     staleTime: 10 * 60 * 1000,
   });
 
+  // Fetch public media assets from motorsports community
+  const { data: mediaAssets = [] } = useQuery({
+    queryKey: ['behind-scenes-media-assets'],
+    queryFn: async () => {
+      const assets = await base44.entities.MediaAsset.list('-created_date', 40);
+      return assets.filter(a => a.asset_url);
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
   // Combine and flatten all images
   const allImages = [
     ...driverMedia.flatMap(dm => dm.gallery_urls || []),
     ...events.flatMap(e => e.event_media_gallery || []),
     ...stories.flatMap(s => s.images || []),
+    ...mediaAssets.map(ma => ma.asset_url).filter(Boolean),
   ];
 
   // Remove duplicates and limit to a reasonable number
