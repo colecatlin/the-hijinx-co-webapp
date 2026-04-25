@@ -170,7 +170,7 @@ function TrackCard({ track }) {
     <Link to={`/TrackProfile?id=${track.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer relative"
+        className="w-full rounded-xl overflow-hidden cursor-pointer relative"
         style={{ aspectRatio: '2/3', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Full-bleed image */}
@@ -391,7 +391,7 @@ export default function DiscoveryRows() {
           ) : (
             <div className="flex flex-col gap-2">
               <div className="grid grid-cols-3 gap-2">
-                {tracks.slice(0, 3).map(t => <TrackGridCard key={t.id} track={t} />)}
+                {tracks.slice(0, 3).map(t => <TrackCard key={t.id} track={t} />)}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {tracks.slice(3, 5).map(t => <TrackGridCard key={t.id} track={t} />)}
