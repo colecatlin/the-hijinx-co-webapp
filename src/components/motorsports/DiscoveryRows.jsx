@@ -290,11 +290,11 @@ function ChampionshipLeaderCard({ leader }) {
   const routePath = `/series/${leader.series_id}?class=${leader.class_id}`;
   
   return (
-    <Link to={routePath}>
+    <Link to={routePath} className="flex-1 min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-1 min-w-0 rounded-lg p-2.5 flex flex-col cursor-pointer transition-all"
-        style={{ aspectRatio: '1/1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
+        className="rounded-lg p-2.5 flex flex-col cursor-pointer transition-all h-full w-full"
+        style={{ aspectRatio: '1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.16)' }}
       >
         {/* Class label */}
         <div className="text-white font-black text-[7px] uppercase tracking-wider mb-2">{leader.class}</div>
