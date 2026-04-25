@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, ChevronRight, Flag } from 'lucide-react';
+import { MapPin, ChevronRight, Flag, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -262,19 +262,27 @@ const PLACEHOLDER_LEADERS = [
 
 
 function ChampionshipLeaderCard({ leader }) {
+  const bgImage = leader.image || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&h=500&fit=crop';
+  
   return (
     <div
-      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}>
+      className="flex-1 min-w-0 rounded-xl overflow-hidden relative cursor-pointer"
+      style={{ aspectRatio: '4/3', border: '1px solid rgba(255,255,255,0.16)' }}>
       
-      <div className="text-[#1DA1A1] font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
-      {/* Driver avatar placeholder */}
-      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-        <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
+      {/* Background image */}
+      <img src={bgImage} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+
+      {/* Icon + Class label - top */}
+      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+        <Zap className="w-[13.5px] h-[13.5px] text-white" />
+        <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
       </div>
-      <div className="text-center">
-        <div className="text-white font-bold text-[10px] leading-tight">1 {leader.name}</div>
-        <div className="text-white/40 text-[9px] mt-0.5">{leader.points} pts</div>
+
+      {/* Name + points - bottom */}
+      <div className="absolute bottom-2 left-2.5 right-2.5">
+        <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
+        <div className="text-white/50 text-[9px] mt-0.5">{leader.points} pts</div>
       </div>
     </div>);
 
