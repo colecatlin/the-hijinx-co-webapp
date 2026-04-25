@@ -251,6 +251,35 @@ function EventListItem({ event }) {
   );
 }
 
+// ── Championship Leaders ──────────────────────────────────────────────────────
+
+const PLACEHOLDER_LEADERS = [
+  { class: 'Pro Lite', name: 'Cole Catlin', points: 412 },
+  { class: 'Pro 2', name: 'Gavin Harlen', points: 398 },
+  { class: 'Pro 4', name: 'Mason Mingus', points: 375 },
+  { class: 'Pro Buggy', name: 'Jett Noland', points: 420 },
+  { class: 'Mod Lite', name: 'Ryan Beat', points: 355 },
+];
+
+function ChampionshipLeaderCard({ leader }) {
+  return (
+    <div
+      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
+    >
+      <div className="text-[#1DA1A1] font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
+      {/* Driver avatar placeholder */}
+      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+        <span className="text-white/30 text-lg font-black">{leader.name[0]}</span>
+      </div>
+      <div className="text-center">
+        <div className="text-white font-bold text-[10px] leading-tight">1 {leader.name}</div>
+        <div className="text-white/40 text-[9px] mt-0.5">{leader.points} pts</div>
+      </div>
+    </div>
+  );
+}
+
 // ── Series Spotlight ──────────────────────────────────────────────────────────
 
 function SeriesSpotlightCard({ series }) {
@@ -433,16 +462,29 @@ export default function DiscoveryRows() {
         </div>
       </div>
 
-      {/* ── SERIES SPOTLIGHT ── */}
-      {(series.length > 0 || loadingSeries) && (
-        <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
-          <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
-          {loadingSeries
-            ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
-            : series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
-          }
+      {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
+      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
+        {/* Championship Leaders */}
+        <div>
+          <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
+          <div className="flex gap-2">
+            {PLACEHOLDER_LEADERS.map((leader) => (
+              <ChampionshipLeaderCard key={leader.class} leader={leader} />
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Series Spotlight */}
+        {(series.length > 0 || loadingSeries) && (
+          <div>
+            <SectionHeader label="Series Spotlight" viewAllHref="/SeriesHome" />
+            {loadingSeries
+              ? <div className="h-24 rounded-xl animate-pulse bg-white/5" />
+              : series.map(s => <SeriesSpotlightCard key={s.id} series={s} />)
+            }
+          </div>
+        )}
+      </div>
 
       {/* ── CTA BANNER ── */}
       <div style={rowStyle} className="pt-4 pb-8">
