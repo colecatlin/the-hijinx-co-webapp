@@ -323,23 +323,33 @@ function ChampionshipLeaderCard({ leader }) {
 // ── Series Spotlight ──────────────────────────────────────────────────────────
 
 function SeriesSpotlightCard({ series }) {
+  const bgImage = series.banner_url || 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=800&h=400&fit=crop';
+  
   return (
     <Link to={`/series/${series.slug || series.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex items-center gap-4 p-4 rounded-xl cursor-pointer"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="relative rounded-xl overflow-hidden cursor-pointer h-32"
+        style={{ border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        {series.logo_url && (
-          <img src={series.logo_url} alt={series.name} className="w-16 h-16 object-contain flex-shrink-0" />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="text-white font-bold text-sm truncate">{series.name}</div>
-          {series.description && (
-            <div className="text-white/50 text-[10px] mt-1 line-clamp-2">{series.description}</div>
+        {/* Background image */}
+        <img src={bgImage} alt={series.name} className="absolute inset-0 w-full h-full object-cover" />
+        
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+
+        {/* Content */}
+        <div className="relative h-full flex items-center gap-4 p-4">
+          {series.logo_url && (
+            <img src={series.logo_url} alt={series.name} className="w-14 h-14 object-contain flex-shrink-0" />
           )}
-          <div className="mt-2 text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-            Explore Series <ChevronRight className="w-3 h-3" />
+          <div className="flex-1 min-w-0">
+            {series.description && (
+              <div className="text-white text-xs line-clamp-2 mb-2">{series.description}</div>
+            )}
+            <div className="text-[#1DA1A1] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+              Explore Series <ChevronRight className="w-3 h-3" />
+            </div>
           </div>
         </div>
       </motion.div>
