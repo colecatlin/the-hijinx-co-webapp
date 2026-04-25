@@ -49,7 +49,7 @@ function ScrollRow({ children, isLoading }) {
     <div ref={ref} className="flex gap-3">
       {isLoading
         ? Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio: '2/3' }} />
+            <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio: '1/1' }} />
           ))
         : children}
     </div>
@@ -68,7 +68,7 @@ function DriverCard({ driver }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden relative cursor-pointer"
-        style={{ aspectRatio: '2/3', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        style={{ aspectRatio: '1/1', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
         {/* Background image */}
         {img && (
