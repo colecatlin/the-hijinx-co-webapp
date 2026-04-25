@@ -136,19 +136,21 @@ function TrackCard({ track }) {
     <Link to={`/TrackProfile?id=${track.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
-        className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer"
-        style={{ border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
+        className="flex-shrink-0 w-44 rounded-xl overflow-hidden cursor-pointer relative"
+        style={{ aspectRatio: '2/3', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}
       >
-        <div className="h-24 overflow-hidden relative">
-          {img
-            ? <img src={img} alt={track.name} className="w-full h-full object-cover" />
-            : <Placeholder char={(track.name || 'T')[0]} />
-          }
-        </div>
-        <div className="px-2.5 py-2" style={{ background: 'rgba(10,10,10,0.95)' }}>
+        {/* Full-bleed image */}
+        {img
+          ? <img src={img} alt={track.name} className="absolute inset-0 w-full h-full object-cover" />
+          : <div className="absolute inset-0"><Placeholder char={(track.name || 'T')[0]} /></div>
+        }
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }} />
+        {/* Text */}
+        <div className="absolute bottom-0 left-0 right-0 px-2.5 py-2.5">
           <div className="text-white font-bold text-xs leading-tight truncate">{track.name}</div>
           {location && (
-            <div className="flex items-center gap-1 text-white/40 text-[9px] mt-0.5 truncate">
+            <div className="flex items-center gap-1 text-white/50 text-[9px] mt-0.5 truncate">
               <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
               {location}
             </div>
@@ -296,7 +298,7 @@ export default function DiscoveryRows() {
     select: (d) => {
       const today = new Date().toISOString().split('T')[0];
       const upcoming = d.filter(e => e.event_date >= today && e.public_status !== 'archived');
-      return (upcoming.length >= 4 ? upcoming : d).slice(0, 8);
+      return (upcoming.length >= 4 ? upcoming : d).slice(0, 5);
     },
   });
 
