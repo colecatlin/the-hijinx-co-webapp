@@ -254,42 +254,72 @@ function EventListItem({ event }) {
 // ── Championship Leaders ──────────────────────────────────────────────────────
 
 const PLACEHOLDER_LEADERS = [
-  { class: 'Pro Lite', name: 'Cole Catlin', points: 412 },
-  { class: 'Pro 2', name: 'Gavin Harlen', points: 398 },
-  { class: 'Pro 4', name: 'Mason Mingus', points: 375 },
-  { class: 'Pro Buggy', name: 'Jett Noland', points: 420 },
-  { class: 'Mod Lite', name: 'Ryan Beat', points: 355 },
+  { 
+    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    class_id: 'class-prolite', class: 'Pro Lite',
+    driver_id: 'driver-1', name: 'Cole Catlin', points: 412,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
+  },
+  { 
+    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    class_id: 'class-pro2', class: 'Pro 2',
+    driver_id: 'driver-2', name: 'Gavin Harlen', points: 398,
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
+  },
+  { 
+    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    class_id: 'class-pro4', class: 'Pro 4',
+    driver_id: 'driver-3', name: 'Mason Mingus', points: 375,
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop'
+  },
+  { 
+    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    class_id: 'class-probuggy', class: 'Pro Buggy',
+    driver_id: 'driver-4', name: 'Jett Noland', points: 420,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'
+  },
+  { 
+    series_id: 'series-ultra4', series_name: 'ULTRA4',
+    class_id: 'class-modlite', class: 'Mod Lite',
+    driver_id: 'driver-5', name: 'Ryan Beat', points: 355,
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
+  },
 ];
 
 function ChampionshipLeaderCard({ leader }) {
+  const routePath = `/series/${leader.series_id}?class=${leader.class_id}`;
+  
   return (
-    <div
-      className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2.5"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.14)' }}
-    >
-      {/* Class label */}
-      <div className="text-white/50 font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
+    <Link to={routePath}>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="flex-1 min-w-0 rounded-xl p-3 flex flex-col gap-2.5 cursor-pointer transition-all"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.14)' }}
+      >
+        {/* Class label */}
+        <div className="text-white/50 font-black text-[9px] uppercase tracking-widest">{leader.class}</div>
 
-      {/* Avatar + info row */}
-      <div className="flex items-center gap-2.5">
-        {/* Circular avatar */}
-        <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
-          style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
-          {leader.image
-            ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
-            : <span className="text-white/30 text-base font-black">{leader.name[0]}</span>
-          }
-        </div>
-
-        {/* Name + points */}
-        <div>
-          <div className="text-white font-bold text-[11px] leading-tight">
-            <span className="text-white/40 mr-1">1</span>{leader.name}
+        {/* Avatar + info row */}
+        <div className="flex items-center gap-2.5">
+          {/* Circular avatar */}
+          <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-white/10 flex items-center justify-center"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+            {leader.image
+              ? <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top" />
+              : <span className="text-white/30 text-base font-black">{leader.name[0]}</span>
+            }
           </div>
-          <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
+
+          {/* Name + points */}
+          <div>
+            <div className="text-white font-bold text-[11px] leading-tight">
+              <span className="text-white/40 mr-1">1</span>{leader.name}
+            </div>
+            <div className="text-white/40 text-[10px] mt-0.5">{leader.points} pts</div>
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </Link>
   );
 }
 
