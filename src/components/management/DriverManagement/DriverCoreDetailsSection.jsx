@@ -281,9 +281,9 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
             <p className="text-xs text-gray-400">Recommended: 600×800px (3:4)</p>
             <div className="flex items-center gap-4">
               {headshotUrl ? (
-                <img src={headshotUrl} alt="Driver headshot" className="w-16 h-16 rounded-full object-cover border border-gray-200 shrink-0" />
+                <img src={headshotUrl} alt="Driver headshot" className="w-20 h-28 rounded-lg object-cover border border-gray-200 shrink-0 shadow" />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-xs shrink-0">No photo</div>
+                <div className="w-20 h-28 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-xs shrink-0">No photo</div>
               )}
               <label className="cursor-pointer">
                 <input
