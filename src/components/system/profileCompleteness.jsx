@@ -47,10 +47,7 @@ export function checkDriverCompleteness(driver) {
       { key: 'primary_discipline', label: 'Primary discipline' },
       { key: 'racing_status', label: 'Racing status' },
     ],
-    [
-      { key: 'profile_image_url', label: 'Profile image' },
-      { key: 'bio', label: 'Bio' },
-    ]
+    []
   );
 }
 
