@@ -109,10 +109,12 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
   }, [driver, driverId]);
 
   useEffect(() => {
-    if (mediaRecords.length > 0) {
-      setHeadshotUrl(mediaRecords[0].headshot_url || '');
+    if (mediaRecords.length > 0 && mediaRecords[0].headshot_url) {
+      setHeadshotUrl(mediaRecords[0].headshot_url);
+    } else if (driver?.profile_image_url) {
+      setHeadshotUrl(driver.profile_image_url);
     }
-  }, [mediaRecords]);
+  }, [mediaRecords, driver]);
 
   const generateUniqueNumericId = async () => {
     let numericId;
