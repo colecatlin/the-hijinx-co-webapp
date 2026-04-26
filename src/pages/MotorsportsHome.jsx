@@ -64,7 +64,7 @@ export default function MotorsportsHome() {
         <img
           src={BG_IMAGE}
           alt="Racing"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-bottom"
           style={{ filter: 'saturate(1.15) contrast(1.08)' }}
         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.88) 0%, rgba(4,8,8,0.65) 38%, rgba(4,8,8,0.15) 65%, rgba(4,8,8,0.35) 100%)' }} />
