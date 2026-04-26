@@ -44,46 +44,40 @@ Deno.serve(async (req) => {
 
     const seriesConfigs = SERIES_CONFIGS.filter(c => series_ids.includes(c.id));
 
-    // Use LLM to fetch driver rosters
-    const llmPrompt = `Please provide the complete 2026 NASCAR driver roster for the following series: ${seriesConfigs.map(c => c.name).join(', ')}.
+    // Fetch one series at a time to avoid LLM JSON truncation on large responses
+    const nascarDrivers = [];
+    for (const config of seriesConfigs) {
+      const llmPrompt = `List ALL full-time drivers competing in the 2026 ${config.name} season.
+For each driver include: car number, vehicle manufacturer (Chevrolet, Ford, or Toyota), and full team name.
+Return JSON only:
+{"drivers":[{"first_name":"...","last_name":"...","car_number":"...","manufacturer":"...","series":"${config.name}","team_name":"..."}]}`;
 
-For each series, list ALL full-time drivers competing in the 2026 season.
-Include their car number, vehicle manufacturer (Chevrolet, Ford, Toyota), and the full team name they race for.
-
-Return a JSON object with this structure:
-{
-  "drivers": [
-    { "first_name": "...", "last_name": "...", "car_number": "...", "manufacturer": "...", "series": "...", "team_name": "..." }
-  ]
-}
-
-Use exact series names: ${seriesConfigs.map(c => `"${c.name}"`).join(', ')}`;
-
-    const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: llmPrompt,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          drivers: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                first_name:  { type: 'string' },
-                last_name:   { type: 'string' },
-                car_number:  { type: 'string' },
-                manufacturer:{ type: 'string' },
-                series:      { type: 'string' },
-                team_name:   { type: 'string' },
+      const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: llmPrompt,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            drivers: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  first_name:   { type: 'string' },
+                  last_name:    { type: 'string' },
+                  car_number:   { type: 'string' },
+                  manufacturer: { type: 'string' },
+                  series:       { type: 'string' },
+                  team_name:    { type: 'string' },
+                },
               },
             },
           },
         },
-      },
-    });
-
-    const nascarDrivers = llmResult?.drivers || [];
+      });
+      const batch = llmResult?.drivers || [];
+      nascarDrivers.push(...batch);
+    }
 
     // Load existing DB data once
     const [existingPrograms] = await Promise.all([
