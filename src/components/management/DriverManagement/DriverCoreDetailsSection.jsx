@@ -265,11 +265,11 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
                 accept="image/*"
                 className="hidden"
                 disabled={driverId === 'new'}
-                onChange={async (e) => {
+                onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                  handleHeadshotUpload(file_url);
+                  const localUrl = URL.createObjectURL(file);
+                  handleHeadshotUpload(localUrl);
                 }}
               />
               <span className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors ${driverId === 'new' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
