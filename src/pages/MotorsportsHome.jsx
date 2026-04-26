@@ -57,7 +57,7 @@ export default function MotorsportsHome() {
   ];
 
   return (
-    <div className="relative bg-[#050A0A]">
+    <div className="relative bg-[#050A0A]" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto' }}>
 
       {/* ── BACKGROUND ── */}
       <div className="absolute inset-0 z-0 h-[70vh]">
