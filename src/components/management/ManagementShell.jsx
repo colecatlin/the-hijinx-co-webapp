@@ -19,21 +19,21 @@ export default function ManagementShell({ title, subtitle, actions, children, ma
       <div className="flex items-start gap-4 mb-6 pb-5 border-b border-gray-200">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-gray-500 mt-0.5 leading-snug">{subtitle}</p>
-          )}
+          {subtitle &&
+          <p className="text-sm text-gray-500 mt-0.5 leading-snug">{subtitle}</p>
+          }
         </div>
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+        {actions &&
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             {actions}
           </div>
-        )}
+        }
       </div>
 
       {/* Page body */}
-      <div>
+      <div className="py-1">
         {children}
       </div>
-    </div>
-  );
+    </div>);
+
 }
