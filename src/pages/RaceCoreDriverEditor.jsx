@@ -47,6 +47,7 @@ export default function RaceCoreDriverEditor() {
     } else {
       toast.success('Driver updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['driver', id] });
+      queryClient.refetchQueries({ queryKey: ['driver', id] });
     }
   };
 

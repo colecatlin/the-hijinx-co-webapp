@@ -230,6 +230,7 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
         await base44.entities.Driver.update(driverId, { profile_image_url: croppedUrl });
         queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
         queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
+        await queryClient.refetchQueries({ queryKey: ['driver', driverId] });
         toast.success('Headshot updated');
       }
       setCropModalOpen(false);
@@ -254,6 +255,7 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
       await base44.entities.Driver.update(driverId, { hero_image_url: file_url });
       queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
       queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
+      await queryClient.refetchQueries({ queryKey: ['driver', driverId] });
       toast.success('Banner image updated');
     } catch (error) {
       toast.error('Failed to save banner image');
