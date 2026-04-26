@@ -425,6 +425,7 @@ export default function ManageDrivers() {
               placeholder="Search drivers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.stopPropagation()}
               className="pl-10"
             />
           </div>
