@@ -58,7 +58,7 @@ export default function Home() {
 
       {/* Clean break: events → race core */}
 
-      <RaceCoreSection stats={hp.hero_stats} />
+      <RaceCoreSection />
 
       <SocialsSection media={hp.featured_media || []} />
 
