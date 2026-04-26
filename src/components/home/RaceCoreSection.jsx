@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Search, Users, CalendarDays, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowRight, Users, CalendarDays, ShieldCheck, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -80,7 +80,6 @@ function StatCard({ label, data, isLoading, delay = 0 }) {
 }
 
 export default function RaceCoreSection() {
-  const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
   const { data: driverStats, isLoading: loadingDrivers } = useEntityStats('Driver');
@@ -92,15 +91,6 @@ export default function RaceCoreSection() {
     { label: 'Events',  data: eventStats,  isLoading: loadingEvents  },
     { label: 'Results', data: resultStats, isLoading: loadingResults },
   ];
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate(`/DriverDirectory?q=${encodeURIComponent(query.trim())}`);
-    } else {
-      navigate('/MotorsportsHome');
-    }
-  };
 
   return (
     <section className="relative bg-[#050A0A]" style={{ minHeight: '600px' }}>
@@ -168,34 +158,23 @@ export default function RaceCoreSection() {
               The most comprehensive motorsports data platform, built for the culture.
             </p>
 
-            <form onSubmit={handleSearch} className="flex items-center gap-0 max-w-md">
-              <div
-                className="flex items-center flex-1 px-4 py-4 rounded-l-xl"
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRight: 'none',
-                }}
-              >
-                <Search className="w-5 h-5 text-white/40 mr-3 flex-shrink-0" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Search drivers, teams, tracks, events..."
-                  className="flex-1 bg-transparent text-white text-sm placeholder-white/30 outline-none"
-                />
-              </div>
+            <div className="flex flex-wrap gap-3">
               <button
-                type="submit"
-                className="px-6 py-4 rounded-r-xl text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110 flex-shrink-0"
+                onClick={() => navigate(createPageUrl('MotorsportsHome'))}
+                className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
                 style={{ background: '#1DA1A1', color: '#050A0A' }}
               >
-                Explore
+                Explore INDEX46
+                <ArrowRight className="w-4 h-4" />
               </button>
-            </form>
+              <button
+                onClick={() => navigate(createPageUrl('DriverDirectory'))}
+                className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:bg-white/10"
+                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}
+              >
+                Driver Directory
+              </button>
+            </div>
           </motion.div>
 
           {/* RIGHT: Live stat cards */}
