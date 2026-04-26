@@ -8,17 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
+
 export default function DriverBrandingSection({ driver, driverId, onSaveSuccess }) {
   const [formData, setFormData] = useState({
     bio: '',
     tagline: '',
-    hero_image_url: '',
-    website_url: '',
-    instagram_url: '',
-    facebook_url: '',
-    tiktok_url: '',
-    x_url: '',
-    youtube_url: '',
     years_active_start: '',
     years_active_end: '',
     nicknames_raw: '',
@@ -32,13 +26,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
       setFormData({
         bio: driver.bio || '',
         tagline: driver.tagline || '',
-        hero_image_url: driver.hero_image_url || '',
-        website_url: driver.website_url || '',
-        instagram_url: driver.instagram_url || '',
-        facebook_url: driver.facebook_url || '',
-        tiktok_url: driver.tiktok_url || '',
-        x_url: driver.x_url || '',
-        youtube_url: driver.youtube_url || '',
         years_active_start: driver.years_active_start || '',
         years_active_end: driver.years_active_end || '',
         nicknames_raw: (driver.nicknames || []).join(', '),
@@ -55,13 +42,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         id: driverId,
         bio: data.bio || null,
         tagline: data.tagline || null,
-        hero_image_url: data.hero_image_url || null,
-        website_url: data.website_url || null,
-        instagram_url: data.instagram_url || null,
-        facebook_url: data.facebook_url || null,
-        tiktok_url: data.tiktok_url || null,
-        x_url: data.x_url || null,
-        youtube_url: data.youtube_url || null,
         years_active_start: data.years_active_start ? Number(data.years_active_start) : null,
         years_active_end: data.years_active_end ? Number(data.years_active_end) : null,
         nicknames,
@@ -81,23 +61,11 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
     setIsDirty(true);
   };
 
-  const uploadImage = async (e, field) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      handleChange(field, file_url);
-      toast.success('Image uploaded');
-    } catch {
-      toast.error('Upload failed');
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Branding & Identity</CardTitle>
-        <CardDescription>Bio, tagline, images, social links, and career years</CardDescription>
+        <CardDescription>Bio, tagline, career years, and nicknames</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Bio & tagline */}
@@ -121,60 +89,6 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
               placeholder="Public biography shown on driver profile..."
               rows={5}
             />
-          </div>
-        </div>
-
-        {/* Images */}
-        <div className="border-t pt-5 space-y-4">
-          <h4 className="font-semibold text-sm text-gray-700">Profile Images</h4>
-          {[
-            { field: 'hero_image_url', label: 'Hero / Banner Image' },
-          ].map(({ field, label }) => (
-            <div key={field} className="flex items-start gap-4">
-              {formData[field] ? (
-                <img src={formData[field]} alt={label} className="w-20 h-14 object-cover rounded border border-gray-200 flex-shrink-0" />
-              ) : (
-                <div className="w-20 h-14 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">None</div>
-              )}
-              <div className="flex-1 space-y-1">
-                <Label className="text-xs">{label}</Label>
-                <Input
-                  className="text-xs"
-                  value={formData[field]}
-                  onChange={e => handleChange(field, e.target.value)}
-                  placeholder="https://..."
-                />
-                <label className="cursor-pointer inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50">
-                  <input type="file" accept="image/*" className="hidden" onChange={e => uploadImage(e, field)} />
-                  Upload
-                </label>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Social links */}
-        <div className="border-t pt-5 space-y-3">
-          <h4 className="font-semibold text-sm text-gray-700">Social & Web</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { field: 'website_url', label: 'Website', placeholder: 'https://mywebsite.com' },
-              { field: 'instagram_url', label: 'Instagram', placeholder: 'https://instagram.com/...' },
-              { field: 'x_url', label: 'X / Twitter', placeholder: 'https://x.com/...' },
-              { field: 'facebook_url', label: 'Facebook', placeholder: 'https://facebook.com/...' },
-              { field: 'tiktok_url', label: 'TikTok', placeholder: 'https://tiktok.com/@...' },
-              { field: 'youtube_url', label: 'YouTube', placeholder: 'https://youtube.com/...' },
-            ].map(({ field, label, placeholder }) => (
-              <div key={field}>
-                <Label className="text-xs">{label}</Label>
-                <Input
-                  className="mt-1 text-sm"
-                  value={formData[field]}
-                  onChange={e => handleChange(field, e.target.value)}
-                  placeholder={placeholder}
-                />
-              </div>
-            ))}
           </div>
         </div>
 
