@@ -40,34 +40,41 @@ Deno.serve(async (req) => {
     // ---- Fetch drivers from LLM one series at a time ----
     const nascarDrivers = [];
     for (const config of seriesConfigs) {
-      const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are a NASCAR expert. List ALL full-time drivers competing in the 2026 ${config.name} season as of April 2026.
-Include every driver with their car number, manufacturer (Chevrolet, Ford, or Toyota only), and team name.
-Be complete — do not truncate the list.`,
-        add_context_from_internet: true,
-        model: 'gemini_3_1_pro',
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            drivers: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  first_name:   { type: 'string' },
-                  last_name:    { type: 'string' },
-                  car_number:   { type: 'string' },
-                  manufacturer: { type: 'string' },
-                  series:       { type: 'string' },
-                  team_name:    { type: 'string' },
+      let batch = [];
+      // Try up to 2 times in case of JSON parse issues
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+            prompt: `List ALL full-time drivers in the 2026 ${config.name} season as of April 2026. For each driver provide: first_name (ASCII only, no accents), last_name (ASCII only, no accents), car_number (string), manufacturer (only: Chevrolet, Ford, or Toyota), team_name (ASCII only). Return only plain ASCII text in all string fields — no special characters or accents.`,
+            add_context_from_internet: true,
+            model: 'gemini_3_1_pro',
+            response_json_schema: {
+              type: 'object',
+              properties: {
+                drivers: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      first_name:   { type: 'string' },
+                      last_name:    { type: 'string' },
+                      car_number:   { type: 'string' },
+                      manufacturer: { type: 'string' },
+                      team_name:    { type: 'string' },
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      });
-      const batch = llmResult?.drivers || [];
-      for (const d of batch) { d.series = config.name; } // ensure series name is set
+          });
+          batch = llmResult?.drivers || [];
+          break; // success
+        } catch (llmErr) {
+          log.push(`[WARN] LLM attempt ${attempt} failed for ${config.name}: ${llmErr.message}`);
+          if (attempt === 2) { log.push(`[ERROR] Skipping ${config.name} after 2 failed attempts`); }
+        }
+      }
+      for (const d of batch) { d.series = config.name; }
       nascarDrivers.push(...batch);
     }
 
