@@ -10,6 +10,7 @@ import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash, ExternalLink } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -51,6 +52,9 @@ export default function ManageDrivers() {
   const [sortDir, setSortDir] = useState('desc');
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
   const [driverDupCount, setDriverDupCount] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
 
   // Lightweight background duplicate check on first load
   React.useEffect(() => {
@@ -241,10 +245,13 @@ export default function ManageDrivers() {
   };
 
   const handleBulkDelete = () => {
-    if (window.confirm(`Delete ${selectedDrivers.length} selected driver(s)?`)) {
-      const selectedItems = drivers.filter(d => selectedDrivers.includes(d.id));
-      bulkDeleteMutation.mutate(selectedDrivers, selectedItems);
-    }
+    setBulkDeleteConfirm(true);
+  };
+
+  const confirmBulkDelete = () => {
+    setBulkDeleteConfirm(false);
+    const selectedItems = drivers.filter(d => selectedDrivers.includes(d.id));
+    bulkDeleteMutation.mutate(selectedDrivers, selectedItems);
   };
 
   const handleBulkApply = async () => {
@@ -270,10 +277,16 @@ export default function ManageDrivers() {
     navigate('/race-core/drivers/' + driver.id);
   };
 
-  const handleDelete = async (driver) => {
-    if (window.confirm(`Delete ${driver.display_name}?`)) {
-      deleteMutation.mutate(driver.id, driver);
-    }
+  const handleDelete = (driver) => {
+    setDriverToDelete(driver);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (!driverToDelete) return;
+    setShowDeleteConfirm(false);
+    deleteMutation.mutate(driverToDelete.id, driverToDelete);
+    setDriverToDelete(null);
   };
 
   const handleFormClose = () => {
@@ -688,6 +701,39 @@ export default function ManageDrivers() {
           </TabsContent>
         </Tabs>
       </ManagementShell>
+
+      {/* Single delete confirm */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete driver?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{driverToDelete?.first_name} {driverToDelete?.last_name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">Yes, delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk delete confirm */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedDrivers.length} driver(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedDrivers.length} selected drivers</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkDelete} className="bg-red-600 hover:bg-red-700">Yes, delete all</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </ManagementLayout>
   );
 }
