@@ -4,153 +4,142 @@ import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, Flag } from 'lucide-react';
 
-// Subtle starting grid texture as inline SVG data URI
-const gridTexture = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='20' height='20' fill='rgba(255,255,255,0.025)'/%3E%3Crect x='20' y='20' width='20' height='20' fill='rgba(255,255,255,0.025)'/%3E%3C/svg%3E")`;
-
 export default function RaceCoreBridge() {
   const navigate = useNavigate();
 
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: '#020606' }}
+      style={{ background: '#010404' }}
     >
-      {/* Starting grid texture */}
+      {/* Single clean horizontal divider at top — signals a hard break */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ backgroundImage: gridTexture, backgroundSize: '40px 40px', opacity: 1 }}
+        className="absolute top-0 left-0 right-0 h-[1px]"
+        style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.4) 30%, rgba(29,161,161,0.4) 70%, transparent 100%)' }}
       />
 
-      {/* Faint track line — horizontal rule across mid */}
+      {/* Restrained teal glow — anchors right side where CTA lives */}
       <div
-        className="absolute left-0 right-0 pointer-events-none"
-        style={{ top: '50%', height: '1px', background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent 100%)' }}
-      />
-
-      {/* Vertical accent line — left edge */}
-      <div
-        className="absolute top-0 bottom-0 left-[10%] pointer-events-none hidden lg:block"
-        style={{ width: '1px', background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent 100%)' }}
-      />
-      <div
-        className="absolute top-0 bottom-0 left-[90%] pointer-events-none hidden lg:block"
-        style={{ width: '1px', background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent 100%)' }}
-      />
-
-      {/* Teal glow — bottom right */}
-      <div
-        className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-[120px] pointer-events-none"
-        style={{ background: 'rgba(29,161,161,0.07)' }}
+        className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full blur-[160px] pointer-events-none"
+        style={{ background: 'rgba(29,161,161,0.06)' }}
       />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-12 lg:px-20 py-20 md:py-28">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-12 lg:px-20 py-24 md:py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
           {/* LEFT — Copy */}
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.65 }}
           >
             {/* Label */}
-            <div className="flex items-center gap-3 mb-6">
-              <Flag className="w-3.5 h-3.5 text-[#1DA1A1]" />
-              <span className="font-mono text-[9px] tracking-[0.5em] text-[#1DA1A1] uppercase font-bold">
+            <div className="flex items-center gap-2.5 mb-7">
+              <Flag className="w-3 h-3 text-[#1DA1A1]" />
+              <span className="font-mono text-[9px] tracking-[0.55em] text-[#1DA1A1] uppercase font-bold">
                 Race Core
               </span>
             </div>
 
-            {/* Headline */}
+            {/* Headline — deliberately oversized */}
             <h2
-              className="text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase leading-[0.88] tracking-tight mb-4"
-              style={{ textShadow: '0 2px 40px rgba(0,0,0,0.9)' }}
+              className="font-black text-white uppercase leading-[0.85] tracking-tight mb-5"
+              style={{
+                fontSize: 'clamp(3.5rem, 8vw, 6.5rem)',
+                textShadow: '0 0 60px rgba(0,0,0,1)',
+              }}
             >
               GET ON<br />THE GRID.
             </h2>
 
             {/* Subline */}
             <p
-              className="text-lg md:text-xl font-black italic uppercase mb-6 leading-tight"
-              style={{ color: '#1DA1A1' }}
+              className="text-base md:text-lg font-black italic uppercase mb-7 tracking-wide"
+              style={{ color: '#1DA1A1', letterSpacing: '0.04em' }}
             >
               This isn't just something you watch.
             </p>
 
             {/* Body */}
-            <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-md">
+            <p className="text-white/45 text-sm md:text-base leading-relaxed max-w-[380px]">
               You've explored the world of racing.<br />
               Now it's time to be part of it.<br />
               Build your profile, track your results, and step into the system that powers it all.
             </p>
           </motion.div>
 
-          {/* RIGHT — Glass card with CTAs */}
+          {/* RIGHT — Glass card */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.15 }}
+            transition={{ duration: 0.65, delay: 0.12 }}
             className="flex justify-center lg:justify-end"
           >
             <div
-              className="w-full max-w-sm p-8 relative overflow-hidden"
+              className="w-full max-w-[340px] p-8 relative"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                boxShadow: '0 0 60px rgba(0,0,0,0.6), 0 0 30px rgba(29,161,161,0.08)',
               }}
             >
-              {/* Top accent line */}
+              {/* Teal top accent */}
               <div
                 className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, transparent 60%)' }}
+                style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.2) 70%, transparent 100%)' }}
               />
 
-              {/* Inner grid texture on card */}
-              <div
-                className="absolute inset-0 pointer-events-none opacity-50"
-                style={{ backgroundImage: gridTexture, backgroundSize: '20px 20px' }}
-              />
+              <div className="font-mono text-[8px] tracking-[0.45em] text-white/20 uppercase mb-7">
+                Ready to compete?
+              </div>
 
-              <div className="relative z-10">
-                <div className="font-mono text-[8px] tracking-[0.4em] text-white/25 uppercase mb-6">
-                  Ready to race?
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={() => navigate(createPageUrl('DriverProfileSetup'))}
-                    className="w-full py-4 px-6 text-sm font-black tracking-widest uppercase text-center transition-all duration-200 hover:brightness-110 flex items-center justify-center gap-2"
-                    style={{ background: '#1DA1A1', color: '#020606' }}
-                  >
-                    Create Your Profile
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={() => navigate(createPageUrl('MotorsportsHome'))}
-                    className="w-full py-4 px-6 text-sm font-black tracking-widest uppercase text-center transition-all duration-200 hover:bg-white/10 text-white/70 hover:text-white"
-                    style={{ border: '1px solid rgba(255,255,255,0.15)' }}
-                  >
-                    Explore Race Core
-                  </button>
-                </div>
-
-                <div
-                  className="mt-6 pt-5 text-[10px] text-white/20 leading-relaxed"
-                  style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+              <div className="flex flex-col gap-3">
+                {/* Primary — dominant */}
+                <button
+                  onClick={() => navigate(createPageUrl('DriverProfileSetup'))}
+                  className="w-full py-4 px-6 text-sm font-black tracking-widest uppercase text-center transition-all duration-200 hover:brightness-110 flex items-center justify-center gap-2.5"
+                  style={{
+                    background: '#1DA1A1',
+                    color: '#010404',
+                    boxShadow: '0 4px 24px rgba(29,161,161,0.35)',
+                  }}
                 >
-                  Free to join. Built for competitors at every level.
-                </div>
+                  Create Your Profile
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                {/* Secondary — clearly subordinate */}
+                <button
+                  onClick={() => navigate(createPageUrl('MotorsportsHome'))}
+                  className="w-full py-3.5 px-6 text-xs font-bold tracking-widest uppercase text-center transition-all duration-200 text-white/40 hover:text-white/70"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  Explore Race Core
+                </button>
+              </div>
+
+              <div
+                className="mt-7 pt-5 text-[10px] text-white/18 leading-relaxed"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                Free to join. Built for competitors at every level.
               </div>
             </div>
           </motion.div>
 
         </div>
       </div>
+
+      {/* Bottom divider — clean exit into next section */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[1px]"
+        style={{ background: 'rgba(255,255,255,0.04)' }}
+      />
     </section>
   );
 }
