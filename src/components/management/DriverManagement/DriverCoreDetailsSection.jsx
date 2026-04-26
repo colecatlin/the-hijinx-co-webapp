@@ -410,18 +410,6 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
           </Select>
         </div>
 
-        {isAdmin && (
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <Checkbox
-              id="featured"
-              checked={formData.featured}
-              onCheckedChange={(checked) => handleInputChange('featured', checked)}
-            />
-            <Label htmlFor="featured" className="text-sm font-medium cursor-pointer">
-              Featured on homepage
-            </Label>
-          </div>
-        )}
 
         {isReadOnly && (
           <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
