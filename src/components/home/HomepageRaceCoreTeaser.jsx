@@ -1,170 +1,95 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Gauge, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const FEATURES = [
-  'Event Management',
-  'Driver Registration',
-  'Tech Inspection',
-  'Results & Standings',
-  'Race Control',
-  'Points Systems',
-];
+const BG_TEXTURE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png';
+const HERO_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d3e32f1e6_46HeaderPhoto.png';
 
-const MOCK_ROWS = [
-  { pos: '01', num: '#18', pts: '248', trend: 'up' },
-  { pos: '02', num: '#44', pts: '241', trend: 'up' },
-  { pos: '03', num: '#07', pts: '235', trend: 'same' },
-  { pos: '04', num: '#12', pts: '228', trend: 'down' },
-  { pos: '05', num: '#33', pts: '219', trend: 'up' },
-];
+const grainStyle = {
+  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")`,
+};
 
 export default function HomepageRaceCoreTeaser() {
   return (
-    <section className="relative py-16 md:py-24 overflow-hidden border-b border-white/5">
+    <section className="relative overflow-hidden" style={{ minHeight: '520px' }}>
 
-      {/* Rich dark background with blue-teal gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#000D1A] via-[#001A0D] to-[#050505]" />
-      <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+      {/* Base dark bg + texture */}
+      <div className="absolute inset-0 bg-[#050A0A]" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url('${BG_TEXTURE}')`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '1024px auto',
+          opacity: 0.35,
+        }}
+      />
 
-      {/* Teal glow right */}
-      <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-[#00FFDA]/7 to-transparent pointer-events-none" />
-      {/* Blue glow left */}
-      <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#2563EB]/6 to-transparent pointer-events-none" />
-
-      {/* Left vertical accent */}
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-[#00FFDA]/40 to-transparent" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-          {/* Left: Copy */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="flex items-center gap-3 mb-7">
-              <Gauge className="w-5 h-5 text-[#00FFDA]" />
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold">Race Core</span>
-            </div>
-
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[0.92] mb-6">
-              The operating system
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00FFDA] to-[#2563EB]">for motorsports.</span>
-            </h2>
-
-            <p className="text-white/60 text-base leading-relaxed max-w-md mb-10">
-              Race Core powers event management, driver registration, tech inspection, results processing, standings, and live race control for tracks and series operators nationwide.
-            </p>
-
-            {/* Feature list */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 mb-10">
-              {FEATURES.map((label) => (
-                <div key={label} className="flex items-center gap-2.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#00FFDA] flex-shrink-0" />
-                  <span className="text-sm text-white/65 font-medium">{label}</span>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              to={createPageUrl('Registration')}
-              className="group inline-flex items-center gap-2.5 px-7 py-4 bg-[#00FFDA] text-[#050A0A] text-sm font-black tracking-wider uppercase hover:bg-white hover:shadow-[0_0_24px_rgba(0,255,218,0.35)] transition-all duration-200"
-            >
-              <Gauge className="w-4 h-4" />
-              Open Race Core
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-
-          {/* Right: Mock interface */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="hidden lg:block"
-          >
-            <div className="relative border border-[#00FFDA]/20 bg-[#060D14] shadow-[0_0_60px_rgba(0,255,218,0.06)]">
-              {/* Top accent */}
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#00FFDA]/80 via-[#2563EB]/40 to-transparent" />
-
-              {/* Window chrome */}
-              <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/8">
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-white/10" />
-                  <div className="w-2 h-2 rounded-full bg-white/10" />
-                  <div className="w-2 h-2 rounded-full bg-[#00FFDA]/55" />
-                </div>
-                <span className="font-mono text-[9px] tracking-[0.25em] text-white/35 uppercase ml-2">Race Core · Standings</span>
-                <div className="ml-auto flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse" />
-                  <span className="font-mono text-[8px] text-[#EF4444] uppercase tracking-widest font-bold">Live</span>
-                </div>
-              </div>
-
-              {/* Nav tabs mock */}
-              <div className="flex gap-1 px-5 pt-3 pb-3 border-b border-white/5">
-                {['Overview', 'Entries', 'Results', 'Tech', 'Standings'].map((tab, i) => (
-                  <div
-                    key={tab}
-                    className={`px-3 py-1.5 text-[9px] font-mono tracking-[0.15em] uppercase ${
-                      i === 4
-                        ? 'bg-[#00FFDA]/15 text-[#00FFDA] border border-[#00FFDA]/30'
-                        : 'text-white/20'
-                    }`}
-                  >
-                    {tab}
-                  </div>
-                ))}
-              </div>
-
-              {/* Header row */}
-              <div className="flex items-center gap-4 px-5 py-2.5 border-b border-white/5">
-                <span className="font-mono text-[8px] text-white/20 w-6">POS</span>
-                <span className="font-mono text-[8px] text-white/20 flex-1">DRIVER</span>
-                <span className="font-mono text-[8px] text-white/20 w-12">NO.</span>
-                <span className="font-mono text-[8px] text-white/20 w-16 text-right">POINTS</span>
-              </div>
-
-              {/* Data rows */}
-              {MOCK_ROWS.map((row, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 + i * 0.07, duration: 0.4 }}
-                  className={`flex items-center gap-4 px-5 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/4 transition-colors cursor-default ${i === 0 ? 'bg-[#00FFDA]/4' : ''}`}
-                >
-                  <span className={`font-mono text-xs w-6 font-bold ${i === 0 ? 'text-[#00FFDA]' : 'text-[#00FFDA]/45'}`}>{row.pos}</span>
-                  <div className="flex-1 flex gap-2 items-center">
-                    <div className={`w-5 h-5 rounded-sm flex-shrink-0 ${i === 0 ? 'bg-[#00FFDA]/20' : 'bg-white/8'}`} />
-                    <div className="h-2 bg-white/12 rounded-sm" style={{ width: `${60 + i * 12}px` }} />
-                  </div>
-                  <span className="font-mono text-[10px] text-white/25 w-12">{row.num}</span>
-                  <div className="flex items-center gap-1.5 w-16 justify-end">
-                    <span className={`font-mono text-[10px] font-bold ${i === 0 ? 'text-[#00FFDA]' : 'text-[#00FFDA]/50'}`}>{row.pts}</span>
-                    {row.trend === 'up'   && <span className="text-[#00FFDA]/60 text-[8px] leading-none">▲</span>}
-                    {row.trend === 'down' && <span className="text-[#EF4444]/60 text-[8px] leading-none">▼</span>}
-                  </div>
-                </motion.div>
-              ))}
-
-              <div className="px-5 py-4 border-t border-white/5 flex justify-between items-center">
-                <span className="font-mono text-[9px] text-white/20 uppercase tracking-widest">24 of 24 drivers</span>
-                <span className="font-mono text-[9px] text-[#00FFDA]/40 uppercase tracking-widest">Round 8 of 12</span>
-              </div>
-            </div>
-          </motion.div>
-
-        </div>
+      {/* Hero photo — right side */}
+      <div className="absolute inset-0">
+        <img
+          src={HERO_IMAGE}
+          alt="Racing"
+          className="w-full h-full object-cover object-top opacity-40"
+          style={{ filter: 'saturate(1.15) contrast(1.08)' }}
+        />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.95) 0%, rgba(4,8,8,0.75) 45%, rgba(4,8,8,0.25) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.3) 0%, rgba(4,8,8,0.0) 40%, rgba(4,8,8,0.6) 100%)' }} />
+        {/* Teal accent lines */}
+        <div className="absolute top-0 left-0 w-[400px] h-[2px] opacity-50" style={{ background: 'linear-gradient(to right, #1DA1A1, transparent)' }} />
+        <div className="absolute top-0 left-0 w-[2px] h-32 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
+        <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={grainStyle} />
       </div>
+
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-12 lg:px-20 py-20 md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="max-w-xl"
+        >
+          {/* Label */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-5 h-[1px] bg-[#1DA1A1]" />
+            <span className="font-mono text-[9px] tracking-[0.45em] text-[#1DA1A1] uppercase">INDEX46 · Motorsports</span>
+          </div>
+
+          {/* Headline */}
+          <h2
+            className="text-5xl md:text-6xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
+            style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
+          >
+            THE WORLD<br />OF RACING.
+          </h2>
+          <p
+            className="text-3xl md:text-4xl font-black italic uppercase mb-5 leading-tight"
+            style={{ color: '#1DA1A1', textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
+          >
+            All in one place.
+          </p>
+
+          <p className="text-white/60 text-sm leading-relaxed mb-8 max-w-md">
+            Drivers. Teams. Tracks. Events. Results.<br />
+            The most comprehensive motorsports data platform, built for the culture.
+          </p>
+
+          {/* CTA */}
+          <Link
+            to={createPageUrl('MotorsportsHome')}
+            className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
+            style={{ background: '#1DA1A1', color: '#050A0A' }}
+          >
+            <Search className="w-4 h-4" />
+            Explore INDEX46
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
+      </div>
+
     </section>
   );
 }
