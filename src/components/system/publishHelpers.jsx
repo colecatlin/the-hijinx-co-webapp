@@ -12,7 +12,7 @@
  */
 export function isDriverPublic(driver) {
   if (!driver) return false;
-  return driver.profile_status === 'live';
+  return driver.visibility_status === 'live';
 }
 
 /**
@@ -56,7 +56,7 @@ export function areResultsPublic(result, session) {
  */
 export function isTeamPublic(team) {
   if (!team) return false;
-  return team.profile_status === 'live';
+  return team.visibility_status === 'live';
 }
 
 /**
@@ -64,7 +64,7 @@ export function isTeamPublic(team) {
  */
 export function isTrackPublic(track) {
   if (!track) return false;
-  return track.profile_status === 'live';
+  return track.visibility_status === 'live';
 }
 
 /**
@@ -72,7 +72,7 @@ export function isTrackPublic(track) {
  */
 export function isSeriesPublic(series) {
   if (!series) return false;
-  return series.profile_status === 'live';
+  return series.visibility_status === 'live';
 }
 
 /**
@@ -128,7 +128,7 @@ export function getPublishStatus(entity, entityType) {
   switch (entityType) {
     case 'Driver':
       status.isPublic = isDriverPublic(entity);
-      status.reason = status.isPublic ? 'Profile live' : `Profile status: ${entity.profile_status}`;
+      status.reason = status.isPublic ? 'Profile live' : `Visibility status: ${entity.visibility_status}`;
       break;
       
     case 'Event':
