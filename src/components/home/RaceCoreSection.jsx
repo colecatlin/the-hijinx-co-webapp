@@ -1,192 +1,140 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ArrowRight, Users, CalendarDays, ShieldCheck, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { ArrowRight, Cpu, Shield, Zap } from 'lucide-react';
 
-const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d3e32f1e6_46HeaderPhoto.png';
-const BG_TEXTURE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png';
+const PILLARS = [
+  { icon: Cpu,    label: 'Verified Results',      sub: 'Race data you can trust. Published the moment it\'s official.' },
+  { icon: Shield, label: 'Real Athlete Profiles', sub: 'Every driver, team, and series — verified, not anonymous.' },
+  { icon: Zap,    label: 'Season in Real Time',   sub: 'Registration to final results. The full picture.' },
+];
 
-const grainStyle = {
-  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")`,
-};
-
-const sparklinePaths = {
-  Drivers: 'M2,22 6,18 10,20 14,14 18,16 22,10 26,12 30,6 34,8 38,4 42,7 46,3',
-  Events:  'M2,21 6,17 10,19 14,13 18,15 22,9  26,11 30,7  34,9  38,5  42,8  46,3',
-  Results: 'M2,22 6,20 10,18 14,15 18,17 22,12 26,9  30,11 34,7  38,5  42,8  46,2',
-};
-
-const iconMap = { Drivers: Users, Events: CalendarDays, Results: ShieldCheck };
-
-function useEntityStats(entityName) {
-  return useQuery({
-    queryKey: ['racecore-section-stats', entityName],
-    queryFn: async () => {
-      const all = await base44.entities[entityName].list();
-      const total = Array.isArray(all) ? all.length : 0;
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      const monthly = Array.isArray(all)
-        ? all.filter(r => r.created_date && new Date(r.created_date) >= startOfMonth).length
-        : 0;
-      return { total, monthly };
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-function StatCard({ label, data, isLoading, delay = 0 }) {
-  const Icon = iconMap[label] || Users;
-  const path = sparklinePaths[label];
-  const count = data?.total?.toLocaleString() ?? '—';
-  const monthly = data?.monthly > 0 ? `+${data.monthly} this month` : null;
-
+export default function RaceCoreSection({ stats }) {
   return (
-    <motion.div
-      initial={{ x: 40, opacity: 0 }}
-      whileInView={{ x: 0, opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.5 }}
-      className="flex items-center gap-3 px-4 py-3 rounded-xl"
-      style={{
-        background: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.35)',
-        boxShadow: '0 0 14px rgba(255,255,255,0.08), 0 2px 20px rgba(0,0,0,0.3)',
-      }}
-    >
-      <Icon className="w-5 h-5 text-white/40 flex-shrink-0" strokeWidth={1.25} />
-      <div className="flex-1 min-w-0">
-        <div className="font-mono text-[8px] tracking-[0.3em] text-white/40 uppercase mb-0.5">{label}</div>
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-white/30" />
-        ) : (
-          <>
-            <div className="text-white font-black text-xl leading-none tracking-tight">{count}</div>
-            {monthly && <div className="text-[#1DA1A1] font-mono text-[8px] mt-0.5 tracking-wide">{monthly}</div>}
-          </>
-        )}
-      </div>
-      <svg width="48" height="24" viewBox="0 0 48 28" fill="none" className="flex-shrink-0 opacity-70">
-        <polyline points={path} stroke="#1DA1A1" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </motion.div>
-  );
-}
+    <section className="bg-[#111111] py-16 md:py-24 border-t border-white/5 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
 
-export default function RaceCoreSection() {
-  const navigate = useNavigate();
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-  const { data: driverStats, isLoading: loadingDrivers } = useEntityStats('Driver');
-  const { data: eventStats,  isLoading: loadingEvents  } = useEntityStats('Event');
-  const { data: resultStats, isLoading: loadingResults } = useEntityStats('Results');
-
-  const stats = [
-    { label: 'Drivers', data: driverStats, isLoading: loadingDrivers },
-    { label: 'Events',  data: eventStats,  isLoading: loadingEvents  },
-    { label: 'Results', data: resultStats, isLoading: loadingResults },
-  ];
-
-  return (
-    <section className="relative bg-[#050A0A]" style={{ minHeight: '600px' }}>
-
-      {/* Texture overlay */}
-      <div
-        className="absolute inset-0 z-[1] pointer-events-none"
-        style={{
-          backgroundImage: `url('${BG_TEXTURE}')`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '1024px auto',
-          opacity: 0.35,
-        }}
-      />
-
-      {/* Background photo + gradients */}
-      <div className="absolute inset-0 z-[2]">
-        <img
-          src={BG_IMAGE}
-          alt="Racing"
-          className="w-full h-full object-cover object-top"
-          style={{ filter: 'saturate(1.15) contrast(1.08)' }}
-        />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.92) 0%, rgba(4,8,8,0.68) 38%, rgba(4,8,8,0.18) 65%, rgba(4,8,8,0.40) 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.45) 0%, rgba(4,8,8,0.05) 35%, rgba(4,8,8,0.40) 80%, rgba(4,8,8,0.85) 100%)' }} />
-        {/* Teal accent lines */}
-        <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: 'linear-gradient(to right, #1DA1A1, transparent)' }} />
-        <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
-        <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: 'linear-gradient(to left, #1DA1A1, transparent)' }} />
-        <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={grainStyle} />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-[3] flex items-center px-8 md:px-12 lg:px-20 py-20 md:py-28">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
-
-          {/* LEFT: Hero text + search */}
+          {/* Left — copy */}
           <motion.div
-            className="lg:col-span-3 max-w-xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            initial={{ x: -24 }} whileInView={{ x: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7 }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-[1px] bg-[#1DA1A1]" />
-              <span className="font-mono text-[9px] tracking-[0.45em] text-[#1DA1A1] uppercase">INDEX46 · Motorsports</span>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-6 h-[2px] bg-[#00FFDA]" />
+              <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase font-bold">
+                INDEX46 · Race Core
+              </span>
             </div>
 
-            <h2
-              className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
-              style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
-            >
-              THE WORLD<br />OF RACING.
+            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-[0.92] mb-6">
+              The system<br />
+              <span className="text-[#00FFDA]">powering racing.</span>
             </h2>
-            <p
-              className="text-3xl md:text-4xl lg:text-5xl font-black italic uppercase mb-4 leading-tight"
-              style={{ color: '#1DA1A1', textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
-            >
-              All in one place.
+
+            <p className="text-white/40 text-base leading-relaxed mb-10 max-w-md">
+              INDEX46 is the data infrastructure beneath modern motorsports. Real results.
+              Verified athletes. Every series, from grassroots to national — structured, searchable, and growing.
             </p>
 
-            <p className="text-white/60 text-sm md:text-base leading-relaxed mb-7 max-w-md">
-              Drivers. Teams. Tracks. Events. Results.<br />
-              The most comprehensive motorsports data platform, built for the culture.
-            </p>
+            <div className="flex flex-col gap-4 mb-10">
+              {PILLARS.map(({ icon: Icon, label, sub }, i) => (
+                <motion.div
+                  key={label}
+                  initial={{ x: -16 }} whileInView={{ x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="flex items-center gap-4"
+                >
+                  <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(0,255,218,0.08)', border: '1px solid rgba(0,255,218,0.15)' }}>
+                    <Icon className="w-4 h-4 text-[#00FFDA]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white">{label}</div>
+                    <div className="text-xs text-white/35">{sub}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
             <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => navigate(createPageUrl('MotorsportsHome'))}
-                className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
-                style={{ background: '#1DA1A1', color: '#050A0A' }}
+              <Link
+                to={createPageUrl('MotorsportsHome')}
+                className="group inline-flex items-center gap-2 px-6 py-3 text-xs font-black tracking-wider uppercase transition-all duration-200 hover:gap-3"
+                style={{ background: '#00FFDA', color: '#0A0A0A' }}
               >
-                Explore INDEX46
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => navigate(createPageUrl('DriverDirectory'))}
-                className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:bg-white/10"
-                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}
+                Explore INDEX46 <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                to={createPageUrl('DriverDirectory')}
+                className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold tracking-wide uppercase border border-white/15 text-white/60 hover:border-white/30 hover:text-white transition-all duration-200"
               >
                 Driver Directory
-              </button>
+              </Link>
             </div>
           </motion.div>
 
-          {/* RIGHT: Live stat cards */}
-          <div className="lg:col-span-2 flex flex-col gap-2 max-w-[220px] w-full ml-auto">
-            {stats.map((s, i) => (
-              <StatCard key={s.label} label={s.label} data={s.data} isLoading={s.isLoading} delay={i * 0.08} />
-            ))}
-          </div>
+          {/* Right — glass stat panel */}
+          <motion.div
+            initial={{ x: 24 }} whileInView={{ x: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            <div className="relative p-8 md:p-10 overflow-hidden"
+              style={{ background: 'rgba(0,255,218,0.04)', border: '1px solid rgba(0,255,218,0.12)', backdropFilter: 'blur(16px)' }}>
+              <div className="absolute top-0 left-0 right-0 h-[2px]"
+                style={{ background: 'linear-gradient(90deg, #00FFDA80 0%, transparent 70%)' }} />
+              <div className="absolute bottom-0 right-0 w-48 h-48 rounded-full blur-[80px] pointer-events-none"
+                style={{ background: 'rgba(0,255,218,0.08)' }} />
 
+              <div className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA] uppercase font-bold mb-8">
+                Platform Stats
+              </div>
+
+              {stats && stats.driver_count > 50 ? (
+                <div className="grid grid-cols-2 gap-6">
+                  {[
+                    { value: stats.driver_count, label: 'Driver Profiles' },
+                    { value: stats.series_count, label: 'Series Tracked' },
+                    { value: stats.track_count,  label: 'Tracks' },
+                    { value: stats.event_count,  label: 'Events' },
+                  ].filter(s => s.value > 0).map(s => (
+                    <div key={s.label} className="border-l-2 border-[#00FFDA]/25 pl-4">
+                      <div className="text-3xl md:text-4xl font-black text-white tracking-tight">
+                        {s.value?.toLocaleString()}
+                      </div>
+                      <div className="font-mono text-[8px] tracking-[0.3em] text-white/35 uppercase mt-1">
+                        {s.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {[
+                    { label: 'Driver Profiles', desc: 'Verified athlete records across disciplines' },
+                    { label: 'Live Results', desc: 'Race data published in real time' },
+                    { label: 'Series & Classes', desc: 'National to grassroots coverage' },
+                    { label: 'Events Tracked', desc: 'From registration to final results' },
+                  ].map(item => (
+                    <div key={item.label} className="border-l-2 border-[#00FFDA]/25 pl-4">
+                      <div className="text-sm font-bold text-white mb-0.5">{item.label}</div>
+                      <div className="text-xs text-white/35">{item.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-8 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <p className="text-xs text-white/25 leading-relaxed">
+                  Growing daily. Real athletes. Real results. Real races.
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
-
     </section>
   );
 }
