@@ -358,23 +358,20 @@ function CTABanner() {
 export default function DiscoveryRows() {
   const { data: drivers = [], isLoading: loadingDrivers } = useQuery({
     queryKey: ['discovery-drivers'],
-    queryFn: () => base44.entities.Driver.list('-created_date', 20),
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 5),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter((dr) => dr.visibility_status === 'live').slice(0, 5)
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
     queryKey: ['discovery-teams'],
-    queryFn: () => base44.entities.Team.list('-created_date', 20),
+    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-created_date', 5),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter((t) => t.visibility_status === 'live').slice(0, 5)
   });
 
   const { data: tracks = [], isLoading: loadingTracks } = useQuery({
     queryKey: ['discovery-tracks'],
-    queryFn: () => base44.entities.Track.list('-created_date', 20),
+    queryFn: () => base44.entities.Track.filter({ visibility_status: 'live' }, '-created_date', 20),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter((t) => t.visibility_status === 'live').slice(0, 20)
   });
 
   const { data: events = [], isLoading: loadingEvents } = useQuery({
@@ -390,9 +387,8 @@ export default function DiscoveryRows() {
 
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['discovery-series'],
-    queryFn: () => base44.entities.Series.list('-created_date', 10),
+    queryFn: () => base44.entities.Series.filter({ visibility_status: 'live' }, '-created_date', 1),
     staleTime: 5 * 60 * 1000,
-    select: (d) => d.filter((s) => s.visibility_status === 'live').slice(0, 1)
   });
 
   const rowStyle = {
