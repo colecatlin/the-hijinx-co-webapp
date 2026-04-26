@@ -16,7 +16,7 @@ export default function Management() {
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => base44.auth.me()
   });
 
   const enabled = !userLoading && !!user && user.role === 'admin';
@@ -24,41 +24,41 @@ export default function Management() {
   const { data: drivers = [] } = useQuery({
     queryKey: ['mgmt_drivers'],
     queryFn: () => base44.entities.Driver.list(),
-    enabled,
+    enabled
   });
   const { data: driverClaims = [] } = useQuery({
     queryKey: ['mgmt_driver_claims'],
     queryFn: () => base44.entities.DriverClaim.filter({ status: 'pending' }),
-    enabled,
+    enabled
   });
   const { data: events = [] } = useQuery({
     queryKey: ['mgmt_events'],
     queryFn: () => base44.entities.Event.list(),
-    enabled,
+    enabled
   });
   const { data: series = [] } = useQuery({
     queryKey: ['mgmt_series'],
     queryFn: () => base44.entities.Series.list(),
-    enabled,
+    enabled
   });
   const { data: teams = [] } = useQuery({
     queryKey: ['mgmt_teams'],
     queryFn: () => base44.entities.Team.list(),
-    enabled,
+    enabled
   });
   const { data: tracks = [] } = useQuery({
     queryKey: ['mgmt_tracks'],
     queryFn: () => base44.entities.Track.list(),
-    enabled,
+    enabled
   });
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const recentDrivers = drivers.filter(d => d.updated_date > sevenDaysAgo).length;
-  const missingImages = drivers.filter(d => !d.profile_image_url && !d.hero_image_url).length;
-  const upcomingEvents = events.filter(e => e.event_date >= new Date().toISOString().slice(0, 10) && ['Published', 'Draft'].includes(e.status)).length;
-  const liveEvents = events.filter(e => e.status === 'Live').length;
-  const activeTeams = teams.filter(t => t.status === 'Active').length;
-  const activeTracks = tracks.filter(t => t.status === 'Active').length;
+  const recentDrivers = drivers.filter((d) => d.updated_date > sevenDaysAgo).length;
+  const missingImages = drivers.filter((d) => !d.profile_image_url && !d.hero_image_url).length;
+  const upcomingEvents = events.filter((e) => e.event_date >= new Date().toISOString().slice(0, 10) && ['Published', 'Draft'].includes(e.status)).length;
+  const liveEvents = events.filter((e) => e.status === 'Live').length;
+  const activeTeams = teams.filter((t) => t.status === 'Active').length;
+  const activeTracks = tracks.filter((t) => t.status === 'Active').length;
 
   if (userLoading) return null;
 
@@ -78,8 +78,8 @@ export default function Management() {
             <Button size="sm" onClick={() => navigate(createPageUrl('MyDashboard'))}>Go to My Dashboard</Button>
           </div>
         </ManagementShell>
-      </ManagementLayout>
-    );
+      </ManagementLayout>);
+
   }
 
   return (
@@ -94,9 +94,9 @@ export default function Management() {
           {/* Race Core primary action */}
           <div className="mt-8">
             <Link
-              to={createPageUrl('RegistrationDashboard')}
-              className="group flex items-start gap-3 p-5 rounded-lg border bg-gray-900 border-gray-900 hover:bg-gray-800 text-white transition-all"
-            >
+              to={createPageUrl('RegistrationDashboard')} className="group flex items-start gap-3 p-5 rounded-lg border bg-gray-900 border-gray-900 hover:bg-gray-800 text-white transition-all hidden">
+
+              
               <div className="w-9 h-9 rounded-md flex items-center justify-center shrink-0 bg-white/10">
                 <Gauge className="w-4 h-4 text-white" />
               </div>
@@ -113,19 +113,19 @@ export default function Management() {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Admin Quick Actions</p>
             <div className="flex flex-wrap gap-2">
               {[
-                { label: 'Review Queue', to: createPageUrl('management/editorial/review-queue'), icon: ListChecks },
-                { label: 'Driver Claims', to: createPageUrl('ManageDriverClaims'), icon: FileTextIcon },
-                { label: 'Access Mgmt', to: createPageUrl('ManageAccess'), icon: Handshake },
-                { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
-                { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
-                { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
-              ].map(({ label, to, icon: Icon }) => (
-                <Link key={label} to={to}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                >
+              { label: 'Review Queue', to: createPageUrl('management/editorial/review-queue'), icon: ListChecks },
+              { label: 'Driver Claims', to: createPageUrl('ManageDriverClaims'), icon: FileTextIcon },
+              { label: 'Access Mgmt', to: createPageUrl('ManageAccess'), icon: Handshake },
+              { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
+              { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
+              { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 }].
+              map(({ label, to, icon: Icon }) =>
+              <Link key={label} to={to}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                
                   <Icon className="w-3 h-3" /> {label}
                 </Link>
-              ))}
+              )}
             </div>
           </div>
 
@@ -163,11 +163,11 @@ export default function Management() {
                     <p className="text-xs text-gray-400">Missing images</p>
                   </div>
                 </div>
-                {driverClaims.length > 0 && (
-                  <Link to={createPageUrl('ManageDriverClaims')} className="mt-3 flex items-center gap-1.5 text-xs text-amber-600 font-medium">
+                {driverClaims.length > 0 &&
+                <Link to={createPageUrl('ManageDriverClaims')} className="mt-3 flex items-center gap-1.5 text-xs text-amber-600 font-medium">
                     <AlertCircle className="w-3.5 h-3.5" /> {driverClaims.length} claim{driverClaims.length !== 1 ? 's' : ''} need review
                   </Link>
-                )}
+                }
               </div>
 
               {/* Events */}
@@ -195,7 +195,7 @@ export default function Management() {
                     <p className="text-xs text-gray-400">Upcoming</p>
                   </div>
                   <div>
-                    <p className="text-xl font-black text-gray-900">{events.filter(e => e.status === 'Completed').length}</p>
+                    <p className="text-xl font-black text-gray-900">{events.filter((e) => e.status === 'Completed').length}</p>
                     <p className="text-xs text-gray-400">Completed</p>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export default function Management() {
                     <p className="text-xs text-gray-400">Total series</p>
                   </div>
                   <div>
-                    <p className="text-xl font-black text-green-600">{series.filter(s => s.status === 'Active').length}</p>
+                    <p className="text-xl font-black text-green-600">{series.filter((s) => s.status === 'Active').length}</p>
                     <p className="text-xs text-gray-400">Active</p>
                   </div>
                 </div>
@@ -299,6 +299,6 @@ export default function Management() {
 
         </ManagementShell>
       </ManagementLayout>
-    </>
-  );
+    </>);
+
 }
