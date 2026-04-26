@@ -57,10 +57,13 @@ export default function MotorsportsHome() {
   ];
 
   return (
-    <div className="relative bg-[#050A0A]" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto' }}>
+    <div className="relative bg-[#050A0A]">
+
+      {/* ── FULL PAGE TEXTURE OVERLAY ── */}
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto', opacity: 0.35 }} />
 
       {/* ── BACKGROUND ── */}
-      <div className="absolute inset-0 z-0 h-[70vh]">
+      <div className="absolute inset-0 z-[2] h-[70vh]">
         <img
           src={BG_IMAGE}
           alt="Racing"
@@ -76,7 +79,7 @@ export default function MotorsportsHome() {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className="relative z-10 h-[70vh] flex items-center px-8 md:px-12 lg:px-20 py-10">
+      <div className="relative z-[3] h-[70vh] flex items-center px-8 md:px-12 lg:px-20 py-10">
         <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
 
           {/* LEFT: Hero text + search */}

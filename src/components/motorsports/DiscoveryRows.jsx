@@ -400,7 +400,7 @@ export default function DiscoveryRows() {
   };
 
   return (
-    <div className="relative z-10 bg-[#080C0C]">
+    <div className="relative z-10 bg-transparent">
 
       {/* ── TRENDING DRIVERS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
