@@ -4,7 +4,7 @@ import { createPageUrl } from '@/components/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, Flag } from 'lucide-react';
 
-const BG_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=80&fit=crop';
+const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/048dfeff4_GridisCallingAI.png';
 
 export default function RaceCoreBridge() {
   const navigate = useNavigate();
