@@ -100,6 +100,7 @@ export default function RaceCoreDriverEditor() {
           <TabsContent value="core" className="mt-6">
             <DriverCoreDetailsSection
               driverId={isNew ? 'new' : id}
+              driver={isNew ? null : driver}
               onSaveSuccess={handleSaveSuccess}
               isReadOnly={!isNew && !canEditManagement}
               isAdmin={isAdmin}
