@@ -45,8 +45,10 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
 
   const [isSaved, setIsSaved] = useState(false);
   const [headshotUrl, setHeadshotUrl] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempHeadshotUrl, setTempHeadshotUrl] = useState(null);
+  const [isUploadingHero, setIsUploadingHero] = useState(false);
   const queryClient = useQueryClient();
 
   // Support both driverId lookup and direct driver object
@@ -109,11 +111,9 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
   }, [driver, driverId]);
 
   useEffect(() => {
-    if (mediaRecords.length > 0 && mediaRecords[0].headshot_url) {
-      setHeadshotUrl(mediaRecords[0].headshot_url);
-    } else if (driver?.profile_image_url) {
-      setHeadshotUrl(driver.profile_image_url);
-    }
+    const media = mediaRecords[0];
+    setHeadshotUrl(media?.headshot_url || driver?.profile_image_url || '');
+    setHeroImageUrl(media?.hero_image_url || driver?.hero_image_url || '');
   }, [mediaRecords, driver]);
 
   const generateUniqueNumericId = async () => {
@@ -220,7 +220,6 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
   const handleCropSave = async (croppedUrl) => {
     try {
       setHeadshotUrl(croppedUrl);
-      
       if (driverId !== 'new') {
         const mediaRecord = mediaRecords[0];
         if (mediaRecord) {
@@ -228,15 +227,38 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
         } else {
           await base44.entities.DriverMedia.create({ driver_id: driverId, headshot_url: croppedUrl });
         }
+        await base44.entities.Driver.update(driverId, { profile_image_url: croppedUrl });
         queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
+        queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
         toast.success('Headshot updated');
       }
-      
       setCropModalOpen(false);
       setTempHeadshotUrl(null);
     } catch (error) {
-      console.error('Error saving headshot:', error);
       toast.error('Failed to save headshot');
+    }
+  };
+
+  const handleHeroUpload = async (file) => {
+    if (!file || driverId === 'new') return;
+    setIsUploadingHero(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setHeroImageUrl(file_url);
+      const mediaRecord = mediaRecords[0];
+      if (mediaRecord) {
+        await base44.entities.DriverMedia.update(mediaRecord.id, { hero_image_url: file_url });
+      } else {
+        await base44.entities.DriverMedia.create({ driver_id: driverId, hero_image_url: file_url });
+      }
+      await base44.entities.Driver.update(driverId, { hero_image_url: file_url });
+      queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
+      queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
+      toast.success('Banner image updated');
+    } catch (error) {
+      toast.error('Failed to save banner image');
+    } finally {
+      setIsUploadingHero(false);
     }
   };
 
@@ -251,38 +273,67 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
         <CardDescription>Edit basic driver information</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center gap-4 pb-2">
-          <div className="shrink-0">
-            {headshotUrl ? (
-              <img src={headshotUrl} alt="Driver headshot" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-xs">No photo</div>
-            )}
+        {/* Profile Images */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
+          {/* Headshot */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Driver Photo (Headshot)</label>
+            <p className="text-xs text-gray-400">Recommended: 600×800px (3:4)</p>
+            <div className="flex items-center gap-4">
+              {headshotUrl ? (
+                <img src={headshotUrl} alt="Driver headshot" className="w-16 h-16 rounded-full object-cover border border-gray-200 shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 text-xs shrink-0">No photo</div>
+              )}
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={driverId === 'new'}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    handleHeadshotUpload(URL.createObjectURL(file));
+                  }}
+                />
+                <span className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors ${driverId === 'new' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                  {headshotUrl ? 'Change Photo' : 'Upload Photo'}
+                </span>
+              </label>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Driver Photo</label>
+
+          {/* Banner / Hero */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Hero / Banner Image</label>
+            <p className="text-xs text-gray-400">Recommended: 1920×600px (wide)</p>
+            {heroImageUrl ? (
+              <img src={heroImageUrl} alt="Hero banner" className="w-full h-20 object-cover rounded border border-gray-200" />
+            ) : (
+              <div className="w-full h-20 bg-gray-100 border border-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">No banner</div>
+            )}
             <label className="cursor-pointer">
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
-                disabled={driverId === 'new'}
+                disabled={driverId === 'new' || isUploadingHero}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (!file) return;
-                  const localUrl = URL.createObjectURL(file);
-                  handleHeadshotUpload(localUrl);
+                  if (file) handleHeroUpload(file);
                 }}
               />
-              <span className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors ${driverId === 'new' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                Upload Photo
+              <span className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors ${(driverId === 'new' || isUploadingHero) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                {isUploadingHero ? 'Uploading...' : heroImageUrl ? 'Change Banner' : 'Upload Banner'}
               </span>
             </label>
-            {driverId === 'new' && (
-              <p className="text-xs text-gray-400">Save driver first to upload photo</p>
-            )}
           </div>
         </div>
+
+        {driverId === 'new' && (
+          <p className="text-xs text-gray-400 -mt-4">Save driver first to upload images</p>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>

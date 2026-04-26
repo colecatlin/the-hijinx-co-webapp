@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,6 @@ export default function DriverMediaSection({ driverId }) {
 
   const mediaRecord = media[0];
   const [data, setData] = useState({
-    headshot_url: '',
-    hero_image_url: '',
     gallery_urls: [],
     highlight_video_url: '',
     social_instagram: '',
@@ -35,11 +33,9 @@ export default function DriverMediaSection({ driverId }) {
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (mediaRecord) {
       setData({
-        headshot_url: mediaRecord.headshot_url || '',
-        hero_image_url: mediaRecord.hero_image_url || '',
         gallery_urls: mediaRecord.gallery_urls || [],
         highlight_video_url: mediaRecord.highlight_video_url || '',
         social_instagram: mediaRecord.social_instagram || '',
@@ -80,24 +76,6 @@ export default function DriverMediaSection({ driverId }) {
         <CardDescription>Upload images and manage social media links</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-
-        {/* Photos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <MediaUploader
-            label="Headshot"
-            hint="Recommended: 600×800px (3:4) · Max 5MB"
-            value={data.headshot_url}
-            onChange={(v) => handleChange('headshot_url', v)}
-            maxSizeMB={5}
-          />
-          <MediaUploader
-            label="Hero / Banner Image"
-            hint="Recommended: 1920×600px (wide) · Max 8MB"
-            value={data.hero_image_url}
-            onChange={(v) => handleChange('hero_image_url', v)}
-            maxSizeMB={8}
-          />
-        </div>
 
         <MediaUploader
           label="Gallery"
