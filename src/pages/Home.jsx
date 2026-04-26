@@ -10,6 +10,7 @@ import OutletSection from '@/components/home/OutletSection';
 import ApparelSection from '@/components/home/ApparelSection';
 import EventsSection from '@/components/home/EventsSection';
 import RaceCoreSection from '@/components/home/RaceCoreSection';
+import RaceCoreBridge from '@/components/home/RaceCoreBridge';
 import SocialsSection from '@/components/home/SocialsSection';
 import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
 
@@ -59,6 +60,8 @@ export default function Home() {
       {/* Clean break: events → race core */}
 
       <RaceCoreSection />
+
+      <RaceCoreBridge />
 
       <SocialsSection media={hp.featured_media || []} />
 
