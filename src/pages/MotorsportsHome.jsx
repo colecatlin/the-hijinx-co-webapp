@@ -51,7 +51,7 @@ export default function MotorsportsHome() {
   };
 
   const stats = [
-    { label: 'Drivers', data: driverStats,  isLoading: loadingDrivers  },
+    { label: 'Drivers', data: driverStats,  isLoading: loadingDrivers, hideMonthly: true },
     { label: 'Events',  data: eventStats,   isLoading: loadingEvents   },
     { label: 'Results', data: resultStats,  isLoading: loadingResults  },
   ];
@@ -141,7 +141,7 @@ export default function MotorsportsHome() {
                 key={s.label}
                 label={s.label}
                 count={s.data?.total?.toLocaleString() ?? '—'}
-                monthlyCount={s.data?.monthly ?? null}
+                monthlyCount={s.hideMonthly ? null : (s.data?.monthly ?? null)}
                 isLoading={s.isLoading}
                 delay={i * 0.08}
               />
