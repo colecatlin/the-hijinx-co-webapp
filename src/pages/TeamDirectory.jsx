@@ -14,7 +14,8 @@ export default function TeamDirectory() {
     status: 'all',
     state: 'all',
   });
-  const [sortBy, setSortBy] = useState('name');
+  const urlParams = new URLSearchParams(window.location.search);
+  const [sortBy, setSortBy] = useState(urlParams.get('sort') === 'trending' ? 'trending' : 'name');
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -82,6 +83,7 @@ export default function TeamDirectory() {
         const order = { High: 1, Medium: 2, Low: 3, Unknown: 4 };
         return (order[a.content_value] || 4) - (order[b.content_value] || 4);
       }
+      if (sortBy === 'trending') return (b.trending_score || 0) - (a.trending_score || 0);
       return 0;
     });
 
@@ -148,6 +150,7 @@ export default function TeamDirectory() {
           sortBy={sortBy}
           onSortChange={setSortBy}
           sortOptions={[
+            { value: 'trending', label: 'Trending' },
             { value: 'name', label: 'Name' },
             { value: 'discipline', label: 'Discipline' },
             { value: 'level', label: 'Level' },

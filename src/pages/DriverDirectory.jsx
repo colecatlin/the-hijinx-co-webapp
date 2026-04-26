@@ -23,7 +23,8 @@ export default function DriverDirectory() {
     manufacturer: 'all',
     country: 'all',
   });
-  const [sortBy, setSortBy] = useState('name');
+  const urlParams = new URLSearchParams(window.location.search);
+  const [sortBy, setSortBy] = useState(urlParams.get('sort') === 'trending' ? 'trending' : 'name');
   const [compareMode, setCompareMode] = useState(false);
   const [selectedDrivers, setSelectedDrivers] = useState([]);
 
@@ -171,6 +172,8 @@ export default function DriverDirectory() {
         return new Date(b.created_date) - new Date(a.created_date);
       case 'oldest':
         return new Date(a.created_date) - new Date(b.created_date);
+      case 'trending':
+        return (b.trending_score || 0) - (a.trending_score || 0);
     }
   });
 
@@ -297,6 +300,7 @@ export default function DriverDirectory() {
           sortBy={sortBy}
           onSortChange={setSortBy}
           sortOptions={[
+            { value: 'trending', label: 'Trending' },
             { value: 'name_asc', label: 'Name A–Z' },
             { value: 'name_desc', label: 'Name Z–A' },
             { value: 'number', label: 'Car Number' },

@@ -129,6 +129,11 @@
       "default": false,
       "description": "Whether this driver is featured on homepage"
     },
+    "trending_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Dynamic trending score \u2014 higher = more prominent on discovery pages. Will be computed from results, profile views, and activity."
+    },
     "owner_user_id": {
       "type": "string",
       "description": "User ID of the driver owner"

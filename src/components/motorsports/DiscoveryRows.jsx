@@ -358,13 +358,13 @@ function CTABanner() {
 export default function DiscoveryRows() {
   const { data: drivers = [], isLoading: loadingDrivers } = useQuery({
     queryKey: ['discovery-drivers'],
-    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 5),
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-trending_score', 5),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
     queryKey: ['discovery-teams'],
-    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-created_date', 5),
+    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-trending_score', 5),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -400,7 +400,7 @@ export default function DiscoveryRows() {
 
       {/* ── TRENDING DRIVERS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
-        <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory" />
+        <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory?sort=trending" />
         <ScrollRow isLoading={loadingDrivers} aspectRatio="4/3">
           {drivers.map((d) => <DriverCard key={d.id} driver={d} />)}
           {!loadingDrivers && drivers.length === 0 &&
@@ -411,7 +411,7 @@ export default function DiscoveryRows() {
 
       {/* ── TOP TEAMS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
-        <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory" />
+        <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory?sort=trending" />
         <ScrollRow isLoading={loadingTeams} aspectRatio="3/2">
           {teams.map((t) => <TeamCard key={t.id} team={t} />)}
           {!loadingTeams && teams.length === 0 &&
