@@ -24,6 +24,7 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
     nicknames_raw: '',
   });
 
+  const [isDirty, setIsDirty] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -70,11 +71,15 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
       toast.success('Branding & identity saved');
+      setIsDirty(false);
       onSaveSuccess?.();
     },
   });
 
-  const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setIsDirty(true);
+  };
 
   const uploadImage = async (e, field) => {
     const file = e.target.files?.[0];
@@ -212,8 +217,8 @@ export default function DriverBrandingSection({ driver, driverId, onSaveSuccess 
         </div>
 
         <div className="flex justify-end pt-2 border-t">
-          <Button onClick={() => saveMutation.mutate(formData)} disabled={saveMutation.isPending} className="bg-gray-900">
-            {saveMutation.isPending ? 'Saving…' : 'Save Branding'}
+          <Button onClick={() => saveMutation.mutate(formData)} disabled={saveMutation.isPending || !isDirty} className="bg-gray-900">
+            {saveMutation.isPending ? 'Saving…' : isDirty ? 'Save Branding' : '✓ Saved'}
           </Button>
         </div>
       </CardContent>
