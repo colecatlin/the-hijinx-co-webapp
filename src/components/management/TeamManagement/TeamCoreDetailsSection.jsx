@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { RefreshCw, Upload, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import LocationFields from '@/components/shared/LocationFields';
 import MediaUploader from '@/components/shared/MediaUploader';
 import { generateSlug, validateSlug } from '@/components/utils/routingContract';
@@ -166,18 +168,34 @@ export default function TeamCoreDetailsSection({ teamId, onTeamCreated, isReadOn
           errors={errors}
         />
 
-        <div>
-          <label className="text-sm font-medium">Status</label>
-          <Select value={formData.racing_status || ''} onValueChange={(value) => setFormData({ ...formData, racing_status: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Part Time">Part Time</SelectItem>
-              <SelectItem value="Historic">Historic</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Racing Status</label>
+            <Select value={formData.racing_status || ''} onValueChange={(value) => setFormData({ ...formData, racing_status: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Part Time">Part Time</SelectItem>
+                <SelectItem value="Historic">Historic</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Visibility</label>
+            <div className="flex items-center gap-3 mt-1">
+              <Switch
+                id="visibility_status"
+                checked={formData.visibility_status === 'live'}
+                onCheckedChange={(checked) => setFormData({ ...formData, visibility_status: checked ? 'live' : 'draft' })}
+                disabled={isReadOnly}
+              />
+              <Label htmlFor="visibility_status" className={formData.visibility_status === 'live' ? 'text-green-600 font-semibold' : 'text-gray-400'}>
+                {formData.visibility_status === 'live' ? 'Live' : 'Draft'}
+              </Label>
+            </div>
+          </div>
         </div>
 
         <div>
