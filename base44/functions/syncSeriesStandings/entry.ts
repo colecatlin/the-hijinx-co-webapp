@@ -30,9 +30,11 @@ Deno.serve(async (req) => {
       try {
         // Use LLM with internet context to scrape and parse the standings page
         const parsed = await base44.integrations.Core.InvokeLLM({
-          prompt: `Fetch the driver standings from this URL: ${series.standings_url}
+          prompt: `Fetch the full driver standings table from this URL: ${series.standings_url}
 
-Extract a JSON array of all drivers in the standings table. For each driver return:
+IMPORTANT: You MUST extract EVERY SINGLE driver row from the complete standings table — do not stop early, do not truncate, do not summarize. Include all drivers from position 1 through to the last position. NASCAR Cup typically has 36+ drivers, Xfinity has 30+, Trucks has 30+. If the page has pagination or "show more", include all rows.
+
+For each driver return:
 - driver_name (string): full driver name
 - car_number (string): car/entry number
 - manufacturer (string): vehicle manufacturer (e.g. Chevrolet, Ford, Toyota)
@@ -47,7 +49,7 @@ Extract a JSON array of all drivers in the standings table. For each driver retu
 - dnfs (number): did-not-finish count
 - laps_led (number): total laps led
 
-Return only the JSON array, no commentary.`,
+Return the complete JSON array with ALL drivers. Do not stop at 10 or 20 — get every row.`,
           add_context_from_internet: true,
           model: 'gemini_3_1_pro',
           response_json_schema: {
@@ -128,7 +130,26 @@ Return only the JSON array, no commentary.`,
           }
         }
 
-        results.push({ series_id: series.id, series_name: series.name, status: 'ok', created, updated });
+        // Auto-link new standings to Driver records by normalized name
+        const allDrivers = await base44.asServiceRole.entities.Driver.list();
+        const driverMap = {};
+        for (const d of allDrivers) {
+          const key = `${d.first_name} ${d.last_name}`.toLowerCase().trim();
+          driverMap[key] = d.id;
+        }
+        const freshStandings = await base44.asServiceRole.entities.DriverStanding.filter({ series_id: series.id, season_year: currentYear });
+        let autoLinked = 0;
+        for (const s of freshStandings) {
+          if (!s.driver_id && s.driver_name) {
+            const dId = driverMap[s.driver_name.toLowerCase().trim()];
+            if (dId) {
+              await base44.asServiceRole.entities.DriverStanding.update(s.id, { driver_id: dId });
+              autoLinked++;
+            }
+          }
+        }
+
+        results.push({ series_id: series.id, series_name: series.name, status: 'ok', created, updated, autoLinked });
       } catch (seriesErr) {
         results.push({ series_id: series.id, series_name: series.name, status: 'error', error: seriesErr.message });
       }
