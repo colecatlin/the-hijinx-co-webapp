@@ -363,7 +363,7 @@ function getCompetitionLevel(series) {
 export default function DiscoveryRows() {
   const { data: allSeries = [], isLoading: loadingAllSeries } = useQuery({
     queryKey: ['discovery-all-series'],
-    queryFn: () => base44.entities.Series.filter({ visibility_status: 'live' }),
+    queryFn: () => base44.entities.Series.list(),
     staleTime: 10 * 60 * 1000,
   });
 
@@ -463,7 +463,7 @@ export default function DiscoveryRows() {
       {/* ── TRENDING DRIVERS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory?sort=trending" />
-        <ScrollRow isLoading={loadingDrivers} aspectRatio="4/3">
+        <ScrollRow isLoading={loadingDrivers || loadingAllSeries} aspectRatio="4/3">
           {drivers.map((d) => <DriverCard key={d.id} driver={d} seriesMap={seriesMap} />)}
           {!loadingDrivers && drivers.length === 0 &&
           <span className="text-white/20 text-xs italic py-4">No drivers yet</span>
@@ -474,7 +474,7 @@ export default function DiscoveryRows() {
       {/* ── TOP TEAMS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory?sort=trending" />
-        <ScrollRow isLoading={loadingTeams} aspectRatio="3/2">
+        <ScrollRow isLoading={loadingTeams || loadingAllSeries} aspectRatio="3/2">
           {teams.map((t) => <TeamCard key={t.id} team={t} topSeries={teamTopSeriesMap[t.id]} />)}
           {!loadingTeams && teams.length === 0 &&
           <span className="text-white/20 text-xs italic py-4">No teams yet</span>
