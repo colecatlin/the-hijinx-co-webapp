@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -59,10 +59,11 @@ function ScrollRow({ children, isLoading, aspectRatio = '3/2' }) {
 
 // ── Driver Card ───────────────────────────────────────────────────────────────
 
-function DriverCard({ driver }) {
+function DriverCard({ driver, seriesMap }) {
   const name = `${driver.first_name || ''} ${driver.last_name || ''}`.trim();
   const img = driver.profile_image_url || driver.hero_image_url;
   const slug = driver.slug || driver.id;
+  const series = seriesMap && driver.primary_series_id ? seriesMap[driver.primary_series_id] : null;
 
   return (
     <Link to={`/drivers/${slug}`} className="flex-1 min-w-0">
@@ -84,11 +85,11 @@ function DriverCard({ driver }) {
           </div>
         }
 
-        {/* Name + class */}
+        {/* Name + series */}
         <div className="absolute bottom-2 left-3 right-3">
           <div className="text-white font-bold text-xs leading-tight truncate">{name}</div>
-          {driver.primary_discipline &&
-          <div className="text-white/50 text-[9px] truncate mt-0.5">{driver.primary_discipline}</div>
+          {series &&
+          <div className="text-white/50 text-[9px] truncate mt-0.5">{series.name}</div>
           }
         </div>
       </motion.div>
@@ -98,7 +99,7 @@ function DriverCard({ driver }) {
 
 // ── Team Card ─────────────────────────────────────────────────────────────────
 
-function TeamCard({ team }) {
+function TeamCard({ team, topSeries }) {
   const img = team.logo_url;
 
   return (
@@ -122,8 +123,8 @@ function TeamCard({ team }) {
             
             {team.name}
           </div>
-          {team.primary_discipline &&
-          <div className="text-white/50 text-[9px] truncate mt-0.5">{team.primary_discipline}</div>
+          {topSeries &&
+          <div className="text-white/50 text-[9px] truncate mt-0.5">{topSeries.name}</div>
           }
         </div>
       </motion.div>
@@ -355,18 +356,79 @@ function CTABanner() {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
+function getCompetitionLevel(series) {
+  return series?.override_competition_level ?? series?.derived_competition_level ?? 0;
+}
+
 export default function DiscoveryRows() {
-  const { data: drivers = [], isLoading: loadingDrivers } = useQuery({
+  const { data: allSeries = [], isLoading: loadingAllSeries } = useQuery({
+    queryKey: ['discovery-all-series'],
+    queryFn: () => base44.entities.Series.filter({ visibility_status: 'live' }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  // Build a map: series id → series record
+  const seriesMap = React.useMemo(() => {
+    const map = {};
+    allSeries.forEach(s => { map[s.id] = s; });
+    return map;
+  }, [allSeries]);
+
+  const { data: rawDrivers = [], isLoading: loadingDrivers } = useQuery({
     queryKey: ['discovery-drivers'],
-    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 5),
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 20),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: teams = [], isLoading: loadingTeams } = useQuery({
+  // Sort drivers by their primary series competition level (highest first), take top 5
+  const drivers = React.useMemo(() => {
+    return [...rawDrivers]
+      .sort((a, b) => {
+        const aLevel = getCompetitionLevel(seriesMap[a.primary_series_id]);
+        const bLevel = getCompetitionLevel(seriesMap[b.primary_series_id]);
+        return bLevel - aLevel;
+      })
+      .slice(0, 5);
+  }, [rawDrivers, seriesMap]);
+
+  const { data: rawTeams = [], isLoading: loadingTeams } = useQuery({
     queryKey: ['discovery-teams'],
-    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-trending_score', 5),
+    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-trending_score', 20),
     staleTime: 5 * 60 * 1000,
   });
+
+  // For each team, find the highest competition-level series among its drivers
+  const { data: teamDrivers = [] } = useQuery({
+    queryKey: ['discovery-team-drivers'],
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }),
+    staleTime: 10 * 60 * 1000,
+    enabled: rawTeams.length > 0,
+  });
+
+  const { teams, teamTopSeriesMap } = React.useMemo(() => {
+    // Build team_id → top series
+    const topSeriesMap = {};
+    teamDrivers.forEach(driver => {
+      if (!driver.team_id || !driver.primary_series_id) return;
+      const s = seriesMap[driver.primary_series_id];
+      if (!s) return;
+      const existing = topSeriesMap[driver.team_id];
+      if (!existing || getCompetitionLevel(s) > getCompetitionLevel(existing)) {
+        topSeriesMap[driver.team_id] = s;
+      }
+    });
+
+    // Sort teams by top series competition level, take top 5
+    const sorted = [...rawTeams]
+      .sort((a, b) => {
+        const aLevel = getCompetitionLevel(topSeriesMap[a.id]);
+        const bLevel = getCompetitionLevel(topSeriesMap[b.id]);
+        return bLevel - aLevel;
+      })
+      .slice(0, 5);
+
+    return { teams: sorted, teamTopSeriesMap: topSeriesMap };
+  }, [rawTeams, teamDrivers, seriesMap]);
 
   const { data: tracks = [], isLoading: loadingTracks } = useQuery({
     queryKey: ['discovery-tracks'],
@@ -402,7 +464,7 @@ export default function DiscoveryRows() {
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory?sort=trending" />
         <ScrollRow isLoading={loadingDrivers} aspectRatio="4/3">
-          {drivers.map((d) => <DriverCard key={d.id} driver={d} />)}
+          {drivers.map((d) => <DriverCard key={d.id} driver={d} seriesMap={seriesMap} />)}
           {!loadingDrivers && drivers.length === 0 &&
           <span className="text-white/20 text-xs italic py-4">No drivers yet</span>
           }
@@ -413,7 +475,7 @@ export default function DiscoveryRows() {
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory?sort=trending" />
         <ScrollRow isLoading={loadingTeams} aspectRatio="3/2">
-          {teams.map((t) => <TeamCard key={t.id} team={t} />)}
+          {teams.map((t) => <TeamCard key={t.id} team={t} topSeries={teamTopSeriesMap[t.id]} />)}
           {!loadingTeams && teams.length === 0 &&
           <span className="text-white/20 text-xs italic py-4">No teams yet</span>
           }
