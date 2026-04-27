@@ -22,8 +22,6 @@ const footerLinks = [
       { name: 'Learning', page: 'Learning' },
       { name: 'Hospitality', page: 'Hospitality' },
       { name: 'Food & Beverage', page: 'FoodBeverage' },
-      { name: 'About', page: 'About' },
-      { name: 'Contact', page: 'Contact' },
     ]
   },
   {
