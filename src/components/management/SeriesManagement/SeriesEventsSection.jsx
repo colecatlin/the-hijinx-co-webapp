@@ -10,11 +10,9 @@ export default function SeriesEventsSection({ seriesId, series }) {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['seriesEventsManagement', seriesId],
     queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('event_date', 500);
-      const names = [series?.name, series?.full_name].filter(Boolean).map(n => n.toLowerCase().trim());
-      return allEvents.filter(e => e.series && names.includes(e.series.toLowerCase().trim()));
+      return base44.entities.Event.filter({ series_id: seriesId }, 'event_date', 500);
     },
-    enabled: !!seriesId && !!series,
+    enabled: !!seriesId,
   });
 
   const statusColors = {
@@ -37,8 +35,8 @@ export default function SeriesEventsSection({ seriesId, series }) {
           Calendar & Schedule
         </CardTitle>
         <p className="text-sm text-gray-500">
-          Events are linked via the Event entity's "series" field matching this series name.
-          {events.length > 0 && <span className="ml-1 font-medium text-gray-700">{events.length} events found.</span>}
+          {events.length > 0 && <span className="font-medium text-gray-700">{events.length} events linked to this series.</span>}
+          {events.length === 0 && <span>Events linked via series_id field.</span>}
         </p>
       </CardHeader>
       <CardContent>
@@ -47,9 +45,9 @@ export default function SeriesEventsSection({ seriesId, series }) {
         ) : events.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">No events found for this series.</p>
+            <p className="text-sm">No events linked to this series.</p>
             <p className="text-xs text-gray-400 mt-1">
-              Events must have a "series" field matching "{series?.name}"{series?.full_name ? ` or "${series.full_name}"` : ''}.
+              Create or link events via the Event entity's series_id field.
             </p>
           </div>
         ) : (
