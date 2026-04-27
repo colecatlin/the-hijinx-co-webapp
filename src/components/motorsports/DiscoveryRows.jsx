@@ -699,7 +699,7 @@ export default function DiscoveryRows() {
                   {leader && (
                     <div className="mt-2 flex items-center gap-1.5">
                       {leader.series_logo && (
-                        <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
+                        <div className="bg-white/10 rounded px-0.5 py-0.5 backdrop-blur-sm flex-shrink-0">
                           <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
                         </div>
                       )}
