@@ -115,6 +115,7 @@ function TeamCard({ team, topSeries }) {
             <img src={img} alt={team.name} className="max-w-full max-h-full object-contain" style={{ maxHeight: '60%' }} />
           </div>
         )}
+        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.15)' }} />
 
         {/* Text */}
         <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
