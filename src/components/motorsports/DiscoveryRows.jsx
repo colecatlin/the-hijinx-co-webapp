@@ -291,16 +291,8 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
             <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
           </div>
 
-          {/* Series logo + name + points - bottom */}
+          {/* Points - bottom */}
           <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              {leader.series_logo && (
-                <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
-                  <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
-                </div>
-              )}
-              <div className="text-white font-black text-[9px] uppercase tracking-wider truncate">{leader.class}</div>
-            </div>
             <div className="text-white/50 text-[9px]">{leader.points} pts</div>
           </div>
         </>
@@ -596,7 +588,7 @@ export default function DiscoveryRows() {
   };
 
   return (
-    <div className="relative z-10 bg-transparent">
+    <div className="relative z-10 bg-transparent" id="champ-leaders">
 
       {/* ── TRENDING DRIVERS ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
@@ -672,11 +664,22 @@ export default function DiscoveryRows() {
             <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
             <div className="flex gap-2">
               {championshipLeaders.map((leader, idx) =>
-                <ChampionshipLeaderCard
-                  key={leader?.class || idx}
-                  leader={leader || {}}
-                  isEmpty={!leader}
-                />
+                <div key={leader?.class || idx} className="flex-1 min-w-0 flex flex-col">
+                  <ChampionshipLeaderCard
+                    leader={leader || {}}
+                    isEmpty={!leader}
+                  />
+                  {leader && (
+                    <div className="mt-2 flex items-center gap-1.5">
+                      {leader.series_logo && (
+                        <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
+                          <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
+                        </div>
+                      )}
+                      <div className="text-white font-black text-[9px] uppercase tracking-wider truncate">{leader.class}</div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
