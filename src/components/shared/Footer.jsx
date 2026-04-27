@@ -17,10 +17,13 @@ const footerLinks = [
   {
     label: 'Ventures',
     links: [
+      { name: 'Creative Services', page: 'CreativeServices' },
       { name: 'Tech', page: 'TechHome' },
       { name: 'Learning', page: 'Learning' },
       { name: 'Hospitality', page: 'Hospitality' },
       { name: 'Food & Beverage', page: 'FoodBeverage' },
+      { name: 'About', page: 'About' },
+      { name: 'Contact', page: 'Contact' },
     ]
   },
   {

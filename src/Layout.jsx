@@ -36,15 +36,6 @@ const navItems = [
     { name: 'Media Portal', page: 'MediaPortal' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
-  { name: 'More', page: null, sub: [
-    { name: 'Creative', page: 'CreativeServices' },
-    { name: 'Tech', page: 'TechHome' },
-    { name: 'Learning', page: 'Learning' },
-    { name: 'Hospitality', page: 'Hospitality' },
-    { name: 'Food & Bev', page: 'FoodBeverage' },
-    { name: 'About', page: 'About' },
-    { name: 'Contact', page: 'Contact' },
-  ]},
 ];
 
 export default function Layout({ children, currentPageName }) {
