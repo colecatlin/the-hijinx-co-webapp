@@ -24,7 +24,7 @@ const DISCIPLINES = [
   'Mixed'
 ];
 
-export default function DriverCoreDetailsSection({ driverId, driver: passedDriver, onSaveSuccess, isReadOnly = false, isAdmin = false }) {
+export default function DriverCoreDetailsSection({ driverId, onSaveSuccess, isReadOnly = false, isAdmin = false }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -51,15 +51,11 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const queryClient = useQueryClient();
 
-  // Support both driverId lookup and direct driver object
-  const { data: queriedDriver, isLoading: isLoadingDriver } = useQuery({
+  const { data: driver, isLoading } = useQuery({
     queryKey: ['driver', driverId],
-    queryFn: () => base44.entities.Driver.filter({ id: driverId }),
-    enabled: driverId && driverId !== 'new' && !passedDriver,
+    queryFn: () => base44.entities.Driver.get(driverId),
+    enabled: !!driverId && driverId !== 'new',
   });
-
-  const driver = passedDriver || (queriedDriver && queriedDriver.length > 0 ? queriedDriver[0] : null);
-  const isLoading = isLoadingDriver;
 
 
 
@@ -221,7 +217,6 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
         await base44.entities.Driver.update(driverId, { profile_image_url: croppedUrl });
         queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
         queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
-        await queryClient.refetchQueries({ queryKey: ['driver', driverId] });
         toast.success('Headshot updated');
         if (onSaveSuccess) onSaveSuccess();
       }
@@ -247,7 +242,6 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
       await base44.entities.Driver.update(driverId, { hero_image_url: file_url });
       queryClient.invalidateQueries({ queryKey: ['driverMedia', driverId] });
       queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
-      await queryClient.refetchQueries({ queryKey: ['driver', driverId] });
       toast.success('Banner image updated');
       if (onSaveSuccess) onSaveSuccess();
     } catch (error) {
