@@ -23,6 +23,7 @@ import AIEventGenerator from '@/components/management/AIEventGenerator';
 import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 import AdminOverridePanel from '@/components/management/AdminOverridePanel';
+import EventSchedulerForm from '@/components/management/EventScheduler/EventSchedulerForm';
 
 export default function ManageEvents() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function ManageEvents() {
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [deletingEventId, setDeletingEventId] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedSeriesForScheduler, setSelectedSeriesForScheduler] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -82,6 +84,11 @@ export default function ManageEvents() {
   const { data: tracks = [] } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
   });
 
   const [approvalFilter, setApprovalFilter] = useState('all');
@@ -236,9 +243,10 @@ export default function ManageEvents() {
         </> : undefined}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="bulk-scheduler">Bulk Scheduler</TabsTrigger>
             <TabsTrigger value="relationships">Relationships</TabsTrigger>
             <TabsTrigger value="publish">Publish</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -492,6 +500,65 @@ export default function ManageEvents() {
               </tbody>
             </table>
           </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="bulk-scheduler" className="space-y-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-amber-900 mb-1">Bulk Event Scheduler</h3>
+              <p className="text-sm text-amber-800">Create multiple events with sessions in one form. Select a series, input event details, and add as many rounds/sessions as needed.</p>
+            </div>
+
+            {selectedSeriesForScheduler ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setSelectedSeriesForScheduler(null)}
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedSeriesForScheduler.name}</h2>
+                    <p className="text-sm text-gray-600">Create events with sessions</p>
+                  </div>
+                </div>
+                <EventSchedulerForm 
+                  seriesId={selectedSeriesForScheduler.id}
+                  onSuccess={() => {
+                    setSelectedSeriesForScheduler(null);
+                    setActiveTab('data');
+                    queryClient.invalidateQueries({ queryKey: ['events'] });
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <p className="text-sm text-gray-600 mb-2">Select a series to create events:</p>
+                {series.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No series found. Create a series first.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {series.map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => setSelectedSeriesForScheduler(s)}
+                        className="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                      >
+                        <h3 className="font-semibold text-gray-900">{s.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{s.full_name || s.sanctioning_body || 'No description'}</p>
+                        <div className="mt-3 flex items-center text-xs text-gray-500">
+                          <Plus className="w-3 h-3 mr-1" />
+                          Create events
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </TabsContent>
 
