@@ -264,7 +264,7 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function ChampionshipLeaderCard({ leader, isEmpty }) {
+function ChampionshipLeaderCard({ leader, isEmpty, manufacturerLogo }) {
   return (
     <div
       className="flex-1 min-w-0 rounded-xl overflow-hidden relative"
@@ -285,14 +285,20 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
             </div>
           )}
 
-          {/* Driver name - top */}
-          <div className="absolute top-2.5 left-2.5 right-2.5">
-            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
-          </div>
+          {/* Gradient overlay from bottom to top */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
 
-          {/* Points - bottom */}
+          {/* Manufacturer logo - top left */}
+          {manufacturerLogo && (
+            <div className="absolute top-2 left-2 bg-white/10 rounded px-2 py-1 backdrop-blur-sm">
+              <img src={manufacturerLogo} alt="manufacturer" className="h-5 w-auto object-contain" />
+            </div>
+          )}
+
+          {/* Driver name and points - bottom */}
           <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="text-white/50 text-[9px]">{leader.points} pts</div>
+            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
+            <div className="text-white/70 text-[9px] mt-1">{leader.points} pts</div>
           </div>
         </>
       )}
@@ -555,10 +561,29 @@ export default function DiscoveryRows() {
     return map;
   }, [leaderDrivers]);
 
+  const leaderTeamIds = leaderDrivers
+    .map(d => d?.team_id)
+    .filter(Boolean);
+
+  const { data: leaderTeams = [] } = useQuery({
+    queryKey: ['discovery-leader-teams', leaderTeamIds.join(',')],
+    queryFn: () => Promise.all(leaderTeamIds.map(id => base44.entities.Team.get(id))),
+    enabled: leaderTeamIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const leaderTeamMap = React.useMemo(() => {
+    const map = {};
+    leaderTeams.forEach(t => { if (t) map[t.id] = t; });
+    return map;
+  }, [leaderTeams]);
+
   const rawChampLeaders = useAutoChampLeaders
     ? autoLeaderStandings.map(({ series, standing }) => {
         const driverRecord = standing.driver_id ? leaderDriverMap[standing.driver_id] : null;
+        const teamRecord = driverRecord?.team_id ? leaderTeamMap[driverRecord.team_id] : null;
         const image = driverRecord?.profile_image_url || driverRecord?.hero_image_url || series.banner_url || series.logo_url || null;
+        const manufacturerLogo = teamRecord?.manufacturer_logo_url || null;
         return {
           class: series.name,
           name: standing.driver_name,
@@ -566,6 +591,7 @@ export default function DiscoveryRows() {
           image,
           series_id: series.id,
           series_logo: series.logo_url || null,
+          manufacturerLogo,
         };
       })
     : (settings?.championship_leader_entries || []).map(e => ({
@@ -574,6 +600,7 @@ export default function DiscoveryRows() {
         points: e.points,
         image: e.image_url || null,
         series_logo: null,
+        manufacturerLogo: null,
       }));
 
   // Always pad to 5 slots
@@ -667,6 +694,7 @@ export default function DiscoveryRows() {
                   <ChampionshipLeaderCard
                     leader={leader || {}}
                     isEmpty={!leader}
+                    manufacturerLogo={leader?.manufacturerLogo}
                   />
                   {leader && (
                     <div className="mt-2 flex items-center gap-1.5">
