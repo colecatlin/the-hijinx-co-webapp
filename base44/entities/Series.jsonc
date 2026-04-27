@@ -198,6 +198,22 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp when this record was last seen during a sync operation"
+    },
+    "ical_url": {
+      "type": "string",
+      "description": "iCal feed URL for importing the series event schedule"
+    },
+    "standings_url": {
+      "type": "string",
+      "description": "Web URL of the standings page to scrape for driver standings data"
+    },
+    "api_endpoint_url": {
+      "type": "string",
+      "description": "API endpoint URL for future formal API integration"
+    },
+    "api_key": {
+      "type": "string",
+      "description": "API key for future formal API integration"
     }
   },
   "required": [

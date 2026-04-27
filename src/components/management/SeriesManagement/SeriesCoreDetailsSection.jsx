@@ -370,6 +370,50 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
         </div>
 
         <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold mb-1">Data Sources & Integration</h3>
+          <p className="text-xs text-gray-400 mb-3">Configure external data links for standings, schedule imports, and API access.</p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium">iCal Schedule URL</label>
+              <Input
+                value={formData.ical_url || ''}
+                onChange={(e) => setFormData({ ...formData, ical_url: e.target.value })}
+                placeholder="https://example.com/schedule.ics"
+              />
+              <p className="text-xs text-gray-400 mt-1">iCal feed used to auto-import event dates.</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Standings Web URL</label>
+              <Input
+                value={formData.standings_url || ''}
+                onChange={(e) => setFormData({ ...formData, standings_url: e.target.value })}
+                placeholder="https://www.nascar.com/standings/..."
+              />
+              <p className="text-xs text-gray-400 mt-1">Web page URL scraped weekly to pull driver standings data.</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">API Endpoint URL</label>
+              <Input
+                value={formData.api_endpoint_url || ''}
+                onChange={(e) => setFormData({ ...formData, api_endpoint_url: e.target.value })}
+                placeholder="https://api.example.com/v1/standings"
+              />
+              <p className="text-xs text-gray-400 mt-1">For future formal API integration.</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">API Key</label>
+              <Input
+                value={formData.api_key || ''}
+                onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
+                placeholder="sk-..."
+                type="password"
+              />
+              <p className="text-xs text-gray-400 mt-1">API key for authenticated API access.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
           <h3 className="text-sm font-semibold mb-1">Name History</h3>
           <p className="text-xs text-gray-400 mb-3">Track name changes over the years (e.g. sponsor title changes).</p>
           <div className="space-y-3">

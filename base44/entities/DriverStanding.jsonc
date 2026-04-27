@@ -1,0 +1,84 @@
+{
+  "name": "DriverStanding",
+  "type": "object",
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series entity"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver entity (if matched)"
+    },
+    "season_year": {
+      "type": "number",
+      "description": "Season year (e.g. 2026)"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Driver full name as scraped (for display and matching)"
+    },
+    "car_number": {
+      "type": "string",
+      "description": "Car number (NO.)"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Vehicle manufacturer (MFR)"
+    },
+    "position": {
+      "type": "number",
+      "description": "Championship position (POS)"
+    },
+    "points": {
+      "type": "number",
+      "description": "Total championship points"
+    },
+    "stage_points": {
+      "type": "number",
+      "description": "Stage bonus points accumulated"
+    },
+    "behind": {
+      "type": "number",
+      "description": "Points behind the leader"
+    },
+    "starts": {
+      "type": "number",
+      "description": "Number of races started"
+    },
+    "wins": {
+      "type": "number",
+      "description": "Number of wins"
+    },
+    "top_5s": {
+      "type": "number",
+      "description": "Number of top-5 finishes"
+    },
+    "top_10s": {
+      "type": "number",
+      "description": "Number of top-10 finishes"
+    },
+    "dnfs": {
+      "type": "number",
+      "description": "Number of did-not-finish results"
+    },
+    "laps_led": {
+      "type": "number",
+      "description": "Total laps led"
+    },
+    "standings_key": {
+      "type": "string",
+      "description": "Composite dedup key: series_id:season_year:driver_name (used for upsert)"
+    },
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last successful data sync for this record"
+    }
+  },
+  "required": [
+    "series_id",
+    "season_year",
+    "driver_name"
+  ]
+}
