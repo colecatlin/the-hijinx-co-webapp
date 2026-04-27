@@ -610,10 +610,10 @@ export default function DiscoveryRows() {
           <div>
             <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
             <div className="flex gap-2">
-              {championshipLeaders.map((leader) =>
+              {championshipLeaders.map((leader, idx) =>
                 <ChampionshipLeaderCard
-                  key={leader.class_name}
-                  leader={{ class: leader.class_name, name: leader.driver_name, points: leader.points, image: leader.image_url }}
+                  key={leader.class || idx}
+                  leader={leader}
                 />
               )}
             </div>
