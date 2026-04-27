@@ -114,6 +114,15 @@ export default function SeriesCoreDetailsSection({ seriesId, isReadOnly = false 
         </div>
 
         <div>
+          <label className="text-sm font-medium">Sanctioning Body</label>
+          <Input
+            value={formData.sanctioning_body || ''}
+            onChange={(e) => setFormData({ ...formData, sanctioning_body: e.target.value })}
+            placeholder="e.g. NASCAR, NHRA, FIA"
+          />
+        </div>
+
+        <div>
           <label className="text-sm font-medium">Discipline</label>
           {activeDisciplines.length > 0 ? (
             <div className="space-y-2">
