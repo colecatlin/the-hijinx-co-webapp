@@ -109,11 +109,13 @@ function TeamCard({ team, topSeries }) {
         className="w-full rounded-xl overflow-hidden cursor-pointer relative"
         style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}>
         
-        {/* Background image */}
-        {img &&
-        <img src={img} alt={team.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
-        }
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)' }} />
+        {/* Logo centered and contained */}
+        {img && (
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <img src={img} alt={team.name} className="max-w-full max-h-full object-contain" style={{ maxHeight: '60%' }} />
+          </div>
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
         {/* Text */}
         <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
