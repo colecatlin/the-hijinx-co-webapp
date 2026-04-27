@@ -284,7 +284,6 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
               <span className="text-white/20 font-black text-4xl">{getInitials(leader.name)}</span>
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
 
           {/* Driver name - top */}
           <div className="absolute top-2.5 left-2.5 right-2.5">
