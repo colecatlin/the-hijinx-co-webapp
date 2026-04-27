@@ -171,10 +171,7 @@ export default function Layout({ children, currentPageName }) {
                 </button>
                 {user?.role === 'admin' && (
                   <>
-                    <span className={`px-2 py-1 text-[10px] font-bold border rounded hidden lg:inline-flex items-center gap-1.5 ${launchMode.color}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${launchMode.dotColor}`} />
-                      {launchMode.label}
-                    </span>
+
                     <Link
                       to={createPageUrl('Management')}
                       className="px-3 py-1.5 text-xs font-medium bg-[#232323] text-white rounded-lg hover:bg-[#1A3249] transition-colors hidden lg:block"
