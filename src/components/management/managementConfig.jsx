@@ -1,4 +1,4 @@
-import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, ShieldCheck, Database, Wrench, GitMerge, Palette } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, ShieldCheck, Database, Wrench, GitMerge, Palette, Gauge } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation.
@@ -23,6 +23,7 @@ export const MANAGEMENT_SECTIONS = [
     description: 'Site settings, homepage, announcements, and platform controls',
     items: [
       { name: 'Homepage Settings', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
+      { name: 'Motorsports Home Settings', page: 'ManageMotorsportsHome', icon: Gauge, description: 'Control trending drivers, teams, tracks, events, and championship leaders on the motorsports home page' },
       { name: 'Discipline Management', page: 'management/discipline', icon: Palette, description: 'Manage discipline colors for map pins' },
       { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
       { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries and placements' },

@@ -47,6 +47,7 @@ import HashtagLibrary from './pages/HashtagLibrary';
 import HashtagAnalytics from './pages/HashtagAnalytics';
 import ManageDisciplineColors from './pages/ManageDisciplineColors';
 import StandingsHome from './pages/StandingsHome';
+import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -141,6 +142,7 @@ const AuthenticatedApp = () => {
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
       <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/StandingsHome" element={<LayoutWrapper currentPageName="StandingsHome"><StandingsHome /></LayoutWrapper>} />
+      <Route path="/ManageMotorsportsHome" element={<LayoutWrapper currentPageName="ManageMotorsportsHome"><ManageMotorsportsHome /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">
           <PlatformDataMap />
