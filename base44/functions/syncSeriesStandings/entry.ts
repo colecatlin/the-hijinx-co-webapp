@@ -49,6 +49,7 @@ Extract a JSON array of all drivers in the standings table. For each driver retu
 
 Return only the JSON array, no commentary.`,
           add_context_from_internet: true,
+          model: 'gemini_3_1_pro',
           response_json_schema: {
             type: 'object',
             properties: {
