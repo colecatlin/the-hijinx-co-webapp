@@ -74,7 +74,7 @@ function DriverCard({ driver, seriesMap }) {
         
         {/* Background image */}
         {img &&
-        <img src={img} alt={name} className="absolute inset-0 w-full h-full object-cover object-top opacity-60" />
+        <img src={img} alt={name} className="absolute inset-0 w-full h-full object-cover object-top" />
         }
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
 
