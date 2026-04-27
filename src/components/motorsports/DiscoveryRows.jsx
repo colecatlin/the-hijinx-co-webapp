@@ -119,10 +119,10 @@ function TeamCard({ team, topSeries }) {
         {/* Text */}
         <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
           <div
-            className="text-[#1A1A1A] font-bold leading-tight flex items-center justify-between gap-2"
+            className="text-[#1A1A1A] font-bold leading-tight flex items-center gap-2"
             style={{ fontSize: 'clamp(9px, 2.2vw, 15px)' }}>
             
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
+            <span className="flex-1 min-w-0" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
             {team.manufacturer && (
               <span className="text-[9px] text-[#666] flex-shrink-0 whitespace-nowrap">{team.manufacturer}</span>
             )}
