@@ -358,7 +358,7 @@ function CTABanner() {
 export default function DiscoveryRows() {
   const { data: drivers = [], isLoading: loadingDrivers } = useQuery({
     queryKey: ['discovery-drivers'],
-    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-trending_score', 5),
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 5),
     staleTime: 5 * 60 * 1000,
   });
 
