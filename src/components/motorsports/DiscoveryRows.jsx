@@ -288,17 +288,17 @@ function ChampionshipLeaderCard({ leader, isEmpty, manufacturerLogo }) {
           {/* Gradient overlay from bottom to top */}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
 
-          {/* Manufacturer logo - top left */}
-          {manufacturerLogo && (
-            <div className="absolute top-2 left-2 bg-white/10 rounded px-2 py-1 backdrop-blur-sm">
-              <img src={manufacturerLogo} alt="manufacturer" className="h-5 w-auto object-contain" />
-            </div>
-          )}
-
-          {/* Driver name and points - bottom */}
+          {/* Driver name, points, and manufacturer logo - bottom */}
           <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
-            <div className="text-white/70 text-[9px] mt-1">{leader.points} pts</div>
+            <div className="flex items-start gap-2">
+              {manufacturerLogo && (
+                <img src={manufacturerLogo} alt="manufacturer" className="h-3.5 w-auto object-contain flex-shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
+                <div className="text-white/70 text-[9px] mt-1">{leader.points} pts</div>
+              </div>
+            </div>
           </div>
         </>
       )}
