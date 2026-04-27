@@ -125,9 +125,6 @@
     }
   },
   "required": [
-    "name",
-    "headquarters_city",
-    "headquarters_state",
-    "country"
+    "name"
   ]
 }
