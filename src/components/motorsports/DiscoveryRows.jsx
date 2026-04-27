@@ -266,44 +266,50 @@ function getInitials(name) {
 
 function ChampionshipLeaderCard({ leader, isEmpty }) {
   return (
-    <div
-      className="flex-1 min-w-0 rounded-xl overflow-hidden relative"
-      style={{ aspectRatio: '4/3', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15,15,15,0.9)' }}>
-      
-      {isEmpty ? (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-white/10 font-black text-3xl">—</div>
-        </div>
-      ) : (
-        <>
-          {/* Background image or abbreviation */}
-          {leader.image ? (
-            <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/20 font-black text-4xl">{getInitials(leader.name)}</span>
+    <div className="flex-1 min-w-0 flex flex-col">
+      <div
+        className="rounded-xl overflow-hidden relative flex-1"
+        style={{ border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15,15,15,0.9)' }}>
+        
+        {isEmpty ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-white/10 font-black text-3xl">—</div>
+          </div>
+        ) : (
+          <>
+            {/* Background image or abbreviation */}
+            {leader.image ? (
+              <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white/20 font-black text-4xl">{getInitials(leader.name)}</span>
+              </div>
+            )}
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
+
+            {/* Driver name - top */}
+            <div className="absolute top-2.5 left-2.5 right-2.5">
+              <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
+            </div>
+
+            {/* Points - bottom */}
+            <div className="absolute bottom-2 left-2.5 right-2.5">
+              <div className="text-white/50 text-[9px]">{leader.points} pts</div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Series info below card */}
+      {!isEmpty && (
+        <div className="mt-2 flex items-center gap-1.5">
+          {leader.series_logo && (
+            <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
+              <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
-
-          {/* Driver name - top */}
-          <div className="absolute top-2.5 left-2.5 right-2.5">
-            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
-          </div>
-
-          {/* Series logo + name + points - bottom */}
-          <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              {leader.series_logo && (
-                <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
-                  <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
-                </div>
-              )}
-              <div className="text-white font-black text-[9px] uppercase tracking-wider truncate">{leader.class}</div>
-            </div>
-            <div className="text-white/50 text-[9px]">{leader.points} pts</div>
-          </div>
-        </>
+          <div className="text-white font-black text-[9px] uppercase tracking-wider truncate">{leader.class}</div>
+        </div>
       )}
     </div>);
 
