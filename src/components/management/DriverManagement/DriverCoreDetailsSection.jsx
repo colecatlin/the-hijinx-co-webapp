@@ -131,35 +131,24 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      let payload = { ...data };
-
       if (driverId === 'new') {
-        // Pre-generate numeric_id + slug so the record is routable immediately
+        // Create new driver: pre-generate numeric_id + slug
         const numericId = await generateUniqueNumericId();
         const slugBase = `${data.first_name} ${data.last_name}`
           .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        payload = { ...payload, numeric_id: numericId, slug: `${slugBase}-${numericId}` };
+        const record = await base44.entities.Driver.create({
+          ...data,
+          numeric_id: numericId,
+          slug: `${slugBase}-${numericId}`,
+        });
+        return record;
       } else {
-        // Pass id so upsertSourceEntity fast-paths directly to the existing record
-        payload = { ...payload, id: driverId };
+        // Direct update — bypass sync pipeline to prevent field overwrites
+        const record = await base44.entities.Driver.update(driverId, data);
+        return record;
       }
-
-      // source_path: manage_driver — routes through syncSourceAndEntityRecord (safe sync pipeline)
-      const result = await base44.functions.invoke('syncSourceAndEntityRecord', {
-        entity_type: 'driver',
-        payload,
-        triggered_from: 'manage_driver',
-      });
-
-      if (result?.data?.error) throw new Error(result.data.error);
-      const record = result?.data?.source_record;
-      if (!record) throw new Error('syncSourceAndEntityRecord returned no source_record');
-      return record;
     },
     onSuccess: (record) => {
-      const idToInvalidate = driverId === 'new' ? record.id : driverId;
-      queryClient.invalidateQueries({ queryKey: ['driver', idToInvalidate] });
-      queryClient.invalidateQueries({ queryKey: ['drivers'] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       toast.success('Driver details saved');
