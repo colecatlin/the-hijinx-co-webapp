@@ -107,7 +107,7 @@ function TeamCard({ team, topSeries }) {
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden cursor-pointer relative"
-        style={{ aspectRatio: '3/2', background: 'rgba(15,15,15,0.95)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 12px rgba(255,255,255,0.08)' }}>
+        style={{ aspectRatio: '3/2', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 0 12px rgba(0,0,0,0.06)' }}>
         
         {/* Logo centered and contained */}
         {img && (
@@ -115,18 +115,20 @@ function TeamCard({ team, topSeries }) {
             <img src={img} alt={team.name} className="max-w-full max-h-full object-contain" style={{ maxHeight: '60%' }} />
           </div>
         )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
         {/* Text */}
         <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
           <div
-            className="text-white font-bold leading-tight"
-            style={{ fontSize: 'clamp(9px, 2.2vw, 15px)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            className="text-[#1A1A1A] font-bold leading-tight flex items-center justify-between gap-2"
+            style={{ fontSize: 'clamp(9px, 2.2vw, 15px)' }}>
             
-            {team.name}
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
+            {team.manufacturer && (
+              <span className="text-[9px] text-[#666] flex-shrink-0 whitespace-nowrap">{team.manufacturer}</span>
+            )}
           </div>
           {topSeries &&
-          <div className="text-white/50 text-[9px] truncate mt-0.5">{topSeries.name}</div>
+          <div className="text-[#999] text-[9px] truncate mt-0.5">{topSeries.name}</div>
           }
         </div>
       </motion.div>
