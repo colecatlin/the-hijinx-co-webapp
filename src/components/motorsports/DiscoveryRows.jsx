@@ -278,7 +278,7 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
         <>
           {/* Background image or abbreviation */}
           {leader.image ? (
-            <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+            <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top opacity-100" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white/20 font-black text-4xl">{getInitials(leader.name)}</span>
