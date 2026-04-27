@@ -5,11 +5,13 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfileCompletenessIndicator from '@/components/system/ProfileCompletenessIndicator';
 import ProfileHandoffBanner from '@/components/system/ProfileHandoffBanner';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import { createPageUrl } from '@/components/utils';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
+import SessionManager from '@/components/management/EventManagement/SessionManager';
 
 export default function RaceCoreEventEditor() {
   const { id } = useParams();
@@ -58,12 +60,27 @@ export default function RaceCoreEventEditor() {
 
         {!isNew && event && <ProfileHandoffBanner entityType="Event" entityId={id} record={event} />}
 
-        <EventBuilderForm
-          selectedEventId={isNew ? null : id}
-          onEventCreated={handleEventCreated}
-          isAdmin={isAdmin}
-          canEditEventCore={true}
-        />
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="details">Event Details</TabsTrigger>
+            {!isNew && <TabsTrigger value="sessions">Sessions</TabsTrigger>}
+          </TabsList>
+
+          <TabsContent value="details">
+            <EventBuilderForm
+              selectedEventId={isNew ? null : id}
+              onEventCreated={handleEventCreated}
+              isAdmin={isAdmin}
+              canEditEventCore={true}
+            />
+          </TabsContent>
+
+          {!isNew && (
+            <TabsContent value="sessions">
+              <SessionManager eventId={id} eventName={event?.name} />
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
     </ManagementLayout>
   );
