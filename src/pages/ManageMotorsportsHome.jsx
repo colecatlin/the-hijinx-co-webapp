@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import EntityMultiSelect from '@/components/management/EntityMultiSelect';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,55 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, X, Trophy, Users, User, MapPin, Calendar, Newspaper, Save } from 'lucide-react';
-
-// ── Reusable Entity Picker Row ─────────────────────────────────────────────────
-
-function EntityPickerSection({ title, icon: Icon, ids = [], onAdd, onRemove, entityMap, placeholder }) {
-  const [inputVal, setInputVal] = useState('');
-
-  const handleAdd = () => {
-    const val = inputVal.trim();
-    if (!val) return;
-    onAdd(val);
-    setInputVal('');
-  };
-
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-4 h-4 text-gray-500" />
-        <h3 className="text-sm font-semibold">{title}</h3>
-      </div>
-      <div className="flex flex-wrap gap-2 mb-2 min-h-[32px]">
-        {ids.map((id) => (
-          <span key={id} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs font-mono">
-            {entityMap[id]?.name || entityMap[id]?.first_name ? (
-              entityMap[id].first_name
-                ? `${entityMap[id].first_name} ${entityMap[id].last_name}`
-                : entityMap[id].name
-            ) : id}
-            <button onClick={() => onRemove(id)} className="text-gray-400 hover:text-red-500 ml-1">
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-        {ids.length === 0 && <span className="text-xs text-gray-400 italic">No entries pinned</span>}
-      </div>
-      <div className="flex gap-2">
-        <Input
-          value={inputVal}
-          onChange={(e) => setInputVal(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder={placeholder || 'Paste ID...'}
-          className="text-xs h-8 font-mono"
-        />
-        <Button size="sm" variant="outline" onClick={handleAdd}>
-          <Plus className="w-3 h-3 mr-1" /> Add
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // ── Championship Leader Entry ───────────────────────────────────────────────────
 
@@ -81,17 +33,14 @@ function ChampionshipLeadersSection({ entries = [], onChange }) {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-3">
         <Trophy className="w-4 h-4 text-gray-500" />
         <h3 className="text-sm font-semibold">Championship Leaders</h3>
       </div>
       <div className="space-y-2">
         {entries.map((entry, idx) => (
           <div key={idx} className="border rounded-lg p-3 grid grid-cols-2 gap-2 relative">
-            <button
-              onClick={() => removeEntry(idx)}
-              className="absolute top-2 right-2 text-gray-300 hover:text-red-500"
-            >
+            <button onClick={() => removeEntry(idx)} className="absolute top-2 right-2 text-gray-300 hover:text-red-500">
               <X className="w-3.5 h-3.5" />
             </button>
             <div>
@@ -136,33 +85,33 @@ export default function ManageMotorsportsHome() {
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['all_drivers_mgmt'],
-    queryFn: () => base44.entities.Driver.list('-updated_date', 200),
+    queryKey: ['live_drivers_mgmt'],
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-updated_date', 200),
   });
   const { data: teams = [] } = useQuery({
-    queryKey: ['all_teams_mgmt'],
-    queryFn: () => base44.entities.Team.list('-updated_date', 200),
+    queryKey: ['live_teams_mgmt'],
+    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-updated_date', 200),
   });
   const { data: tracks = [] } = useQuery({
-    queryKey: ['all_tracks_mgmt'],
-    queryFn: () => base44.entities.Track.list('-updated_date', 200),
+    queryKey: ['live_tracks_mgmt'],
+    queryFn: () => base44.entities.Track.filter({ visibility_status: 'live' }, '-updated_date', 200),
   });
   const { data: events = [] } = useQuery({
-    queryKey: ['all_events_mgmt'],
+    queryKey: ['upcoming_events_mgmt'],
     queryFn: () => base44.entities.Event.list('-event_date', 200),
   });
-
-  // Build lookup maps
-  const driverMap = Object.fromEntries(drivers.map(d => [d.id, d]));
-  const teamMap = Object.fromEntries(teams.map(t => [t.id, t]));
-  const trackMap = Object.fromEntries(tracks.map(t => [t.id, t]));
-  const eventMap = Object.fromEntries(events.map(e => [e.id, e]));
+  const { data: stories = [] } = useQuery({
+    queryKey: ['published_stories_mgmt'],
+    queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 200),
+  });
 
   const record = settings[0];
 
   useEffect(() => {
     if (record && !formData) {
       setFormData(record);
+    } else if (!record && !formData) {
+      setFormData({ name: 'Primary Motorsports Home Settings', is_active: true });
     }
   }, [record]);
 
@@ -191,14 +140,6 @@ export default function ManageMotorsportsHome() {
 
   const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
-  const addId = (field) => (id) => {
-    const current = formData[field] || [];
-    if (!current.includes(id)) set(field, [...current, id]);
-  };
-  const removeId = (field) => (id) => {
-    set(field, (formData[field] || []).filter(x => x !== id));
-  };
-
   const sections = [
     {
       key: 'trending_drivers',
@@ -207,8 +148,8 @@ export default function ManageMotorsportsHome() {
       idsField: 'trending_driver_ids',
       autoField: 'trending_drivers_use_auto',
       autoLabel: 'Auto-sort by competition level',
-      map: driverMap,
-      placeholder: 'Paste Driver ID...',
+      entities: drivers,
+      placeholder: 'Search live drivers...',
     },
     {
       key: 'top_teams',
@@ -217,8 +158,8 @@ export default function ManageMotorsportsHome() {
       idsField: 'top_team_ids',
       autoField: 'top_teams_use_auto',
       autoLabel: 'Auto-sort by trending score',
-      map: teamMap,
-      placeholder: 'Paste Team ID...',
+      entities: teams,
+      placeholder: 'Search live teams...',
     },
     {
       key: 'tracks',
@@ -227,8 +168,8 @@ export default function ManageMotorsportsHome() {
       idsField: 'featured_track_ids',
       autoField: 'tracks_use_auto',
       autoLabel: 'Auto-pull live tracks',
-      map: trackMap,
-      placeholder: 'Paste Track ID...',
+      entities: tracks,
+      placeholder: 'Search live tracks...',
     },
     {
       key: 'events',
@@ -237,8 +178,8 @@ export default function ManageMotorsportsHome() {
       idsField: 'featured_event_ids',
       autoField: 'events_use_auto',
       autoLabel: 'Auto-pull upcoming events',
-      map: eventMap,
-      placeholder: 'Paste Event ID...',
+      entities: events,
+      placeholder: 'Search events...',
     },
     {
       key: 'from_the_pits',
@@ -247,8 +188,8 @@ export default function ManageMotorsportsHome() {
       idsField: 'from_the_pits_story_ids',
       autoField: 'from_the_pits_use_auto',
       autoLabel: 'Auto-pull latest published stories',
-      map: {},
-      placeholder: 'Paste OutletStory ID...',
+      entities: stories,
+      placeholder: 'Search published stories...',
     },
   ];
 
@@ -265,10 +206,13 @@ export default function ManageMotorsportsHome() {
         }
       >
         <div className="space-y-6">
-          {sections.map(({ key, title, icon, idsField, autoField, autoLabel, map, placeholder }) => (
+          {sections.map(({ key, title, icon: Icon, idsField, autoField, autoLabel, entities: sectionEntities, placeholder }) => (
             <Card key={key} className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-sm">{title}</h2>
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 text-gray-500" />
+                  <h2 className="font-semibold text-sm">{title}</h2>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">{autoLabel}</span>
                   <Switch
@@ -280,21 +224,18 @@ export default function ManageMotorsportsHome() {
                   </Badge>
                 </div>
               </div>
-              {!formData[autoField] && (
-                <EntityPickerSection
-                  title={title}
-                  icon={icon}
-                  ids={formData[idsField] || []}
-                  onAdd={addId(idsField)}
-                  onRemove={removeId(idsField)}
-                  entityMap={map}
+
+              {formData[autoField] ? (
+                <p className="text-xs text-gray-400 italic">
+                  Content is pulled automatically. Toggle off to pin specific entries.
+                </p>
+              ) : (
+                <EntityMultiSelect
+                  entities={sectionEntities}
+                  selectedIds={formData[idsField] || []}
+                  onChange={(ids) => set(idsField, ids)}
                   placeholder={placeholder}
                 />
-              )}
-              {formData[autoField] && (
-                <p className="text-xs text-gray-400 italic">
-                  This section is on auto mode — content is pulled automatically. Toggle off to pin specific entries.
-                </p>
               )}
             </Card>
           ))}
