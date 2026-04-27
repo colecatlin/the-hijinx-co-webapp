@@ -286,10 +286,16 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
           )}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
 
-          {/* Icon + Class label - top */}
+          {/* Series logo or class label - top */}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-            <Zap className="w-[13.5px] h-[13.5px] text-white" />
-            <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
+            {leader.series_logo ? (
+              <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain max-w-[80px]" style={{ filter: 'brightness(0) invert(1)' }} />
+            ) : (
+              <>
+                <Zap className="w-[13.5px] h-[13.5px] text-white" />
+                <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
+              </>
+            )}
           </div>
 
           {/* Name + points - bottom */}
@@ -562,6 +568,7 @@ export default function DiscoveryRows() {
           points: standing.points,
           image,
           series_id: series.id,
+          series_logo: series.logo_url || null,
         };
       })
     : (settings?.championship_leader_entries || []).map(e => ({
@@ -569,6 +576,7 @@ export default function DiscoveryRows() {
         name: e.driver_name,
         points: e.points,
         image: e.image_url || null,
+        series_logo: null,
       }));
 
   // Always pad to 5 slots
