@@ -89,6 +89,11 @@
       },
       "description": "Championship leader entries shown in the Championship Leaders row"
     },
+    "championship_leaders_use_auto": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, auto-pull #1 driver from each series with synced DriverStanding data."
+    },
     "from_the_pits_story_ids": {
       "type": "array",
       "items": {

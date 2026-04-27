@@ -240,12 +240,34 @@ export default function ManageMotorsportsHome() {
             </Card>
           ))}
 
-          {/* Championship Leaders — always manual */}
+          {/* Championship Leaders */}
           <Card className="p-5">
-            <ChampionshipLeadersSection
-              entries={formData.championship_leader_entries || []}
-              onChange={(val) => set('championship_leader_entries', val)}
-            />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-gray-500" />
+                <h2 className="font-semibold text-sm">Championship Leaders</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Auto-pull from synced standings</span>
+                <Switch
+                  checked={formData.championship_leaders_use_auto ?? false}
+                  onCheckedChange={(val) => set('championship_leaders_use_auto', val)}
+                />
+                <Badge variant={formData.championship_leaders_use_auto ? 'default' : 'secondary'} className="text-[10px]">
+                  {formData.championship_leaders_use_auto ? 'Auto' : 'Pinned'}
+                </Badge>
+              </div>
+            </div>
+            {formData.championship_leaders_use_auto ? (
+              <p className="text-xs text-gray-400 italic">
+                Will automatically show the #1 driver from each series that has synced standings data.
+              </p>
+            ) : (
+              <ChampionshipLeadersSection
+                entries={formData.championship_leader_entries || []}
+                onChange={(val) => set('championship_leader_entries', val)}
+              />
+            )}
           </Card>
         </div>
       </ManagementShell>

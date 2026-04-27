@@ -483,7 +483,52 @@ export default function DiscoveryRows() {
   });
 
   // ── Championship Leaders ──────────────────────────────────────────────────
-  const championshipLeaders = settings?.championship_leader_entries || [];
+  const useAutoChampLeaders = settings?.championship_leaders_use_auto ?? false;
+
+  // Fetch all series that have standings_url (so we know which ones have synced data)
+  const { data: seriesWithStandings = [] } = useQuery({
+    queryKey: ['discovery-series-with-standings'],
+    queryFn: () => base44.entities.Series.filter({ visibility_status: 'live' }),
+    enabled: useAutoChampLeaders,
+    staleTime: 10 * 60 * 1000,
+    select: (d) => d.filter(s => s.standings_url),
+  });
+
+  const currentYearNum = new Date().getFullYear();
+
+  const { data: autoLeaderStandings = [] } = useQuery({
+    queryKey: ['discovery-champ-leaders-standings', currentYearNum],
+    queryFn: async () => {
+      // Fetch top-1 for each series with a standings_url
+      const results = await Promise.all(
+        seriesWithStandings.map(s =>
+          base44.entities.DriverStanding.filter(
+            { series_id: s.id, season_year: currentYearNum },
+            'position',
+            1
+          ).then(rows => rows[0] ? { series: s, standing: rows[0] } : null)
+        )
+      );
+      return results.filter(Boolean);
+    },
+    enabled: useAutoChampLeaders && seriesWithStandings.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const championshipLeaders = useAutoChampLeaders
+    ? autoLeaderStandings.map(({ series, standing }) => ({
+        class: series.name,
+        name: standing.driver_name,
+        points: standing.points,
+        image: series.banner_url || series.logo_url || null,
+        series_id: series.id,
+      }))
+    : (settings?.championship_leader_entries || []).map(e => ({
+        class: e.class_name,
+        name: e.driver_name,
+        points: e.points,
+        image: e.image_url || null,
+      }));
 
   const rowStyle = {
     borderTop: '1px solid rgba(255,255,255,0.06)'
