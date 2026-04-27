@@ -286,24 +286,22 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
           )}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
 
-          {/* Series logo or class label - top */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-            {leader.series_logo ? (
-              <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm">
-                <img src={leader.series_logo} alt={leader.class} className="h-5 w-auto object-contain" />
-              </div>
-            ) : (
-              <>
-                <Zap className="w-[13.5px] h-[13.5px] text-white" />
-                <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
-              </>
-            )}
+          {/* Driver name - top */}
+          <div className="absolute top-2.5 left-2.5 right-2.5">
+            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
           </div>
 
-          {/* Name + points - bottom */}
+          {/* Series logo + name + points - bottom */}
           <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
-            <div className="text-white/50 text-[9px] mt-0.5">{leader.points} pts</div>
+            <div className="flex items-center gap-1.5 mb-1">
+              {leader.series_logo && (
+                <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm flex-shrink-0">
+                  <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain" />
+                </div>
+              )}
+              <div className="text-white font-black text-[9px] uppercase tracking-wider truncate">{leader.class}</div>
+            </div>
+            <div className="text-white/50 text-[9px]">{leader.points} pts</div>
           </div>
         </>
       )}
