@@ -255,14 +255,6 @@ function EventListItem({ event }) {
 
 // ── Championship Leaders ──────────────────────────────────────────────────────
 
-const PLACEHOLDER_LEADERS = [
-{ class: 'Pro Lite', name: 'Cole Catlin', points: 412 },
-{ class: 'Pro 2', name: 'Gavin Harlen', points: 398 },
-{ class: 'Pro 4', name: 'Mason Mingus', points: 375 },
-{ class: 'Pro Buggy', name: 'Jett Noland', points: 420 },
-{ class: 'Mod Lite', name: 'Ryan Beat', points: 355 }];
-
-
 function ChampionshipLeaderCard({ leader }) {
   const bgImage = leader.image || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&h=500&fit=crop';
   
@@ -360,28 +352,46 @@ function getCompetitionLevel(series) {
   return series?.override_competition_level ?? series?.derived_competition_level ?? 0;
 }
 
+// Resolve pinned IDs against a pool; return pinned subset in order
+function resolvePinned(ids, pool) {
+  if (!ids?.length || !pool?.length) return [];
+  const map = Object.fromEntries(pool.map(r => [r.id, r]));
+  return ids.map(id => map[id]).filter(Boolean);
+}
+
 export default function DiscoveryRows() {
+  // ── Settings ──────────────────────────────────────────────────────────────
+  const { data: settingsList = [] } = useQuery({
+    queryKey: ['motorsports-home-settings'],
+    queryFn: () => base44.entities.MotorsportsHomeSettings.filter({ is_active: true }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const settings = settingsList[0] || null;
+
+  // ── All Series (for competition level lookup) ─────────────────────────────
   const { data: allSeries = [], isLoading: loadingAllSeries } = useQuery({
     queryKey: ['discovery-all-series'],
     queryFn: () => base44.entities.Series.list(),
     staleTime: 10 * 60 * 1000,
   });
 
-  // Build a map: series id → series record
   const seriesMap = React.useMemo(() => {
     const map = {};
     allSeries.forEach(s => { map[s.id] = s; });
     return map;
   }, [allSeries]);
 
+  // ── Drivers ───────────────────────────────────────────────────────────────
   const { data: rawDrivers = [], isLoading: loadingDrivers } = useQuery({
     queryKey: ['discovery-drivers'],
-    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 20),
+    queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }, '-created_date', 100),
     staleTime: 5 * 60 * 1000,
   });
 
-  // Sort drivers by their primary series competition level (highest first), take top 5
   const drivers = React.useMemo(() => {
+    if (settings && !settings.trending_drivers_use_auto && settings.trending_driver_ids?.length) {
+      return resolvePinned(settings.trending_driver_ids, rawDrivers).slice(0, 5);
+    }
     return [...rawDrivers]
       .sort((a, b) => {
         const aLevel = getCompetitionLevel(seriesMap[a.primary_series_id]);
@@ -389,15 +399,15 @@ export default function DiscoveryRows() {
         return bLevel - aLevel;
       })
       .slice(0, 5);
-  }, [rawDrivers, seriesMap]);
+  }, [rawDrivers, seriesMap, settings]);
 
+  // ── Teams ─────────────────────────────────────────────────────────────────
   const { data: rawTeams = [], isLoading: loadingTeams } = useQuery({
     queryKey: ['discovery-teams'],
-    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-trending_score', 20),
+    queryFn: () => base44.entities.Team.filter({ visibility_status: 'live' }, '-trending_score', 100),
     staleTime: 5 * 60 * 1000,
   });
 
-  // For each team, find the highest competition-level series among its drivers
   const { data: teamDrivers = [] } = useQuery({
     queryKey: ['discovery-team-drivers'],
     queryFn: () => base44.entities.Driver.filter({ visibility_status: 'live' }),
@@ -406,7 +416,6 @@ export default function DiscoveryRows() {
   });
 
   const { teams, teamTopSeriesMap } = React.useMemo(() => {
-    // Build team_id → top series
     const topSeriesMap = {};
     teamDrivers.forEach(driver => {
       if (!driver.team_id || !driver.primary_series_id) return;
@@ -418,40 +427,61 @@ export default function DiscoveryRows() {
       }
     });
 
-    // Sort teams by top series competition level, take top 5
-    const sorted = [...rawTeams]
-      .sort((a, b) => {
-        const aLevel = getCompetitionLevel(topSeriesMap[a.id]);
-        const bLevel = getCompetitionLevel(topSeriesMap[b.id]);
-        return bLevel - aLevel;
-      })
-      .slice(0, 5);
+    let sorted;
+    if (settings && !settings.top_teams_use_auto && settings.top_team_ids?.length) {
+      sorted = resolvePinned(settings.top_team_ids, rawTeams).slice(0, 5);
+    } else {
+      sorted = [...rawTeams]
+        .sort((a, b) => {
+          const aLevel = getCompetitionLevel(topSeriesMap[a.id]);
+          const bLevel = getCompetitionLevel(topSeriesMap[b.id]);
+          return bLevel - aLevel;
+        })
+        .slice(0, 5);
+    }
 
     return { teams: sorted, teamTopSeriesMap: topSeriesMap };
-  }, [rawTeams, teamDrivers, seriesMap]);
+  }, [rawTeams, teamDrivers, seriesMap, settings]);
 
-  const { data: tracks = [], isLoading: loadingTracks } = useQuery({
+  // ── Tracks ────────────────────────────────────────────────────────────────
+  const { data: rawTracks = [], isLoading: loadingTracks } = useQuery({
     queryKey: ['discovery-tracks'],
-    queryFn: () => base44.entities.Track.filter({ visibility_status: 'live' }, '-created_date', 20),
+    queryFn: () => base44.entities.Track.filter({ visibility_status: 'live' }, '-created_date', 100),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: events = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ['discovery-events'],
-    queryFn: () => base44.entities.Event.list('-event_date', 20),
-    staleTime: 5 * 60 * 1000,
-    select: (d) => {
-      const today = new Date().toISOString().split('T')[0];
-      const upcoming = d.filter((e) => e.event_date >= today && e.public_status !== 'archived');
-      return (upcoming.length >= 4 ? upcoming : d).slice(0, 5);
+  const tracks = React.useMemo(() => {
+    if (settings && !settings.tracks_use_auto && settings.featured_track_ids?.length) {
+      return resolvePinned(settings.featured_track_ids, rawTracks).slice(0, 5);
     }
+    return rawTracks.slice(0, 5);
+  }, [rawTracks, settings]);
+
+  // ── Events ────────────────────────────────────────────────────────────────
+  const { data: rawEvents = [], isLoading: loadingEvents } = useQuery({
+    queryKey: ['discovery-events'],
+    queryFn: () => base44.entities.Event.list('-event_date', 100),
+    staleTime: 5 * 60 * 1000,
   });
 
+  const events = React.useMemo(() => {
+    if (settings && !settings.events_use_auto && settings.featured_event_ids?.length) {
+      return resolvePinned(settings.featured_event_ids, rawEvents).slice(0, 5);
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = rawEvents.filter((e) => e.event_date >= today && e.public_status !== 'archived');
+    return (upcoming.length >= 4 ? upcoming : rawEvents).slice(0, 5);
+  }, [rawEvents, settings]);
+
+  // ── Series Spotlight ──────────────────────────────────────────────────────
   const { data: series = [], isLoading: loadingSeries } = useQuery({
     queryKey: ['discovery-series'],
     queryFn: () => base44.entities.Series.filter({ visibility_status: 'live' }, '-created_date', 1),
     staleTime: 5 * 60 * 1000,
   });
+
+  // ── Championship Leaders ──────────────────────────────────────────────────
+  const championshipLeaders = settings?.championship_leader_entries || [];
 
   const rowStyle = {
     borderTop: '1px solid rgba(255,255,255,0.06)'
@@ -498,7 +528,6 @@ export default function DiscoveryRows() {
             </div> :
           tracks.length === 0 ?
           <span className="text-white/20 text-xs italic py-4">No tracks yet</span> :
-
           <div className="flex flex-col gap-2">
               <div className="grid grid-cols-3 gap-2">
                 {tracks.slice(0, 3).map((t) => <TrackCard key={t.id} track={t} />)}
@@ -517,29 +546,32 @@ export default function DiscoveryRows() {
           Array.from({ length: 4 }).map((_, i) =>
           <div key={i} className="h-14 rounded-lg animate-pulse bg-white/5 mb-2" />
           ) :
-
           <div className="flex flex-col gap-2">
-                {events.map((e) => <EventListItem key={e.id} event={e} />)}
-                {events.length === 0 &&
-            <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
+            {events.map((e) => <EventListItem key={e.id} event={e} />)}
+            {events.length === 0 &&
+              <span className="text-white/20 text-xs italic py-4">No upcoming events</span>
             }
-              </div>
-
+          </div>
           }
         </div>
       </div>
 
       {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
-        {/* Championship Leaders */}
-        <div>
-          <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
-          <div className="flex gap-2">
-            {PLACEHOLDER_LEADERS.map((leader) =>
-            <ChampionshipLeaderCard key={leader.class} leader={leader} />
-            )}
+        {/* Championship Leaders — only render if configured */}
+        {championshipLeaders.length > 0 && (
+          <div>
+            <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
+            <div className="flex gap-2">
+              {championshipLeaders.map((leader) =>
+                <ChampionshipLeaderCard
+                  key={leader.class_name}
+                  leader={{ class: leader.class_name, name: leader.driver_name, points: leader.points, image: leader.image_url }}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Series Spotlight */}
         {(series.length > 0 || loadingSeries) &&
