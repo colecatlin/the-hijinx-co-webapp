@@ -257,29 +257,48 @@ function EventListItem({ event }) {
 
 // ── Championship Leaders ──────────────────────────────────────────────────────
 
-function ChampionshipLeaderCard({ leader }) {
-  const bgImage = leader.image || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&h=500&fit=crop';
-  
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function ChampionshipLeaderCard({ leader, isEmpty }) {
   return (
     <div
-      className="flex-1 min-w-0 rounded-xl overflow-hidden relative cursor-pointer"
-      style={{ aspectRatio: '4/3', border: '1px solid rgba(255,255,255,0.16)' }}>
+      className="flex-1 min-w-0 rounded-xl overflow-hidden relative"
+      style={{ aspectRatio: '4/3', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15,15,15,0.9)' }}>
       
-      {/* Background image */}
-      <img src={bgImage} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+      {isEmpty ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-white/10 font-black text-3xl">—</div>
+        </div>
+      ) : (
+        <>
+          {/* Background image or abbreviation */}
+          {leader.image ? (
+            <img src={leader.image} alt={leader.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white/20 font-black text-4xl">{getInitials(leader.name)}</span>
+            </div>
+          )}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)' }} />
 
-      {/* Icon + Class label - top */}
-      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-        <Zap className="w-[13.5px] h-[13.5px] text-white" />
-        <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
-      </div>
+          {/* Icon + Class label - top */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+            <Zap className="w-[13.5px] h-[13.5px] text-white" />
+            <div className="text-white font-black text-[9px] uppercase tracking-wider">{leader.class}</div>
+          </div>
 
-      {/* Name + points - bottom */}
-      <div className="absolute bottom-2 left-2.5 right-2.5">
-        <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
-        <div className="text-white/50 text-[9px] mt-0.5">{leader.points} pts</div>
-      </div>
+          {/* Name + points - bottom */}
+          <div className="absolute bottom-2 left-2.5 right-2.5">
+            <div className="text-white font-bold text-[10px] leading-tight truncate">1 {leader.name}</div>
+            <div className="text-white/50 text-[9px] mt-0.5">{leader.points} pts</div>
+          </div>
+        </>
+      )}
     </div>);
 
 }
@@ -515,20 +534,48 @@ export default function DiscoveryRows() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const championshipLeaders = useAutoChampLeaders
-    ? autoLeaderStandings.map(({ series, standing }) => ({
-        class: series.name,
-        name: standing.driver_name,
-        points: standing.points,
-        image: series.banner_url || series.logo_url || null,
-        series_id: series.id,
-      }))
+  // Fetch driver profile images for auto leaders that have a driver_id
+  const leaderDriverIds = autoLeaderStandings
+    .map(({ standing }) => standing.driver_id)
+    .filter(Boolean);
+
+  const { data: leaderDrivers = [] } = useQuery({
+    queryKey: ['discovery-leader-drivers', leaderDriverIds.join(',')],
+    queryFn: () => Promise.all(leaderDriverIds.map(id => base44.entities.Driver.get(id))),
+    enabled: useAutoChampLeaders && leaderDriverIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const leaderDriverMap = React.useMemo(() => {
+    const map = {};
+    leaderDrivers.forEach(d => { if (d) map[d.id] = d; });
+    return map;
+  }, [leaderDrivers]);
+
+  const rawChampLeaders = useAutoChampLeaders
+    ? autoLeaderStandings.map(({ series, standing }) => {
+        const driverRecord = standing.driver_id ? leaderDriverMap[standing.driver_id] : null;
+        const image = driverRecord?.profile_image_url || driverRecord?.hero_image_url || series.banner_url || series.logo_url || null;
+        return {
+          class: series.name,
+          name: standing.driver_name,
+          points: standing.points,
+          image,
+          series_id: series.id,
+        };
+      })
     : (settings?.championship_leader_entries || []).map(e => ({
         class: e.class_name,
         name: e.driver_name,
         points: e.points,
         image: e.image_url || null,
       }));
+
+  // Always pad to 5 slots
+  const championshipLeaders = [
+    ...rawChampLeaders,
+    ...Array.from({ length: Math.max(0, 5 - rawChampLeaders.length) }, () => null),
+  ];
 
   const rowStyle = {
     borderTop: '1px solid rgba(255,255,255,0.06)'
@@ -605,15 +652,16 @@ export default function DiscoveryRows() {
 
       {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
       <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
-        {/* Championship Leaders — only render if configured */}
-        {championshipLeaders.length > 0 && (
+        {/* Championship Leaders — always show 5 slots when configured */}
+        {(useAutoChampLeaders || (settings?.championship_leader_entries?.length > 0)) && (
           <div>
             <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
             <div className="flex gap-2">
               {championshipLeaders.map((leader, idx) =>
                 <ChampionshipLeaderCard
-                  key={leader.class || idx}
-                  leader={leader}
+                  key={leader?.class || idx}
+                  leader={leader || {}}
+                  isEmpty={!leader}
                 />
               )}
             </div>
