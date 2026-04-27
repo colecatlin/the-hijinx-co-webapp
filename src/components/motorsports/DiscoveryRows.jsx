@@ -526,13 +526,19 @@ export default function DiscoveryRows() {
     queryFn: async () => {
       // Fetch top-1 for each series with a standings_url
       const results = await Promise.all(
-        seriesWithStandings.map(s =>
-          base44.entities.DriverStanding.filter(
+        seriesWithStandings.map(async s => {
+          const standings = await base44.entities.DriverStanding.filter(
             { series_id: s.id, season_year: currentYearNum },
             'position',
             1
-          ).then(rows => rows[0] ? { series: s, standing: rows[0] } : null)
-        )
+          );
+          if (standings[0]) {
+            // Fetch fresh series data to ensure logo_url is present
+            const freshSeries = await base44.entities.Series.get(s.id);
+            return { series: freshSeries, standing: standings[0] };
+          }
+          return null;
+        })
       );
       return results.filter(Boolean);
     },
