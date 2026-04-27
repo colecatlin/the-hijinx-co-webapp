@@ -289,7 +289,9 @@ function ChampionshipLeaderCard({ leader, isEmpty }) {
           {/* Series logo or class label - top */}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
             {leader.series_logo ? (
-              <img src={leader.series_logo} alt={leader.class} className="h-4 w-auto object-contain max-w-[80px]" style={{ filter: 'brightness(0) invert(1)' }} />
+              <div className="bg-white/10 rounded px-1.5 py-1 backdrop-blur-sm">
+                <img src={leader.series_logo} alt={leader.class} className="h-5 w-auto object-contain" />
+              </div>
             ) : (
               <>
                 <Zap className="w-[13.5px] h-[13.5px] text-white" />
