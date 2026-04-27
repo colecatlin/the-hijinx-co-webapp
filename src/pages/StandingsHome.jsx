@@ -31,12 +31,18 @@ function TopThreeDriver({ driver, position }) {
 }
 
 function SeriesLeaderboard({ series }) {
-  // Sample top 3 drivers per series/class
-  const topDrivers = [
-    { name: 'Cole Catlin', points: 412, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop' },
-    { name: 'Gavin Harlen', points: 398, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop' },
-    { name: 'Mason Mingus', points: 375, image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop' },
-  ];
+  const currentYear = new Date().getFullYear();
+  const { data: standings = [] } = useQuery({
+    queryKey: ['driverStandings', series.id, currentYear],
+    queryFn: () => base44.entities.DriverStanding.filter(
+      { series_id: series.id, season_year: currentYear },
+      'position',
+      5
+    ),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const topDrivers = standings.map(s => ({ name: s.driver_name, points: s.points, image: null }));
 
   return (
     <motion.div
