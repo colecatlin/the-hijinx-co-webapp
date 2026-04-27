@@ -123,8 +123,8 @@ function TeamCard({ team, topSeries }) {
             style={{ fontSize: 'clamp(9px, 2.2vw, 15px)' }}>
             
             <span className="flex-1 min-w-0" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
-            {team.manufacturer && (
-              <span className="text-[9px] text-[#666] flex-shrink-0 whitespace-nowrap">{team.manufacturer}</span>
+            {team.manufacturer_logo_url && (
+              <img src={team.manufacturer_logo_url} alt={team.manufacturer} className="h-4 w-auto flex-shrink-0 object-contain" />
             )}
           </div>
           {topSeries &&
