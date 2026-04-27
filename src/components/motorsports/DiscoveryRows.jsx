@@ -296,10 +296,9 @@ function ChampionshipLeaderCard({ leader, isEmpty, manufacturerLogo }) {
             <img src={manufacturerLogo} alt="manufacturer" className="absolute top-2 left-2.5 h-3.5 w-auto object-contain" />
           )}
 
-          {/* Driver name and points - bottom */}
-          <div className="absolute bottom-2 left-2.5 right-2.5">
-            <div className="text-white font-bold text-[10px] leading-tight truncate">{leader.name}</div>
-            <div className="text-white/70 text-[9px] mt-1">{leader.points} pts</div>
+          {/* Driver name - bottom */}
+          <div className="absolute bottom-3 left-2.5 right-2.5">
+            <div className="text-white font-bold text-[16px] leading-tight truncate">{leader.name}</div>
           </div>
         </>
       )}
