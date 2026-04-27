@@ -1,0 +1,112 @@
+{
+  "name": "MotorsportsHomeSettings",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of this settings configuration",
+      "default": "Primary Motorsports Home Settings"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this settings record is the active one"
+    },
+    "trending_driver_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pinned Driver IDs to feature as Trending Drivers (overrides auto sort)"
+    },
+    "trending_drivers_use_auto": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, auto-sort by competition level. If false, use pinned IDs."
+    },
+    "top_team_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pinned Team IDs to feature as Top Teams (overrides auto sort)"
+    },
+    "top_teams_use_auto": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, auto-sort by trending score. If false, use pinned IDs."
+    },
+    "featured_track_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pinned Track IDs to feature in Tracks Around the World"
+    },
+    "tracks_use_auto": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, auto-pull live tracks. If false, use pinned IDs."
+    },
+    "featured_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pinned Event IDs to feature as Upcoming Events"
+    },
+    "events_use_auto": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, auto-pull upcoming events. If false, use pinned IDs."
+    },
+    "championship_leader_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "class_name": {
+            "type": "string",
+            "description": "Class or series name"
+          },
+          "driver_id": {
+            "type": "string",
+            "description": "Driver ID"
+          },
+          "driver_name": {
+            "type": "string",
+            "description": "Driver display name (denormalized)"
+          },
+          "points": {
+            "type": "number",
+            "description": "Current points total"
+          },
+          "image_url": {
+            "type": "string",
+            "description": "Optional background image URL"
+          }
+        }
+      },
+      "description": "Championship leader entries shown in the Championship Leaders row"
+    },
+    "from_the_pits_story_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "OutletStory IDs to feature in the From the Pits section"
+    },
+    "from_the_pits_use_auto": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, auto-pull latest published stories. If false, use pinned IDs."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal admin notes about this settings configuration"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
