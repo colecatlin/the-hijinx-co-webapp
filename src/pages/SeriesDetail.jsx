@@ -109,6 +109,18 @@ export default function SeriesDetail({ overrideSlug } = {}) {
       .sort((a, b) => (a.position || 999) - (b.position || 999)).slice(0, 10),
   [standings, series?.id, seasonYear, activeClassName]);
 
+  // DriverStanding records synced from external standings URL (NASCAR etc.)
+  const { data: driverStandings = [] } = useQuery({
+    queryKey: ['driverStandings', series?.id, parseInt(seasonYear)],
+    queryFn: () => base44.entities.DriverStanding.filter(
+      { series_id: series.id, season_year: parseInt(seasonYear) },
+      'position',
+      50
+    ),
+    enabled: !!series?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (series) Analytics.profileViewSeries(series.id, series.name, series.discipline);
   }, [series?.id]);
@@ -353,10 +365,10 @@ export default function SeriesDetail({ overrideSlug } = {}) {
                   </Select>
                 )}
               </div>
-              {seasonStandings.length === 0 ? (
+              {seasonStandings.length === 0 && driverStandings.length === 0 ? (
                 <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
                   <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p className="text-sm">No standings calculated yet for this class and season.</p>
+                  <p className="text-sm">No standings available yet for this season.</p>
                 </div>
               ) : (
                 <>
@@ -365,18 +377,24 @@ export default function SeriesDetail({ overrideSlug } = {}) {
                       <thead><tr className="border-b border-gray-200">
                         <th className="text-left py-3 px-2 font-semibold text-gray-600">#</th>
                         <th className="text-left py-3 px-2 font-semibold text-gray-600">Driver</th>
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600">No.</th>
+                        <th className="text-left py-3 px-2 font-semibold text-gray-600">MFR</th>
                         <th className="text-right py-3 px-2 font-semibold text-gray-600">Points</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Behind</th>
                         <th className="text-right py-3 px-2 font-semibold text-gray-600">Wins</th>
-                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Podiums</th>
+                        <th className="text-right py-3 px-2 font-semibold text-gray-600">Starts</th>
                       </tr></thead>
                       <tbody>
-                        {seasonStandings.map(stand => (
+                        {(driverStandings.length > 0 ? driverStandings : seasonStandings).map(stand => (
                           <tr key={stand.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-2 font-semibold text-[#232323]">{stand.position}</td>
                             <td className="py-3 px-2 font-medium text-[#232323]">{stand.driver_name || 'N/A'}</td>
-                            <td className="py-3 px-2 text-right font-semibold text-[#232323]">{stand.total_points}</td>
-                            <td className="py-3 px-2 text-right">{stand.wins || 0}</td>
-                            <td className="py-3 px-2 text-right">{stand.podiums || 0}</td>
+                            <td className="py-3 px-2 text-gray-600">{stand.car_number || '—'}</td>
+                            <td className="py-3 px-2 text-gray-600">{stand.manufacturer || '—'}</td>
+                            <td className="py-3 px-2 text-right font-semibold text-[#232323]">{stand.points ?? stand.total_points ?? '—'}</td>
+                            <td className="py-3 px-2 text-right text-gray-600">{stand.behind ? `-${stand.behind}` : '—'}</td>
+                            <td className="py-3 px-2 text-right">{stand.wins ?? 0}</td>
+                            <td className="py-3 px-2 text-right">{stand.starts ?? '—'}</td>
                           </tr>
                         ))}
                       </tbody>
