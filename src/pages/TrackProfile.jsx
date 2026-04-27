@@ -14,7 +14,6 @@ import { createPageUrl } from '@/components/utils';
 import { MapPin, Globe, Phone, Mail, Flag, Ruler, ExternalLink, Calendar } from 'lucide-react';
 import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
-import Analytics from '@/components/system/analyticsTracker';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { isAfter, parseISO } from 'date-fns';
 
@@ -45,7 +44,7 @@ export default function TrackProfile() {
     .sort((a, b) => b.event_date.localeCompare(a.event_date));
 
   useEffect(() => {
-    if (track) Analytics.track('track_profile_view', { trackId: track.id, trackName: track.name });
+    if (track) base44.analytics.track({ eventName: 'track_profile_view', properties: { trackId: track.id, trackName: track.name } });
   }, [track?.id]);
 
   if (isLoading) {
