@@ -45,8 +45,8 @@ export default function RaceCoreDriverEditor() {
       toast.success('Driver created successfully!');
       navigate('/race-core/drivers/' + newDriverId);
     } else {
-      toast.success('Driver updated successfully!');
-      queryClient.invalidateQueries({ queryKey: ['driver', id] });
+      // Use refetchQueries (not invalidate) so the cached driver data stays
+      // intact during the refetch, preventing the form from resetting mid-save.
       queryClient.refetchQueries({ queryKey: ['driver', id] });
     }
   };

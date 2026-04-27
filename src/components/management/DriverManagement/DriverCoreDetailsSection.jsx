@@ -70,44 +70,46 @@ export default function DriverCoreDetailsSection({ driverId, driver: passedDrive
   });
 
   useEffect(() => {
-   if (driverId === 'new') {
-     setFormData({
-       first_name: '',
-       last_name: '',
-       date_of_birth: '',
-       contact_email: '',
-       represented_by: '',
-       hometown_city: '',
-       hometown_state: '',
-       hometown_country: 'USA',
-       racing_base_city: '',
-       racing_base_state: '',
-       racing_base_country: '',
-       primary_number: '',
-       primary_discipline: '',
-       featured: false,
-       career_status: '',
-     });
-     setHeadshotUrl('');
-   } else if (driver) {
-     setFormData({
-       first_name: driver.first_name || '',
-       last_name: driver.last_name || '',
-       date_of_birth: driver.date_of_birth || '',
-       contact_email: driver.contact_email || '',
-       represented_by: driver.represented_by || '',
-       hometown_city: driver.hometown_city || '',
-       hometown_state: driver.hometown_state || '',
-       hometown_country: driver.hometown_country || 'USA',
-       racing_base_city: driver.racing_base_city || '',
-       racing_base_state: driver.racing_base_state || '',
-       racing_base_country: driver.racing_base_country || '',
-       primary_number: driver.primary_number || '',
-       primary_discipline: driver.primary_discipline || '',
-       career_status: driver.career_status || '',
-       featured: driver.featured || false,
-     });
-   }
+    if (driverId === 'new') {
+      setFormData({
+        first_name: '',
+        last_name: '',
+        date_of_birth: '',
+        contact_email: '',
+        represented_by: '',
+        hometown_city: '',
+        hometown_state: '',
+        hometown_country: 'USA',
+        racing_base_city: '',
+        racing_base_state: '',
+        racing_base_country: '',
+        primary_number: '',
+        primary_discipline: '',
+        featured: false,
+        career_status: '',
+      });
+      setHeadshotUrl('');
+    } else if (driver && driver.first_name) {
+      // Only repopulate if driver has real data — prevents a mid-refetch blank
+      // driver object from wiping out the user's current form values.
+      setFormData({
+        first_name: driver.first_name || '',
+        last_name: driver.last_name || '',
+        date_of_birth: driver.date_of_birth || '',
+        contact_email: driver.contact_email || '',
+        represented_by: driver.represented_by || '',
+        hometown_city: driver.hometown_city || '',
+        hometown_state: driver.hometown_state || '',
+        hometown_country: driver.hometown_country || 'USA',
+        racing_base_city: driver.racing_base_city || '',
+        racing_base_state: driver.racing_base_state || '',
+        racing_base_country: driver.racing_base_country || '',
+        primary_number: driver.primary_number || '',
+        primary_discipline: driver.primary_discipline || '',
+        career_status: driver.career_status || '',
+        featured: driver.featured || false,
+      });
+    }
   }, [driver, driverId]);
 
   useEffect(() => {
