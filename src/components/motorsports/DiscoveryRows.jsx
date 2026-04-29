@@ -47,10 +47,14 @@ function SectionHeader({ label, viewAllHref }) {
 function ScrollRow({ children, isLoading, aspectRatio = '3/2' }) {
   const ref = useRef(null);
   return (
-    <div ref={ref} className="flex gap-3">
+    <div
+      ref={ref}
+      className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {isLoading ?
       Array.from({ length: 5 }).map((_, i) =>
-      <div key={i} className="flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio }} />
+      <div key={i} className="flex-shrink-0 w-40 sm:flex-1 rounded-xl animate-pulse bg-white/5" style={{ aspectRatio }} />
       ) :
       children}
     </div>);
@@ -66,7 +70,7 @@ function DriverCard({ driver, seriesMap }) {
   const series = seriesMap && driver.primary_series_id ? seriesMap[driver.primary_series_id] : null;
 
   return (
-    <Link to={`/drivers/${slug}`} className="flex-1 min-w-0">
+    <Link to={`/drivers/${slug}`} className="flex-shrink-0 w-36 sm:flex-1 sm:w-auto min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden relative cursor-pointer"
@@ -103,7 +107,7 @@ function TeamCard({ team, topSeries }) {
   const img = team.logo_url;
 
   return (
-    <Link to={`/TeamProfile?id=${team.id}`} className="flex-1 min-w-0">
+    <Link to={`/TeamProfile?id=${team.id}`} className="flex-shrink-0 w-36 sm:flex-1 sm:w-auto min-w-0">
       <motion.div
         whileHover={{ y: -2 }}
         className="w-full rounded-xl overflow-hidden cursor-pointer relative"
@@ -337,7 +341,7 @@ function SeriesSpotlightCard({ series }) {
 
 function CTABanner() {
   return (
-    <div className="mx-8 md:mx-12 lg:mx-20 my-6 rounded-2xl overflow-hidden relative"
+    <div className="mx-4 sm:mx-8 md:mx-12 lg:mx-20 my-6 rounded-2xl overflow-hidden relative"
     style={{ background: 'linear-gradient(135deg, #0A0A0A 0%, #111 100%)', border: '1px solid rgba(255,255,255,0.1)' }}>
       <div className="absolute inset-0 opacity-10"
       style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)' }} />
@@ -617,7 +621,7 @@ export default function DiscoveryRows() {
     <div className="relative z-10 bg-transparent" id="champ-leaders">
 
       {/* ── TRENDING DRIVERS ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
+      <div className="py-6 px-4 sm:px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Trending Drivers" viewAllHref="/DriverDirectory?sort=trending" />
         <ScrollRow isLoading={loadingDrivers || loadingAllSeries} aspectRatio="4/3">
           {drivers.map((d) => <DriverCard key={d.id} driver={d} seriesMap={seriesMap} />)}
@@ -628,7 +632,7 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── TOP TEAMS ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20" style={rowStyle}>
+      <div className="py-6 px-4 sm:px-8 md:px-12 lg:px-20" style={rowStyle}>
         <SectionHeader label="Top Teams" viewAllHref="/TeamDirectory?sort=trending" />
         <ScrollRow isLoading={loadingTeams || loadingAllSeries} aspectRatio="3/2">
           {teams.map((t) => <TeamCard key={t.id} team={t} topSeries={teamTopSeriesMap[t.id]} />)}
@@ -639,7 +643,7 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── TRACKS + EVENTS (side by side) ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-8" style={rowStyle}>
+      <div className="py-6 px-4 sm:px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8" style={rowStyle}>
         {/* Tracks */}
         <div>
           <SectionHeader label="Tracks Around the World" viewAllHref="/TrackDirectory" />
@@ -655,8 +659,8 @@ export default function DiscoveryRows() {
           tracks.length === 0 ?
           <span className="text-white/20 text-xs italic py-4">No tracks yet</span> :
           <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-3 gap-2">
-                {tracks.slice(0, 3).map((t) => <TrackCard key={t.id} track={t} />)}
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+                {tracks.slice(0, 3).map((t) => <TrackGridCard key={t.id} track={t} />)}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {tracks.slice(3, 5).map((t) => <TrackGridCard key={t.id} track={t} />)}
@@ -683,14 +687,17 @@ export default function DiscoveryRows() {
       </div>
 
       {/* ── CHAMPIONSHIP LEADERS + SERIES SPOTLIGHT ── */}
-      <div className="py-6 px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8" style={rowStyle}>
+      <div className="py-6 px-4 sm:px-8 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 lg:gap-8" style={rowStyle}>
         {/* Championship Leaders — always show 5 slots when configured */}
         {(useAutoChampLeaders || (settings?.championship_leader_entries?.length > 0)) && (
           <div>
             <SectionHeader label="Championship Leaders" viewAllHref="/StandingsHome" />
-            <div className="flex gap-2">
+            <div
+              className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
               {championshipLeaders.map((leader, idx) =>
-                <div key={leader?.class || idx} className="flex-1 min-w-0 flex flex-col">
+                <div key={leader?.class || idx} className="flex-shrink-0 w-36 sm:flex-1 sm:w-auto min-w-0 flex flex-col">
                   <ChampionshipLeaderCard
                     leader={leader || {}}
                     isEmpty={!leader}

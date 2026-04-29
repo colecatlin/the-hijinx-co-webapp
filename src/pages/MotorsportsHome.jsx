@@ -16,7 +16,8 @@ function useEntityStats(entityName) {
   return useQuery({
     queryKey: ['motorsports-stats', entityName],
     queryFn: async () => {
-      const all = await base44.entities[entityName].list();
+      // Only fetch the most recent 500 sorted by created_date — fast and sufficient for stats
+      const all = await base44.entities[entityName].list('-created_date', 500);
       const total = Array.isArray(all) ? all.length : 0;
 
       const startOfMonth = new Date();
@@ -29,7 +30,8 @@ function useEntityStats(entityName) {
 
       return { total, monthly };
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 }
 
@@ -79,34 +81,34 @@ export default function MotorsportsHome() {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className="relative z-[3] h-[70vh] flex items-center px-8 md:px-12 lg:px-20 py-10">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
+      <div className="relative z-[3] min-h-[70vh] flex items-center px-5 sm:px-8 md:px-12 lg:px-20 py-12 md:py-10">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-6 items-center">
 
           {/* LEFT: Hero text + search */}
           <div className="lg:col-span-3 max-w-xl">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-5 h-[1px] bg-[#1DA1A1]" />
               <span className="font-mono text-[9px] tracking-[0.45em] text-[#1DA1A1] uppercase">INDEX46 · Motorsports</span>
             </div>
             <h1
-              className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
               style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
             >
               THE WORLD<br />OF RACING.
             </h1>
             <p
-              className="text-3xl md:text-4xl lg:text-5xl font-black italic uppercase mb-4 leading-tight"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black italic uppercase mb-3 leading-tight"
               style={{ color: '#1DA1A1', textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
             >
               All in one place.
             </p>
-            <p className="text-white/60 text-sm md:text-base leading-relaxed mb-7 max-w-md">
+            <p className="text-white/60 text-xs sm:text-sm leading-relaxed mb-5 max-w-md">
               Drivers. Teams. Tracks. Events. Results.<br />
               The most comprehensive motorsports data platform, built for the culture.
             </p>
-            <form onSubmit={handleSearch} className="flex items-center gap-0 max-w-md">
+            <form onSubmit={handleSearch} className="flex items-center gap-0 w-full max-w-md">
               <div
-                className="flex items-center flex-1 px-4 py-4 rounded-l-xl"
+                className="flex items-center flex-1 px-3 py-3 rounded-l-xl min-w-0"
                 style={{
                   background: 'rgba(255,255,255,0.08)',
                   backdropFilter: 'blur(12px)',
@@ -115,18 +117,18 @@ export default function MotorsportsHome() {
                   borderRight: 'none',
                 }}
               >
-                <Search className="w-5 h-5 text-white/40 mr-3 flex-shrink-0" />
+                <Search className="w-4 h-4 text-white/40 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Search drivers, teams, tracks, events..."
-                  className="flex-1 bg-transparent text-white text-sm placeholder-white/30 outline-none"
+                  placeholder="Search drivers, teams..."
+                  className="flex-1 bg-transparent text-white text-sm placeholder-white/30 outline-none min-w-0"
                 />
               </div>
               <button
                 type="submit"
-                className="px-6 py-4 rounded-r-xl text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110 flex-shrink-0"
+                className="px-4 sm:px-6 py-3 rounded-r-xl text-xs sm:text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110 flex-shrink-0 whitespace-nowrap"
                 style={{ background: '#1DA1A1', color: '#050A0A' }}
               >
                 Explore
@@ -134,8 +136,8 @@ export default function MotorsportsHome() {
             </form>
           </div>
 
-          {/* RIGHT: Live stat cards */}
-          <div className="lg:col-span-2 flex flex-col gap-2 max-w-[220px] w-full ml-auto">
+          {/* RIGHT: Live stat cards — hidden on smallest screens, shown as horizontal row on sm */}
+          <div className="lg:col-span-2 hidden sm:flex sm:flex-row lg:flex-col gap-2 lg:max-w-[220px] w-full lg:ml-auto">
             {stats.map((s, i) => (
               <StatCard
                 key={s.label}
