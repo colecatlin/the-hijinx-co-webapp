@@ -5,11 +5,15 @@ import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
 import HeroSection from '@/components/home/HeroSection';
-import HomepageBridge from '@/components/home/HomepageBridge';
-import Index46Preview from '@/components/home/Index46Preview';
-import OutletAndCulture from '@/components/home/OutletAndCulture';
-import ApparelShowcase from '@/components/home/ApparelShowcase';
-import FinalCallToAction from '@/components/home/FinalCallToAction';
+import CultureGrid from '@/components/home/CultureGrid';
+import OutletSection from '@/components/home/OutletSection';
+import ApparelSection from '@/components/home/ApparelSection';
+import EventsSection from '@/components/home/EventsSection';
+import RaceCoreSection from '@/components/home/RaceCoreSection';
+import RaceCoreBridge from '@/components/home/RaceCoreBridge';
+import SocialsSection from '@/components/home/SocialsSection';
+import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
+
 
 export default function Home() {
   const { data: hpResult, isLoading } = useQuery({
@@ -24,33 +28,46 @@ export default function Home() {
   useEffect(() => { Analytics.pageView('Home'); }, []);
 
   return (
-    <div className="min-h-screen bg-[#050A0A] overflow-x-hidden">
+    <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden">
       <SeoMeta
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
         noSuffix={false}
       />
 
-      {/* 1. Hero — cinematic entry point */}
-      <HeroSection />
-
-      {/* 2. Bridge — one world, three ways in */}
-      <HomepageBridge />
-
-      {/* 3. INDEX46 preview — tease the platform */}
-      <Index46Preview />
-
-      {/* 4. Outlet & Culture — cream chapter break */}
-      <OutletAndCulture
+      <HeroSection
+        featuredDriver={hp.featured_drivers?.[0] ?? null}
         featuredStory={hp.featured_story ?? null}
+        stats={hp.hero_stats}
+      />
+
+      {/* Dark → editorial cream bridge */}
+      <div style={{ height: 56, background: 'linear-gradient(to bottom, #0A0A0A, #F5F0E8)', marginTop: 0 }} />
+
+      <CultureGrid />
+
+      <OutletSection
+        featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 6)}
       />
 
-      {/* 5. Apparel — wear the world */}
-      <ApparelShowcase products={hp.featured_products || []} />
+      {/* Hard cut: editorial → apparel — intentional chapter shift */}
 
-      {/* 6. Final CTA — one exit point */}
-      <FinalCallToAction />
+      <ApparelSection products={hp.featured_products || []} />
+
+      <EventsSection />
+
+      {/* Clean break: events → race core */}
+
+      <RaceCoreSection />
+
+      <RaceCoreBridge />
+
+      <SocialsSection media={hp.featured_media || []} />
+
+      <GetInvolvedCTA />
+
+
     </div>
   );
 }

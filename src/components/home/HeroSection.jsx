@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, Users, MapPin, BarChart2 } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// Fallback slides — visual + message only. CTAs are fixed system-wide.
+// Smart link: external URLs open in a new tab, internal use React Router
+function CtaLink({ to, className, style, children }) {
+  const isExternal = to && (to.startsWith('http://') || to.startsWith('https://'));
+  if (isExternal) {
+    return <a href={to} target="_blank" rel="noopener noreferrer" className={className} style={style}>{children}</a>;
+  }
+  return <Link to={to} className={className} style={style}>{children}</Link>;
+}
+
+// Fallback slides if no DB slides exist yet
 const FALLBACK_SLIDES = [
   {
     media_type: 'image',
@@ -13,6 +23,10 @@ const FALLBACK_SLIDES = [
     headline_line1: 'IN MOTION.',
     headline_line2: 'ON PURPOSE.',
     subtext: 'Not just moving, moving with intent.',
+    cta1_label: 'Enter HIJINX',
+    cta1_url: '/OutletHome',
+    cta2_label: null,
+    cta2_url: null,
   },
   {
     media_type: 'image',
@@ -20,6 +34,10 @@ const FALLBACK_SLIDES = [
     headline_line1: "YOU'RE GOING",
     headline_line2: 'TO LOSE.',
     subtext: "That's where everything is built.",
+    cta1_label: 'Keep Going',
+    cta1_url: '/OutletHome',
+    cta2_label: null,
+    cta2_url: null,
   },
   {
     media_type: 'image',
@@ -27,71 +45,20 @@ const FALLBACK_SLIDES = [
     headline_line1: 'THIS IS',
     headline_line2: 'HIJINX.',
     subtext: "For those who don't sit still.",
+    cta1_label: 'Shop Apparel',
+    cta1_url: '/ApparelHome',
+    cta2_label: 'Explore Race Core',
+    cta2_url: '/MotorsportsHome',
   },
 ];
 
-// Fixed CTA system — same on every slide
-const PRIMARY_CTA = { label: 'Create Your Profile', to: '/DriverProfileSetup' };
-const SECONDARY_CTA = { label: 'Explore the Platform', to: '#homepage-bridge' };
+const INTERVAL = 4000;
 
-const INTERVAL = 4500;
-
-// Compact stat signal items
-const STAT_ITEMS = [
-  { key: 'Driver', label: 'Drivers', entity: 'Driver', icon: Users },
-  { key: 'Track', label: 'Tracks', entity: 'Track', icon: MapPin },
-  { key: 'Series', label: 'Series', entity: 'Series', icon: BarChart2 },
-];
-
-function useEntityCount(entityName) {
-  return useQuery({
-    queryKey: ['hero-stat', entityName],
-    queryFn: async () => {
-      const data = await base44.entities[entityName].list('-created_date', 500);
-      return Array.isArray(data) ? data.length : 0;
-    },
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
-function StatSignal({ label, entity, icon: Icon }) {
-  const { data: count, isLoading } = useEntityCount(entity);
-  return (
-    <div
-      className="flex items-center gap-2.5 px-3.5 py-2.5"
-      style={{
-        background: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.10)',
-        borderRadius: 10,
-      }}
-    >
-      <Icon className="w-3.5 h-3.5 text-white/35 flex-shrink-0" strokeWidth={1.5} />
-      <div>
-        <div className="font-mono text-[7px] tracking-[0.3em] text-white/30 uppercase leading-none mb-0.5">{label}</div>
-        {isLoading ? (
-          <div className="w-6 h-3 bg-white/10 rounded animate-pulse" />
-        ) : (
-          <div className="text-white font-black text-sm leading-none">{(count || 0).toLocaleString()}</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function handleAnchorClick(e, to) {
-  if (to.startsWith('#')) {
-    e.preventDefault();
-    const el = document.getElementById(to.slice(1));
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-export default function HeroSection() {
+export default function HeroSection({ stats = {} }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const videoRef = useRef(null);
+  const timerRef = useRef(null);
 
   const { data: dbSlides = [] } = useQuery({
     queryKey: ['heroSlides'],
@@ -101,50 +68,53 @@ export default function HeroSection() {
 
   const SLIDES = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
 
-  // Preload images
+  // Preload all slide images on mount
   useEffect(() => {
-    SLIDES.forEach(s => {
-      if ((s.media_type || s.type) === 'image' && (s.background_url || s.bg)) {
+    SLIDES.forEach((slide) => {
+      if ((slide.media_type || slide.type) === 'image' && (slide.background_url || slide.bg)) {
         const img = new Image();
-        img.src = s.background_url || s.bg;
+        img.src = slide.background_url || slide.bg;
       }
     });
   }, [SLIDES.length]);
 
   const go = (idx) => setCurrent((idx + SLIDES.length) % SLIDES.length);
+  const next = () => go(current + 1);
+  const prev = () => go(current - 1);
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(() => go(current + 1), INTERVAL);
-    return () => clearInterval(t);
-  }, [paused, current, SLIDES.length]);
+    timerRef.current = setInterval(next, INTERVAL);
+    return () => clearInterval(timerRef.current);
+  }, [paused, SLIDES.length]);
 
+  // Ensure video plays when on slide 0
   useEffect(() => {
     if (current === 0 && videoRef.current) {
       videoRef.current.play().catch(() => {});
     }
   }, [current]);
 
-  const raw = SLIDES[current] || SLIDES[0];
+  const rawSlide = SLIDES[current] || SLIDES[0];
+  // Normalize DB slide shape to match render expectations
   const slide = {
-    type: raw.media_type || raw.type || 'image',
-    bg: raw.background_url || raw.bg || '',
-    videoSrc: raw.background_url || raw.videoSrc || '',
-    headline: [
-      raw.headline_line1 || raw.headline?.[0] || '',
-      raw.headline_line2 || raw.headline?.[1] || '',
-    ].filter(Boolean),
-    sub: raw.subtext || raw.sub || '',
+    type: rawSlide.media_type || rawSlide.type || 'image',
+    bg: rawSlide.background_url || rawSlide.bg || '',
+    videoSrc: rawSlide.background_url || rawSlide.videoSrc || '',
+    headline: [rawSlide.headline_line1 || rawSlide.headline?.[0] || '', rawSlide.headline_line2 || rawSlide.headline?.[1] || ''].filter(Boolean),
+    sub: rawSlide.subtext || rawSlide.sub || '',
+    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : (rawSlide.cta1 || null),
+    cta2: rawSlide.cta2_label ? { label: rawSlide.cta2_label, to: rawSlide.cta2_url || '/' } : (rawSlide.cta2 || null),
   };
 
   return (
     <section
       className="relative w-full overflow-hidden"
-      style={{ height: 'calc(100vh - 80px)', minHeight: 400, maxHeight: 720 }}
+      style={{ height: 'calc(100vh - 112px)', minHeight: 360, maxHeight: 640 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Background */}
+      {/* Background layer */}
       <AnimatePresence>
         <motion.div
           key={current}
@@ -152,13 +122,16 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: 'easeInOut' }}
+          transition={{ duration: 0.4, ease: 'easeInOut' }}
         >
           {slide.type === 'video' ? (
             <video
               ref={videoRef}
               src={slide.videoSrc}
-              autoPlay muted loop playsInline
+              autoPlay
+              muted
+              loop
+              playsInline
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
@@ -167,10 +140,18 @@ export default function HeroSection() {
               style={{ backgroundImage: `url(${slide.bg})` }}
             />
           )}
-          <div className="absolute inset-0 bg-black/60" />
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
-          <div className="absolute inset-x-0 top-0 h-28" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), transparent)' }} />
-          {/* Film grain */}
+
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-black/62" />
+          {/* Vignette */}
+          <div className="absolute inset-0" style={{
+            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)'
+          }} />
+          {/* Subtle light haze top */}
+          <div className="absolute inset-x-0 top-0 h-32" style={{
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0.04), transparent)'
+          }} />
+          {/* Grain texture — animated slow pulse for life */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
             animate={{ opacity: [0.04, 0.07, 0.04] }}
@@ -183,99 +164,94 @@ export default function HeroSection() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Scanning accent line */}
+      {/* Scanning light bar — subtle life */}
       <motion.div
         className="absolute inset-x-0 z-10 pointer-events-none"
-        style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(29,161,161,0.2), transparent)' }}
-        animate={{ top: ['15%', '85%', '15%'] }}
-        transition={{ repeat: Infinity, duration: 14, ease: 'easeInOut' }}
+        style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,218,0.15) 50%, transparent 100%)' }}
+        animate={{ top: ['20%', '80%', '20%'] }}
+        transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut' }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center px-4 sm:px-6 md:px-12 lg:px-20 pb-16 pt-8">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 items-center max-w-7xl mx-auto">
+      {/* Content — glass card */}
+      <div className="relative z-10 h-full flex items-center pb-8 px-4 sm:px-6" style={{ paddingTop: '2rem' }}>
+        <div className="w-full max-w-7xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="w-full max-w-2xl"
+              style={{
+                background: 'rgba(10,10,10,0.45)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 8px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
+                borderRadius: 2,
+                padding: 'clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 5vw, 2.5rem)',
+              }}
+            >
+              {/* Accent line */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-5 h-[2px] bg-[#00FFDA]" />
+                <span className="font-mono text-[9px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold">
+                  HIJINX
+                </span>
+              </div>
 
-          {/* LEFT — Glass card with headline + fixed CTAs */}
-          <div className="lg:col-span-3">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="w-full max-w-xl"
-                style={{
-                  background: 'rgba(5,10,10,0.5)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 8px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-                  borderRadius: 3,
-                  padding: 'clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 5vw, 2.5rem)',
-                }}
-              >
-                {/* Brand marker */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-5 h-[2px] bg-[#1DA1A1]" />
-                  <span className="font-mono text-[9px] tracking-[0.5em] text-[#1DA1A1] uppercase font-bold">
-                    HIJINX
-                  </span>
+              {/* Headline */}
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white leading-[1.0] tracking-tight mb-3">
+                {slide.headline.map((line, i) => (
+                  <span key={i} className="block">{line}</span>
+                ))}
+              </h1>
+
+              {/* Sub */}
+              <p className="text-xs sm:text-sm md:text-base text-white/55 font-medium leading-relaxed mb-5 max-w-sm">
+                {slide.sub}
+              </p>
+
+              {/* CTAs */}
+              {(slide.cta1 || slide.cta2) && (
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  {slide.cta1 && (
+                    <CtaLink
+                      to={slide.cta1.to}
+                      className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-black text-xs font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors"
+                      style={{ borderRadius: 2 }}
+                    >
+                      {slide.cta1.label} <ArrowRight className="w-3 h-3" />
+                    </CtaLink>
+                  )}
+                  {slide.cta2 && (
+                    <CtaLink
+                      to={slide.cta2.to}
+                      className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 text-white text-xs font-bold tracking-wide uppercase transition-colors hover:text-[#00FFDA]"
+                      style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}
+                    >
+                      {slide.cta2.label}
+                    </CtaLink>
+                  )}
                 </div>
-
-                {/* Headline */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[1.0] tracking-tight mb-3">
-                  {slide.headline.map((line, i) => (
-                    <span key={i} className="block">{line}</span>
-                  ))}
-                </h1>
-
-                {/* Sub */}
-                <p className="text-sm text-white/50 font-medium leading-relaxed mb-6 max-w-xs">
-                  {slide.sub}
-                </p>
-
-                {/* Fixed CTAs — consistent across all slides */}
-                <div className="flex flex-wrap gap-2.5">
-                  <Link
-                    to={PRIMARY_CTA.to}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-black tracking-wide uppercase hover:bg-[#1DA1A1] hover:text-white transition-colors"
-                    style={{ borderRadius: 2 }}
-                  >
-                    {PRIMARY_CTA.label} <ArrowRight className="w-3 h-3" />
-                  </Link>
-                  <a
-                    href={SECONDARY_CTA.to}
-                    onClick={(e) => handleAnchorClick(e, SECONDARY_CTA.to)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-xs font-black tracking-wide uppercase transition-colors hover:text-[#1DA1A1]"
-                    style={{ border: '1px solid rgba(255,255,255,0.18)', borderRadius: 2 }}
-                  >
-                    {SECONDARY_CTA.label}
-                  </a>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* RIGHT — Compact motorsports signal (3 stat cards) */}
-          <div className="lg:col-span-2 hidden sm:flex flex-col gap-2 lg:max-w-[200px] w-full lg:ml-auto">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-[1px] bg-[#1DA1A1]" />
-              <span className="font-mono text-[7px] tracking-[0.45em] text-[#1DA1A1] uppercase">The World of Racing</span>
-            </div>
-            {STAT_ITEMS.map(s => (
-              <StatSignal key={s.key} label={s.label} entity={s.entity} icon={s.icon} />
-            ))}
-          </div>
-
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Slide nav dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
-        <button onClick={() => go(current - 1)} className="p-1.5 text-white/30 hover:text-white transition-colors">
-          <ChevronLeft className="w-3.5 h-3.5" />
+      {/* Nav controls */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+        {/* Prev */}
+        <button
+          onClick={prev}
+          className="p-1.5 text-white/40 hover:text-white transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
         </button>
+
+        {/* Dots */}
         <div className="flex items-center gap-2">
           {SLIDES.map((_, i) => (
             <button
@@ -283,18 +259,39 @@ export default function HeroSection() {
               onClick={() => go(i)}
               className="transition-all duration-300"
               style={{
-                width: i === current ? 20 : 5,
+                width: i === current ? 24 : 6,
                 height: 2,
                 borderRadius: 1,
-                background: i === current ? '#1DA1A1' : 'rgba(255,255,255,0.2)',
+                background: i === current ? '#00FFDA' : 'rgba(255,255,255,0.25)',
               }}
             />
           ))}
         </div>
-        <button onClick={() => go(current + 1)} className="p-1.5 text-white/30 hover:text-white transition-colors">
-          <ChevronRight className="w-3.5 h-3.5" />
+
+        {/* Next */}
+        <button
+          onClick={next}
+          className="p-1.5 text-white/40 hover:text-white transition-colors"
+        >
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Stats strip — bottom right */}
+      {(stats.drivers || stats.tracks || stats.events) && (
+        <div className="absolute bottom-6 right-6 z-20 hidden md:flex items-center gap-6">
+          {[
+            { label: 'Drivers', val: stats.drivers },
+            { label: 'Tracks', val: stats.tracks },
+            { label: 'Events', val: stats.events },
+          ].filter(s => s.val).map(s => (
+            <div key={s.label} className="text-right">
+              <div className="text-lg font-black text-white leading-none">{s.val?.toLocaleString()}</div>
+              <div className="font-mono text-[8px] tracking-[0.3em] text-white/30 uppercase mt-0.5">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
