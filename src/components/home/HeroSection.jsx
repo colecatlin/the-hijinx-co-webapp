@@ -292,6 +292,11 @@ export default function HeroSection({ stats = {} }) {
           ))}
         </div>
       )}
+      {/* Bottom fade — bleeds into next section */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-20"
+        style={{ background: 'linear-gradient(to bottom, transparent 0%, #050A0A 100%)' }}
+      />
     </section>
   );
 }

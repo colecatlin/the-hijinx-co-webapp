@@ -93,7 +93,7 @@ export default function RaceCoreSection() {
   ];
 
   return (
-    <section className="relative bg-[#050A0A]" style={{ minHeight: '600px' }}>
+    <section className="relative" style={{ minHeight: '600px', background: '#050A0A' }}>
 
       {/* Texture overlay */}
       <div
@@ -120,10 +120,12 @@ export default function RaceCoreSection() {
         <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
         <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: 'linear-gradient(to left, #1DA1A1, transparent)' }} />
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={grainStyle} />
+        {/* Bottom fade — blends into RaceCoreBridge */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(5,10,10,0.7) 100%)' }} />
       </div>
 
       {/* Content */}
-      <div className="relative z-[3] flex items-center px-8 md:px-12 lg:px-20 py-20 md:py-28">
+      <div className="relative z-[3] flex items-center px-8 md:px-12 lg:px-20 py-16 md:py-22">
         <div className="w-full grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 items-center">
 
           {/* LEFT: Hero text + CTAs */}

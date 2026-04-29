@@ -88,7 +88,7 @@ export default function SocialsSection() {
 
 
   return (
-    <section className="bg-[#0A0A0A] py-16 md:py-24 border-t border-white/5 overflow-hidden">
+    <section className="py-16 md:py-24 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-end justify-between mb-12">

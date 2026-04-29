@@ -43,21 +43,32 @@ export default function Home() {
 
       <CultureGrid />
 
-      {/* Teal glow thread between culture and outlet */}
-      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.35) 40%, rgba(29,161,161,0.35) 60%, transparent 100%)' }} />
+      {/* Teal glow thread — culture → outlet */}
+      <div className="relative h-px mx-auto max-w-5xl" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.3) 35%, rgba(29,161,161,0.3) 65%, transparent 100%)' }}>
+        <div className="absolute inset-x-0 top-0 h-8 -translate-y-1/2 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(29,161,161,0.07) 0%, transparent 100%)' }} />
+      </div>
 
       <OutletSection
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 6)}
       />
 
+      {/* Ambient glow — outlet → apparel */}
+      <div className="pointer-events-none h-px" style={{ background: 'radial-gradient(ellipse 80% 1px at 50% 50%, rgba(229,255,0,0.12) 0%, transparent 100%)' }} />
+
       <ApparelSection products={hp.featured_products || []} />
+
+      {/* Ambient glow — apparel → events */}
+      <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.15) 40%, rgba(29,161,161,0.15) 60%, transparent 100%)' }} />
 
       <EventsSection />
 
       <RaceCoreSection />
 
       <RaceCoreBridge />
+
+      {/* Ambient glow — bridge → socials */}
+      <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.2) 30%, rgba(29,161,161,0.2) 70%, transparent 100%)' }} />
 
       <SocialsSection media={hp.featured_media || []} />
 

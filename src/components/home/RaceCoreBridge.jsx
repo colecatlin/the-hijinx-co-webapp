@@ -29,10 +29,14 @@ export default function RaceCoreBridge() {
         style={{ background: 'linear-gradient(to bottom, rgba(1,4,4,0.4) 0%, rgba(1,4,4,0.1) 40%, rgba(1,4,4,0.5) 100%)' }}
       />
 
-      {/* Teal accent — top divider */}
+      {/* Top fade — absorbs from RaceCoreSection */}
+      <div className="absolute top-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to bottom, #050A0A 0%, transparent 100%)' }} />
+      {/* Bottom fade — bleeds into SocialsSection */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to top, #050A0A 0%, transparent 100%)' }} />
+      {/* Teal accent thread */}
       <div
-        className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.5) 25%, rgba(29,161,161,0.5) 75%, transparent 100%)' }}
+        className="absolute top-20 left-0 right-0 h-[1px]"
+        style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.3) 25%, rgba(29,161,161,0.3) 75%, transparent 100%)' }}
       />
 
       {/* Content */}
