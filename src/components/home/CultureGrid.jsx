@@ -142,12 +142,12 @@ export default function CultureGrid() {
   const editorialCard = dbBlocks[6];
 
   return (
-    <section style={{ background: '#F5F0E8' }} className="py-14 md:py-28 overflow-hidden">
+    <section className="py-14 md:py-20 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
         <div className="flex items-center gap-3 mb-8 md:mb-10">
-          <div className="w-5 h-px" style={{ background: '#00FFDA' }} />
-          <span className="text-[9px] font-bold tracking-[0.5em] uppercase" style={{ color: '#00CCAA' }}>
+          <div className="w-5 h-px" style={{ background: '#1DA1A1' }} />
+          <span className="text-[9px] font-bold tracking-[0.5em] uppercase" style={{ color: '#1DA1A1' }}>
             HIJINX · Culture &amp; Identity
           </span>
         </div>
@@ -172,18 +172,18 @@ export default function CultureGrid() {
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
-              className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
-              style={{ minHeight: 200, background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
+              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
+              style={{ minHeight: 200, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 0 20px rgba(0,0,0,0.4)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #00FFDA 0%, #00FFDA44 50%, transparent 100%)' }} />
-              <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
+              <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
+              <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="leading-tight mb-3" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, fontStyle: 'italic', color: '#0A0A0A' }}>Born from<br />the garage.</h2>
-                <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
+                <h2 className="leading-tight mb-3" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, fontStyle: 'italic', color: 'rgba(255,255,255,0.92)' }}>Born from<br />the garage.</h2>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 mt-4 w-fit" style={{ color: '#009980', borderBottom: '1px solid rgba(0,153,128,0.35)' }}>
+                <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 mt-4 w-fit" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
                   {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               )}
@@ -192,17 +192,17 @@ export default function CultureGrid() {
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
-              className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
-              style={{ minHeight: 160, background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 10px 40px rgba(0,0,0,0.07)' }}
+              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
+              style={{ minHeight: 160, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 0 20px rgba(0,0,0,0.4)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
             >
-              <div className="absolute inset-0 pointer-events-none opacity-25" style={GRAIN_STYLE} />
-              <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
+              <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
+              <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, fontStyle: 'italic', color: '#0A0A0A' }}>{editorialCard.description}</p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
+                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-xs font-semibold mt-3 w-fit" style={{ color: '#8A9096' }}>
+                <span className="relative inline-flex items-center gap-2 text-xs font-semibold mt-3 w-fit" style={{ color: 'rgba(255,255,255,0.35)' }}>
                   {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
@@ -256,28 +256,28 @@ export default function CultureGrid() {
             {cultureCard && (
               <TileWrapper
                 linkUrl={cultureCard.link_url}
-                className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
+                className="relative rounded-xl overflow-hidden flex flex-col justify-between p-7 group cursor-pointer"
                 style={{
                   flex: '3',
-                  background: 'rgba(255,255,255,0.55)',
-                  backdropFilter: 'blur(18px)',
-                  WebkitBackdropFilter: 'blur(18px)',
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease',
                 }}
-                onMouseEnter={e => { const c = cultureCard.accent_color || '#00FFDA'; const rgb = c.length === 7 ? `${parseInt(c.slice(1,3),16)},${parseInt(c.slice(3,5),16)},${parseInt(c.slice(5,7),16)}` : '0,255,218'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 0 32px rgba(${rgb},0.18), 0 16px 48px rgba(0,0,0,0.1)`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.08)'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(29,161,161,0.2), 0 16px 48px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
               >
-                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #00FFDA 0%, #00FFDA44 50%, transparent 100%)' }} />
-                <div className="absolute inset-0 pointer-events-none opacity-20" style={GRAIN_STYLE} />
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
+                <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
                 <div className="relative">
-                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#00CCAA' }}>{cultureCard.label || cultureCard.title}</span>
-                  <h2 className="leading-tight mb-4" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 900, color: '#0A0A0A', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
-                  <p className="text-sm leading-relaxed" style={{ color: '#4A4F55' }}>{cultureCard.description}</p>
+                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-6" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
+                  <h2 className="leading-tight mb-4" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{cultureCard.description}</p>
                 </div>
                 {cultureCard.link_label && (
-                  <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 hover:gap-3 transition-all w-fit" style={{ color: '#009980', borderBottom: '1px solid rgba(0,153,128,0.35)' }}>
+                  <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 hover:gap-3 transition-all w-fit" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
                     {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 )}
@@ -286,29 +286,29 @@ export default function CultureGrid() {
             {editorialCard && (
               <TileWrapper
                 linkUrl={editorialCard.link_url}
-                className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+                className="relative rounded-xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
                 style={{
                   flex: '2',
-                  background: 'rgba(255,255,255,0.5)',
-                  backdropFilter: 'blur(18px)',
-                  WebkitBackdropFilter: 'blur(18px)',
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.07)',
-                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
+                  background: 'rgba(255,255,255,0.04)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                  transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease',
                 }}
-                onMouseEnter={e => { const c = editorialCard.accent_color || '#E5FF00'; const rgb = c.length === 7 ? `${parseInt(c.slice(1,3),16)},${parseInt(c.slice(3,5),16)},${parseInt(c.slice(5,7),16)}` : '229,255,0'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 0 28px rgba(${rgb},0.15), 0 12px 40px rgba(0,0,0,0.08)`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.07)'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.12), 0 12px 40px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
               >
-                <div className="absolute inset-0 pointer-events-none opacity-25" style={GRAIN_STYLE} />
-                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #E5FF0066 0%, transparent 60%)' }} />
+                <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
                 <div className="relative">
-                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#8A7000' }}>{editorialCard.label || editorialCard.title}</span>
-                  <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', fontWeight: 700, fontStyle: 'italic', color: '#0A0A0A' }}>{editorialCard.description}</p>
+                  <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
+                  <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
                 </div>
                 {editorialCard.link_label && (
-                  <span className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3" style={{ color: '#8A9096' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#8A9096'}
+                  <span className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
                   >
                     {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
                   </span>

@@ -28,7 +28,7 @@ export default function Home() {
   useEffect(() => { Analytics.pageView('Home'); }, []);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050A0A' }}>
       <SeoMeta
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
@@ -41,23 +41,19 @@ export default function Home() {
         stats={hp.hero_stats}
       />
 
-      {/* Dark → editorial cream bridge */}
-      <div style={{ height: 56, background: 'linear-gradient(to bottom, #0A0A0A, #F5F0E8)', marginTop: 0 }} />
-
       <CultureGrid />
+
+      {/* Teal glow thread between culture and outlet */}
+      <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.35) 40%, rgba(29,161,161,0.35) 60%, transparent 100%)' }} />
 
       <OutletSection
         featuredStory={hp.featured_story}
         supportingStories={(hp.featured_stories || []).slice(1, 6)}
       />
 
-      {/* Hard cut: editorial → apparel — intentional chapter shift */}
-
       <ApparelSection products={hp.featured_products || []} />
 
       <EventsSection />
-
-      {/* Clean break: events → race core */}
 
       <RaceCoreSection />
 
@@ -66,8 +62,6 @@ export default function Home() {
       <SocialsSection media={hp.featured_media || []} />
 
       <GetInvolvedCTA />
-
-
     </div>
   );
 }

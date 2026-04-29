@@ -94,13 +94,14 @@ export default function SocialsSection() {
         <div className="flex items-end justify-between mb-12">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-[2px] bg-[#FF6B35]" />
-              <span className="font-mono text-[10px] tracking-[0.45em] text-[#FF6B35] uppercase font-bold">
+              <div className="w-6 h-[1px]" style={{ background: '#1DA1A1' }} />
+              <span className="font-mono text-[10px] tracking-[0.45em] uppercase font-bold" style={{ color: '#1DA1A1' }}>
                 Community
               </span>
               {/* Live pulse indicator */}
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]"
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: '#1DA1A1' }}
                 animate={{ opacity: [1, 0.2, 1] }}
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
               />
@@ -171,13 +172,14 @@ export default function SocialsSection() {
           {/* Header row */}
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-mono text-xs tracking-[0.35em] text-[#FF6B35] uppercase font-bold">Tag Us In Your Posts</p>
+              <p className="font-mono text-xs tracking-[0.35em] uppercase font-bold" style={{ color: '#1DA1A1' }}>Tag Us In Your Posts</p>
               <p className="text-white/35 text-xs mt-1">Find your hashtags. Stay relevant to the community you're a part of.</p>
             </div>
             {selected.length > 0 && (
               <button
                 onClick={handleCopySelected}
-                className="flex-shrink-0 px-4 py-2 bg-[#FF6B35] text-black text-xs font-bold hover:bg-[#FF6B35]/80 transition-colors"
+                className="flex-shrink-0 px-4 py-2 text-black text-xs font-bold transition-colors hover:brightness-110"
+                style={{ background: '#1DA1A1' }}
               >
                 {copied ? 'Copied!' : `Copy (${selected.length})`}
               </button>
@@ -192,11 +194,12 @@ export default function SocialsSection() {
                 <button
                   key={tag}
                   onClick={() => toggleHashtag(tag)}
-                  className={`font-mono text-sm px-3 py-1.5 border transition-all ${
+                  className={`font-mono text-sm px-3 py-1.5 border transition-all rounded ${
                     isSelected
-                      ? 'border-[#FF6B35] text-[#FF6B35] bg-[#FF6B35]/10'
+                      ? 'text-[#1DA1A1] bg-[rgba(29,161,161,0.10)]'
                       : 'border-white/15 text-white/50 hover:border-white/30 hover:text-white/70'
                   }`}
+            style={isSelected ? { borderColor: '#1DA1A1' } : {}}
                 >
                   {tag}
                 </button>
@@ -214,7 +217,8 @@ export default function SocialsSection() {
           <div className="pt-1 border-t border-white/[0.06]">
             <Link
               to="/hashtag-library"
-              className="inline-flex items-center gap-2 text-[#FF6B35] text-xs font-bold hover:gap-3 transition-all"
+              className="inline-flex items-center gap-2 text-xs font-bold hover:gap-3 transition-all"
+              style={{ color: '#1DA1A1' }}
             >
               Browse Full Hashtag Library <ArrowRight className="w-3.5 h-3.5" />
             </Link>

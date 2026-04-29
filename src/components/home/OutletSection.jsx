@@ -26,16 +26,16 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
   return (
     <section
       className="pt-10 md:pt-14 pb-16 md:pb-24 relative"
-      style={{ background: '#F5F0E8' }}
+      style={{ background: 'transparent' }}
     >
-      {/* Paper grain overlay */}
-      <div className="absolute inset-0 opacity-[0.18] pointer-events-none" style={paperGrain} />
+      {/* Subtle ambient glow behind the section */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 60%, rgba(29,161,161,0.06) 0%, transparent 70%)' }} />
 
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* ── MASTHEAD ── */}
-        <div className="border-b-2 border-black pt-20 pb-4 mb-10 relative flex items-end justify-between">
-          <span className="font-mono text-[9px] tracking-[0.5em] text-black/40 uppercase font-bold self-end pb-0.5">
+        <div className="border-b border-white/10 pt-16 pb-4 mb-10 relative flex items-end justify-between">
+          <span className="font-mono text-[9px] tracking-[0.5em] text-white/30 uppercase font-bold self-end pb-0.5">
             Editorial — Vol. 01
           </span>
 
@@ -44,13 +44,14 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/e0e7460c8_OutletLogo.png"
               alt="The Outlet"
               className="h-12 md:h-16 object-contain"
+              style={{ filter: 'brightness(0) invert(1) opacity(0.75)' }}
             />
-            <p className="font-mono text-[9px] tracking-[0.3em] text-black/45 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
+            <p className="font-mono text-[9px] tracking-[0.3em] text-white/30 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
           </div>
 
           <Link
             to={createPageUrl('OutletHome')}
-            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-black/40 hover:text-black transition-colors uppercase font-bold pb-1"
+            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/30 hover:text-white transition-colors uppercase font-bold pb-1"
           >
             All Stories <ArrowRight className="w-3 h-3" />
           </Link>
@@ -63,25 +64,26 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           <motion.div
             initial={{ y: 20 }} whileInView={{ y: 0 }}
             viewport={{ once: true, amount: 0 }} transition={{ duration: 0.7 }}
-            className="lg:col-span-7 lg:border-r-2 border-black lg:pr-8"
+            className="lg:col-span-7 lg:border-r lg:pr-8"
+            style={{ borderColor: 'rgba(255,255,255,0.08)' }}
           >
             <Link
               to={featuredStory ? getOutletStoryUrl(featuredStory) : createPageUrl('OutletHome')}
               className="group block"
             >
-              <div className="relative overflow-hidden mb-5" style={{ height: 360 }}>
+              <div className="relative overflow-hidden mb-5 rounded-xl" style={{ height: 360 }}>
                 <img
                   src={featuredStory?.cover_image || PLACEHOLDER_BG}
                   alt={featuredStory?.title || 'The Outlet'}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700"
-                  style={{ filter: 'contrast(1.15) saturate(0.75) brightness(0.92)' }}
+                  style={{ filter: 'contrast(1.15) saturate(0.65) brightness(0.80)' }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 {featuredStory?.primary_category && (
                   <div className="absolute top-4 left-4">
                     <span
                       className="font-mono text-[8px] tracking-[0.4em] text-white uppercase font-bold px-2 py-1"
-                      style={{ background: 'rgba(0,0,0,0.75)' }}
+                      style={{ background: 'rgba(0,0,0,0.75)', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
                       {featuredStory.primary_category}
                     </span>
@@ -91,14 +93,14 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
               <div className="flex items-center gap-4 mb-3">
                 {safeDate(featuredStory?.published_date) && (
-                  <span className="font-mono text-[9px] text-black/40 tracking-[0.25em]">
+                  <span className="font-mono text-[9px] text-white/35 tracking-[0.25em]">
                     {safeDate(featuredStory.published_date)}
                   </span>
                 )}
                 {featuredStory?.author && (
                   <>
-                    <span className="text-black/20 text-xs">—</span>
-                    <span className="font-mono text-[9px] text-black/40 tracking-[0.15em] uppercase">
+                    <span className="text-white/20 text-xs">—</span>
+                    <span className="font-mono text-[9px] text-white/35 tracking-[0.15em] uppercase">
                       {featuredStory.author}
                     </span>
                   </>
@@ -106,29 +108,29 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               </div>
 
               <h3
-                className="text-3xl md:text-4xl font-black text-black tracking-tight leading-[1.05] mb-3 group-hover:opacity-70 transition-opacity"
+                className="text-3xl md:text-4xl font-black text-white tracking-tight leading-[1.05] mb-3 group-hover:opacity-60 transition-opacity"
                 style={{ maxWidth: '90%' }}
               >
                 {featuredStory?.title || 'Latest from The Outlet'}
               </h3>
 
               {featuredStory?.subtitle && (
-                <p className="text-black/50 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
+                <p className="text-white/45 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
                   {featuredStory.subtitle}
                 </p>
               )}
 
-              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-black uppercase font-bold border-b border-black pb-0.5 group-hover:opacity-50 transition-opacity">
+              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/60 uppercase font-bold border-b border-white/20 pb-0.5 group-hover:text-white group-hover:border-white transition-all">
                 Read Story <ArrowRight className="w-3 h-3" />
               </span>
             </Link>
           </motion.div>
 
           {/* ── SUPPORTING STORIES ── */}
-          <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t-2 border-black lg:border-t-0 mt-8 lg:mt-0">
+          <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t lg:border-t-0 mt-8 lg:mt-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1 h-[1px] bg-black/15" />
-              <span className="font-mono text-[8px] tracking-[0.5em] text-black/35 uppercase">More Stories</span>
+              <div className="flex-1 h-[1px]" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <span className="font-mono text-[8px] tracking-[0.5em] text-white/25 uppercase">More Stories</span>
             </div>
 
             <div className="space-y-0">
@@ -137,48 +139,50 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   key={story?.id || i}
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
                   viewport={{ once: true, amount: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }}
-                  className={`border-b border-black/10 ${i === 0 ? 'border-t border-black/10' : ''}`}
+                  className={`border-b ${i === 0 ? 'border-t' : ''}`}
+                  style={{ borderColor: 'rgba(255,255,255,0.06)' }}
                 >
                   {story ? (
                     <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
-                      <span className="font-mono text-[9px] tracking-[0.2em] text-black/20 font-bold pt-0.5 flex-shrink-0 w-5">
+                      <span className="font-mono text-[9px] tracking-[0.2em] text-white/20 font-bold pt-0.5 flex-shrink-0 w-5">
                         0{i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         {story.primary_category && (
-                          <span className="font-mono text-[8px] tracking-[0.35em] text-black/40 uppercase font-bold block mb-1">
+                          <span className="font-mono text-[8px] tracking-[0.35em] text-white/35 uppercase font-bold block mb-1">
                             {story.primary_category}
                           </span>
                         )}
-                        <h4 className="text-base font-black text-black tracking-tight leading-snug group-hover:opacity-50 transition-opacity line-clamp-2">
+                        <h4 className="text-base font-black text-white tracking-tight leading-snug group-hover:opacity-50 transition-opacity line-clamp-2">
                           {story.title}
                         </h4>
                         {safeDate(story.published_date) && (
-                          <span className="font-mono text-[8px] text-black/30 mt-1.5 block tracking-[0.2em]">
+                          <span className="font-mono text-[8px] text-white/25 mt-1.5 block tracking-[0.2em]">
                             {safeDate(story.published_date)}
                           </span>
                         )}
                       </div>
                       {story.cover_image && (
                         <div
-                          className="flex-shrink-0 overflow-hidden"
-                          style={{ width: 64, height: 64, filter: 'contrast(1.05) saturate(0.8)' }}
+                          className="flex-shrink-0 overflow-hidden rounded-lg"
+                          style={{ width: 64, height: 64 }}
                         >
                           <img
                             src={story.cover_image}
                             alt={story.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            style={{ filter: 'contrast(1.05) saturate(0.75) brightness(0.85)' }}
                           />
                         </div>
                       )}
                     </Link>
                   ) : (
                     <div className="py-4 flex gap-4 items-start">
-                      <span className="font-mono text-[9px] text-black/15 w-5">0{i + 1}</span>
+                      <span className="font-mono text-[9px] text-white/10 w-5">0{i + 1}</span>
                       <div className="flex-1 space-y-2">
-                        <div className="h-2 bg-black/8 rounded w-1/4" />
-                        <div className="h-4 bg-black/8 rounded w-3/4" />
-                        <div className="h-4 bg-black/8 rounded w-1/2" />
+                        <div className="h-2 rounded w-1/4" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                        <div className="h-4 rounded w-3/4" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                        <div className="h-4 rounded w-1/2" style={{ background: 'rgba(255,255,255,0.06)' }} />
                       </div>
                     </div>
                   )}
@@ -188,7 +192,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
             <Link
               to={createPageUrl('OutletHome')}
-              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-black/40 hover:text-black transition-colors uppercase font-bold"
+              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/30 hover:text-white transition-colors uppercase font-bold"
             >
               Explore The Outlet <ArrowRight className="w-3 h-3" />
             </Link>
