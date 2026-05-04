@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
-import HeroSection from '@/components/home/HeroSection';
 import CultureGrid from '@/components/home/CultureGrid';
 import OutletSection from '@/components/home/OutletSection';
 import ApparelSection from '@/components/home/ApparelSection';
@@ -33,12 +32,6 @@ export default function Home() {
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
         noSuffix={false}
-      />
-
-      <HeroSection
-        featuredDriver={hp.featured_drivers?.[0] ?? null}
-        featuredStory={hp.featured_story ?? null}
-        stats={hp.hero_stats}
       />
 
       <CultureGrid />

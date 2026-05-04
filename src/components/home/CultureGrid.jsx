@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const GRAIN_STYLE = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
@@ -11,10 +12,7 @@ const GRAIN_STYLE = {
   backgroundSize: '128px 128px',
 };
 
-// Fallback accent colors if no accent_color set on block
-const ACCENTS = [
-  '#00FFDA', '#FF6B00', '#FF2D55', '#E5FF00', '#00FFDA',
-];
+const ACCENTS = ['#00FFDA', '#FF6B00', '#FF2D55', '#E5FF00', '#00FFDA'];
 
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -39,8 +37,194 @@ function TileWrapper({ linkUrl, children, className, style, onMouseEnter, onMous
   return <Link to={linkUrl} {...props}>{children}</Link>;
 }
 
+function CtaLink({ to, className, style, children }) {
+  const external = isExternal(to);
+  if (external) return <a href={to} target="_blank" rel="noopener noreferrer" className={className} style={style}>{children}</a>;
+  return <Link to={to} className={className} style={style}>{children}</Link>;
+}
+
 function getInitials(title) {
   return (title || '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4);
+}
+
+// Fallback slides if no DB slides
+const FALLBACK_SLIDES = [
+  {
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1660337288537-71ae329ba2f0?w=1800&q=90&fit=crop',
+    headline_line1: 'IN MOTION.',
+    headline_line2: 'ON PURPOSE.',
+    subtext: 'Not just moving, moving with intent.',
+    cta1_label: 'Enter HIJINX',
+    cta1_url: '/OutletHome',
+  },
+  {
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1800&q=90&fit=crop',
+    headline_line1: "YOU'RE GOING",
+    headline_line2: 'TO LOSE.',
+    subtext: "That's where everything is built.",
+    cta1_label: 'Keep Going',
+    cta1_url: '/OutletHome',
+  },
+  {
+    media_type: 'image',
+    background_url: 'https://images.unsplash.com/photo-1558981852-426c349548ab?w=1800&q=90&fit=crop',
+    headline_line1: 'THIS IS',
+    headline_line2: 'HIJINX.',
+    subtext: "For those who don't sit still.",
+    cta1_label: 'Shop Apparel',
+    cta1_url: '/ApparelHome',
+    cta2_label: 'Explore Race Core',
+    cta2_url: '/MotorsportsHome',
+  },
+];
+
+const INTERVAL = 4500;
+
+// Hero carousel glass tile — replaces the large "On Track" tile
+function HeroTile({ className, style }) {
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const { data: dbSlides = [] } = useQuery({
+    queryKey: ['heroSlides'],
+    queryFn: () => base44.entities.HeroSlide.filter({ is_active: true }, 'sort_order'),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const SLIDES = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
+
+  const go = (idx) => setCurrent((idx + SLIDES.length) % SLIDES.length);
+  const next = () => go(current + 1);
+  const prev = () => go(current - 1);
+
+  useEffect(() => {
+    if (paused) return;
+    timerRef.current = setInterval(next, INTERVAL);
+    return () => clearInterval(timerRef.current);
+  }, [paused, current, SLIDES.length]);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.play().catch(() => {});
+  }, [current]);
+
+  const rawSlide = SLIDES[current] || SLIDES[0];
+  const slide = {
+    type: rawSlide.media_type || rawSlide.type || 'image',
+    bg: rawSlide.background_url || rawSlide.bg || '',
+    videoSrc: rawSlide.background_url || rawSlide.videoSrc || '',
+    headline: [rawSlide.headline_line1 || rawSlide.headline?.[0] || '', rawSlide.headline_line2 || rawSlide.headline?.[1] || ''].filter(Boolean),
+    sub: rawSlide.subtext || rawSlide.sub || '',
+    cta1: rawSlide.cta1_label ? { label: rawSlide.cta1_label, to: rawSlide.cta1_url || '/' } : (rawSlide.cta1 || null),
+    cta2: rawSlide.cta2_label ? { label: rawSlide.cta2_label, to: rawSlide.cta2_url || '/' } : (rawSlide.cta2 || null),
+  };
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl cursor-default ${className || ''}`}
+      style={style}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Background */}
+      <AnimatePresence>
+        <motion.div
+          key={current}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        >
+          {slide.type === 'video' ? (
+            <video ref={videoRef} src={slide.videoSrc} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.bg})` }} />
+          )}
+          <div className="absolute inset-0 bg-black/65" />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.55) 100%)' }} />
+          {/* Scanning light bar */}
+          <motion.div
+            className="absolute inset-x-0 pointer-events-none"
+            style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,218,0.12) 50%, transparent 100%)' }}
+            animate={{ top: ['15%', '80%', '15%'] }}
+            transition={{ repeat: Infinity, duration: 14, ease: 'easeInOut' }}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="absolute inset-0 pointer-events-none" style={GRAIN_STYLE} />
+
+      {/* Content — glass card overlaid */}
+      <div className="relative z-10 h-full flex flex-col justify-center p-6 md:p-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="max-w-xs"
+            style={{
+              background: 'rgba(10,10,10,0.45)',
+              backdropFilter: 'blur(18px)',
+              WebkitBackdropFilter: 'blur(18px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+              borderRadius: 6,
+              padding: '1.25rem 1.5rem',
+            }}
+          >
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-4 h-[2px] bg-[#00FFDA]" />
+              <span className="font-mono text-[8px] tracking-[0.5em] text-[#00FFDA] uppercase font-bold">HIJINX</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-[1.0] tracking-tight mb-2.5">
+              {slide.headline.map((line, i) => <span key={i} className="block">{line}</span>)}
+            </h1>
+            <p className="text-xs text-white/55 font-medium leading-relaxed mb-4 max-w-[220px]">{slide.sub}</p>
+            {(slide.cta1 || slide.cta2) && (
+              <div className="flex flex-wrap gap-2">
+                {slide.cta1 && (
+                  <CtaLink to={slide.cta1.to} className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-black text-[10px] font-bold tracking-wide uppercase hover:bg-[#00FFDA] transition-colors" style={{ borderRadius: 2 }}>
+                    {slide.cta1.label} <ArrowRight className="w-2.5 h-2.5" />
+                  </CtaLink>
+                )}
+                {slide.cta2 && (
+                  <CtaLink to={slide.cta2.to} className="inline-flex items-center gap-1.5 px-4 py-2 text-white text-[10px] font-bold tracking-wide uppercase hover:text-[#00FFDA] transition-colors" style={{ border: '1px solid rgba(255,255,255,0.2)', borderRadius: 2 }}>
+                    {slide.cta2.label}
+                  </CtaLink>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Nav dots + arrows */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+        <button onClick={prev} className="p-1 text-white/40 hover:text-white transition-colors">
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <div className="flex items-center gap-1.5">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => go(i)}
+              className="transition-all duration-300"
+              style={{ width: i === current ? 20 : 5, height: 2, borderRadius: 1, background: i === current ? '#00FFDA' : 'rgba(255,255,255,0.25)' }}
+            />
+          ))}
+        </div>
+        <button onClick={next} className="p-1 text-white/40 hover:text-white transition-colors">
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function ImageTile({ block, span, accentIdx }) {
@@ -68,59 +252,27 @@ function ImageTile({ block, span, accentIdx }) {
       }}
     >
       {hasImage ? (
-        <img
-          src={block.image_url}
-          alt={block.label || block.title}
-          className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]"
-          style={{ filter: 'contrast(1.18) saturate(0.45) brightness(0.65)' }}
-        />
+        <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.18) saturate(0.45) brightness(0.65)' }} />
       ) : (
-        /* No image — show large initials centered */
         <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="font-black tracking-tight select-none"
-            style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}
-          >
+          <span className="font-black tracking-tight select-none" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}>
             {getInitials(block.title)}
           </span>
         </div>
       )}
-
       <div className="absolute inset-0 pointer-events-none opacity-60" style={GRAIN_STYLE} />
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/15 to-transparent" />}
-
-      {/* Hover accent bar */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: accent, boxShadow: `0 0 16px ${accent}CC` }}
-      />
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at 50% 100%, ${accent}22 0%, transparent 65%)` }}
-      />
-
-      {/* If title + CTA: title top-left, CTA bottom-left */}
-      {/* Category label — always top left */}
-      <span
-        className="absolute top-4 left-4 text-[8px] font-bold tracking-[0.45em] uppercase"
-        style={{ color: 'rgba(255,255,255,0.45)' }}
-      >
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: accent, boxShadow: `0 0 16px ${accent}CC` }} />
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 100%, ${accent}22 0%, transparent 65%)` }} />
+      <span className="absolute top-4 left-4 text-[8px] font-bold tracking-[0.45em] uppercase" style={{ color: 'rgba(255,255,255,0.45)' }}>
         {block.label || block.title}
       </span>
-
-      {/* Title — always bottom left, serif editorial */}
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <h3
-          className="text-white leading-tight mb-1"
-          style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 2.2vw, 1.35rem)', fontWeight: 700 }}
-        >
+        <h3 className="text-white leading-tight mb-1" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 2.2vw, 1.35rem)', fontWeight: 700 }}>
           {block.title}
         </h3>
         {hasCta && (
-          <span
-            className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-widest uppercase transition-colors duration-300"
-            style={{ color: accent }}
-          >
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-widest uppercase transition-colors duration-300" style={{ color: accent }}>
             {block.link_label} <ArrowRight className="w-2.5 h-2.5" />
           </span>
         )}
@@ -137,6 +289,7 @@ export default function CultureGrid() {
   });
 
   // Positions 0-4 are image tiles, 5 = culture glass card, 6 = editorial glass card
+  // tiles[0] = On Track, [1] = Built, [2] = Crew, [3] = Worn, [4] = Behind the Scenes
   const tiles = dbBlocks.slice(0, 5);
   const cultureCard = dbBlocks[5];
   const editorialCard = dbBlocks[6];
@@ -152,23 +305,20 @@ export default function CultureGrid() {
           </span>
         </div>
 
-        {/* 
-          Layout: flex row of 4 columns on desktop, stacked on mobile.
-          Col A: large "On Track" tile (spans full height of rows 1+2)
-          Col B+C: two rows of two smaller tiles stacked
-          Col D: "Culture" glass card (spans full height) + "Editorial" below on desktop
-          No CSS grid row-span tricks — flex-col handles height naturally with no overlap.
-        */}
-
-        {/* Mobile: simple vertical stack of cards */}
+        {/* Mobile: vertical stack */}
         <div className="flex flex-col gap-2.5 md:hidden">
-          {tiles[0] && <div style={{ height: 220 }}><ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} /></div>}
+          {/* Hero tile full width */}
+          <div style={{ height: 340 }}>
+            <HeroTile className="w-full h-full" />
+          </div>
+          {/* Remaining image tiles in 2 cols */}
           <div className="grid grid-cols-2 gap-2.5">
             {tiles[1] && <div style={{ height: 180 }}><ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} /></div>}
-            {tiles[2] && <div style={{ height: 180 }}><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
             {tiles[3] && <div style={{ height: 180 }}><ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} /></div>}
+            {tiles[2] && <div style={{ height: 180 }}><ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} /></div>}
             {tiles[4] && <div style={{ height: 180 }}><ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} /></div>}
           </div>
+          {/* Culture glass card */}
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
@@ -189,6 +339,7 @@ export default function CultureGrid() {
               )}
             </TileWrapper>
           )}
+          {/* Editorial card */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
@@ -210,48 +361,56 @@ export default function CultureGrid() {
           )}
         </div>
 
-        {/* Desktop: CSS grid with explicit pixel rows — reliable, no overlap */}
+        {/*
+          Desktop layout:
+          Row 1 (300px): HeroTile spans col 1-2 (large), Built col 3, Culture glass card col 4 (spans both rows)
+          Row 2 (220px): HeroTile cont., Worn col 3 (or Crew), Behind the Scenes col 3, Editorial card col 4
+          
+          Actual grid:
+          Col 1 (hero): spans row 1+2 — full hero carousel
+          Col 2 (Built + Worn): stacked 2 tiles
+          Col 3 (Crew + Behind): stacked 2 tiles
+          Col 4 (Culture + Editorial): stacked glass cards
+        */}
         <div className="hidden md:grid gap-2.5" style={{
-          gridTemplateColumns: '1fr 22% 22% 26%',
-          gridTemplateRows: '220px 220px',
+          gridTemplateColumns: '2fr 22% 22% 26%',
+          gridTemplateRows: '260px 220px',
         }}>
 
-          {/* Col A: On Track — spans both rows */}
-          {tiles[0] && (
-            <div style={{ gridColumn: '1', gridRow: '1 / 3', height: '100%' }}>
-              <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
-            </div>
-          )}
+          {/* Col 1: Hero tile — spans both rows */}
+          <div style={{ gridColumn: '1', gridRow: '1 / 3', height: '100%' }}>
+            <HeroTile className="w-full h-full" />
+          </div>
 
-          {/* Col B top: Built */}
+          {/* Col 2 top: Built (tiles[1]) */}
           {tiles[1] && (
             <div style={{ gridColumn: '2', gridRow: '1', height: '100%' }}>
               <ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} />
             </div>
           )}
 
-          {/* Col B bottom: Worn */}
+          {/* Col 2 bottom: Worn (tiles[3]) */}
           {tiles[3] && (
             <div style={{ gridColumn: '2', gridRow: '2', height: '100%' }}>
               <ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} />
             </div>
           )}
 
-          {/* Col C top: Crew */}
+          {/* Col 3 top: Crew (tiles[2]) */}
           {tiles[2] && (
             <div style={{ gridColumn: '3', gridRow: '1', height: '100%' }}>
               <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
             </div>
           )}
 
-          {/* Col C bottom: Behind the Scenes */}
+          {/* Col 3 bottom: Behind the Scenes (tiles[4]) */}
           {tiles[4] && (
             <div style={{ gridColumn: '3', gridRow: '2', height: '100%' }}>
               <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
             </div>
           )}
 
-          {/* Col D: Culture glass card (top ~60%) + Editorial card (bottom ~40%) */}
+          {/* Col 4: Culture glass card + Editorial card stacked */}
           <div className="flex flex-col gap-2.5" style={{ gridColumn: '4', gridRow: '1 / 3', height: '100%' }}>
             {cultureCard && (
               <TileWrapper
@@ -317,7 +476,7 @@ export default function CultureGrid() {
             )}
           </div>
 
-        </div>{/* end desktop grid */}
+        </div>
       </div>
     </section>
   );
