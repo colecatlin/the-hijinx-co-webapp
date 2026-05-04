@@ -252,7 +252,7 @@ function ImageTile({ block, span, accentIdx }) {
       }}
     >
       {hasImage ? (
-        <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.18) saturate(0.45) brightness(0.65)' }} />
+        <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.05) saturate(0.75) brightness(0.85)' }} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="font-black tracking-tight select-none" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}>
@@ -295,15 +295,9 @@ export default function CultureGrid() {
   const editorialCard = dbBlocks[6];
 
   return (
-    <section className="py-14 md:py-20 overflow-hidden" style={{ background: 'transparent' }}>
+    <section className="py-6 md:py-8 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
-        <div className="flex items-center gap-3 mb-8 md:mb-10">
-          <div className="w-5 h-px" style={{ background: '#1DA1A1' }} />
-          <span className="text-[9px] font-bold tracking-[0.5em] uppercase" style={{ color: '#1DA1A1' }}>
-            HIJINX · Culture &amp; Identity
-          </span>
-        </div>
 
         {/* Mobile: vertical stack */}
         <div className="flex flex-col gap-2.5 md:hidden">
