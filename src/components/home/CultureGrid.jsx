@@ -357,18 +357,16 @@ export default function CultureGrid() {
 
         {/*
           Desktop layout — 3 rows, 4 cols:
-          Hero spans col 1-2, rows 1-3 (doubled width, full height)
-          Col 3: Built (row1), Worn (row2), Behind the Scenes (row3)
-          Col 4: Crew (row1), Culture glass card (row2-3 stacked)
-          Row 3: Culture glass card (col 3) + Editorial card (col 4) side by side
+          Row 1+2: Hero spans cols 1-2 (~440px tall = 33% less than before), cols 3-4 have 2 stacked tiles each
+          Row 3: 4 tiles across full width — tiles[0], culture card, editorial card, tiles[4]
         */}
         <div className="hidden md:grid gap-2.5" style={{
           gridTemplateColumns: '4fr 4fr 22% 22%',
-          gridTemplateRows: '240px 220px 200px',
+          gridTemplateRows: '210px 210px 190px',
         }}>
 
-          {/* Hero tile — spans cols 1-2, rows 1-3 */}
-          <div style={{ gridColumn: '1 / 3', gridRow: '1 / 4', height: '100%' }}>
+          {/* Hero tile — spans cols 1-2, rows 1-2 only (420px) */}
+          <div style={{ gridColumn: '1 / 3', gridRow: '1 / 3', height: '100%' }}>
             <HeroTile className="w-full h-full" />
           </div>
 
@@ -386,11 +384,39 @@ export default function CultureGrid() {
             </div>
           )}
 
-          {/* Col 3 row 3: Culture glass card */}
+          {/* Col 4 row 1: Crew (tiles[2]) */}
+          {tiles[2] && (
+            <div style={{ gridColumn: '4', gridRow: '1', height: '100%' }}>
+              <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
+            </div>
+          )}
+
+          {/* Col 4 row 2: Behind the Scenes (tiles[4]) */}
+          {tiles[4] && (
+            <div style={{ gridColumn: '4', gridRow: '2', height: '100%' }}>
+              <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
+            </div>
+          )}
+
+          {/* Row 3 col 1: tiles[0] (On Track) */}
+          {tiles[0] && (
+            <div style={{ gridColumn: '1', gridRow: '3', height: '100%' }}>
+              <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
+            </div>
+          )}
+
+          {/* Row 3 col 2: tiles[1] repeated or a fallback tile — use tiles[3] variant */}
+          {tiles[4] && (
+            <div style={{ gridColumn: '2', gridRow: '3', height: '100%' }}>
+              <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
+            </div>
+          )}
+
+          {/* Row 3 col 3: Culture glass card */}
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
-              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
               style={{
                 gridColumn: '3',
                 gridRow: '3',
@@ -408,37 +434,23 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="leading-tight mb-2" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.1rem, 2vw, 1.6rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-2" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
+                <h2 className="leading-tight mb-1.5" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 1.8vw, 1.4rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
                 <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 hover:gap-3 transition-all w-fit mt-3" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
-                  {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 hover:gap-2.5 transition-all w-fit mt-2" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
+                  {cultureCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
             </TileWrapper>
           )}
 
-          {/* Col 4 row 1: Crew (tiles[2]) */}
-          {tiles[2] && (
-            <div style={{ gridColumn: '4', gridRow: '1', height: '100%' }}>
-              <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
-            </div>
-          )}
-
-          {/* Col 4 row 2: Behind the Scenes (tiles[4]) */}
-          {tiles[4] && (
-            <div style={{ gridColumn: '4', gridRow: '2', height: '100%' }}>
-              <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
-            </div>
-          )}
-
-          {/* Col 4 row 3: Editorial card */}
+          {/* Row 3 col 4: Editorial card */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
-              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-6 group cursor-pointer"
+              className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
               style={{
                 gridColumn: '4',
                 gridRow: '3',
@@ -456,11 +468,11 @@ export default function CultureGrid() {
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-2" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
+                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.85rem, 1.4vw, 1rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-xs font-semibold transition-colors w-fit mt-3" style={{ color: 'rgba(255,255,255,0.35)' }}
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold transition-colors w-fit mt-2" style={{ color: 'rgba(255,255,255,0.35)' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
                 >
