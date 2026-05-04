@@ -360,66 +360,68 @@ export default function CultureGrid() {
           Row 1+2: Hero spans cols 1-2 (~440px tall = 33% less than before), cols 3-4 have 2 stacked tiles each
           Row 3: 4 tiles across full width — tiles[0], culture card, editorial card, tiles[4]
         */}
+        {/*
+          Desktop layout — editorial asymmetric grid:
+          Cols: Hero(wide) | Feature tall tile | 2 stacked small tiles | glass cards stacked
+          Row structure:
+            Hero: cols 1-2, rows 1-3
+            Col 3: tiles[1] spans rows 1-2 (tall feature), tiles[3] row 3 (short)
+            Col 4: tiles[2] row 1 (short), tiles[4] row 2 (short), editorial card row 3
+            Col 5: culture card spans rows 1-3 (tall sidebar)
+        */}
         <div className="hidden md:grid gap-2.5" style={{
-          gridTemplateColumns: '4fr 4fr 22% 22%',
-          gridTemplateRows: '210px 210px 190px',
+          gridTemplateColumns: '5fr 5fr 18% 18% 16%',
+          gridTemplateRows: '180px 180px 180px',
         }}>
 
-          {/* Hero tile — spans cols 1-2, rows 1-2 only (420px) */}
-          <div style={{ gridColumn: '1 / 3', gridRow: '1 / 3', height: '100%' }}>
+          {/* Hero tile — spans cols 1-2, rows 1-3 */}
+          <div style={{ gridColumn: '1 / 3', gridRow: '1 / 4', height: '100%' }}>
             <HeroTile className="w-full h-full" />
           </div>
 
-          {/* Col 3 row 1: Built (tiles[1]) */}
+          {/* Col 3: tiles[1] — tall feature, spans rows 1-2 */}
           {tiles[1] && (
-            <div style={{ gridColumn: '3', gridRow: '1', height: '100%' }}>
+            <div style={{ gridColumn: '3', gridRow: '1 / 3', height: '100%' }}>
               <ImageTile block={tiles[1]} span="w-full h-full" accentIdx={1} />
             </div>
           )}
 
-          {/* Col 3 row 2: Worn (tiles[3]) */}
+          {/* Col 3 row 3: tiles[3] — short */}
           {tiles[3] && (
-            <div style={{ gridColumn: '3', gridRow: '2', height: '100%' }}>
+            <div style={{ gridColumn: '3', gridRow: '3', height: '100%' }}>
               <ImageTile block={tiles[3]} span="w-full h-full" accentIdx={3} />
             </div>
           )}
 
-          {/* Col 4 row 1: Crew (tiles[2]) */}
+          {/* Col 4 row 1: tiles[2] — short */}
           {tiles[2] && (
             <div style={{ gridColumn: '4', gridRow: '1', height: '100%' }}>
               <ImageTile block={tiles[2]} span="w-full h-full" accentIdx={2} />
             </div>
           )}
 
-          {/* Col 4 row 2: Behind the Scenes (tiles[4]) */}
+          {/* Col 4 row 2: tiles[4] — short */}
           {tiles[4] && (
             <div style={{ gridColumn: '4', gridRow: '2', height: '100%' }}>
               <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
             </div>
           )}
 
-          {/* Row 3 col 1: tiles[0] (On Track) */}
+          {/* Col 4 row 3: tiles[0] (On Track) — short */}
           {tiles[0] && (
-            <div style={{ gridColumn: '1', gridRow: '3', height: '100%' }}>
+            <div style={{ gridColumn: '4', gridRow: '3', height: '100%' }}>
               <ImageTile block={tiles[0]} span="w-full h-full" accentIdx={0} />
             </div>
           )}
 
-          {/* Row 3 col 2: tiles[1] repeated or a fallback tile — use tiles[3] variant */}
-          {tiles[4] && (
-            <div style={{ gridColumn: '2', gridRow: '3', height: '100%' }}>
-              <ImageTile block={tiles[4]} span="w-full h-full" accentIdx={4} />
-            </div>
-          )}
-
-          {/* Row 3 col 3: Culture glass card */}
+          {/* Col 5: Culture glass card — tall sidebar, spans all 3 rows */}
           {cultureCard && (
             <TileWrapper
               linkUrl={cultureCard.link_url}
               className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
               style={{
-                gridColumn: '3',
-                gridRow: '3',
+                gridColumn: '5',
+                gridRow: '1 / 3',
                 height: '100%',
                 background: 'rgba(255,255,255,0.05)',
                 backdropFilter: 'blur(20px)',
@@ -434,25 +436,25 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-2" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="leading-tight mb-1.5" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 1.8vw, 1.4rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
+                <h2 className="leading-tight mb-2" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.1rem, 1.6vw, 1.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
                 <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
-                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 hover:gap-2.5 transition-all w-fit mt-2" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 hover:gap-2.5 transition-all w-fit" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
                   {cultureCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
             </TileWrapper>
           )}
 
-          {/* Row 3 col 4: Editorial card */}
+          {/* Col 5 row 3: Editorial card */}
           {editorialCard && (
             <TileWrapper
               linkUrl={editorialCard.link_url}
               className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
               style={{
-                gridColumn: '4',
+                gridColumn: '5',
                 gridRow: '3',
                 height: '100%',
                 background: 'rgba(255,255,255,0.04)',
@@ -469,10 +471,10 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-2" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.85rem, 1.4vw, 1rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
+                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold transition-colors w-fit mt-2" style={{ color: 'rgba(255,255,255,0.35)' }}
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold transition-colors w-fit" style={{ color: 'rgba(255,255,255,0.35)' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
                 >
