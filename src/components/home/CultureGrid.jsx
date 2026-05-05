@@ -169,11 +169,11 @@ function HeroTile({ className, style, overlayAlpha = 0.5 }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="max-w-xs"
             style={{
-              background: 'rgba(10,10,10,0.30)',
+              background: 'rgba(255,255,255,0.12)',
               backdropFilter: 'blur(18px)',
               WebkitBackdropFilter: 'blur(18px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
               borderRadius: 6,
               padding: '1.25rem 1.5rem',
             }}
@@ -239,7 +239,9 @@ function ImageTile({ block, span, accentIdx }) {
       style={{
         display: 'block',
         height: '100%',
-        background: hasImage ? undefined : '#1A1A1A',
+        background: hasImage ? undefined : 'rgba(255,255,255,0.08)',
+        backdropFilter: hasImage ? undefined : 'blur(15px)',
+        WebkitBackdropFilter: hasImage ? undefined : 'blur(15px)',
         transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
       }}
       onMouseEnter={e => {
@@ -248,7 +250,6 @@ function ImageTile({ block, span, accentIdx }) {
       }}
       onMouseLeave={e => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       {hasImage ? (
@@ -325,7 +326,7 @@ export default function CultureGrid() {
             <TileWrapper
               linkUrl={cultureCard.link_url}
               className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
-              style={{ minHeight: 200, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 0 20px rgba(0,0,0,0.4)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
+              style={{ minHeight: 200, background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 0 20px rgba(0,0,0,0.3)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
             >
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
@@ -346,7 +347,7 @@ export default function CultureGrid() {
             <TileWrapper
               linkUrl={editorialCard.link_url}
               className="relative rounded-xl overflow-hidden flex flex-col justify-between p-5 group cursor-pointer"
-              style={{ minHeight: 160, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 0 20px rgba(0,0,0,0.4)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
+              style={{ minHeight: 160, background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.16)', boxShadow: '0 0 20px rgba(0,0,0,0.3)', transition: 'border-color 0.3s ease, transform 0.3s ease' }}
             >
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
@@ -431,15 +432,15 @@ export default function CultureGrid() {
                 gridColumn: '5',
                 gridRow: '1 / 3',
                 height: '100%',
-                background: 'rgba(255,255,255,0.05)',
+                background: 'rgba(255,255,255,0.12)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.18)',
+                boxShadow: '0 0 20px rgba(0,0,0,0.3)',
                 transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease',
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(29,161,161,0.2), 0 16px 48px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(29,161,161,0.35), 0 16px 48px rgba(0,0,0,0.3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
@@ -465,15 +466,15 @@ export default function CultureGrid() {
                 gridColumn: '5',
                 gridRow: '3',
                 height: '100%',
-                background: 'rgba(255,255,255,0.04)',
+                background: 'rgba(255,255,255,0.10)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                boxShadow: '0 0 20px rgba(0,0,0,0.3)',
                 transition: 'box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease',
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.12), 0 12px 40px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(229,255,0,0.25), 0 12px 40px rgba(0,0,0,0.3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.26)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
