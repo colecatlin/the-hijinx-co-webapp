@@ -35,7 +35,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
         {/* ── MASTHEAD ── */}
         <div className="border-b border-white/10 pt-16 pb-4 mb-10 relative flex items-end justify-between">
-          <span className="font-mono text-[9px] tracking-[0.5em] text-white/30 uppercase font-bold self-end pb-0.5">
+          <span className="font-mono text-[9px] tracking-[0.5em] text-white/60 uppercase font-bold self-end pb-0.5">
             Editorial — Vol. 01
           </span>
 
@@ -46,12 +46,12 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               className="h-12 md:h-16 object-contain"
               style={{ filter: 'brightness(0) invert(1) opacity(1) drop-shadow(0 0 8px rgba(255,255,255,0.6)) drop-shadow(0 0 20px rgba(255,255,255,0.25))' }}
             />
-            <p className="font-mono text-[9px] tracking-[0.3em] text-white/30 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
+            <p className="font-mono text-[9px] tracking-[0.3em] text-white/60 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
           </div>
 
           <Link
             to={createPageUrl('OutletHome')}
-            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/30 hover:text-white transition-colors uppercase font-bold pb-1"
+            className="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/60 hover:text-white transition-colors uppercase font-bold pb-1"
           >
             All Stories <ArrowRight className="w-3 h-3" />
           </Link>
@@ -93,14 +93,14 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
               <div className="flex items-center gap-4 mb-3">
                 {safeDate(featuredStory?.published_date) && (
-                  <span className="font-mono text-[9px] text-white/35 tracking-[0.25em]">
+                  <span className="font-mono text-[9px] text-white/60 tracking-[0.25em]">
                     {safeDate(featuredStory.published_date)}
                   </span>
                 )}
                 {featuredStory?.author && (
                   <>
                     <span className="text-white/20 text-xs">—</span>
-                    <span className="font-mono text-[9px] text-white/35 tracking-[0.15em] uppercase">
+                    <span className="font-mono text-[9px] text-white/60 tracking-[0.15em] uppercase">
                       {featuredStory.author}
                     </span>
                   </>
@@ -115,12 +115,12 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               </h3>
 
               {featuredStory?.subtitle && (
-                <p className="text-white/45 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
+                <p className="text-white/70 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
                   {featuredStory.subtitle}
                 </p>
               )}
 
-              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/60 uppercase font-bold border-b border-white/20 pb-0.5 group-hover:text-white group-hover:border-white transition-all">
+              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/80 uppercase font-bold border-b border-white/40 pb-0.5 group-hover:text-white group-hover:border-white transition-all">
                 Read Story <ArrowRight className="w-3 h-3" />
               </span>
             </Link>
@@ -130,7 +130,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t lg:border-t-0 mt-8 lg:mt-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="flex-1 h-[1px]" style={{ background: 'rgba(255,255,255,0.08)' }} />
-              <span className="font-mono text-[8px] tracking-[0.5em] text-white/25 uppercase">More Stories</span>
+              <span className="font-mono text-[8px] tracking-[0.5em] text-white/60 uppercase">More Stories</span>
             </div>
 
             <div className="space-y-0">
@@ -144,12 +144,12 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                 >
                   {story ? (
                     <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
-                      <span className="font-mono text-[9px] tracking-[0.2em] text-white/20 font-bold pt-0.5 flex-shrink-0 w-5">
+                      <span className="font-mono text-[9px] tracking-[0.2em] text-white/50 font-bold pt-0.5 flex-shrink-0 w-5">
                         0{i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         {story.primary_category && (
-                          <span className="font-mono text-[8px] tracking-[0.35em] text-white/35 uppercase font-bold block mb-1">
+                          <span className="font-mono text-[8px] tracking-[0.35em] text-white/60 uppercase font-bold block mb-1">
                             {story.primary_category}
                           </span>
                         )}
@@ -157,7 +157,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                           {story.title}
                         </h4>
                         {safeDate(story.published_date) && (
-                          <span className="font-mono text-[8px] text-white/25 mt-1.5 block tracking-[0.2em]">
+                          <span className="font-mono text-[8px] text-white/55 mt-1.5 block tracking-[0.2em]">
                             {safeDate(story.published_date)}
                           </span>
                         )}
@@ -192,7 +192,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
             <Link
               to={createPageUrl('OutletHome')}
-              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/30 hover:text-white transition-colors uppercase font-bold"
+              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/60 hover:text-white transition-colors uppercase font-bold"
             >
               Explore The Outlet <ArrowRight className="w-3 h-3" />
             </Link>
