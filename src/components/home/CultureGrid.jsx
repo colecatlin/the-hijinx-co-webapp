@@ -144,8 +144,8 @@ function HeroTile({ className, style }) {
           ) : (
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.bg})` }} />
           )}
-          <div className="absolute inset-0 bg-black/65" />
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.55) 100%)' }} />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.38) 100%)' }} />
           {/* Scanning light bar */}
           <motion.div
             className="absolute inset-x-0 pointer-events-none"
@@ -169,7 +169,7 @@ function HeroTile({ className, style }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="max-w-xs"
             style={{
-              background: 'rgba(10,10,10,0.45)',
+              background: 'rgba(10,10,10,0.30)',
               backdropFilter: 'blur(18px)',
               WebkitBackdropFilter: 'blur(18px)',
               border: '1px solid rgba(255,255,255,0.08)',
