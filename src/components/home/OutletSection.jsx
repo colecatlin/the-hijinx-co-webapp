@@ -44,7 +44,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/e0e7460c8_OutletLogo.png"
               alt="The Outlet"
               className="h-12 md:h-16 object-contain"
-              style={{ filter: 'brightness(0) invert(1) opacity(0.75)' }}
+              style={{ filter: 'brightness(0) invert(1) opacity(1) drop-shadow(0 0 8px rgba(255,255,255,0.6)) drop-shadow(0 0 20px rgba(255,255,255,0.25))' }}
             />
             <p className="font-mono text-[9px] tracking-[0.3em] text-white/30 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
           </div>
