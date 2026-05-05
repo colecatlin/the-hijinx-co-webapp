@@ -27,7 +27,7 @@ export default function Home() {
   useEffect(() => { Analytics.pageView('Home'); }, []);
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050A0A' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#F5EFE6' }}>
       <SeoMeta
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
