@@ -125,7 +125,11 @@ function HeroTile({ className, style, overlayAlpha = 0.5 }) {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl cursor-default ${className || ''}`}
-      style={style}
+      style={{
+        ...style,
+        border: '1px solid rgba(255,255,255,0.14)',
+        boxShadow: '0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.12)',
+      }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -242,21 +246,21 @@ function ImageTile({ block, span, accentIdx }) {
         background: hasImage ? undefined : 'rgba(255,255,255,0.08)',
         backdropFilter: hasImage ? undefined : 'blur(15px)',
         WebkitBackdropFilter: hasImage ? undefined : 'blur(15px)',
-        transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease'
+        border: '1px solid rgba(255,255,255,0.14)',
+        boxShadow: '0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.12)',
+        transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease, border-color 0.3s ease'
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-3px)';
-        e.currentTarget.style.boxShadow = `0 16px 48px ${glowColor}, 0 2px 12px rgba(0,0,0,0.12)`;
+        e.currentTarget.style.boxShadow = `0 16px 48px ${glowColor}, 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.18)`;
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.24)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
       {hasImage ? (
-        <>
-          <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.05) saturate(1.3) brightness(1.05)' }} />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }} />
-        </>
+        <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.05) saturate(1.3) brightness(1.05)' }} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="font-black tracking-tight select-none" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}>
@@ -307,7 +311,7 @@ export default function CultureGrid() {
   const editorialCard = dbBlocks[6];
 
   return (
-    <section className="py-6 md:py-8 overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+    <section className="py-6 md:py-8 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
 
