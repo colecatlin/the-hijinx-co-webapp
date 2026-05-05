@@ -83,7 +83,7 @@ const FALLBACK_SLIDES = [
 const INTERVAL = 4500;
 
 // Hero carousel glass tile — replaces the large "On Track" tile
-function HeroTile({ className, style }) {
+function HeroTile({ className, style, overlayAlpha = 0.5 }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
@@ -144,8 +144,8 @@ function HeroTile({ className, style }) {
           ) : (
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.bg})` }} />
           )}
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.38) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayAlpha})` }} />
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,${Math.min(overlayAlpha * 0.75, 0.7)}) 100%)` }} />
           {/* Scanning light bar */}
           <motion.div
             className="absolute inset-x-0 pointer-events-none"
@@ -288,6 +288,14 @@ export default function CultureGrid() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: allSettings = [] } = useQuery({
+    queryKey: ['homepageSettings'],
+    queryFn: () => base44.entities.HomepageSettings.list(),
+    staleTime: 2 * 60 * 1000,
+  });
+  const singleton = allSettings.find(s => s.active) || {};
+  const overlayAlpha = singleton.hero_overlay_alpha ?? 0.5;
+
   // Positions 0-4 are image tiles, 5 = culture glass card, 6 = editorial glass card
   // tiles[0] = On Track, [1] = Built, [2] = Crew, [3] = Worn, [4] = Behind the Scenes
   const tiles = dbBlocks.slice(0, 5);
@@ -303,7 +311,7 @@ export default function CultureGrid() {
         <div className="flex flex-col gap-2.5 md:hidden">
           {/* Hero tile full width */}
           <div style={{ height: 340 }}>
-            <HeroTile className="w-full h-full" />
+            <HeroTile className="w-full h-full" overlayAlpha={overlayAlpha} />
           </div>
           {/* Remaining image tiles in 2 cols */}
           <div className="grid grid-cols-2 gap-2.5">
@@ -376,7 +384,7 @@ export default function CultureGrid() {
 
           {/* Hero tile — spans cols 1-2, rows 1-3 */}
           <div style={{ gridColumn: '1 / 3', gridRow: '1 / 4', height: '100%' }}>
-            <HeroTile className="w-full h-full" />
+            <HeroTile className="w-full h-full" overlayAlpha={overlayAlpha} />
           </div>
 
           {/* Col 3: tiles[1] — tall feature, spans rows 1-2 */}

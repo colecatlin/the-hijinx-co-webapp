@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Plus, X, Save, CheckCircle } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
 function TagInput({ value = [], onChange, placeholder }) {
@@ -91,6 +92,7 @@ export default function HomepageEditorialSettings() {
     spotlight_driver_id: '',
     spotlight_event_id: '',
     spotlight_mode: 'mixed',
+    hero_overlay_alpha: 0.5,
   };
 
   const [form, setForm] = useState(EMPTY);
@@ -112,6 +114,7 @@ export default function HomepageEditorialSettings() {
         spotlight_driver_id:    existing.spotlight_driver_id    || '',
         spotlight_event_id:     existing.spotlight_event_id     || '',
         spotlight_mode:         existing.spotlight_mode         || 'mixed',
+        hero_overlay_alpha:     existing.hero_overlay_alpha     ?? 0.5,
       });
     }
   }, [existing?.id]);
@@ -169,6 +172,24 @@ export default function HomepageEditorialSettings() {
           )}
           {saved ? 'Saved' : 'Save Settings'}
         </Button>
+      </div>
+
+      {/* Hero overlay */}
+      <div className="space-y-3 p-4 bg-white border border-gray-200 rounded-lg">
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Hero Tile Appearance</h4>
+        <FieldRow label="Background Overlay Darkness" hint="Lower = more transparent (brighter image) · Higher = darker overlay">
+          <div className="flex items-center gap-3">
+            <Slider
+              min={0}
+              max={1}
+              step={0.05}
+              value={[form.hero_overlay_alpha]}
+              onValueChange={([v]) => set('hero_overlay_alpha', v)}
+              className="flex-1"
+            />
+            <span className="text-xs font-mono text-gray-500 w-8 text-right">{Math.round(form.hero_overlay_alpha * 100)}%</span>
+          </div>
+        </FieldRow>
       </div>
 
       {/* Mode controls */}

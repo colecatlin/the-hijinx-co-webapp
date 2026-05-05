@@ -121,6 +121,11 @@
       ],
       "default": "auto"
     },
+    "hero_overlay_alpha": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Hero tile background overlay opacity (0.0 = fully transparent, 1.0 = fully dark). Default 0.5."
+    },
     "updated_by_user_id": {
       "type": "string"
     },
@@ -133,93 +138,72 @@
       "format": "date-time"
     },
     "social_instagram_url": {
-      "type": "string",
-      "description": "Instagram profile URL"
+      "type": "string"
     },
     "social_instagram_handle": {
-      "type": "string",
-      "description": "Instagram handle (e.g. @hijinxco)"
+      "type": "string"
     },
     "social_x_url": {
-      "type": "string",
-      "description": "X (Twitter) profile URL"
+      "type": "string"
     },
     "social_x_handle": {
-      "type": "string",
-      "description": "X handle (e.g. @hijinxco)"
+      "type": "string"
     },
     "social_facebook_url": {
-      "type": "string",
-      "description": "Facebook page URL"
+      "type": "string"
     },
     "social_facebook_handle": {
-      "type": "string",
-      "description": "Facebook page name or handle"
+      "type": "string"
     },
     "social_youtube_url": {
-      "type": "string",
-      "description": "YouTube channel URL"
+      "type": "string"
     },
     "social_youtube_handle": {
-      "type": "string",
-      "description": "YouTube channel name or handle"
+      "type": "string"
     },
     "social_tiktok_url": {
-      "type": "string",
-      "description": "TikTok profile URL"
+      "type": "string"
     },
     "social_tiktok_handle": {
-      "type": "string",
-      "description": "TikTok handle (e.g. @hijinxco)"
+      "type": "string"
     },
     "social_linkedin_url": {
-      "type": "string",
-      "description": "LinkedIn page URL"
+      "type": "string"
     },
     "social_linkedin_handle": {
-      "type": "string",
-      "description": "LinkedIn company name or page handle"
+      "type": "string"
     },
     "social_threads_url": {
-      "type": "string",
-      "description": "Threads profile URL"
+      "type": "string"
     },
     "social_threads_handle": {
-      "type": "string",
-      "description": "Threads handle (e.g. @hijinxco)"
+      "type": "string"
     },
     "social_snapchat_url": {
-      "type": "string",
-      "description": "Snapchat profile URL"
+      "type": "string"
     },
     "social_snapchat_handle": {
-      "type": "string",
-      "description": "Snapchat username"
+      "type": "string"
     },
     "social_discord_url": {
-      "type": "string",
-      "description": "Discord server invite URL"
+      "type": "string"
     },
     "social_discord_handle": {
-      "type": "string",
-      "description": "Discord server name or community tag"
+      "type": "string"
     },
     "social_hashtags": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "default": [],
-      "description": "List of recommended community hashtags (e.g. #hijinx, #motorsports)"
+      "default": []
     },
     "apparel_shopify_url": {
       "type": "string",
-      "description": "Shopify store URL for the apparel section (e.g. https://www.hijinxco.com)",
       "default": "https://www.hijinxco.com"
     },
     "apparel_cta_label": {
       "type": "string",
-      "description": "CTA label for the homepage apparel section (e.g. Shop HIJINX CO.)",
       "default": "Shop HIJINX CO."
     },
     "apparel_link_strategy": {
@@ -228,35 +212,28 @@
         "shopify",
         "internal"
       ],
-      "default": "shopify",
-      "description": "Whether product clicks go to Shopify or internal product pages"
+      "default": "shopify"
     },
     "apparel_marketing_blocks": {
       "type": "array",
-      "description": "The two supporting marketing blocks shown beside the main hero card in the apparel section",
       "default": [],
       "items": {
         "type": "object",
         "properties": {
           "tag": {
-            "type": "string",
-            "description": "Small label at top (e.g. New Drop)"
+            "type": "string"
           },
           "title": {
-            "type": "string",
-            "description": "Block title"
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "Short description text"
+            "type": "string"
           },
           "link_url": {
-            "type": "string",
-            "description": "URL this block links to"
+            "type": "string"
           },
           "accent_color": {
-            "type": "string",
-            "description": "Accent color hex (e.g. #E5FF00)"
+            "type": "string"
           }
         }
       }
