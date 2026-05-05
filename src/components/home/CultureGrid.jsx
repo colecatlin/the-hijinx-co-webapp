@@ -253,7 +253,10 @@ function ImageTile({ block, span, accentIdx }) {
       }}
     >
       {hasImage ? (
-        <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.05) saturate(1.3) brightness(1.05)' }} />
+        <>
+          <img src={block.image_url} alt={block.label || block.title} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]" style={{ filter: 'contrast(1.05) saturate(1.3) brightness(1.05)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }} />
+        </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="font-black tracking-tight select-none" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', color: accent, opacity: 0.18, lineHeight: 1 }}>
@@ -304,7 +307,7 @@ export default function CultureGrid() {
   const editorialCard = dbBlocks[6];
 
   return (
-    <section className="py-6 md:py-8 overflow-hidden" style={{ background: 'transparent' }}>
+    <section className="py-6 md:py-8 overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
 
 
