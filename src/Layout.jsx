@@ -133,7 +133,6 @@ export default function Layout({ children, currentPageName }) {
                         key={item.name}
                         className="relative"
                         onMouseEnter={() => setHoveredItem(item.name)}
-                        onMouseLeave={() => setHoveredItem(null)}
                       >
                         <Link
                           to={item.page ? createPageUrl(item.page) : '#'}
