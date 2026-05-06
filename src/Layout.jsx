@@ -88,8 +88,8 @@ export default function Layout({ children, currentPageName }) {
               className="transition-all duration-300 rounded-[20px] overflow-hidden"
               style={{
                 background: scrolled
-                  ? 'rgba(255, 255, 255, 0.10)'
-                  : 'rgba(255, 255, 255, 0.07)',
+                  ? 'rgba(255, 255, 255, 0.52)'
+                  : 'rgba(255, 255, 255, 0.50)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 border: '1.5px solid rgba(255,255,255,0.18)',
