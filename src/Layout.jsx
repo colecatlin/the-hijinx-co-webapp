@@ -88,12 +88,12 @@ export default function Layout({ children, currentPageName }) {
               className="transition-all duration-300 rounded-[20px] overflow-hidden"
               style={{
                 background: scrolled
-                  ? 'rgba(5, 8, 10, 0.88)'
-                  : 'rgba(5, 8, 10, 0.72)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(29,161,161,0.06)',
+                  ? 'rgba(255, 255, 255, 0.10)'
+                  : 'rgba(255, 255, 255, 0.07)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1.5px solid rgba(255,255,255,0.18)',
+                boxShadow: '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
               }}
             >
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
