@@ -36,42 +36,28 @@ export default function AnnouncementBar() {
     return () => clearInterval(interval);
   }, [announcements.length]);
 
-  if (!announcements.length) return null;
-
-  const current = announcements[currentIndex];
-  
-  const bgColors = {
-    black: 'bg-[#232323] text-white',
-    white: 'bg-white text-black border-b border-gray-200',
-    blue: 'bg-blue-600 text-white',
-    indigo: 'bg-indigo-600 text-white',
-    purple: 'bg-purple-600 text-white',
-    pink: 'bg-pink-600 text-white',
-    red: 'bg-red-600 text-white',
-    orange: 'bg-orange-600 text-white',
-    yellow: 'bg-yellow-500 text-black',
-    green: 'bg-green-600 text-white',
-    teal: 'bg-teal-600 text-white',
-    cyan: 'bg-cyan-600 text-white',
-    gray: 'bg-gray-600 text-white'
-  };
+  // Always show the beta bar (with dynamic message if available, else default)
+  const betaMessage = announcements.length > 0
+    ? announcements[currentIndex]?.message
+    : 'WELCOME TO HIJINX BETA — THE PLATFORM IS EVOLVING IN REAL TIME';
 
   return (
-    <div className={`${bgColors[current.background_color] || bgColors.black} py-2 px-3 sm:px-6`}>
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-          <span>{current.message}</span>
-          {current.link_url && current.link_text && (
-            <a
-              href={current.link_url}
-              target={current.link_url.startsWith('http') ? '_blank' : undefined}
-              rel={current.link_url.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className="underline font-medium hover:opacity-80 transition-opacity whitespace-nowrap"
-            >
-              {current.link_text}
-            </a>
-          )}
-        </div>
+    <div
+      className="py-1.5 px-4"
+      style={{
+        background: 'rgba(5, 8, 10, 0.85)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
+        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#1DA1A1', boxShadow: '0 0 6px rgba(29,161,161,0.8)' }} />
+        <span
+          className="font-mono text-[9px] tracking-[0.45em] uppercase"
+          style={{ color: 'rgba(255,255,255,0.45)' }}
+        >
+          {betaMessage}
+        </span>
+        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#1DA1A1', boxShadow: '0 0 6px rgba(29,161,161,0.8)' }} />
       </div>
     </div>
   );

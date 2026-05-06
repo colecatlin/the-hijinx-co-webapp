@@ -66,34 +66,57 @@ export default function UserMenu({ user }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors outline-none focus:outline-none">
-          <div className="w-7 h-7 rounded-full bg-[#232323] text-white flex items-center justify-center text-xs font-bold flex-shrink-0 select-none">
+        <button
+          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all outline-none focus:outline-none"
+          style={{ color: 'rgba(255,255,255,0.6)' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 select-none"
+            style={{
+              background: 'rgba(29,161,161,0.2)',
+              color: '#1DA1A1',
+              border: '1px solid rgba(29,161,161,0.35)',
+            }}
+          >
             {initials}
           </div>
-          <ChevronDown className="w-3 h-3 text-gray-400" />
+          <ChevronDown className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.35)' }} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent
+        align="end"
+        className="w-56 border-0"
+        style={{
+          background: 'rgba(5, 8, 10, 0.95)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+        }}
+      >
         <DropdownMenuLabel className="pb-2">
-          <p className="text-sm font-semibold text-gray-900 truncate">{user?.full_name || user?.email}</p>
+          <p className="text-sm font-semibold truncate" style={{ color: 'rgba(255,255,255,0.9)' }}>{user?.full_name || user?.email}</p>
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             <Badge className={`text-xs px-1.5 py-0 h-5 ${USER_MODE_COLORS[userMode]}`}>
               {USER_MODE_LABELS[userMode]}
             </Badge>
             {user?.full_name && (
-              <span className="text-xs text-gray-400 truncate max-w-[120px]">{user.email}</span>
+              <span className="text-xs truncate max-w-[120px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{user.email}</span>
             )}
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator style={{ background: 'rgba(255,255,255,0.07)' }} />
         {menuItems.map((item, i) => {
-          if (item.type === 'divider') return <DropdownMenuSeparator key={`sep-${i}`} />;
+          if (item.type === 'divider') return <DropdownMenuSeparator key={`sep-${i}`} style={{ background: 'rgba(255,255,255,0.07)' }} />;
           const Icon = ICON_MAP[item.icon];
           if (item.type === 'action' && item.action === 'logout') {
             return (
               <DropdownMenuItem key={i}
                 onClick={() => base44.auth.logout(createPageUrl('Home'))}
-                className="gap-2 text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer">
+                className="gap-2 cursor-pointer"
+                style={{ color: 'rgba(239,68,68,0.8)' }}>
                 {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
                 <span>{item.label}</span>
               </DropdownMenuItem>
@@ -102,18 +125,17 @@ export default function UserMenu({ user }) {
           return (
             <DropdownMenuItem key={i} asChild>
               <Link to={item.to}
-                className={`flex items-center gap-2 cursor-pointer w-full ${item.adminOnly ? 'text-purple-700' : ''}`}>
+                className="flex items-center gap-2 cursor-pointer w-full"
+                style={{ color: item.adminOnly ? 'rgba(167,139,250,0.85)' : 'rgba(255,255,255,0.7)' }}>
                 {Icon && (
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${
-                    item.highlight ? 'text-[#232323]' : item.adminOnly ? 'text-purple-500' : 'text-gray-400'
-                  }`} />
+                  <Icon className="w-4 h-4 flex-shrink-0" style={{ color: item.highlight ? '#1DA1A1' : item.adminOnly ? 'rgba(167,139,250,0.7)' : 'rgba(255,255,255,0.35)' }} />
                 )}
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className={`text-sm truncate ${item.highlight ? 'font-semibold text-[#232323]' : ''}`}>
+                  <span className="text-sm truncate" style={{ fontWeight: item.highlight ? 600 : 400, color: item.highlight ? '#1DA1A1' : 'inherit' }}>
                     {item.label}
                   </span>
                   {item.sublabel && (
-                    <span className="text-xs text-gray-400 truncate">{item.sublabel}</span>
+                    <span className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.sublabel}</span>
                   )}
                 </div>
               </Link>
