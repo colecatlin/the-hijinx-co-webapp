@@ -257,17 +257,7 @@ export default function Layout({ children, currentPageName }) {
                 )}
               </AnimatePresence>
 
-              {/* Placeholder row when header hovered but no sub — keeps consistent height feel */}
-              <AnimatePresence>
-                {isHeaderHovered && !activeSubItems && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 40 }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  />
-                )}
-              </AnimatePresence>
+
             </header>
           </div>
         </div>
