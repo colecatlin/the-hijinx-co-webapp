@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import SearchBar from '@/components/shared/SearchBar';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
@@ -41,6 +40,10 @@ const navItems = [
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ stories: [], drivers: [] });
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchInputRef = React.useRef(null);
   const [scrolled, setScrolled] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
@@ -61,8 +64,45 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults({ stories: [], drivers: [] });
     window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      setSearchQuery('');
+      setSearchResults({ stories: [], drivers: [] });
+      return;
+    }
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults({ stories: [], drivers: [] });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearchLoading(true);
+      const [stories, drivers] = await Promise.all([
+        base44.entities.OutletStory.list('-created_date', 50),
+        base44.entities.Driver.list('-created_date', 50),
+      ]);
+      const q = searchQuery.toLowerCase();
+      setSearchResults({
+        stories: stories.filter(s =>
+          s.status === 'published' &&
+          (s.title?.toLowerCase().includes(q) || s.primary_category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
+        ).slice(0, 4),
+        drivers: drivers.filter(d =>
+          `${d.first_name} ${d.last_name}`.toLowerCase().includes(q)
+        ).slice(0, 4),
+      });
+      setSearchLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
@@ -89,7 +129,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="px-3 pt-2 pb-1">
             <header
               onMouseEnter={() => setIsHeaderHovered(true)}
-              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); }}
+              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); setSearchOpen(false); }}
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
@@ -163,11 +203,11 @@ export default function Layout({ children, currentPageName }) {
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
-                    onClick={() => setSearchOpen(true)}
+                    onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
                     className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
-                    style={{ color: isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)' }}
+                    style={{ color: searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)' }}
                     onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
-                    onMouseLeave={e => e.currentTarget.style.color = isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)'}
+                    onMouseLeave={e => e.currentTarget.style.color = searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)'}
                   >
                     <Search className="w-4 h-4" />
                   </button>
@@ -214,6 +254,92 @@ export default function Layout({ children, currentPageName }) {
                   </button>
                 </div>
               </div>
+
+              {/* Inline search panel — shown when search icon is clicked */}
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.div
+                    key="search-panel"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="max-w-7xl mx-auto px-6 pb-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      {/* Search input */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          placeholder="Search stories, drivers, teams..."
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          className="flex-1 bg-transparent outline-none text-sm font-medium"
+                          style={{ color: 'rgba(255,255,255,0.85)', caretColor: '#1DA1A1' }}
+                        />
+                        {searchQuery && (
+                          <button onClick={() => setSearchQuery('')} style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      {/* Results */}
+                      {searchLoading && (
+                        <p className="font-mono text-[10px] tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>SEARCHING...</p>
+                      )}
+                      {!searchLoading && searchQuery.length >= 2 && searchResults.stories.length === 0 && searchResults.drivers.length === 0 && (
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No results for "{searchQuery}"</p>
+                      )}
+                      {(searchResults.stories.length > 0 || searchResults.drivers.length > 0) && (
+                        <div className="flex gap-8">
+                          {searchResults.stories.length > 0 && (
+                            <div className="flex-1">
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>STORIES</p>
+                              <div className="space-y-0.5">
+                                {searchResults.stories.map(story => (
+                                  <Link
+                                    key={story.id}
+                                    to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}
+                                  >
+                                    {story.title}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.drivers.length > 0 && (
+                            <div className="flex-1">
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>DRIVERS</p>
+                              <div className="space-y-0.5">
+                                {searchResults.drivers.map(driver => (
+                                  <Link
+                                    key={driver.id}
+                                    to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}
+                                  >
+                                    {driver.first_name} {driver.last_name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Expanded sub-nav area — shown when header is hovered and a sub exists */}
               <AnimatePresence>
@@ -370,11 +496,6 @@ export default function Layout({ children, currentPageName }) {
               </motion.div>
             </>
           )}
-        </AnimatePresence>
-
-        {/* Search overlay */}
-        <AnimatePresence>
-          {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
         </AnimatePresence>
 
         {/* Page content */}
