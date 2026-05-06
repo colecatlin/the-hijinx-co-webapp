@@ -85,15 +85,19 @@ export default function Layout({ children, currentPageName }) {
           {/* Floating glass header */}
           <div className="px-3 pt-2 pb-1">
             <header
-              className="transition-all duration-300 rounded-[20px] overflow-hidden"
+              className="transition-all duration-300 rounded-[20px]"
               style={{
-                background: scrolled
-                  ? 'rgba(255, 255, 255, 0.27)'
-                  : 'rgba(255, 255, 255, 0.25)',
+                background: hoveredItem
+                  ? 'rgba(255, 255, 255, 0.38)'
+                  : scrolled
+                    ? 'rgba(255, 255, 255, 0.27)'
+                    : 'rgba(255, 255, 255, 0.25)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 border: '1.5px solid rgba(255,255,255,0.18)',
-                boxShadow: '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
+                boxShadow: hoveredItem
+                  ? '0 0 48px rgba(255,255,255,0.14), 0 12px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)'
+                  : '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
               }}
             >
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
