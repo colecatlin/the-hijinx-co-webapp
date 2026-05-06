@@ -125,7 +125,7 @@ export default function Layout({ children, currentPageName }) {
                       >
                         <Link
                           to={item.page ? createPageUrl(item.page) : '#'}
-                          className={`flex items-center gap-1 px-3 py-4 text-[11px] font-bold tracking-[0.18em] uppercase transition-all duration-200 ${
+                          className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200 ${
                             isActive(item.page)
                               ? 'text-[#1DA1A1]'
                               : 'hover:text-white'
