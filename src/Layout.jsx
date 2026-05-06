@@ -43,6 +43,7 @@ export default function Layout({ children, currentPageName }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const location = useLocation();
 
   const { data: isAuthenticated } = useQuery({
@@ -77,6 +78,8 @@ export default function Layout({ children, currentPageName }) {
     return <Navigate to="/Home" replace />;
   }
 
+  const activeSubItems = hoveredItem ? navItems.find(i => i.name === hoveredItem)?.sub : null;
+
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen" style={{ background: '#050A0A' }}>
@@ -85,23 +88,28 @@ export default function Layout({ children, currentPageName }) {
           {/* Floating glass header */}
           <div className="px-3 pt-2 pb-1">
             <header
+              onMouseEnter={() => setIsHeaderHovered(true)}
+              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); }}
               className="transition-all duration-300 rounded-[20px]"
               style={{
-                background: hoveredItem
-                  ? 'rgba(255, 255, 255, 0.38)'
+                background: isHeaderHovered
+                  ? 'rgba(8, 12, 14, 0.97)'
                   : scrolled
                     ? 'rgba(255, 255, 255, 0.27)'
                     : 'rgba(255, 255, 255, 0.25)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                boxShadow: hoveredItem
-                  ? '0 0 48px rgba(255,255,255,0.14), 0 12px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)'
+                border: isHeaderHovered
+                  ? '1.5px solid rgba(29,161,161,0.25)'
+                  : '1.5px solid rgba(255,255,255,0.18)',
+                boxShadow: isHeaderHovered
+                  ? '0 0 48px rgba(29,161,161,0.15), 0 16px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)'
                   : '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
               }}
             >
+              {/* Top row — logo + nav + actions */}
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
-                {/* Logo: icon + wordmark — inverted for dark bg */}
+                {/* Logo */}
                 <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 flex-shrink-0">
                   <img
                     src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
@@ -129,54 +137,26 @@ export default function Layout({ children, currentPageName }) {
                       >
                         <Link
                           to={item.page ? createPageUrl(item.page) : '#'}
-                          className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200 ${
-                            isActive(item.page)
-                              ? 'text-[#1DA1A1]'
-                              : 'hover:text-white'
-                          }`}
+                          className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200`}
                           style={{
-                            color: isActive(item.page) ? '#1DA1A1' : 'rgba(255,255,255,0.78)',
-                            textShadow: isActive(item.page) ? '0 0 12px rgba(29,161,161,0.4)' : 'none',
+                            color: hoveredItem === item.name
+                              ? '#1DA1A1'
+                              : isActive(item.page)
+                                ? '#1DA1A1'
+                                : isHeaderHovered
+                                  ? 'rgba(255,255,255,0.55)'
+                                  : 'rgba(255,255,255,0.78)',
+                            textShadow: (hoveredItem === item.name || isActive(item.page)) ? '0 0 12px rgba(29,161,161,0.4)' : 'none',
                           }}
                         >
                           {item.name}
-                          {item.sub && <ChevronDown className="w-3 h-3" />}
+                          {item.sub && (
+                            <ChevronDown
+                              className="w-3 h-3 transition-transform duration-200"
+                              style={{ transform: hoveredItem === item.name ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                            />
+                          )}
                         </Link>
-
-                        {/* Sub-nav dropdown — dark glass */}
-                        {item.sub && hoveredItem === item.name && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute top-full left-0 min-w-[200px] py-2 z-50 rounded-xl overflow-hidden"
-                            style={{
-                              background: 'rgba(5, 8, 10, 0.92)',
-                              backdropFilter: 'blur(24px)',
-                              WebkitBackdropFilter: 'blur(24px)',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(29,161,161,0.06)',
-                            }}
-                          >
-                            {item.sub.map((sub) => (
-                              sub.disabled ? (
-                                <div key={sub.name} className="px-4 pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em] border-t first:border-t-0" style={{ color: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                                  {sub.name.replace(/^— | —$/g, '')}
-                                </div>
-                              ) : (
-                                <Link
-                                  key={sub.name}
-                                  to={sub.href || createPageUrl(sub.page)}
-                                  className="block px-4 py-2 text-xs font-medium transition-colors"
-                                  style={{ color: 'rgba(255,255,255,0.65)' }}
-                                  onMouseEnter={e => { e.currentTarget.style.color = '#1DA1A1'; e.currentTarget.style.background = 'rgba(29,161,161,0.06)'; }}
-                                  onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.background = 'transparent'; }}
-                                >
-                                  {sub.name}
-                                </Link>
-                              )
-                            ))}
-                          </motion.div>
-                        )}
                       </li>
                     ))}
                   </ul>
@@ -186,9 +166,9 @@ export default function Layout({ children, currentPageName }) {
                   <button
                     onClick={() => setSearchOpen(true)}
                     className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
-                    style={{ color: 'rgba(255,255,255,0.55)' }}
+                    style={{ color: isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)' }}
                     onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
+                    onMouseLeave={e => e.currentTarget.style.color = isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)'}
                   >
                     <Search className="w-4 h-4" />
                   </button>
@@ -235,6 +215,60 @@ export default function Layout({ children, currentPageName }) {
                   </button>
                 </div>
               </div>
+
+              {/* Expanded sub-nav area — shown when header is hovered and a sub exists */}
+              <AnimatePresence>
+                {isHeaderHovered && activeSubItems && (
+                  <motion.div
+                    key={hoveredItem}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div
+                      className="max-w-7xl mx-auto px-6 pb-4 pt-1 hidden lg:flex flex-wrap gap-x-1 gap-y-0.5"
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                    >
+                      {activeSubItems.map((sub) =>
+                        sub.disabled ? (
+                          <div
+                            key={sub.name}
+                            className="w-full pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em] first:pt-2"
+                            style={{ color: 'rgba(29,161,161,0.5)' }}
+                          >
+                            {sub.name.replace(/^— | —$/g, '')}
+                          </div>
+                        ) : (
+                          <Link
+                            key={sub.name}
+                            to={sub.href || createPageUrl(sub.page)}
+                            className="px-3 py-1.5 text-xs font-semibold tracking-wide uppercase rounded-lg transition-all"
+                            style={{ color: 'rgba(255,255,255,0.55)' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#1DA1A1'; e.currentTarget.style.background = 'rgba(29,161,161,0.08)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            {sub.name}
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Placeholder row when header hovered but no sub — keeps consistent height feel */}
+              <AnimatePresence>
+                {isHeaderHovered && !activeSubItems && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 40 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  />
+                )}
+              </AnimatePresence>
             </header>
           </div>
         </div>
