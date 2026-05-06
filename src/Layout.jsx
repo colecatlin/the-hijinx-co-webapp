@@ -79,8 +79,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <GoogleMapsInitializer>
-      <div className="flex flex-col min-h-screen">
-        <div className="sticky top-0 z-50">
+      <div className="flex flex-col min-h-screen" style={{ background: '#050A0A' }}>
+        <div className="sticky top-0 z-50" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 pt-2 pb-1">
