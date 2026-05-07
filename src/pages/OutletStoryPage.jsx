@@ -107,7 +107,7 @@ export default function OutletStoryPage() {
   const storyImg  = story.cover_image || SITE_FALLBACK_IMAGE;
 
   return (
-    <PageShell style={{ backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/2af63331a_THEOUTLETBACKGROUND.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+    <PageShell style={{ backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/506952c44_THEOUTLETBACKGROUND.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       <SeoMeta
         title={story.title}
         description={storyDesc}
