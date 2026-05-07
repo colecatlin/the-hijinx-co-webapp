@@ -9,6 +9,9 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, LayoutDashboard, User, Gauge, Camera, Settings, Activity, LogOut } from 'lucide-react';
+
+// Icon map must include 'User' for navigationResolver
+
 import {
   getResolvedManagedEntities,
   getRaceCoreEntities,
@@ -19,6 +22,7 @@ import { getUserMode, USER_MODE_LABELS, USER_MODE_COLORS } from '@/components/sy
 import { getUserMenuItems } from '@/components/system/navigationResolver';
 
 const ICON_MAP = { LayoutDashboard, User, Gauge, Camera, Settings, Activity, LogOut };
+// Note: 'User' icon is used for Profile link (navigationResolver)
 
 /**
  * Top-right user avatar dropdown for logged-in users.
