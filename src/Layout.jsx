@@ -140,10 +140,10 @@ export default function Layout({ children, currentPageName }) {
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
-                  ? 'rgba(8, 12, 14, 0.97)'
+                  ? 'rgba(8, 12, 14, 0.82)'
                   : scrolled
-                    ? 'rgba(255, 255, 255, 0.27)'
-                    : 'rgba(255, 255, 255, 0.25)',
+                    ? 'rgba(5, 10, 10, 0.55)'
+                    : 'rgba(5, 10, 10, 0.25)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 border: isHeaderHovered
