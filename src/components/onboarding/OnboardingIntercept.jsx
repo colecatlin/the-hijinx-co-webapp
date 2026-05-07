@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils';
 import PersonIdentityStep from './PersonIdentityStep';
 import MediaOnboardingFlow from './MediaOnboardingFlow';
-import { User, Users, MapPin, Trophy, Heart, Search, ArrowRight, Gauge, Camera } from 'lucide-react';
+import { validateUsername, mapLegacyRoleToProfileType, PROFILE_TYPE_CONFIG, ALL_PROFILE_TYPES } from '@/components/system/userCapabilities';
+import { User, Users, MapPin, Trophy, Heart, Search, ArrowRight, Gauge, Camera, AtSign, Flag } from 'lucide-react';
 
 const ENTITY_OPTIONS = [
   { icon: User, label: "I'm a driver", description: "Create or claim your driver profile", mode: 'new', type: 'Driver' },
@@ -17,14 +18,33 @@ const ENTITY_OPTIONS = [
 export default function OnboardingIntercept({ user, onSkip }) {
   const navigate = useNavigate();
 
-  // Layer 1 is satisfied if user already has both names, or after PersonIdentityStep completes
   const hasIdentity = !!(user?.first_name?.trim() && user?.last_name?.trim());
-  const [step, setStep] = useState(hasIdentity ? 'intent' : 'identity');
+  const hasUsername = !!user?.username;
+  // Steps: identity → username → intent
+  const [step, setStep] = useState(hasIdentity ? (hasUsername ? 'intent' : 'username') : 'identity');
   const [skipping, setSkipping] = useState(false);
   const [updatedUser, setUpdatedUser] = useState(user);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [savingUsername, setSavingUsername] = useState(false);
 
   const handleIdentityComplete = (data) => {
     setUpdatedUser(prev => ({ ...prev, ...data }));
+    setStep('username');
+  };
+
+  const handleUsernameSave = async () => {
+    const val = usernameInput.toLowerCase().trim();
+    const err = validateUsername(val);
+    if (err) { setUsernameError(err); return; }
+    setSavingUsername(true);
+    await base44.auth.updateMe({ username: val, username_slug: val }).catch(() => {});
+    setUpdatedUser(prev => ({ ...prev, username: val, username_slug: val }));
+    setSavingUsername(false);
+    setStep('intent');
+  };
+
+  const handleSkipUsername = () => {
     setStep('intent');
   };
 
@@ -65,7 +85,12 @@ export default function OnboardingIntercept({ user, onSkip }) {
               Let's start with who you are.
             </p>
           )}
-          {step === 'intent' && (
+          {step === 'username' && (
+            <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
+              Claim your spot in the HIJINX world.
+            </p>
+          )}
+        {step === 'intent' && (
             <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
               Tell us how you're here so we can point you in the right direction.
             </p>
@@ -75,8 +100,9 @@ export default function OnboardingIntercept({ user, onSkip }) {
         {/* Step indicator */}
         {step !== 'media' && (
           <div className="flex items-center justify-center gap-2 mb-8">
-            <div className={`w-2 h-2 rounded-full transition-colors ${step === 'identity' ? 'bg-[#232323]' : 'bg-gray-300'}`} />
-            <div className={`w-2 h-2 rounded-full transition-colors ${step === 'intent' ? 'bg-[#232323]' : 'bg-gray-200'}`} />
+            {['identity', 'username', 'intent'].map(s => (
+              <div key={s} className={`w-2 h-2 rounded-full transition-colors ${step === s ? 'bg-[#232323]' : 'bg-gray-200'}`} />
+            ))}
           </div>
         )}
 
@@ -87,7 +113,42 @@ export default function OnboardingIntercept({ user, onSkip }) {
             <PersonIdentityStep user={user} onComplete={handleIdentityComplete} />
           )}
 
-          {/* Layer 2 — Entity Intent */}
+          {/* Layer 2 — Username */}
+          {step === 'username' && (
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  Choose your username
+                </label>
+                <p className="text-xs text-gray-400 mb-4">This becomes your public profile URL: hijinx.com/u/yourhandle</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 text-sm font-mono">@</span>
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={e => { setUsernameInput(e.target.value.toLowerCase()); setUsernameError(''); }}
+                    placeholder="yourhandle"
+                    className={`flex h-10 flex-1 rounded-xl border px-3 text-sm font-mono focus-visible:outline-none focus-visible:ring-2 ${usernameError ? 'border-red-300 focus-visible:ring-red-400' : 'border-gray-200 focus-visible:ring-gray-900'}`}
+                  />
+                </div>
+                {usernameError && <p className="text-xs text-red-500 mt-2">{usernameError}</p>}
+                <p className="text-xs text-gray-400 mt-2">3–24 chars. Letters, numbers, underscores only.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleUsernameSave} disabled={savingUsername || !usernameInput}
+                  className="flex-1 bg-[#232323] hover:bg-black text-white gap-2">
+                  <AtSign className="w-4 h-4" />
+                  {savingUsername ? 'Saving…' : 'Claim Username'}
+                </Button>
+              </div>
+              <button onClick={handleSkipUsername}
+                className="w-full text-center text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                Skip for now — I'll set this up later
+              </button>
+            </div>
+          )}
+
+          {/* Layer 3 — Entity Intent */}
           {step === 'intent' && (
             <div className="space-y-4">
               <div className="space-y-2">

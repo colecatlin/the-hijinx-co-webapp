@@ -48,6 +48,7 @@ import HashtagAnalytics from './pages/HashtagAnalytics';
 import ManageDisciplineColors from './pages/ManageDisciplineColors';
 import StandingsHome from './pages/StandingsHome';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
+import UserPublicProfile from './pages/UserPublicProfile';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -148,6 +149,8 @@ const AuthenticatedApp = () => {
           <PlatformDataMap />
         </LayoutWrapper>
       } />
+      {/* Public user profile route */}
+      <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

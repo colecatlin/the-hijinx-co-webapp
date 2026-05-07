@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import {
   Save, LogOut, ChevronRight, CheckCircle2, AlertCircle,
   KeyRound, Gauge, Star, ExternalLink, Shield, Edit,
-  Clock, XCircle, Camera, FileText, Flag, Users, BookOpen
+  Clock, XCircle, Camera, FileText, Flag, Users, BookOpen, Globe
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
@@ -32,8 +32,11 @@ import FavoritesTab from '@/components/profile/FavoritesTab';
 import AccountStatusCard from '@/components/profile/AccountStatusCard';
 import MediaApplicationForm from '@/components/media/portal/MediaApplicationForm';
 import MediaApplicationStatus from '@/components/media/portal/MediaApplicationStatus';
+import SocialLinksEditor from '@/components/profile/SocialLinksEditor';
+import IdentitySection from '@/components/profile/IdentitySection';
 import { isApprovedContributor } from '@/components/media/mediaPermissions';
 import { getUserMode } from '@/components/system/userModeResolver';
+import { validateUsername, mapLegacyRoleToProfileType, PROFILE_TYPE_CONFIG, VERIFICATION_BADGE_CONFIG } from '@/components/system/userCapabilities';
 import {
   getResolvedManagedEntities,
   buildRaceCoreLaunchUrl,
@@ -41,8 +44,6 @@ import {
   getRaceCoreEntities,
 } from '@/components/entities/entityResolver';
 import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } from '@/components/entities/entityPrimary';
-
-// ─── Entity type labels ───────────────────────────────────────────────────────
 
 const ENTITY_TYPE_LABELS = {
   Driver: 'My Driver Page',
@@ -58,33 +59,25 @@ const ENTITY_TYPE_COLORS = {
   Series: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
-// ─── Tab resolver ─────────────────────────────────────────────────────────────
-
 function resolveTab(param) {
   const map = {
-    general: 'account',
-    account: 'account',
-    my_entities: 'racing_profiles',
-    racing_profiles: 'racing_profiles',
-    access_codes: 'racing_profiles',
-    racecore: 'racing_profiles',
-    story: 'contributions',
-    media: 'contributions',
-    contributions: 'contributions',
-    follows: 'follows',
-    fan: 'account',
+    account: 'account', general: 'account',
+    identity: 'identity',
+    socials: 'socials', social: 'socials',
+    follows: 'follows', my_entities: 'racing_profiles',
+    racing_profiles: 'racing_profiles', access_codes: 'racing_profiles', racecore: 'racing_profiles',
+    story: 'contributions', media: 'contributions', contributions: 'contributions',
   };
   return map[param] || 'account';
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Profile() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState(null);
   const [settingPrimary, setSettingPrimary] = useState(false);
   const [mediaAppSubmitted, setMediaAppSubmitted] = useState(null);
-  const [showDangerZone, setShowDangerZone] = useState(false);
+  const [showAccountControls, setShowAccountControls] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
 
   const urlParams = new URLSearchParams(window.location.search);
   const tabFromUrl = urlParams.get('tab');
@@ -122,11 +115,41 @@ export default function Profile() {
 
   useEffect(() => {
     if (user) {
+      // Derive profile_types from legacy if not set
+      const profileTypes = user.profile_types?.length
+        ? user.profile_types
+        : [mapLegacyRoleToProfileType(user.role_interest_category)];
+      const primaryProfileType = user.primary_profile_type
+        || mapLegacyRoleToProfileType(user.role_interest_category);
+
+      // Migrate legacy social URLs into social_links if needed
+      const existingSocials = user.social_links || [];
+      const hasMigratedInstagram = existingSocials.some(l => l.platform === 'instagram');
+      const hasMigratedPortfolio = existingSocials.some(l => l.platform === 'website');
+      const migrated = [...existingSocials];
+      if (!hasMigratedInstagram && user.instagram_url) {
+        migrated.push({ platform: 'instagram', url: user.instagram_url, handle: '', public_enabled: true });
+      }
+      if (!hasMigratedPortfolio && (user.portfolio_url || user.website_url)) {
+        migrated.push({ platform: 'website', url: user.portfolio_url || user.website_url, handle: '', public_enabled: true });
+      }
+
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        role_interest_category: user.role_interest_category || '',
+        display_name: user.display_name || '',
+        username: user.username || '',
+        bio: user.bio || '',
+        location_display: user.location_display || user.city || '',
+        website_url: user.website_url || '',
+        profile_photo_url: user.profile_photo_url || '',
+        banner_image_url: user.banner_image_url || '',
         newsletter_subscriber: user.newsletter_subscriber || false,
+        profile_visibility: user.profile_visibility || 'limited',
+        primary_profile_type: primaryProfileType,
+        profile_types: profileTypes,
+        role_interest_category: user.role_interest_category || '',
+        social_links: migrated,
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
         favorite_series: user.favorite_series || [],
@@ -139,19 +162,43 @@ export default function Profile() {
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
+      const usernameVal = data.username?.toLowerCase().trim() || '';
+      if (usernameVal) {
+        const err = validateUsername(usernameVal);
+        if (err) throw new Error(err);
+      }
       await base44.auth.updateMe({
         first_name: data.first_name,
         last_name: data.last_name,
-        role_interest_category: data.role_interest_category || undefined,
+        display_name: data.display_name,
+        username: usernameVal || undefined,
+        username_slug: usernameVal || undefined,
+        bio: data.bio,
+        location_display: data.location_display,
+        website_url: data.website_url,
+        profile_photo_url: data.profile_photo_url,
+        banner_image_url: data.banner_image_url,
         newsletter_subscriber: data.newsletter_subscriber || false,
+        profile_visibility: data.profile_visibility,
+        primary_profile_type: data.primary_profile_type,
+        profile_types: data.profile_types,
+        role_interest_category: data.role_interest_category || undefined,
+        social_links: data.social_links || [],
         favorite_drivers: data.favorite_drivers || [],
         favorite_teams: data.favorite_teams || [],
         favorite_series: data.favorite_series || [],
         favorite_tracks: data.favorite_tracks || [],
       });
-      base44.functions.invoke('updateUserProfile', { formData: data }).catch(() => {});
     },
-    onSuccess: () => invalidateDataGroups(queryClient, ['profile']),
+    onSuccess: () => {
+      setUsernameError('');
+      invalidateDataGroups(queryClient, ['profile']);
+    },
+    onError: (err) => {
+      if (err.message.includes('sername') || err.message.includes('reserved')) {
+        setUsernameError(err.message);
+      }
+    },
   });
 
   const handleSetPrimary = async (entity) => {
@@ -165,14 +212,16 @@ export default function Profile() {
   const handleLogout = () => base44.auth.logout(createPageUrl('Home'));
 
   const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile: null });
-  const isMediaUser = mode === 'media_user' || user?.role_interest_category === 'Media / Creator';
+  const isMediaUser = mode === 'media_user' || user?.role_interest_category === 'Media / Creator'
+    || (formData?.profile_types || []).includes('media') || (formData?.profile_types || []).includes('photographer') || (formData?.profile_types || []).includes('creator');
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
   const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
   const hasCollaborations = resolvedEntities.length > 0;
+  const hasRacingProfileSection = hasCollaborations || invitations.length > 0 || claimRequests.length > 0;
   const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
   const raceCoreTarget = (primaryEntity?.is_racecore_entity ? primaryEntity : null) || raceCoreEntities[0] || null;
 
-  const defaultTab = tabFromUrl ? resolveTab(tabFromUrl) : (hasCollaborations ? 'racing_profiles' : 'account');
+  const defaultTab = tabFromUrl ? resolveTab(tabFromUrl) : 'account';
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('Profile'));
@@ -190,6 +239,15 @@ export default function Profile() {
     );
   }
 
+  const tabs = [
+    { value: 'account', label: 'Account' },
+    { value: 'identity', label: 'Identity' },
+    { value: 'socials', label: 'Social Links' },
+    { value: 'follows', label: 'My Follows' },
+    { value: 'contributions', label: 'Contributions' },
+    { value: 'racing_profiles', label: 'Racing Profiles' },
+  ];
+
   return (
     <PageShell className="bg-gray-50 min-h-screen">
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
@@ -199,11 +257,20 @@ export default function Profile() {
           <div>
             <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">Profile</p>
             <h1 className="text-2xl font-bold text-gray-900">
-              {user?.first_name || user?.full_name?.split(' ')[0] || 'My Profile'}
+              {formData.display_name || formData.first_name || user?.full_name?.split(' ')[0] || 'My Profile'}
             </h1>
-            <p className="text-sm text-gray-400 mt-0.5">{user?.email}</p>
+            {user?.username && (
+              <p className="text-sm text-gray-400 mt-0.5">@{user.username}</p>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            {user?.username && (
+              <Link to={`/u/${user.username}`}>
+                <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Globe className="w-3 h-3" /> Public Profile
+                </button>
+              </Link>
+            )}
             <Link to={createPageUrl('MyDashboard')}>
               <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <ChevronRight className="w-3 h-3 rotate-180" /> My Garage
@@ -230,7 +297,8 @@ export default function Profile() {
         )}
         {updateMutation.isError && (
           <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" /> Save failed. Please try again.
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {updateMutation.error?.message || 'Save failed. Please try again.'}
           </div>
         )}
 
@@ -240,98 +308,127 @@ export default function Profile() {
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <TabsList className="inline-flex w-full bg-transparent border-0 p-0 rounded-none shadow-none">
-                  {[
-                    { value: 'account', label: 'Account' },
-                    { value: 'follows', label: 'My Follows' },
-                    { value: 'contributions', label: 'Contributions' },
-                    ...(hasCollaborations ? [{ value: 'racing_profiles', label: 'Racing Profiles' }] : [{ value: 'racing_profiles', label: 'Racing Profiles' }]),
-                  ].map(tab => (
+                  {tabs.map(tab => (
                     <TabsTrigger key={tab.value} value={tab.value}
-                      className="flex-1 rounded-none px-4 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#1A1A1A] data-[state=active]:bg-transparent data-[state=active]:text-[#1A1A1A] text-gray-400 hover:text-gray-700">
+                      className="flex-1 min-w-max rounded-none px-4 py-3.5 text-xs font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:border-b-[#1A1A1A] data-[state=active]:bg-transparent data-[state=active]:text-[#1A1A1A] text-gray-400 hover:text-gray-700">
                       {tab.label}
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </div>
 
-              {/* ── Account Tab ───────────────────────────────────────────── */}
-              <TabsContent value="account" className="p-6 space-y-6">
+              {/* ── Account Tab ──────────────────────────────────────────── */}
+              <TabsContent value="account" className="p-6 space-y-5">
                 <div className="space-y-4">
-                  <h2 className="text-sm font-bold text-gray-900">Personal Information</h2>
+                  <h2 className="text-sm font-bold text-gray-900">Display & Identity</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-medium text-gray-500 block mb-1.5">First Name</label>
-                      <input
-                        value={formData.first_name || ''}
-                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900"
-                      />
+                      <input value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })}
+                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
                     </div>
                     <div>
                       <label className="text-xs font-medium text-gray-500 block mb-1.5">Last Name</label>
+                      <input value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })}
+                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1.5">Display Name</label>
+                    <input value={formData.display_name} onChange={e => setFormData({ ...formData, display_name: e.target.value })}
+                      placeholder="How you want to be known publicly"
+                      className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                      Username
+                      {user?.username && <span className="ml-2 text-green-600">@{user.username}</span>}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-sm">@</span>
                       <input
-                        value={formData.last_name || ''}
-                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900"
+                        value={formData.username}
+                        onChange={e => { setFormData({ ...formData, username: e.target.value.toLowerCase() }); setUsernameError(''); }}
+                        placeholder="yourhandle"
+                        className={`flex h-9 flex-1 rounded-lg border px-3 text-sm focus-visible:outline-none focus-visible:ring-1 ${usernameError ? 'border-red-300 focus-visible:ring-red-400' : 'border-gray-200 focus-visible:ring-gray-900'}`}
                       />
+                    </div>
+                    {usernameError && <p className="text-xs text-red-500 mt-1">{usernameError}</p>}
+                    <p className="text-xs text-gray-400 mt-1">3–24 characters. Letters, numbers, underscores only. Your public profile: /u/yourhandle</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1.5">Bio</label>
+                    <textarea value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                      placeholder="A quick line about you"
+                      rows={3}
+                      className="flex w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 block mb-1.5">Location</label>
+                      <input value={formData.location_display} onChange={e => setFormData({ ...formData, location_display: e.target.value })}
+                        placeholder="e.g. Phoenix, AZ"
+                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 block mb-1.5">Website</label>
+                      <input value={formData.website_url} onChange={e => setFormData({ ...formData, website_url: e.target.value })}
+                        placeholder="https://yoursite.com"
+                        className="flex h-9 w-full rounded-lg border border-gray-200 bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 block mb-1.5">Email</label>
-                    <input
-                      value={user?.email || ''}
-                      disabled
-                      className="flex h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-400"
-                    />
+                    <input value={user?.email || ''} disabled
+                      className="flex h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-400" />
+                    <p className="text-xs text-gray-400 mt-1">Email is managed by the platform.</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-2 border-t border-gray-100">
-                  <h2 className="text-sm font-bold text-gray-900">Your Role on HIJINX</h2>
-                  <GeneralTab user={user} formData={formData} setFormData={setFormData} roleOnly />
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <h2 className="text-sm font-bold text-gray-900">Profile Visibility</h2>
+                  <Select value={formData.profile_visibility} onValueChange={v => setFormData({ ...formData, profile_visibility: v })}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public — anyone can view your profile</SelectItem>
+                      <SelectItem value="limited">Limited — visible but without a full page</SelectItem>
+                      <SelectItem value="private">Private — hidden from public</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
-                  <Switch
-                    id="newsletter_subscriber"
-                    checked={formData.newsletter_subscriber || false}
-                    onCheckedChange={(checked) => setFormData({ ...formData, newsletter_subscriber: checked })}
-                  />
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                  <Switch id="newsletter_subscriber" checked={formData.newsletter_subscriber || false}
+                    onCheckedChange={checked => setFormData({ ...formData, newsletter_subscriber: checked })} />
                   <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm text-gray-700">
                     Subscribe to the Index46 newsletter
                   </Label>
                 </div>
 
                 <Button type="submit" disabled={updateMutation.isPending}
-                  className="bg-[#1A1A1A] hover:bg-black text-white gap-2 w-full sm:w-auto">
+                  className="bg-[#1A1A1A] hover:bg-black text-white gap-2">
                   <Save className="w-4 h-4" />
-                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
                 </Button>
 
-                {/* Account controls — tucked away */}
+                {/* Account Controls — tucked away */}
                 <div className="pt-4 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowDangerZone(v => !v)}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showDangerZone ? 'Hide account controls ↑' : 'Account controls ↓'}
+                  <button type="button" onClick={() => setShowAccountControls(v => !v)}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                    {showAccountControls ? 'Hide account controls ↑' : 'Account controls ↓'}
                   </button>
-                  {showDangerZone && (
+                  {showAccountControls && (
                     <div className="mt-4 space-y-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-gray-700">Reset Onboarding</p>
                           <p className="text-xs text-gray-400 mt-0.5">Re-run setup to update your role or preferences.</p>
                         </div>
-                        <Button
-                          type="button" variant="outline" size="sm"
-                          className="text-xs flex-shrink-0"
+                        <Button type="button" variant="outline" size="sm" className="text-xs flex-shrink-0"
                           onClick={async () => {
                             await base44.auth.updateMe({ onboarding_complete: false }).catch(() => {});
                             window.location.href = createPageUrl('MyDashboard');
-                          }}
-                        >
+                          }}>
                           Reset
                         </Button>
                       </div>
@@ -340,19 +437,12 @@ export default function Profile() {
                           <p className="text-sm font-medium text-gray-700">Request Account Deletion</p>
                           <p className="text-xs text-gray-400 mt-0.5">Handled manually by our team within 2 business days.</p>
                         </div>
-                        <Button
-                          type="button" variant="outline" size="sm"
+                        <Button type="button" variant="outline" size="sm"
                           className="text-red-600 border-red-200 hover:bg-red-50 text-xs flex-shrink-0"
                           onClick={() => {
-                            base44.entities.ContactMessage.create({
-                              name: user.full_name || user.email,
-                              email: user.email,
-                              subject: 'Account Deletion Request',
-                              message: `User ${user.email} (ID: ${user.id}) has requested account deletion.`,
-                            }).catch(() => {});
-                            alert('Your deletion request has been submitted. Our team will follow up via email within 2 business days.');
-                          }}
-                        >
+                            base44.entities.ContactMessage.create({ name: user.full_name || user.email, email: user.email, subject: 'Account Deletion Request', message: `User ${user.email} (ID: ${user.id}) has requested account deletion.` }).catch(() => {});
+                            alert('Your deletion request has been submitted. Our team will follow up within 2 business days.');
+                          }}>
                           Request
                         </Button>
                       </div>
@@ -361,33 +451,56 @@ export default function Profile() {
                 </div>
               </TabsContent>
 
-              {/* ── My Follows Tab ────────────────────────────────────────── */}
+              {/* ── Identity Tab ─────────────────────────────────────────── */}
+              <TabsContent value="identity" className="p-6 space-y-5">
+                <IdentitySection formData={formData} setFormData={setFormData} />
+                <Button type="submit" disabled={updateMutation.isPending}
+                  className="bg-[#1A1A1A] hover:bg-black text-white gap-2">
+                  <Save className="w-4 h-4" />
+                  {updateMutation.isPending ? 'Saving…' : 'Save Identity'}
+                </Button>
+              </TabsContent>
+
+              {/* ── Social Links Tab ─────────────────────────────────────── */}
+              <TabsContent value="socials" className="p-6 space-y-5">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900 mb-1">Social Links</h2>
+                  <p className="text-xs text-gray-400 mb-4">Add your social handles. Toggle public display on each to control what shows on your profile page.</p>
+                  <SocialLinksEditor
+                    links={formData.social_links || []}
+                    onChange={links => setFormData({ ...formData, social_links: links })}
+                  />
+                </div>
+                <Button type="submit" disabled={updateMutation.isPending}
+                  className="bg-[#1A1A1A] hover:bg-black text-white gap-2">
+                  <Save className="w-4 h-4" />
+                  {updateMutation.isPending ? 'Saving…' : 'Save Social Links'}
+                </Button>
+              </TabsContent>
+
+              {/* ── My Follows Tab ───────────────────────────────────────── */}
               <TabsContent value="follows" className="p-6 space-y-4">
                 <div>
                   <h2 className="text-sm font-bold text-gray-900 mb-1">Drivers, Teams, Tracks & Series</h2>
-                  <p className="text-xs text-gray-400">The entities you follow show up in your garage and keep you updated.</p>
+                  <p className="text-xs text-gray-400">The entities you follow show up in your garage.</p>
                 </div>
                 <FavoritesTab formData={formData} />
                 <Button type="submit" disabled={updateMutation.isPending}
                   className="bg-[#1A1A1A] hover:bg-black text-white gap-2">
                   <Save className="w-4 h-4" />
-                  {updateMutation.isPending ? 'Saving...' : 'Save Follows'}
+                  {updateMutation.isPending ? 'Saving…' : 'Save Follows'}
                 </Button>
               </TabsContent>
 
-              {/* ── Contributions Tab ─────────────────────────────────────── */}
+              {/* ── Contributions Tab ────────────────────────────────────── */}
               <TabsContent value="contributions" className="p-6 space-y-6">
-
-                {/* Story submissions */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-gray-500" />
                     <h2 className="text-sm font-bold text-gray-900">Story Submissions</h2>
                   </div>
                   <div className="border border-gray-100 rounded-xl overflow-hidden">
-                    <div className="p-4 bg-white">
-                      <StorySubmissionForm user={user} />
-                    </div>
+                    <div className="p-4 bg-white"><StorySubmissionForm user={user} /></div>
                     <div className="p-4 bg-gray-50 border-t border-gray-100">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Your Submissions</p>
                       <ManageStorySubmissions user={user} />
@@ -395,7 +508,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Media profile — only if relevant */}
                 {isMediaUser && (
                   <div className="space-y-3 pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-2">
@@ -420,41 +532,34 @@ export default function Profile() {
                 )}
               </TabsContent>
 
-              {/* ── Racing Profiles Tab ───────────────────────────────────── */}
+              {/* ── Racing Profiles Tab ──────────────────────────────────── */}
               <TabsContent value="racing_profiles" className="p-6 space-y-6">
-
-                {/* No collaborations state */}
-                {!hasCollaborations && invitations.length === 0 && (
+                {!hasRacingProfileSection && (
                   <div className="text-center py-8 space-y-4">
                     <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto">
                       <Flag className="w-5 h-5 text-gray-400" />
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-gray-900 mb-1">No racing profiles linked</h3>
-                      <p className="text-sm text-gray-400 max-w-sm mx-auto">
-                        Link a driver, team, track, or series to unlock editing tools and Race Core.
-                      </p>
+                      <p className="text-sm text-gray-400 max-w-sm mx-auto">Link a driver, team, track, or series to unlock editing tools.</p>
                     </div>
-                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl max-w-sm mx-auto">
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl max-w-sm mx-auto text-left">
                       <p className="text-sm font-semibold text-gray-800 mb-1">Have an invite code?</p>
-                      <p className="text-xs text-gray-400 mb-3">Enter your code to link an entity to your profile.</p>
+                      <p className="text-xs text-gray-400 mb-3">Enter your code to link a profile.</p>
                       <CodeInputTab user={user} />
                     </div>
                   </div>
                 )}
 
-                {/* Active profiles */}
                 {hasCollaborations && (
                   <div className="space-y-4">
                     <h2 className="text-sm font-bold text-gray-900">Your Profiles</h2>
-
                     {primaryStale && (
                       <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        Your primary profile is no longer linked. Choose a new one below.
+                        Your primary profile is no longer linked.
                       </div>
                     )}
-
                     <div className="space-y-3">
                       {resolvedEntities.map(entity => {
                         const isThisPrimary = entity.entity_id === primaryEntity?.entity_id;
@@ -469,7 +574,7 @@ export default function Profile() {
                                   <p className="font-bold text-gray-900 text-sm">{entity.entity_name}</p>
                                   {isThisPrimary && <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200"><Star className="w-3 h-3 mr-1 inline" />Primary</Badge>}
                                 </div>
-                                <p className="text-xs text-gray-400 mt-0.5">{label} · {isOwner ? 'Owner' : 'Editor'}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{label} · {isOwner ? 'Page Owner' : 'Page Editor'}</p>
                               </div>
                               <div className="flex flex-wrap gap-2 flex-shrink-0">
                                 {!isThisPrimary && (
@@ -485,13 +590,13 @@ export default function Profile() {
                                     <Gauge className="w-3 h-3" /> Race Core
                                   </Button>
                                 )}
-                                <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs h-7 px-3"
+                                <Button type="button" size="sm" variant="outline" className="text-xs h-7 px-3"
                                   onClick={() => window.location.href = buildEditorUrl(entity)}>
                                   Open Editor
                                 </Button>
                                 {isOwner && (
                                   <Button type="button" size="sm" variant="outline" className="gap-1.5 text-xs h-7 px-3"
-                                    onClick={() => window.location.href = createPageUrl('Profile') + '?tab=racing_profiles&manage=' + entity.entity_id}>
+                                    onClick={() => window.location.href = createPageUrl('Profile') + '?tab=racing_profiles'}>
                                     <Users className="w-3 h-3" /> Collaborators
                                   </Button>
                                 )}
@@ -502,34 +607,28 @@ export default function Profile() {
                       })}
                     </div>
 
-                    {/* Manage access for owners */}
                     {resolvedEntities.some(e => e.role === 'owner') && (
                       <div className="border border-gray-100 rounded-xl p-4 bg-white space-y-3">
                         <p className="text-sm font-bold text-gray-900">Manage Collaborators</p>
-                        <p className="text-xs text-gray-400">Invite editors to help manage your profiles.</p>
+                        <p className="text-xs text-gray-400">Invite others to help manage your profiles.</p>
                         <ManageTab user={user} />
                       </div>
                     )}
 
-                    {/* Race Core quick launch */}
                     {raceCoreEntities.length > 0 && (
                       <div className="border border-gray-100 rounded-xl p-4 bg-white">
                         <RaceCoreAccessTab user={user} />
                       </div>
                     )}
+
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-sm font-semibold text-gray-800 mb-1">Have another invite code?</p>
+                      <p className="text-xs text-gray-400 mb-3">Link additional profiles to your account.</p>
+                      <CodeInputTab user={user} />
+                    </div>
                   </div>
                 )}
 
-                {/* Enter code when no collaborations */}
-                {hasCollaborations && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-sm font-semibold text-gray-800 mb-1">Have another invite code?</p>
-                    <p className="text-xs text-gray-400 mb-3">Link additional profiles to your account.</p>
-                    <CodeInputTab user={user} />
-                  </div>
-                )}
-
-                {/* Claim Requests */}
                 {claimRequests.length > 0 && (
                   <div className="space-y-3 pt-4 border-t border-gray-100">
                     <h3 className="text-sm font-bold text-gray-900">Claim Requests</h3>
@@ -540,7 +639,7 @@ export default function Profile() {
                           approved: { badge: 'bg-green-100 text-green-700 border-green-200', Icon: CheckCircle2, text: 'Approved' },
                           rejected: { badge: 'bg-red-100 text-red-600 border-red-200', Icon: XCircle, text: 'Not approved' },
                         }[claim.status] || { badge: 'bg-gray-100 text-gray-600', Icon: Clock, text: claim.status };
-                        const { Icon: StatusIcon } = statusConfig;
+                        const StatusIcon = statusConfig.Icon;
                         return (
                           <div key={claim.id} className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl bg-white">
                             <StatusIcon className="w-4 h-4 flex-shrink-0 text-gray-400" />
@@ -556,7 +655,6 @@ export default function Profile() {
                   </div>
                 )}
 
-                {/* Pending Invitations */}
                 {invitations.length > 0 && (
                   <div className="space-y-3 pt-4 border-t border-gray-100">
                     <h3 className="text-sm font-bold text-gray-900">Pending Invitations</h3>
@@ -566,8 +664,7 @@ export default function Profile() {
                           <div>
                             <p className="font-semibold text-gray-900 text-sm">{inv.entity_name}</p>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {inv.entity_type}
-                              {inv.expiration_date && (() => { try { return ` · Expires ${format(new Date(inv.expiration_date), 'MMM d')}`; } catch { return ''; } })()}
+                              {inv.entity_type}{inv.expiration_date && (() => { try { return ` · Expires ${format(new Date(inv.expiration_date), 'MMM d')}`; } catch { return ''; } })()}
                             </p>
                           </div>
                           <Button type="button" size="sm" className="bg-[#1A1A1A] text-white hover:bg-black gap-1.5 text-xs"

@@ -12,35 +12,169 @@
     },
     "display_name": {
       "type": "string",
-      "description": "User's public display name/handle"
+      "description": "Public display name shown on profile"
     },
-    "birth_date": {
+    "username": {
       "type": "string",
-      "format": "date",
-      "description": "User's date of birth"
+      "description": "Unique username \u2014 lowercase, 3-24 chars, letters/numbers/underscore only"
     },
-    "city": {
+    "username_slug": {
       "type": "string",
-      "description": "User's city"
+      "description": "Normalized username slug for routing (/u/:username_slug)"
     },
-    "state": {
+    "bio": {
       "type": "string",
-      "description": "User's state/region"
+      "description": "Short public bio"
     },
-    "country": {
+    "location_display": {
       "type": "string",
-      "description": "User's country"
+      "description": "Display-only location text (e.g. 'Phoenix, AZ')"
+    },
+    "profile_photo_url": {
+      "type": "string",
+      "description": "Profile photo URL"
+    },
+    "banner_image_url": {
+      "type": "string",
+      "description": "Banner/header image URL for public profile"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Personal or professional website URL"
+    },
+    "primary_profile_type": {
+      "type": "string",
+      "enum": [
+        "fan",
+        "driver",
+        "team",
+        "media",
+        "brand",
+        "track",
+        "series",
+        "crew",
+        "builder",
+        "sponsor",
+        "photographer",
+        "creator"
+      ],
+      "default": "fan",
+      "description": "Controls default dashboard layout and profile experience \u2014 identity only, not a permission"
+    },
+    "profile_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "fan",
+          "driver",
+          "team",
+          "media",
+          "brand",
+          "track",
+          "series",
+          "crew",
+          "builder",
+          "sponsor",
+          "photographer",
+          "creator"
+        ]
+      },
+      "default": [
+        "fan"
+      ],
+      "description": "All identity types this user identifies with"
+    },
+    "social_links": {
+      "type": "array",
+      "default": [],
+      "description": "Social media links with display settings",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram",
+              "tiktok",
+              "youtube",
+              "facebook",
+              "x",
+              "threads",
+              "linkedin",
+              "snapchat",
+              "discord",
+              "twitch",
+              "website"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "public_enabled": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    },
+    "profile_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "limited",
+        "private"
+      ],
+      "default": "limited",
+      "description": "Controls what is visible on the public profile page"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "unverified",
+      "description": "Admin-controlled verification state"
+    },
+    "verification_badges": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "verified_driver",
+          "verified_media",
+          "verified_team",
+          "verified_track",
+          "verified_series",
+          "verified_brand",
+          "hijinx_staff",
+          "founding_member"
+        ]
+      },
+      "default": [],
+      "description": "Admin-assigned verification badges"
     },
     "newsletter_subscriber": {
       "type": "boolean",
+      "default": false
+    },
+    "onboarding_complete": {
+      "type": "boolean",
       "default": false,
-      "description": "Whether the user is subscribed to the newsletter"
+      "description": "Whether the user has completed or dismissed onboarding"
     },
     "favorite_drivers": {
       "type": "array",
       "items": {
         "type": "string"
       },
+      "default": [],
       "description": "Favorited driver IDs"
     },
     "favorite_teams": {
@@ -48,6 +182,7 @@
       "items": {
         "type": "string"
       },
+      "default": [],
       "description": "Favorited team IDs"
     },
     "favorite_series": {
@@ -55,6 +190,7 @@
       "items": {
         "type": "string"
       },
+      "default": [],
       "description": "Favorited series IDs"
     },
     "favorite_tracks": {
@@ -62,15 +198,16 @@
       "items": {
         "type": "string"
       },
+      "default": [],
       "description": "Favorited track IDs"
     },
     "primary_entity_type": {
       "type": "string",
-      "description": "Primary entity type"
+      "description": "Primary entity type for Race Core quick launch"
     },
     "primary_entity_id": {
       "type": "string",
-      "description": "Primary entity ID"
+      "description": "Primary entity ID for Race Core quick launch"
     },
     "workspace_access": {
       "type": "array",
@@ -86,12 +223,7 @@
         "type": "string"
       },
       "default": [],
-      "description": "Media roles: writer, photographer, videographer, media_member, contributor, editor, managing_editor, credential_reviewer, outlet_admin"
-    },
-    "onboarding_complete": {
-      "type": "boolean",
-      "default": false,
-      "description": "Whether the user has completed or dismissed first-time onboarding"
+      "description": "Media roles: writer, photographer, videographer, etc."
     },
     "role_interest_category": {
       "type": "string",
@@ -103,27 +235,23 @@
         "Crew / Industry",
         "Fan / Supporter"
       ],
-      "description": "Broad category of the user's role interest \u2014 intent only, grants no authority"
+      "description": "Legacy field \u2014 preserved for migration. Maps to primary_profile_type."
     },
     "role_interest": {
       "type": "string",
-      "description": "Specific role within their category \u2014 intent only, grants no authority"
+      "description": "Legacy specific role field \u2014 preserved for migration"
     },
     "media_outlet_name": {
       "type": "string",
-      "description": "Name of the media outlet the user is associated with"
+      "description": "Name of media outlet user is associated with"
     },
     "portfolio_url": {
       "type": "string",
-      "description": "URL to the user's media portfolio"
+      "description": "Legacy portfolio URL \u2014 migrate to social_links.website"
     },
     "instagram_url": {
       "type": "string",
-      "description": "User's Instagram profile URL"
-    },
-    "website_url": {
-      "type": "string",
-      "description": "User's personal or professional website URL"
+      "description": "Legacy Instagram URL \u2014 migrate to social_links.instagram"
     },
     "media_specialties": {
       "type": "array",
@@ -137,28 +265,41 @@
           "Publication / Outlet"
         ]
       },
-      "description": "Types of media work the user specializes in"
+      "description": "Types of media work"
     },
     "disciplines_covered": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Racing disciplines the user covers or follows (media/fan intent)"
+      "description": "Racing disciplines covered or followed"
     },
     "series_covered": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Racing series the user covers or follows (media/fan intent)"
+      "description": "Racing series covered or followed"
     },
     "regions_covered": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Geographic regions the user covers or follows (media/fan intent)"
+      "description": "Geographic regions covered or followed"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
     }
   },
   "required": []
