@@ -41,7 +41,7 @@ export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ stories: [], drivers: [] });
+  const [searchResults, setSearchResults] = useState({ stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] });
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = React.useRef(null);
   const [scrolled, setScrolled] = useState(false);
@@ -65,14 +65,16 @@ export default function Layout({ children, currentPageName }) {
     setMobileOpen(false);
     setSearchOpen(false);
     setSearchQuery('');
-    setSearchResults({ stories: [], drivers: [] });
+    setSearchResults({ stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] });
     window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  const emptyResults = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] };
 
   useEffect(() => {
     if (!searchOpen) {
       setSearchQuery('');
-      setSearchResults({ stories: [], drivers: [] });
+      setSearchResults(emptyResults);
       return;
     }
     setTimeout(() => searchInputRef.current?.focus(), 50);
@@ -80,35 +82,51 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     if (searchQuery.length < 2) {
-      setSearchResults({ stories: [], drivers: [] });
+      setSearchResults(emptyResults);
       return;
     }
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       const q = searchQuery.toLowerCase();
-      // Fetch a broad set and filter client-side for fuzzy matching across fields
-      const [allStories, allDrivers] = await Promise.all([
+      const [allStories, allDrivers, allEvents, allTracks, allSeries, allTeams] = await Promise.all([
         base44.entities.OutletStory.list('-published_date', 200),
         base44.entities.Driver.list('-created_date', 200),
+        base44.entities.Event.list('-event_date', 200),
+        base44.entities.Track.list('-created_date', 200),
+        base44.entities.Series.list('-created_date', 200),
+        base44.entities.Team.list('-created_date', 200),
       ]);
       setSearchResults({
         stories: allStories.filter(s =>
           s.status === 'published' &&
-          (
-            s.title?.toLowerCase().includes(q) ||
-            s.subtitle?.toLowerCase().includes(q) ||
-            s.author?.toLowerCase().includes(q) ||
-            s.primary_category?.toLowerCase().includes(q) ||
-            s.sub_category?.toLowerCase().includes(q) ||
-            s.tags?.some(t => t.toLowerCase().includes(q))
-          )
-        ).slice(0, 6),
+          (s.title?.toLowerCase().includes(q) || s.subtitle?.toLowerCase().includes(q) ||
+           s.author?.toLowerCase().includes(q) || s.primary_category?.toLowerCase().includes(q) ||
+           s.sub_category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
+        ).slice(0, 4),
         drivers: allDrivers.filter(d =>
           `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
           d.primary_number?.toLowerCase().includes(q) ||
           d.hometown_city?.toLowerCase().includes(q) ||
           d.nicknames?.some(n => n.toLowerCase().includes(q))
-        ).slice(0, 6),
+        ).slice(0, 4),
+        events: allEvents.filter(e =>
+          e.published_flag &&
+          (e.name?.toLowerCase().includes(q) || e.series_name?.toLowerCase().includes(q) ||
+           e.location_note?.toLowerCase().includes(q) || e.season?.toLowerCase().includes(q))
+        ).slice(0, 4),
+        tracks: allTracks.filter(t =>
+          t.visibility_status === 'live' &&
+          (t.name?.toLowerCase().includes(q) || t.location_city?.toLowerCase().includes(q) ||
+           t.location_state?.toLowerCase().includes(q) || t.track_type?.toLowerCase().includes(q))
+        ).slice(0, 4),
+        series: allSeries.filter(s =>
+          s.name?.toLowerCase().includes(q) || s.short_name?.toLowerCase().includes(q) ||
+          s.description?.toLowerCase().includes(q)
+        ).slice(0, 4),
+        teams: allTeams.filter(t =>
+          t.name?.toLowerCase().includes(q) || t.location_city?.toLowerCase().includes(q) ||
+          t.primary_discipline?.toLowerCase().includes(q)
+        ).slice(0, 4),
       });
       setSearchLoading(false);
     }, 300);
@@ -307,25 +325,23 @@ export default function Layout({ children, currentPageName }) {
                       {searchLoading && (
                         <p className="font-mono text-[10px] tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>SEARCHING...</p>
                       )}
-                      {!searchLoading && searchQuery.length >= 2 && searchResults.stories.length === 0 && searchResults.drivers.length === 0 && (
+                      {!searchLoading && searchQuery.length >= 2 &&
+                        Object.values(searchResults).every(arr => arr.length === 0) && (
                         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No results for "{searchQuery}"</p>
                       )}
-                      {(searchResults.stories.length > 0 || searchResults.drivers.length > 0) && (
-                        <div className="flex gap-8">
+                      {Object.values(searchResults).some(arr => arr.length > 0) && (
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
                           {searchResults.stories.length > 0 && (
-                            <div className="flex-1">
+                            <div>
                               <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>STORIES</p>
                               <div className="space-y-0.5">
                                 {searchResults.stories.map(story => (
-                                  <Link
-                                    key={story.id}
-                                    to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
+                                  <Link key={story.id} to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
                                     style={{ color: 'rgba(255,255,255,0.6)' }}
                                     onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}
-                                  >
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {story.title}
                                   </Link>
                                 ))}
@@ -333,20 +349,85 @@ export default function Layout({ children, currentPageName }) {
                             </div>
                           )}
                           {searchResults.drivers.length > 0 && (
-                            <div className="flex-1">
+                            <div>
                               <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>DRIVERS</p>
                               <div className="space-y-0.5">
                                 {searchResults.drivers.map(driver => (
-                                  <Link
-                                    key={driver.id}
-                                    to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
+                                  <Link key={driver.id} to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
                                     style={{ color: 'rgba(255,255,255,0.6)' }}
                                     onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}
-                                  >
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {driver.first_name} {driver.last_name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.events.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>EVENTS</p>
+                              <div className="space-y-0.5">
+                                {searchResults.events.map(event => (
+                                  <Link key={event.id} to={`/EventProfile?id=${event.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {event.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.tracks.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>TRACKS</p>
+                              <div className="space-y-0.5">
+                                {searchResults.tracks.map(track => (
+                                  <Link key={track.id} to={track.slug ? `/TrackProfile?slug=${track.slug}` : `/TrackProfile?id=${track.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {track.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.series.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>SERIES</p>
+                              <div className="space-y-0.5">
+                                {searchResults.series.map(s => (
+                                  <Link key={s.id} to={s.slug ? `/series/${s.slug}` : `/SeriesDetail?id=${s.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {s.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.teams.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>TEAMS</p>
+                              <div className="space-y-0.5">
+                                {searchResults.teams.map(team => (
+                                  <Link key={team.id} to={`/TeamProfile?id=${team.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {team.name}
                                   </Link>
                                 ))}
                               </div>
