@@ -85,19 +85,30 @@ export default function Layout({ children, currentPageName }) {
     }
     const timer = setTimeout(async () => {
       setSearchLoading(true);
-      const [stories, drivers] = await Promise.all([
-        base44.entities.OutletStory.list('-created_date', 50),
-        base44.entities.Driver.list('-created_date', 50),
-      ]);
       const q = searchQuery.toLowerCase();
+      // Fetch a broad set and filter client-side for fuzzy matching across fields
+      const [allStories, allDrivers] = await Promise.all([
+        base44.entities.OutletStory.list('-published_date', 200),
+        base44.entities.Driver.list('-created_date', 200),
+      ]);
       setSearchResults({
-        stories: stories.filter(s =>
+        stories: allStories.filter(s =>
           s.status === 'published' &&
-          (s.title?.toLowerCase().includes(q) || s.primary_category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
-        ).slice(0, 4),
-        drivers: drivers.filter(d =>
-          `${d.first_name} ${d.last_name}`.toLowerCase().includes(q)
-        ).slice(0, 4),
+          (
+            s.title?.toLowerCase().includes(q) ||
+            s.subtitle?.toLowerCase().includes(q) ||
+            s.author?.toLowerCase().includes(q) ||
+            s.primary_category?.toLowerCase().includes(q) ||
+            s.sub_category?.toLowerCase().includes(q) ||
+            s.tags?.some(t => t.toLowerCase().includes(q))
+          )
+        ).slice(0, 6),
+        drivers: allDrivers.filter(d =>
+          `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
+          d.primary_number?.toLowerCase().includes(q) ||
+          d.hometown_city?.toLowerCase().includes(q) ||
+          d.nicknames?.some(n => n.toLowerCase().includes(q))
+        ).slice(0, 6),
       });
       setSearchLoading(false);
     }, 300);
@@ -136,7 +147,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="px-3 py-2">
             <header
               onMouseEnter={() => setIsHeaderHovered(true)}
-              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); setSearchOpen(false); }}
+              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); if (!searchQuery) setSearchOpen(false); }}
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
