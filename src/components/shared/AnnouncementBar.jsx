@@ -53,7 +53,7 @@ export default function AnnouncementBar() {
         <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#1DA1A1', boxShadow: '0 0 6px rgba(29,161,161,0.8)' }} />
         <span
           className="font-mono text-[9px] tracking-[0.45em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.45)' }}
+          style={{ color: 'rgba(255,255,255,0.9)' }}
         >
           {betaMessage}
         </span>

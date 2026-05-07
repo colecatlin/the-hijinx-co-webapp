@@ -377,9 +377,9 @@ export default function Layout({ children, currentPageName }) {
                             key={sub.name}
                             to={sub.href || createPageUrl(sub.page)}
                             className="px-3 py-1.5 text-xs font-semibold tracking-wide uppercase rounded-lg transition-all"
-                            style={{ color: 'rgba(255,255,255,0.55)' }}
+                            style={{ color: 'rgba(255,255,255,0.9)' }}
                             onMouseEnter={e => { e.currentTarget.style.color = '#1DA1A1'; e.currentTarget.style.background = 'rgba(29,161,161,0.08)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'transparent'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'transparent'; }}
                           >
                             {sub.name}
                           </Link>
