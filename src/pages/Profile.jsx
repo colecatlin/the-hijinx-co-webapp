@@ -549,7 +549,7 @@ export default function Profile() {
               <GlassPanel>
                 <SectionLabel>My Follows</SectionLabel>
                 <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Drivers, teams, tracks and series you follow.</p>
-                <div className="bg-white rounded-xl p-4">
+                <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <FavoritesTab formData={formData} />
                 </div>
                 <div className="mt-5">
@@ -562,11 +562,11 @@ export default function Profile() {
             <TabsContent value="contributions">
               <GlassPanel>
                 <SectionLabel>Story Submissions</SectionLabel>
-                <div className="bg-white rounded-xl p-4 mb-5">
+                <div className="rounded-xl p-4 mb-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <StorySubmissionForm user={user} />
                 </div>
-                <div className="bg-white rounded-xl p-4">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Your Submissions</p>
+                <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Your Submissions</p>
                   <ManageStorySubmissions user={user} />
                 </div>
 
@@ -575,12 +575,12 @@ export default function Profile() {
                     <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="pt-5">
                       <SectionLabel>Media Profile</SectionLabel>
                     </div>
-                    <div className="bg-white rounded-xl p-4">
+                    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                       <MediaProfileTab user={user} />
                     </div>
-                    <div className="bg-white rounded-xl p-4">
-                      <p className="text-sm font-semibold text-gray-900 mb-1">Contributor Access</p>
-                      <p className="text-xs text-gray-400 mb-4">Apply to become an approved media contributor.</p>
+                    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <p className="text-sm font-bold text-white mb-1">Contributor Access</p>
+                      <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Apply to become an approved media contributor.</p>
                       {isApprovedContributor(user) ? (
                         <MediaApplicationStatus application={mediaApplication} isContributor={true} />
                       ) : (mediaAppSubmitted || mediaApplication) ? (
@@ -608,7 +608,7 @@ export default function Profile() {
                       <p className="text-base font-bold text-white">No profiles linked yet</p>
                       <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Enter your invite code to link a driver, team, track, or series.</p>
                     </div>
-                    <div className="bg-white rounded-xl p-4 max-w-sm mx-auto text-left">
+                    <div className="rounded-xl p-4 max-w-sm mx-auto text-left" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                       <CodeInputTab user={user} />
                     </div>
                   </div>
@@ -678,15 +678,15 @@ export default function Profile() {
                     </div>
 
                     {resolvedEntities.some(e => e.role === 'owner') && (
-                      <div className="bg-white rounded-xl p-4">
-                        <p className="text-sm font-bold text-gray-900 mb-1">Manage Collaborators</p>
-                        <p className="text-xs text-gray-400 mb-3">Invite others to help manage your profiles.</p>
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <p className="text-sm font-bold text-white mb-1">Manage Collaborators</p>
+                        <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Invite others to help manage your profiles.</p>
                         <ManageTab user={user} />
                       </div>
                     )}
 
                     {raceCoreEntities.length > 0 && (
-                      <div className="bg-white rounded-xl p-4">
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <RaceCoreAccessTab user={user} />
                       </div>
                     )}
@@ -694,7 +694,7 @@ export default function Profile() {
                     <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       <p className="text-sm font-bold text-white mb-1">Have another invite code?</p>
                       <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Link additional profiles to your account.</p>
-                      <div className="bg-white rounded-xl p-4">
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <CodeInputTab user={user} />
                       </div>
                     </div>
