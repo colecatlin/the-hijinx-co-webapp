@@ -41,7 +41,8 @@ export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] });
+  const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] };
+  const [searchResults, setSearchResults] = useState(EMPTY_RESULTS);
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = React.useRef(null);
   const [scrolled, setScrolled] = useState(false);
@@ -65,16 +66,14 @@ export default function Layout({ children, currentPageName }) {
     setMobileOpen(false);
     setSearchOpen(false);
     setSearchQuery('');
-    setSearchResults({ stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] });
+    setSearchResults(EMPTY_RESULTS);
     window.scrollTo(0, 0);
   }, [location.pathname]);
-
-  const emptyResults = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] };
 
   useEffect(() => {
     if (!searchOpen) {
       setSearchQuery('');
-      setSearchResults(emptyResults);
+      setSearchResults(EMPTY_RESULTS);
       return;
     }
     setTimeout(() => searchInputRef.current?.focus(), 50);
@@ -82,7 +81,7 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     if (searchQuery.length < 2) {
-      setSearchResults(emptyResults);
+      setSearchResults(EMPTY_RESULTS);
       return;
     }
     const timer = setTimeout(async () => {
@@ -104,10 +103,11 @@ export default function Layout({ children, currentPageName }) {
            s.sub_category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
         ).slice(0, 4),
         drivers: allDrivers.filter(d =>
-          `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
-          d.primary_number?.toLowerCase().includes(q) ||
-          d.hometown_city?.toLowerCase().includes(q) ||
-          d.nicknames?.some(n => n.toLowerCase().includes(q))
+          d.visibility_status === 'live' &&
+          (`${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
+           d.primary_number?.toLowerCase().includes(q) ||
+           d.hometown_city?.toLowerCase().includes(q) ||
+           d.nicknames?.some(n => n.toLowerCase().includes(q)))
         ).slice(0, 4),
         events: allEvents.filter(e =>
           e.published_flag &&
@@ -120,8 +120,9 @@ export default function Layout({ children, currentPageName }) {
            t.location_state?.toLowerCase().includes(q) || t.track_type?.toLowerCase().includes(q))
         ).slice(0, 4),
         series: allSeries.filter(s =>
-          s.name?.toLowerCase().includes(q) || s.short_name?.toLowerCase().includes(q) ||
-          s.description?.toLowerCase().includes(q)
+          s.visibility_status === 'live' &&
+          (s.name?.toLowerCase().includes(q) || s.short_name?.toLowerCase().includes(q) ||
+           s.description?.toLowerCase().includes(q))
         ).slice(0, 4),
         teams: allTeams.filter(t =>
           t.name?.toLowerCase().includes(q) || t.location_city?.toLowerCase().includes(q) ||
@@ -165,7 +166,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="px-3 py-2">
             <header
               onMouseEnter={() => setIsHeaderHovered(true)}
-              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); if (!searchQuery) setSearchOpen(false); }}
+              onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); if (!searchQuery && !searchLoading) setSearchOpen(false); }}
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
@@ -309,7 +310,7 @@ export default function Layout({ children, currentPageName }) {
                         <input
                           ref={searchInputRef}
                           type="text"
-                          placeholder="Search stories, drivers, teams..."
+                          placeholder="Search stories, drivers, events, tracks, series, teams..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           className="flex-1 bg-transparent outline-none text-sm font-medium"
