@@ -43,7 +43,7 @@ export default function AnnouncementBar() {
 
   return (
     <div
-      className="py-1.5 px-4"
+      className="py-3 px-4"
       style={{
         background: 'rgba(5, 8, 10, 0.85)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
