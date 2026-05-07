@@ -133,7 +133,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="sticky top-0 z-50" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
-          <div className="px-3 pt-2 pb-1">
+          <div className="px-3 py-2">
             <header
               onMouseEnter={() => setIsHeaderHovered(true)}
               onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); setSearchOpen(false); }}
