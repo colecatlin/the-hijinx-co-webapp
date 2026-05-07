@@ -1,30 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Compass, BookOpen, Calendar, Shirt, Camera, FileText, Flag, Users, Wrench, Image } from 'lucide-react';
+import {
+  Compass, BookOpen, Calendar, Shirt, Camera, FileText,
+  Flag, Users, Wrench, Image, MapPin, Trophy, Handshake, Star,
+} from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
-function ModuleCard({ icon: Icon, label, sub, to, accentColor = TEAL }) {
+function ModuleCard({ icon: Icon, label, sub, to }) {
   return (
     <Link to={to}>
       <div
-        className="flex items-center gap-3 p-4 rounded-2xl transition-all duration-200 group"
-        style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.06)',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = 'rgba(29,161,161,0.06)';
-          e.currentTarget.style.border = '1px solid rgba(29,161,161,0.2)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)';
-        }}
+        className="flex items-center gap-3 p-4 rounded-2xl transition-all duration-200"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.06)'; e.currentTarget.style.border = '1px solid rgba(29,161,161,0.2)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)'; }}
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(29,161,161,0.12)', color: accentColor }}>
+          style={{ background: 'rgba(29,161,161,0.12)', color: TEAL }}>
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
@@ -42,6 +36,24 @@ const MODULE_SETS = {
     { icon: Calendar, label: 'Events', sub: 'Races & schedules', to: createPageUrl('EventDirectory') },
     { icon: BookOpen, label: 'The Outlet', sub: 'Racing stories', to: createPageUrl('OutletHome') },
     { icon: Compass, label: 'INDEX46', sub: 'Teams, tracks & series', to: createPageUrl('MotorsportsHome') },
+  ],
+  team: [
+    { icon: Users, label: 'Team Directory', sub: 'Browse all teams', to: createPageUrl('TeamDirectory') },
+    { icon: Flag, label: 'Drivers', sub: 'Driver grid', to: createPageUrl('DriverDirectory') },
+    { icon: Calendar, label: 'Events', sub: 'Race schedule', to: createPageUrl('EventDirectory') },
+    { icon: BookOpen, label: 'The Outlet', sub: 'Team coverage', to: createPageUrl('OutletHome') },
+  ],
+  track: [
+    { icon: MapPin, label: 'Track Directory', sub: 'All venues', to: createPageUrl('TrackDirectory') },
+    { icon: Calendar, label: 'Events', sub: 'Upcoming races at your venue', to: createPageUrl('EventDirectory') },
+    { icon: BookOpen, label: 'Venue Coverage', sub: 'Stories & media', to: createPageUrl('OutletHome') },
+    { icon: Compass, label: 'INDEX46', sub: 'Series & racing partners', to: createPageUrl('MotorsportsHome') },
+  ],
+  series: [
+    { icon: Trophy, label: 'Series Home', sub: 'Your series hub', to: createPageUrl('SeriesHome') },
+    { icon: Calendar, label: 'Events', sub: 'Season schedule', to: createPageUrl('EventDirectory') },
+    { icon: Flag, label: 'Drivers & Teams', sub: 'Series participants', to: createPageUrl('DriverDirectory') },
+    { icon: BookOpen, label: 'The Outlet', sub: 'Series coverage', to: createPageUrl('OutletHome') },
   ],
   media: [
     { icon: Camera, label: 'Media Portal', sub: 'Credentials & assets', to: createPageUrl('MediaPortal') },
@@ -61,17 +73,23 @@ const MODULE_SETS = {
     { icon: BookOpen, label: 'The Outlet', sub: 'Browse coverage', to: createPageUrl('OutletHome') },
     { icon: Compass, label: 'INDEX46', sub: 'Explore the grid', to: createPageUrl('MotorsportsHome') },
   ],
-  team: [
-    { icon: Users, label: 'Team Directory', sub: 'Browse all teams', to: createPageUrl('TeamDirectory') },
-    { icon: Flag, label: 'Drivers', sub: 'Driver grid', to: createPageUrl('DriverDirectory') },
-    { icon: Calendar, label: 'Events', sub: 'Race schedule', to: createPageUrl('EventDirectory') },
-    { icon: BookOpen, label: 'The Outlet', sub: 'Team coverage', to: createPageUrl('OutletHome') },
-  ],
   builder: [
     { icon: Wrench, label: 'INDEX46', sub: 'Builders & crew', to: createPageUrl('MotorsportsHome') },
     { icon: Flag, label: 'Teams', sub: 'Team directory', to: createPageUrl('TeamDirectory') },
     { icon: Calendar, label: 'Events', sub: 'Upcoming races', to: createPageUrl('EventDirectory') },
     { icon: BookOpen, label: 'The Outlet', sub: 'Tech & builds', to: createPageUrl('OutletHome') },
+  ],
+  crew: [
+    { icon: Users, label: 'Teams', sub: 'Find team connections', to: createPageUrl('TeamDirectory') },
+    { icon: Flag, label: 'Drivers', sub: 'Driver grid', to: createPageUrl('DriverDirectory') },
+    { icon: Calendar, label: 'Events', sub: 'Event prep & schedule', to: createPageUrl('EventDirectory') },
+    { icon: Compass, label: 'INDEX46', sub: 'Find opportunities', to: createPageUrl('MotorsportsHome') },
+  ],
+  sponsor: [
+    { icon: Star, label: 'Driver Directory', sub: 'Partnership opportunities', to: createPageUrl('DriverDirectory') },
+    { icon: Users, label: 'Teams', sub: 'Team sponsorship', to: createPageUrl('TeamDirectory') },
+    { icon: Compass, label: 'INDEX46', sub: 'Explore the grid', to: createPageUrl('MotorsportsHome') },
+    { icon: BookOpen, label: 'The Outlet', sub: 'Brand & culture', to: createPageUrl('OutletHome') },
   ],
   fan: [
     { icon: Compass, label: 'INDEX46', sub: 'Drivers, teams & tracks', to: createPageUrl('MotorsportsHome') },
@@ -81,9 +99,21 @@ const MODULE_SETS = {
   ],
 };
 
+const SECTION_LABELS = {
+  media: 'Media & Content',
+  photographer: 'Media & Content',
+  creator: 'Media & Content',
+  driver: 'Racing World',
+  team: 'Your Scene',
+  track: 'Venue & Events',
+  series: 'Series Hub',
+  crew: 'Crew & Connections',
+  sponsor: 'Brand & Partnerships',
+  builder: 'Builds & Garage',
+  fan: 'Explore',
+};
+
 export default function GarageAdaptiveModules({ primaryProfileType, mode }) {
-  // For entity owners / editors / media users with permission — use mode-based key
-  // Otherwise use primary_profile_type
   const key = (() => {
     if (mode === 'media_user') return 'media';
     if (['entity_owner', 'entity_editor'].includes(mode)) return primaryProfileType || 'driver';
@@ -91,12 +121,7 @@ export default function GarageAdaptiveModules({ primaryProfileType, mode }) {
   })();
 
   const modules = MODULE_SETS[key] || MODULE_SETS.fan;
-  const sectionLabel = (() => {
-    if (mode === 'media_user' || key === 'media' || key === 'photographer' || key === 'creator') return 'Media & Content';
-    if (key === 'driver' || mode === 'entity_owner' || mode === 'entity_editor') return 'Racing World';
-    if (key === 'team') return 'Your Scene';
-    return 'Explore';
-  })();
+  const sectionLabel = SECTION_LABELS[key] || 'Explore';
 
   return (
     <div className="space-y-3">

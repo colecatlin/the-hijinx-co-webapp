@@ -47,7 +47,7 @@ export default function ProfileIdentityHero({ user, isOwner = false, completionP
           boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
         }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex flex-wrap items-start gap-4">
           {/* Avatar */}
           <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden"
             style={{ border: '2px solid rgba(29,161,161,0.4)', boxShadow: '0 0 20px rgba(29,161,161,0.15)' }}
@@ -109,8 +109,8 @@ export default function ProfileIdentityHero({ user, isOwner = false, completionP
           </div>
 
           {isOwner && (
-            <Link to="/Profile">
-              <button className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+            <Link to="/Profile" className="flex-shrink-0">
+              <button className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}

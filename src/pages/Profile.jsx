@@ -374,8 +374,8 @@ export default function Profile() {
           <Tabs defaultValue={defaultTab} className="space-y-5">
 
             {/* Tab bar */}
-            <div className="overflow-x-auto">
-              <TabsList className="inline-flex gap-1 p-1 rounded-2xl w-auto min-w-full"
+            <div className="overflow-x-auto whitespace-nowrap">
+              <TabsList className="inline-flex gap-1 p-1 rounded-2xl w-auto"
                 style={{ background: 'rgba(8,12,14,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 {tabs.map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value}
@@ -453,9 +453,9 @@ export default function Profile() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="public">Public — anyone can find and view your full profile</SelectItem>
-                        <SelectItem value="limited">Limited — your profile exists but isn't publicly discoverable</SelectItem>
-                        <SelectItem value="private">Private — completely hidden from public</SelectItem>
+                        <SelectItem value="public">Public — anyone can discover and view your full profile</SelectItem>
+                        <SelectItem value="limited">Limited — visible by direct link, but not discoverable or searchable</SelectItem>
+                        <SelectItem value="private">Private — only you can view your profile</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -534,13 +534,10 @@ export default function Profile() {
                 <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
                   Add your socials. Toggle visibility to control what appears on your public profile.
                 </p>
-                {/* Social links editor uses light styling — wrapped in light box */}
-                <div className="bg-white rounded-xl p-4">
-                  <SocialLinksEditor
-                    links={formData.social_links || []}
-                    onChange={links => setFormData({ ...formData, social_links: links })}
-                  />
-                </div>
+                <SocialLinksEditor
+                  links={formData.social_links || []}
+                  onChange={links => setFormData({ ...formData, social_links: links })}
+                />
                 <div className="mt-5">
                   <SaveButton label="Save Social Links" />
                 </div>

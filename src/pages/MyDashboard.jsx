@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import HijinxPageShell from '@/components/shared/HijinxPageShell';
@@ -54,7 +53,7 @@ function RacingProfileCard({ entity, isPrimary, index }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 + index * 0.05 }}
-      className="flex items-center justify-between px-4 py-4 rounded-xl transition-all duration-200"
+      className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 gap-2"
       style={{
         background: isPrimary ? 'rgba(29,161,161,0.08)' : 'rgba(255,255,255,0.03)',
         border: isPrimary ? '1px solid rgba(29,161,161,0.25)' : '1px solid rgba(255,255,255,0.06)',
@@ -75,7 +74,7 @@ function RacingProfileCard({ entity, isPrimary, index }) {
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
         {entity.is_racecore_entity && (
           <button
             className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
@@ -265,12 +264,28 @@ export default function MyDashboard() {
         {!hasEntities && mode !== 'admin' && (
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="flex items-center justify-between px-5 py-4 rounded-2xl"
+            className="flex items-start sm:items-center justify-between gap-3 px-5 py-4 rounded-2xl"
             style={{ background: 'rgba(29,161,161,0.05)', border: '1px dashed rgba(29,161,161,0.2)' }}
           >
             <div>
-              <p className="text-sm font-bold text-white">Running a team, track, or series?</p>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Enter your invite code to link your profile.</p>
+              <p className="text-sm font-bold text-white">{(() => {
+                const t = primaryProfileType;
+                if (t === 'driver') return 'Race under HIJINX?';
+                if (t === 'team') return 'Running a team?';
+                if (t === 'track') return 'Manage a track?';
+                if (t === 'series') return 'Run a series?';
+                if (['media', 'photographer', 'creator'].includes(t)) return 'Got media access?';
+                return 'Have an invite code?';
+              })()}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{(() => {
+                const t = primaryProfileType;
+                if (t === 'driver') return 'Enter your invite code or claim your driver profile.';
+                if (t === 'team') return 'Enter your invite code to connect your team profile.';
+                if (t === 'track') return 'Enter your invite code to connect your venue profile.';
+                if (t === 'series') return 'Enter your invite code to connect your series profile.';
+                if (['media', 'photographer', 'creator'].includes(t)) return 'Enter your invite code to connect your profile.';
+                return 'Connect your profile to a driver, team, track, or series.';
+              })()}</p>
             </div>
             <Link to={createPageUrl('Profile') + '?tab=racing_profiles'}>
               <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all flex-shrink-0"

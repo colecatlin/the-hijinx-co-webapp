@@ -78,7 +78,20 @@ export default function OnboardingIntercept({ user, onSkip }) {
   };
 
   const handleSkipUsername = () => setStep('intent');
-  const handleMediaBranch = () => setStep('media');
+  const handleMediaBranch = async () => {
+    const currentTypes = updatedUser?.profile_types || [];
+    const hasMedia = currentTypes.some(t => ['media', 'photographer', 'creator'].includes(t));
+    const newTypes = hasMedia ? currentTypes : [...currentTypes.filter(t => t !== 'fan'), 'media'];
+    const primaryType = updatedUser?.primary_profile_type;
+    const newPrimary = (primaryType && primaryType !== 'fan') ? primaryType : 'media';
+    await base44.auth.updateMe({
+      onboarding_complete: true,
+      profile_types: newTypes,
+      primary_profile_type: newPrimary,
+    }).catch(() => {});
+    setUpdatedUser(prev => ({ ...prev, profile_types: newTypes, primary_profile_type: newPrimary }));
+    setStep('media');
+  };
 
   const handleEntityOption = async (mode, type) => {
     await base44.auth.updateMe({ onboarding_complete: true }).catch(() => {});
@@ -190,7 +203,7 @@ export default function OnboardingIntercept({ user, onSkip }) {
                   {usernameError && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{usernameError}</p>}
                   {usernameValid && !usernameError && (
                     <p className="text-xs mt-2 font-mono" style={{ color: 'rgba(29,161,161,0.7)' }}>
-                      hijinx.co/u/{usernameInput}
+                      your public URL: /u/{usernameInput}
                     </p>
                   )}
                   {!usernameValid && !usernameError && (
