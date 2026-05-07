@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import PageShell from '@/components/shared/PageShell';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { createPageUrl } from '@/components/utils';
+import HijinxPageShell from '@/components/shared/HijinxPageShell';
+import ProfileIdentityHero from '@/components/profile/ProfileIdentityHero';
+import GarageAdaptiveModules from '@/components/mydashboard/GarageAdaptiveModules';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import OnboardingIntercept from '@/components/onboarding/OnboardingIntercept';
@@ -17,81 +18,122 @@ import {
   buildEditorUrl,
 } from '@/components/entities/entityResolver';
 import { getValidPrimaryEntity } from '@/components/entities/entityPrimary';
-import { getUserMode } from '@/components/system/userModeResolver';
+import { getUserMode, getPublicProfileType } from '@/components/system/userModeResolver';
 import {
-  User, Calendar, BookOpen, Camera, Shield, Edit,
-  ChevronRight, Gauge, KeyRound, ExternalLink, Star,
-  Shirt, Compass, FileText, Users, ArrowRight, Flag
+  ChevronRight, Gauge, KeyRound, Star, Shield, Flag,
+  BarChart3, AlertCircle, ListChecks
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// ─── Entity type labels ───────────────────────────────────────────────────────
-
+const TEAL = '#1DA1A1';
 const ENTITY_TYPE_LABELS = {
-  Driver: 'My Driver Page',
-  Team: 'My Team Page',
-  Track: 'My Track Page',
-  Series: 'My Series Page',
+  Driver: 'Driver Page',
+  Team: 'Team Page',
+  Track: 'Track Page',
+  Series: 'Series Page',
 };
 
-// ─── Racing Profile Card ──────────────────────────────────────────────────────
+function computeProfileCompletion(user) {
+  const fields = [
+    user?.first_name, user?.last_name, user?.username,
+    user?.bio, user?.profile_photo_url, user?.location_display,
+    user?.website_url || (user?.social_links || []).length > 0,
+  ];
+  const filled = fields.filter(Boolean).length;
+  return Math.round((filled / fields.length) * 100);
+}
 
-function RacingProfileCard({ entity, isPrimary }) {
+// ─── Racing Profile Card (dark) ───────────────────────────────────────────────
+
+function RacingProfileCard({ entity, isPrimary, index }) {
   const label = ENTITY_TYPE_LABELS[entity.entity_type] || entity.entity_type;
   const isOwner = entity.role === 'owner';
 
   return (
-    <div className={`flex items-center justify-between px-4 py-4 rounded-2xl border transition-shadow hover:shadow-sm ${isPrimary ? 'border-[#1A1A1A] bg-gray-50' : 'border-gray-200 bg-white'}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 + index * 0.05 }}
+      className="flex items-center justify-between px-4 py-4 rounded-xl transition-all duration-200"
+      style={{
+        background: isPrimary ? 'rgba(29,161,161,0.08)' : 'rgba(255,255,255,0.03)',
+        border: isPrimary ? '1px solid rgba(29,161,161,0.25)' : '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-          <Flag className="w-4 h-4 text-gray-600" />
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: isPrimary ? 'rgba(29,161,161,0.2)' : 'rgba(255,255,255,0.05)' }}>
+          <Flag className="w-4 h-4" style={{ color: isPrimary ? TEAL : 'rgba(255,255,255,0.4)' }} />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-gray-900">{entity.entity_name}</p>
-            {isPrimary && <Star className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-bold text-white truncate">{entity.entity_name}</p>
+            {isPrimary && <Star className="w-3 h-3 flex-shrink-0" style={{ color: '#00FFDA' }} />}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">{label} · {isOwner ? 'Owner' : 'Editor'}</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            {label} · {isOwner ? 'Page Owner' : 'Page Editor'}
+          </p>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {entity.is_racecore_entity && (
-          <Button size="sm" className="text-xs gap-1 bg-[#1A1A1A] hover:bg-black text-white h-7 px-3"
-            onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}>
+          <button
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
+            style={{ background: TEAL, color: '#fff' }}
+            onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}
+            onMouseEnter={e => e.currentTarget.style.background = '#158080'}
+            onMouseLeave={e => e.currentTarget.style.background = TEAL}
+          >
             <Gauge className="w-3 h-3" /> Race Core
-          </Button>
+          </button>
         )}
-        <Button size="sm" variant="outline" className="text-xs gap-1 h-7 px-3"
-          onClick={() => window.location.href = buildEditorUrl(entity)}>
-          Edit <ChevronRight className="w-3 h-3" />
-        </Button>
+        <button
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+          onClick={() => window.location.href = buildEditorUrl(entity)}
+          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+        >
+          Edit <ChevronRight className="w-3 h-3 inline" />
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-// ─── Mode-specific sections ───────────────────────────────────────────────────
+// ─── Admin Control Center ─────────────────────────────────────────────────────
 
-function FanSection() {
+function AdminControlCenter() {
   return (
-    <div className="space-y-3">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Explore</p>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="px-5 py-5 rounded-2xl"
+      style={{
+        background: 'rgba(139,0,255,0.06)',
+        border: '1px solid rgba(139,0,255,0.2)',
+        boxShadow: '0 0 40px rgba(139,0,255,0.05)',
+      }}>
+      <div className="flex items-center gap-2 mb-2">
+        <Shield className="w-3.5 h-3.5" style={{ color: 'rgba(200,150,255,0.7)' }} />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(200,150,255,0.7)' }}>
+          Control Center
+        </p>
+      </div>
+      <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+        Full platform admin access active.
+      </p>
+      <div className="flex flex-wrap gap-2">
         {[
-          { label: 'INDEX46', sub: 'Drivers, teams & tracks', to: createPageUrl('MotorsportsHome'), icon: Compass, color: 'bg-blue-50 text-blue-600' },
-          { label: 'The Outlet', sub: 'Stories & coverage', to: createPageUrl('OutletHome'), icon: BookOpen, color: 'bg-amber-50 text-amber-600' },
-          { label: 'Events', sub: 'Races & schedules', to: createPageUrl('EventDirectory'), icon: Calendar, color: 'bg-green-50 text-green-600' },
-          { label: 'Apparel', sub: 'Shop HIJINX CO.', to: createPageUrl('ApparelHome'), icon: Shirt, color: 'bg-purple-50 text-purple-600' },
-        ].map(({ label, sub, to, icon: Icon, color }) => (
+          { label: 'Management', to: createPageUrl('Management'), icon: Shield },
+          { label: 'Review Queue', to: '/management/editorial/review-queue', icon: ListChecks },
+          { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
+          { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
+        ].map(({ label, to, icon: Icon }) => (
           <Link key={label} to={to}>
-            <div className="flex flex-col gap-2 p-4 border border-gray-100 rounded-2xl hover:border-gray-200 hover:shadow-sm transition-all h-full">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-                <Icon className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">{label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-              </div>
-            </div>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}>
+              <Icon className="w-3 h-3" /> {label}
+            </button>
           </Link>
         ))}
       </div>
@@ -99,63 +141,7 @@ function FanSection() {
   );
 }
 
-function MediaSection() {
-  return (
-    <div className="space-y-3">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Media & Content</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[
-          { label: 'Media Portal', sub: 'Credentials, assets & assignments', to: createPageUrl('MediaPortal'), icon: Camera, color: 'bg-teal-50 text-teal-600' },
-          { label: 'Submit a Story', sub: 'Pitch to The Outlet', to: createPageUrl('OutletSubmit'), icon: FileText, color: 'bg-amber-50 text-amber-600' },
-          { label: 'The Outlet', sub: 'Browse all stories', to: createPageUrl('OutletHome'), icon: BookOpen, color: 'bg-blue-50 text-blue-600' },
-        ].map(({ label, sub, to, icon: Icon, color }) => (
-          <Link key={label} to={to}>
-            <div className="flex items-start gap-3 p-4 border border-gray-100 rounded-2xl hover:border-gray-200 hover:shadow-sm transition-all h-full">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-                <Icon className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">{label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function AdminSection() {
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl px-6 py-5 space-y-3">
-      <div className="flex items-center gap-2">
-        <Shield className="w-4 h-4 text-white/60" />
-        <p className="text-xs font-semibold text-white/60 uppercase tracking-widest">Control Center</p>
-      </div>
-      <p className="text-sm text-white/80">You have full admin access to the platform.</p>
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Link to={createPageUrl('Management')}>
-          <Button size="sm" className="bg-white text-gray-900 hover:bg-gray-100 gap-1.5 text-xs">
-            <Shield className="w-3.5 h-3.5" /> Management
-          </Button>
-        </Link>
-        <Link to={createPageUrl('Diagnostics')}>
-          <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10 gap-1.5 text-xs">
-            Diagnostics
-          </Button>
-        </Link>
-        <Link to={createPageUrl('AnalyticsDashboard')}>
-          <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10 gap-1.5 text-xs">
-            Analytics
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function MyDashboard() {
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
@@ -183,6 +169,8 @@ export default function MyDashboard() {
   const raceCoreEntities = getRaceCoreEntities(resolvedEntities);
   const raceCoreTarget = (primaryEntity?.is_racecore_entity ? primaryEntity : null) || raceCoreEntities[0] || null;
   const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile });
+  const primaryProfileType = getPublicProfileType(user);
+  const completionPct = user ? computeProfileCompletion(user) : null;
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
@@ -200,20 +188,22 @@ export default function MyDashboard() {
     return <OnboardingIntercept user={user} onSkip={() => setOnboardingDismissed(true)} />;
   }
 
-  const welcomeName = user?.first_name || user?.full_name?.split(' ')[0] || '';
-
-  const modeLabel = {
-    admin: 'Platform Administrator',
-    entity_owner: 'Racing Profile Owner',
-    entity_editor: 'Racing Profile Editor',
-    media_user: 'Media & Creator',
-    fan: 'Motorsports Fan',
-  }[mode] || 'Motorsports Fan';
+  if (isLoading) {
+    return (
+      <HijinxPageShell>
+        <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+          <Skeleton className="h-44 w-full rounded-2xl opacity-20" />
+          <Skeleton className="h-28 w-full rounded-2xl opacity-10" />
+        </div>
+      </HijinxPageShell>
+    );
+  }
 
   return (
-    <PageShell className="bg-gray-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <HijinxPageShell>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
+        {/* Access banners */}
         <AccessSuccessBanner
           raceCoreTarget={raceCoreTarget}
           primaryEntity={primaryEntity}
@@ -221,75 +211,88 @@ export default function MyDashboard() {
           buildEditorUrl={buildEditorUrl}
         />
 
-        {/* ── Identity Card ─────────────────────────────────────────── */}
-        <div className="bg-white border border-gray-200 rounded-2xl px-6 py-5 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-0.5">My Garage</p>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {welcomeName ? `Welcome back, ${welcomeName}` : 'My Garage'}
-            </h1>
-            {!isLoading && (
-              <p className="text-sm text-gray-400 mt-1">{modeLabel}</p>
-            )}
-          </div>
-          <Link to={createPageUrl('Profile')}>
-            <Button variant="outline" size="sm" className="text-xs gap-1.5 flex-shrink-0">
-              <User className="w-3.5 h-3.5" /> Profile
-            </Button>
-          </Link>
-        </div>
+        {/* ── Identity Hero ────────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <ProfileIdentityHero
+            user={user}
+            isOwner={true}
+            completionPct={completionPct}
+          />
+        </motion.div>
 
-        {/* ── Admin Control Center ───────────────────────────────────── */}
-        {!isLoading && mode === 'admin' && <AdminSection />}
+        {/* ── Admin Control Center ─────────────────────────────────── */}
+        {mode === 'admin' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <AdminControlCenter />
+          </motion.div>
+        )}
 
-        {/* ── My Racing Profiles (entity owners/editors) ────────────── */}
-        {!isLoading && hasEntities && (
-          <div className="bg-white border border-gray-200 rounded-2xl px-6 py-5 space-y-3">
+        {/* ── My Racing Profiles ───────────────────────────────────── */}
+        {hasEntities && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="px-5 py-5 rounded-2xl space-y-3"
+            style={{ background: 'rgba(8,12,14,0.72)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">My Racing Profiles</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                My Racing Profiles
+              </p>
               <Link to={createPageUrl('Profile') + '?tab=racing_profiles'}>
-                <span className="text-xs text-gray-400 hover:text-gray-700 transition-colors flex items-center gap-1">
+                <span className="text-xs transition-colors flex items-center gap-1"
+                  style={{ color: 'rgba(255,255,255,0.3)' }}
+                  onMouseEnter={e => e.currentTarget.style.color = TEAL}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                >
                   Manage <ChevronRight className="w-3 h-3" />
                 </span>
               </Link>
             </div>
             <div className="space-y-2">
-              {resolvedEntities.map(entity => (
+              {resolvedEntities.map((entity, i) => (
                 <RacingProfileCard
                   key={entity.collaboration_id || entity.entity_id}
                   entity={entity}
                   isPrimary={entity.entity_id === primaryEntity?.entity_id}
+                  index={i}
                 />
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* ── Media Section ─────────────────────────────────────────── */}
-        {!isLoading && mode === 'media_user' && <MediaSection />}
-
-        {/* ── Explore / Fan Section ─────────────────────────────────── */}
-        {!isLoading && <FanSection />}
-
-        {/* ── Access code prompt for fans with no entities ──────────── */}
-        {!isLoading && !hasEntities && mode !== 'admin' && (
-          <div className="bg-white border border-dashed border-gray-200 rounded-2xl px-6 py-5 flex items-center justify-between gap-4">
+        {/* ── Invite code prompt (no entities, non-admin) ──────────── */}
+        {!hasEntities && mode !== 'admin' && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="flex items-center justify-between px-5 py-4 rounded-2xl"
+            style={{ background: 'rgba(29,161,161,0.05)', border: '1px dashed rgba(29,161,161,0.2)' }}
+          >
             <div>
-              <p className="text-sm font-semibold text-gray-800">Have an invite code?</p>
-              <p className="text-xs text-gray-400 mt-0.5">Link a driver, team, track, or series to your garage.</p>
+              <p className="text-sm font-bold text-white">Running a team, track, or series?</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Enter your invite code to link your profile.</p>
             </div>
             <Link to={createPageUrl('Profile') + '?tab=racing_profiles'}>
-              <Button size="sm" className="bg-[#1A1A1A] hover:bg-black text-white text-xs gap-1.5 flex-shrink-0">
+              <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all flex-shrink-0"
+                style={{ background: TEAL, color: '#fff' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#158080'}
+                onMouseLeave={e => e.currentTarget.style.background = TEAL}
+              >
                 <KeyRound className="w-3.5 h-3.5" /> Enter Code
-              </Button>
+              </button>
             </Link>
-          </div>
+          </motion.div>
         )}
 
-        {/* ── Pending invitations ───────────────────────────────────── */}
-        {user && !isLoading && <PendingAccessSection user={user} />}
+        {/* ── Adaptive discovery modules ───────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <GarageAdaptiveModules primaryProfileType={primaryProfileType} mode={mode} />
+        </motion.div>
+
+        {/* ── Pending invitations ──────────────────────────────────── */}
+        {user && <PendingAccessSection user={user} />}
 
       </div>
-    </PageShell>
+    </HijinxPageShell>
   );
 }

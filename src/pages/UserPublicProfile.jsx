@@ -2,21 +2,47 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import PageShell from '@/components/shared/PageShell';
-import { Badge } from '@/components/ui/badge';
+import HijinxPageShell from '@/components/shared/HijinxPageShell';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils';
-import { MapPin, Globe, ArrowLeft, ExternalLink } from 'lucide-react';
-import {
-  PROFILE_TYPE_CONFIG,
-  VERIFICATION_BADGE_CONFIG,
-  SOCIAL_PLATFORM_CONFIG,
-} from '@/components/system/userCapabilities';
+import { ArrowLeft, MapPin, Globe, ExternalLink } from 'lucide-react';
+import { PROFILE_TYPE_CONFIG, VERIFICATION_BADGE_CONFIG, SOCIAL_PLATFORM_CONFIG } from '@/components/system/userCapabilities';
+import { motion } from 'framer-motion';
 
-function SocialIcon({ platform }) {
-  const labels = { instagram: 'IG', tiktok: 'TT', youtube: 'YT', facebook: 'FB', x: 'X', threads: 'TH', linkedin: 'LI', snapchat: 'SC', discord: 'DC', twitch: 'TV', website: '🌐' };
-  return <span className="text-xs font-bold">{labels[platform] || platform.slice(0, 2).toUpperCase()}</span>;
+const TEAL = '#1DA1A1';
+
+const SOCIAL_ICONS = {
+  instagram: 'IG', tiktok: 'TK', youtube: 'YT', facebook: 'FB',
+  x: 'X', threads: 'TH', linkedin: 'LI', snapchat: 'SC',
+  discord: 'DC', twitch: 'TV', website: '🌐',
+};
+
+function SocialPill({ link }) {
+  const cfg = SOCIAL_PLATFORM_CONFIG[link.platform];
+  return (
+    <a href={link.url} target="_blank" rel="noopener noreferrer"
+      className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        color: 'rgba(255,255,255,0.55)',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(29,161,161,0.1)';
+        e.currentTarget.style.border = '1px solid rgba(29,161,161,0.3)';
+        e.currentTarget.style.color = TEAL;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+        e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+        e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+      }}
+    >
+      <span className="font-mono text-[10px]">{SOCIAL_ICONS[link.platform] || link.platform.slice(0,2).toUpperCase()}</span>
+      {link.handle && <span>{link.handle}</span>}
+      {cfg && <ExternalLink className="w-3 h-3 ml-auto opacity-40" />}
+    </a>
+  );
 }
 
 export default function UserPublicProfile() {
@@ -32,152 +58,241 @@ export default function UserPublicProfile() {
 
   if (isLoading) {
     return (
-      <PageShell className="bg-gray-50 min-h-screen">
+      <HijinxPageShell>
         <div className="max-w-2xl mx-auto px-4 py-12 space-y-4">
-          <Skeleton className="h-40 w-full rounded-2xl" />
-          <Skeleton className="h-20 w-full rounded-2xl" />
+          <Skeleton className="h-44 w-full rounded-2xl opacity-20" />
+          <Skeleton className="h-32 w-full rounded-2xl opacity-10" />
         </div>
-      </PageShell>
+      </HijinxPageShell>
     );
   }
 
+  // Private profile
   if (!profileUser || profileUser.profile_visibility === 'private') {
     return (
-      <PageShell className="bg-gray-50 min-h-screen">
-        <div className="max-w-2xl mx-auto px-4 py-24 text-center space-y-4">
-          <h1 className="text-2xl font-bold text-gray-900">Profile not found</h1>
-          <p className="text-gray-400 text-sm">This profile doesn't exist or is set to private.</p>
+      <HijinxPageShell>
+        <div className="max-w-2xl mx-auto px-4 py-24 text-center space-y-5">
+          <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <span className="text-2xl">🔒</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-black text-white">Profile not found</h1>
+            <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              This profile doesn't exist or is set to private.
+            </p>
+          </div>
           <Link to={createPageUrl('Home')}>
-            <Button variant="outline" size="sm" className="gap-2 mt-4">
+            <button className="flex items-center gap-2 mx-auto px-4 py-2 text-sm font-medium rounded-xl transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+            >
               <ArrowLeft className="w-4 h-4" /> Back to HIJINX
-            </Button>
+            </button>
           </Link>
         </div>
-      </PageShell>
+      </HijinxPageShell>
     );
   }
 
+  // Limited profile — show minimal identity, hide details
+  if (profileUser.profile_visibility === 'limited') {
+    const displayName = profileUser.display_name || profileUser.full_name || profileUser.first_name || username;
+    const primaryType = profileUser.primary_profile_type || 'fan';
+    const cfg = PROFILE_TYPE_CONFIG[primaryType];
+    return (
+      <HijinxPageShell>
+        <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+          <Link to={createPageUrl('Home')}>
+            <button className="flex items-center gap-1.5 text-xs mb-2 transition-colors"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+              onMouseEnter={e => e.currentTarget.style.color = TEAL}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> HIJINX
+            </button>
+          </Link>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            className="px-6 py-8 rounded-2xl text-center space-y-4"
+            style={{ background: 'rgba(8,12,14,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <div className="w-16 h-16 mx-auto rounded-2xl overflow-hidden"
+              style={{ border: '2px solid rgba(29,161,161,0.3)' }}>
+              {profileUser.profile_photo_url
+                ? <img src={profileUser.profile_photo_url} alt={displayName} className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg, #1DA1A1, #0D5C5C)' }}>
+                    <span className="text-2xl font-black text-white">{displayName?.[0]?.toUpperCase()}</span>
+                  </div>
+              }
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white">{displayName}</h1>
+              {profileUser.username && <p className="text-xs font-mono mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>@{profileUser.username}</p>}
+              {cfg && (
+                <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  style={{ background: 'rgba(29,161,161,0.15)', color: TEAL, border: '1px solid rgba(29,161,161,0.25)' }}>
+                  {cfg.label}
+                </span>
+              )}
+            </div>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              This profile exists, but isn't publicly discoverable yet.
+            </p>
+          </motion.div>
+        </div>
+      </HijinxPageShell>
+    );
+  }
+
+  // Full public profile
+  const displayName = profileUser.display_name || profileUser.full_name || profileUser.first_name || username;
   const profileTypes = profileUser.profile_types || ['fan'];
   const primaryType = profileUser.primary_profile_type || 'fan';
   const verificationBadges = profileUser.verification_badges || [];
+  const isVerified = profileUser.verification_status === 'verified';
   const publicSocials = (profileUser.social_links || []).filter(l => l.public_enabled !== false);
-  const displayName = profileUser.display_name || profileUser.full_name || profileUser.first_name || username;
 
   return (
-    <PageShell className="bg-gray-50 min-h-screen">
+    <HijinxPageShell>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
 
         {/* Back nav */}
         <Link to={createPageUrl('Home')}>
-          <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-2">
+          <button className="flex items-center gap-1.5 text-xs mb-2 transition-colors"
+            style={{ color: 'rgba(255,255,255,0.3)' }}
+            onMouseEnter={e => e.currentTarget.style.color = TEAL}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+          >
             <ArrowLeft className="w-3.5 h-3.5" /> HIJINX
           </button>
         </Link>
 
         {/* Banner */}
-        {profileUser.banner_image_url ? (
-          <div className="w-full h-36 rounded-2xl overflow-hidden bg-gray-200">
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+          className="w-full h-40 rounded-2xl overflow-hidden relative"
+          style={{ background: 'linear-gradient(135deg, #0D1F1F 0%, #081212 100%)' }}
+        >
+          {profileUser.banner_image_url && (
             <img src={profileUser.banner_image_url} alt="Banner" className="w-full h-full object-cover" />
-          </div>
-        ) : (
-          <div className="w-full h-36 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700" />
-        )}
+          )}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(6,10,10,1) 0%, transparent 70%)' }} />
+        </motion.div>
 
         {/* Identity card */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 -mt-10 relative">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="-mt-10 relative mx-2 px-5 py-5 rounded-2xl"
+          style={{
+            background: 'rgba(8,12,14,0.88)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+          }}
+        >
           <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-2xl border-2 border-white bg-gray-200 flex-shrink-0 overflow-hidden shadow-sm">
-              {profileUser.profile_photo_url ? (
-                <img src={profileUser.profile_photo_url} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <span className="text-xl font-bold text-gray-400">
-                    {displayName?.[0]?.toUpperCase() || '?'}
-                  </span>
-                </div>
-              )}
+            <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0"
+              style={{ border: '2px solid rgba(29,161,161,0.35)', boxShadow: '0 0 20px rgba(29,161,161,0.12)' }}>
+              {profileUser.profile_photo_url
+                ? <img src={profileUser.profile_photo_url} alt={displayName} className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg, #1DA1A1, #0D5C5C)' }}>
+                    <span className="text-2xl font-black text-white">{displayName?.[0]?.toUpperCase()}</span>
+                  </div>
+              }
             </div>
-
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-gray-900">{displayName}</h1>
-                {profileUser.verification_status === 'verified' && (
-                  <span className="w-5 h-5 rounded-full bg-[#1A1A1A] flex items-center justify-center flex-shrink-0" title="Verified">
-                    <span className="text-white text-[9px] font-black">✓</span>
-                  </span>
-                )}
+                <h1 className="text-xl font-black text-white tracking-tight">{displayName}</h1>
+                {isVerified && <span style={{ color: TEAL }}>✓</span>}
               </div>
               {profileUser.username && (
-                <p className="text-sm text-gray-400 mt-0.5">@{profileUser.username}</p>
+                <p className="text-xs font-mono mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>@{profileUser.username}</p>
               )}
-
-              {/* Profile type badges */}
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {profileTypes.map(type => {
-                  const config = PROFILE_TYPE_CONFIG[type];
-                  if (!config) return null;
+                  const cfg = PROFILE_TYPE_CONFIG[type];
+                  if (!cfg) return null;
+                  const isPrimary = type === primaryType;
                   return (
-                    <span key={type} className={`px-2 py-0.5 rounded-full text-xs font-semibold ${config.color} ${type === primaryType ? 'ring-1 ring-current' : ''}`}>
-                      {config.label}
+                    <span key={type}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                      style={isPrimary ? {
+                        background: 'rgba(29,161,161,0.2)', color: '#00FFDA', border: '1px solid rgba(0,255,218,0.25)',
+                      } : {
+                        background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      {cfg.label}
                     </span>
                   );
                 })}
               </div>
-
-              {/* Verification badges */}
-              {verificationBadges.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {verificationBadges.map(badge => {
-                    const config = VERIFICATION_BADGE_CONFIG[badge];
-                    if (!config) return null;
-                    return (
-                      <span key={badge} className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.color}`}>
-                        {config.label}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
 
+          {/* Verification badges */}
+          {verificationBadges.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {verificationBadges.map(badge => {
+                const cfg = VERIFICATION_BADGE_CONFIG[badge];
+                if (!cfg) return null;
+                return (
+                  <span key={badge} className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    style={{ background: 'rgba(29,161,161,0.12)', color: TEAL, border: '1px solid rgba(29,161,161,0.25)' }}>
+                    {cfg.label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
           {/* Bio */}
           {profileUser.bio && (
-            <p className="text-sm text-gray-600 mt-4 leading-relaxed">{profileUser.bio}</p>
+            <p className="text-sm mt-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{profileUser.bio}</p>
           )}
 
           {/* Meta */}
-          <div className="flex flex-wrap items-center gap-3 mt-3">
+          <div className="flex flex-wrap items-center gap-4 mt-3">
             {profileUser.location_display && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 <MapPin className="w-3 h-3" /> {profileUser.location_display}
               </span>
             )}
             {profileUser.website_url && (
               <a href={profileUser.website_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors">
+                className="flex items-center gap-1.5 text-xs transition-colors"
+                style={{ color: 'rgba(255,255,255,0.35)' }}
+                onMouseEnter={e => e.currentTarget.style.color = TEAL}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+              >
                 <Globe className="w-3 h-3" /> {profileUser.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
               </a>
             )}
           </div>
+        </motion.div>
 
-          {/* Social links */}
-          {publicSocials.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
-              {publicSocials.map((link, i) => (
-                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
-                  title={SOCIAL_PLATFORM_CONFIG[link.platform]?.label || link.platform}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-400 hover:bg-white transition-all text-xs font-medium">
-                  <SocialIcon platform={link.platform} />
-                  {link.handle && <span>{link.handle}</span>}
-                </a>
-              ))}
+        {/* Social links */}
+        {publicSocials.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="px-5 py-4 rounded-2xl space-y-3"
+            style={{ background: 'rgba(8,12,14,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              Find Me Online
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {publicSocials.map((link, i) => <SocialPill key={i} link={link} />)}
             </div>
-          )}
-        </div>
+          </motion.div>
+        )}
 
       </div>
-    </PageShell>
+    </HijinxPageShell>
   );
 }
