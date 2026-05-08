@@ -339,7 +339,6 @@ export default function CultureGrid() {
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="leading-tight mb-3" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, fontStyle: 'italic', color: 'rgba(255,255,255,0.92)' }}>Born from<br />the garage.</h2>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
@@ -453,7 +452,6 @@ export default function CultureGrid() {
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
-                <h2 className="leading-tight mb-2" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.1rem, 1.6vw, 1.5rem)', fontWeight: 900, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic' }}>Born from<br />the garage.</h2>
                 <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
