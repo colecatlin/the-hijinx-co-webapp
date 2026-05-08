@@ -88,6 +88,7 @@ const EMPTY_BLOCK = {
   label: '',
   description: '',
   image_url: '',
+  use_glass_overlay: false,
   link_url: '',
   link_label: '',
   accent_color: '#00FFDA',
@@ -264,7 +265,8 @@ function BlockRow({ block, number, isFirst, isLast, isEditing, onEdit, onDelete,
         <div className="flex items-center gap-2 mt-0.5">
           {block.label && <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400">{block.label}</span>}
           {block.link_label && <span className="text-[10px] text-gray-400">· CTA: <em>{block.link_label}</em></span>}
-          {!block.image_url && <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1.5 py-0.5 font-medium">No image (glass card)</span>}
+          {block.use_glass_overlay && <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 rounded px-1.5 py-0.5 font-medium">Glass overlay</span>}
+          {!block.image_url && !block.use_glass_overlay && <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200 rounded px-1.5 py-0.5 font-medium">No image</span>}
         </div>
       </div>
 
@@ -406,6 +408,15 @@ function BlockForm({ form, setForm, uploading, isSaving, isNew, onSave, onCancel
         <div className="space-y-1">
           <Label>Link URL</Label>
           <Input value={form.link_url} onChange={e => set('link_url', e.target.value)} placeholder="/ApparelHome" />
+        </div>
+      </div>
+
+      {/* Glass Overlay */}
+      <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-gray-200">
+        <Switch checked={!!form.use_glass_overlay} onCheckedChange={val => set('use_glass_overlay', val)} />
+        <div>
+          <Label className="cursor-pointer">Frosted Glass Overlay</Label>
+          <p className="text-xs text-gray-400 mt-0.5">Applies a translucent glass effect over the image (or as background if no image). Good for text-forward tiles.</p>
         </div>
       </div>
 

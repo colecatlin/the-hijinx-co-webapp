@@ -19,6 +19,11 @@
       "type": "string",
       "description": "Background image URL"
     },
+    "use_glass_overlay": {
+      "type": "boolean",
+      "default": false,
+      "description": "When enabled, applies a frosted glass overlay style on top of the image (or as the background if no image)"
+    },
     "link_url": {
       "type": "string",
       "description": "URL to navigate to when block is clicked"
