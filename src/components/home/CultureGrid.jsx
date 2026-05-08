@@ -338,12 +338,12 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, #1DA1A1 0%, rgba(29,161,161,0.3) 50%, transparent 100%)' }} />
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-4" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{cultureCard.description}</p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: '#1DA1A1' }}>{cultureCard.label || cultureCard.title}</span>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{cultureCard.description}</p>
               </div>
               {cultureCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-sm font-semibold pb-0.5 mt-4 w-fit" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
-                  {cultureCard.link_label} <ArrowRight className="w-3.5 h-3.5" />
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 mt-4 w-fit" style={{ color: '#1DA1A1', borderBottom: '1px solid rgba(29,161,161,0.35)' }}>
+                  {cultureCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
             </TileWrapper>
@@ -359,10 +359,10 @@ export default function CultureGrid() {
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
               <div className="relative">
                 <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span className="relative inline-flex items-center gap-2 text-xs font-semibold mt-3 w-fit" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 mt-4 w-fit" style={{ color: 'rgba(229,255,0,0.7)', borderBottom: '1px solid rgba(229,255,0,0.25)' }}>
                   {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
@@ -484,14 +484,11 @@ export default function CultureGrid() {
               <div className="absolute inset-0 pointer-events-none opacity-10" style={GRAIN_STYLE} />
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, rgba(229,255,0,0.4) 0%, transparent 60%)' }} />
               <div className="relative">
-                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-2" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
-                <p className="leading-snug" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)', fontWeight: 700, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)' }}>{editorialCard.description}</p>
+                <span className="text-[9px] font-bold tracking-[0.5em] uppercase block mb-3" style={{ color: 'rgba(229,255,0,0.7)' }}>{editorialCard.label || editorialCard.title}</span>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{editorialCard.description}</p>
               </div>
               {editorialCard.link_label && (
-                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold transition-colors w-fit" style={{ color: 'rgba(255,255,255,0.35)' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
-                >
+                <span className="relative inline-flex items-center gap-1.5 text-xs font-semibold pb-0.5 hover:gap-2.5 transition-all w-fit" style={{ color: 'rgba(229,255,0,0.7)', borderBottom: '1px solid rgba(229,255,0,0.25)' }}>
                   {editorialCard.link_label} <ArrowRight className="w-3 h-3" />
                 </span>
               )}
