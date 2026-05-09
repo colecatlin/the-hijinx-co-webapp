@@ -9,7 +9,7 @@ import CommandPalette from '@/components/management/CommandPalette';
 import StatsBar from '@/components/management/StatsBar';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
 import { Button } from '@/components/ui/button';
-import { ShieldOff, Gauge, ArrowRight, User, Calendar, Trophy, FileText, Users, MapPin, AlertCircle, FileText as FileTextIcon, ListChecks, BarChart3, Handshake } from 'lucide-react';
+import { ShieldOff, Gauge, ArrowRight, User, Calendar, Trophy, FileText, Users, MapPin, AlertCircle, FileText as FileTextIcon, ListChecks, BarChart3, Handshake, ShoppingBag } from 'lucide-react';
 
 export default function Management() {
   const navigate = useNavigate();
@@ -118,7 +118,8 @@ export default function Management() {
               { label: 'Access Mgmt', to: createPageUrl('ManageAccess'), icon: Handshake },
               { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
               { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
-              { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 }].
+              { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
+              { label: 'Storefront', to: '/admin/storefront', icon: ShoppingBag }].
               map(({ label, to, icon: Icon }) =>
               <Link key={label} to={to}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
@@ -267,6 +268,24 @@ export default function Management() {
                     <p className="text-xl font-black text-green-600">{activeTracks}</p>
                     <p className="text-xs text-gray-400">Active</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Storefront */}
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
+                      <ShoppingBag className="w-3.5 h-3.5 text-gray-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">Storefront</p>
+                  </div>
+                  <Link to="/admin/storefront" className="text-xs text-gray-400 hover:text-gray-700 flex items-center gap-0.5">Manage <ArrowRight className="w-3 h-3" /></Link>
+                </div>
+                <p className="text-xs text-gray-500 leading-snug">Products, orders, collections, discounts, reviews, and store settings.</p>
+                <div className="flex flex-col gap-1 mt-3">
+                  <Link to="/admin/products" className="text-xs text-blue-600 hover:underline">→ Products</Link>
+                  <Link to="/admin/orders" className="text-xs text-blue-600 hover:underline">→ Orders</Link>
                 </div>
               </div>
 
