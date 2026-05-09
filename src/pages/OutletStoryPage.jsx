@@ -200,7 +200,7 @@ export default function OutletStoryPage() {
             />
           </div>
 
-          <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
+          <div className="editorial-body mt-10" style={{ color: 'rgba(255,255,255,0.75)' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
 
           {story.tags?.length > 0 && (
             <div className="flex items-center gap-2 mt-12 pt-8 border-t border-white/15">
