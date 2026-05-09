@@ -87,6 +87,51 @@ body {
   margin: 2rem 0;
 }
 
+.editorial-body h1,
+.editorial-body h3,
+.editorial-body h4,
+.editorial-body h5,
+.editorial-body h6 {
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.editorial-body ul,
+.editorial-body ol {
+  color: rgba(255,255,255,0.72);
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.editorial-body li {
+  margin-bottom: 0.4rem;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.editorial-body a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.editorial-body a:hover {
+  color: #1DA1A1;
+}
+
+.editorial-body strong,
+.editorial-body b {
+  color: rgba(255,255,255,0.92);
+}
+
+.editorial-body em,
+.editorial-body i {
+  color: rgba(255,255,255,0.72);
+}
+
 /* Accent highlight */
 .accent-highlight {
   background-color: var(--hijinx-accent);
