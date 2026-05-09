@@ -94,10 +94,20 @@ export default function Checkout() {
     }
   };
 
-  const handlePlaceOrder = () => {
-    // Navigate to success — Stripe will be wired here
-    clearCart();
-    navigate(`/order-confirmation?order_id=${preparedOrder.order_id}&order_number=${preparedOrder.order_number}`);
+  const handlePlaceOrder = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('createStorefrontCheckoutSession', {
+        order_id: preparedOrder.order_id,
+        customer_email: info.email,
+      });
+      // Redirect to Stripe Checkout
+      window.location.href = res.data.url;
+    } catch (e) {
+      setError(e.response?.data?.error || e.message || 'Failed to start payment');
+      setLoading(false);
+    }
   };
 
   return (
@@ -222,15 +232,16 @@ export default function Checkout() {
                   </button>
                   <button
                     onClick={handlePlaceOrder}
-                    className="flex-[2] py-3.5 text-sm font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all"
+                    disabled={loading}
+                    className="flex-[2] py-3.5 text-sm font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all disabled:opacity-60"
                     style={{ background: '#00FFDA', color: '#050505' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#00e6c4'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#00FFDA'}
+                    onMouseEnter={e => !loading && (e.currentTarget.style.background = '#00e6c4')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#00FFDA')}
                   >
-                    <Lock className="w-3.5 h-3.5" /> Place Order
+                    <Lock className="w-3.5 h-3.5" /> {loading ? 'Redirecting to Payment…' : 'Pay Now'}
                   </button>
                 </div>
-                <p className="text-center text-[10px] text-[#333]">Payment processing coming soon — order will be created as pending</p>
+                <p className="text-center text-[10px] text-[#333]">You'll be securely redirected to Stripe to complete payment</p>
               </div>
             )}
           </div>
