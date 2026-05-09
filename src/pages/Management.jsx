@@ -119,7 +119,7 @@ export default function Management() {
               { label: 'Diagnostics', to: createPageUrl('Diagnostics'), icon: AlertCircle },
               { label: 'CSV Import', to: createPageUrl('ManageCSVImportExport'), icon: BarChart3 },
               { label: 'Analytics', to: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
-              { label: 'Storefront', to: '/admin/storefront', icon: ShoppingBag }].
+              { label: 'Storefront', to: '/ManageHomepage?tab=storefront', icon: ShoppingBag }].
               map(({ label, to, icon: Icon }) =>
               <Link key={label} to={to}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">

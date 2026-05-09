@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import HeroSlideManagement from '@/components/management/HeroSlideManagement';
 import CultureBlockManagement from '@/components/management/CultureBlockManagement';
 import ApparelSettings from '@/components/management/ApparelSettings';
+import StorefrontDashboard from '@/components/storefront/admin/StorefrontDashboard';
 
 const SOCIAL_FIELDS = [
   { key: 'social_instagram_url', label: 'Instagram', placeholder: 'https://instagram.com/hijinxco' },
@@ -26,7 +27,8 @@ const SOCIAL_FIELDS = [
 
 export default function ManageHomepage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('hero');
+  const urlParams = new URLSearchParams(window.location.search);
+  const [activeTab, setActiveTab] = useState(urlParams.get('tab') || 'storefront');
 
 
   const { data: settings = [], isLoading } = useQuery({
@@ -46,14 +48,19 @@ export default function ManageHomepage() {
 
   return (
     <ManagementLayout currentPage="ManageHomepage">
-      <ManagementShell title="Homepage" subtitle="Manage hero slides and platform social links" maxWidth="max-w-3xl">
+      <ManagementShell title="Homepage & Store" subtitle="Storefront operations, homepage settings, and platform configuration" maxWidth="max-w-5xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="storefront">🛍 Storefront</TabsTrigger>
             <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="culture">Culture & Identity</TabsTrigger>
             <TabsTrigger value="apparel">Apparel</TabsTrigger>
             <TabsTrigger value="socials">Socials</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="storefront">
+            <StorefrontDashboard />
+          </TabsContent>
 
           <TabsContent value="hero" className="space-y-6">
             <HeroSlideManagement />
