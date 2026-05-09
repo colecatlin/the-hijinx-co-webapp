@@ -63,8 +63,8 @@ export default function OutletHome() {
               onClick={() => handlePrimaryClick(cat)}
               className={`px-4 py-2 text-xs font-medium tracking-wide whitespace-nowrap transition-all ${
                 activePrimary === cat
-                  ? 'bg-[#0A0A0A] text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-white text-[#0A0A0A]'
+                  : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
               }`}
             >
               {cat}
@@ -81,8 +81,8 @@ export default function OutletHome() {
                 onClick={() => setActiveSub(sub)}
                 className={`px-3 py-1.5 text-[11px] font-medium tracking-wide whitespace-nowrap transition-all border ${
                   activeSub === sub
-                    ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
-                    : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400'
+                    ? 'border-white bg-white text-[#0A0A0A]'
+                    : 'border-white/20 bg-transparent text-white/55 hover:border-white/50 hover:text-white'
                 }`}
               >
                 {sub}
@@ -98,9 +98,9 @@ export default function OutletHome() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-3">
-                <Skeleton className="h-56 w-full" />
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-56 w-full bg-white/10" />
+                <Skeleton className="h-3 w-16 bg-white/10" />
+                <Skeleton className="h-5 w-3/4 bg-white/10" />
               </div>
             ))}
           </div>
@@ -142,7 +142,7 @@ export default function OutletHome() {
                 to={getOutletStoryUrl(story)}
                 className="group"
               >
-                <div className="aspect-[3/2] bg-gray-100 mb-4 overflow-hidden">
+                <div className="aspect-[3/2] bg-white/10 mb-4 overflow-hidden">
                   {story.cover_image ? (
                     <img
                       src={story.cover_image}
@@ -152,31 +152,31 @@ export default function OutletHome() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="font-mono text-xs text-gray-300">{story.primary_category}</span>
+                      <span className="font-mono text-xs text-white/40">{story.primary_category}</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase">
+                  <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase">
                     {story.primary_category}
                   </span>
                   {story.sub_category && (
                     <>
-                      <span className="text-gray-300 text-[10px]">·</span>
-                      <span className="font-mono text-[10px] tracking-[0.15em] text-gray-400 uppercase">
+                      <span className="text-white/30 text-[10px]">·</span>
+                      <span className="font-mono text-[10px] tracking-[0.15em] text-white/50 uppercase">
                         {story.sub_category}
                       </span>
                     </>
                   )}
                 </div>
-                <h3 className="font-bold text-lg mt-1 tracking-tight leading-tight group-hover:underline decoration-1 underline-offset-4">
+                <h3 className="font-bold text-lg mt-1 tracking-tight leading-tight text-white group-hover:underline decoration-1 underline-offset-4">
                   {story.title}
                 </h3>
                 {story.subtitle && (
-                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{story.subtitle}</p>
+                  <p className="text-sm text-white/55 mt-2 line-clamp-2">{story.subtitle}</p>
                 )}
                 {story.published_date && (
-                  <span className="text-xs text-gray-400 mt-3 block">
+                  <span className="text-xs text-white/35 mt-3 block">
                     {format(new Date(story.published_date), 'MMM d, yyyy · h:mm a')}
                   </span>
                 )}

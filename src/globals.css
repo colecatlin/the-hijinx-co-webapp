@@ -63,7 +63,7 @@ body {
   font-size: 1.125rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
-  color: var(--hijinx-gray-700);
+  color: rgba(255,255,255,0.72);
 }
 
 .editorial-body h2 {
@@ -71,15 +71,15 @@ body {
   font-weight: 700;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--hijinx-black);
+  color: rgba(255,255,255,0.92);
 }
 
 .editorial-body blockquote {
-  border-left: 3px solid var(--hijinx-black);
+  border-left: 3px solid rgba(255,255,255,0.3);
   padding-left: 1.5rem;
   margin: 2rem 0;
   font-style: italic;
-  color: var(--hijinx-gray-600);
+  color: rgba(255,255,255,0.5);
 }
 
 .editorial-body img {

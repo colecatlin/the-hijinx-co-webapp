@@ -125,7 +125,7 @@ export default function OutletStoryPage() {
         <article className={ads?.length > 0 ? "flex-1 max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
           <Link
             to={createPageUrl('OutletHome')}
-            className="inline-flex items-center gap-1 text-xs font-mono text-gray-400 hover:text-[#0A0A0A] mb-8 transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-mono text-white/50 hover:text-white mb-8 transition-colors"
           >
             <ArrowLeft className="w-3 h-3" /> Back to The Outlet
           </Link>
@@ -135,7 +135,7 @@ export default function OutletStoryPage() {
               <img src={story.cover_image} alt={story.title} className="w-full" />
               {(story.location_city || story.location_state || story.location_country) && (
                 <div className="mt-3">
-                  <span className="flex items-center gap-1 text-xs font-bold text-black">
+                  <span className="flex items-center gap-1 text-xs font-bold text-white/60">
                     <MapPin className="w-3 h-3" />
                     {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
                   </span>
@@ -144,16 +144,16 @@ export default function OutletStoryPage() {
             </div>
           )}
 
-          <span className="font-mono text-[10px] tracking-[0.2em] text-gray-400 uppercase block">
+          <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase block">
             {story.category}
           </span>
 
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-[1.05]">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-[1.05] text-white">
             {story.title}
           </h1>
 
           {story.subtitle && (
-            <p className="text-lg text-gray-500 mt-4">{story.subtitle}</p>
+            <p className="text-lg text-white/65 mt-4">{story.subtitle}</p>
           )}
 
           {/* Context links — driver / event */}
@@ -162,7 +162,7 @@ export default function OutletStoryPage() {
               {linkedDriver && (
                 <Link
                   to={`/drivers/${linkedDriver.canonical_slug || linkedDriver.slug || linkedDriver.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs font-medium text-white/75 transition-colors"
                 >
                   <User className="w-3 h-3" />
                   Featuring {linkedDriver.first_name} {linkedDriver.last_name}
@@ -171,7 +171,7 @@ export default function OutletStoryPage() {
               {linkedEvent && (
                 <Link
                   to={`${createPageUrl('EventProfile')}?id=${linkedEvent.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs font-medium text-white/75 transition-colors"
                 >
                   <Calendar className="w-3 h-3" />
                   From {linkedEvent.name}
@@ -180,16 +180,16 @@ export default function OutletStoryPage() {
             </div>
           )}
 
-          <div className="mt-6 pb-8 border-b border-gray-200">
+          <div className="mt-6 pb-8 border-b border-white/15">
             <div className="flex flex-col gap-2 mb-4">
               {story.published_date && (
-                <span className="text-xs text-gray-400">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
+                <span className="text-xs text-white/45">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
               )}
               {story.author && (
-                <span className="text-xs text-gray-400">Published by {story.author}</span>
+                <span className="text-xs text-white/45">Published by {story.author}</span>
               )}
               {story.photo_credit && (
-                <span className="text-xs text-gray-400">Photo by {story.photo_credit}</span>
+                <span className="text-xs text-white/45">Photo by {story.photo_credit}</span>
               )}
             </div>
             <SocialShareButtons
@@ -203,10 +203,10 @@ export default function OutletStoryPage() {
           <div className="editorial-body mt-10" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
 
           {story.tags?.length > 0 && (
-            <div className="flex items-center gap-2 mt-12 pt-8 border-t border-gray-200">
-              <Tag className="w-3 h-3 text-gray-400" />
+            <div className="flex items-center gap-2 mt-12 pt-8 border-t border-white/15">
+              <Tag className="w-3 h-3 text-white/40" />
               {story.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 uppercase">
+                <span key={tag} className="px-3 py-1 text-[10px] font-mono tracking-wider bg-white/10 text-white/55 uppercase">
                   {tag}
                 </span>
               ))}
