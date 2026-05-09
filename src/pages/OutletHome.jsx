@@ -53,6 +53,7 @@ export default function OutletHome() {
           label="The Outlet"
           title="Stories"
           subtitle="Journalism, culture, and coverage from across the Hijinx network."
+          light
         />
 
         {/* Primary category filters */}
@@ -157,26 +158,26 @@ export default function OutletHome() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase">
+                  <span className="font-mono text-[10px] tracking-[0.2em] uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>
                     {story.primary_category}
                   </span>
                   {story.sub_category && (
                     <>
-                      <span className="text-white/30 text-[10px]">·</span>
-                      <span className="font-mono text-[10px] tracking-[0.15em] text-white/50 uppercase">
+                      <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
+                      <span className="font-mono text-[10px] tracking-[0.15em] uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>
                         {story.sub_category}
                       </span>
                     </>
                   )}
                 </div>
-                <h3 className="font-bold text-lg mt-1 tracking-tight leading-tight text-white group-hover:underline decoration-1 underline-offset-4">
+                <h3 className="font-bold text-lg mt-1 tracking-tight leading-tight text-white group-hover:underline decoration-1 underline-offset-4" style={{ color: 'rgba(255,255,255,0.92)' }}>
                   {story.title}
                 </h3>
                 {story.subtitle && (
-                  <p className="text-sm text-white/55 mt-2 line-clamp-2">{story.subtitle}</p>
+                  <p className="text-sm mt-2 line-clamp-2" style={{ color: 'rgba(255,255,255,0.55)' }}>{story.subtitle}</p>
                 )}
                 {story.published_date && (
-                  <span className="text-xs text-white/35 mt-3 block">
+                  <span className="text-xs mt-3 block" style={{ color: 'rgba(255,255,255,0.35)' }}>
                     {format(new Date(story.published_date), 'MMM d, yyyy · h:mm a')}
                   </span>
                 )}
