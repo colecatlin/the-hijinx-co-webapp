@@ -1,78 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
-import { CheckCircle, Download, Package, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { createPageUrl } from '@/components/utils';
+import { CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function CheckoutSuccess() {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id');
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  // Poll for order briefly — webhook may take a moment
-  const { data: orders = [] } = useQuery({
-    queryKey: ['recent_order', user?.id],
-    queryFn: () => base44.entities.Order.filter({ user_id: user.id, payment_provider: 'stripe' }, '-created_date', 1),
-    enabled: !!user?.id,
-    refetchInterval: (data) => (!data?.length ? 2000 : false),
-    refetchIntervalInBackground: true,
-  });
-
-  const order = orders[0];
-  const hasDigital = order?.order_type === 'digital' || order?.order_type === 'mixed';
-  const hasPhysical = order?.order_type === 'physical' || order?.order_type === 'mixed';
+  const orderNumber = params.get('order_number');
 
   return (
-    <PageShell>
-      <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-9 h-9 text-green-600" />
+    <PageShell style={{ background: '#050505', color: '#F5F5F5', minHeight: '100vh' }}>
+      <div className="max-w-lg mx-auto px-6 py-24 text-center">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ background: 'rgba(0,255,218,0.1)', border: '1px solid rgba(0,255,218,0.3)' }}
+        >
+          <CheckCircle className="w-8 h-8 text-[#00FFDA]" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment confirmed!</h1>
-        <p className="text-gray-500 mb-8">
-          {order
-            ? `Order #${order.id.slice(-6).toUpperCase()} has been placed.`
-            : 'Your order is being processed…'}
-        </p>
-
-        <div className="bg-white border border-gray-100 rounded-xl p-5 text-left space-y-3 mb-8">
-          {hasDigital && (
-            <div className="flex items-center gap-3 text-sm">
-              <Download className="w-4 h-4 text-purple-500 flex-shrink-0" />
-              <span className="text-gray-700">Your digital downloads are now available in your account.</span>
-            </div>
-          )}
-          {hasPhysical && (
-            <div className="flex items-center gap-3 text-sm">
-              <Package className="w-4 h-4 text-blue-500 flex-shrink-0" />
-              <span className="text-gray-700">Your physical item(s) will be processed and shipped.</span>
-            </div>
-          )}
-          {!order && (
-            <p className="text-xs text-gray-400 animate-pulse">Confirming your order…</p>
-          )}
-        </div>
-
+        <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-[#00FFDA] block mb-3">Payment Confirmed</span>
+        <h1 className="text-3xl font-black text-[#F5F5F5] mb-2">Thank You!</h1>
+        {orderNumber && (
+          <p className="text-sm text-[#555] mb-8">Order <span className="font-mono text-[#A1A1A1]">{orderNumber}</span> is confirmed.</p>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          {hasDigital && (
-            <Button asChild className="gap-2 bg-[#232323] hover:bg-black text-white">
-              <Link to="/digital-downloads">
-                <Download className="w-4 h-4" /> My Downloads
-              </Link>
-            </Button>
-          )}
-          <Button asChild variant="outline">
-            <Link to={createPageUrl('Home')}>
-              Back to Home <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </Button>
+          <Link to="/store"
+            className="px-6 py-3 text-xs font-mono tracking-[0.2em] uppercase border border-[#2a2a2a] text-[#A1A1A1] hover:border-[#00FFDA]/50 hover:text-[#00FFDA] transition-all">
+            Continue Shopping
+          </Link>
+          <Link to="/"
+            className="px-6 py-3 text-xs font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-all"
+            style={{ background: '#00FFDA', color: '#050505' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#00e6c4'}
+            onMouseLeave={e => e.currentTarget.style.background = '#00FFDA'}
+          >
+            Back to Home <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </PageShell>

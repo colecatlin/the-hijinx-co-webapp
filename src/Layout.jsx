@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
+import CartIcon from '@/components/cart/CartIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
@@ -282,6 +283,7 @@ export default function Layout({ children, currentPageName }) {
                       Login
                     </button>
                   )}
+                  <CartIcon style={{ color: 'rgba(255,255,255,0.65)' }} />
                   <button
                     onClick={() => setMobileOpen(!mobileOpen)}
                     className="p-2 rounded-lg transition-colors lg:hidden"

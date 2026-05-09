@@ -15,6 +15,7 @@ import FeatureIconGrid from '@/components/storefront/FeatureIconGrid';
 import RelatedProducts from '@/components/storefront/RelatedProducts';
 import ReviewList from '@/components/storefront/ReviewList';
 import DOMPurify from 'dompurify';
+import { useCart } from '@/lib/cartStore.jsx';
 
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
@@ -59,6 +60,7 @@ export default function StorefrontProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistAdded, setWishlistAdded] = useState(false);
+  const { addItem } = useCart();
 
   const { data: productArr = [], isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -125,27 +127,17 @@ export default function StorefrontProductDetail() {
     : 0;
 
   const handleAddToCart = ({ product, variant, qty, color, size }) => {
-    const key = 'hjx_cart';
-    const cart = JSON.parse(localStorage.getItem(key) || '[]');
-    const id = `${product.id}__${variant?.id || 'base'}`;
-    const existing = cart.find(i => i.id === id);
-    if (existing) {
-      existing.qty += qty;
-    } else {
-      cart.push({
-        id,
-        product_id: product.id,
-        variant_id: variant?.id,
-        name: product.name,
-        price: variant?.price || product.price,
-        image: variant?.image_url || product.cover_image_url,
-        color,
-        size,
-        qty,
-      });
-    }
-    localStorage.setItem(key, JSON.stringify(cart));
-    window.dispatchEvent(new Event('cart-updated'));
+    addItem({
+      variantId: variant?.id || `${product.id}__base`,
+      productId: product.id,
+      name: product.name,
+      price: variant?.price ?? product.price,
+      image: variant?.image_url || product.cover_image_url,
+      color: color || variant?.color || null,
+      size: size || variant?.size || null,
+      slug: product.slug,
+      quantity: qty || 1,
+    });
   };
 
   if (isLoading) {

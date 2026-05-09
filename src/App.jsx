@@ -50,6 +50,11 @@ import StandingsHome from './pages/StandingsHome';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 import UserPublicProfile from './pages/UserPublicProfile';
 import StorefrontHome from './pages/StorefrontHome';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
+import { CartProvider } from '@/lib/cartStore.jsx';
+import CartDrawer from '@/components/cart/CartDrawer';
 import StorefrontProductDetail from './pages/StorefrontProductDetail';
 import StorefrontAdmin from './pages/admin/StorefrontAdmin';
 import ManageStorefrontProducts from './pages/admin/ManageStorefrontProducts';
@@ -149,7 +154,6 @@ const AuthenticatedApp = () => {
       <Route path="/management/invoices" element={<LayoutWrapper currentPageName="ManageInvoices"><ManageInvoices /></LayoutWrapper>} />
       <Route path="/checkout-success" element={<LayoutWrapper currentPageName="CheckoutSuccess"><CheckoutSuccess /></LayoutWrapper>} />
       <Route path="/checkout-cancel" element={<LayoutWrapper currentPageName="CheckoutCancel"><CheckoutCancel /></LayoutWrapper>} />
-      <Route path="/product/:slug" element={<LayoutWrapper currentPageName="ProductDetail"><ProductDetail /></LayoutWrapper>} />
       <Route path="/digital-downloads" element={<LayoutWrapper currentPageName="DigitalDownloads"><DigitalDownloads /></LayoutWrapper>} />
       <Route path="/hashtag-library" element={<LayoutWrapper currentPageName="HashtagLibrary"><HashtagLibrary /></LayoutWrapper>} />
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
@@ -163,6 +167,11 @@ const AuthenticatedApp = () => {
       } />
       {/* Public user profile route */}
       <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
+
+      {/* Cart & Checkout */}
+      <Route path="/cart" element={<LayoutWrapper currentPageName="Cart"><Cart /></LayoutWrapper>} />
+      <Route path="/checkout" element={<LayoutWrapper currentPageName="Checkout"><Checkout /></LayoutWrapper>} />
+      <Route path="/order-confirmation" element={<LayoutWrapper currentPageName="OrderConfirmation"><OrderConfirmation /></LayoutWrapper>} />
 
       {/* Storefront routes */}
       <Route path="/store" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
@@ -191,10 +200,13 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <CartProvider>
+          <Router>
+            <AuthenticatedApp />
+            <CartDrawer />
+          </Router>
+          <Toaster />
+        </CartProvider>
       </QueryClientProvider>
     </AuthProvider>
   )
