@@ -5,16 +5,19 @@ export default function ProductStoryBlock({ story, lifestyleImages = [] }) {
   if (!story && lifestyleImages.length === 0) return null;
 
   return (
-    <div className="py-20 border-t border-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className={`grid gap-16 items-center ${lifestyleImages.length > 0 ? 'lg:grid-cols-2' : 'max-w-2xl'}`}>
+    <section style={{ background: '#0A0A0A', borderTop: '1px solid #111', borderBottom: '1px solid #111' }}>
+      <div className="max-w-7xl mx-auto px-6 py-24">
+        <div className={`grid gap-16 lg:gap-24 items-center ${lifestyleImages.length > 0 ? 'lg:grid-cols-2' : 'max-w-2xl mx-auto'}`}>
+          
           {story && (
             <div>
-              <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-6">
-                The Story
-              </span>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-5 h-px bg-[#00FFDA]" />
+                <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase">The Story</span>
+              </div>
               <div
-                className="prose-story text-[#A1A1A1] leading-relaxed text-base"
+                className="text-[#7a7a7a] leading-[1.9] text-base space-y-5"
+                style={{ fontFamily: 'Georgia, serif' }}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story) }}
               />
             </div>
@@ -25,17 +28,25 @@ export default function ProductStoryBlock({ story, lifestyleImages = [] }) {
               {lifestyleImages.slice(0, 4).map((img, i) => (
                 <div
                   key={i}
-                  className={`overflow-hidden bg-[#111111] ${
-                    i === 0 && lifestyleImages.length >= 3 ? 'col-span-2 aspect-[16/9]' : 'aspect-[4/5]'
-                  }`}
+                  className="overflow-hidden"
+                  style={{
+                    background: '#111',
+                    aspectRatio: i === 0 && lifestyleImages.length >= 3 ? '16/9' : '4/5',
+                    gridColumn: i === 0 && lifestyleImages.length >= 3 ? 'span 2' : undefined,
+                  }}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img
+                    src={img}
+                    alt=""
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

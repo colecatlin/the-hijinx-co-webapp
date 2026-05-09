@@ -1,19 +1,32 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 
-export default function RelatedProducts({ products = [], title = 'You May Also Like' }) {
-  if (products.length === 0) return null;
+export default function RelatedProducts({ products = [], title = 'You Might Also Like' }) {
+  if (!products || products.length === 0) return null;
 
   return (
-    <div className="py-16 border-t border-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-6">
-        <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-2">{title}</span>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-          {products.slice(0, 4).map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+    <section style={{ background: '#050505', borderTop: '1px solid #111' }}>
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <div className="w-5 h-px bg-[#00FFDA]" />
+            <span className="font-mono text-[10px] tracking-[0.45em] text-[#00FFDA] uppercase">{title}</span>
+          </div>
+          <Link
+            to="/store"
+            className="font-mono text-[10px] tracking-[0.2em] text-[#555] uppercase flex items-center gap-1.5 transition-colors duration-200 hover:text-[#00FFDA]"
+          >
+            View All <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-7">
+          {products.map((p, i) => (
+            <ProductCard key={p.id} product={p} index={i} />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

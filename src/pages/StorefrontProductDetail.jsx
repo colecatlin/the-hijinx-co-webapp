@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Heart, Share2, ChevronDown } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeoMeta from '@/components/system/seoMeta';
@@ -19,32 +19,47 @@ import DOMPurify from 'dompurify';
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-t border-[#1a1a1a]">
+    <div style={{ borderTop: '1px solid #1a1a1a' }}>
       <button
-        className="w-full flex items-center justify-between py-4 text-left"
+        className="w-full flex items-center justify-between py-4 text-left group"
         onClick={() => setOpen(!open)}
       >
-        <span className="text-xs font-mono tracking-[0.2em] text-[#F5F5F5] uppercase">{title}</span>
-        <ChevronDown className={`w-4 h-4 text-[#555] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <span
+          className="text-[10px] font-mono tracking-[0.25em] uppercase transition-colors duration-200"
+          style={{ color: open ? '#F5F5F5' : '#A1A1A1' }}
+        >
+          {title}
+        </span>
+        <ChevronDown
+          className="w-3.5 h-3.5 transition-transform duration-300"
+          style={{ color: '#555', transform: open ? 'rotate(180deg)' : 'rotate(0)' }}
+        />
       </button>
-      {open && (
-        <div className="pb-6 text-sm text-[#A1A1A1] leading-relaxed">
-          {children}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="pb-6 text-sm leading-relaxed" style={{ color: '#7a7a7a' }}>
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default function StorefrontProductDetail() {
   const { slug } = useParams();
-  const purchasePanelRef = useRef(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [wishlistAdded, setWishlistAdded] = useState(false);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-  // Fetch product
   const { data: productArr = [], isLoading } = useQuery({
     queryKey: ['product', slug],
     queryFn: () => base44.entities.Product.filter({ slug }),
@@ -52,21 +67,18 @@ export default function StorefrontProductDetail() {
   });
   const product = productArr[0] || null;
 
-  // Fetch variants
   const { data: variants = [] } = useQuery({
     queryKey: ['variants', product?.id],
     queryFn: () => base44.entities.ProductVariant.filter({ product_id: product.id }),
     enabled: !!product?.id,
   });
 
-  // Fetch reviews (approved only)
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews', product?.id],
     queryFn: () => base44.entities.Review.filter({ product_id: product.id, status: 'approved' }),
     enabled: !!product?.id,
   });
 
-  // Fetch related products
   const { data: relatedProducts = [] } = useQuery({
     queryKey: ['relatedProducts', product?.category, product?.id],
     queryFn: () => base44.entities.Product.filter({ category: product.category, status: 'active' }),
@@ -74,7 +86,6 @@ export default function StorefrontProductDetail() {
     select: (data) => data.filter(p => p.id !== product?.id).slice(0, 4),
   });
 
-  // Fetch storefront settings
   const { data: settingsList = [] } = useQuery({
     queryKey: ['storefrontSettings'],
     queryFn: () => base44.entities.StorefrontSettings.list(),
@@ -82,33 +93,27 @@ export default function StorefrontProductDetail() {
   });
   const settings = settingsList[0] || {};
 
-  // Build unique colors and sizes from variants
-  const colors = variants
-    .reduce((acc, v) => {
-      if (v.color && !acc.find(c => c.color === v.color)) {
-        acc.push({ color: v.color, color_hex: v.color_hex });
-      }
-      return acc;
-    }, []);
+  const colors = variants.reduce((acc, v) => {
+    if (v.color && !acc.find(c => c.color === v.color)) {
+      acc.push({ color: v.color, color_hex: v.color_hex });
+    }
+    return acc;
+  }, []);
 
   const sizes = variants.filter(v => !selectedColor || v.color === selectedColor);
 
-  // Selected variant resolution
   const selectedVariant = variants.find(
     v => v.color === selectedColor && v.size === selectedSize
   ) || null;
 
-  // Track recently viewed
   useEffect(() => {
     if (!product) return;
     const key = 'hjx_rv';
     const stored = JSON.parse(localStorage.getItem(key) || '[]');
     const updated = [product.id, ...stored.filter(id => id !== product.id)].slice(0, 8);
     localStorage.setItem(key, JSON.stringify(updated));
-    setRecentlyViewed(stored.filter(id => id !== product.id).slice(0, 4));
   }, [product?.id]);
 
-  // Auto-select first color if only one
   useEffect(() => {
     if (colors.length === 1 && !selectedColor) {
       setSelectedColor(colors[0].color);
@@ -141,14 +146,16 @@ export default function StorefrontProductDetail() {
     }
     localStorage.setItem(key, JSON.stringify(cart));
     window.dispatchEvent(new Event('cart-updated'));
-    alert(`Added ${product.name} (${color || ''} ${size || ''}) to cart!`);
   };
 
   if (isLoading) {
     return (
       <PageShell style={{ background: '#050505' }}>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-[#00FFDA] border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div
+            className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: '#00FFDA', borderTopColor: 'transparent' }}
+          />
         </div>
       </PageShell>
     );
@@ -157,9 +164,9 @@ export default function StorefrontProductDetail() {
   if (!product) {
     return (
       <PageShell style={{ background: '#050505' }}>
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-          <p className="text-[#555] font-mono tracking-widest uppercase text-sm">Product Not Found</p>
-          <Link to="/ApparelHome" className="text-xs text-[#00FFDA] underline">Back to Store</Link>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+          <p className="text-[#444] font-mono tracking-[0.3em] uppercase text-xs">Product Not Found</p>
+          <Link to="/store" className="text-xs text-[#00FFDA] underline underline-offset-4">Back to Store</Link>
         </div>
       </PageShell>
     );
@@ -180,27 +187,27 @@ export default function StorefrontProductDetail() {
       />
 
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <nav className="flex items-center gap-2 text-xs font-mono text-[#555]">
-          <Link to="/ApparelHome" className="hover:text-[#00FFDA] transition-colors flex items-center gap-1">
+      <div className="max-w-7xl mx-auto px-6 pt-6 pb-2">
+        <nav className="flex items-center gap-2 text-[10px] font-mono text-[#333]">
+          <Link to="/store" className="hover:text-[#00FFDA] transition-colors flex items-center gap-1.5">
             <ArrowLeft className="w-3 h-3" /> Store
           </Link>
           {product.category && (
             <>
-              <span>/</span>
-              <span className="text-[#555]">{product.category}</span>
+              <span style={{ color: '#222' }}>/</span>
+              <span style={{ color: '#444' }}>{product.category}</span>
             </>
           )}
-          <span>/</span>
-          <span className="text-[#A1A1A1]">{product.name}</span>
+          <span style={{ color: '#222' }}>/</span>
+          <span style={{ color: '#666' }}>{product.name}</span>
         </nav>
       </div>
 
-      {/* Main product section */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="grid lg:grid-cols-[1fr_480px] gap-16 items-start">
+      {/* Main layout */}
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-20">
+        <div className="grid lg:grid-cols-[1fr_460px] gap-12 xl:gap-20 items-start">
 
-          {/* LEFT: Gallery */}
+          {/* Gallery */}
           <div className="lg:sticky lg:top-24">
             <ProductGallery
               images={product.gallery_images || []}
@@ -208,24 +215,37 @@ export default function StorefrontProductDetail() {
             />
           </div>
 
-          {/* RIGHT: Purchase panel */}
-          <div ref={purchasePanelRef} className="space-y-8">
-
-            {/* Category + wishlist row */}
+          {/* Purchase panel */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-7"
+          >
+            {/* Category + actions */}
             <div className="flex items-center justify-between">
               {product.category && (
-                <span className="font-mono text-[10px] tracking-[0.35em] text-[#00FFDA] uppercase">
-                  {product.category}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-px bg-[#00FFDA]" />
+                  <span className="font-mono text-[9px] tracking-[0.4em] text-[#00FFDA] uppercase">{product.category}</span>
+                </div>
               )}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setWishlistAdded(!wishlistAdded)}
-                  className="w-8 h-8 flex items-center justify-center border border-[#262626] hover:border-[#00FFDA] transition-colors"
+                  className="w-8 h-8 flex items-center justify-center transition-all duration-200"
+                  style={{ border: `1px solid ${wishlistAdded ? 'rgba(239,68,68,0.4)' : '#262626'}` }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = wishlistAdded ? 'rgba(239,68,68,0.6)' : '#404040'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = wishlistAdded ? 'rgba(239,68,68,0.4)' : '#262626'}
                 >
                   <Heart className={`w-3.5 h-3.5 transition-colors ${wishlistAdded ? 'text-red-400 fill-red-400' : 'text-[#555]'}`} />
                 </button>
-                <button className="w-8 h-8 flex items-center justify-center border border-[#262626] hover:border-[#404040] transition-colors">
+                <button
+                  className="w-8 h-8 flex items-center justify-center transition-all duration-200"
+                  style={{ border: '1px solid #262626' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = '#404040'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = '#262626'}
+                >
                   <Share2 className="w-3.5 h-3.5 text-[#555]" />
                 </button>
               </div>
@@ -233,39 +253,44 @@ export default function StorefrontProductDetail() {
 
             {/* Name + tagline */}
             <div>
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#F5F5F5] leading-[1.05]">
+              <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-black tracking-tight leading-[1.02]" style={{ color: '#F5F5F5' }}>
                 {product.name}
               </h1>
               {product.tagline && (
-                <p className="text-base text-[#A1A1A1] mt-2 leading-relaxed">{product.tagline}</p>
+                <p className="text-sm mt-2.5 leading-relaxed" style={{ color: '#6a6a6a' }}>
+                  {product.tagline}
+                </p>
               )}
             </div>
 
-            {/* Review summary */}
+            {/* Review star summary */}
             {reviews.length > 0 && (
               <button
                 onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2.5 hover:opacity-75 transition-opacity"
               >
                 <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(n => (
-                    <span key={n} className={`text-xs ${n <= Math.round(avgRating) ? 'text-[#00FFDA]' : 'text-[#333]'}`}>★</span>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <span key={n} className="text-[11px]" style={{ color: n <= Math.round(avgRating) ? '#00FFDA' : '#2a2a2a' }}>★</span>
                   ))}
                 </div>
-                <span className="text-xs text-[#555] underline underline-offset-2">{reviews.length} reviews</span>
+                <span className="text-[11px] text-[#555] underline underline-offset-2">{reviews.length} reviews</span>
               </button>
             )}
 
             {/* Short description */}
             {product.short_description && (
-              <p className="text-sm text-[#A1A1A1] leading-relaxed border-l-2 border-[#00FFDA]/30 pl-4">
+              <p
+                className="text-sm leading-relaxed pl-4"
+                style={{ color: '#7a7a7a', borderLeft: '2px solid rgba(0,255,218,0.2)' }}
+              >
                 {product.short_description}
               </p>
             )}
 
-            <div className="w-full h-px bg-[#1a1a1a]" />
+            <div style={{ height: '1px', background: '#111' }} />
 
-            {/* Color selector */}
+            {/* Variant selectors */}
             {colors.length > 0 && (
               <VariantSelector
                 colors={colors}
@@ -273,8 +298,6 @@ export default function StorefrontProductDetail() {
                 onColorChange={setSelectedColor}
               />
             )}
-
-            {/* Size selector */}
             {sizes.length > 0 && (
               <SizeSelector
                 sizes={sizes}
@@ -301,14 +324,11 @@ export default function StorefrontProductDetail() {
               <FeatureIconGrid features={product.feature_icons} />
             )}
 
-            {/* Accordion sections */}
-            <div className="space-y-0">
+            {/* Accordion details */}
+            <div>
               {product.description && (
                 <AccordionSection title="Details">
-                  <div
-                    className="prose-sm"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
-                  />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }} />
                 </AccordionSection>
               )}
               {product.fit_and_sizing && (
@@ -322,7 +342,7 @@ export default function StorefrontProductDetail() {
                 </AccordionSection>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
