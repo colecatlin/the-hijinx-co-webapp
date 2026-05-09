@@ -26,17 +26,6 @@ Deno.serve(async (req) => {
       // --- Checkout completed ---
       case 'checkout.session.completed': {
         const meta = obj.metadata || {};
-
-        // Storefront order payment confirmed
-        if (meta.order_id) {
-          await base44.asServiceRole.entities.Order.update(meta.order_id, {
-            status: 'confirmed',
-            stripe_session_id: obj.id,
-            stripe_payment_intent_id: obj.payment_intent || null,
-          });
-          break;
-        }
-
         if (meta.revenue_type === 'asset_license_sale') {
           // Create RevenueEvent for the completed license sale
           const revenueEvent = await base44.asServiceRole.entities.RevenueEvent.create({
