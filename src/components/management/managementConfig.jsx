@@ -1,11 +1,7 @@
-import { Users, Trophy, MapPin, Calendar, Newspaper, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, ShieldCheck, Database, Wrench, GitMerge, Palette, Gauge } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, Wrench, GitMerge, Palette, Gauge, ShoppingCart, Package, Tag, Star, Settings, Image } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation.
- *
- * Management role: admin oversight, moderation, diagnostics, bulk ops, access control, content/platform control.
- * Management is NOT the primary deep-editor for Driver, Team, Track, Series, or Event.
- * Deep operational editing routes through /race-core/:entity/:id (canonical Race Core editors).
  */
 
 export const DASHBOARD_ITEM = {
@@ -22,14 +18,33 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Platform',
     description: 'Site settings, homepage, announcements, and platform controls',
     items: [
-      { name: 'Homepage Settings', page: 'ManageHomepage', icon: Home, description: 'Manage homepage section images and visuals' },
-      { name: 'Motorsports Home Settings', page: 'ManageMotorsportsHome', icon: Gauge, description: 'Control trending drivers, teams, tracks, events, and championship leaders on the motorsports home page' },
+      { name: 'Motorsports Home', page: 'ManageMotorsportsHome', icon: Gauge, description: 'Control trending drivers, teams, tracks, events, and championship leaders' },
       { name: 'Discipline Management', page: 'management/discipline', icon: Palette, description: 'Manage discipline colors for map pins' },
       { name: 'Announcements', page: 'ManageAnnouncements', icon: MessageSquare, description: 'Manage rotating announcement bar' },
       { name: 'Advertising', page: 'ManageAdvertising', icon: Megaphone, description: 'Manage advertising inquiries and placements' },
       { name: 'Analytics', page: 'AnalyticsDashboard', icon: LineChart, description: 'View platform insights and data trends' },
       { name: 'Food & Beverage', page: 'ManageFoodBeverage', icon: UtensilsCrossed, description: 'Manage F&B offerings' },
       { name: 'Tech', page: 'ManageTech', icon: Cpu, description: 'Manage tech solutions and offerings' },
+    ]
+  },
+
+  // ─────────────────────────────────────────────────────
+  // HOMEPAGE & STORE — storefront + homepage management
+  // ─────────────────────────────────────────────────────
+  {
+    title: 'Homepage & Store',
+    description: 'Storefront operations, homepage settings, hero slides, and visual content',
+    items: [
+      { name: 'Storefront Dashboard', href: '/ManageHomepage?tab=storefront', icon: ShoppingCart, description: 'Revenue, orders, notifications, and store health' },
+      { name: 'Homepage Settings', href: '/ManageHomepage?tab=hero', icon: Home, description: 'Hero slides, culture blocks, apparel, and social links' },
+      { name: 'Products', href: '/admin/products', icon: Package, description: 'Manage product catalog' },
+      { name: 'Orders', href: '/admin/orders', icon: ShoppingCart, description: 'View and fulfill orders' },
+      { name: 'Variants & Stock', href: '/admin/variants', icon: Tag, description: 'Inventory, sizing, and stock levels' },
+      { name: 'Collections', href: '/admin/collections', icon: Image, description: 'Organize products into collections' },
+      { name: 'Discounts', href: '/admin/discounts', icon: Tag, description: 'Promo codes and discount rules' },
+      { name: 'Reviews', href: '/admin/reviews', icon: Star, description: 'Moderate customer reviews' },
+      { name: 'Customers', href: '/admin/customers', icon: Users, description: 'Customer CRM' },
+      { name: 'Store Settings', href: '/admin/storefront-settings', icon: Settings, description: 'Global storefront configuration' },
     ]
   },
 
@@ -96,7 +111,6 @@ export const MANAGEMENT_SECTIONS = [
 
   // ─────────────────────────────────────────────────────
   // CORE ENTITY OVERSIGHT — admin list/moderation views
-  // Deep editing routes through Race Core canonical editors
   // ─────────────────────────────────────────────────────
   {
     title: 'Core Entity Oversight',
@@ -132,7 +146,7 @@ export const MANAGEMENT_PAGES = MANAGEMENT_SECTIONS.reduce((acc, section) => {
 }, []);
 
 /**
- * Filter sections by user role. Currently only admins have management access.
+ * Filter sections by user role.
  */
 export function getManagementItemsForRole(userRole) {
   if (userRole === 'admin') {

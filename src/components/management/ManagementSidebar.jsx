@@ -116,12 +116,15 @@ export default function ManagementSidebar({ onNavigate }) {
                   <div className="pl-2 space-y-0.5">
                     {section.items.map((item) => {
                       const Icon = item.icon;
-                      const isActive = currentPage === item.page;
+                      const to = item.href || createPageUrl(item.page);
+                      const isActive = item.href
+                        ? location.pathname + location.search === item.href || location.pathname === item.href.split('?')[0]
+                        : currentPage === item.page;
                       return (
                         <Link
                           key={item.name}
-                          to={createPageUrl(item.page)}
-                          onClick={() => onNavigate?.(item.page)}
+                          to={to}
+                          onClick={() => !item.href && onNavigate?.(item.page)}
                           className={cn(
                             'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors',
                             isActive
