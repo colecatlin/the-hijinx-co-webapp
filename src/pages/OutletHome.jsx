@@ -47,7 +47,7 @@ export default function OutletHome() {
   });
 
   return (
-    <PageShell style={{ backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/2af63331a_THEOUTLETBACKGROUND.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+    <PageShell style={{ backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/44b72608e_TheOutletv1.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
         <SectionHeader
           label="The Outlet"
