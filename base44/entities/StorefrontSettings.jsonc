@@ -1,0 +1,62 @@
+{
+  "name": "StorefrontSettings",
+  "type": "object",
+  "properties": {
+    "store_name": {
+      "type": "string",
+      "default": "HIJINX"
+    },
+    "store_tagline": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "favicon_url": {
+      "type": "string"
+    },
+    "primary_accent_color": {
+      "type": "string",
+      "default": "#00FFDA"
+    },
+    "announcement_bar_text": {
+      "type": "string"
+    },
+    "announcement_bar_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "free_shipping_threshold": {
+      "type": "number",
+      "default": 75
+    },
+    "default_currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "shipping_note": {
+      "type": "string",
+      "description": "Default shipping note shown on PDPs"
+    },
+    "returns_policy_url": {
+      "type": "string"
+    },
+    "size_guide_url": {
+      "type": "string"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "twitter_url": {
+      "type": "string"
+    },
+    "featured_collection_id": {
+      "type": "string"
+    },
+    "maintenance_mode": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": []
+}

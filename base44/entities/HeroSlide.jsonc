@@ -2,59 +2,55 @@
   "name": "HeroSlide",
   "type": "object",
   "properties": {
-    "headline_line1": {
-      "type": "string",
-      "description": "First line of the headline"
+    "title": {
+      "type": "string"
     },
-    "headline_line2": {
-      "type": "string",
-      "description": "Second line of the headline"
+    "subtitle": {
+      "type": "string"
     },
-    "subtext": {
+    "eyebrow": {
       "type": "string",
-      "description": "Subheadline / supporting text"
+      "description": "Small label above title (e.g. 'New Collection')"
     },
-    "media_type": {
+    "image_url": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string"
+    },
+    "cta_label": {
+      "type": "string",
+      "description": "CTA button text"
+    },
+    "cta_url": {
+      "type": "string",
+      "description": "CTA link URL"
+    },
+    "cta_secondary_label": {
+      "type": "string"
+    },
+    "cta_secondary_url": {
+      "type": "string"
+    },
+    "text_position": {
       "type": "string",
       "enum": [
-        "image",
-        "video"
+        "left",
+        "center",
+        "right"
       ],
-      "default": "image",
-      "description": "Type of background media"
+      "default": "left"
     },
-    "background_url": {
-      "type": "string",
-      "description": "URL for background image or video (optional \u2014 can be uploaded)"
-    },
-    "cta1_label": {
-      "type": "string",
-      "description": "Primary CTA button label"
-    },
-    "cta1_url": {
-      "type": "string",
-      "description": "Primary CTA button URL"
-    },
-    "cta2_label": {
-      "type": "string",
-      "description": "Secondary CTA button label (optional)"
-    },
-    "cta2_url": {
-      "type": "string",
-      "description": "Secondary CTA button URL (optional)"
+    "active": {
+      "type": "boolean",
+      "default": true
     },
     "sort_order": {
       "type": "number",
-      "default": 0,
-      "description": "Display order \u2014 lower number appears first"
-    },
-    "is_active": {
-      "type": "boolean",
-      "default": true,
-      "description": "Whether this slide is visible on the homepage"
+      "default": 0
     }
   },
   "required": [
-    "headline_line1"
+    "title"
   ]
 }

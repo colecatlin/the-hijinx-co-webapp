@@ -1,0 +1,56 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "1-5 star rating"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "verified_purchase": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "size_purchased": {
+      "type": "string"
+    },
+    "fit_rating": {
+      "type": "string",
+      "enum": [
+        "runs_small",
+        "true_to_size",
+        "runs_large"
+      ]
+    }
+  },
+  "required": [
+    "product_id",
+    "rating"
+  ]
+}

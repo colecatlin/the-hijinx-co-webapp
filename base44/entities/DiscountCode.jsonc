@@ -1,0 +1,63 @@
+{
+  "name": "DiscountCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "The discount code string (uppercase)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "percentage",
+        "fixed_amount",
+        "free_shipping"
+      ],
+      "default": "percentage"
+    },
+    "value": {
+      "type": "number",
+      "description": "Discount value (% or $ amount)"
+    },
+    "minimum_order_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "usage_limit": {
+      "type": "number",
+      "description": "Max total uses (null = unlimited)"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0
+    },
+    "per_customer_limit": {
+      "type": "number",
+      "default": 1
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "applies_to_collection_id": {
+      "type": "string",
+      "description": "Optional: restrict to collection"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "type",
+    "value"
+  ]
+}

@@ -49,6 +49,18 @@ import ManageDisciplineColors from './pages/ManageDisciplineColors';
 import StandingsHome from './pages/StandingsHome';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 import UserPublicProfile from './pages/UserPublicProfile';
+import StorefrontHome from './pages/StorefrontHome';
+import StorefrontProductDetail from './pages/StorefrontProductDetail';
+import StorefrontAdmin from './pages/admin/StorefrontAdmin';
+import ManageStorefrontProducts from './pages/admin/ManageStorefrontProducts';
+import ManageVariants from './pages/admin/ManageVariants';
+import ManageCollections from './pages/admin/ManageCollections';
+import ManageOrders from './pages/admin/ManageOrders';
+import ManageCustomers from './pages/admin/ManageCustomers';
+import ManageDiscounts from './pages/admin/ManageDiscounts';
+import ManageReviews from './pages/admin/ManageReviews';
+import ManageHeroSlides from './pages/admin/ManageHeroSlides';
+import ManageStorefrontSettings from './pages/admin/ManageStorefrontSettings';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -151,6 +163,23 @@ const AuthenticatedApp = () => {
       } />
       {/* Public user profile route */}
       <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
+
+      {/* Storefront routes */}
+      <Route path="/store" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
+      <Route path="/product/:slug" element={<LayoutWrapper currentPageName="StorefrontProductDetail"><StorefrontProductDetail /></LayoutWrapper>} />
+      <Route path="/collection/:slug" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
+
+      {/* Storefront admin routes */}
+      <Route path="/admin/storefront" element={<LayoutWrapper currentPageName="StorefrontAdmin"><StorefrontAdmin /></LayoutWrapper>} />
+      <Route path="/admin/products" element={<LayoutWrapper currentPageName="ManageStorefrontProducts"><ManageStorefrontProducts /></LayoutWrapper>} />
+      <Route path="/admin/variants" element={<LayoutWrapper currentPageName="ManageVariants"><ManageVariants /></LayoutWrapper>} />
+      <Route path="/admin/collections" element={<LayoutWrapper currentPageName="ManageCollections"><ManageCollections /></LayoutWrapper>} />
+      <Route path="/admin/orders" element={<LayoutWrapper currentPageName="ManageOrders"><ManageOrders /></LayoutWrapper>} />
+      <Route path="/admin/customers" element={<LayoutWrapper currentPageName="ManageCustomers"><ManageCustomers /></LayoutWrapper>} />
+      <Route path="/admin/discounts" element={<LayoutWrapper currentPageName="ManageDiscounts"><ManageDiscounts /></LayoutWrapper>} />
+      <Route path="/admin/reviews" element={<LayoutWrapper currentPageName="ManageReviews"><ManageReviews /></LayoutWrapper>} />
+      <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
+      <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

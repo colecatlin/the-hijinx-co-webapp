@@ -8,15 +8,18 @@
     "product_id": {
       "type": "string"
     },
-    "product_name_snapshot": {
+    "variant_id": {
       "type": "string"
     },
-    "product_type": {
+    "product_name": {
+      "type": "string"
+    },
+    "variant_label": {
       "type": "string",
-      "enum": [
-        "physical",
-        "digital"
-      ]
+      "description": "e.g. Black / Large"
+    },
+    "sku": {
+      "type": "string"
     },
     "quantity": {
       "type": "number"
@@ -27,17 +30,14 @@
     "line_total": {
       "type": "number"
     },
-    "variant_id": {
+    "image_url": {
       "type": "string"
     }
   },
   "required": [
     "order_id",
     "product_id",
-    "product_name_snapshot",
-    "product_type",
     "quantity",
-    "unit_price",
-    "line_total"
+    "unit_price"
   ]
 }

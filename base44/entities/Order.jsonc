@@ -2,64 +2,103 @@
   "name": "Order",
   "type": "object",
   "properties": {
-    "user_id": {
+    "order_number": {
+      "type": "string",
+      "description": "Human-readable order number"
+    },
+    "customer_id": {
       "type": "string"
     },
-    "email": {
+    "customer_email": {
       "type": "string"
     },
-    "order_status": {
+    "customer_name": {
+      "type": "string"
+    },
+    "status": {
       "type": "string",
       "enum": [
         "pending",
-        "paid",
-        "fulfilled",
-        "canceled",
+        "confirmed",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
         "refunded"
       ],
       "default": "pending"
     },
-    "total_amount": {
+    "subtotal": {
+      "type": "number"
+    },
+    "discount_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "shipping_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "total": {
       "type": "number"
     },
     "currency": {
       "type": "string",
       "default": "USD"
     },
-    "payment_provider": {
+    "discount_code": {
       "type": "string"
     },
-    "payment_reference": {
+    "stripe_payment_intent_id": {
       "type": "string"
     },
-    "fulfillment_status": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "fulfilled",
-        "partially_fulfilled",
-        "not_applicable"
-      ],
-      "default": "pending"
+    "stripe_session_id": {
+      "type": "string"
     },
-    "order_type": {
-      "type": "string",
-      "enum": [
-        "physical",
-        "digital",
-        "mixed"
-      ]
+    "shipping_name": {
+      "type": "string"
     },
-    "paid_at": {
+    "shipping_address_line1": {
+      "type": "string"
+    },
+    "shipping_address_line2": {
+      "type": "string"
+    },
+    "shipping_city": {
+      "type": "string"
+    },
+    "shipping_state": {
+      "type": "string"
+    },
+    "shipping_zip": {
+      "type": "string"
+    },
+    "shipping_country": {
+      "type": "string",
+      "default": "US"
+    },
+    "tracking_number": {
+      "type": "string"
+    },
+    "tracking_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "fulfilled_at": {
       "type": "string",
       "format": "date-time"
     }
   },
   "required": [
-    "user_id",
-    "email",
-    "total_amount",
-    "currency",
-    "order_type"
+    "customer_email",
+    "status",
+    "total",
+    "currency"
   ]
 }

@@ -3,13 +3,15 @@ import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
-const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
+import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ArrowRight } from 'lucide-react';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
+import ProductCard from '@/components/storefront/ProductCard';
+
+const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 
 export default function ApparelHome() {
   const { data: products = [], isLoading } = useQuery({
@@ -38,70 +40,63 @@ export default function ApparelHome() {
   useEffect(() => { Analytics.pageView('ApparelHome'); }, []);
 
   return (
-    <PageShell>
+    <PageShell style={{ background: '#050505', color: '#F5F5F5' }}>
       <SeoMeta
         title="Apparel | Wear the Culture"
-        description="HIJINX apparel and essentials. Wear the culture. New collection dropping soon."
+        description="HIJINX apparel and essentials. Wear the culture."
       />
+
       {/* Hero */}
-      <div className="bg-[#0A0A0A] text-white">
+      <div style={{ background: '#050505' }}>
         <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
-          <span className="font-mono text-xs tracking-[0.3em] text-gray-500 uppercase">Hijinx Apparel</span>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight mt-3 max-w-3xl">Wear the culture.</h1>
-          <p className="text-gray-400 mt-4 max-w-lg">Apparel and essentials from the Hijinx brand.</p>
+          <span className="font-mono text-xs tracking-[0.3em] text-[#00FFDA] uppercase">Hijinx Apparel</span>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight mt-3 max-w-3xl text-[#F5F5F5] leading-[0.95]">Wear the<br />culture.</h1>
+          <p className="text-[#555] mt-5 max-w-lg text-base">Apparel and essentials from the Hijinx brand. Built for people who live in the pits.</p>
+          <div className="flex gap-4 mt-8">
+            <Link to="/store" className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#00FFDA] text-[#050505] text-xs font-bold tracking-[0.1em] uppercase hover:bg-white transition-colors">
+              Shop All <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <a href={shopifyUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-3.5 border border-[#262626] text-[#A1A1A1] text-xs font-bold tracking-[0.1em] uppercase hover:border-[#F5F5F5] hover:text-[#F5F5F5] transition-colors">
+              Visit Hijinx.com <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
-        <div className="h-1 bg-gradient-to-r from-[#E5FF00] via-white to-transparent" />
+        <div className="h-px bg-gradient-to-r from-[#00FFDA]/60 via-[#00FFDA]/20 to-transparent" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-16">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-80 w-full" />)}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => <div key={i} className="aspect-[3/4] bg-[#111] animate-pulse" />)}
           </div>
         ) : products.length === 0 ? (
-          /* No products yet — show teaser */
           <div className="text-center py-24">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <h2 className="text-2xl font-black tracking-tight mb-4">New Collection Dropping Soon</h2>
-              <p className="text-gray-500 text-sm max-w-md mx-auto mb-8">
-                New Hijinx apparel and merchandise coming soon. Shop our current collection in the meantime.
-              </p>
-              <a
-                href={shopifyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
+              <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-4">Coming Soon</span>
+              <h2 className="text-3xl font-black tracking-tight mb-4 text-[#F5F5F5]">New Collection Dropping Soon</h2>
+              <p className="text-[#555] text-sm max-w-md mx-auto mb-8">New HIJINX apparel incoming. Visit our current collection in the meantime.</p>
+              <a href={shopifyUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#00FFDA] text-[#050505] text-xs font-bold uppercase hover:bg-white transition-colors">
                 Visit Store <ExternalLink className="w-4 h-4" />
               </a>
             </motion.div>
           </div>
         ) : (
           <>
-            {/* Featured */}
             {featuredProducts.length > 0 && (
               <div className="mb-16">
-                <p className="font-mono text-xs tracking-[0.2em] text-gray-400 uppercase mb-6">Featured</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {featuredProducts.map((product, i) => (
-                    <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-                      <ProductCard product={product} statusBadge={statusBadge} featured shopifyUrl={shopifyUrl} strategy={strategy} />
-                    </motion.div>
-                  ))}
+                <p className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase mb-8">Featured</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {featuredProducts.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
                 </div>
               </div>
             )}
-
-            {/* All Products */}
             {allActiveProducts.length > 0 && (
               <div>
-                <p className="font-mono text-xs tracking-[0.2em] text-gray-400 uppercase mb-6">All Products</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allActiveProducts.map((product, i) => (
-                    <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                      <ProductCard product={product} statusBadge={statusBadge} shopifyUrl={shopifyUrl} strategy={strategy} />
-                    </motion.div>
-                  ))}
+                <p className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase mb-8">All Products</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {allActiveProducts.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
                 </div>
               </div>
             )}
@@ -109,56 +104,13 @@ export default function ApparelHome() {
         )}
 
         {/* Newsletter */}
-        <div className="mt-20 bg-gray-50 p-8 md:p-12">
-          <h2 className="text-xl font-black tracking-tight mb-2">New Drops & Releases</h2>
-          <p className="text-sm text-gray-500 mb-6">Be the first to know when new items drop.</p>
+        <div className="mt-20 border border-[#1a1a1a] bg-[#0D0D0D] p-8 md:p-12">
+          <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-3">Stay Connected</span>
+          <h2 className="text-2xl font-black tracking-tight mb-2 text-[#F5F5F5]">New Drops & Releases</h2>
+          <p className="text-sm text-[#555] mb-6">Be the first to know when new items drop.</p>
           <NewsletterSignup source="apparel" />
         </div>
       </div>
     </PageShell>
-  );
-}
-
-function ProductCard({ product, statusBadge, featured, shopifyUrl = DEFAULT_SHOPIFY, strategy = 'shopify' }) {
-  const image = product.images?.[0];
-  const isUnavailable = product.status === 'sold_out' || product.status === 'coming_soon';
-  const productHref = strategy === 'internal' ? `/product/${product.slug || product.id}` : (product.external_fulfillment_url || shopifyUrl);
-
-  return (
-    <div className={`group border border-gray-200 hover:border-[#0A0A0A] transition-all duration-300 ${featured ? 'overflow-hidden' : ''}`}>
-      {image && (
-        <div className={`overflow-hidden bg-gray-100 ${featured ? 'h-72' : 'h-56'}`}>
-          <img
-            src={image}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-      )}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-bold text-sm leading-tight">{product.name}</h3>
-          {statusBadge(product.status)}
-        </div>
-        {product.description && (
-          <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{product.description}</p>
-        )}
-        <div className="flex items-center justify-between mt-4">
-          {product.price ? (
-            <span className="text-sm font-bold">${product.price.toFixed(2)}</span>
-          ) : <span />}
-          {!isUnavailable && (
-            <a
-              href={productHref}
-              target={strategy === 'shopify' ? '_blank' : '_self'}
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-white bg-[#0A0A0A] px-3 py-1.5 hover:bg-gray-800 transition-colors"
-            >
-              Shop <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }

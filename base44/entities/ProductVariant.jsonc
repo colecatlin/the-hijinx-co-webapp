@@ -1,0 +1,55 @@
+{
+  "name": "ProductVariant",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Parent Product ID"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Unique SKU for this variant"
+    },
+    "color": {
+      "type": "string",
+      "description": "Color name (e.g. Midnight Black)"
+    },
+    "color_hex": {
+      "type": "string",
+      "description": "Hex color code for swatch (#000000)"
+    },
+    "size": {
+      "type": "string",
+      "description": "Size label (XS, S, M, L, XL, XXL, etc.)"
+    },
+    "price": {
+      "type": "number",
+      "description": "Override price (if different from base)"
+    },
+    "compare_at_price": {
+      "type": "number"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Variant-specific image"
+    },
+    "inventory": {
+      "type": "number",
+      "default": 0,
+      "description": "Stock count"
+    },
+    "available": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this variant is purchasable"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "product_id",
+    "sku"
+  ]
+}
