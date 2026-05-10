@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
 import { ExternalLink, Plus, CheckCircle2 } from 'lucide-react';
+import { createEventCanonical } from './createEventCanonical';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -316,6 +317,13 @@ export default function RaceCoreQuickCreate({
     }
   }, [initialEntityType, open]);
 
+  // Current user — needed for canonical Event creation (createdByEntityId)
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60_000,
+  });
+
   // Fetch teams for the Driver form
   const { data: teams = [] } = useQuery({
     queryKey: ['teams_for_quickcreate'],
@@ -340,12 +348,26 @@ export default function RaceCoreQuickCreate({
         Object.entries(form).filter(([, v]) => v !== '' && v !== null && v !== undefined)
       );
 
-      // Coerce numeric fields
-      if (entityType === 'Event' && payload.round_number) {
-        payload.round_number = Number(payload.round_number);
+      let result;
+
+      if (entityType === 'Event') {
+        // Phase 2 Part B2: Event creation uses canonical pipeline
+        result = await createEventCanonical({
+          payload,
+          currentUser: user,
+          triggeredFrom: 'race_core_quick_create',
+          seriesList: seriesList || [],
+          trackList: tracks || [],
+          createdByEntityType: 'admin',
+          createdByEntityId: user?.id || null,
+        });
+      } else {
+        // All other entity types: unchanged direct create
+        // Coerce numeric fields for non-Event types if needed
+        const result_ = await base44.entities[entityType].create(payload);
+        result = result_;
       }
 
-      const result = await base44.entities[entityType].create(payload);
       setCreated(result);
       toast.success(`${entityType} created`);
       onCreated?.(entityType, result);
