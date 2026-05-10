@@ -1,0 +1,118 @@
+{
+  "name": "Results",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver"
+    },
+    "program_id": {
+      "type": "string",
+      "description": "Reference to DriverProgram \u2014 links result to a specific racing program"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Reference to Session (optional \u2014 for T&S integration)"
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "Practice",
+        "Qualifying",
+        "Heat",
+        "LCQ",
+        "Final"
+      ],
+      "description": "Type of session"
+    },
+    "heat_number": {
+      "type": "number",
+      "description": "Heat number (1, 2, 3, 4, etc.) when session_type is Heat"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (denormalized for quick lookup)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (denormalized for quick lookup)"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team at time of race"
+    },
+    "position": {
+      "type": "number",
+      "description": "Finishing position (1, 2, 3, etc.)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Running",
+        "DNF",
+        "DNS",
+        "DSQ",
+        "DNP"
+      ],
+      "description": "Result status code (race outcome status)"
+    },
+    "status_state": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Provisional",
+        "Official",
+        "Locked"
+      ],
+      "default": "Draft",
+      "description": "Publication state of the result"
+    },
+    "laps_completed": {
+      "type": "number",
+      "description": "Laps completed"
+    },
+    "best_lap_time_ms": {
+      "type": "number",
+      "description": "Best lap time in milliseconds"
+    },
+    "points": {
+      "type": "number",
+      "description": "Points earned"
+    },
+    "published": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether result is published for public viewing"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When result was published"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Derived visibility field - set automatically when session is Official or Locked"
+    },
+    "result_identity_key": {
+      "type": "string",
+      "description": "Stable deduplication key: result:{event_id}:{session_id}:{driver_id}"
+    },
+    "normalized_result_key": {
+      "type": "string",
+      "description": "Deterministic normalized key: result:{session_id}:{driver_id_or_normalized_name}"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional result notes (DUPLICATE_OF:{id} marker used by repair tools)"
+    }
+  },
+  "required": [
+    "driver_id",
+    "event_id"
+  ]
+}

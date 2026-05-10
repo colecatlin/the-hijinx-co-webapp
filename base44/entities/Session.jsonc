@@ -1,0 +1,135 @@
+{
+  "name": "Session",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "event_class_id": {
+      "type": "string",
+      "description": "Reference to EventClass (optional, primary grouping key for Race Core)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional, for standings and series filtering)"
+    },
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "Practice",
+        "Qualifying",
+        "Heat",
+        "LCQ",
+        "Feature",
+        "Final",
+        "Time Attack",
+        "Other"
+      ],
+      "description": "Type of session"
+    },
+    "name": {
+      "type": "string",
+      "description": "Session name (e.g., Heat 1, Final)"
+    },
+    "session_number": {
+      "type": "number",
+      "description": "Session number within class group (optional)"
+    },
+    "round_number": {
+      "type": "number",
+      "description": "Round number (optional)"
+    },
+    "run_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Execution order for race day timeline"
+    },
+    "scheduled_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled start time (optional)"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Duration in minutes (optional)"
+    },
+    "laps": {
+      "type": "number",
+      "description": "Number of laps (optional)"
+    },
+    "input_source": {
+      "type": "string",
+      "enum": [
+        "Manual",
+        "CSV",
+        "API"
+      ],
+      "default": "Manual",
+      "description": "Source of session data"
+    },
+    "advancement_rules": {
+      "type": "string",
+      "description": "Rules for driver advancement (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Provisional",
+        "Official",
+        "Locked"
+      ],
+      "default": "Draft",
+      "description": "Session status and lock state"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether session is locked from editing (mirrors status=Locked)"
+    },
+    "is_historical": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marks sessions created for historical/reference result entry workflows."
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized lowercase name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Canonical slug derived from normalized name"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Canonical unique key: session:{event_id}:{normalized_name}"
+    },
+    "normalized_session_key": {
+      "type": "string",
+      "description": "Composite dedup key: session:{event_id}:{normalized_name}"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "UID from external data source for deduplication"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source system or import job that created this record"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when last seen during a sync operation"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes (DUPLICATE_OF:{id} marker used by repair tools)"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_type",
+    "name"
+  ]
+}

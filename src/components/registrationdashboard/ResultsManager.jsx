@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertCircle, Lock, CheckCircle2, Download, Eye } from 'lucide-react';
+import { AlertCircle, Lock, CheckCircle2, Download, Eye, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import {
@@ -66,11 +66,13 @@ export default function ResultsManager({
   const [entryMode, setEntryMode] = useState('manual');
   const [pendingStatus, setPendingStatus] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
+  const [isHistoricalMode, setIsHistoricalMode] = useState(false);
 
   useEffect(() => {
     setClassFilter('all');
     setSessionId('');
     setEntryMode('manual');
+    setIsHistoricalMode(false);
   }, [eventId]);
 
   // ── Queries ──
@@ -413,34 +415,35 @@ export default function ResultsManager({
     const errs = [];
     if (!sessionResults.length) errs.push('No results entered');
     if (sessionResults.some((r) => !r.driver_id)) errs.push('All rows must have a driver');
-    
-    // Check Entry roster integrity
-    if (unmatchedResults.length > 0) {
-      errs.push(`${unmatchedResults.length} result row(s) do not match any Entry in the event roster. Resolve before publishing Official.`);
-    }
 
-    // Use validation engine
-    const { errors: validationErrs } = validateResults({
-      rows: sessionResults,
-      rosterByCarNumber: roster.rosterByCarNumber,
-      rosterByDriverId: roster.rosterByDriverId,
-    });
-
-    validationErrs.forEach((err) => {
-      errs.push(err.message);
-    });
-
-    // Check tech requirements
-    const techFailures = [];
-    classEntries.forEach((entry) => {
-      const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
-      if (template?.required_for_publish && entry.tech_status !== 'Passed') {
-        techFailures.push(entry.id);
+    // Historical mode: skip Entry roster, roster validation, and tech checks
+    if (!isHistoricalMode) {
+      // Check Entry roster integrity
+      if (unmatchedResults.length > 0) {
+        errs.push(`${unmatchedResults.length} result row(s) do not match any Entry in the event roster. Resolve before publishing Official.`);
       }
-    });
-    
-    if (techFailures.length > 0) {
-      errs.push(`${techFailures.length} entries have not passed required tech inspection`);
+
+      // Use validation engine
+      const { errors: validationErrs } = validateResults({
+        rows: sessionResults,
+        rosterByCarNumber: roster.rosterByCarNumber,
+        rosterByDriverId: roster.rosterByDriverId,
+      });
+      validationErrs.forEach((err) => {
+        errs.push(err.message);
+      });
+
+      // Check tech requirements
+      const techFailures = [];
+      classEntries.forEach((entry) => {
+        const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
+        if (template?.required_for_publish && entry.tech_status !== 'Passed') {
+          techFailures.push(entry.id);
+        }
+      });
+      if (techFailures.length > 0) {
+        errs.push(`${techFailures.length} entries have not passed required tech inspection`);
+      }
     }
 
     return errs;
@@ -550,7 +553,31 @@ export default function ResultsManager({
             {sessions.length} session{sessions.length !== 1 ? 's' : ''} · select a session below to enter or publish results
           </p>
         </div>
+        {/* Historical Entry Mode toggle — admin only */}
+        {isAdmin && (
+          <button
+            onClick={() => setIsHistoricalMode(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              isHistoricalMode
+                ? 'bg-amber-900/40 border-amber-700 text-amber-300'
+                : 'bg-[#171717] border-gray-700 text-gray-500 hover:text-gray-300 hover:border-gray-600'
+            }`}
+          >
+            <History className="w-3.5 h-3.5" />
+            Historical Mode {isHistoricalMode ? 'ON' : 'OFF'}
+          </button>
+        )}
       </div>
+
+      {/* Historical mode banner */}
+      {isHistoricalMode && (
+        <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg px-4 py-2.5 flex items-start gap-2">
+          <History className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-300">
+            <span className="font-semibold">Historical Entry Mode</span> — Live operational checks (Entry roster, tech inspection, check-in) are bypassed. Results will still affect standings when the session is marked Official.
+          </p>
+        </div>
+      )}
 
       {/* Top control bar */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 flex items-end gap-3 flex-wrap">
@@ -633,7 +660,7 @@ export default function ResultsManager({
               </div>
             )}
 
-            {unmatchedResults.length > 0 && (
+            {!isHistoricalMode && unmatchedResults.length > 0 && (
               <div className="bg-orange-950/30 border border-orange-800/50 rounded-lg p-3">
                 <p className="text-xs font-semibold text-orange-300 mb-2">Unmatched Results ({unmatchedResults.length})</p>
                 <div className="space-y-1 text-xs text-orange-300">
@@ -671,9 +698,15 @@ export default function ResultsManager({
                         </div>
                       )}
                       {/* Step buttons */}
-                      {(selectedSession.status === 'Draft' || !selectedSession.status) && can('results_mark_provisional') && (
+                      {(selectedSession.status === 'Draft' || !selectedSession.status) && can('results_mark_provisional') && !isHistoricalMode && (
                        <Button size="sm" onClick={() => handleStatusTransition('Provisional')} disabled={updateSessionStatus.isPending} className="w-full bg-blue-700 hover:bg-blue-600 text-xs">
                           Mark Provisional
+                       </Button>
+                      )}
+                      {/* Historical mode: allow Direct Draft → Official promotion */}
+                      {(selectedSession.status === 'Draft' || !selectedSession.status) && isHistoricalMode && can('results_publish_official') && (
+                       <Button size="sm" onClick={() => handleStatusTransition('Official')} disabled={updateSessionStatus.isPending} className="w-full bg-green-700 hover:bg-green-600 text-xs">
+                          Publish Official
                        </Button>
                       )}
                       {selectedSession.status === 'Provisional' && can('results_publish_official') && (
@@ -764,7 +797,9 @@ export default function ResultsManager({
           <AlertDialogTitle className="text-white">Confirm: {pendingStatus}</AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
             {pendingStatus === 'Official'
-              ? 'Publishing Official will trigger standings recalculation. Results will still be editable but will revert to Provisional on edit.'
+              ? isHistoricalMode
+                ? 'Publishing Official in Historical Mode. Live checks (Entry roster, tech) were bypassed. Standings recalculation will run normally.'
+                : 'Publishing Official will trigger standings recalculation. Results will still be editable but will revert to Provisional on edit.'
               : pendingStatus === 'Locked'
               ? 'Locking prevents all further edits to this session. Only admins can unlock.'
               : pendingStatus === 'Draft'
