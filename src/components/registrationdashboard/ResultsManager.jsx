@@ -25,7 +25,7 @@ import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
 import { calculateStandingsForSession, recomputeStandingsForFinalSession } from './standings/calculateStandings';
 import ResultsManualTable from './ResultsManualTable';
-import ResultsCsvImportDialog from './ResultsCsvImportDialog';
+import ResultsCsvImportDialog from './results/ResultsCsvImportDialog';
 import ResultsApiSyncPanel from './ResultsApiSyncPanel';
 import ResultsVersionHistory from './ResultsVersionHistory';
 import SessionContextBar from './results/SessionContextBar';
@@ -279,21 +279,24 @@ export default function ResultsManager({
         await base44.entities.Session.update(selectedSession.id, { input_source: 'CSV' });
       }
       // Write OperationLog batch record
-      base44.entities.OperationLog.create({
-        operation_type: 'results_imported_csv',
-        status: created.length ? 'success' : 'failed',
-        entity_name: 'Results',
-        event_id: eventId,
-        message: `CSV import: ${created.length} rows imported, ${meta?.error_count || 0} errors`,
-        metadata: {
+      try {
+        await base44.entities.OperationLog.create({
+          operation_type: 'results_imported_csv',
+          status: created.length ? 'success' : 'failed',
+          entity_name: 'Results',
           event_id: eventId,
-          session_id: sessionId,
-          series_class_id: selectedSession?.series_class_id,
-          imported_count: created.length,
-          rejected_count: meta?.rejected_count || 0,
-          ...(meta || {}),
-        },
-      }).catch(() => {});
+          message: `CSV import: ${created.length} rows imported, ${meta?.driversCreated || 0} new drivers`,
+          metadata: {
+            event_id: eventId,
+            session_id: sessionId,
+            series_class_id: selectedSession?.series_class_id,
+            imported_count: created.length,
+            drivers_created: meta?.driversCreated || 0,
+          },
+        });
+      } catch (_) {
+        // Logging failure is non-critical
+      }
       return created;
     },
     successMessage: 'Results imported',
@@ -812,14 +815,20 @@ export default function ResultsManager({
 
               <TabsContent value="csv">
                 <ResultsCsvImportDialog
-                    session={selectedSession}
-                    drivers={drivers}
-                    entries={classEntries}
-                    selectedEvent={selectedEvent}
-                    locked={isLocked}
-                    onImport={handleImport}
-                    importing={importing}
-                  />
+                  session={selectedSession}
+                  drivers={drivers}
+                  selectedEvent={selectedEvent}
+                  locked={isLocked}
+                  onImport={(rows, skippedCount, meta) => {
+                    importResults({ rows, meta }).then(() => {
+                      queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
+                      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+                      const msg = `Added ${rows.length} result rows${meta?.driversCreated > 0 ? `. Created ${meta.driversCreated} draft driver${meta.driversCreated !== 1 ? 's' : ''}` : ''}${skippedCount ? `. Skipped ${skippedCount} row${skippedCount !== 1 ? 's' : ''}` : ''}.`;
+                      toast.success(msg);
+                    }).catch(() => {});
+                  }}
+                  importing={importing}
+                />
               </TabsContent>
 
               <TabsContent value="api">
