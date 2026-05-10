@@ -13,7 +13,7 @@ export default function SeriesScheduleResults({ seriesId }) {
     queryKey: ['seriesEvents', seriesId],
     queryFn: async () => {
       const allEvents = await base44.entities.Event.list('-event_date', 1000);
-      const seriesEvents = allEvents.filter(e => e.series === seriesId);
+      const seriesEvents = allEvents.filter(e => e.series_id === seriesId);
       return seriesEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
     },
     enabled: !!seriesId,
@@ -26,7 +26,7 @@ export default function SeriesScheduleResults({ seriesId }) {
       const allResults = [];
       
       // Get all events in this series
-      const seriesEvents = await base44.entities.Event.filter({ series: seriesId });
+      const seriesEvents = await base44.entities.Event.filter({ series_id: seriesId });
       const eventIds = seriesEvents.map(e => e.id);
       
       // Get results for all those events
