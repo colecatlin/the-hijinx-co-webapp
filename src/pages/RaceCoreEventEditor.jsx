@@ -39,23 +39,22 @@ export default function RaceCoreEventEditor() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Events</p>
-            <h1 className="text-4xl font-black mb-1">{isNew ? 'New Event' : 'Edit Event'}</h1>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Deep Editor / Events</p>
+            <h1 className="text-4xl font-black mb-1">{isNew ? 'New Event' : 'Event Deep Editor'}</h1>
             <div className="flex items-center gap-3 mt-1">
               <p className="text-gray-500 text-sm">
-                {isNew ? 'Create a new event' : 'Edit event details — for full operations, use the Registration Dashboard'}
+                {isNew ? 'Create a new event' : 'Deep record editor — use this page for detailed event configuration. Use the Race Operations Hub for event planning, entries, sessions, results, and race day workflow.'}
               </p>
               {!isNew && event && <ProfileCompletenessIndicator entityType="Event" record={event} />}
             </div>
           </div>
-          {!isNew && (
-            <Button
-              variant="outline"
-              onClick={() => navigate(createPageUrl('RegistrationDashboard') + `?eventId=${id}`)}
-            >
-              Open Full Dashboard →
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={() => navigate(createPageUrl('RegistrationDashboard') + (id && !isNew ? `?eventId=${id}` : ''))}
+            className="gap-2 shrink-0"
+          >
+            ↗ Back to Race Operations Hub
+          </Button>
         </div>
 
         {!isNew && event && <ProfileHandoffBanner entityType="Event" entityId={id} record={event} />}

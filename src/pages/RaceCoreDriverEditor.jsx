@@ -69,13 +69,16 @@ export default function RaceCoreDriverEditor() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Drivers</p>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Deep Editor / Drivers</p>
             <h1 className="text-4xl font-black mb-1">{driverName}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-gray-500 text-sm">{isNew ? 'Create a new driver profile' : 'Manage all driver data'}</p>
+              <p className="text-gray-500 text-sm">{isNew ? 'Create a new driver profile' : 'Deep record editor — for race day operations, use the Race Operations Hub'}</p>
               {!isNew && driver && <ProfileCompletenessIndicator entityType="Driver" record={driver} />}
             </div>
           </div>
+          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationDashboard'))} className="gap-2 shrink-0">
+            ↗ Back to Race Operations Hub
+          </Button>
         </div>
 
         {!isNew && driver && <ProfileHandoffBanner entityType="Driver" entityId={id} record={driver} />}

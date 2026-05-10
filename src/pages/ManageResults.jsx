@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ResultForm from '@/components/management/results/ResultForm';
@@ -116,9 +116,15 @@ export default function ManageResults() {
   return (
     <ManagementLayout currentPage="ManageResults">
       <ManagementShell
-        title="Results"
-        subtitle={`${results.length} total results`}
+        title="Results Records"
+        subtitle={`${results.length} total result records across the platform`}
         actions={<>
+          <Link to={createPageUrl('RegistrationDashboard')}>
+            <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Go to Race Operations Hub
+            </Button>
+          </Link>
           <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}><Upload className="w-4 h-4 mr-2" />Smart Import</Button>
           <Button variant="outline" onClick={() => setShowUploadDialog(true)}><Upload className="w-4 h-4 mr-2" />Bulk Upload</Button>
           {selectedIds.size > 0 && (
@@ -131,8 +137,8 @@ export default function ManageResults() {
         </>}
       >
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="font-bold text-blue-900 mb-1">Results Lifecycle Notice</h3>
-          <p className="text-sm text-blue-800">Result lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+          <h3 className="font-bold text-blue-900 mb-1">Data Overview Notice</h3>
+          <p className="text-sm text-blue-800">Review result records across the platform. Active result entry, publishing, provisional status, official status, locked status, and standings workflow should be managed inside the <strong>Race Operations Hub</strong>.</p>
         </div>
 
         <div className="mb-6">

@@ -344,10 +344,24 @@ export default function ManagePointsConfig() {
   return (
     <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-white">Points Configuration</h1>
-        <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" /> New Ruleset
-        </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-white">Points Rulesets & Configuration</h1>
+          <p className="text-sm text-gray-400 mt-1">Manage points rules and scoring configuration for all series and classes.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <a href="/RegistrationDashboard">
+            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white gap-2">
+              <span>↗</span> Go to Race Operations Hub
+            </Button>
+          </a>
+          <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" /> New Ruleset
+          </Button>
+        </div>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+        <p className="text-sm text-gray-400">Event-specific points review, standings workflow, and standings recalculation should be handled inside the <span className="text-white font-medium">Race Operations Hub</span>. This page is for defining and managing the points ruleset configurations used in those calculations.</p>
       </div>
 
       {/* Points RuleSets Section */}

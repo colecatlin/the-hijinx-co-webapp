@@ -120,7 +120,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Teams (Admin)', page: 'ManageTeams', icon: Users, description: 'Admin overview: bulk ops, status, duplicate detection. Edit → Race Core.' },
       { name: 'Tracks (Admin)', page: 'ManageTracks', icon: MapPin, description: 'Admin overview: status, duplicate detection. Edit → Race Core.' },
       { name: 'Series (Admin)', page: 'ManageSeries', icon: Trophy, description: 'Admin overview: status, bulk ops. Edit → Race Core.' },
-      { name: 'Events (Admin)', page: 'ManageEvents', icon: Calendar, description: 'Admin event list and metadata overview.' },
+      { name: 'Events Data Overview', page: 'ManageEvents', icon: Calendar, description: 'Platform-wide event records and metadata overview. Use Race Operations Hub for active event management.' },
     ]
   },
 
@@ -129,11 +129,11 @@ export const MANAGEMENT_SECTIONS = [
   // ─────────────────────────────────────────────────────
   {
     title: 'Race Core Records',
-    description: 'Operational racing data — review and repair. Use Race Core Ops for live management.',
+    description: 'Operational racing data — review and repair. Use the Race Operations Hub for live management.',
     items: [
-      { name: 'Sessions', page: 'ManageSessions', icon: BarChart3, description: 'Review and repair race session records' },
-      { name: 'Results', page: 'ManageResults', icon: Award, description: 'Review and repair race results records' },
-      { name: 'Points Config', page: 'ManagePointsConfig', icon: Trophy, description: 'Points sheet integration and standings automation' },
+      { name: 'Sessions Records', page: 'ManageSessions', icon: BarChart3, description: 'Review and repair race session records. Use Race Operations Hub for active session management.' },
+      { name: 'Results Records', page: 'ManageResults', icon: Award, description: 'Review and repair race results records. Use Race Operations Hub for active result publishing.' },
+      { name: 'Points Rulesets', page: 'ManagePointsConfig', icon: Trophy, description: 'Define points scoring rules. Use Race Operations Hub for standings recalculation.' },
     ]
   },
 ];

@@ -109,6 +109,7 @@ import {
     Camera,
     Star,
     ArrowLeft,
+    ExternalLink,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import {
@@ -1143,11 +1144,11 @@ export default function RegistrationDashboard() {
            >
              <div className="space-y-3">
                <div>
-                 <h1 className="text-2xl font-black text-amber-300">Hijinx RaceDay Engine</h1>
-                 <p className="text-lg font-semibold text-amber-200 mt-1">Operational Control Center</p>
+                 <h1 className="text-2xl font-black text-amber-300">Index46 Race Operations Hub</h1>
+                 <p className="text-lg font-semibold text-amber-200 mt-1">Your Command Center for Race Day</p>
                </div>
                <p className="text-xs text-amber-200/70 leading-relaxed">
-                 Event lifecycle, session management, results publishing, standings recalculation, and race-day compliance are controlled exclusively through this dashboard.
+                 Centralized control for event planning, race day management, registrations, results, and standings. Event lifecycle, session management, results publishing, standings recalculation, and race-day compliance are all managed from this hub.
                </p>
              </div>
            </motion.div>
@@ -1158,7 +1159,7 @@ export default function RegistrationDashboard() {
              animate={{ opacity: 1, y: 0 }}
              className="mb-6"
            >
-             <h1 className="text-3xl font-black text-white mb-2">Index46 Operations</h1>
+             <h1 className="text-3xl font-black text-white mb-2">Index46 Race Operations Hub</h1>
             <p className="text-gray-400">
               {selectedOrgName && <span className="text-white">{selectedOrgName}</span>}
                   {selectedEvent && (
@@ -1230,20 +1231,36 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'event_builder') && activeTab === 'eventBuilder' && (
-                <EventBuilderForm
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  selectedEventId={editingEventId}
-                  onEventCreated={(id) => { handleEventCreated(id); invalidateAfterOperation('event_updated', { eventId: id }); }}
-                  isAdmin={isAdmin}
-                  isLiveMode={isLiveMode}
-                  onArchiveAttempt={() => setShowArchiveWarning(true)}
-                  onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
-                  onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
-                  canEditEventCore={canUserEditEventCore}
-                  canApproveAsTrack={canApproveAsTrack({ isAdmin, selectedEvent, userTrackAccess })}
-                  canApproveAsSeries={canApproveAsSeries({ isAdmin, selectedEvent, userSeriesAccess })}
-                />
+                <div className="space-y-4">
+                  {selectedEvent && (
+                    <div className="flex items-center justify-between bg-[#1a1a1a] border border-gray-800 rounded-lg px-4 py-3">
+                      <p className="text-xs text-gray-400">Need to edit all event record fields in depth?</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/race-core/events/${selectedEvent.id}`)}
+                        className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white gap-2"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Open Event Deep Editor
+                      </Button>
+                    </div>
+                  )}
+                  <EventBuilderForm
+                    dashboardContext={dashboardContext}
+                    dashboardPermissions={dashboardPermissions}
+                    selectedEventId={editingEventId}
+                    onEventCreated={(id) => { handleEventCreated(id); invalidateAfterOperation('event_updated', { eventId: id }); }}
+                    isAdmin={isAdmin}
+                    isLiveMode={isLiveMode}
+                    onArchiveAttempt={() => setShowArchiveWarning(true)}
+                    onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
+                    onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
+                    canEditEventCore={canUserEditEventCore}
+                    canApproveAsTrack={canApproveAsTrack({ isAdmin, selectedEvent, userTrackAccess })}
+                    canApproveAsSeries={canApproveAsSeries({ isAdmin, selectedEvent, userSeriesAccess })}
+                  />
+                </div>
               )}
 
               {canTab(dashboardPermissions, 'classes_sessions') && activeTab === 'classesSessions' && (

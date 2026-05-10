@@ -144,14 +144,14 @@ function LandingPage({ user, isAuth, onOpenRegistration }) {
               onClick={handleProfile}
               className="border-gray-300 text-gray-700 font-semibold px-8 py-3 h-auto text-base hover:bg-gray-50"
             >
-              <UserPlus className="w-4 h-4 mr-2" /> Build my Driver Profile
+              <UserPlus className="w-4 h-4 mr-2" /> Manage My Driver Profile
             </Button>
             <Button
               variant="outline"
               onClick={handleDashboard}
               className="border-gray-300 text-gray-700 font-semibold px-8 py-3 h-auto text-base hover:bg-gray-50"
             >
-              <LayoutDashboard className="w-4 h-4 mr-2" /> Open Race Core Dashboard
+              <LayoutDashboard className="w-4 h-4 mr-2" /> Open Race Operations Hub
             </Button>
           </div>
         </div>
@@ -278,12 +278,12 @@ function LandingPage({ user, isAuth, onOpenRegistration }) {
               <Calendar className="w-4 h-4 mr-2" /> Register for an Event
             </Button>
             <Button
-              variant="outline"
-              onClick={handleDashboard}
-              className="border-gray-300 text-gray-700 font-semibold px-8 py-3 h-auto hover:bg-gray-50"
+            variant="outline"
+            onClick={handleDashboard}
+            className="border-gray-300 text-gray-700 font-semibold px-8 py-3 h-auto hover:bg-gray-50"
             >
-              <LayoutDashboard className="w-4 h-4 mr-2" /> Open Race Core Dashboard
-              <ChevronRight className="w-4 h-4 ml-1" />
+            <LayoutDashboard className="w-4 h-4 mr-2" /> Open Race Operations Hub
+            <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>

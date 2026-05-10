@@ -65,13 +65,16 @@ export default function RaceCoreTeamEditor() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Race Core / Teams</p>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Deep Editor / Teams</p>
             <h1 className="text-4xl font-black mb-1">{team?.name || 'New Team'}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-gray-500 text-sm">{isNew ? 'Create a new team' : 'Manage all team data'}</p>
+              <p className="text-gray-500 text-sm">{isNew ? 'Create a new team' : 'Deep record editor — for race day operations, use the Race Operations Hub'}</p>
               {!isNew && team && <ProfileCompletenessIndicator entityType="Team" record={team} />}
             </div>
           </div>
+          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationDashboard'))} className="gap-2 shrink-0">
+            ↗ Back to Race Operations Hub
+          </Button>
         </div>
 
         {tabsLocked && !isNew && (

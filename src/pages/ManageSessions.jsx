@@ -6,7 +6,7 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
@@ -37,8 +37,16 @@ export default function ManageSessions() {
       <ManagementLayout currentPage="ManageSessions">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-            <h3 className="font-bold text-blue-900 mb-1">Session Lifecycle Notice</h3>
-            <p className="text-sm text-blue-800">Session lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+            <h3 className="font-bold text-blue-900 mb-1">Deep Record View</h3>
+            <p className="text-sm text-blue-800">Active session creation, race day workflow, provisional status, official status, and locked status should be managed inside the <strong>Race Operations Hub</strong>. This view is for reviewing and repairing the raw session record.</p>
+          </div>
+          <div className="flex justify-end mb-4">
+            <Link to={createPageUrl('RegistrationDashboard')}>
+              <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
+                <ExternalLink className="w-4 h-4" />
+                Go to Race Operations Hub
+              </Button>
+            </Link>
           </div>
 
           {isOperationalSession(selectedSessionForEdit) && (
@@ -117,10 +125,21 @@ export default function ManageSessions() {
 
   return (
     <ManagementLayout currentPage="ManageSessions">
-      <ManagementShell title="Manage Sessions" subtitle={`${sessions.length} total sessions`}>
+      <ManagementShell
+        title="Sessions Records"
+        subtitle={`${sessions.length} total session records across the platform`}
+        actions={
+          <Link to={createPageUrl('RegistrationDashboard')}>
+            <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Go to Race Operations Hub
+            </Button>
+          </Link>
+        }
+      >
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="font-bold text-blue-900 mb-1">Session Lifecycle Notice</h3>
-          <p className="text-sm text-blue-800">Session lifecycle transitions (Provisional, Official, Locked) are managed exclusively through RegistrationDashboard.</p>
+          <h3 className="font-bold text-blue-900 mb-1">Data Overview Notice</h3>
+          <p className="text-sm text-blue-800">Review session records across the platform. Active session creation, race day workflow, provisional status, official status, and locked status should be managed inside the <strong>Race Operations Hub</strong>.</p>
         </div>
 
         <div className="flex items-center gap-4 mb-6">

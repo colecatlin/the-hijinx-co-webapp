@@ -177,9 +177,19 @@ export default function ManageEvents() {
     return (
       <ManagementLayout currentPage="ManageEvents">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8">
-            <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
-            <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
+                <p className="text-sm text-blue-800">This page is for reviewing and editing event record metadata. For active event setup, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
+              </div>
+              <Link to={createPageUrl('RegistrationDashboard')} className="shrink-0">
+                <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2 whitespace-nowrap">
+                  <ExternalLink className="w-4 h-4" />
+                  Go to Race Operations Hub
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center gap-4 mb-8">
@@ -236,11 +246,16 @@ export default function ManageEvents() {
   return (
     <ManagementLayout currentPage="ManageEvents">
       <ManagementShell
-        title="Events"
-        subtitle={`${events.length} total events`}
-        actions={activeTab === 'data' ? <>
-          <Button variant="outline" onClick={() => window.location.href = createPageUrl('RegistrationLanding')} className="border-gray-300 text-gray-700 hover:bg-gray-50"><ExternalLink className="w-4 h-4 mr-2" />Go to Race Core</Button>
-        </> : undefined}
+        title="Events Data Overview"
+        subtitle={`${events.length} total event records across the platform`}
+        actions={<>
+          <Link to={createPageUrl('RegistrationDashboard')}>
+            <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Go to Race Operations Hub
+            </Button>
+          </Link>
+        </>}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
@@ -253,6 +268,10 @@ export default function ManageEvents() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
+              <p className="text-sm text-blue-800">Review and maintain event records across the platform. For active event setup, race day operations, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
+            </div>
             <div className="grid grid-cols-4 gap-4">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Total Events</p>
@@ -271,16 +290,12 @@ export default function ManageEvents() {
                 <p className="text-2xl font-bold text-gray-500">{events.filter(e => e.status === 'completed').length}</p>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
-              <p className="text-sm text-amber-800">Event creation and lifecycle management is handled exclusively through Race Core. Use the button in Data tab to create events.</p>
-            </div>
           </TabsContent>
 
           <TabsContent value="data" className="space-y-6">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <h3 className="font-bold text-amber-900 mb-1">Operational Control Notice</h3>
-              <p className="text-sm text-amber-800">Event lifecycle management is handled exclusively through RegistrationDashboard. This page is limited to metadata maintenance.</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
+              <p className="text-sm text-blue-800">Review and maintain event records across the platform. For active event setup, race day operations, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
             </div>
 
             <div className="mb-4 flex gap-2">

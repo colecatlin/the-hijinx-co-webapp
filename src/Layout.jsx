@@ -28,7 +28,7 @@ const navItems = [
     { name: '— Events —', page: null, disabled: true },
     { name: 'Events', page: 'EventDirectory' },
     { name: '— Registration —', page: null, disabled: true },
-    { name: 'Registration', page: 'Registration' },
+    { name: 'Register for Event', page: 'Registration' },
     { name: '— Media —', page: null, disabled: true },
     { name: 'Media Home', page: 'MediaHome' },
     { name: 'Creator Directory', href: '/creators' },
@@ -261,7 +261,7 @@ export default function Layout({ children, currentPageName }) {
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.25)'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.15)'; }}
                     >
-                      Management
+                      Admin Tools
                     </Link>
                   )}
                   {isAuthenticated ? (
