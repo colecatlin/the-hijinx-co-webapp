@@ -54,8 +54,13 @@ export default function ManageResults() {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       await base44.entities.Results.delete(id);
-      await base44.functions.invoke('logDeletion', { entityName: 'Results', recordIds: [id] });
-      await new Promise(r => setTimeout(r, 100));
+      await base44.entities.OperationLog.create({
+        operation_type: 'result_deleted',
+        status: 'success',
+        entity_name: 'Results',
+        message: `Result deleted via ManageResults`,
+        metadata: { record_id: id },
+      }).catch(() => {});
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
   });
@@ -65,8 +70,13 @@ export default function ManageResults() {
       for (const id of ids) {
         await base44.entities.Results.delete(id);
       }
-      await base44.functions.invoke('logDeletion', { entityName: 'Results', recordIds: ids });
-      await new Promise(r => setTimeout(r, 100));
+      await base44.entities.OperationLog.create({
+        operation_type: 'results_bulk_deleted',
+        status: 'success',
+        entity_name: 'Results',
+        message: `${ids.length} results deleted via ManageResults bulk delete`,
+        metadata: { record_ids: ids, count: ids.length },
+      }).catch(() => {});
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['results'] }),
   });

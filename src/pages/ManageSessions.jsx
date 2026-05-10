@@ -143,11 +143,15 @@ export default function ManageSessions() {
         </div>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1" />
-          <Button className="bg-gray-900">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Session
-          </Button>
+          <p className="text-sm text-gray-600 flex-1">
+            Session creation should happen inside the Race Operations Hub so sessions stay connected to event classes, race workflow, and results.
+          </p>
+          <Link to="/RegistrationDashboard">
+            <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
+              <Plus className="w-4 h-4" />
+              Create Sessions in Race Ops
+            </Button>
+          </Link>
         </div>
 
         <div className="mb-6">
