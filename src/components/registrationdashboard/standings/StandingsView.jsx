@@ -16,8 +16,8 @@ import { Link } from 'react-router-dom';
 export default function StandingsView({ standings, drivers }) {
   const sortedStandings = useMemo(() => {
     return [...standings].sort((a, b) => {
-      if (a.total_points !== b.total_points) {
-        return b.total_points - a.total_points;
+      if (a.points_total !== b.points_total) {
+        return b.points_total - a.points_total;
       }
       return (a.position || 0) - (b.position || 0);
     });
@@ -28,7 +28,7 @@ export default function StandingsView({ standings, drivers }) {
     const tieMap = {};
     sortedStandings.forEach((s, idx) => {
       const tieCount = sortedStandings.filter(
-        (other) => other.total_points === s.total_points
+        (other) => other.points_total === s.points_total
       ).length;
       if (tieCount > 1) {
         tieMap[s.id] = true;
@@ -96,10 +96,10 @@ export default function StandingsView({ standings, drivers }) {
                       )}
                     </TableCell>
                     <TableCell className="text-right text-gray-300 font-semibold">
-                      {s.total_points || 0}
+                      {s.points_total || 0}
                     </TableCell>
                     <TableCell className="text-right text-gray-400 text-sm">
-                      {s.events_counted || 0}
+                      {s.starts || 0}
                     </TableCell>
                     <TableCell className="text-right text-gray-400 text-sm">
                       {s.wins || 0}
