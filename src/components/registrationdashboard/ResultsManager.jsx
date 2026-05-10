@@ -778,10 +778,12 @@ export default function ResultsManager({
                       drivers={drivers}
                       selectedEvent={selectedEvent}
                       selectedSession={selectedSession}
-                      onPaste={(rows, skipped) => {
-                        // Rows are already created by dialog; just notify
+                      onPaste={(rows, skipped, driversCreated = 0) => {
+                        // Invalidate both results and drivers queries
                         queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
-                        toast.success(`Pasted ${rows.length} rows${skipped ? `, ${skipped} skipped` : ''}`);
+                        queryClient.invalidateQueries({ queryKey: ['drivers'] });
+                        const msg = `Added ${rows.length} result rows${driversCreated > 0 ? `. Created ${driversCreated} draft driver${driversCreated !== 1 ? 's' : ''}` : ''}${skipped ? `. Skipped ${skipped} row${skipped !== 1 ? 's' : ''}` : ''}.`;
+                        toast.success(msg);
                       }}
                     />
                     <ResultsQuickEntryTable

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -18,6 +19,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AlertCircle, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import {
+  splitDriverName,
+  buildNormalizedName,
+  resolveDriverMatch,
+  buildMinimalDriverPayload,
+  isSingleWordName,
+} from './pasteDriverUtils';
 
 const VALID_STATUSES = new Set(['Running', 'DNF', 'DNS', 'DSQ', 'DNP']);
 
@@ -58,15 +68,7 @@ function findHeader(headers, candidates) {
   return null;
 }
 
-function resolveDriver(driverName, drivers) {
-  if (!driverName) return null;
-  const normalized = normalizeName(driverName);
-  const matches = drivers.filter(
-    (d) => normalizeName(`${d.first_name} ${d.last_name}`) === normalized
-  );
-  if (matches.length === 1) return matches[0];
-  return null; // no match or ambiguous
-}
+
 
 export default function ResultsPasteDialog({
   open,
@@ -78,6 +80,7 @@ export default function ResultsPasteDialog({
 }) {
   const [pasteText, setPasteText] = useState('');
   const [preview, setPreview] = useState(null);
+  const [createSelected, setCreateSelected] = useState(new Set());
 
   const handleParse = () => {
     if (!pasteText.trim()) {
@@ -113,6 +116,7 @@ export default function ResultsPasteDialog({
       let status = null;
       let laps = null;
       let driver = null;
+      let driverStatus = 'matched'; // matched | unmatched | ambiguous
       let isValid = true;
 
       // Validate position
@@ -143,15 +147,28 @@ export default function ResultsPasteDialog({
         }
       }
 
-      // Validate driver
+      // Resolve driver
       if (!driverName) {
         errors.push('Missing driver name');
         isValid = false;
+        driverStatus = 'invalid';
       } else {
-        driver = resolveDriver(driverName, drivers);
-        if (!driver) {
-          errors.push(`Driver not found: ${driverName}`);
+        const match = resolveDriverMatch(
+          splitDriverName(driverName).first_name,
+          splitDriverName(driverName).last_name,
+          drivers
+        );
+        if (match.status === 'matched') {
+          driver = match.driver;
+          driverStatus = 'matched';
+        } else if (match.status === 'ambiguous') {
+          errors.push(`Multiple drivers match "${driverName}" (${match.count} found). Resolve duplicates first.`);
+          driverStatus = 'ambiguous';
           isValid = false;
+        } else {
+          driverStatus = 'unmatched';
+          // Allow unmatched rows to be valid if position/status are OK
+          // isValid will be true unless other validations fail
         }
       }
 
@@ -166,6 +183,11 @@ export default function ResultsPasteDialog({
         }
       }
 
+      // Check for single-word driver name warning
+      if (driverName && driverStatus === 'unmatched' && isSingleWordName(driverName)) {
+        errors.push('Single-word name — admin should verify first/last name split');
+      }
+
       return {
         _idx: idx,
         rawDriver: driverName,
@@ -173,48 +195,90 @@ export default function ResultsPasteDialog({
         status,
         laps,
         driver,
+        driverStatus,
         errors,
-        isValid: isValid && driver,
+        isValid: isValid && (driverStatus === 'matched' || driverStatus === 'unmatched'),
+        canCreate: driverStatus === 'unmatched' && isValid && position && status,
       };
     });
+
+    const toCreate = parsed.filter((r) => r.canCreate);
+    setCreateSelected(new Set()); // reset selections
 
     setPreview({
       rows: parsed,
       error: null,
       stats: {
         total: parsed.length,
-        valid: parsed.filter((r) => r.isValid).length,
-        invalid: parsed.filter((r) => !r.isValid).length,
+        matched: parsed.filter((r) => r.driverStatus === 'matched' && r.isValid).length,
+        unmatched: parsed.filter((r) => r.driverStatus === 'unmatched').length,
+        ambiguous: parsed.filter((r) => r.driverStatus === 'ambiguous').length,
+        invalid: parsed.filter((r) => !r.isValid && r.driverStatus !== 'ambiguous').length,
       },
     });
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!preview || !preview.rows) return;
 
-    const validRows = preview.rows.filter((r) => r.isValid);
-    const newRows = validRows.map((r) => ({
-      event_id: selectedEvent?.id,
-      session_id: selectedSession?.id,
-      session_type: selectedSession?.session_type,
-      series_id: selectedEvent?.series_id,
-      series_class_id: selectedSession?.series_class_id,
-      driver_id: r.driver.id,
-      position: r.position,
-      status: r.status,
-      laps_completed: r.laps,
-      status_state: 'Draft',
-    }));
+    // Check limit on new drivers to create
+    const rowsToCreate = preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx));
+    if (rowsToCreate.length > 20) {
+      toast.error('Maximum 20 new drivers per paste. Please reduce selection.');
+      return;
+    }
 
-    onPaste(newRows, preview.stats.invalid);
-    setPasteText('');
-    setPreview(null);
-    onOpenChange(false);
+    try {
+      // Step 1: Create missing drivers
+      const driverIdMap = new Map(); // rowIdx -> driver_id
+      for (const row of rowsToCreate) {
+        const { first_name, last_name } = splitDriverName(row.rawDriver);
+        const payload = buildMinimalDriverPayload(first_name, last_name);
+        try {
+          const newDriver = await base44.entities.Driver.create(payload);
+          driverIdMap.set(row._idx, newDriver.id);
+        } catch (err) {
+          toast.error(`Failed to create driver "${row.rawDriver}": ${err.message}`);
+          return;
+        }
+      }
+
+      // Step 2: Build result rows (matched + newly created)
+      const newRows = preview.rows
+        .filter((r) => r.isValid && (r.driverStatus === 'matched' || createSelected.has(r._idx)))
+        .map((r) => {
+          const driverId = driverIdMap.has(r._idx) ? driverIdMap.get(r._idx) : r.driver?.id;
+          return {
+            event_id: selectedEvent?.id,
+            session_id: selectedSession?.id,
+            session_type: selectedSession?.session_type,
+            series_id: selectedEvent?.series_id,
+            series_class_id: selectedSession?.series_class_id,
+            driver_id: driverId,
+            position: r.position,
+            status: r.status,
+            laps_completed: r.laps,
+            status_state: 'Draft',
+          };
+        });
+
+      const skippedCount = preview.rows.length - newRows.length;
+      const driversCreated = driverIdMap.size;
+
+      onPaste(newRows, skippedCount, driversCreated);
+      setPasteText('');
+      setPreview(null);
+      setCreateSelected(new Set());
+      onOpenChange(false);
+    } catch (err) {
+      toast.error(`Paste failed: ${err.message}`);
+    }
   };
 
   const handleClose = () => {
     setPasteText('');
     setPreview(null);
+    setCreateSelected(new Set());
     onOpenChange(false);
   };
 
@@ -260,12 +324,21 @@ export default function ResultsPasteDialog({
               </div>
             ) : (
               <>
-                <div className="text-xs text-gray-400 mb-2">
-                  <span className="text-green-400 font-semibold">{preview.stats.valid} valid</span>
-                  {' '}
-                  · <span className="text-red-400 font-semibold">{preview.stats.invalid} invalid</span>
-                  {' '}
-                  · <span className="text-gray-500">{preview.stats.total} total</span>
+                <div className="text-xs text-gray-400 mb-2 space-y-1">
+                  <div>
+                    <span className="text-green-400 font-semibold">{preview.stats.matched} matched</span>
+                    {' '} · <span className="text-amber-400 font-semibold">{preview.stats.unmatched} unmatched</span>
+                    {' '} · <span className="text-orange-400 font-semibold">{preview.stats.ambiguous} ambiguous</span>
+                    {' '} · <span className="text-red-400 font-semibold">{preview.stats.invalid} invalid</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">
+                      Will add: {preview.stats.matched + preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length} rows
+                      {preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length > 0 && (
+                        ` (${preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length} new drivers)`
+                      )}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto border border-gray-800 rounded-lg mb-3">
@@ -274,35 +347,69 @@ export default function ResultsPasteDialog({
                       <TableRow className="h-8">
                         <TableHead className="text-gray-400 p-2 w-12">Pos</TableHead>
                         <TableHead className="text-gray-400 p-2">Driver (Raw)</TableHead>
-                        <TableHead className="text-gray-400 p-2">Matched</TableHead>
-                        <TableHead className="text-gray-400 p-2 w-20">Status</TableHead>
+                        <TableHead className="text-gray-400 p-2">Status</TableHead>
+                        <TableHead className="text-gray-400 p-2 w-20">Result</TableHead>
                         <TableHead className="text-gray-400 p-2 w-12">Laps</TableHead>
-                        <TableHead className="text-gray-400 p-2">Issues</TableHead>
+                        <TableHead className="text-gray-400 p-2 w-20">Action</TableHead>
+                        <TableHead className="text-gray-400 p-2">Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {preview.rows.map((row) => (
                         <TableRow
                           key={row._idx}
-                          className={`h-8 ${row.isValid ? 'hover:bg-[#1A1A1A]' : 'bg-red-950/20'}`}
+                          className={`h-8 ${
+                            row.driverStatus === 'ambiguous' ? 'bg-orange-950/20' :
+                            row.driverStatus === 'unmatched' ? 'bg-amber-950/20' :
+                            row.isValid ? 'hover:bg-[#1A1A1A]' : 'bg-red-950/20'
+                          }`}
                         >
                           <TableCell className="p-2 text-gray-300 font-mono">{row.position || '—'}</TableCell>
                           <TableCell className="p-2 text-gray-300 truncate">{row.rawDriver}</TableCell>
+                          <TableCell className="p-2 text-gray-300">{row.status || '—'}</TableCell>
                           <TableCell className="p-2">
-                            {row.driver ? (
+                            {row.driverStatus === 'matched' ? (
                               <Badge className="text-xs bg-green-500/20 text-green-400 gap-1">
                                 <CheckCircle2 className="w-2.5 h-2.5" />
                                 {row.driver.first_name} {row.driver.last_name}
                               </Badge>
+                            ) : row.driverStatus === 'unmatched' ? (
+                              <Badge className="text-xs bg-amber-500/20 text-amber-300 gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                Unmatched
+                              </Badge>
+                            ) : row.driverStatus === 'ambiguous' ? (
+                              <Badge className="text-xs bg-orange-500/20 text-orange-300 gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                {row.errors[0]?.match(/\d+/) ? 'Ambiguous' : 'Ambiguous'}
+                              </Badge>
                             ) : (
                               <Badge className="text-xs bg-red-500/20 text-red-400 gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />
-                                No match
+                                <AlertCircle className="w-2.5 h-2.5" />
+                                Invalid
                               </Badge>
                             )}
                           </TableCell>
-                          <TableCell className="p-2 text-gray-300">{row.status || '—'}</TableCell>
                           <TableCell className="p-2 text-gray-300">{row.laps || '—'}</TableCell>
+                          <TableCell className="p-2">
+                            {row.canCreate ? (
+                              <div className="flex items-center gap-1">
+                                <Checkbox
+                                  checked={createSelected.has(row._idx)}
+                                  onCheckedChange={(checked) => {
+                                    const newSet = new Set(createSelected);
+                                    if (checked) newSet.add(row._idx);
+                                    else newSet.delete(row._idx);
+                                    setCreateSelected(newSet);
+                                  }}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-[10px] text-amber-300">Create</span>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-gray-500">—</span>
+                            )}
+                          </TableCell>
                           <TableCell className="p-2 text-red-400 text-xs">
                             {row.errors.length > 0 ? (
                               <div className="space-y-0.5">
@@ -326,6 +433,7 @@ export default function ResultsPasteDialog({
                     onClick={() => {
                       setPasteText('');
                       setPreview(null);
+                      setCreateSelected(new Set());
                     }}
                     variant="outline"
                     className="border-gray-700 text-gray-300 text-xs"
@@ -334,10 +442,10 @@ export default function ResultsPasteDialog({
                   </Button>
                   <AlertDialogAction
                     onClick={handleConfirm}
-                    disabled={preview.stats.valid === 0}
-                    className="bg-blue-700 hover:bg-blue-600 text-xs"
+                    disabled={preview.stats.matched + preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length === 0 || preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length > 20}
+                    className="bg-blue-700 hover:bg-blue-600 text-xs disabled:opacity-50"
                   >
-                    Add {preview.stats.valid} Row{preview.stats.valid !== 1 ? 's' : ''}
+                    Add {preview.stats.matched + preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length} Row{(preview.stats.matched + preview.rows.filter((r) => r.canCreate && createSelected.has(r._idx)).length) !== 1 ? 's' : ''}
                   </AlertDialogAction>
                 </div>
               </>
