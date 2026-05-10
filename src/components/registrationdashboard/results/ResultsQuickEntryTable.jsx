@@ -246,8 +246,21 @@ export default function ResultsQuickEntryTable({
   selectedEvent,
   onSave,
   saving,
+  onPasteRows,
 }) {
   const [sessionResults, setSessionResults] = useState(results);
+  const queryClient = useQueryClient();
+
+  // Merge pasted rows into table
+  const handlePasteRows = async (pastedRows, skippedCount) => {
+    const created = await Promise.all(
+      pastedRows.map((row) => base44.entities.Results.create(row))
+    );
+    setSessionResults([...sessionResults, ...created]);
+    queryClient.invalidateQueries({ queryKey: ['results'] });
+    toast.success(`Pasted ${created.length} rows${skippedCount ? `, ${skippedCount} skipped` : ''}`);
+    if (onPasteRows) onPasteRows(created);
+  };
   const focusRef = useRef({});
 
   const handleNavigate = (rowIndex, field) => {
@@ -276,6 +289,7 @@ export default function ResultsQuickEntryTable({
 
   return (
     <div className="space-y-3">
+      {/* Paste results modal (controlled externally) */}
       {/* Compact results table */}
       <div className="border border-gray-800 rounded-lg overflow-hidden">
         <Table className="text-xs">
@@ -317,14 +331,23 @@ export default function ResultsQuickEntryTable({
         <div className="text-xs text-gray-500">
           {sessionResults.length} row{sessionResults.length !== 1 ? 's' : ''}
         </div>
-        <Button
-          size="sm"
-          onClick={handleAddRow}
-          disabled={saving}
-          className="bg-blue-700 hover:bg-blue-600 text-xs gap-1"
-        >
-          <Plus className="w-3 h-3" /> Add Row
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => onPasteRows?.()}
+            className="bg-amber-700 hover:bg-amber-600 text-xs gap-1"
+          >
+            📋 Paste Results
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleAddRow}
+            disabled={saving}
+            className="bg-blue-700 hover:bg-blue-600 text-xs gap-1"
+          >
+            <Plus className="w-3 h-3" /> Add Row
+          </Button>
+        </div>
       </div>
     </div>
   );

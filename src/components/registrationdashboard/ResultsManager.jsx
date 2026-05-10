@@ -30,6 +30,7 @@ import ResultsApiSyncPanel from './ResultsApiSyncPanel';
 import ResultsVersionHistory from './ResultsVersionHistory';
 import SessionContextBar from './results/SessionContextBar';
 import ResultsQuickEntryTable from './results/ResultsQuickEntryTable';
+import ResultsPasteDialog from './results/ResultsPasteDialog';
 import { buildRoster, getRosterStats } from './rosterHelper';
 import { validateResults } from './resultsValidation';
 
@@ -69,6 +70,7 @@ export default function ResultsManager({
   const [pendingStatus, setPendingStatus] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
   const [isHistoricalMode, setIsHistoricalMode] = useState(false);
+  const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
 
   useEffect(() => {
     setClassFilter('all');
@@ -769,15 +771,30 @@ export default function ResultsManager({
 
                 {/* Quick entry table (Historical mode) or standard table (Live mode) */}
                 {isHistoricalMode ? (
-                  <ResultsQuickEntryTable
-                    session={selectedSession}
-                    results={sessionResults}
-                    drivers={drivers}
-                    selectedEvent={selectedEvent}
-                    onSave={handleSaveDraft}
-                    saving={savingResults}
-                  />
-                ) : (
+                  <>
+                    <ResultsPasteDialog
+                      open={pasteDialogOpen}
+                      onOpenChange={setPasteDialogOpen}
+                      drivers={drivers}
+                      selectedEvent={selectedEvent}
+                      selectedSession={selectedSession}
+                      onPaste={(rows, skipped) => {
+                        // Rows are already created by dialog; just notify
+                        queryClient.invalidateQueries({ queryKey: ['results', eventId, sessionId] });
+                        toast.success(`Pasted ${rows.length} rows${skipped ? `, ${skipped} skipped` : ''}`);
+                      }}
+                    />
+                    <ResultsQuickEntryTable
+                      session={selectedSession}
+                      results={sessionResults}
+                      drivers={drivers}
+                      selectedEvent={selectedEvent}
+                      onSave={handleSaveDraft}
+                      saving={savingResults}
+                      onPasteRows={() => setPasteDialogOpen(true)}
+                    />
+                  </>
+                  ) : (
                   <ResultsManualTable
                     session={selectedSession}
                     results={sessionResults}
@@ -788,7 +805,7 @@ export default function ResultsManager({
                     onSave={handleSaveDraft}
                     saving={savingResults}
                   />
-                )}
+                  )}
               </TabsContent>
 
               <TabsContent value="csv">
