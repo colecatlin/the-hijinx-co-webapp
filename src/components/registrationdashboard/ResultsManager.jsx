@@ -28,6 +28,8 @@ import ResultsManualTable from './ResultsManualTable';
 import ResultsCsvImportDialog from './ResultsCsvImportDialog';
 import ResultsApiSyncPanel from './ResultsApiSyncPanel';
 import ResultsVersionHistory from './ResultsVersionHistory';
+import SessionContextBar from './results/SessionContextBar';
+import ResultsQuickEntryTable from './results/ResultsQuickEntryTable';
 import { buildRoster, getRosterStats } from './rosterHelper';
 import { validateResults } from './resultsValidation';
 
@@ -747,17 +749,46 @@ export default function ResultsManager({
                 <TabsTrigger value="history" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Version History</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="manual">
-                <ResultsManualTable
+              <TabsContent value="manual" className="space-y-4">
+                {/* Session context header */}
+                <SessionContextBar
                   session={selectedSession}
-                  results={sessionResults}
-                  entries={classEntries}
-                  drivers={drivers}
-                  selectedEvent={selectedEvent}
-                  locked={isLocked}
-                  onSave={handleSaveDraft}
-                  saving={savingResults}
+                  event={selectedEvent}
+                  seriesClass={seriesClasses.find((sc) => sc.id === selectedSession?.series_class_id)}
                 />
+
+                {/* Historical workflow banner */}
+                {isHistoricalMode && (
+                  <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg px-4 py-2.5 flex items-start gap-2">
+                    <History className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-300">
+                      <span className="font-semibold">Historical Mode Active</span> — Bypasses live checks (Entry roster, tech inspection). Results still update standings when marked Official.
+                    </p>
+                  </div>
+                )}
+
+                {/* Quick entry table (Historical mode) or standard table (Live mode) */}
+                {isHistoricalMode ? (
+                  <ResultsQuickEntryTable
+                    session={selectedSession}
+                    results={sessionResults}
+                    drivers={drivers}
+                    selectedEvent={selectedEvent}
+                    onSave={handleSaveDraft}
+                    saving={savingResults}
+                  />
+                ) : (
+                  <ResultsManualTable
+                    session={selectedSession}
+                    results={sessionResults}
+                    entries={classEntries}
+                    drivers={drivers}
+                    selectedEvent={selectedEvent}
+                    locked={isLocked}
+                    onSave={handleSaveDraft}
+                    saving={savingResults}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="csv">
