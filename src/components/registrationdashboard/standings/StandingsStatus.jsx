@@ -44,7 +44,7 @@ export default function StandingsStatus({
     // Check for ties
     const pointGroups = {};
     standings.forEach((s) => {
-      const pts = s.total_points || 0;
+      const pts = s.points_total || 0;
       pointGroups[pts] = (pointGroups[pts] || 0) + 1;
     });
     const hasTies = Object.values(pointGroups).some((count) => count > 1);
