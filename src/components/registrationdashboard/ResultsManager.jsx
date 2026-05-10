@@ -32,6 +32,10 @@ import SessionContextBar from './results/SessionContextBar';
 import ResultsQuickEntryTable from './results/ResultsQuickEntryTable';
 import ResultsPasteDialog from './results/ResultsPasteDialog';
 import ResultsPublishConfirmDialog from './results/ResultsPublishConfirmDialog';
+import SessionHealthPanel from './results/SessionHealthPanel';
+import SessionActivityLog from './results/SessionActivityLog';
+import PointsConfigStatusBadge from './results/PointsConfigStatusBadge';
+import { usePointsConfigStatus } from './results/usePointsConfigStatus';
 import { buildRoster, getRosterStats } from './rosterHelper';
 import { validateResults } from './resultsValidation';
 
@@ -73,6 +77,7 @@ export default function ResultsManager({
   const [isHistoricalMode, setIsHistoricalMode] = useState(false);
   const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
   const [isConfirmOfficialOpen, setIsConfirmOfficialOpen] = useState(false);
+  const [showHealthPanel, setShowHealthPanel] = useState(false);
 
   useEffect(() => {
     setClassFilter('all');
@@ -392,6 +397,13 @@ export default function ResultsManager({
     onError: () => toast.error('Failed to update session status'),
   });
 
+  // ── PointsConfig visibility (read-only, no logic change) ──
+  const pointsConfigStatus = usePointsConfigStatus({
+    seriesId: selectedEvent?.series_id,
+    season: selectedEvent?.season,
+    seriesClassId: selectedSession?.series_class_id,
+  });
+
   // ── Roster building ──
   const selectedClassId = classFilter !== 'all' ? classFilter : null;
   const roster = useMemo(() => {
@@ -663,6 +675,37 @@ export default function ResultsManager({
               </CardContent>
             </Card>
 
+            {/* Session Health Panel */}
+            {selectedSession && sessionResults.length >= 0 && (
+              <div>
+                <button
+                  onClick={() => setShowHealthPanel(v => !v)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-gray-400 hover:text-gray-300 border border-gray-800 rounded bg-[#171717] mb-2"
+                >
+                  <span className="uppercase tracking-wide">Session Health</span>
+                  <span>{showHealthPanel ? '▲' : '▼'}</span>
+                </button>
+                {showHealthPanel && (
+                  <SessionHealthPanel
+                    session={selectedSession}
+                    sessionResults={sessionResults}
+                    seriesClass={seriesClasses.find(sc => sc.id === selectedSession?.series_class_id)}
+                    standingsLastRecalcAt={standingsLastCalculatedAt}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* PointsConfig visibility */}
+            {selectedSession?.session_type === 'Final' && (
+              <PointsConfigStatusBadge
+                {...pointsConfigStatus}
+                sessionType={selectedSession?.session_type}
+                season={selectedEvent?.season}
+                seriesClass={seriesClasses.find(sc => sc.id === selectedSession?.series_class_id)}
+              />
+            )}
+
             {/* Validation errors */}
             {validationErrors.length > 0 && (
               <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-3">
@@ -756,6 +799,7 @@ export default function ResultsManager({
                 <TabsTrigger value="csv" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">CSV Upload</TabsTrigger>
                 <TabsTrigger value="api" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">API Sync</TabsTrigger>
                 <TabsTrigger value="history" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Version History</TabsTrigger>
+                <TabsTrigger value="activity" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Activity Log</TabsTrigger>
               </TabsList>
 
               <TabsContent value="manual" className="space-y-4">
@@ -848,6 +892,10 @@ export default function ResultsManager({
                   selectedEvent={selectedEvent}
                   selectedSession={selectedSession}
                 />
+              </TabsContent>
+
+              <TabsContent value="activity">
+                <SessionActivityLog sessionId={selectedSession?.id} />
               </TabsContent>
             </Tabs>
           </div>
