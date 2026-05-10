@@ -248,7 +248,7 @@ export default function ManageResults() {
           <DialogHeader>
             <DialogTitle>Add Result</DialogTitle>
           </DialogHeader>
-          <ResultForm onSuccess={() => setShowAddDialog(false)} onCancel={() => setShowAddDialog(false)} />
+          <ResultForm sessions={sessions} onSuccess={() => setShowAddDialog(false)} onCancel={() => setShowAddDialog(false)} />
         </DialogContent>
       </Dialog>
 
@@ -260,6 +260,7 @@ export default function ManageResults() {
           </DialogHeader>
           {editingResult && (
             <ResultForm
+              sessions={sessions}
               initialData={editingResult}
               onSuccess={() => setEditingResult(null)}
               onCancel={() => setEditingResult(null)}

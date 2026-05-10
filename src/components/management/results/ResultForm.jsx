@@ -10,11 +10,12 @@ import { isResultOperational } from '@/components/registrationdashboard/sessionL
 const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
 const STATUS_OPTIONS = ['Running', 'DNF', 'DNS', 'DSQ'];
 
-export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
+export default function ResultForm({ initialData = {}, sessions = [], onSuccess, onCancel }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     driver_id: '',
     event_id: '',
+    session_id: '',
     session_type: 'Heat',
     heat_number: '',
     position: '',
@@ -43,11 +44,6 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
     queryFn: () => base44.entities.DriverProgram.list(),
   });
 
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => base44.entities.Session.list('-created_date', 500),
-  });
-
   const saveMutation = useMutation({
     mutationFn: (data) => {
       // Find a matching program_id if possible
@@ -55,6 +51,7 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
       const payload = {
         ...data,
         program_id: data.program_id || program?.id || '',
+        session_id: data.session_id || null,
         position: data.position ? Number(data.position) : null,
         points: data.points !== '' ? Number(data.points) : null,
         laps_completed: data.laps_completed !== '' ? Number(data.laps_completed) : null,
@@ -69,6 +66,9 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
   });
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+  const setEventId = (val) => setForm(f => ({ ...f, event_id: val, session_id: '' }));
+
+  const sessionsForEvent = sessions.filter(s => s.event_id === form.event_id);
 
   const isOperational = isResultOperational(initialData, sessions);
 
@@ -94,7 +94,7 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
           </div>
           <div>
             <Label>Event *</Label>
-            <Select value={form.event_id} onValueChange={v => set('event_id', v)} disabled={isOperational}>
+            <Select value={form.event_id} onValueChange={setEventId} disabled={isOperational}>
               <SelectTrigger disabled={isOperational}><SelectValue placeholder="Select event" /></SelectTrigger>
               <SelectContent>
                 {events.map(e => (
@@ -102,6 +102,27 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label>Linked Session {isOperational && '(Locked)'}</Label>
+            <Select
+              value={form.session_id}
+              onValueChange={v => set('session_id', v)}
+              disabled={isOperational || !form.event_id}
+            >
+              <SelectTrigger disabled={isOperational || !form.event_id}>
+                <SelectValue placeholder={!form.event_id ? 'Select an event first' : sessionsForEvent.length === 0 ? 'No sessions found for this event' : 'Select session (optional)'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>— None —</SelectItem>
+                {sessionsForEvent.map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name || s.session_type || 'Unnamed Session'} ({s.session_type || 'Session'})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">Optional. Linking a result to a session allows lifecycle and publishing rules to apply correctly.</p>
           </div>
         <div>
           <Label>Session Type {isOperational && '(Locked)'}</Label>
