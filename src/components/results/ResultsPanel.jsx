@@ -48,13 +48,12 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
 
   // Standings for championship view
   const { data: standings = [], isLoading: loadingStandings } = useQuery({
-    queryKey: ['standings-panel', driverId, seriesName],
+    queryKey: ['standings-panel', driverId],
     queryFn: () => {
       if (driverId) return base44.entities.Standings.filter({ driver_id: driverId });
-      if (seriesName) return base44.entities.Standings.filter({ series_name: seriesName });
       return [];
     },
-    enabled: !!(driverId || seriesName),
+    enabled: !!driverId,
   });
 
   const getEventName = (eventId) => events.find(e => e.id === eventId)?.name || 'Unknown Event';
@@ -251,10 +250,10 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
                             )}
                           </td>
                           <td className="py-2 px-3 text-xs text-gray-500 font-mono">{entry.bib_number || '—'}</td>
-                          <td className="py-2 px-3 font-bold tabular-nums">{entry.total_points ?? '—'}</td>
+                          <td className="py-2 px-3 font-bold tabular-nums">{entry.points_total ?? '—'}</td>
                           <td className="py-2 px-3 tabular-nums">{entry.wins ?? 0}</td>
                           <td className="py-2 px-3 tabular-nums">{entry.podiums ?? 0}</td>
-                          <td className="py-2 px-3 tabular-nums">{entry.events_counted ?? 0}</td>
+                          <td className="py-2 px-3 tabular-nums">{entry.starts ?? 0}</td>
                         </tr>
                       ))}
                     </tbody>
