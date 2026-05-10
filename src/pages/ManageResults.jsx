@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, ExternalLink } from 'lucide-react';
+import { isResultOperational } from '@/components/registrationdashboard/sessionLifecycle';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import ResultForm from '@/components/management/results/ResultForm';
@@ -23,8 +24,6 @@ export default function ManageResults() {
   const [editingResult, setEditingResult] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const queryClient = useQueryClient();
-
-  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['results'],
@@ -45,11 +44,6 @@ export default function ManageResults() {
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list('-created_date', 500),
   });
-
-  const isResultOperational = (result) => {
-    const session = sessions.find(s => s.id === result.session_id);
-    return session && operationalStatuses.includes(session.status);
-  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
@@ -138,7 +132,7 @@ export default function ManageResults() {
           <Button variant="outline" onClick={() => setShowSmartImportDialog(true)}><Upload className="w-4 h-4 mr-2" />Smart Import</Button>
           <Button variant="outline" onClick={() => setShowUploadDialog(true)}><Upload className="w-4 h-4 mr-2" />Bulk Upload</Button>
           {selectedIds.size > 0 && (
-            <Button variant="destructive" onClick={handleDeleteSelected} disabled={bulkDeleteMutation.isPending || Array.from(selectedIds).some(id => { const result = filteredResults.find(r => r.id === id); return result && isResultOperational(result); })}>
+            <Button variant="destructive" onClick={handleDeleteSelected} disabled={bulkDeleteMutation.isPending || Array.from(selectedIds).some(id => { const result = filteredResults.find(r => r.id === id); return result && isResultOperational(result, sessions); })}>
               {bulkDeleteMutation.isPending ? <BurnoutSpinner /> : <Trash2 className="w-4 h-4 mr-2" />}
               {bulkDeleteMutation.isPending ? 'Doing a burnout...' : `Delete (${selectedIds.size})`}
             </Button>
@@ -225,14 +219,14 @@ export default function ManageResults() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setEditingResult(result)} disabled={isResultOperational(result)}>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingResult(result)} disabled={isResultOperational(result, sessions)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => { if (confirm('Delete this result?')) deleteMutation.mutate(result.id); }}
-                        disabled={deleteMutation.isPending || isResultOperational(result)}
+                        disabled={deleteMutation.isPending || isResultOperational(result, sessions)}
                       >
                         {deleteMutation.isPending ? (
                           <div className="text-red-600"><BurnoutSpinner /></div>

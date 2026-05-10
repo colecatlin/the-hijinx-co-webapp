@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
+import { isSessionLocked } from './sessionLifecycle';
 
 const EMPTY_CLASS_FORM = {
   class_name: '', series_class_id: '', max_entries: '', class_status: 'Open', class_order: '', notes: '',
@@ -288,7 +289,7 @@ export default function ClassSessionBuilder({
     setLockConfirm(null);
   };
 
-  const isLocked = (s) => s.status === 'Locked' || s.locked;
+  const isLocked = (s) => isSessionLocked(s);
 
   const statusBadge = (s) => {
     if (s === 'Open') return 'bg-green-500/20 text-green-400';

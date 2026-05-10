@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { isResultOperational } from '@/components/registrationdashboard/sessionLifecycle';
 
 const SESSION_TYPES = ['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final'];
 const STATUS_OPTIONS = ['Running', 'DNF', 'DNS', 'DSQ'];
@@ -27,8 +28,6 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
     ...initialData,
   });
 
-  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
-
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list(),
@@ -48,11 +47,6 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list('-created_date', 500),
   });
-
-  const isResultOperational = () => {
-    const session = sessions.find(s => s.id === initialData.session_id);
-    return session && operationalStatuses.includes(session.status);
-  };
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
@@ -76,7 +70,7 @@ export default function ResultForm({ initialData = {}, onSuccess, onCancel }) {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
-  const isOperational = isResultOperational();
+  const isOperational = isResultOperational(initialData, sessions);
 
   return (
     <>

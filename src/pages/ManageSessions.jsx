@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { isOperationalSession, isSessionLocked } from '@/components/registrationdashboard/sessionLifecycle';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
@@ -15,8 +16,8 @@ export default function ManageSessions() {
   const [selectedSessionForEdit, setSelectedSessionForEdit] = useState(null);
   const queryClient = useQueryClient();
 
-  const operationalStatuses = ['Provisional', 'Official', 'Locked'];
-  const isOperationalSession = (session) => operationalStatuses.includes(session.status);
+
+
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions'],

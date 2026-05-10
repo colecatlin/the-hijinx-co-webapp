@@ -15,6 +15,12 @@ import {
 import { AlertCircle, Lock, CheckCircle2, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import {
+  SESSION_STATUS_ORDER,
+  isSessionLocked,
+  isSessionOfficial,
+  getSessionStatusBadgeClass,
+} from './sessionLifecycle';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
 import { calculateStandingsForSession, recomputeStandingsForFinalSession } from './standings/calculateStandings';
@@ -27,17 +33,7 @@ import { validateResults } from './resultsValidation';
 
 const DQ = applyDefaultQueryOptions();
 
-const STATUS_ORDER = ['Draft', 'Provisional', 'Official', 'Locked'];
-
-function statusBadgeClass(status) {
-  switch (status) {
-    case 'Draft': return 'bg-gray-500/20 text-gray-400';
-    case 'Provisional': return 'bg-blue-500/20 text-blue-400';
-    case 'Official': return 'bg-green-500/20 text-green-400';
-    case 'Locked': return 'bg-purple-500/20 text-purple-400';
-    default: return 'bg-gray-500/20 text-gray-400';
-  }
-}
+// SESSION_STATUS_ORDER and getSessionStatusBadgeClass imported from sessionLifecycle
 
 function downloadCSV(rows, filename) {
   const headers = ['position', 'driver_id', 'car_number', 'status', 'laps_completed', 'best_lap_time_ms', 'points', 'notes'];
@@ -211,8 +207,8 @@ export default function ResultsManager({
   }, [sessions, classFilter]);
 
   // ── Lock state ──
-  const isLocked = selectedSession?.status === 'Locked' || !!selectedSession?.locked;
-  const isOfficial = selectedSession?.status === 'Official';
+  const isLocked = isSessionLocked(selectedSession);
+  const isOfficial = isSessionOfficial(selectedSession);
 
   // ── Permission helpers ──
   const can = (action) => {
@@ -596,7 +592,7 @@ export default function ResultsManager({
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className={`text-xs ${statusBadgeClass(selectedSession.status)}`}>
+                  <Badge className={`text-xs ${getSessionStatusBadgeClass(selectedSession.status)}`}>
                     {selectedSession.status || 'Draft'}
                   </Badge>
                   {selectedSession.status === 'Locked' && <Lock className="w-3 h-3 text-purple-400" />}
