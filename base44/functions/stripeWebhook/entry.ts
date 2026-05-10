@@ -85,9 +85,34 @@ Deno.serve(async (req) => {
       // --- Payment Intent succeeded ---
       case 'payment_intent.succeeded': {
         const pi = obj;
-        // Find RevenueEvent by stripe_payment_intent_id
-        const events = await base44.asServiceRole.entities.RevenueEvent.filter({ stripe_payment_intent_id: pi.id });
-        for (const evt of (events || [])) {
+
+        // ── Storefront order fulfillment ──────────────────────────────────────
+        const storefrontOrders = await base44.asServiceRole.entities.Order.filter({ stripe_payment_intent_id: pi.id });
+        for (const order of (storefrontOrders || [])) {
+          if (order.status === 'pending' || order.status === 'confirmed') {
+            await base44.asServiceRole.entities.Order.update(order.id, { status: 'confirmed' });
+
+            // Decrement inventory for each line item
+            const orderItems = await base44.asServiceRole.entities.OrderItem.filter({ order_id: order.id });
+            for (const item of (orderItems || [])) {
+              if (item.variant_id) {
+                const variants = await base44.asServiceRole.entities.ProductVariant.filter({ id: item.variant_id });
+                const variant = variants?.[0];
+                if (variant) {
+                  const newInventory = Math.max(0, (variant.inventory || 0) - item.quantity);
+                  await base44.asServiceRole.entities.ProductVariant.update(variant.id, {
+                    inventory: newInventory,
+                    available: newInventory > 0,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // ── Media/Creator RevenueEvent sync ───────────────────────────────────
+        const revenueEvents = await base44.asServiceRole.entities.RevenueEvent.filter({ stripe_payment_intent_id: pi.id });
+        for (const evt of (revenueEvents || [])) {
           if (evt.status !== 'paid') {
             await base44.asServiceRole.entities.RevenueEvent.update(evt.id, { status: 'paid' });
           }

@@ -6,6 +6,34 @@ import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import PageShell from '@/components/shared/PageShell';
 
+function OrderLineItems({ orderId }) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['orderItems', orderId],
+    queryFn: () => base44.entities.OrderItem.filter({ order_id: orderId }),
+    staleTime: 60000,
+  });
+
+  if (isLoading) return <p className="text-xs text-[#555] mt-3">Loading items…</p>;
+  if (!items.length) return <p className="text-xs text-[#555] mt-3">No items found.</p>;
+
+  return (
+    <div className="mt-3 border border-[#222]">
+      <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-[#555] px-3 py-2 border-b border-[#222]">Line Items</p>
+      {items.map(item => (
+        <div key={item.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#1a1a1a] last:border-0">
+          {item.image_url && <img src={item.image_url} alt="" className="w-8 h-8 object-cover border border-[#262626] flex-shrink-0" />}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-[#F5F5F5] font-medium truncate">{item.product_name}</p>
+            {item.variant_label && <p className="text-[10px] text-[#555]">{item.variant_label}</p>}
+          </div>
+          <span className="text-[10px] text-[#A1A1A1] font-mono">×{item.quantity}</span>
+          <span className="text-xs text-[#F5F5F5] font-mono">${(item.line_total || 0).toFixed(2)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const STATUS_COLORS = {
   pending: '#F59E0B', confirmed: '#00FFDA', processing: '#3B82F6',
   shipped: '#8B5CF6', delivered: '#10B981', cancelled: '#EF4444', refunded: '#6B7280'
@@ -115,23 +143,24 @@ export default function ManageOrders() {
                     <tr className="border-b border-[#1a1a1a]">
                       <td colSpan={7} className="px-8 py-4 bg-[#0D0D0D]">
                         <div className="grid grid-cols-2 gap-6 text-xs">
-                          <div className="space-y-1 text-[#A1A1A1]">
-                            <p className="font-mono text-[#555] uppercase tracking-wider mb-2">Shipping</p>
-                            <p>{order.shipping_name}</p>
-                            <p>{order.shipping_address_line1}</p>
-                            {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}
-                            <p>{order.shipping_city}, {order.shipping_state} {order.shipping_zip}</p>
-                          </div>
-                          <div className="space-y-1 text-[#A1A1A1]">
-                            <p className="font-mono text-[#555] uppercase tracking-wider mb-2">Order Summary</p>
-                            <p>Subtotal: ${(order.subtotal || 0).toFixed(2)}</p>
-                            <p>Shipping: ${(order.shipping_amount || 0).toFixed(2)}</p>
-                            <p>Tax: ${(order.tax_amount || 0).toFixed(2)}</p>
-                            {order.discount_amount > 0 && <p>Discount: -${order.discount_amount.toFixed(2)}</p>}
-                            <p className="text-[#F5F5F5] font-bold pt-1 border-t border-[#262626]">Total: ${(order.total || 0).toFixed(2)}</p>
-                            {order.tracking_number && <p className="text-[#00FFDA]">Tracking: {order.tracking_number}</p>}
-                          </div>
+                        <div className="space-y-1 text-[#A1A1A1]">
+                          <p className="font-mono text-[#555] uppercase tracking-wider mb-2">Shipping</p>
+                          <p>{order.shipping_name}</p>
+                          <p>{order.shipping_address_line1}</p>
+                          {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}
+                          <p>{order.shipping_city}, {order.shipping_state} {order.shipping_zip}</p>
                         </div>
+                        <div className="space-y-1 text-[#A1A1A1]">
+                          <p className="font-mono text-[#555] uppercase tracking-wider mb-2">Order Summary</p>
+                          <p>Subtotal: ${(order.subtotal || 0).toFixed(2)}</p>
+                          <p>Shipping: ${(order.shipping_amount || 0).toFixed(2)}</p>
+                          <p>Tax: ${(order.tax_amount || 0).toFixed(2)}</p>
+                          {order.discount_amount > 0 && <p>Discount: -${order.discount_amount.toFixed(2)}</p>}
+                          <p className="text-[#F5F5F5] font-bold pt-1 border-t border-[#262626]">Total: ${(order.total || 0).toFixed(2)}</p>
+                          {order.tracking_number && <p className="text-[#00FFDA]">Tracking: {order.tracking_number}</p>}
+                        </div>
+                        </div>
+                        <OrderLineItems orderId={order.id} />
                       </td>
                     </tr>
                   )}

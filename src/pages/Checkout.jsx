@@ -5,8 +5,12 @@ import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import { ShoppingBag, Check, ChevronRight, Lock, Tag, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const STEPS = ['Cart', 'Information', 'Shipping', 'Review'];
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
+
+const STEPS = ['Cart', 'Information', 'Shipping', 'Review', 'Payment'];
 
 function StepIndicator({ current }) {
   return (
@@ -44,6 +48,8 @@ export default function Checkout() {
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
   const [preparedOrder, setPreparedOrder] = useState(null);
+  const [clientSecret, setClientSecret] = useState('');
+  const [paymentIntentId, setPaymentIntentId] = useState('');
 
   const [info, setInfo] = useState({
     email: '', first_name: '', last_name: '',
@@ -94,10 +100,21 @@ export default function Checkout() {
     }
   };
 
-  const handlePlaceOrder = () => {
-    // Navigate to success — Stripe will be wired here
-    clearCart();
-    navigate(`/order-confirmation?order_id=${preparedOrder.order_id}&order_number=${preparedOrder.order_number}`);
+  const handleProceedToPayment = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('createStripePaymentIntent', {
+        order_id: preparedOrder.order_id,
+      });
+      setClientSecret(res.data.client_secret);
+      setPaymentIntentId(res.data.payment_intent_id);
+      setStep(4);
+    } catch (e) {
+      setError(e.response?.data?.error || e.message || 'Could not initialize payment');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -221,17 +238,32 @@ export default function Checkout() {
                     ← Back
                   </button>
                   <button
-                    onClick={handlePlaceOrder}
-                    className="flex-[2] py-3.5 text-sm font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all"
+                    onClick={handleProceedToPayment}
+                    disabled={loading}
+                    className="flex-[2] py-3.5 text-sm font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all disabled:opacity-40"
                     style={{ background: '#00FFDA', color: '#050505' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#00e6c4'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#00FFDA'}
+                    onMouseEnter={e => !loading && (e.currentTarget.style.background = '#00e6c4')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#00FFDA')}
                   >
-                    <Lock className="w-3.5 h-3.5" /> Place Order
+                    <Lock className="w-3.5 h-3.5" /> {loading ? 'Loading…' : 'Proceed to Payment →'}
                   </button>
                 </div>
-                <p className="text-center text-[10px] text-[#333]">Payment processing coming soon — order will be created as pending</p>
               </div>
+            )}
+
+            {/* Step 4: Payment */}
+            {step === 4 && clientSecret && (
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#00FFDA', colorBackground: '#0a0a0a', colorText: '#F5F5F5', colorDanger: '#ef4444', fontFamily: 'Inter, system-ui, sans-serif', borderRadius: '0px' } } }}>
+                <PaymentStep
+                  preparedOrder={preparedOrder}
+                  onBack={() => setStep(3)}
+                  onSuccess={(orderId, orderNumber) => {
+                    clearCart();
+                    navigate(`/order-confirmation?order_id=${orderId}&order_number=${orderNumber}`);
+                  }}
+                  onError={setError}
+                />
+              </Elements>
             )}
           </div>
 
@@ -268,6 +300,58 @@ export default function Checkout() {
         </div>
       </div>
     </PageShell>
+  );
+}
+
+function PaymentStep({ preparedOrder, onBack, onSuccess, onError }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setLoading(true);
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: window.location.origin + `/order-confirmation?order_id=${preparedOrder.order_id}&order_number=${preparedOrder.order_number}` },
+      redirect: 'if_required',
+    });
+    if (error) {
+      onError(error.message);
+      setLoading(false);
+    } else {
+      onSuccess(preparedOrder.order_id, preparedOrder.order_number);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <h2 className="text-lg font-black text-[#F5F5F5] mb-5">Payment</h2>
+      <div className="border border-[#2a2a2a] p-4">
+        <PaymentElement />
+      </div>
+      <div className="border border-[#1a1a1a] bg-[#0D0D0D] p-4 flex justify-between font-black">
+        <span>Total</span>
+        <span className="text-[#00FFDA]">${preparedOrder.total.toFixed(2)}</span>
+      </div>
+      <div className="flex gap-3">
+        <button type="button" onClick={onBack} className="flex-1 py-3 text-xs font-mono tracking-wider uppercase border border-[#2a2a2a] text-[#555] hover:text-[#F5F5F5] hover:border-[#444] transition-all">
+          ← Back
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="flex-[2] py-3.5 text-sm font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+          style={{ background: '#00FFDA', color: '#050505' }}
+        >
+          <Lock className="w-3.5 h-3.5" /> {loading ? 'Processing…' : 'Pay Now'}
+        </button>
+      </div>
+      <p className="text-center text-[10px] text-[#333] flex items-center justify-center gap-1">
+        <Lock className="w-3 h-3" /> Secured by Stripe
+      </p>
+    </form>
   );
 }
 
