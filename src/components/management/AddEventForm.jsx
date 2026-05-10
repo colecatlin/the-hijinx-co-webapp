@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { createEventCanonical } from '../registrationdashboard/createEventCanonical';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,6 +27,12 @@ export default function AddEventForm({ tracks, onCancel, onSuccess }) {
 
   const [errors, setErrors] = useState({});
   const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60_000,
+  });
 
   const { data: allSeries = [] } = useQuery({
     queryKey: ['series'],
@@ -54,11 +61,28 @@ export default function AddEventForm({ tracks, onCancel, onSuccess }) {
 
   const createMutation = useMutation({
     mutationFn: (data) => {
-      const submitData = { ...data };
-      if (!submitData.track_id) delete submitData.track_id;
-      if (!submitData.end_date) delete submitData.end_date;
-      if (!submitData.round_number) delete submitData.round_number;
-      return base44.entities.Event.create(submitData);
+      // Reverse-lookup series_id from allSeries by matching series name
+      const matchedSeries = allSeries.find((s) => s.name === data.series);
+      const payload = {
+        name: data.name,
+        event_date: data.event_date,
+        ...(data.end_date      && { end_date: data.end_date }),
+        ...(data.track_id      && { track_id: data.track_id }),
+        ...(matchedSeries?.id  && { series_id: matchedSeries.id }),
+        series_name: data.series || null,
+        season: data.season,
+        status: data.status,
+        ...(data.round_number  && { round_number: Number(data.round_number) }),
+      };
+      return createEventCanonical({
+        payload,
+        currentUser: user,
+        triggeredFrom: 'add_event_form',
+        seriesList: allSeries,
+        trackList: tracks,
+        createdByEntityType: 'admin',
+        createdByEntityId: user?.id || null,
+      });
     },
     onSuccess: (newEvent) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
