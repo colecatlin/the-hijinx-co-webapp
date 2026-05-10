@@ -55,33 +55,66 @@ async function guardAgainstDoubleCount(base44, session, event) {
 
 /**
  * Load PointsConfig for the series/class/season, fallback to DEFAULT_POINTS_TABLE.
+ * Reads points_by_position (0-indexed array) and converts to 1-indexed table.
  */
 async function loadPointsTable(base44, seriesId, seriesClassId, seasonYear) {
-  let pointsTable = { ...DEFAULT_POINTS_TABLE };
+  if (!seriesId) return { ...DEFAULT_POINTS_TABLE };
 
-  if (seriesId && seriesClassId) {
-    const configs = await base44.entities.PointsConfig.filter({
-      series_id: seriesId,
-      series_class_id: seriesClassId,
-      season_year: seasonYear,
-    }).catch(() => []);
+  const allConfigs = await base44.entities.PointsConfig.filter({
+    series_id: seriesId,
+  }).catch(() => []);
 
-    if (configs.length > 0) {
-      const cfg = configs[0];
-      if (cfg.points_json) {
-        try { pointsTable = JSON.parse(cfg.points_json); } catch (_) {}
-      } else {
-        const overrides = {};
-        for (let i = 1; i <= 20; i++) {
-          const v = cfg[`pos_${i}`];
-          if (v !== undefined && v !== null) overrides[i] = Number(v);
-        }
-        if (Object.keys(overrides).length > 0) pointsTable = overrides;
-      }
-    }
+  // Resolution hierarchy (mirrors resolvePointsConfig backend function):
+  // a. active + class-scoped + season match
+  // b. active + is_default + season match
+  // c. active + season match (any)
+  // d. any config + season match (ignoring status)
+  // e. DEFAULT_POINTS_TABLE
+
+  const seasonMatch = (c) => !c.season || c.season === seasonYear;
+  const active = allConfigs.filter((c) => c.status === 'active');
+
+  let cfg = null;
+
+  // a. active, class-scoped, season-matched
+  if (!cfg && seriesClassId) {
+    const match = active.filter((c) => c.series_class_id === seriesClassId && seasonMatch(c));
+    if (match.length) cfg = match.sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   }
 
-  return pointsTable;
+  // b. active, default, season-matched
+  if (!cfg) {
+    const match = active.filter((c) => c.is_default === true && !c.series_class_id && seasonMatch(c));
+    if (match.length) cfg = match.sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
+  }
+
+  // c. active, any, season-matched
+  if (!cfg) {
+    const match = active.filter((c) => !c.series_class_id && seasonMatch(c));
+    if (match.length) cfg = match.sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
+  }
+
+  // d. any config, season-matched (ignore status)
+  if (!cfg) {
+    const match = allConfigs.filter((c) => seasonMatch(c));
+    if (match.length) cfg = match.sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
+  }
+
+  if (!cfg) {
+    console.warn('[loadPointsTable] No PointsConfig found for series/class/season — using default table', { seriesId, seriesClassId, seasonYear });
+    return { ...DEFAULT_POINTS_TABLE };
+  }
+
+  if (!cfg.points_by_position || !Array.isArray(cfg.points_by_position) || cfg.points_by_position.length === 0) {
+    console.warn('[loadPointsTable] PointsConfig found but points_by_position is missing/empty — using default table', { configId: cfg.id });
+    return { ...DEFAULT_POINTS_TABLE };
+  }
+
+  const table = {};
+  cfg.points_by_position.forEach((pts, idx) => {
+    table[idx + 1] = pts;
+  });
+  return table;
 }
 
 /**
