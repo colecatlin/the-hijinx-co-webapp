@@ -31,6 +31,7 @@ import ResultsVersionHistory from './ResultsVersionHistory';
 import SessionContextBar from './results/SessionContextBar';
 import ResultsQuickEntryTable from './results/ResultsQuickEntryTable';
 import ResultsPasteDialog from './results/ResultsPasteDialog';
+import ResultsPublishConfirmDialog from './results/ResultsPublishConfirmDialog';
 import { buildRoster, getRosterStats } from './rosterHelper';
 import { validateResults } from './resultsValidation';
 
@@ -71,6 +72,7 @@ export default function ResultsManager({
   const [validationErrors, setValidationErrors] = useState([]);
   const [isHistoricalMode, setIsHistoricalMode] = useState(false);
   const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
+  const [isConfirmOfficialOpen, setIsConfirmOfficialOpen] = useState(false);
 
   useEffect(() => {
     setClassFilter('all');
@@ -460,6 +462,8 @@ export default function ResultsManager({
     if (newStatus === 'Official') {
       const errs = validateForOfficial();
       if (errs.length) { setValidationErrors(errs); return; }
+      setIsConfirmOfficialOpen(true);
+      return;
     }
     setValidationErrors([]);
     setPendingStatus(newStatus);
@@ -850,8 +854,23 @@ export default function ResultsManager({
         </div>
       )}
 
+      {/* Pre-Official Confirmation Modal */}
+      <ResultsPublishConfirmDialog
+        open={isConfirmOfficialOpen}
+        onOpenChange={setIsConfirmOfficialOpen}
+        session={selectedSession}
+        event={selectedEvent}
+        sessionResults={sessionResults}
+        isHistoricalMode={isHistoricalMode}
+        onConfirm={(status) => {
+          setIsConfirmOfficialOpen(false);
+          updateSessionStatus.mutate(status);
+        }}
+        isConfirming={updateSessionStatus.isPending}
+      />
+
       {/* Confirm status dialog */}
-      <AlertDialog open={!!pendingStatus} onOpenChange={(open) => !open && setPendingStatus(null)}>
+      <AlertDialog open={!!pendingStatus && pendingStatus !== 'Official'} onOpenChange={(open) => !open && setPendingStatus(null)}>
         <AlertDialogContent className="bg-[#262626] border-gray-700">
           <AlertDialogTitle className="text-white">Confirm: {pendingStatus}</AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
