@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { createEventCanonical } from '../registrationdashboard/createEventCanonical';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -21,11 +22,28 @@ export default function AIEventGenerator({ tracks = [], onSuccess, onCancel }) {
   const [edited, setEdited] = useState(null);
   const [step, setStep] = useState('input'); // 'input' | 'review' | 'saving'
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60_000,
+  });
+
+  const { data: allSeries = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
   const generateMutation = useMutation({
     mutationFn: () => base44.functions.invoke('generateEventDetails', { description }),
     onSuccess: (res) => {
-      const event = res.data?.event;
-      if (event) {
+      const raw = res.data?.event;
+      if (raw) {
+        // Defensive normalization: coerce AI schema variants to expected keys
+        const event = {
+          ...raw,
+          event_name: raw.event_name || raw.name || '',
+          series: raw.series || raw.series_name || '',
+        };
         setGenerated(event);
         setEdited({ ...event });
         setStep('review');
@@ -34,16 +52,29 @@ export default function AIEventGenerator({ tracks = [], onSuccess, onCancel }) {
   });
 
   const saveMutation = useMutation({
-    mutationFn: () => base44.entities.Event.create({
-      name: edited.event_name,
-      event_date: edited.event_date,
-      end_date: edited.end_date || null,
-      series: edited.series,
-      season: edited.season,
-      round_number: edited.round_number || null,
-      track_id: edited.track_id || null,
-      status: 'upcoming',
-    }),
+    mutationFn: () => {
+      const matchedSeries = allSeries.find((s) => s.name === edited.series);
+      const payload = {
+        name: edited.event_name,
+        event_date: edited.event_date,
+        ...(edited.end_date     && { end_date: edited.end_date }),
+        ...(edited.track_id     && { track_id: edited.track_id }),
+        ...(matchedSeries?.id   && { series_id: matchedSeries.id }),
+        series_name: edited.series || null,
+        season: edited.season,
+        status: 'upcoming',
+        ...(edited.round_number && { round_number: Number(edited.round_number) }),
+      };
+      return createEventCanonical({
+        payload,
+        currentUser: user,
+        triggeredFrom: 'ai_event_generator',
+        seriesList: allSeries,
+        trackList: tracks,
+        createdByEntityType: 'admin',
+        createdByEntityId: user?.id || null,
+      });
+    },
     onSuccess: (newEvent) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       onSuccess(newEvent);
