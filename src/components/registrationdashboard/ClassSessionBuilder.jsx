@@ -94,6 +94,14 @@ export default function ClassSessionBuilder({
     enabled: !!eventId,
   });
 
+  const { data: eventResults = [] } = useQuery({
+    queryKey: ['results', eventId],
+    queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
+    enabled: !!eventId,
+  });
+
+  const sessionHasResults = (sessionId) => eventResults.some((r) => r.session_id === sessionId);
+
   // ── Mutations ─────────────────────────────────────────────────────────────
   const { mutateAsync: createEventClass, isPending: creatingClass } = useDashboardMutation({
     operationType: 'event_class_created', entityName: 'EventClass',
@@ -481,9 +489,19 @@ export default function ClassSessionBuilder({
                               <button onClick={() => openEditSession(session)} className="p-1 hover:bg-gray-600 rounded" title="Edit"><Edit2 className="w-3 h-3 text-gray-400" /></button>
                               <button onClick={() => handleDuplicate(session)} className="p-1 hover:bg-gray-600 rounded" title="Duplicate"><Copy className="w-3 h-3 text-gray-400" /></button>
                             </>}
-                            <button onClick={() => setLockConfirm(session.id)} className="p-1 hover:bg-gray-600 rounded" title={isLocked(session) ? 'Unlock' : 'Lock'}>
-                              {isLocked(session) ? <LockOpen className="w-3 h-3 text-yellow-400" /> : <Lock className="w-3 h-3 text-gray-400" />}
-                            </button>
+                            {sessionHasResults(session.id) ? (
+                              <button
+                                className="p-1 rounded opacity-30 cursor-not-allowed"
+                                title="Use the Results tab to lock sessions that already have results so result publishing and lifecycle states stay in sync."
+                                disabled
+                              >
+                                <Lock className="w-3 h-3 text-gray-500" />
+                              </button>
+                            ) : (
+                              <button onClick={() => setLockConfirm(session.id)} className="p-1 hover:bg-gray-600 rounded" title={isLocked(session) ? 'Unlock' : 'Lock'}>
+                                {isLocked(session) ? <LockOpen className="w-3 h-3 text-yellow-400" /> : <Lock className="w-3 h-3 text-gray-400" />}
+                              </button>
+                            )}
                             {!isLocked(session) && session.status === 'Draft' && (
                               <button onClick={() => deleteSession(session.id)} className="p-1 hover:bg-red-900/30 rounded" title="Delete"><Trash2 className="w-3 h-3 text-red-400" /></button>
                             )}
