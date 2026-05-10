@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import PageShell from '@/components/shared/PageShell';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import NewsletterSignup from '@/components/shared/NewsletterSignup';
@@ -14,30 +13,56 @@ import ProductCard from '@/components/storefront/ProductCard';
 const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 
 export default function ApparelHome() {
+  const { data: user, isLoading: authLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: () => base44.entities.Product.filter({ status: 'active' }),
+    enabled: user?.role === 'admin',
   });
 
   const { data: settingsList = [] } = useQuery({
     queryKey: ['homepageSettings'],
     queryFn: () => base44.entities.HomepageSettings.list(),
     staleTime: 5 * 60 * 1000,
+    enabled: user?.role === 'admin',
   });
   const settings = settingsList.find(s => s.active) || {};
   const shopifyUrl = settings.apparel_shopify_url || DEFAULT_SHOPIFY;
-  const strategy = settings.apparel_link_strategy || 'shopify';
 
   const featuredProducts = products.filter(p => p.featured);
   const allActiveProducts = products.filter(p => !p.featured);
 
-  const statusBadge = (status) => {
-    if (status === 'coming_soon') return <span className="text-[10px] font-mono tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 uppercase">Coming Soon</span>;
-    if (status === 'sold_out') return <span className="text-[10px] font-mono tracking-wider bg-red-100 text-red-600 px-2 py-0.5 uppercase">Sold Out</span>;
-    return null;
-  };
-
   useEffect(() => { Analytics.pageView('ApparelHome'); }, []);
+
+  // Non-admin: show only the redirect landing
+  if (!authLoading && user?.role !== 'admin') {
+    return (
+      <PageShell style={{ background: '#050505', color: '#F5F5F5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <SeoMeta title="Apparel | Wear the Culture" description="HIJINX apparel and essentials." />
+        <div className="text-center px-6">
+          <span className="font-mono text-xs tracking-[0.3em] text-[#00FFDA] uppercase block mb-4">Hijinx Apparel</span>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 text-[#F5F5F5] leading-[0.95]">Wear the<br />culture.</h1>
+          <p className="text-[#555] mb-10 max-w-md mx-auto">Apparel and essentials from the Hijinx brand. Built for people who live in the pits.</p>
+          <a
+            href={DEFAULT_SHOPIFY}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FFDA] text-[#050505] text-sm font-black tracking-[0.1em] uppercase hover:bg-white transition-colors"
+          >
+            Shop Hijinx.com <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (authLoading) {
+    return <div className="min-h-screen" style={{ background: '#050505' }} />;
+  }
 
   return (
     <PageShell style={{ background: '#050505', color: '#F5F5F5' }}>
