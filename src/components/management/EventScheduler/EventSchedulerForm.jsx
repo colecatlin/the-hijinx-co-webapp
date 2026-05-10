@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { createEventCanonical } from '../../registrationdashboard/createEventCanonical';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,14 +47,20 @@ export default function EventSchedulerForm({ seriesId, onSuccess }) {
       const eventPayload = {
         name: formData.event_name,
         event_date: formData.event_date,
-        end_date: formData.end_date || formData.event_date,
-        track_id: formData.track_id,
-        series_id: formData.series_id,
+        ...(formData.end_date && { end_date: formData.end_date }),
+        ...(formData.track_id && { track_id: formData.track_id }),
+        ...(formData.series_id && { series_id: formData.series_id }),
+        series_name: series?.name || null,
         status: 'Draft',
-        public_status: 'draft',
       };
 
-      const event = await base44.entities.Event.create(eventPayload);
+      const event = await createEventCanonical({
+        payload: eventPayload,
+        triggeredFrom: 'event_scheduler_form',
+        seriesList: series ? [series] : [],
+        createdByEntityType: seriesId ? 'series' : 'admin',
+        createdByEntityId: seriesId || null,
+      });
 
       // Create sessions
       const sessionPromises = formData.sessions.map((session) =>
