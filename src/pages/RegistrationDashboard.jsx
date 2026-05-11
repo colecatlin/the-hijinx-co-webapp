@@ -111,7 +111,6 @@ import {
     Star,
     ArrowLeft,
     ExternalLink,
-    MapPin,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import {
@@ -1127,77 +1126,25 @@ export default function RegistrationDashboard() {
             )}
 
             {/* Event Workspace Header */}
-            {selectedEvent && (
+            {selectedEvent ? (
               <EventWorkspaceHeader
                 dashboardContext={dashboardContext}
                 selectedEvent={selectedEvent}
                 selectedTrack={selectedTrack}
                 selectedSeries={selectedSeries}
                 dashboardPermissions={dashboardPermissions}
+                canUserEditEventCore={canUserEditEventCore}
                 invalidateAfterOperation={invalidateAfterOperation}
               />
-            )}
-
-          {/* Command Header */}
-          {selectedEvent ? (
-            <div className="mb-6 bg-[#161616] border border-gray-800 rounded-lg px-5 py-4">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="space-y-1.5 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Race Operations</p>
-                    {selectedSeries && <span className="text-[10px] text-gray-600">·</span>}
-                    {selectedSeries && <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">{selectedSeries.name}</p>}
-                    {dashboardContext.season && <p className="text-[10px] text-gray-600">· {dashboardContext.season}</p>}
-                  </div>
-                  <h1 className="text-xl font-black text-white leading-tight truncate">
-                    {selectedEvent.name}
-                    {selectedEvent.round_number && <span className="text-gray-500 font-medium text-base ml-2">Rd {selectedEvent.round_number}</span>}
-                  </h1>
-                  <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500">
-                    {selectedTrack?.name && (
-                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{selectedTrack.name}</span>
-                    )}
-                    {selectedEvent.event_date && (
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{selectedEvent.event_date}{selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date ? ` – ${selectedEvent.end_date}` : ''}</span>
-                    )}
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                      selectedEvent.status === 'Live'      ? 'bg-red-900/50 text-red-300' :
-                      selectedEvent.status === 'Completed' ? 'bg-green-900/40 text-green-300' :
-                      selectedEvent.status === 'Published' ? 'bg-blue-900/40 text-blue-300' :
-                      'bg-gray-800 text-gray-400'
-                    }`}>
-                      {selectedEvent.status || 'Draft'}
-                    </span>
-                    {!canUserEditEventCore && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-500">Read only</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-                  <button
-                    onClick={() => window.open(`/EventProfile?id=${selectedEvent.id}`, '_blank')}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" /> Public Page
-                  </button>
-                  <button
-                    onClick={() => window.open(`/EventResults?id=${selectedEvent.id}`, '_blank')}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Flag className="w-3 h-3" /> Public Results
-                  </button>
-                </div>
+            ) : (
+              <div className="mb-6">
+                <h1 className="text-xl font-black text-white mb-1">Race Operations</h1>
+                <p className="text-sm text-gray-500">
+                  {selectedOrgName ? selectedOrgName : 'Configure your organization above to begin'}
+                  {eventId && !selectedEvent && <span className="text-yellow-500"> · Loading event…</span>}
+                </p>
               </div>
-            </div>
-          ) : (
-            <div className="mb-6">
-              <h1 className="text-xl font-black text-white mb-1">Race Operations</h1>
-              <p className="text-sm text-gray-500">
-                {selectedOrgName ? selectedOrgName : 'Configure your organization above to begin'}
-                {eventId && !selectedEvent && <span className="text-yellow-500"> · Loading event…</span>}
-              </p>
-            </div>
-          )}
+            )}
 
           {/* Workspace content — sidebar drives tab selection */}
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

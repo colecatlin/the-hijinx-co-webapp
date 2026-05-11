@@ -8,7 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ExternalLink, MapPin, Clock, Flag } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { REG_QK } from './queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -38,6 +38,7 @@ export default function EventWorkspaceHeader({
   selectedTrack,
   selectedSeries,
   dashboardPermissions,
+  canUserEditEventCore,
   invalidateAfterOperation,
 }) {
   const eventId = selectedEvent?.id;
@@ -139,92 +140,83 @@ export default function EventWorkspaceHeader({
 
   return (
     <div className="space-y-4 mb-6">
-      {/* ── Header Row ──────────────────────────────────────────────────────── */}
       <Card className="bg-[#171717] border-gray-800">
         <CardContent className="py-4">
-          {/* Top section */}
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
-                  {orgLabel}
-                </span>
-                <span className="text-xs text-gray-600">•</span>
-                <span className="text-xs text-gray-400 uppercase tracking-wide">
-                  {seasonYear || 'Season TBD'}
-                </span>
+          {/* ── Top Row: Event identity + public links ── */}
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+            <div className="space-y-1.5 min-w-0">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-2 flex-wrap text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                <span>Race Operations</span>
+                {selectedSeries && <><span>·</span><span className="text-gray-500">{selectedSeries.name}</span></>}
+                {seasonYear && <span>· {seasonYear}</span>}
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-lg font-bold text-white">{selectedEvent.name}</h2>
+              {/* Event name */}
+              <h1 className="text-xl font-black text-white leading-tight">
+                {selectedEvent.name}
+                {selectedEvent.round_number && (
+                  <span className="text-gray-500 font-medium text-base ml-2">Rd {selectedEvent.round_number}</span>
+                )}
+              </h1>
+              {/* Meta row */}
+              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500">
+                {selectedTrack?.name && (
+                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{selectedTrack.name}</span>
+                )}
+                {selectedEvent.event_date && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {selectedEvent.event_date}
+                    {selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date ? ` – ${selectedEvent.end_date}` : ''}
+                  </span>
+                )}
                 <Badge className={`text-xs ${getStatusBadgeClass(selectedEvent.status)}`}>
                   {selectedEvent.status || 'Draft'}
                 </Badge>
+                {canUserEditEventCore === false && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-gray-800 text-gray-500">Read only</span>
+                )}
               </div>
-              {selectedEvent.event_date && (
-                <p className="text-xs text-gray-500">
-                  {selectedEvent.event_date}
-                  {selectedEvent.end_date && ` — ${selectedEvent.end_date}`}
-                </p>
-              )}
             </div>
 
-            {/* Quick Links */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 text-xs h-8 gap-1"
-                asChild
+            {/* Public Links */}
+            <div className="flex gap-2 flex-wrap flex-shrink-0">
+              <button
+                onClick={() => window.open(`/EventProfile?id=${selectedEvent.id}`, '_blank')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
               >
-                <a href={createPageUrl('EventProfile')} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-3 h-3" /> Event Page
-                </a>
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 text-xs h-8 gap-1"
-                asChild
+                <ExternalLink className="w-3 h-3" /> Public Page
+              </button>
+              <button
+                onClick={() => window.open(`/EventResults?id=${selectedEvent.id}`, '_blank')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
               >
-                <a href={createPageUrl('EventResults')} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-3 h-3" /> Results
-                </a>
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 text-xs h-8 gap-1"
-                asChild
+                <Flag className="w-3 h-3" /> Public Results
+              </button>
+              <button
+                onClick={() => window.open(`/StandingsHome?seriesId=${selectedEvent.series_id}`, '_blank')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
               >
-                <a href={createPageUrl('StandingsHome')} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-3 h-3" /> Standings
-                </a>
-              </Button>
+                <ExternalLink className="w-3 h-3" /> Standings
+              </button>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-800 my-4" />
+          <div className="border-t border-gray-800 my-3" />
 
-          {/* Data Health Strip */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Data Health
-            </p>
+          {/* ── Data Health Strip ── */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Data Health</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {metrics.map((metric) => (
-                <div
-                  key={metric.label}
-                  className="bg-[#262626] rounded-lg p-3 text-center space-y-1"
-                >
+                <div key={metric.label} className="bg-[#262626] rounded-lg p-3 text-center space-y-1">
                   <div className="text-xl">{metric.icon}</div>
                   <p className="text-xs text-gray-400">{metric.label}</p>
                   {metric.count !== undefined ? (
                     <p className="text-lg font-bold text-white">{metric.count}</p>
                   ) : (
-                    <p className={`text-xs font-semibold ${metric.statusClass}`}>
-                      {metric.status}
-                    </p>
+                    <p className={`text-xs font-semibold ${metric.statusClass}`}>{metric.status}</p>
                   )}
                 </div>
               ))}
