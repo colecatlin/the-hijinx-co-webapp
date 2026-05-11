@@ -879,13 +879,23 @@ export default function RegistrationDashboard() {
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
         {/* Main Content — sidebar + workspace */}
-          <div className="flex min-h-[calc(100vh-72px)]">            <RaceCoreSidebar
+          <div className="flex min-h-[calc(100vh-72px)]">
+            <RaceCoreSidebar
               activeTab={activeTab}
               onTabChange={setActiveTab}
               dashboardPermissions={dashboardPermissions}
               isAdmin={isAdmin}
               user={user}
               selectedEvent={selectedEvent}
+              onQuickCreate={() => { setQuickCreateType('Driver'); setQuickCreateOpen(true); }}
+              onCreateEvent={handleCreateEvent}
+              onImportEntries={() => setShowImportEntriesModal(true)}
+              onSyncTiming={() => setShowSyncModal(true)}
+              onPublish={handlePublishOfficial}
+              onExport={() => setShowExportModal(true)}
+              onMediaPortal={() => setShowMediaPortalDialog(true)}
+              announcerMode={announcerMode}
+              onAnnouncerModeToggle={handleAnnouncerModeToggle}
             />
           <div className="flex-1 px-6 py-8 overflow-auto">
 
@@ -996,106 +1006,10 @@ export default function RegistrationDashboard() {
                 if (isCurrent) return <span className="flex items-center gap-1 text-xs px-2 py-1 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded shrink-0"><Star className="w-3 h-3" /> Primary</span>;
                 return <button onClick={() => navigate(buildRaceCoreLaunchUrl(primaryEntity, extras))} className="flex items-center gap-1 text-xs px-2 py-1 text-gray-400 hover:text-amber-300 border border-gray-700 hover:border-amber-500/40 rounded transition-colors shrink-0"><Star className="w-3 h-3" /> Return to Primary</button>;
               })()}
-              <div className="flex-1" />
-              {/* Quick Actions */}
-              <div className="flex items-center gap-2">
-                {isAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => { setQuickCreateType('Driver'); setQuickCreateOpen(true); }}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Quick Create
-                  </Button>
-                )}
-                {canAction(dashboardPermissions, 'create_event') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCreateEvent}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Create Event
-                  </Button>
-                )}
-                {canAction(dashboardPermissions, 'import_csv') && selectedEvent && (
-                   <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={() => setShowImportEntriesModal(true)}
-                     className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                   >
-                     <Upload className="w-4 h-4 mr-1" /> Import Entries CSV
-                   </Button>
-                 )}
-                {canAction(dashboardPermissions, 'sync_timing') && selectedEvent && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowSyncModal(true)}
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" /> Sync Timing
-                    </Button>
-                  )}
-                  {canAction(dashboardPermissions, 'publish_official') && selectedEvent && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePublishOfficial}
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                    >
-                      <Send className="w-4 h-4 mr-1" /> Publish
-                    </Button>
-                  )}
-                  {canAction(dashboardPermissions, 'export') && selectedEvent && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowExportModal(true)}
-                        className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                      >
-                        <Download className="w-4 h-4 mr-1" /> Export
-                      </Button>
-                    )}
-                  {canTab(dashboardPermissions, 'media') && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowMediaPortalDialog(true)}
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                    >
-                      <Film className="w-4 h-4 mr-1" /> Media Portal
-                    </Button>
-                  )}
-                  </div>
-
-                  {/* Announcer Mode Toggle */}
-                <Button
-                 onClick={() => handleAnnouncerModeToggle(!announcerMode)}
-                 size="sm"
-                 variant="outline"
-                 className={`border-gray-700 ${announcerMode ? 'bg-purple-900/40 text-purple-300 border-purple-700' : 'text-gray-300 hover:bg-gray-800'}`}
-                >
-                 <Mic className="w-4 h-4 mr-1" /> {announcerMode ? 'Announcer Mode On' : 'Announcer Mode'}
-                </Button>
+              </div>
                 </div>
                 </div>
                 </div>
-                </div>
-
-                {/* Main Content — sidebar + workspace */}
-                <div className="flex min-h-[calc(100vh-72px)]">
-                <RaceCoreSidebar
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                dashboardPermissions={dashboardPermissions}
-                isAdmin={isAdmin}
-                user={user}
-                selectedEvent={selectedEvent}
-                />
-                <div className="flex-1 px-6 py-8 overflow-auto">
 
                 {/* Hard Event Lock Banner */}
             {!selectedEvent && (
@@ -1547,7 +1461,6 @@ export default function RegistrationDashboard() {
               </Tabs>
           </div>
         </div>
-        </div>
 
         {/* Modals */}
         <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
@@ -1774,6 +1687,7 @@ export default function RegistrationDashboard() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
     </PageShell>
   );
 }

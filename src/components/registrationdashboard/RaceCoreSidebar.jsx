@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { canTab } from '@/components/access/accessControl';
+import { canTab, canAction } from '@/components/access/accessControl';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink, Plus, Upload, RefreshCw, Send, Download, Film, Mic } from 'lucide-react';
 import { RACE_CORE_NAV_GROUPS } from './raceCoreNavConfig';
 
 export default function RaceCoreSidebar({
@@ -12,6 +12,16 @@ export default function RaceCoreSidebar({
   isAdmin,
   user,
   selectedEvent,
+  // Quick action callbacks
+  onQuickCreate,
+  onCreateEvent,
+  onImportEntries,
+  onSyncTiming,
+  onPublish,
+  onExport,
+  onMediaPortal,
+  announcerMode,
+  onAnnouncerModeToggle,
 }) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState({});
@@ -25,7 +35,6 @@ export default function RaceCoreSidebar({
   const isVisible = (item) => {
     if (item.adminOnly && !isAdmin) return false;
     if (item.ownerOnly && !isOwnerOrEditor) return false;
-    // href items (People group) are always visible — they're platform-wide links
     if (item.href) return true;
     if (item.canTabKey && !canTab(dashboardPermissions, item.canTabKey)) return false;
     return true;
@@ -43,8 +52,51 @@ export default function RaceCoreSidebar({
     }
   };
 
+  // Build the list of quick actions to show
+  const quickActions = [
+    isAdmin && { label: 'Quick Create', icon: Plus, onClick: onQuickCreate },
+    canAction(dashboardPermissions, 'create_event') && { label: 'Create Event', icon: Plus, onClick: onCreateEvent },
+    canAction(dashboardPermissions, 'import_csv') && selectedEvent && { label: 'Import Entries', icon: Upload, onClick: onImportEntries },
+    canAction(dashboardPermissions, 'sync_timing') && selectedEvent && { label: 'Sync Timing', icon: RefreshCw, onClick: onSyncTiming },
+    canAction(dashboardPermissions, 'publish_official') && selectedEvent && { label: 'Publish', icon: Send, onClick: onPublish },
+    canAction(dashboardPermissions, 'export') && selectedEvent && { label: 'Export', icon: Download, onClick: onExport },
+    canTab(dashboardPermissions, 'media') && { label: 'Media Portal', icon: Film, onClick: onMediaPortal },
+    { label: announcerMode ? 'Announcer On' : 'Announcer Mode', icon: Mic, onClick: () => onAnnouncerModeToggle?.(!announcerMode), active: announcerMode, purple: true },
+  ].filter(Boolean);
+
   return (
     <div className="w-48 shrink-0 bg-[#111111] border-r border-gray-800 min-h-full flex flex-col py-3 overflow-y-auto">
+
+      {/* Quick Actions */}
+      {quickActions.length > 0 && (
+        <div className="mb-1">
+          <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+            Quick Actions
+          </div>
+          <div className="space-y-0.5 px-2 pb-1">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.label}
+                  onClick={action.onClick}
+                  className={cn(
+                    'w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors text-left',
+                    action.purple && action.active
+                      ? 'bg-purple-900/40 text-purple-300'
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate flex-1">{action.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mx-3 border-t border-gray-800 mb-1" />
+        </div>
+      )}
+
       {RACE_CORE_NAV_GROUPS.map((group) => {
         const visibleItems = group.items.filter(isVisible);
         if (visibleItems.length === 0) return null;
