@@ -19,8 +19,9 @@ import {
   SESSION_STATUS_ORDER,
   isSessionLocked,
   isSessionOfficial,
-  getSessionStatusBadgeClass,
 } from './sessionLifecycle';
+import { sortSessionsChronologically } from './ops/sessionOrdering';
+import { SESSION_STATE_CONFIG, deriveSessionOperationalState } from './ops/sessionStateIntelligence';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
 import { calculateStandingsForSession, recomputeStandingsForFinalSession } from './standings/calculateStandings';
@@ -54,6 +55,7 @@ function downloadCSV(rows, filename) {
 
 export default function ResultsManager({
   selectedEvent,
+  initialSessionId,
   isAdmin,
   canAction,
   dashboardContext,
@@ -70,7 +72,7 @@ export default function ResultsManager({
 
   // ── Selection state ──
   const [classFilter, setClassFilter] = useState('all');
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState(initialSessionId || '');
   const [entryMode, setEntryMode] = useState('manual');
   const [pendingStatus, setPendingStatus] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -79,34 +81,29 @@ export default function ResultsManager({
   const [isConfirmOfficialOpen, setIsConfirmOfficialOpen] = useState(false);
   const [showHealthPanel, setShowHealthPanel] = useState(false);
 
+  // Sync to external initialSessionId when event or prop changes
   useEffect(() => {
     setClassFilter('all');
-    setSessionId('');
+    setSessionId(initialSessionId || '');
     setEntryMode('manual');
     setIsHistoricalMode(false);
   }, [eventId]);
+
+  // Part 2: keep in sync when initialSessionId changes without event change
+  useEffect(() => {
+    if (initialSessionId && initialSessionId !== sessionId) {
+      setSessionId(initialSessionId);
+    }
+  }, [initialSessionId]);
 
   // ── Queries ──
   const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => {
       if (!eventId) return [];
-      // Sort by run_order (schema field) → scheduled_time → created_date fallback.
-      // NOTE: session_order does not exist on the Session schema — run_order is the correct field.
+      // Part 3: use shared sortSessionsChronologically for consistent ordering
       return base44.entities.Session.filter({ event_id: eventId }).then(all =>
-        all.sort((a, b) => {
-          const orderA = a.run_order ?? 9999;
-          const orderB = b.run_order ?? 9999;
-          if (orderA !== orderB) return orderA - orderB;
-          if (a.scheduled_time && b.scheduled_time) {
-            return new Date(a.scheduled_time) - new Date(b.scheduled_time);
-          }
-          if (a.scheduled_time) return -1;
-          if (b.scheduled_time) return 1;
-          const createdA = a.created_date ? new Date(a.created_date) : new Date(0);
-          const createdB = b.created_date ? new Date(b.created_date) : new Date(0);
-          return createdA - createdB;
-        })
+        sortSessionsChronologically(all)
       );
     },
     enabled: !!eventId,
@@ -657,9 +654,14 @@ export default function ResultsManager({
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className={`text-xs ${getSessionStatusBadgeClass(selectedSession.status)}`}>
-                    {selectedSession.status || 'Draft'}
-                  </Badge>
+                {(() => {
+                  const sc = SESSION_STATE_CONFIG[deriveSessionOperationalState(selectedSession, sessionResults)] || SESSION_STATE_CONFIG.pending;
+                  return (
+                    <Badge className={`text-xs ${sc.badge}`}>
+                      {sc.icon} {sc.label}
+                    </Badge>
+                  );
+                })()}
                   {selectedSession.status === 'Locked' && <Lock className="w-3 h-3 text-purple-400" />}
                   {selectedSession.status === 'Official' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
                   {(selectedSession.status === 'Official' || selectedSession.status === 'Locked') && (

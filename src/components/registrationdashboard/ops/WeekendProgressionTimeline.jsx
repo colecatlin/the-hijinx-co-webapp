@@ -1,5 +1,5 @@
 /**
- * REVISION 5E — Weekend Progression Timeline
+ * REVISION 6A — Weekend Progression Timeline
  * Renders a day-grouped, type-grouped session timeline showing
  * the full event weekend structure with operational state indicators.
  *
@@ -33,6 +33,7 @@ export default function WeekendProgressionTimeline({
   onSelectSession,
 }) {
   const [collapsedDays, setCollapsedDays] = useState({});
+  // Part 7: preserve collapse state when toggling — viewMode change does NOT reset collapsedDays
   const [viewMode, setViewMode] = useState('day'); // 'day' | 'class'
 
   const allCollapsed = Object.keys(collapsedDays).length > 0 &&

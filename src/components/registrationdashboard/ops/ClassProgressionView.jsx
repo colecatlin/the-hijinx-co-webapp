@@ -1,5 +1,5 @@
 /**
- * REVISION 5F — ClassProgressionView
+ * REVISION 6A — ClassProgressionView
  * Secondary operational view showing each class's full session arc
  * across the event weekend: Practice → Qual → Heat → LCQ → Final.
  *
@@ -9,7 +9,7 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { sortSessionsChronologically, isScoringSession, getSessionDisplayLabel } from './sessionOrdering';
+import { sortSessionsChronologically, isScoringSession, getSessionDisplayLabel, getSessionDayLabel } from './sessionOrdering';
 import {
   deriveSessionOperationalState,
   SESSION_STATE_CONFIG,
@@ -101,22 +101,14 @@ function ClassDayBlock({ dayLabel, sessions, results, seriesClasses, eventClasse
   );
 }
 
-// Derive a simplified day label for grouping within a class arc
-function getDayLabel(session, eventStartDate) {
-  if (!session.scheduled_time) return 'Unscheduled';
-  const d = new Date(session.scheduled_time);
-  const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
-  const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return `${weekday}, ${dateStr}`;
-}
-
-// Group sessions belonging to a class by day (chronological)
+// Group sessions belonging to a class by day (chronological).
+// Uses shared getSessionDayLabel for consistency with WeekendProgressionTimeline.
 function groupClassSessionsByDay(sessions, eventStartDate) {
-  const sorted = sortSessionsChronologically(sessions, eventStartDate);
+  const sorted = sortSessionsChronologically(sessions);
   const buckets = {};
   const order = [];
   sorted.forEach(s => {
-    const label = getDayLabel(s, eventStartDate);
+    const label = getSessionDayLabel(s, eventStartDate);
     if (!buckets[label]) { buckets[label] = []; order.push(label); }
     buckets[label].push(s);
   });
@@ -175,7 +167,8 @@ export default function ClassProgressionView({
   const toggleClass = (id) => setCollapsedClasses(prev => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <div className="space-y-3">
+    // Part 7: gap-2 for dense weekends (was space-y-3), still compact
+    <div className="space-y-2">
       {classGroups.map(cg => {
         const isCollapsed = !!collapsedClasses[cg.id];
         const dayGroups = groupClassSessionsByDay(cg.sessions, eventStartDate);

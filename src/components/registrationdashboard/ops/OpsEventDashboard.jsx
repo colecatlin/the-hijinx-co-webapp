@@ -1,5 +1,5 @@
 /**
- * REVISION 5E — OpsEventDashboard
+ * REVISION 6A — OpsEventDashboard
  * Main orchestration component for the Race Ops operational interface.
  * Integrates weekend timeline, session intelligence, results manager, and right sidebar.
  */
@@ -13,7 +13,8 @@ import SessionControlCenter from './SessionControlCenter';
 import OpsRightSidebar from './OpsRightSidebar';
 import ResultsManager from '../ResultsManager';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Trophy } from 'lucide-react';
+import { isScoringSession } from './sessionOrdering';
 import { Button } from '@/components/ui/button';
 import { sortSessionsChronologically } from './sessionOrdering';
 
@@ -141,7 +142,7 @@ export default function OpsEventDashboard({
           {/* Inline Results Manager — shown when a session is selected */}
           {selectedSession && (
             <div className="border border-gray-800 rounded-lg bg-[#111] overflow-hidden">
-              {/* Panel header */}
+              {/* Panel header — Part 2 + 7: scheduled time and scoring pill */}
               <div className="flex items-center gap-3 px-4 py-2.5 bg-[#171717] border-b border-gray-800">
                 <Button
                   size="sm"
@@ -152,13 +153,27 @@ export default function OpsEventDashboard({
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <span className="text-sm font-semibold text-white">{selectedSession.name}</span>
-                <span className="text-xs text-gray-500">· Results</span>
+                {selectedSession.scheduled_time && (
+                  <span className="text-xs text-gray-500">
+                    {new Date(selectedSession.scheduled_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    {' '}
+                    {new Date(selectedSession.scheduled_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </span>
+                )}
+                {isScoringSession(selectedSession) ? (
+                  <span className="ml-auto flex items-center gap-1 text-xs text-amber-400 font-medium">
+                    <Trophy className="w-3 h-3" /> Scoring session
+                  </span>
+                ) : (
+                  <span className="ml-auto text-xs text-gray-600">⚪ Non-scoring</span>
+                )}
               </div>
 
-              {/* Results Manager (all logic untouched) */}
+              {/* Results Manager — Part 2: pass initialSessionId for auto-targeting */}
               <div className="p-4">
                 <ResultsManager
                   selectedEvent={selectedEvent}
+                  initialSessionId={selectedSessionId}
                   isAdmin={isAdmin}
                   canAction={isAdmin
                     ? ['results_save_draft', 'results_mark_provisional', 'results_publish_official', 'results_lock_session', 'results_unlock_session']

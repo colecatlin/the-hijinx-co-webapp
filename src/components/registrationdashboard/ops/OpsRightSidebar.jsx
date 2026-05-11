@@ -1,5 +1,5 @@
 /**
- * REVISION 5E — OpsRightSidebar
+ * REVISION 6A — OpsRightSidebar
  * Sticky right panel showing Session Health and Activity Log.
  * Desktop-only (xl+). No mutations.
  */
@@ -9,6 +9,7 @@ import { CheckCircle2, History, AlertTriangle, AlertCircle } from 'lucide-react'
 import SessionHealthPanel from '../results/SessionHealthPanel';
 import SessionActivityLog from '../results/SessionActivityLog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isScoringSession } from './sessionOrdering';
 
 export default function OpsRightSidebar({ selectedSession, sessions, results, seriesClasses }) {
   const [activeSection, setActiveSection] = useState('health');
@@ -94,10 +95,15 @@ export default function OpsRightSidebar({ selectedSession, sessions, results, se
                           <span>Duplicate positions</span>
                         </div>
                       )}
-                      {selectedSession.session_type === 'Final' && (
+                      {/* Part 4: include Feature as scoring session */}
+                      {isScoringSession(selectedSession) ? (
                         <div className="flex items-center gap-1 text-green-400 pt-1 border-t border-gray-800 mt-1">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>Standings recalc on Official</span>
+                          <span>Scoring session — standings recalc on Official</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-gray-600 pt-1 border-t border-gray-800 mt-1">
+                          <span>Non-scoring — no standings impact</span>
                         </div>
                       )}
                     </div>

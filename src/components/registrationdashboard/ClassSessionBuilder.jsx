@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { isSessionLocked } from './sessionLifecycle';
+import { sortSessionsChronologically } from './ops/sessionOrdering';
 
 const EMPTY_CLASS_FORM = {
   class_name: '', series_class_id: '', max_entries: '', class_status: 'Open', class_order: '', notes: '',
@@ -417,7 +418,8 @@ export default function ClassSessionBuilder({
             const hasLocked = cg.sessions.some(isLocked);
             const entryCount = entriesByClass[cg.id] || 0;
             const isFull = cg.max_entries && entryCount >= cg.max_entries;
-            const sortedSessions = [...cg.sessions].sort((a, b) => (a.run_order || 0) - (b.run_order || 0));
+            // Part 3: use shared sort for consistency with all other Ops views
+            const sortedSessions = sortSessionsChronologically(cg.sessions);
 
             return (
               <AccordionItem key={cg.id} value={cg.id} className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">

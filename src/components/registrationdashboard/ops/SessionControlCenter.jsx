@@ -1,5 +1,5 @@
 /**
- * REVISION 5E — SessionControlCenter
+ * REVISION 6A — SessionControlCenter
  * Replaces the flat session grid with a structured weekend timeline view.
  * Adds event-level derived status, round grouping, and operational state indicators.
  */
@@ -42,6 +42,11 @@ export default function SessionControlCenter({
   const derivedStatus = deriveEventOperationalStatus(sessions, results);
   const statusConfig = EVENT_STATUS_CONFIG[derivedStatus];
 
+  // Part 7: derive selected session name for compact indicator
+  const selectedSession = selectedSessionId
+    ? sorted.find(s => s.id === selectedSessionId)
+    : null;
+
   return (
     <div className="space-y-4">
       {/* Control center header */}
@@ -55,7 +60,15 @@ export default function SessionControlCenter({
             {statusConfig.label}
           </Badge>
         </div>
-        <span className="text-xs text-gray-500 font-mono">{sessions.length} sessions</span>
+        <div className="flex items-center gap-2">
+          {/* Part 7: compact selected session indicator */}
+          {selectedSession && (
+            <span className="text-xs text-green-400 font-medium bg-green-900/20 border border-green-800/40 px-2 py-0.5 rounded truncate max-w-[160px]">
+              ↓ {selectedSession.name}
+            </span>
+          )}
+          <span className="text-xs text-gray-500 font-mono">{sessions.length} sessions</span>
+        </div>
       </div>
 
       {/* Timeline */}

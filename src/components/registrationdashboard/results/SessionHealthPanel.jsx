@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { isScoringSession } from '../ops/sessionOrdering';
 
 export default function SessionHealthPanel({
   session,
@@ -153,16 +154,17 @@ export default function SessionHealthPanel({
           <CardTitle className="text-xs text-gray-400 uppercase tracking-wide">Standings Impact</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Part 4: use isScoringSession to include Feature */}
           <div className="text-xs space-y-2">
-            {session?.session_type === 'Final' ? (
+            {isScoringSession(session) ? (
               <div className="flex items-start gap-2 p-2 bg-green-950/30 border border-green-800/50 rounded">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />
-                <span className="text-green-300">Standings will recalculate on Official publish.</span>
+                <span className="text-green-300">Scoring session — standings will recalculate on Official publish.</span>
               </div>
             ) : (
               <div className="flex items-start gap-2 p-2 bg-blue-950/30 border border-blue-800/50 rounded">
                 <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <span className="text-blue-300">Standings will NOT recalculate (non-Final session).</span>
+                <span className="text-blue-300">Non-scoring session — standings will not recalculate.</span>
               </div>
             )}
             {seriesClass && (
