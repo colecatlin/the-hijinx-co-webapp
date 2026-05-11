@@ -338,10 +338,24 @@ export default function RaceCoreHome({
         </div>
       )}
 
-      {/* ── C. Quick Actions ──────────────────────────────────────────────── */}
+      {/* ── C. Action Center ──────────────────────────────────────────────── */}
       {quickActions.length > 0 && (
         <div>
-          <SectionLabel>Quick Actions</SectionLabel>
+          <SectionLabel>Action Center</SectionLabel>
+          {/* Primary actions — only when event selected */}
+          {hasEvent && (
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              {[
+                canTab(dashboardPermissions, 'classes_sessions') && { id: 'sessions', label: 'Create Session', icon: Plus, color: 'text-purple-400', onClick: () => onTabChange('classesSessions') },
+                canTab(dashboardPermissions, 'results') && { id: 'results', label: 'Enter Results', icon: Flag, color: 'text-red-400', onClick: () => onTabChange('results') },
+                canTab(dashboardPermissions, 'points_standings') && isSeries && { id: 'standings', label: 'Recalc Standings', icon: RefreshCw, color: 'text-yellow-400', onClick: () => onTabChange('pointsStandings') },
+                canAction(dashboardPermissions, 'publish_official') && { id: 'publish', label: 'Publish Official', icon: Database, color: 'text-green-400', onClick: () => onTabChange('results') },
+              ].filter(Boolean).slice(0, 4).map(a => (
+                <QuickActionButton key={a.id} icon={a.icon} label={a.label} color={a.color} onClick={a.onClick} disabled={false} />
+              ))}
+            </div>
+          )}
+          {/* Secondary / navigation actions */}
           <div className="grid grid-cols-2 gap-2">
             {quickActions.map(a => (
               <QuickActionButton key={a.id} icon={a.icon} label={a.label} color={a.color} onClick={a.onClick} disabled={a.disabled} />
@@ -350,34 +364,166 @@ export default function RaceCoreHome({
         </div>
       )}
 
-      {/* ── E. Role-Relevant Operational Modules ─────────────────────────── */}
-
-      {/* Event Ops summary — Track or Admin */}
-      {showEventOps && (
+      {/* ── E. Weekend Status ────────────────────────────────────────────── */}
+      {hasEvent && (
         <div>
-          <SectionLabel>Event Operations</SectionLabel>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: 'Sessions', value: sessions.length, sub: draftSessions.length > 0 ? `${draftSessions.length} draft` : 'all published', warn: draftSessions.length > 0, tab: 'classesSessions', can: canTab(dashboardPermissions, 'classes_sessions') },
-              { label: 'Results', value: results.length, sub: unpublishedSessions.length > 0 ? `${unpublishedSessions.length} unpublished` : 'up to date', warn: unpublishedSessions.length > 0, tab: 'results', can: canTab(dashboardPermissions, 'results') },
-              { label: 'Official', value: officialSessions.length, sub: `of ${sessions.length} sessions`, warn: false, tab: 'results', can: canTab(dashboardPermissions, 'results') },
-            ].map(stat => (
+          <SectionLabel>Weekend Status</SectionLabel>
+          <div className="grid grid-cols-2 gap-2">
+
+            {/* Sessions */}
+            {canTab(dashboardPermissions, 'classes_sessions') && (
               <button
-                key={stat.label}
-                onClick={() => stat.can && onTabChange(stat.tab)}
-                disabled={!stat.can}
-                className={`bg-[#171717] border rounded-lg p-3 text-left transition-colors ${stat.can ? 'border-gray-800 hover:border-gray-700 cursor-pointer' : 'border-gray-800/50 cursor-default'}`}
+                onClick={() => onTabChange('classesSessions')}
+                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
               >
-                <p className={`text-2xl font-black ${stat.warn ? 'text-amber-300' : 'text-white'}`}>{stat.value}</p>
-                <p className="text-[11px] font-medium text-gray-400 mt-0.5">{stat.label}</p>
-                <p className={`text-[10px] mt-0.5 ${stat.warn ? 'text-amber-500' : 'text-gray-600'}`}>{stat.sub}</p>
+                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${sessions.length === 0 ? 'text-gray-600' : draftSessions.length > 0 ? 'text-amber-400' : 'text-green-400'}`}>Sessions</p>
+                <p className={`text-sm font-semibold ${sessions.length === 0 ? 'text-gray-500' : 'text-white'}`}>
+                  {sessions.length === 0 ? 'Not started' : `${sessions.length} sessions`}
+                </p>
+                {sessions.length > 0 && (
+                  <p className={`text-[10px] mt-0.5 ${draftSessions.length > 0 ? 'text-amber-500' : 'text-gray-600'}`}>
+                    {officialSessions.length} official · {draftSessions.length} draft
+                  </p>
+                )}
               </button>
-            ))}
+            )}
+
+            {/* Results */}
+            {canTab(dashboardPermissions, 'results') && (
+              <button
+                onClick={() => onTabChange('results')}
+                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
+              >
+                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${results.length === 0 ? 'text-gray-600' : sessionsWithNoResults.length > 0 ? 'text-amber-400' : 'text-green-400'}`}>Results</p>
+                <p className={`text-sm font-semibold ${results.length === 0 ? 'text-gray-500' : 'text-white'}`}>
+                  {results.length === 0 ? 'No results yet' : `${results.length} results entered`}
+                </p>
+                {sessions.length > 0 && sessionsWithNoResults.length > 0 && (
+                  <p className="text-[10px] mt-0.5 text-amber-500">{sessionsWithNoResults.length} session{sessionsWithNoResults.length > 1 ? 's' : ''} missing results</p>
+                )}
+                {results.length > 0 && sessionsWithNoResults.length === 0 && (
+                  <p className="text-[10px] mt-0.5 text-gray-600">All sessions covered</p>
+                )}
+              </button>
+            )}
+
+            {/* Standings */}
+            {canTab(dashboardPermissions, 'points_standings') && (
+              <button
+                onClick={() => onTabChange('pointsStandings')}
+                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
+              >
+                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${standingsDirty ? 'text-amber-400' : standings.length === 0 ? 'text-gray-600' : 'text-green-400'}`}>Standings</p>
+                <p className={`text-sm font-semibold ${standings.length === 0 ? 'text-gray-500' : 'text-white'}`}>
+                  {standingsDirty ? 'Needs recalculation' : standings.length === 0 ? 'Not calculated' : `${standings.length} entries`}
+                </p>
+                {standingsDirty && <p className="text-[10px] mt-0.5 text-amber-500">Results changed since last calc</p>}
+                {!standingsDirty && standings.length > 0 && <p className="text-[10px] mt-0.5 text-gray-600">Up to date</p>}
+              </button>
+            )}
+
+            {/* Official sessions */}
+            {canTab(dashboardPermissions, 'results') && sessions.length > 0 && (
+              <button
+                onClick={() => onTabChange('results')}
+                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
+              >
+                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${officialSessions.length === 0 ? 'text-gray-600' : 'text-blue-400'}`}>Published</p>
+                <p className={`text-sm font-semibold ${officialSessions.length === 0 ? 'text-gray-500' : 'text-white'}`}>
+                  {officialSessions.length === 0 ? 'None published yet' : `${officialSessions.length} of ${sessions.length} official`}
+                </p>
+                {officialSessions.length > 0 && officialSessions.length < sessions.length && (
+                  <p className="text-[10px] mt-0.5 text-gray-600">{sessions.length - officialSessions.length} still draft</p>
+                )}
+                {officialSessions.length === sessions.length && sessions.length > 0 && (
+                  <p className="text-[10px] mt-0.5 text-green-600">All sessions published</p>
+                )}
+              </button>
+            )}
+
           </div>
         </div>
       )}
 
-      {/* Championship module — Series or Admin */}
+      {/* ── F. Session Snapshot ──────────────────────────────────────────── */}
+      {hasEvent && canTab(dashboardPermissions, 'classes_sessions') && (
+        <div>
+          <SectionLabel>Session Snapshot</SectionLabel>
+          {sessions.length === 0 ? (
+            <div className="bg-[#161616] border border-gray-800/50 border-dashed rounded-lg px-4 py-6 text-center">
+              <Calendar className="w-5 h-5 text-gray-700 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 mb-2">No sessions created yet.</p>
+              {canTab(dashboardPermissions, 'classes_sessions') && (
+                <button
+                  onClick={() => onTabChange('classesSessions')}
+                  className="text-xs px-3 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white rounded transition-colors"
+                >
+                  + Create First Session
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {/* Next upcoming session */}
+              {(() => {
+                const upcoming = [...sessions]
+                  .filter(s => s.status === 'Draft' || s.status === 'Provisional')
+                  .sort((a, b) => (a.run_order ?? 999) - (b.run_order ?? 999));
+                const next = upcoming[0];
+                if (!next) return null;
+                return (
+                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-blue-900/40 rounded text-xs">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 mr-2">Next</span>
+                      <span className="text-gray-200 font-medium">{next.name || next.session_type}</span>
+                    </div>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${next.status === 'Provisional' ? 'bg-amber-900/40 text-amber-300' : 'bg-gray-800 text-gray-500'}`}>{next.status}</span>
+                  </div>
+                );
+              })()}
+              {/* Latest official */}
+              {(() => {
+                const latest = [...officialSessions].sort((a, b) => (b.run_order ?? 0) - (a.run_order ?? 0))[0];
+                if (!latest) return null;
+                return (
+                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-green-900/30 rounded text-xs">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-green-400 mr-2">Latest</span>
+                      <span className="text-gray-200 font-medium">{latest.name || latest.session_type}</span>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-green-900/40 text-green-300">{latest.status}</span>
+                  </div>
+                );
+              })()}
+              {/* Sessions missing results */}
+              {sessionsWithNoResults.length > 0 && (
+                <button
+                  onClick={() => onTabChange('results')}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-[#161616] border border-amber-900/30 rounded text-xs hover:border-amber-700/50 transition-colors"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Missing Results</span>
+                  </div>
+                  <span className="text-amber-300 font-medium">{sessionsWithNoResults.length} session{sessionsWithNoResults.length > 1 ? 's' : ''} → Enter Results</span>
+                </button>
+              )}
+              {/* Scoring sessions count */}
+              {(() => {
+                const scoring = sessions.filter(s => s.session_type === 'Final' || s.session_type === 'Feature');
+                if (scoring.length === 0) return null;
+                return (
+                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-gray-800/50 rounded text-xs">
+                    <span className="text-gray-500">Scoring sessions</span>
+                    <span className="text-gray-300 font-medium">{scoring.length}</span>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Championship module — Series or Admin ───────────────────────── */}
       {showChampionship && (
         <div>
           <SectionLabel>Championship</SectionLabel>
