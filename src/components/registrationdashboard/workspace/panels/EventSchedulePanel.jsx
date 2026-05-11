@@ -8,7 +8,7 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
-import WeekendProgressionTimeline from '../../ops/WeekendProgressionTimeline';
+import SessionTimelinePolished from '../SessionTimelinePolished';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Calendar } from 'lucide-react';
 
@@ -63,15 +63,11 @@ export default function EventSchedulePanel() {
         <span className="text-[10px] px-2 py-1 rounded border border-gray-800 text-gray-600 font-mono">READ ONLY</span>
       </div>
 
-      {/* WeekendProgressionTimeline — full schedule with day/class grouping */}
-      <WeekendProgressionTimeline
+      {/* SessionTimelinePolished — enhanced visual progression */}
+      <SessionTimelinePolished
         sessions={sessions}
         results={results}
-        seriesClasses={seriesClasses}
-        eventClasses={eventClasses}
-        selectedEvent={selectedEvent}
-        selectedSessionId={null}
-        onSelectSession={() => {}}
+        entries={[]}
       />
     </div>
   );

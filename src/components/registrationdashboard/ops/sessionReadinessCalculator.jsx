@@ -68,13 +68,9 @@ export function calculateEventReadiness(event = {}, sessions = [], entries = [],
 
   // Compliance clear (0-15%)
   total += 15;
-  if (entries.length > 0) {
-    const complianceIssues = entries.filter(e => !e.waiver_verified || e.tech_status === 'Failed').length;
-    const complianceRate = 1 - (complianceIssues / entries.length);
-    score += Math.round(15 * complianceRate);
-  } else {
-    score += 0; // No entries yet, no compliance points
-  }
+  const complianceIssues = entries.filter(e => !e.waiver_verified || e.tech_status === 'Failed').length;
+  if (complianceIssues === 0) score += 15;
+  else if (complianceIssues < entries.length * 0.1) score += 10; // > 90% compliant
 
   // Results status (0-20%)
   total += 20;
@@ -191,45 +187,14 @@ export function buildOperationalAlerts(event = {}, sessions = [], entries = [], 
 }
 
 /**
- * Get active session (currently running)
- * A session is active if:
- * - has scheduled_time
- * - current time is after scheduled_time
- * - not Locked or Completed
- * - is the most recent started session
- */
-export function getActiveSession(sessions = []) {
-  const now = new Date().getTime();
-  const eligibleSessions = sessions.filter(s => {
-    if (!s.scheduled_time) return false;
-    const sessionTime = new Date(s.scheduled_time).getTime();
-    if (sessionTime > now) return false; // Future session
-    if (s.locked || s.status === 'Locked' || s.status === 'Completed') return false;
-    return true;
-  });
-
-  if (eligibleSessions.length === 0) return null;
-  
-  // Return most recent started session
-  return eligibleSessions.reduce((latest, session) => {
-    const latestTime = new Date(latest.scheduled_time).getTime();
-    const sessionTime = new Date(session.scheduled_time).getTime();
-    return sessionTime > latestTime ? session : latest;
-  });
-}
-
-/**
  * Get next upcoming session
  */
 export function getNextSession(sessions = [], eventDate = null) {
-  const now = new Date().getTime();
-  const sorted = [...sessions]
-    .filter(s => s.scheduled_time && new Date(s.scheduled_time).getTime() > now)
-    .sort((a, b) => {
-      const aTime = new Date(a.scheduled_time).getTime();
-      const bTime = new Date(b.scheduled_time).getTime();
-      return aTime - bTime;
-    });
+  const sorted = [...sessions].sort((a, b) => {
+    const aTime = a.scheduled_time ? new Date(a.scheduled_time).getTime() : Infinity;
+    const bTime = b.scheduled_time ? new Date(b.scheduled_time).getTime() : Infinity;
+    return aTime - bTime;
+  });
 
   return sorted.find(s => s.status !== 'Locked' && s.status !== 'Completed') || null;
 }
