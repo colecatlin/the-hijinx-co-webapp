@@ -1175,16 +1175,16 @@ export default function RegistrationDashboard() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                   <button
-                    onClick={() => window.open(`/EventProfile?id=${selectedEvent.id}`, '_blank')}
+                    onClick={() => navigate(`/EventProfile?id=${selectedEvent.id}`)}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
                   >
-                    <ExternalLink className="w-3 h-3" /> Public Page
+                    <ExternalLink className="w-3 h-3" /> Event Page
                   </button>
                   <button
-                    onClick={() => window.open(`/EventResults?id=${selectedEvent.id}`, '_blank')}
+                    onClick={() => navigate(`/EventResults?id=${selectedEvent.id}`)}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 rounded text-xs text-gray-400 hover:text-white transition-colors"
                   >
-                    <Flag className="w-3 h-3" /> Public Results
+                    <Flag className="w-3 h-3" /> Results
                   </button>
                 </div>
               </div>
