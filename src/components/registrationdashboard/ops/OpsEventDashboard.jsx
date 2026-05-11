@@ -35,31 +35,39 @@ export default function OpsEventDashboard({
   onResultsProvisional,
   onResultsOfficial,
   onResultsLocked,
+  // Pre-fetched data from EventWorkspaceShell (R7D patch)
+  sessions: preFetchedSessions = null,
+  results: preFetchedResults = null,
+  standings: preFetchedStandings = null,
+  entries: preFetchedEntries = null,
+  operationLogs: preFetchedOperationLogs = null,
 }) {
   const [selectedSessionId, setSelectedSessionId] = useState('');
   const eventId = selectedEvent?.id;
 
-  // Fetch sessions
-  const { data: rawSessions = [] } = useQuery({
+  // Use pre-fetched data if provided (from EventWorkspaceShell), otherwise fetch locally
+  const { data: rawSessions = preFetchedSessions || [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
+    enabled: !preFetchedSessions && !!eventId,
+    initialData: preFetchedSessions || [],
     ...DQ,
   });
 
   // Sorted chronologically for display
   const sessions = useMemo(() => sortSessionsChronologically(rawSessions), [rawSessions]);
 
-  // Fetch results
-  const { data: results = [] } = useQuery({
+  // Use pre-fetched results if provided
+  const { data: results = preFetchedResults || [] } = useQuery({
     queryKey: ['results', eventId],
     queryFn: () => (eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
+    enabled: !preFetchedResults && !!eventId,
+    initialData: preFetchedResults || [],
     ...DQ,
   });
 
-  // Fetch standings (for status bar)
-  const { data: standings = [] } = useQuery({
+  // Use pre-fetched standings if provided
+  const { data: standings = preFetchedStandings || [] } = useQuery({
     queryKey: ['standings', selectedEvent?.series_id, selectedEvent?.season],
     queryFn: () =>
       selectedEvent?.series_id && selectedEvent?.season
@@ -68,25 +76,27 @@ export default function OpsEventDashboard({
             season_year: selectedEvent.season,
           })
         : Promise.resolve([]),
-    enabled: !!selectedEvent?.series_id && !!selectedEvent?.season,
+    enabled: !preFetchedStandings && !!selectedEvent?.series_id && !!selectedEvent?.season,
+    initialData: preFetchedStandings || [],
     ...DQ,
   });
 
-  // Fetch series classes (for sidebar)
+  // Fetch series classes (for sidebar) — not pre-fetched
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
     ...DQ,
   });
 
-  // Fetch operation logs for sidebar activity
-  const { data: operationLogs = [] } = useQuery({
+  // Use pre-fetched operation logs if provided
+  const { data: operationLogs = preFetchedOperationLogs || [] } = useQuery({
     queryKey: ['operationLogs', eventId],
     queryFn: () =>
       eventId
         ? base44.entities.OperationLog.filter({ event_id: eventId }, '-created_date', 50)
         : Promise.resolve([]),
-    enabled: !!eventId,
+    enabled: !preFetchedOperationLogs && !!eventId,
+    initialData: preFetchedOperationLogs || [],
     ...DQ,
   });
 
@@ -95,13 +105,8 @@ export default function OpsEventDashboard({
     [sessions, selectedSessionId]
   );
 
-  // Fetch entries for operational alerts
-  const { data: entries = [] } = useQuery({
-    queryKey: ['entries', eventId],
-    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
-    ...DQ,
-  });
+  // Use pre-fetched entries if provided
+  const entries = preFetchedEntries || [];
 
   if (!selectedEvent) {
     return (

@@ -6,7 +6,7 @@
  */
 import React, { useMemo } from 'react';
 import { CheckCircle2, Circle, Zap, Lock } from 'lucide-react';
-import { calculateSessionReadiness } from '../ops/sessionReadinessCalculator';
+import { calculateSessionReadiness, getActiveSession } from '../ops/sessionReadinessCalculator';
 
 function TimelineSession({ session, results, entries, isActive, isNext, index }) {
   const readiness = useMemo(() => calculateSessionReadiness(session, entries, results), [session, entries, results]);
@@ -78,8 +78,13 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
 }
 
 export default function SessionTimelinePolished({ sessions = [], results = [], entries = [] }) {
-  const activeSession = useMemo(() => sessions.find(s => s.status === 'Live'), [sessions]);
-  const nextSession = useMemo(() => sessions.find(s => s.status !== 'Locked' && s.status !== 'Completed' && s !== activeSession), [sessions, activeSession]);
+  const activeSession = useMemo(() => getActiveSession(sessions), [sessions]);
+  const nextSession = useMemo(() => {
+    const now = new Date().getTime();
+    return sessions
+      .filter(s => s.scheduled_time && new Date(s.scheduled_time).getTime() > now && s.status !== 'Locked' && s.status !== 'Completed')
+      .sort((a, b) => new Date(a.scheduled_time).getTime() - new Date(b.scheduled_time).getTime())[0] || null;
+  }, [sessions]);
 
   if (sessions.length === 0) {
     return (

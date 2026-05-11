@@ -133,6 +133,11 @@ export default function EventWorkspaceShell({ panels }) {
               onResultsProvisional={onResultsProvisional}
               onResultsOfficial={onResultsOfficial}
               onResultsLocked={onResultsLocked}
+              sessions={sessions}
+              results={results}
+              standings={standings}
+              entries={entries}
+              operationLogs={operationLogs}
             />
           )}
 

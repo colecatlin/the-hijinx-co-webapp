@@ -6,7 +6,7 @@
  */
 import React, { useMemo, useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Zap } from 'lucide-react';
-import { calculateSessionReadiness, getNextSession, getCountdownToNext, formatCountdown } from '../ops/sessionReadinessCalculator';
+import { calculateSessionReadiness, getActiveSession, getNextSession, getCountdownToNext, formatCountdown } from '../ops/sessionReadinessCalculator';
 
 function StatusPill({ icon: IconComponent, label, value, variant = 'default', pulse = false }) {
   const styles = {
@@ -27,6 +27,7 @@ function StatusPill({ icon: IconComponent, label, value, variant = 'default', pu
 }
 
 export default function LiveStatusBar({ sessions = [], results = [], entries = [], standings = [] }) {
+  const activeSession = useMemo(() => getActiveSession(sessions), [sessions]);
   const nextSession = useMemo(() => getNextSession(sessions), [sessions]);
   const [countdown, setCountdown] = React.useState(null);
 
@@ -43,7 +44,6 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
   }, [nextSession]);
 
   const stats = useMemo(() => {
-    const activeSession = sessions.find(s => s.status === 'Live');
     const lockedSessions = sessions.filter(s => s.locked || s.status === 'Locked').length;
     const sessionsNeedingResults = sessions.filter(s =>
       s.status === 'Completed' && !results.some(r => r.session_id === s.id)
