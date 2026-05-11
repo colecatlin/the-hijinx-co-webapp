@@ -1,7 +1,7 @@
 /**
- * REVISION 7E — EventWorkspaceContext (R7E Part 1 Expansion)
+ * REVISION R7E PART 3 — EventWorkspaceContext
  * Centralizes all event-workspace-scoped data into a single context.
- * Added R7E fields for session/standings management (minimal, safe expansion).
+ * R7E Part 3: Added selectedSessionId for Results panel targeting.
  */
 import React, { createContext, useContext } from 'react';
 

@@ -1273,25 +1273,28 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
-                <div className="space-y-4">
-                  {/* Results Manager */}
-
-                  <ResultsManager
-                    dashboardContext={dashboardContext}
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent}
-                    isAdmin={isAdmin}
-                    standingsLastCalculatedAt={standingsLastCalculatedAt}
-                    onSetStandingsDirty={() => setStandingsDirty(true)}
-                    requireAdminOverride={requireAdminOverride}
-                    onShowOverrideDialog={setOverrideDialog}
-                    onResultsSaved={() => invalidateAfterOperation('results_saved', { eventId })}
-                    onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                    onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                    onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                    announcerMode={announcerMode}
-                  />
-                </div>
+               <Card className="bg-[#171717] border-gray-800">
+                 <CardHeader>
+                   <CardTitle className="text-white flex items-center gap-2">
+                     <ExternalLink className="w-5 h-5 text-blue-400" /> Results Moved to Event Workspace
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   <p className="text-gray-400 text-sm">
+                     Results management has moved to the Event Workspace to keep sessions, results, standings, and activity together in one unified event interface.
+                   </p>
+                   <p className="text-gray-500 text-xs">
+                     This ensures data integrity and prevents duplicate operational ownership across multiple UI surfaces.
+                   </p>
+                   <Button
+                     onClick={() => setActiveTab('workspace')}
+                     className="bg-blue-600 hover:bg-blue-700 gap-2"
+                   >
+                     <LayoutDashboard className="w-4 h-4" />
+                     Open Event Workspace Results
+                   </Button>
+                 </CardContent>
+               </Card>
               )}
 
               {canTab(dashboardPermissions, 'points_standings') && activeTab === 'pointsStandings' && (

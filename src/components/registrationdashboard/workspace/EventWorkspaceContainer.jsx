@@ -1,8 +1,8 @@
 /**
- * REVISION 7A — EventWorkspaceContainer
+ * REVISION R7E PART 3 — EventWorkspaceContainer
  * Shell component that wraps a selected event's operational workspace.
  * Provides EventWorkspaceContext to all child panels.
- * Does NOT rewrite or migrate any stabilized operational components.
+ * R7E Part 3: Added selectedSessionId state for Results panel targeting.
  */
 import React, { useState } from 'react';
 import { EventWorkspaceProvider } from './EventWorkspaceContext';
@@ -54,6 +54,7 @@ export default function EventWorkspaceContainer({
   onLegacyTabChange,
 }) {
   const [eventWorkspacePanel, setEventWorkspacePanel] = useState('overview');
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
 
   const contextValue = {
     selectedEvent,
@@ -71,6 +72,9 @@ export default function EventWorkspaceContainer({
     invalidateAfterOperation,
     eventWorkspacePanel,
     setEventWorkspacePanel,
+    // R7E Part 3: Session targeting for Results panel
+    selectedSessionId,
+    setSelectedSessionId,
     // Pass through protected-system callbacks untouched
     standingsDirty,
     standingsLastCalculatedAt,
@@ -85,6 +89,11 @@ export default function EventWorkspaceContainer({
     onShowOverrideDialog,
     // Legacy bridge
     onLegacyTabChange,
+    // Permission check for Results actions
+    canAction: dashboardPermissions ? (action) => {
+      if (isAdmin) return true;
+      return dashboardPermissions[action] === true || (Array.isArray(dashboardPermissions[action]) && dashboardPermissions[action].length > 0);
+    } : undefined,
   };
 
   return (

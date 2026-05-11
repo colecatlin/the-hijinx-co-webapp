@@ -19,6 +19,7 @@ import EventEntriesPanel from './panels/EventEntriesPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
 import EventSessionsPanel from './panels/EventSessionsPanel';
 import EventStandingsPanel from './panels/EventStandingsPanel';
+import EventResultsPanel from './panels/EventResultsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
@@ -162,10 +163,8 @@ export default function EventWorkspaceShell({ panels }) {
           {/* ── R7E: Standings — migrated workspace panel ── */}
           {eventWorkspacePanel === 'standings' && <EventStandingsPanel />}
 
-          {/* ── DEFERRED: Results — remains legacy-primary until R7F ownership transfer ── */}
-          {eventWorkspacePanel === 'results' && (
-            <DeferredModulePanel panelId="results" />
-          )}
+          {/* ── R7E PART 3: Results — migrated to workspace (PRIMARY SURFACE) ── */}
+          {eventWorkspacePanel === 'results' && <EventResultsPanel />}
         </div>
 
         {/* Right: Event Intelligence Rail */}
