@@ -1,3 +1,8 @@
+/**
+ * REVISION 5E — OpsEventDashboard
+ * Main orchestration component for the Race Ops operational interface.
+ * Integrates weekend timeline, session intelligence, results manager, and right sidebar.
+ */
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -8,7 +13,9 @@ import SessionControlCenter from './SessionControlCenter';
 import OpsRightSidebar from './OpsRightSidebar';
 import ResultsManager from '../ResultsManager';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { sortSessionsChronologically } from './sessionOrdering';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -21,17 +28,25 @@ export default function OpsEventDashboard({
   isAdmin,
   user,
   invalidateAfterOperation,
+  standingsLastCalculatedAt,
+  onSetStandingsDirty,
+  onResultsProvisional,
+  onResultsOfficial,
+  onResultsLocked,
 }) {
   const [selectedSessionId, setSelectedSessionId] = useState('');
   const eventId = selectedEvent?.id;
 
   // Fetch sessions
-  const { data: sessions = [] } = useQuery({
+  const { data: rawSessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => (eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([])),
     enabled: !!eventId,
     ...DQ,
   });
+
+  // Sorted chronologically for display
+  const sessions = useMemo(() => sortSessionsChronologically(rawSessions), [rawSessions]);
 
   // Fetch results
   const { data: results = [] } = useQuery({
@@ -41,7 +56,7 @@ export default function OpsEventDashboard({
     ...DQ,
   });
 
-  // Fetch standings
+  // Fetch standings (for status bar)
   const { data: standings = [] } = useQuery({
     queryKey: ['standings', selectedEvent?.series_id, selectedEvent?.season],
     queryFn: () =>
@@ -55,14 +70,14 @@ export default function OpsEventDashboard({
     ...DQ,
   });
 
-  // Fetch series classes
+  // Fetch series classes (for sidebar)
   const { data: seriesClasses = [] } = useQuery({
     queryKey: ['seriesClasses'],
     queryFn: () => base44.entities.SeriesClass.list(),
     ...DQ,
   });
 
-  // Fetch operation logs for activity
+  // Fetch operation logs for sidebar activity
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs', eventId],
     queryFn: () =>
@@ -73,7 +88,10 @@ export default function OpsEventDashboard({
     ...DQ,
   });
 
-  const selectedSession = useMemo(() => sessions.find(s => s.id === selectedSessionId), [sessions, selectedSessionId]);
+  const selectedSession = useMemo(
+    () => sessions.find(s => s.id === selectedSessionId) || null,
+    [sessions, selectedSessionId]
+  );
 
   if (!selectedEvent) {
     return (
@@ -87,7 +105,7 @@ export default function OpsEventDashboard({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Event Command Header */}
       <EventCommandHeader
         selectedEvent={selectedEvent}
@@ -106,44 +124,59 @@ export default function OpsEventDashboard({
         standings={standings}
       />
 
-      {/* Main operational area */}
-      <div className="flex gap-6">
-        {/* Left: Session Control + Results Manager */}
-        <div className="flex-1 min-w-0">
-          {/* Session Control Center */}
+      {/* Main layout: timeline + (results panel) + sidebar */}
+      <div className="flex gap-5 items-start">
+        {/* Left column: Weekend Timeline + inline Results */}
+        <div className="flex-1 min-w-0 space-y-6">
+
+          {/* Weekend Schedule / Session Control Center */}
           <SessionControlCenter
             sessions={sessions}
             results={results}
-            seriesClasses={seriesClasses}
             selectedEvent={selectedEvent}
-            onAddResults={(sessionId) => setSelectedSessionId(sessionId)}
-            onPasteResults={(sessionId) => setSelectedSessionId(sessionId)}
-            onImportCSV={(sessionId) => setSelectedSessionId(sessionId)}
+            selectedSessionId={selectedSessionId}
+            onSelectSession={setSelectedSessionId}
           />
 
-          {/* Results Manager (inline) */}
+          {/* Inline Results Manager — shown when a session is selected */}
           {selectedSession && (
-            <div className="mt-8 border-t border-gray-800 pt-6">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wide mb-4">
-                Results for {selectedSession.name}
-              </h3>
-              <ResultsManager
-                selectedEvent={selectedEvent}
-                isAdmin={isAdmin}
-                canAction={['results_save_draft', 'results_mark_provisional', 'results_publish_official', 'results_lock_session']}
-                dashboardContext={dashboardContext}
-                invalidateAfterOperation={invalidateAfterOperation}
-                standingsLastCalculatedAt={null}
-                onSetStandingsDirty={() => {}}
-                onResultsProvisional={() => {}}
-                onResultsOfficial={() => {}}
-                onResultsLocked={() => {}}
-              />
+            <div className="border border-gray-800 rounded-lg bg-[#111] overflow-hidden">
+              {/* Panel header */}
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-[#171717] border-b border-gray-800">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 text-gray-400 hover:text-white"
+                  onClick={() => setSelectedSessionId('')}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm font-semibold text-white">{selectedSession.name}</span>
+                <span className="text-xs text-gray-500">· Results</span>
+              </div>
+
+              {/* Results Manager (all logic untouched) */}
+              <div className="p-4">
+                <ResultsManager
+                  selectedEvent={selectedEvent}
+                  isAdmin={isAdmin}
+                  canAction={isAdmin
+                    ? ['results_save_draft', 'results_mark_provisional', 'results_publish_official', 'results_lock_session', 'results_unlock_session']
+                    : ['results_save_draft', 'results_mark_provisional']}
+                  dashboardContext={dashboardContext}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                  standingsLastCalculatedAt={standingsLastCalculatedAt}
+                  onSetStandingsDirty={onSetStandingsDirty}
+                  onResultsProvisional={onResultsProvisional}
+                  onResultsOfficial={onResultsOfficial}
+                  onResultsLocked={onResultsLocked}
+                />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Right Sidebar: Health + Activity */}
+        {/* Right sidebar: Session Health + Activity */}
         <OpsRightSidebar
           selectedSession={selectedSession}
           sessions={sessions}

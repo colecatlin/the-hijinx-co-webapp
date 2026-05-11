@@ -50,6 +50,7 @@ import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
 import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
+import OpsEventDashboard from '@/components/registrationdashboard/ops/OpsEventDashboard';
 import { motion } from 'framer-motion';
 import {
   Select,
@@ -1569,18 +1570,21 @@ export default function RegistrationDashboard() {
               )}
 
               {isAdmin && activeTab === 'opsCenter' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <OpsTimeline selectedEvent={selectedEvent} />
-                  </div>
-                  <div>
-                    <LiveControlPanel
-                      selectedEvent={selectedEvent}
-                      selectedSeries={selectedSeries}
-                      invalidateAfterOperation={invalidateAfterOperation}
-                    />
-                  </div>
-                </div>
+                <OpsEventDashboard
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin}
+                  user={user}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                  standingsLastCalculatedAt={standingsLastCalculatedAt}
+                  onSetStandingsDirty={() => setStandingsDirty(true)}
+                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                />
               )}
               </div>
               </Tabs>

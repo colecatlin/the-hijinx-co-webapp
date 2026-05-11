@@ -1,74 +1,72 @@
+/**
+ * REVISION 5E — LiveStatusBar
+ * Horizontal monitoring bar showing derived operational status across
+ * event, results, standings, and health dimensions.
+ */
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, AlertTriangle, TrendingUp } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
+import {
+  deriveEventOperationalStatus,
+  EVENT_STATUS_CONFIG,
+} from './sessionStateIntelligence';
 
 export default function LiveStatusBar({ selectedEvent, sessions, results, standings }) {
-  const eventStatus = selectedEvent?.status || 'Draft';
-  
-  const resultsStatus = (() => {
-    if (results.length === 0) return { label: 'Empty', color: 'bg-gray-800 text-gray-300', icon: AlertCircle };
-    const hasOfficial = results.some(r => r.status_state === 'Official' || r.status_state === 'Locked');
-    const hasDraft = results.some(r => r.status_state === 'Draft' || r.status_state === 'Provisional');
-    if (hasOfficial && !hasDraft) return { label: 'Official', color: 'bg-green-900/40 text-green-300 border-green-800', icon: CheckCircle2 };
-    if (hasDraft) return { label: 'Draft', color: 'bg-yellow-900/40 text-yellow-300 border-yellow-800', icon: AlertTriangle };
-    return { label: 'Mixed', color: 'bg-blue-900/40 text-blue-300 border-blue-800', icon: TrendingUp };
-  })();
+  // Derived event ops status
+  const derivedStatus = deriveEventOperationalStatus(sessions, results);
+  const eventStatusConfig = EVENT_STATUS_CONFIG[derivedStatus];
 
-  const standingsStatus = (() => {
-    if (!standings || standings.length === 0) return { label: 'Not Calculated', color: 'bg-gray-800 text-gray-300' };
-    return { label: 'Calculated', color: 'bg-green-900/40 text-green-300 border-green-800' };
-  })();
+  // Results health
+  const totalResults = results.length;
+  const officialResults = results.filter(r => r.status_state === 'Official' || r.status_state === 'Locked').length;
+  const draftResults = results.filter(r => r.status_state === 'Draft' || r.status_state === 'Provisional').length;
 
-  const healthStatus = (() => {
-    const hasIssues = sessions.some(s => {
-      const sessionResults = results.filter(r => r.session_id === s.id);
-      return sessionResults.some(r => !r.driver_id || !r.position);
-    });
-    if (hasIssues) return { label: 'Warnings', color: 'bg-orange-900/40 text-orange-300 border-orange-800', icon: AlertTriangle };
-    return { label: 'Healthy', color: 'bg-green-900/40 text-green-300 border-green-800', icon: CheckCircle2 };
-  })();
+  const resultsLabel =
+    totalResults === 0 ? 'No Results'
+    : officialResults === totalResults ? 'All Official'
+    : draftResults > 0 ? `${draftResults} Draft`
+    : `${officialResults}/${totalResults} Official`;
 
-  const StatusIcon = resultsStatus.icon;
+  const resultsColor =
+    totalResults === 0 ? 'text-gray-500'
+    : officialResults === totalResults ? 'text-green-400'
+    : draftResults > 0 ? 'text-yellow-400'
+    : 'text-blue-400';
+
+  // Standings
+  const standingsLabel = standings.length > 0 ? `${standings.length} entries` : 'Not calculated';
+  const standingsColor = standings.length > 0 ? 'text-green-400' : 'text-gray-500';
+
+  // Health: any session has missing results
+  const sessionsWithResults = new Set(results.map(r => r.session_id).filter(Boolean));
+  const missingSessions = sessions.filter(s => !sessionsWithResults.has(s.id)).length;
+  const healthLabel = missingSessions === 0 ? 'Healthy' : `${missingSessions} missing`;
+  const healthColor = missingSessions === 0 ? 'text-green-400' : 'text-orange-400';
+  const HealthIcon = missingSessions === 0 ? CheckCircle2 : AlertTriangle;
+
+  const Pill = ({ label, value, valueColor, icon: Icon }) => (
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1a1a] rounded border border-gray-800 text-xs">
+      {Icon && <Icon className="w-3 h-3 text-gray-500" />}
+      <span className="text-gray-500 font-medium">{label}</span>
+      <span className={`font-semibold ${valueColor}`}>{value}</span>
+    </div>
+  );
 
   return (
-    <div className="flex items-center gap-2 flex-wrap mb-6 bg-[#171717] border border-gray-800 rounded-lg p-3">
-      {/* Event Status */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded text-xs border border-gray-700 bg-[#262626]">
-        <span className="text-gray-500 uppercase tracking-wide">Event</span>
-        <Badge className={`ml-1 ${
-          eventStatus === 'Completed' ? 'bg-green-900/40 text-green-300' :
-          eventStatus === 'Live' ? 'bg-red-900/40 text-red-300' :
-          eventStatus === 'Published' ? 'bg-blue-900/40 text-blue-300' :
-          'bg-gray-800 text-gray-400'
-        }`}>
-          {eventStatus}
-        </Badge>
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Event derived status */}
+      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-semibold ${eventStatusConfig.badge}`}>
+        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${eventStatusConfig.dot}`} />
+        {eventStatusConfig.label}
       </div>
 
-      {/* Results Status */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded text-xs border border-gray-700 bg-[#262626]">
-        <StatusIcon className="w-3 h-3" />
-        <span className="text-gray-500 uppercase tracking-wide">Results</span>
-        <Badge className={resultsStatus.color}>{resultsStatus.label}</Badge>
-      </div>
+      <Pill label="Results" value={resultsLabel} valueColor={resultsColor} icon={CheckCircle2} />
+      <Pill label="Standings" value={standingsLabel} valueColor={standingsColor} icon={TrendingUp} />
+      <Pill label="Health" value={healthLabel} valueColor={healthColor} icon={HealthIcon} />
 
-      {/* Standings Status */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded text-xs border border-gray-700 bg-[#262626]">
-        <TrendingUp className="w-3 h-3 text-gray-500" />
-        <span className="text-gray-500 uppercase tracking-wide">Standings</span>
-        <Badge className={standingsStatus.color}>{standingsStatus.label}</Badge>
-      </div>
-
-      {/* Health Status */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded text-xs border border-gray-700 bg-[#262626]">
-        <healthStatus.icon className="w-3 h-3 text-gray-500" />
-        <span className="text-gray-500 uppercase tracking-wide">Health</span>
-        <Badge className={healthStatus.color}>{healthStatus.label}</Badge>
-      </div>
-
-      {/* Sessions Count */}
-      <div className="ml-auto flex items-center gap-1.5 px-2 py-1 rounded text-xs border border-gray-700 bg-[#262626] text-gray-400">
-        <span>{sessions.length} sessions</span>
+      {/* Session count */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1a1a] rounded border border-gray-800 text-xs ml-auto">
+        <Clock className="w-3 h-3 text-gray-500" />
+        <span className="text-gray-500">{sessions.length} sessions</span>
       </div>
     </div>
   );
