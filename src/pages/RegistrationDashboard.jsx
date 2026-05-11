@@ -1009,7 +1009,6 @@ export default function RegistrationDashboard() {
               </div>
                 </div>
                 </div>
-                </div>
 
                 {/* Hard Event Lock Banner */}
             {!selectedEvent && (
@@ -1687,7 +1686,6 @@ export default function RegistrationDashboard() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
     </PageShell>
   );
 }
