@@ -878,8 +878,19 @@ export default function RegistrationDashboard() {
   return (
     <PageShell>
       <div className="min-h-screen bg-[#0A0A0A]">
-        {/* Sticky Top Summary Bar — top-[108px] accounts for global nav: h-16 logo (64px) + nav links bar (~44px) */}
-         <div className="sticky top-[108px] z-40 bg-[#171717] border-b border-gray-800 px-6 py-4">
+        {/* Main Content — sidebar + workspace */}
+          <div className="flex min-h-[calc(100vh-72px)]">            <RaceCoreSidebar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              dashboardPermissions={dashboardPermissions}
+              isAdmin={isAdmin}
+              user={user}
+              selectedEvent={selectedEvent}
+            />
+          <div className="flex-1 px-6 py-8 overflow-auto">
+
+        {/* Controls Bar */}
+         <div className="bg-[#171717] border border-gray-800 rounded-lg px-5 py-4 mb-6">
            <div className="max-w-7xl mx-auto">
              {(authLoading || userLoading) && (
                <div className="text-xs text-gray-500 mb-3">Loading permissions…</div>
@@ -1060,7 +1071,7 @@ export default function RegistrationDashboard() {
                   )}
                   </div>
 
-                {/* Announcer Mode Toggle */}
+                  {/* Announcer Mode Toggle */}
                 <Button
                  onClick={() => handleAnnouncerModeToggle(!announcerMode)}
                  size="sm"
@@ -1072,18 +1083,21 @@ export default function RegistrationDashboard() {
                 </div>
                 </div>
                 </div>
+                </div>
 
-        {/* Main Content — sidebar + workspace */}
-          <div className="flex min-h-[calc(100vh-72px)]">            <RaceCoreSidebar
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              dashboardPermissions={dashboardPermissions}
-              isAdmin={isAdmin}
-              user={user}
-              selectedEvent={selectedEvent}
-            />
-          <div className="flex-1 px-6 py-8 overflow-auto">
-            {/* Hard Event Lock Banner */}
+                {/* Main Content — sidebar + workspace */}
+                <div className="flex min-h-[calc(100vh-72px)]">
+                <RaceCoreSidebar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                dashboardPermissions={dashboardPermissions}
+                isAdmin={isAdmin}
+                user={user}
+                selectedEvent={selectedEvent}
+                />
+                <div className="flex-1 px-6 py-8 overflow-auto">
+
+                {/* Hard Event Lock Banner */}
             {!selectedEvent && (
               <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
                 <div className="flex items-start gap-3">
@@ -1532,6 +1546,7 @@ export default function RegistrationDashboard() {
               </div>
               </Tabs>
           </div>
+        </div>
         </div>
 
         {/* Modals */}
