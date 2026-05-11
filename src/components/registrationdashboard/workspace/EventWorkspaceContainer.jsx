@@ -55,9 +55,14 @@ export default function EventWorkspaceContainer({
   // R7H: deep-linking support
   pendingWorkspacePanel,
   onPendingPanelApplied,
+  // R8B: route support
+  initialPanel = null,
+  routeMode = false,
 }) {
-  const [eventWorkspacePanel, setEventWorkspacePanel] = useState(pendingWorkspacePanel || 'overview');
-  const [lastWorkspacePanel, setLastWorkspacePanel] = useState(pendingWorkspacePanel || 'overview');
+  // R8B: If initialPanel is provided (from route), use it; otherwise use pendingWorkspacePanel
+  const startPanel = initialPanel || pendingWorkspacePanel || 'overview';
+  const [eventWorkspacePanel, setEventWorkspacePanel] = useState(startPanel);
+  const [lastWorkspacePanel, setLastWorkspacePanel] = useState(startPanel);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
   // R7H: Apply pending panel when it changes

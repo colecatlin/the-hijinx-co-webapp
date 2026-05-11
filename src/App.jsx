@@ -66,6 +66,7 @@ import ManageDiscounts from './pages/admin/ManageDiscounts';
 import ManageReviews from './pages/admin/ManageReviews';
 import ManageHeroSlides from './pages/admin/ManageHeroSlides';
 import ManageStorefrontSettings from './pages/admin/ManageStorefrontSettings';
+import EventFile from './pages/EventFile';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -189,6 +190,11 @@ const AuthenticatedApp = () => {
       <Route path="/admin/reviews" element={<LayoutWrapper currentPageName="ManageReviews"><ManageReviews /></LayoutWrapper>} />
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
+      
+      {/* R8B: Event-first race control routes */}
+      <Route path="/race-control/events/:eventId" element={<LayoutWrapper currentPageName="EventFile"><EventFile /></LayoutWrapper>} />
+      <Route path="/race-control/events/:eventId/:panel" element={<LayoutWrapper currentPageName="EventFile"><EventFile /></LayoutWrapper>} />
+      
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
