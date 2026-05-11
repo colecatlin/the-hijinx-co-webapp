@@ -88,34 +88,7 @@ export default function EventCommandHeader({
           </div>
         </div>
 
-        {/* Bottom row: Operational module status chips */}
-        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-gray-800/40">
-          <span className="text-[9px] uppercase tracking-widest text-gray-600 font-bold">Modules:</span>
 
-          <StatusChip
-            label="Sessions"
-            value={sessions.length}
-            variant={draftSessionsCount > 0 ? 'warning' : sessions.length > 0 ? 'success' : 'default'}
-          />
-          <StatusChip
-            label="Results"
-            value={results.length}
-            variant={resultsWithoutStatus > 0 ? 'warning' : results.length > 0 ? 'success' : 'default'}
-          />
-          <StatusChip
-            label="Entries"
-            value={entriesCount}
-            variant={entriesCount > 0 ? 'success' : 'default'}
-          />
-          {complianceFlags > 0 && (
-            <StatusChip
-              label="Compliance"
-              value={complianceFlags}
-              icon={AlertTriangle}
-              variant="warning"
-            />
-          )}
-        </div>
       </div>
     </div>
   );

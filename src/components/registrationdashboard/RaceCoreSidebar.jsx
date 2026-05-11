@@ -33,6 +33,7 @@ export default function RaceCoreSidebar({
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const isVisible = (item) => {
+    if (item.workspaceMigrated) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.ownerOnly && !isOwnerOrEditor) return false;
     if (item.href) return true;

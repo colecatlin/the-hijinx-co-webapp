@@ -4,7 +4,7 @@
  * Three-zone layout: left nav rail, center content, right intelligence rail.
  * Read-only command header + module nav + operational state widgets.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -34,6 +34,8 @@ const DQ = applyDefaultQueryOptions();
 
 // ─── Main shell — Command Center Layout (3-zone) ────────────────────────────
 export default function EventWorkspaceShell({ panels }) {
+  const [showIntelRail, setShowIntelRail] = useState(true);
+
   const {
     selectedEvent,
     selectedTrack,
@@ -116,7 +118,7 @@ export default function EventWorkspaceShell({ panels }) {
       {/* ZONE 2: 3-Column Layout (nav + content + intel) */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left: Module Navigation Rail */}
-        <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} />
+        <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} compact={false} />
 
         {/* Center: Main Content Panel */}
         <div className="flex-1 overflow-y-auto border-r border-gray-800/60 p-5">
@@ -168,14 +170,16 @@ export default function EventWorkspaceShell({ panels }) {
         </div>
 
         {/* Right: Event Intelligence Rail */}
-        <EventIntelligenceRail
-          selectedEvent={selectedEvent}
-          sessions={sessions}
-          results={results}
-          entries={entries}
-          standings={standings}
-          operationLogs={operationLogs}
-        />
+        {showIntelRail && (
+          <EventIntelligenceRail
+            selectedEvent={selectedEvent}
+            sessions={sessions}
+            results={results}
+            entries={entries}
+            standings={standings}
+            operationLogs={operationLogs}
+          />
+        )}
       </div>
     </div>
   );
