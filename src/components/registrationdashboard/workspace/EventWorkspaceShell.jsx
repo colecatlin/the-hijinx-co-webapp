@@ -1,18 +1,20 @@
 /**
- * REVISION 7A — EventWorkspaceShell
- * Visual shell for the event workspace: compact header + horizontal nav + panel area.
- * Overview panel renders OpsEventDashboard (black box, untouched).
- * All other panels show placeholder stubs for future migration.
+ * REVISION 7A Part 2 — EventWorkspaceShell
+ * Wires all workspace panels: Overview (OpsEventDashboard), Schedule, Activity,
+ * Settings, and deferred module stubs for Results/Sessions/Entries/Compliance/Standings/Media.
  */
 import React from 'react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 import OpsEventDashboard from '../ops/OpsEventDashboard';
+import EventSchedulePanel from './panels/EventSchedulePanel';
+import EventActivityPanel from './panels/EventActivityPanel';
+import EventSettingsPanel from './panels/EventSettingsPanel';
+import DeferredModulePanel from './panels/DeferredModulePanel';
 import {
   Calendar,
   MapPin,
   Layers,
   ExternalLink,
-  Radio,
 } from 'lucide-react';
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -128,19 +130,6 @@ function WorkspaceNav({ panels, activePanel, onPanelChange }) {
   );
 }
 
-// ─── Placeholder panel ────────────────────────────────────────────────────────
-function PlaceholderPanel({ label }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-      <Radio className="w-8 h-8 text-gray-700" />
-      <p className="text-sm font-semibold text-gray-500">{label}</p>
-      <p className="text-xs text-gray-700 max-w-xs leading-relaxed">
-        This workspace panel will be migrated in a future revision. Use the sidebar navigation to access the full {label.toLowerCase()} manager.
-      </p>
-    </div>
-  );
-}
-
 // ─── Main shell ───────────────────────────────────────────────────────────────
 export default function EventWorkspaceShell({ panels }) {
   const {
@@ -188,6 +177,7 @@ export default function EventWorkspaceShell({ panels }) {
 
       {/* Panel content */}
       <div className="p-5">
+        {/* ── WIRED: Overview — OpsEventDashboard black box ── */}
         {eventWorkspacePanel === 'overview' && (
           <OpsEventDashboard
             selectedEvent={selectedEvent}
@@ -206,10 +196,18 @@ export default function EventWorkspaceShell({ panels }) {
           />
         )}
 
-        {eventWorkspacePanel !== 'overview' && (
-          <PlaceholderPanel
-            label={panels.find(p => p.id === eventWorkspacePanel)?.label || eventWorkspacePanel}
-          />
+        {/* ── WIRED: Schedule — read-only WeekendProgressionTimeline ── */}
+        {eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
+
+        {/* ── WIRED: Activity — read-only OperationLog feed ── */}
+        {eventWorkspacePanel === 'activity' && <EventActivityPanel />}
+
+        {/* ── WIRED: Settings — placeholder / future config ── */}
+        {eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
+
+        {/* ── DEFERRED: Operational panels — bridge to legacy tabs ── */}
+        {['sessions', 'results', 'entries', 'compliance', 'standings', 'media'].includes(eventWorkspacePanel) && (
+          <DeferredModulePanel panelId={eventWorkspacePanel} />
         )}
       </div>
     </div>
