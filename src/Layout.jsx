@@ -607,7 +607,7 @@ export default function Layout({ children, currentPageName }) {
           </ErrorBoundary>
         </main>
 
-        <Footer />
+        {(!location.pathname.startsWith('/race-core') && !location.pathname.startsWith('/RegistrationDashboard')) && <Footer />}
       </div>
     </GoogleMapsInitializer>
   );
