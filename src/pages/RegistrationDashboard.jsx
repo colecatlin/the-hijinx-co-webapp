@@ -47,6 +47,7 @@ import TimingSyncManager from '@/components/registrationdashboard/TimingSyncMana
 import GateManager from '@/components/registrationdashboard/GateManager';
 import ExportsDataHub from '@/components/registrationdashboard/ExportsDataHub';
 import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
+import EventWorkspaceContainer from '@/components/registrationdashboard/workspace/EventWorkspaceContainer';
 import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
@@ -1080,6 +1081,31 @@ export default function RegistrationDashboard() {
 
              {/* Lazy-mounted tabs: only render active tab content */}
             <div className="mt-6">
+              {canTab(dashboardPermissions, 'overview') && activeTab === 'workspace' && selectedEvent && (
+                <EventWorkspaceContainer
+                  selectedEvent={selectedEvent}
+                  selectedTrack={selectedTrack}
+                  selectedSeries={selectedSeries}
+                  eventId={eventId}
+                  organizationType={organizationType}
+                  organizationId={organizationId}
+                  seasonYear={seasonYear}
+                  dashboardContext={dashboardContext}
+                  dashboardPermissions={dashboardPermissions}
+                  isAdmin={isAdmin}
+                  user={user}
+                  requireAdminOverride={requireAdminOverride}
+                  invalidateAfterOperation={invalidateAfterOperation}
+                  standingsDirty={standingsDirty}
+                  standingsLastCalculatedAt={standingsLastCalculatedAt}
+                  onSetStandingsDirty={() => setStandingsDirty(true)}
+                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  onLegacyTabChange={setActiveTab}
+                />
+              )}
+
               {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
                 <RaceCoreHome
                   dashboardContext={dashboardContext}

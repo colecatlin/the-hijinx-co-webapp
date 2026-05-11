@@ -21,6 +21,7 @@ import {
   BookOpen,
   User,
   MapPin,
+  MonitorPlay,
 } from 'lucide-react';
 
 /**
@@ -43,7 +44,8 @@ export const RACE_CORE_NAV_GROUPS = [
     id: 'home',
     label: 'Overview',
     items: [
-      { tab: 'overview', label: 'Overview', icon: LayoutDashboard, canTabKey: 'overview' },
+      { tab: 'workspace', label: 'Event Workspace', icon: MonitorPlay, canTabKey: 'overview', requiresEvent: true },
+      { tab: 'overview',  label: 'System Overview', icon: LayoutDashboard, canTabKey: 'overview' },
     ],
   },
   {
