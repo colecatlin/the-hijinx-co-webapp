@@ -17,6 +17,8 @@ import EventMediaPanel from './panels/EventMediaPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventEntriesPanel from './panels/EventEntriesPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
+import EventSessionsPanel from './panels/EventSessionsPanel';
+import EventStandingsPanel from './panels/EventStandingsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
@@ -154,9 +156,15 @@ export default function EventWorkspaceShell({ panels }) {
           {/* ── WIRED: Entries ── */}
           {eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
 
-          {/* ── DEFERRED: Sessions / Results / Standings ── */}
-          {['sessions', 'results', 'standings'].includes(eventWorkspacePanel) && (
-            <DeferredModulePanel panelId={eventWorkspacePanel} />
+          {/* ── R7E: Sessions — migrated workspace panel ── */}
+          {eventWorkspacePanel === 'sessions' && <EventSessionsPanel />}
+
+          {/* ── R7E: Standings — migrated workspace panel ── */}
+          {eventWorkspacePanel === 'standings' && <EventStandingsPanel />}
+
+          {/* ── DEFERRED: Results — remains legacy-primary until R7F ownership transfer ── */}
+          {eventWorkspacePanel === 'results' && (
+            <DeferredModulePanel panelId="results" />
           )}
         </div>
 

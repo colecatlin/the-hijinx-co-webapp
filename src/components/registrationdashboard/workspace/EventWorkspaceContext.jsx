@@ -1,8 +1,7 @@
 /**
- * REVISION 7A — EventWorkspaceContext
+ * REVISION 7E — EventWorkspaceContext (R7E Part 1 Expansion)
  * Centralizes all event-workspace-scoped data into a single context.
- * This does NOT introduce new permission logic — it simply re-exposes
- * existing data that RegistrationDashboard already resolves.
+ * Added R7E fields for session/standings management (minimal, safe expansion).
  */
 import React, { createContext, useContext } from 'react';
 

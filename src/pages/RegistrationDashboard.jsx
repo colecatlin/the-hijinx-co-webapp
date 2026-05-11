@@ -1102,6 +1102,13 @@ export default function RegistrationDashboard() {
                   onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                   onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                   onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
+                  sessions={sessions}
+                  onClearDirty={() => setStandingsDirty(false)}
+                  onStandingsCalculated={() => {
+                    setStandingsLastCalculatedAt(new Date().toISOString());
+                    invalidateAfterOperation('standings_recalculated', { seriesId: selectedEvent?.series_id, eventId });
+                  }}
+                  onShowOverrideDialog={setOverrideDialog}
                   onLegacyTabChange={setActiveTab}
                 />
               )}

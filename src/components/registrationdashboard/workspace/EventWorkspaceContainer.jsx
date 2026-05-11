@@ -45,6 +45,11 @@ export default function EventWorkspaceContainer({
   onResultsProvisional,
   onResultsOfficial,
   onResultsLocked,
+  // R7E: sessions/standings workspace fields
+  sessions,
+  onClearDirty,
+  onStandingsCalculated,
+  onShowOverrideDialog,
   // Legacy activeTab bridge — for navigating back to old tabs if needed
   onLegacyTabChange,
 }) {
@@ -73,6 +78,11 @@ export default function EventWorkspaceContainer({
     onResultsProvisional,
     onResultsOfficial,
     onResultsLocked,
+    // R7E: session/standings workspace fields
+    sessions: sessions || [],
+    onClearDirty,
+    onStandingsCalculated,
+    onShowOverrideDialog,
     // Legacy bridge
     onLegacyTabChange,
   };
