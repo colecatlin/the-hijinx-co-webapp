@@ -1,10 +1,14 @@
 /**
- * REVISION 7B — EventIntelligenceRail
+ * REVISION 7D — EventIntelligenceRail
  * Right-side intelligence rail showing operational status and recent activity.
+ * Includes readiness score, timeline, alerts, and activity feed.
  * Read-only widgets with operational state.
  */
 import React, { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import EventReadinessScore from './EventReadinessScore';
+import SessionTimelinePolished from './SessionTimelinePolished';
+import OperationalAlertStack from './OperationalAlertStack';
 
 function IntelligenceWidget({ title, items, isEmpty }) {
   return (
@@ -70,68 +74,28 @@ export default function EventIntelligenceRail({
   }, [operationLogs]);
 
   return (
-    <div className="w-72 flex-shrink-0 space-y-3">
-      {/* Event Status */}
-      <IntelligenceWidget
-        title="Event Status"
-        items={[
-          { label: `${selectedEvent?.status || 'Draft'} event`, icon: Clock },
-          { label: `${entries.length} entries`, icon: null },
-          { label: selectedEvent?.published_flag ? 'Published' : 'Draft visibility', icon: null },
-        ]}
-        isEmpty={!selectedEvent}
+    <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto p-3">
+      {/* Event Readiness Score */}
+      <EventReadinessScore
+        selectedEvent={selectedEvent}
+        sessions={sessions}
+        entries={entries}
+        results={results}
+        standings={standings}
       />
 
-      {/* Sessions */}
-      <IntelligenceWidget
-        title="Sessions"
-        items={[
-          stats.nextSession && { label: `Next: ${stats.nextSession.name}`, icon: Clock },
-          stats.drafts > 0 && { label: `${stats.drafts} draft`, icon: AlertTriangle },
-          stats.locked > 0 && { label: `${stats.locked} locked`, icon: CheckCircle2 },
-        ].filter(Boolean)}
-        isEmpty={sessions.length === 0}
+      {/* Operational Alert Stack */}
+      <OperationalAlertStack
+        selectedEvent={selectedEvent}
+        sessions={sessions}
+        results={results}
+        entries={entries}
       />
 
-      {/* Results */}
-      <IntelligenceWidget
-        title="Results"
-        items={[
-          stats.resultsDraft > 0 && { label: `${stats.resultsDraft} draft`, icon: AlertTriangle },
-          stats.resultsOfficial > 0 && { label: `${stats.resultsOfficial} official`, icon: CheckCircle2 },
-          stats.resultsLocked > 0 && { label: `${stats.resultsLocked} locked`, icon: CheckCircle2 },
-        ].filter(Boolean)}
-        isEmpty={results.length === 0}
-      />
+      {/* Session Timeline */}
+      <SessionTimelinePolished sessions={sessions} results={results} entries={entries} />
 
-      {/* Compliance */}
-      {stats.complianceIssues > 0 && (
-        <IntelligenceWidget
-          title="Compliance Alerts"
-          items={[
-            { label: `${stats.complianceIssues} flags`, icon: AlertTriangle },
-          ]}
-          isEmpty={false}
-        />
-      )}
 
-      {/* Standings */}
-      <IntelligenceWidget
-        title="Standings"
-        items={[
-          stats.standingsCalculated
-            ? { label: 'Calculated', icon: CheckCircle2 }
-            : { label: 'Not calculated', icon: Clock },
-        ]}
-        isEmpty={false}
-      />
-
-      {/* Recent Activity */}
-      <IntelligenceWidget
-        title="Recent Activity"
-        items={recentActivity}
-        isEmpty={operationLogs.length === 0}
-      />
     </div>
   );
 }

@@ -21,7 +21,7 @@ import DeferredModulePanel from './panels/DeferredModulePanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
 import EventIntelligenceRail from './EventIntelligenceRail';
-import { ExternalLink } from 'lucide-react';
+import LiveStatusBar from './LiveStatusBar';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -106,6 +106,9 @@ export default function EventWorkspaceShell({ panels }) {
         results={results}
         entries={entries}
       />
+
+      {/* ZONE 1B: Live Operations Status Bar */}
+      <LiveStatusBar sessions={sessions} results={results} entries={entries} standings={standings} />
 
       {/* ZONE 2: 3-Column Layout (nav + content + intel) */}
       <div className="flex flex-1 min-h-0 overflow-hidden">

@@ -11,6 +11,7 @@ import EventCommandHeader from './EventCommandHeader';
 import LiveStatusBar from './LiveStatusBar';
 import SessionControlCenter from './SessionControlCenter';
 import OpsRightSidebar from './OpsRightSidebar';
+import OperationsSnapshot from '../workspace/OperationsSnapshot';
 import ResultsManager from '../ResultsManager';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, ArrowLeft, Trophy } from 'lucide-react';
@@ -94,6 +95,14 @@ export default function OpsEventDashboard({
     [sessions, selectedSessionId]
   );
 
+  // Fetch entries for operational alerts
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
   if (!selectedEvent) {
     return (
       <Card className="bg-[#171717] border-gray-800">
@@ -121,6 +130,15 @@ export default function OpsEventDashboard({
       <LiveStatusBar
         selectedEvent={selectedEvent}
         sessions={sessions}
+        results={results}
+        standings={standings}
+      />
+
+      {/* Operations Snapshot — enhanced overview */}
+      <OperationsSnapshot
+        selectedEvent={selectedEvent}
+        sessions={sessions}
+        entries={entries}
         results={results}
         standings={standings}
       />
