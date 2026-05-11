@@ -12,6 +12,7 @@ import { ExternalLink, LayoutDashboard } from 'lucide-react';
 export default function WorkspaceRedirectCard({ 
   moduleName = 'Module',
   description = 'This module now lives inside the Event Workspace so all event operations stay inside the same event file.',
+  panel = 'overview',
   onOpenWorkspace 
 }) {
   return (
@@ -30,7 +31,7 @@ export default function WorkspaceRedirectCard({
           Legacy navigation is being preserved during migration.
         </p>
         <Button
-          onClick={onOpenWorkspace}
+          onClick={() => onOpenWorkspace(panel)}
           className="bg-blue-600 hover:bg-blue-700 gap-2"
         >
           <LayoutDashboard className="w-4 h-4" />

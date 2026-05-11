@@ -4,7 +4,7 @@
  * Provides EventWorkspaceContext to all child panels.
  * R7E Part 3: Added selectedSessionId state for Results panel targeting.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EventWorkspaceProvider } from './EventWorkspaceContext';
 import EventWorkspaceShell from './EventWorkspaceShell';
 
@@ -52,9 +52,27 @@ export default function EventWorkspaceContainer({
   onShowOverrideDialog,
   // Legacy activeTab bridge — for navigating back to old tabs if needed
   onLegacyTabChange,
+  // R7H: deep-linking support
+  pendingWorkspacePanel,
+  onPendingPanelApplied,
 }) {
-  const [eventWorkspacePanel, setEventWorkspacePanel] = useState('overview');
+  const [eventWorkspacePanel, setEventWorkspacePanel] = useState(pendingWorkspacePanel || 'overview');
+  const [lastWorkspacePanel, setLastWorkspacePanel] = useState(pendingWorkspacePanel || 'overview');
   const [selectedSessionId, setSelectedSessionId] = useState(null);
+
+  // R7H: Apply pending panel when it changes
+  useEffect(() => {
+    if (pendingWorkspacePanel) {
+      setEventWorkspacePanel(pendingWorkspacePanel);
+      setLastWorkspacePanel(pendingWorkspacePanel);
+      onPendingPanelApplied?.();
+    }
+  }, [pendingWorkspacePanel, onPendingPanelApplied]);
+
+  const handleSetEventWorkspacePanel = (panel) => {
+    setEventWorkspacePanel(panel);
+    setLastWorkspacePanel(panel);
+  };
 
   const contextValue = {
     selectedEvent,
@@ -71,7 +89,8 @@ export default function EventWorkspaceContainer({
     requireAdminOverride,
     invalidateAfterOperation,
     eventWorkspacePanel,
-    setEventWorkspacePanel,
+    setEventWorkspacePanel: handleSetEventWorkspacePanel,
+    lastWorkspacePanel,
     // R7E Part 3: Session targeting for Results panel
     selectedSessionId,
     setSelectedSessionId,

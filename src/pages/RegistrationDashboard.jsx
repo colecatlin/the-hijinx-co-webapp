@@ -223,6 +223,7 @@ export default function RegistrationDashboard() {
     searchParams.get('eventId') || ''
   );
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [pendingWorkspacePanel, setPendingWorkspacePanel] = useState(null);
   const [editingEventId, setEditingEventId] = useState('');
   const [announcerMode, setAnnouncerMode] = useState(searchParams.get('announcer') === '1');
   const [orgAccessDenied, setOrgAccessDenied] = useState(false);
@@ -1111,6 +1112,8 @@ export default function RegistrationDashboard() {
                   }}
                   onShowOverrideDialog={setOverrideDialog}
                   onLegacyTabChange={setActiveTab}
+                  pendingWorkspacePanel={pendingWorkspacePanel}
+                  onPendingPanelApplied={() => setPendingWorkspacePanel(null)}
                 />
               )}
 
@@ -1172,7 +1175,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Sessions"
                   description="Session and class management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="sessions"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1180,7 +1187,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Entries"
                   description="Entry management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="entries"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1188,7 +1199,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Compliance"
                   description="Compliance management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="compliance"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1215,7 +1230,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Tech"
                   description="Tech inspection management now lives inside the Event Workspace (Compliance panel) so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="compliance"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1223,7 +1242,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Results"
                   description="Results management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="results"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1231,7 +1254,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Standings"
                   description="Standings management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="standings"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1258,7 +1285,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Activity"
                   description="Activity and audit logging now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="activity"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1349,7 +1380,11 @@ export default function RegistrationDashboard() {
                 <WorkspaceRedirectCard 
                   moduleName="Media"
                   description="Media management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  onOpenWorkspace={() => setActiveTab('workspace')}
+                  panel="media"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
