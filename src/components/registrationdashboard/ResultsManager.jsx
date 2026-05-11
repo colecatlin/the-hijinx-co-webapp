@@ -91,16 +91,21 @@ export default function ResultsManager({
     queryKey: ['sessions', eventId],
     queryFn: () => {
       if (!eventId) return [];
-      // Fetch and sort by session_order then scheduled_time
+      // Sort by run_order (schema field) → scheduled_time → created_date fallback.
+      // NOTE: session_order does not exist on the Session schema — run_order is the correct field.
       return base44.entities.Session.filter({ event_id: eventId }).then(all =>
         all.sort((a, b) => {
-          const orderA = a.session_order ?? 0;
-          const orderB = b.session_order ?? 0;
+          const orderA = a.run_order ?? 9999;
+          const orderB = b.run_order ?? 9999;
           if (orderA !== orderB) return orderA - orderB;
           if (a.scheduled_time && b.scheduled_time) {
             return new Date(a.scheduled_time) - new Date(b.scheduled_time);
           }
-          return 0;
+          if (a.scheduled_time) return -1;
+          if (b.scheduled_time) return 1;
+          const createdA = a.created_date ? new Date(a.created_date) : new Date(0);
+          const createdB = b.created_date ? new Date(b.created_date) : new Date(0);
+          return createdA - createdB;
         })
       );
     },

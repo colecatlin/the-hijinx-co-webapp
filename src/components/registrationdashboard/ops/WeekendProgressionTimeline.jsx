@@ -27,6 +27,20 @@ export default function WeekendProgressionTimeline({
 }) {
   const [collapsedDays, setCollapsedDays] = useState({});
 
+  const allCollapsed = Object.keys(collapsedDays).length > 0 &&
+    Object.values(collapsedDays).every(Boolean);
+
+  const toggleAllDays = () => {
+    const dayGroups = groupSessionsByDay(sessions, selectedEvent?.event_date);
+    if (allCollapsed) {
+      setCollapsedDays({});
+    } else {
+      const collapsed = {};
+      dayGroups.forEach(({ dayLabel }) => { collapsed[dayLabel] = true; });
+      setCollapsedDays(collapsed);
+    }
+  };
+
   const eventStartDate = selectedEvent?.event_date;
   const dayGroups = groupSessionsByDay(sessions, eventStartDate);
 
@@ -51,13 +65,19 @@ export default function WeekendProgressionTimeline({
 
   return (
     <div className="space-y-4">
-      {/* Event-level derived status */}
+      {/* Event-level derived status + Collapse All toggle */}
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xs text-gray-500 uppercase tracking-wide">Weekend Status</span>
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold border ${eventStatusConfig.badge}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${eventStatusConfig.dot}`} />
           {eventStatusConfig.label}
         </span>
+        <button
+          onClick={toggleAllDays}
+          className="ml-auto text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded border border-gray-800 hover:border-gray-600"
+        >
+          {allCollapsed ? 'Expand All' : 'Collapse All'}
+        </button>
       </div>
 
       {dayGroups.map(({ dayLabel, sessions: daySessions }) => {

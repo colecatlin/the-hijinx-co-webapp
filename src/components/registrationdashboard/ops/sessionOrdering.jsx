@@ -8,6 +8,14 @@
 /**
  * Sort sessions chronologically:
  * Priority: scheduled_time date → scheduled_time time → run_order → session_number → created_date
+ *
+ * run_order day convention (fallback only, used when scheduled_time is absent):
+ *   run_order can optionally follow a hundreds-prefix convention to indicate relative day:
+ *     100–199 = Day 1
+ *     200–299 = Day 2
+ *     300–399 = Day 3
+ *   This is a manual operator convention — it is NOT enforced by the schema.
+ *   When scheduled_time is present it always takes precedence over run_order for day grouping.
  */
 export function sortSessionsChronologically(sessions) {
   return [...sessions].sort((a, b) => {
@@ -106,6 +114,13 @@ export function groupBySessionType(sessions) {
 /**
  * Get a human-readable label for a session, including round/heat context.
  * E.g. "Pro 4 Final — Round 2", "Pro 2 Heat 3"
+ *
+ * Heat numbering note:
+ *   `heat_number` is NOT a field in the Session entity schema (as of 5E).
+ *   Heat labeling currently falls back to `session_number` for identification.
+ *   If session.heat_number is ever set (e.g. from a future schema addition or
+ *   external import), it will be used preferentially over session_number.
+ *   No schema change is made in 5E — this is documented for future reference.
  */
 export function getSessionDisplayLabel(session, seriesClasses, eventClasses) {
   const className =
@@ -119,7 +134,7 @@ export function getSessionDisplayLabel(session, seriesClasses, eventClasses) {
 
   let sessionLabel = session.session_type || 'Session';
   if (session.round_number) sessionLabel += ` — Round ${session.round_number}`;
-  else if (session.heat_number) sessionLabel += ` ${session.heat_number}`;
+  else if (session.heat_number) sessionLabel += ` ${session.heat_number}`; // non-schema, future-safe
   else if (session.session_number) sessionLabel += ` ${session.session_number}`;
   parts.push(sessionLabel);
 
