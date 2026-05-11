@@ -8,6 +8,7 @@ import { useEventWorkspace } from './EventWorkspaceContext';
 import OpsEventDashboard from '../ops/OpsEventDashboard';
 import EventSchedulePanel from './panels/EventSchedulePanel';
 import EventActivityPanel from './panels/EventActivityPanel';
+import EventAuditLogPanel from './panels/EventAuditLogPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
 import {
@@ -199,8 +200,8 @@ export default function EventWorkspaceShell({ panels }) {
         {/* ── WIRED: Schedule — read-only WeekendProgressionTimeline ── */}
         {eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
 
-        {/* ── WIRED: Activity — read-only OperationLog feed ── */}
-        {eventWorkspacePanel === 'activity' && <EventActivityPanel />}
+        {/* ── WIRED: Activity — AuditLogManager (black box, admin-guarded) ── */}
+        {eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
 
         {/* ── WIRED: Settings — placeholder / future config ── */}
         {eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
