@@ -12,6 +12,7 @@ import EventAuditLogPanel from './panels/EventAuditLogPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
 import EventTechPanel from './panels/EventTechPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
+import EventEntriesPanel from './panels/EventEntriesPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
 import {
@@ -215,8 +216,11 @@ export default function EventWorkspaceShell({ panels }) {
         {/* ── WIRED: Compliance — TechManager + ComplianceManager black boxes ── */}
         {eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
 
+        {/* ── WIRED: Entries — EntriesManager black box with URL filter isolation ── */}
+        {eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
+
         {/* ── DEFERRED: Operational panels — bridge to legacy tabs ── */}
-        {['sessions', 'results', 'entries', 'standings'].includes(eventWorkspacePanel) && (
+        {['sessions', 'results', 'standings'].includes(eventWorkspacePanel) && (
           <DeferredModulePanel panelId={eventWorkspacePanel} />
         )}
       </div>
