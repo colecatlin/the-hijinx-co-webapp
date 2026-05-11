@@ -290,7 +290,7 @@ export async function calculateStandingsForSession({ session, event, resultsList
       status: 'success',
       entity_name: 'Standings',
       event_id: event.id,
-      message: `Standings applied from Final session "${session.name}" (${driverIds.length} drivers)`,
+      message: `Standings applied from scoring session "${session.name}" (${driverIds.length} drivers)`,
       metadata: {
         event_id: event.id,
         session_id: session.id,
@@ -381,7 +381,7 @@ export async function recomputeStandingsForFinalSession({ session, event, result
       status: 'success',
       entity_name: 'Standings',
       event_id: event.id,
-      message: `Standings recomputed from Final session "${session.name}" (${driverIds.length} drivers, reverted prior: ${!!priorLedger})`,
+      message: `Standings recomputed from scoring session "${session.name}" (${driverIds.length} drivers, reverted prior: ${!!priorLedger})`,
       metadata: {
         event_id: event.id,
         session_id: session.id,

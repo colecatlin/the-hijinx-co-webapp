@@ -8,6 +8,7 @@ import { Plus, Edit2, Trash2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import SessionForm from './SessionForm';
 import { format, parseISO } from 'date-fns';
+import { isSessionLocked, isOperationalSession } from '@/components/registrationdashboard/sessionLifecycle';
 
 export default function SessionManager({ eventId, eventName }) {
   const [showForm, setShowForm] = useState(false);
@@ -161,7 +162,9 @@ export default function SessionManager({ eventId, eventName }) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-600 hover:bg-red-50"
+                      className="text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={isOperationalSession(session)}
+                      title={isOperationalSession(session) ? 'Operational sessions must be managed through Race Ops.' : undefined}
                       onClick={() => {
                         if (confirm(`Delete session "${session.name}"?`)) {
                           deleteMutation.mutate(session.id);

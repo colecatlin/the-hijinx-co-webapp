@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 const RESULT_FIELDS = [
   { key: 'position', label: 'Position' },
@@ -135,6 +135,13 @@ export default function ResultsBulkUpload({ onDone }) {
   if (step === 'upload') {
     return (
       <div className="space-y-6">
+        <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 flex gap-3">
+          <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-800">
+            <p className="font-semibold mb-1">Legacy Bulk Import Tool</p>
+            <p>Results created here may not appear in Race Ops session workflows. For operational race weekend management, use <strong>Race Ops → Results Manager</strong>.</p>
+          </div>
+        </div>
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-1">Event *</label>
           <Select value={eventId} onValueChange={setEventId}>

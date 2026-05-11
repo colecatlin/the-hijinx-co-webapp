@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { isOperationalSession, isSessionLocked } from '@/components/registrationdashboard/sessionLifecycle';
+import { SESSION_STATE_CONFIG } from '@/components/registrationdashboard/ops/sessionStateIntelligence';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
@@ -188,13 +189,18 @@ export default function ManageSessions() {
                     <td className="px-6 py-4 text-sm text-gray-600">{session.session_type}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{session.laps || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs rounded ${
-                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        session.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {session.status}
-                      </span>
+                      {(() => {
+                        const stateKey = session.status === 'Locked' ? 'locked'
+                          : session.status === 'Official' ? 'official'
+                          : session.status === 'Provisional' ? 'provisional'
+                          : 'pending';
+                        const cfg = SESSION_STATE_CONFIG[stateKey];
+                        return (
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border ${cfg.badge}`}>
+                            {cfg.icon} {cfg.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Button variant="ghost" size="sm" onClick={() => setSelectedSessionForEdit(session)} disabled={isOperationalSession(session)}>
