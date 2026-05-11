@@ -60,10 +60,13 @@ export default function SessionCard({
             <p className="text-sm font-semibold text-white leading-tight truncate">{displayLabel}</p>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               {timeStr && <span className="text-xs text-gray-500">{timeStr}</span>}
-              {scoring && (
-                <span className="flex items-center gap-0.5 text-xs text-amber-400">
-                  <Trophy className="w-2.5 h-2.5" /> Pts
+              {/* Part 5 + 7 — scoring indicator */}
+              {scoring ? (
+                <span className="flex items-center gap-0.5 text-xs text-amber-400 font-medium">
+                  <Trophy className="w-2.5 h-2.5" /> Scores
                 </span>
+              ) : (
+                <span className="text-xs text-gray-600">⚪ Non-scoring</span>
               )}
               {session.round_number && (
                 <span className="text-xs text-gray-400 font-mono">R{session.round_number}</span>

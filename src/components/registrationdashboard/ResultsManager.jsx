@@ -198,10 +198,18 @@ export default function ResultsManager({
     return map;
   }, [allEntries]);
 
+  // Part 3 — session label now includes abbreviated date when scheduled_time is available
   const getSessionLabel = (s) => {
     const cls = s.series_class_id ? classesMap[s.series_class_id]?.class_name : s.class_name;
     const num = s.session_number ? ` #${s.session_number}` : '';
-    return `${cls ? cls + ' – ' : ''}${s.session_type}${num}${s.name && s.name !== s.session_type ? ': ' + s.name : ''}`;
+    const round = s.round_number ? ` — Round ${s.round_number}` : '';
+    const baseLabel = `${cls ? cls + ' · ' : ''}${s.session_type}${num}${round}${s.name && s.name !== s.session_type ? ': ' + s.name : ''}`;
+    if (s.scheduled_time) {
+      const d = new Date(s.scheduled_time);
+      const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+      return `${dateStr} · ${baseLabel}`;
+    }
+    return baseLabel;
   };
 
   // Class options: prefer EventClass ids that have entries; fallback to all EventClasses
@@ -358,8 +366,10 @@ export default function ResultsManager({
       if (newStatus === 'Official' || newStatus === 'Provisional') {
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
-      if (newStatus === 'Official' && selectedSession?.session_type === 'Final') {
-        // Recompute standings (handles idempotent revert+apply for Final sessions)
+      // Standings trigger: Final AND Feature both score toward standings (5F consistency fix)
+      const isScoringSessionType = selectedSession?.session_type === 'Final' || selectedSession?.session_type === 'Feature';
+      if (newStatus === 'Official' && isScoringSessionType) {
+        // Recompute standings (handles idempotent revert+apply for scoring sessions)
         const sessionResults = await base44.entities.Results.filter({
           event_id: eventId,
           session_id: selectedSession.id,
@@ -385,7 +395,7 @@ export default function ResultsManager({
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
       if (newStatus === 'Locked' && onResultsLocked) onResultsLocked();
-      if (newStatus === 'Locked' && selectedSession?.session_type === 'Final') {
+      if (newStatus === 'Locked' && isScoringSessionType) {
         invalidateAfterOperation('standings_updated', { eventId });
       }
     },
@@ -701,8 +711,21 @@ export default function ResultsManager({
               </div>
             )}
 
+            {/* Scoring indicator — Part 5 */}
+            {(selectedSession?.session_type === 'Final' || selectedSession?.session_type === 'Feature') ? (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-900/20 border border-amber-800/40">
+                <span className="text-xs">🏆</span>
+                <span className="text-xs text-amber-300 font-medium">Scores toward standings</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-gray-800/40 border border-gray-700/50">
+                <span className="text-xs">⚪</span>
+                <span className="text-xs text-gray-500">Non-scoring session</span>
+              </div>
+            )}
+
             {/* PointsConfig visibility */}
-            {selectedSession?.session_type === 'Final' && (
+            {(selectedSession?.session_type === 'Final' || selectedSession?.session_type === 'Feature') && (
               <PointsConfigStatusBadge
                 {...pointsConfigStatus}
                 sessionType={selectedSession?.session_type}

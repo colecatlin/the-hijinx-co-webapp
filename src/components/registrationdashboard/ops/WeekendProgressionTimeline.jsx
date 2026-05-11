@@ -15,6 +15,13 @@ import {
   EVENT_STATUS_CONFIG,
 } from './sessionStateIntelligence';
 import SessionCard from './SessionCard';
+import ClassProgressionView from './ClassProgressionView';
+
+// Part 4 — View mode toggle labels
+const VIEW_MODES = [
+  { value: 'day', label: 'By Day' },
+  { value: 'class', label: 'By Class' },
+];
 
 export default function WeekendProgressionTimeline({
   sessions,
@@ -26,6 +33,7 @@ export default function WeekendProgressionTimeline({
   onSelectSession,
 }) {
   const [collapsedDays, setCollapsedDays] = useState({});
+  const [viewMode, setViewMode] = useState('day'); // 'day' | 'class'
 
   const allCollapsed = Object.keys(collapsedDays).length > 0 &&
     Object.values(collapsedDays).every(Boolean);
@@ -65,22 +73,55 @@ export default function WeekendProgressionTimeline({
 
   return (
     <div className="space-y-4">
-      {/* Event-level derived status + Collapse All toggle */}
-      <div className="flex items-center gap-2 mb-2">
+      {/* Event-level derived status + view mode toggle + Collapse All */}
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
         <span className="text-xs text-gray-500 uppercase tracking-wide">Weekend Status</span>
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold border ${eventStatusConfig.badge}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${eventStatusConfig.dot}`} />
           {eventStatusConfig.label}
         </span>
-        <button
-          onClick={toggleAllDays}
-          className="ml-auto text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded border border-gray-800 hover:border-gray-600"
-        >
-          {allCollapsed ? 'Expand All' : 'Collapse All'}
-        </button>
+
+        {/* Part 4 — View mode toggle */}
+        <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-gray-800 overflow-hidden">
+          {VIEW_MODES.map(mode => (
+            <button
+              key={mode.value}
+              onClick={() => setViewMode(mode.value)}
+              className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                viewMode === mode.value
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50'
+              }`}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+
+        {viewMode === 'day' && (
+          <button
+            onClick={toggleAllDays}
+            className="ml-auto text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded border border-gray-800 hover:border-gray-600"
+          >
+            {allCollapsed ? 'Expand All' : 'Collapse All'}
+          </button>
+        )}
       </div>
 
-      {dayGroups.map(({ dayLabel, sessions: daySessions }) => {
+      {/* Class arc view — Part 4 */}
+      {viewMode === 'class' && (
+        <ClassProgressionView
+          sessions={sessions}
+          results={results}
+          eventClasses={eventClasses}
+          seriesClasses={seriesClasses}
+          selectedEvent={selectedEvent}
+          selectedSessionId={selectedSessionId}
+          onSelectSession={onSelectSession}
+        />
+      )}
+
+      {viewMode === 'day' && dayGroups.map(({ dayLabel, sessions: daySessions }) => {
         const isCollapsed = !!collapsedDays[dayLabel];
         const typeGroups = groupBySessionType(daySessions);
 

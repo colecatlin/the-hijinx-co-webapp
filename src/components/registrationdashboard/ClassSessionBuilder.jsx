@@ -32,8 +32,8 @@ const EMPTY_CLASS_FORM = {
 };
 const EMPTY_SESSION_FORM = {
   event_class_id: '', session_type: 'Practice', name: '', session_number: '',
-  round_number: '', scheduled_time: '', duration_minutes: '', laps: '', 
-  input_source: 'Manual', status: 'Draft', advancement_rules: '',
+  round_number: '', scheduled_time: '', duration_minutes: '', laps: '',
+  run_order: '', input_source: 'Manual', status: 'Draft', advancement_rules: '',
 };
 
 export default function ClassSessionBuilder({
@@ -62,6 +62,8 @@ export default function ClassSessionBuilder({
   const [quickGenDialog, setQuickGenDialog] = useState(null);
   const [heatInputs, setHeatInputs] = useState({ number_of_entries: '', cars_per_heat: '' });
   const [selectedClassForGen, setSelectedClassForGen] = useState(null);
+  // Part 2 — optional date for quick-create generators
+  const [quickGenDate, setQuickGenDate] = useState('');
 
   const sharedOpts = {
     invalidateAfterOperation,
@@ -208,10 +210,11 @@ export default function ClassSessionBuilder({
   // ── Session handlers ──────────────────────────────────────────────────────
   const openAddSession = (classGroup) => {
     setEditingSession(null);
+    const nextRunOrder = sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0;
     setSessionForm({
       ...EMPTY_SESSION_FORM,
       event_class_id: classGroup.id,
-      session_order: String(classGroup.sessions.length),
+      run_order: String(nextRunOrder),
     });
     setSessionDialog(true);
   };
@@ -227,6 +230,7 @@ export default function ClassSessionBuilder({
       scheduled_time: session.scheduled_time || '',
       duration_minutes: session.duration_minutes != null ? String(session.duration_minutes) : '',
       laps: session.laps != null ? String(session.laps) : '',
+      run_order: session.run_order != null ? String(session.run_order) : '',
       input_source: session.input_source || 'Manual',
       status: session.status || 'Draft',
       advancement_rules: session.advancement_rules || '',
@@ -247,12 +251,14 @@ export default function ClassSessionBuilder({
       scheduled_time: sessionForm.scheduled_time || undefined,
       duration_minutes: sessionForm.duration_minutes ? Number(sessionForm.duration_minutes) : undefined,
       laps: sessionForm.laps ? Number(sessionForm.laps) : undefined,
+      run_order: sessionForm.run_order !== ''
+        ? Number(sessionForm.run_order)
+        : editingSession
+          ? editingSession.run_order
+          : (sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0),
       input_source: sessionForm.input_source,
       status: sessionForm.status,
       advancement_rules: sessionForm.advancement_rules || undefined,
-      run_order: editingSession
-        ? editingSession.run_order
-        : (sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0),
     };
     if (editingSession) {
       await updateSession({ id: editingSession.id, data: payload });
@@ -313,6 +319,9 @@ export default function ClassSessionBuilder({
     const maxRunOrder = sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0;
     let sessionsToCreate = [];
 
+    // Part 2 — inherit quickGenDate as scheduled_time (noon local time for day-only assignment)
+    const scheduledTime = quickGenDate ? `${quickGenDate}T12:00` : undefined;
+
     if (type === 'heats') {
       const entries = heatInputs.number_of_entries ? Number(heatInputs.number_of_entries) : 0;
       const perHeat = heatInputs.cars_per_heat ? Number(heatInputs.cars_per_heat) : 1;
@@ -326,6 +335,7 @@ export default function ClassSessionBuilder({
           session_type: 'Heat',
           name: `Heat ${i}`,
           session_number: i,
+          scheduled_time: scheduledTime,
           input_source: 'Manual',
           status: 'Draft',
           run_order: maxRunOrder + i - 1,
@@ -346,6 +356,7 @@ export default function ClassSessionBuilder({
           series_class_id: classGroup.series_class_id,
           session_type: config.session_type,
           name: config.name,
+          scheduled_time: scheduledTime,
           input_source: 'Manual',
           status: 'Draft',
           run_order: maxRunOrder,
@@ -358,6 +369,7 @@ export default function ClassSessionBuilder({
       toast.success(`${sessionsToCreate.length} session${sessionsToCreate.length === 1 ? '' : 's'} created`);
       setQuickGenDialog(null);
       setHeatInputs({ number_of_entries: '', cars_per_heat: '' });
+      setQuickGenDate('');
     } catch (err) {
       toast.error('Failed to create sessions');
     }
@@ -441,6 +453,19 @@ export default function ClassSessionBuilder({
                   {sortedSessions.length === 0 ? (
                     <div className="text-center py-4 space-y-3">
                       <p className="text-xs text-gray-500">No sessions in this class</p>
+                      {/* Part 2 — quick-gen date selector */}
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-gray-500 whitespace-nowrap">Session Date (optional)</label>
+                          <Input
+                            type="date"
+                            value={quickGenDate}
+                            onChange={e => setQuickGenDate(e.target.value)}
+                            className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-7 w-40"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-600">Scheduled date improves multi-day event organization.</p>
+                      </div>
                       <div className="flex flex-wrap justify-center gap-2">
                         <Button onClick={() => generateSessions('practice', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Practice
@@ -455,7 +480,7 @@ export default function ClassSessionBuilder({
                           <Zap className="w-3 h-3 mr-1" /> LCQ
                         </Button>
                         <Button onClick={() => generateSessions('feature', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
-                          <Zap className="w-3 h-3 mr-1" /> Feature
+                          <Zap className="w-3 h-3 mr-1" /> Feature 🏆
                         </Button>
                       </div>
                       <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-gray-700 text-gray-300 w-full">
@@ -600,9 +625,19 @@ export default function ClassSessionBuilder({
                 <Select value={sessionForm.session_type} onValueChange={(v) => setSessionForm({ ...sessionForm, session_type: v })}>
                   <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
-                    {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'].map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t === 'Final' || t === 'Feature' ? `${t} 🏆` : t}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {/* Part 5 — scoring indicator */}
+                {(sessionForm.session_type === 'Final' || sessionForm.session_type === 'Feature') ? (
+                  <p className="text-xs text-amber-400 mt-1">🏆 Scores toward standings</p>
+                ) : (
+                  <p className="text-xs text-gray-600 mt-1">⚪ Non-scoring session</p>
+                )}
               </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session Name *</label>
@@ -628,6 +663,12 @@ export default function ClassSessionBuilder({
                 <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
                 <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
                 </div>
+              {/* Part 6 — run_order with day convention hint */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Run Order</label>
+                <Input type="number" value={sessionForm.run_order} onChange={(e) => setSessionForm({ ...sessionForm, run_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Auto" />
+                <p className="text-[10px] text-gray-600 mt-0.5">Convention: 100s = Day 1, 200s = Day 2, 300s = Day 3</p>
+              </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Input Source</label>
                 <Select value={sessionForm.input_source} onValueChange={(v) => setSessionForm({ ...sessionForm, input_source: v })}>
@@ -721,6 +762,12 @@ export default function ClassSessionBuilder({
             <div>
               <label className="text-xs text-gray-400 block mb-1">Cars Per Heat</label>
               <Input type="number" value={heatInputs.cars_per_heat} onChange={(e) => setHeatInputs({ ...heatInputs, cars_per_heat: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 8" />
+            </div>
+            {/* Part 2 — date assignment in heat dialog */}
+            <div>
+              <label className="text-xs text-gray-400 block mb-1">Session Date (optional)</label>
+              <Input type="date" value={quickGenDate} onChange={(e) => setQuickGenDate(e.target.value)} className="bg-[#1A1A1A] border-gray-600 text-white" />
+              <p className="text-[10px] text-gray-600 mt-0.5">Scheduled date improves multi-day event organization.</p>
             </div>
             <p className="text-xs text-gray-500">
               {heatInputs.number_of_entries && heatInputs.cars_per_heat

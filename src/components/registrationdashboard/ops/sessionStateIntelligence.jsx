@@ -31,6 +31,13 @@ export function deriveSessionOperationalState(session, sessionResults) {
 
 /**
  * Config map: state → label, color classes, indicator dot color.
+ *
+ * Part 7 — Standardized badge palette:
+ *   GREEN   = official, healthy, standings applied
+ *   YELLOW  = advisory (draft with results, duplicate warning)
+ *   RED     = blocking (missing results, invalid rows)
+ *   BLUE    = informational (provisional, non-scoring)
+ *   PURPLE  = locked
  */
 export const SESSION_STATE_CONFIG = {
   locked: {
@@ -58,7 +65,7 @@ export const SESSION_STATE_CONFIG = {
     icon: '△',
   },
   missing_results: {
-    label: 'Missing Results',
+    label: 'No Results',
     badge: 'bg-red-900/30 text-red-300 border border-red-800/50',
     dot: 'bg-red-400',
     icon: '!',
@@ -105,11 +112,12 @@ export function deriveStandingsTag(session, sessionResults) {
   return 'scoring';
 }
 
+// Part 7 — standardized standings tag badges
 export const STANDINGS_TAG_CONFIG = {
-  counted: { label: 'Standings: Applied', color: 'text-green-400' },
-  pending_results: { label: 'Standings: Pending', color: 'text-yellow-400' },
-  scoring: { label: 'Scoring Session', color: 'text-blue-400' },
-  non_scoring: { label: 'Non-Scoring', color: 'text-gray-500' },
+  counted: { label: 'Standings: Applied', color: 'text-green-400' },     // GREEN — applied
+  pending_results: { label: 'Standings: Pending', color: 'text-yellow-400' }, // YELLOW — advisory
+  scoring: { label: 'Scoring Session', color: 'text-blue-400' },          // BLUE — informational
+  non_scoring: { label: 'Non-Scoring', color: 'text-gray-500' },          // BLUE/GRAY — informational
   skipped: { label: 'Skipped', color: 'text-gray-600' },
 };
 
