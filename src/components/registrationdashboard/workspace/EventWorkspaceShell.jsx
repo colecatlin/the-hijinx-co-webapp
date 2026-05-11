@@ -11,6 +11,7 @@ import EventActivityPanel from './panels/EventActivityPanel';
 import EventAuditLogPanel from './panels/EventAuditLogPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
 import EventTechPanel from './panels/EventTechPanel';
+import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
 import {
@@ -211,8 +212,8 @@ export default function EventWorkspaceShell({ panels }) {
         {/* ── WIRED: Media — MediaTabContent black box ── */}
         {eventWorkspacePanel === 'media' && <EventMediaPanel />}
 
-        {/* ── WIRED: Compliance / Tech — TechManager black box ── */}
-        {eventWorkspacePanel === 'compliance' && <EventTechPanel />}
+        {/* ── WIRED: Compliance — TechManager + ComplianceManager black boxes ── */}
+        {eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
 
         {/* ── DEFERRED: Operational panels — bridge to legacy tabs ── */}
         {['sessions', 'results', 'entries', 'standings'].includes(eventWorkspacePanel) && (
