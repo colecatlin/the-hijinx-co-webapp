@@ -1,141 +1,35 @@
 /**
- * REVISION 7A Part 2 — EventWorkspaceShell
- * Wires all workspace panels: Overview (OpsEventDashboard), Schedule, Activity,
- * Settings, and deferred module stubs for Results/Sessions/Entries/Compliance/Standings/Media.
+ * REVISION 7B — EventWorkspaceShell
+ * RaceCore Command Center Visual System
+ * Three-zone layout: left nav rail, center content, right intelligence rail.
+ * Read-only command header + module nav + operational state widgets.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { useEventWorkspace } from './EventWorkspaceContext';
 import OpsEventDashboard from '../ops/OpsEventDashboard';
 import EventSchedulePanel from './panels/EventSchedulePanel';
 import EventActivityPanel from './panels/EventActivityPanel';
 import EventAuditLogPanel from './panels/EventAuditLogPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
-import EventTechPanel from './panels/EventTechPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventEntriesPanel from './panels/EventEntriesPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
-import {
-  Calendar,
-  MapPin,
-  Layers,
-  ExternalLink,
-} from 'lucide-react';
+import EventCommandHeader from './EventCommandHeader';
+import EventWorkspaceNav from './EventWorkspaceNav';
+import EventIntelligenceRail from './EventIntelligenceRail';
+import { ExternalLink } from 'lucide-react';
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
-function StatusBadge({ status }) {
-  const map = {
-    Live:        'bg-red-900/60 text-red-300 border-red-700/50',
-    Completed:   'bg-green-900/40 text-green-300 border-green-800/40',
-    Published:   'bg-blue-900/40 text-blue-300 border-blue-800/40',
-    Draft:       'bg-gray-800 text-gray-400 border-gray-700',
-    PendingApproval: 'bg-amber-900/40 text-amber-300 border-amber-700/40',
-    Cancelled:   'bg-red-950/40 text-red-500 border-red-900/40',
-  };
-  const cls = map[status] || map.Draft;
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${cls}`}>
-      {status === 'Live' && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1.5" />}
-      {status || 'Draft'}
-    </span>
-  );
-}
+const DQ = applyDefaultQueryOptions();
 
-// ─── Compact event header ─────────────────────────────────────────────────────
-function WorkspaceEventHeader({ selectedEvent, selectedTrack, selectedSeries, isAdmin }) {
-  if (!selectedEvent) return null;
 
-  const dateStr = selectedEvent.event_date
-    ? selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.event_date
-      ? `${selectedEvent.event_date} – ${selectedEvent.end_date}`
-      : selectedEvent.event_date
-    : null;
 
-  return (
-    <div
-      className="px-5 py-3 border-b border-gray-800/60 flex items-center gap-4 flex-wrap"
-      style={{ background: 'rgba(10,12,14,0.85)' }}
-    >
-      {/* Event name + status */}
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-black text-white truncate">{selectedEvent.name}</span>
-            <StatusBadge status={selectedEvent.status} />
-          </div>
-          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-            {selectedTrack && (
-              <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                <MapPin className="w-3 h-3" /> {selectedTrack.name}
-              </span>
-            )}
-            {selectedSeries && (
-              <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                <Layers className="w-3 h-3" /> {selectedSeries.name}
-              </span>
-            )}
-            {dateStr && (
-              <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                <Calendar className="w-3 h-3" /> {dateStr}
-              </span>
-            )}
-            {selectedEvent.season && (
-              <span className="text-[11px] text-gray-600">Season {selectedEvent.season}</span>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Right: permission scope + public links */}
-      <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-        {isAdmin && (
-          <span className="text-[10px] px-2 py-1 bg-teal-900/30 text-teal-400 border border-teal-800/40 rounded font-bold uppercase tracking-wider">
-            Admin
-          </span>
-        )}
-        {selectedEvent.published_flag && (
-          <a
-            href={`/EventProfile?id=${selectedEvent.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-teal-400 transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" /> Public Page
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
 
-// ─── Horizontal workspace nav ─────────────────────────────────────────────────
-function WorkspaceNav({ panels, activePanel, onPanelChange }) {
-  return (
-    <div
-      className="flex items-center gap-0.5 px-4 border-b border-gray-800/60 overflow-x-auto scrollbar-hide"
-      style={{ background: 'rgba(8,10,12,0.7)' }}
-    >
-      {panels.map(p => {
-        const isActive = activePanel === p.id;
-        return (
-          <button
-            key={p.id}
-            onClick={() => onPanelChange(p.id)}
-            className={`px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${
-              isActive
-                ? 'border-teal-500 text-teal-300'
-                : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
-            }`}
-          >
-            {p.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── Main shell ───────────────────────────────────────────────────────────────
+// ─── Main shell — Command Center Layout (3-zone) ────────────────────────────
 export default function EventWorkspaceShell({ panels }) {
   const {
     selectedEvent,
@@ -155,74 +49,123 @@ export default function EventWorkspaceShell({ panels }) {
     setEventWorkspacePanel,
   } = useEventWorkspace();
 
+  // Fetch operational data for intelligence rail
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id ? base44.entities.Session.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
+  const { data: results = [] } = useQuery({
+    queryKey: ['results', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id ? base44.entities.Results.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', selectedEvent?.id],
+    queryFn: () => (selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
+  const { data: standings = [] } = useQuery({
+    queryKey: ['standings', selectedEvent?.series_id, selectedEvent?.season],
+    queryFn: () =>
+      selectedEvent?.series_id && selectedEvent?.season
+        ? base44.entities.Standings.filter({
+            series_id: selectedEvent.series_id,
+            season_year: selectedEvent.season,
+          })
+        : Promise.resolve([]),
+    enabled: !!selectedEvent?.series_id && !!selectedEvent?.season,
+    ...DQ,
+  });
+
+  const { data: operationLogs = [] } = useQuery({
+    queryKey: ['operationLogs', selectedEvent?.id],
+    queryFn: () =>
+      selectedEvent?.id
+        ? base44.entities.OperationLog.filter({ event_id: selectedEvent.id }, '-created_date', 20)
+        : Promise.resolve([]),
+    enabled: !!selectedEvent?.id,
+    ...DQ,
+  });
+
   return (
-    <div
-      className="rounded-xl overflow-hidden border border-gray-800/70"
-      style={{
-        background: 'rgba(8,10,12,0.82)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)',
-      }}
-    >
-      {/* Compact event header */}
-      <WorkspaceEventHeader
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: 'rgba(8,10,12,0.82)' }}>
+      {/* ZONE 1: Persistent Command Header (top) */}
+      <EventCommandHeader
         selectedEvent={selectedEvent}
         selectedTrack={selectedTrack}
         selectedSeries={selectedSeries}
-        isAdmin={isAdmin}
+        eventWorkspacePanel={eventWorkspacePanel}
+        sessions={sessions}
+        results={results}
+        entries={entries}
       />
 
-      {/* Horizontal panel nav */}
-      <WorkspaceNav
-        panels={panels}
-        activePanel={eventWorkspacePanel}
-        onPanelChange={setEventWorkspacePanel}
-      />
+      {/* ZONE 2: 3-Column Layout (nav + content + intel) */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Left: Module Navigation Rail */}
+        <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} />
 
-      {/* Panel content */}
-      <div className="p-5">
-        {/* ── WIRED: Overview — OpsEventDashboard black box ── */}
-        {eventWorkspacePanel === 'overview' && (
-          <OpsEventDashboard
-            selectedEvent={selectedEvent}
-            selectedTrack={selectedTrack}
-            selectedSeries={selectedSeries}
-            dashboardContext={dashboardContext}
-            dashboardPermissions={dashboardPermissions}
-            isAdmin={isAdmin}
-            user={user}
-            invalidateAfterOperation={invalidateAfterOperation}
-            standingsLastCalculatedAt={standingsLastCalculatedAt}
-            onSetStandingsDirty={onSetStandingsDirty}
-            onResultsProvisional={onResultsProvisional}
-            onResultsOfficial={onResultsOfficial}
-            onResultsLocked={onResultsLocked}
-          />
-        )}
+        {/* Center: Main Content Panel */}
+        <div className="flex-1 overflow-y-auto border-r border-gray-800/60 p-5">
+          {/* ── WIRED: Overview — OpsEventDashboard ── */}
+          {eventWorkspacePanel === 'overview' && (
+            <OpsEventDashboard
+              selectedEvent={selectedEvent}
+              selectedTrack={selectedTrack}
+              selectedSeries={selectedSeries}
+              dashboardContext={dashboardContext}
+              dashboardPermissions={dashboardPermissions}
+              isAdmin={isAdmin}
+              user={user}
+              invalidateAfterOperation={invalidateAfterOperation}
+              standingsLastCalculatedAt={standingsLastCalculatedAt}
+              onSetStandingsDirty={onSetStandingsDirty}
+              onResultsProvisional={onResultsProvisional}
+              onResultsOfficial={onResultsOfficial}
+              onResultsLocked={onResultsLocked}
+            />
+          )}
 
-        {/* ── WIRED: Schedule — read-only WeekendProgressionTimeline ── */}
-        {eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
+          {/* ── WIRED: Schedule ── */}
+          {eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
 
-        {/* ── WIRED: Activity — AuditLogManager (black box, admin-guarded) ── */}
-        {eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
+          {/* ── WIRED: Activity ── */}
+          {eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
 
-        {/* ── WIRED: Settings — placeholder / future config ── */}
-        {eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
+          {/* ── WIRED: Settings ── */}
+          {eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
 
-        {/* ── WIRED: Media — MediaTabContent black box ── */}
-        {eventWorkspacePanel === 'media' && <EventMediaPanel />}
+          {/* ── WIRED: Media ── */}
+          {eventWorkspacePanel === 'media' && <EventMediaPanel />}
 
-        {/* ── WIRED: Compliance — TechManager + ComplianceManager black boxes ── */}
-        {eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
+          {/* ── WIRED: Compliance ── */}
+          {eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
 
-        {/* ── WIRED: Entries — EntriesManager black box with URL filter isolation ── */}
-        {eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
+          {/* ── WIRED: Entries ── */}
+          {eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
 
-        {/* ── DEFERRED: Operational panels — bridge to legacy tabs ── */}
-        {['sessions', 'results', 'standings'].includes(eventWorkspacePanel) && (
-          <DeferredModulePanel panelId={eventWorkspacePanel} />
-        )}
+          {/* ── DEFERRED: Sessions / Results / Standings ── */}
+          {['sessions', 'results', 'standings'].includes(eventWorkspacePanel) && (
+            <DeferredModulePanel panelId={eventWorkspacePanel} />
+          )}
+        </div>
+
+        {/* Right: Event Intelligence Rail */}
+        <EventIntelligenceRail
+          selectedEvent={selectedEvent}
+          sessions={sessions}
+          results={results}
+          entries={entries}
+          standings={standings}
+          operationLogs={operationLogs}
+        />
       </div>
     </div>
   );
