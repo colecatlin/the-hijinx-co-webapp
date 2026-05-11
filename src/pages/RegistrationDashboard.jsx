@@ -52,6 +52,7 @@ import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuic
 import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
 import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
 import OpsEventDashboard from '@/components/registrationdashboard/ops/OpsEventDashboard';
+import WorkspaceRedirectCard from '@/components/registrationdashboard/workspace/WorkspaceRedirectCard';
 import { motion } from 'framer-motion';
 import {
   Select,
@@ -1168,71 +1169,27 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'classes_sessions') && activeTab === 'classesSessions' && (
-                selectedEvent ? (
-                  <ClassSessionBuilder
-                    dashboardContext={dashboardContext}
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent}
-                    eventId={selectedEvent.id}
-                    seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
-                    isAdmin={isAdmin}
-                    requireAdminOverride={requireAdminOverride}
-                    onShowOverrideDialog={setOverrideDialog}
-                    onSessionSaved={() => invalidateAfterOperation('session_updated', { eventId: selectedEvent.id })}
-                    onSessionStatusChanged={() => invalidateAfterOperation('session_status_changed', { eventId: selectedEvent.id })}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-gray-400">Select an event to manage classes and sessions</p>
-                    </CardContent>
-                  </Card>
-                )
+                <WorkspaceRedirectCard 
+                  moduleName="Sessions"
+                  description="Session and class management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'entries') && activeTab === 'entries' && (
-                isAdmin || announcerMode ? (
-                  selectedEvent ? (
-                    <EntriesManager
-                      dashboardContext={dashboardContext}
-                      dashboardPermissions={dashboardPermissions}
-                      selectedEvent={selectedEvent}
-                      eventId={selectedEvent.id}
-                      seriesId={organizationType === 'series' ? organizationId : selectedEvent.series_id}
-                      onEntrySaved={() => invalidateAfterOperation('entries_updated', { eventId: selectedEvent.id })}
-                      announcerMode={announcerMode}
-                    />
-                  ) : (
-                    <Card className="bg-[#171717] border-gray-800">
-                      <CardContent className="py-12 text-center">
-                        <p className="text-gray-400">Select an event to manage entries</p>
-                      </CardContent>
-                    </Card>
-                  )
-                ) : (
-                  <DriverRegistrationPanel
-                    selectedEvent={selectedEvent}
-                    user={user}
-                  />
-                )
+                <WorkspaceRedirectCard 
+                  moduleName="Entries"
+                  description="Entry management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'compliance') && activeTab === 'compliance' && (
-                selectedEvent ? (
-                  <ComplianceManager 
-                    dashboardContext={dashboardContext} 
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent}
-                    onComplianceSeverityChange={setComplianceSeverity}
-                    onComplianceUpdated={() => invalidateAfterOperation('compliance_updated', { eventId: selectedEvent.id })}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-gray-400">Select an event to view compliance</p>
-                    </CardContent>
-                  </Card>
-                )
+                <WorkspaceRedirectCard 
+                  moduleName="Compliance"
+                  description="Compliance management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'checkin') && activeTab === 'checkIn' && (
@@ -1255,64 +1212,26 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'tech') && activeTab === 'tech' && (
-                selectedEvent ? (
-                  <TechManager 
-                    dashboardContext={dashboardContext} 
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent} 
-                    user={user}
-                    onTechUpdated={() => invalidateAfterOperation('tech_updated', { eventId: selectedEvent.id })}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-gray-400">Select an event to manage tech inspection</p>
-                    </CardContent>
-                  </Card>
-                )
+                <WorkspaceRedirectCard 
+                  moduleName="Tech"
+                  description="Tech inspection management now lives inside the Event Workspace (Compliance panel) so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
-               <Card className="bg-[#171717] border-gray-800">
-                 <CardHeader>
-                   <CardTitle className="text-white flex items-center gap-2">
-                     <ExternalLink className="w-5 h-5 text-blue-400" /> Results Moved to Event Workspace
-                   </CardTitle>
-                 </CardHeader>
-                 <CardContent className="space-y-4">
-                   <p className="text-gray-400 text-sm">
-                     Results management has moved to the Event Workspace to keep sessions, results, standings, and activity together in one unified event interface.
-                   </p>
-                   <p className="text-gray-500 text-xs">
-                     This ensures data integrity and prevents duplicate operational ownership across multiple UI surfaces.
-                   </p>
-                   <Button
-                     onClick={() => setActiveTab('workspace')}
-                     className="bg-blue-600 hover:bg-blue-700 gap-2"
-                   >
-                     <LayoutDashboard className="w-4 h-4" />
-                     Open Event Workspace Results
-                   </Button>
-                 </CardContent>
-               </Card>
+                <WorkspaceRedirectCard 
+                  moduleName="Results"
+                  description="Results management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'points_standings') && activeTab === 'pointsStandings' && (
-                <PointsAndStandingsManager
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin}
-                  selectedEvent={selectedEvent}
-                  standingsDirty={standingsDirty}
-                  onClearDirty={() => setStandingsDirty(false)}
-                  onStandingsCalculated={() => {
-                    setStandingsLastCalculatedAt(new Date().toISOString());
-                    invalidateAfterOperation('standings_recalculated', {
-                      seriesId: selectedEvent?.series_id,
-                      eventId,
-                    });
-                  }}
-                  sessions={sessions}
+                <WorkspaceRedirectCard 
+                  moduleName="Standings"
+                  description="Standings management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
                 />
               )}
 
@@ -1336,17 +1255,11 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'audit_log') && activeTab === 'auditLog' && (
-                <div className="space-y-6">
-                  {isAdmin && selectedEvent && (
-                    <EdgeCaseLab selectedEvent={selectedEvent} isAdmin={isAdmin} />
-                  )}
-                  <AuditLogManager 
-                    dashboardContext={dashboardContext} 
-                    dashboardPermissions={dashboardPermissions}
-                    isAdmin={isAdmin}
-                    operationLogs={operationLogs}
-                  />
-                </div>
+                <WorkspaceRedirectCard 
+                  moduleName="Activity"
+                  description="Activity and audit logging now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
@@ -1433,33 +1346,11 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'media') && activeTab === 'media' && (
-                <Tabs defaultValue="portal" className="w-full">
-                  <TabsList className="bg-[#171717] border border-gray-800">
-                    <TabsTrigger value="portal" className="text-gray-400">Portal</TabsTrigger>
-                    <TabsTrigger value="governance" className="text-gray-400">Governance</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="portal" className="mt-6">
-                    <MediaTabContent
-                      dashboardContext={dashboardContext}
-                      selectedEvent={selectedEvent}
-                      selectedTrack={selectedTrack}
-                      selectedSeries={selectedSeries}
-                      dashboardPermissions={dashboardPermissions}
-                      invalidateAfterOperation={invalidateAfterOperation}
-                      onOpenEventBuilder={() => setActiveTab('eventBuilder')}
-                    />
-                  </TabsContent>
-                  <TabsContent value="governance" className="mt-6">
-                    <MediaGovernanceManager
-                      dashboardContext={dashboardContext}
-                      selectedEvent={selectedEvent}
-                      selectedTrack={selectedTrack}
-                      selectedSeries={selectedSeries}
-                      dashboardPermissions={dashboardPermissions}
-                      invalidateAfterOperation={invalidateAfterOperation}
-                    />
-                  </TabsContent>
-                </Tabs>
+                <WorkspaceRedirectCard 
+                  moduleName="Media"
+                  description="Media management now lives inside the Event Workspace so all event operations stay inside the same event file."
+                  onOpenWorkspace={() => setActiveTab('workspace')}
+                />
               )}
 
               {canTab(dashboardPermissions, 'media_portal') && activeTab === 'media_portal' && (
