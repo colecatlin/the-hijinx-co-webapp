@@ -16,6 +16,7 @@ import EventActivityPanel from './panels/EventActivityPanel';
 import EventAuditLogPanel from './panels/EventAuditLogPanel';
 import EventCheckInPanel from './panels/EventCheckInPanel';
 import EventExportsPanel from './panels/EventExportsPanel';
+import EventImportsPanel from './panels/EventImportsPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventEntriesPanel from './panels/EventEntriesPanel';
@@ -58,7 +59,7 @@ export default function EventWorkspaceShell({ panels }) {
     eventPermissions,
   } = useEventWorkspace();
 
-  // R8G Part 4 / R8H Part 2 / R8H Part 3: panel permission key map (mirrors EventWorkspaceNav)
+  // R8G Part 4 / R8H Part 2–4: panel permission key map (mirrors EventWorkspaceNav)
   const PANEL_PERM_KEY = {
     overview:   'canViewOverview',
     schedule:   'canViewSchedule',
@@ -68,6 +69,7 @@ export default function EventWorkspaceShell({ panels }) {
     compliance: 'canManageCompliance',
     checkin:    'canManageCheckIn',
     exports:    'canViewExports',
+    imports:    'canViewImports',
     standings:  'canManageStandings',
     media:      'canManageMedia',
     activity:   'canViewActivity',
@@ -76,7 +78,7 @@ export default function EventWorkspaceShell({ panels }) {
 
   // Build ordered list of permitted panel IDs. null → all permitted.
   const permittedPanels = useMemo(() => {
-    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','exports','standings','media','activity','settings'];
+    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','exports','imports','standings','media','activity','settings'];
     if (!eventPermissions) return allPanels;
     return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
   }, [eventPermissions]);
@@ -207,6 +209,9 @@ export default function EventWorkspaceShell({ panels }) {
 
           {/* ── R8H Part 3: Exports ── */}
           {isPanelPermitted && eventWorkspacePanel === 'exports' && <EventExportsPanel />}
+
+          {/* ── R8H Part 4: Imports ── */}
+          {isPanelPermitted && eventWorkspacePanel === 'imports' && <EventImportsPanel />}
 
           {/* ── WIRED: Entries ── */}
           {isPanelPermitted && eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
