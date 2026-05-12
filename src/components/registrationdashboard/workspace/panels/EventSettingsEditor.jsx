@@ -66,8 +66,11 @@ export default function EventSettingsEditor() {
     selectedTrack,
     selectedSeries,
     isAdmin,
+    eventPermissions,
     invalidateAfterOperation,
   } = useEventWorkspace();
+
+  const canManageSettings = isAdmin || eventPermissions?.canManageSettings === true;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -123,7 +126,10 @@ export default function EventSettingsEditor() {
   };
 
   const handleSave = async () => {
-    if (!isAdmin) return;
+    if (!canManageSettings) {
+      toast.error('You do not have permission to edit event settings.');
+      return;
+    }
     if (!validate()) return;
     setSaving(true);
     try {
@@ -158,7 +164,7 @@ export default function EventSettingsEditor() {
   const fullMgmtUrl = `/RegistrationDashboard?tab=eventBuilder&eventId=${selectedEvent.id}`;
 
   // ── Read-only mode for non-admins ───────────────────────────────────────
-  if (!isAdmin) {
+  if (!canManageSettings) {
     return (
       <div className="space-y-5 max-w-2xl">
         {/* Header */}
