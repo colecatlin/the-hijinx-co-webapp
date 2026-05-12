@@ -85,6 +85,23 @@ export default function EventWorkspaceContainer({
     setLastWorkspacePanel(panel);
   };
 
+  // R8G Part 5C: action → eventPermissions key map
+  // Only canonical, known action strings. Unknown actions → false (no silent allow).
+  const ACTION_TO_PERMISSION = {
+    results_save_draft:        'canManageResults',
+    results_mark_provisional:  'canManageResults',
+    results_publish_official:  'canPublishResults',
+    results_lock_session:      'canLockSession',
+    results_unlock_session:    'canOverrideSession',
+
+    entries_edit:              'canEditEntries',
+    entries_create:            'canEditEntries',
+    entries_delete:            'canEditEntries',
+
+    media_upload:              'canEditMedia',
+    media_delete:              'canEditMedia',
+  };
+
   const contextValue = {
     selectedEvent,
     selectedTrack,
@@ -121,11 +138,30 @@ export default function EventWorkspaceContainer({
     onLegacyTabChange,
     // R8G Part 3: event-scoped permissions from RaceControlProvider (null in embedded mode)
     eventPermissions,
-    // Permission check for Results actions
-    canAction: dashboardPermissions ? (action) => {
+    // R8G Part 5C: canAction resolution order:
+    //   1. isAdmin → true always
+    //   2. eventPermissions present → use ACTION_TO_PERMISSION map (EventFile / route mode)
+    //   3. eventPermissions null → legacy dashboardPermissions path (embedded RegistrationDashboard)
+    canAction: (action) => {
       if (isAdmin) return true;
-      return dashboardPermissions[action] === true || (Array.isArray(dashboardPermissions[action]) && dashboardPermissions[action].length > 0);
-    } : undefined,
+
+      // Event-first mode: eventPermissions is canonical source of truth
+      if (eventPermissions) {
+        const permKey = ACTION_TO_PERMISSION[action];
+        if (!permKey) return false; // unknown action → deny, do NOT silently allow
+        return !!eventPermissions[permKey];
+      }
+
+      // Legacy embedded mode: preserve existing dashboardPermissions behavior exactly
+      if (dashboardPermissions) {
+        return (
+          dashboardPermissions[action] === true ||
+          (Array.isArray(dashboardPermissions[action]) && dashboardPermissions[action].length > 0)
+        );
+      }
+
+      return false;
+    },
   };
 
   return (
