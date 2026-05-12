@@ -15,7 +15,6 @@ import { getLaunchModeConfig } from '@/components/system/launchConfig';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
-  { name: 'RaceCore Dashboard', href: '/racecore' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
     { name: 'Submit a Story', page: 'OutletSubmit' },
@@ -214,8 +213,8 @@ export default function Layout({ children, currentPageName }) {
                         onMouseEnter={() => setHoveredItem(item.name)}
                       >
                         <Link
-                          to={item.page ? createPageUrl(item.page) : '#'}
-                          className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200`}
+                           to={item.href || (item.page ? createPageUrl(item.page) : '#')}
+                           className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200`}
                           style={{
                             color: hoveredItem === item.name
                               ? '#1DA1A1'
@@ -567,7 +566,7 @@ export default function Layout({ children, currentPageName }) {
                   {navItems.map((item) => (
                     <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <Link
-                        to={createPageUrl(item.page)}
+                        to={item.href || createPageUrl(item.page)}
                         className="block py-3 text-base font-bold tracking-[0.1em] uppercase transition-colors"
                         style={{ color: isActive(item.page) ? '#1DA1A1' : 'rgba(255,255,255,0.75)' }}
                       >
@@ -608,7 +607,7 @@ export default function Layout({ children, currentPageName }) {
           </ErrorBoundary>
         </main>
 
-        {(!location.pathname.startsWith('/race-core') && !location.pathname.startsWith('/RegistrationDashboard')) && <Footer />}
+        {(!location.pathname.startsWith('/race-core') && !location.pathname.startsWith('/racecore')) && <Footer />}
       </div>
     </GoogleMapsInitializer>
   );
