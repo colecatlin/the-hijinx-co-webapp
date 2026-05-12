@@ -42,45 +42,18 @@ import {
 export const RACE_CORE_NAV_GROUPS = [
   {
     id: 'home',
-    label: 'Overview',
+    label: 'Command',
     items: [
-      { tab: 'overview',  label: 'RaceCore Overview', icon: LayoutDashboard, canTabKey: 'overview' },
+      { tab: 'overview',  label: 'RaceCore Dashboard', icon: LayoutDashboard, canTabKey: 'overview' },
       { href: '/race-control/events', label: 'Event Files', icon: MonitorPlay, canTabKey: null },
-      { tab: 'workspace', label: 'Event Workspace', icon: MonitorPlay, canTabKey: 'overview', requiresEvent: true, workspaceMigrated: true },
     ],
   },
   {
     id: 'build',
-    label: 'Planning & Setup',
+    label: 'Governance',
     items: [
       { tab: 'eventBuilder',    label: 'Event Setup',        icon: Plus,           canTabKey: 'event_builder' },
-      { tab: 'classesSessions', label: 'Classes & Sessions', icon: ClipboardCheck, canTabKey: 'classes_sessions', requiresEvent: true, workspaceMigrated: true },
-      { tab: 'entries',         label: 'Entries',            icon: Users,          canTabKey: 'entries',          requiresEvent: true, workspaceMigrated: true },
       { tab: 'integrations',    label: 'Integrations',       icon: Plug,           canTabKey: 'integrations' },
-      { tab: 'auditLog',        label: 'Audit Log',          icon: History,        canTabKey: 'audit_log', workspaceMigrated: true },
-      { tab: 'imports',         label: 'Imports',            icon: Upload,         canTabKey: 'imports', workspaceMigrated: true },
-    ],
-  },
-  {
-    id: 'operate',
-    label: 'Race Day Operations',
-    items: [
-      { tab: 'checkIn',    label: 'Check In',        icon: Car,         canTabKey: 'checkin',      requiresEvent: true, workspaceMigrated: true },
-      { tab: 'compliance', label: 'Compliance',      icon: AlertCircle, canTabKey: 'compliance',   requiresEvent: true, workspaceMigrated: true },
-      { tab: 'tech',       label: 'Tech Inspection', icon: Wrench,      canTabKey: 'tech',         requiresEvent: true, workspaceMigrated: true },
-      { tab: 'results',    label: 'Results',         icon: Flag,        canTabKey: 'results', workspaceMigrated: true },
-      { tab: 'pointsStandings', label: 'Points & Standings', icon: Trophy, canTabKey: 'points_standings', workspaceMigrated: true },
-      { tab: 'exportsDataHub',  label: 'Data Hub',   icon: Download,    canTabKey: 'exports',      requiresEvent: true, workspaceMigrated: true },
-      { tab: 'raceControlConsole', label: 'Race Control', icon: Radio,  canTabKey: 'race_control', requiresEvent: true },
-      { tab: 'gateConsole', label: 'Gate Console',   icon: DoorOpen,   canTabKey: 'gate',          requiresEvent: true },
-    ],
-  },
-  {
-    id: 'media',
-    label: 'Media & Content',
-    items: [
-      { tab: 'media',        label: 'Media Governance', icon: Camera,   canTabKey: 'media', workspaceMigrated: true },
-      { tab: 'media_portal', label: 'Media Portal',     icon: Camera,   canTabKey: 'media_portal', requiresEvent: true },
     ],
   },
   {
@@ -95,16 +68,10 @@ export const RACE_CORE_NAV_GROUPS = [
   },
   {
     id: 'admin',
-    label: 'Advanced Tools',
+    label: 'Admin Tools',
     adminOnly: true,
     items: [
-      { tab: 'opsCenter',      label: 'Ops Center',       icon: Gauge,    adminOnly: true, requiresEvent: true },
-      { tab: 'raceControl',    label: 'Race Ctrl Mgr',    icon: Radio,    ownerOnly: true, requiresEvent: true },
-      { tab: 'gateManager',    label: 'Gate Manager',     icon: DoorOpen, ownerOnly: true, requiresEvent: true },
-      { tab: 'paddock',        label: 'Paddock',          icon: Users,    ownerOnly: true, requiresEvent: true },
-      { tab: 'timing_sync',    label: 'Timing Sync',      icon: Clock,    ownerOnly: true, requiresEvent: true },
       { tab: 'announcer_pack', label: 'Announcer Pack',   icon: BookOpen, canTabKey: 'announcer_pack' },
-      { tab: 'announcer',      label: 'Announcer',        icon: Mic,      canTabKey: 'announcer', requiresEvent: true },
     ],
   },
 ];
