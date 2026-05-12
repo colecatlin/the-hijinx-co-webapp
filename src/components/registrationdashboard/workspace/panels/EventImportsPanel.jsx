@@ -52,6 +52,17 @@ export default function EventImportsPanel() {
     eventPermissions?.canManageResults === true ||
     eventPermissions?.canManageStandings === true;
 
+  // ── Type-level gating — only pass types the user can actually perform ──────
+  // When eventPermissions is absent (legacy embedded mode), pass nothing → all types shown.
+  const allowedImportTypes = useMemo(() => {
+    if (!eventPermissions) return undefined;
+    const types = [];
+    if (isAdmin || eventPermissions?.canManageEntries) types.push('entries');
+    if (isAdmin || eventPermissions?.canManageResults) types.push('results');
+    if (isAdmin || eventPermissions?.canManageStandings) types.push('standings');
+    return types;
+  }, [isAdmin, eventPermissions]);
+
   if (!canViewImports) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
@@ -68,6 +79,7 @@ export default function EventImportsPanel() {
       dashboardContext={adaptedDashboardContext}
       dashboardPermissions={dashboardPermissions}
       invalidateAfterOperation={invalidateAfterOperation}
+      allowedImportTypes={allowedImportTypes}
     />
   );
 }

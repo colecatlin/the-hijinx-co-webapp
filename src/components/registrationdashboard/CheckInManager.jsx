@@ -39,11 +39,14 @@ export default function CheckInManager({
   dashboardContext,
   dashboardPermissions,
   invalidateAfterOperation,
+  canEdit: canEditOverride, // optional explicit override from EventCheckInPanel
 }) {
   const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
   const hasAccess = canTab(dashboardPermissions, 'checkin');
-  const canEdit = ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions?.role);
+  const canEdit = typeof canEditOverride === 'boolean'
+    ? canEditOverride
+    : ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions?.role);
 
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('all');

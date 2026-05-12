@@ -38,14 +38,15 @@ export default function EventCheckInPanel() {
   }
 
   // ── Adapted dashboardPermissions ──────────────────────────────────────────
-  // When operating inside EventFile (eventPermissions present), synthesize a
-  // dashboardPermissions-compatible object so CheckInManager's internal
-  // canTab / role checks resolve correctly without modifying CheckInManager.
+  // Inject checkin: true into .tabs so CheckInManager's canTab() check passes.
+  // No longer injects a broad fake role — canEdit is passed explicitly instead.
   const adaptedDashboardPermissions = eventPermissions
     ? {
         ...dashboardPermissions,
-        role: canViewCheckIn ? 'entity_editor' : 'viewer',
-        checkin: canViewCheckIn,
+        tabs: {
+          ...(dashboardPermissions?.tabs || {}),
+          checkin: canViewCheckIn,
+        },
       }
     : dashboardPermissions;
 
@@ -57,6 +58,7 @@ export default function EventCheckInPanel() {
       dashboardContext={dashboardContext}
       dashboardPermissions={adaptedDashboardPermissions}
       invalidateAfterOperation={invalidateAfterOperation}
+      canEdit={canViewCheckIn}
     />
   );
 }

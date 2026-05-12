@@ -2,7 +2,7 @@
  * CSVImportManager.jsx
  * Bulk CSV import for Entries, Results, and Standings.
  */
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { REG_QK } from './queryKeys';
@@ -92,17 +92,38 @@ export default function CSVImportManager({
   dashboardContext,
   dashboardPermissions,
   invalidateAfterOperation,
+  allowedImportTypes, // optional — if provided, filters visible import types
 }) {
   const queryClient = useQueryClient();
   const eventId = selectedEvent?.id;
   const fileRef = useRef(null);
 
-  const [importType, setImportType] = useState('entries');
+  // ── Visible schemas based on allowedImportTypes ────────────────────────────
+  const visibleSchemas = useMemo(() => {
+    if (!allowedImportTypes || allowedImportTypes.length === 0) return SCHEMAS;
+    return Object.fromEntries(
+      Object.entries(SCHEMAS).filter(([key]) => allowedImportTypes.includes(key))
+    );
+  }, [allowedImportTypes]);
+
+  const [importType, setImportType] = useState(() => {
+    // Default to first visible type
+    if (allowedImportTypes && allowedImportTypes.length > 0) return allowedImportTypes[0];
+    return 'entries';
+  });
   const [parsedData, setParsedData] = useState(null); // { headers, rows }
   const [fileName, setFileName] = useState('');
   const [validationWarnings, setValidationWarnings] = useState([]);
   const [importing, setImporting] = useState(false);
   const [importSummary, setImportSummary] = useState(null); // { processed, skipped, created, updated }
+
+  // Reset importType when visibleSchemas changes and current type is no longer visible
+  useEffect(() => {
+    if (!visibleSchemas[importType]) {
+      const firstKey = Object.keys(visibleSchemas)[0];
+      if (firstKey) setImportType(firstKey);
+    }
+  }, [visibleSchemas, importType]);
 
   // ── Data for resolution ────────────────────────────────────────────────────
 
@@ -439,7 +460,7 @@ export default function CSVImportManager({
     );
   }
 
-  const schema = SCHEMAS[importType];
+  const schema = visibleSchemas[importType] || Object.values(visibleSchemas)[0] || SCHEMAS.entries;
   const previewRows = parsedData?.rows.slice(0, PREVIEW_ROWS) || [];
   const previewHeaders = parsedData?.headers || [];
   const hasBlockingWarnings = validationWarnings.some((w) => w.startsWith('Missing required'));
@@ -469,7 +490,7 @@ export default function CSVImportManager({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#262626] border-gray-700 text-white">
-                  {Object.entries(SCHEMAS).map(([key, s]) => (
+                  {Object.entries(visibleSchemas).map(([key, s]) => (
                     <SelectItem key={key} value={key} className="text-white focus:bg-gray-700">{s.label}</SelectItem>
                   ))}
                 </SelectContent>

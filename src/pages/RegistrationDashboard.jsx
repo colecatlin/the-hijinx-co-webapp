@@ -1208,22 +1208,15 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'checkin') && activeTab === 'checkIn' && (
-                selectedEvent ? (
-                  <CheckInManager 
-                    dashboardContext={dashboardContext} 
-                    dashboardPermissions={dashboardPermissions}
-                    selectedEvent={selectedEvent}
-                    selectedTrack={selectedTrack}
-                    selectedSeries={selectedSeries}
-                    invalidateAfterOperation={invalidateAfterOperation}
-                  />
-                ) : (
-                  <Card className="bg-[#171717] border-gray-800">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-gray-400">Select an event to check in entries</p>
-                    </CardContent>
-                  </Card>
-                )
+                <WorkspaceRedirectCard
+                  moduleName="Check-In"
+                  description="Check-In now lives inside the Event Workspace so all race-day operations stay in the same event file."
+                  panel="checkin"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
+                />
               )}
 
               {canTab(dashboardPermissions, 'tech') && activeTab === 'tech' && (
@@ -1263,10 +1256,14 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'exports') && activeTab === 'exportsDataHub' && (
-                <ExportsDataHub
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
+                <WorkspaceRedirectCard
+                  moduleName="Exports"
+                  description="Exports now live inside the Event Workspace so all data operations stay in the same event file."
+                  panel="exports"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 
@@ -1367,12 +1364,14 @@ export default function RegistrationDashboard() {
               )}
 
               {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (
-                <CSVImportManager
-                  selectedEvent={selectedEvent}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
+                <WorkspaceRedirectCard
+                  moduleName="Imports"
+                  description="Imports now live inside the Event Workspace so all data operations stay in the same event file."
+                  panel="imports"
+                  onOpenWorkspace={(panel) => {
+                    setActiveTab('workspace');
+                    setPendingWorkspacePanel(panel);
+                  }}
                 />
               )}
 

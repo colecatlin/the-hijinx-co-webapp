@@ -48,9 +48,9 @@ export default function ExportsDataHub({ selectedEvent, dashboardContext, dashbo
     enabled: !!selectedEvent.season,
   });
 
-  // Mutation for logging
+  // Mutation for logging — user-scoped so OperationLog is attributed to the authenticated user
   const logExport = useMutation({
-    mutationFn: (data) => base44.asServiceRole.entities.OperationLog.create(data),
+    mutationFn: (data) => base44.entities.OperationLog.create(data),
   });
 
   // Build maps
