@@ -16,6 +16,7 @@ const WORKSPACE_PANELS = [
   { id: 'entries',    label: 'Entries' },
   { id: 'compliance', label: 'Compliance' },
   { id: 'checkin',    label: 'Check-In' },
+  { id: 'exports',    label: 'Exports' },
   { id: 'standings',  label: 'Standings' },
   { id: 'media',      label: 'Media' },
   { id: 'activity',   label: 'Activity' },
