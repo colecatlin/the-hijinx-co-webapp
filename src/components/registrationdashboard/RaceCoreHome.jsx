@@ -118,7 +118,7 @@ export default function RaceCoreHome({
   onCreateEvent,
   onOpenImportEntries,
   onOpenQuickCreate,
-  // all events for global view — passed from parent
+  // all events for dashboard view — already filtered for non-admin in parent
   allEvents = [],
   // import logs for health signal
   importLogs = [],
@@ -207,8 +207,9 @@ export default function RaceCoreHome({
       .slice(0, 8);
   }, [globalOperationLogs, operationLogs]);
 
-  // ── System health derivations ─────────────────────────────────────────────
-  const systemHealth = useMemo(() => {
+  // ── Selected event health — only reflects current event's results/standings ─
+  // Note: This is NOT platform-wide system health. Import health is global (importLogs).
+  const selectedEventHealth = useMemo(() => {
     const hasResults = results.length > 0;
     const hasStandings = standings.length > 0;
     const failedImports = importLogs.filter(l => l.status === 'failed' || l.status === 'error').length > 0;
@@ -228,17 +229,22 @@ export default function RaceCoreHome({
   const draftCount           = allEvents.filter(e => e.status === 'Draft').length;
 
   // ── Render ────────────────────────────────────────────────────────────────
+  const dashboardSubtitle = isAdmin
+    ? 'Global command center for live events, alerts, and race-day workflows.'
+    : 'Operational view for your assigned events, alerts, and race-day workflows.';
+
   return (
     <div className="space-y-0 max-w-full bg-[#0A0A0A]">
 
       {/* ── COMMAND HEADER + OPERATIONAL TELEMETRY ─────────────────────────── */}
-      <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-800/50">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-800/50">
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-black text-white tracking-tight">RaceCore</h1>
+          <p className="text-[10px] text-gray-500 mt-1">{dashboardSubtitle}</p>
         </div>
         
         {/* Compact telemetry strip */}
-        <div className="flex items-center gap-3 text-[9px] text-gray-500 font-mono uppercase tracking-widest shrink-0">
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3 text-[9px] text-gray-500 font-mono uppercase tracking-widest shrink-0">
           {liveEvents.length > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-1 bg-red-950/30 border border-red-800/40 rounded">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -302,8 +308,8 @@ export default function RaceCoreHome({
         </div>
       )}
 
-      {/* ── GLOBAL STATUS STRIP (compact metrics) ─────────────────────────── */}
-      <div className="grid grid-cols-5 gap-1.5 mb-3">
+      {/* ── DASHBOARD STATUS STRIP (compact metrics) ─────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5 mb-3">
         <MetricCard
           label="Live Now"
           value={liveEvents.length}
@@ -343,10 +349,10 @@ export default function RaceCoreHome({
       </div>
 
       {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
-        {/* ── LEFT COLUMN (2/3 - operations focus) ─────────────────────── */}
-        <div className="col-span-2 space-y-3">
+        {/* ── LEFT COLUMN (2/3 on desktop, full width on mobile) ─────────────────────── */}
+        <div className="col-span-1 lg:col-span-2 space-y-3">
 
           {/* ACTION REQUIRED (promoted priority) */}
           {actionQueue.length > 0 && (
@@ -422,7 +428,7 @@ export default function RaceCoreHome({
 
         </div>
 
-        {/* ── RIGHT COLUMN (1/3 - operations rail) ─────────────────────────── */}
+        {/* ── RIGHT COLUMN (1/3 on desktop, full width on mobile) ─────────────────────────── */}
         <div className="col-span-1 space-y-3">
 
           {/* OPERATIONS FEED (compact, live) */}
@@ -454,19 +460,20 @@ export default function RaceCoreHome({
             </div>
           </div>
 
-          {/* SYSTEM HEALTH (telemetry) */}
+          {/* SELECTED EVENT HEALTH (selected-event scoped; imports are global) */}
           <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
               <span className="w-1.5 h-1.5 rounded-full bg-gray-700" />
-              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Telemetry</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Health</p>
+              <span className="text-[8px] text-gray-700">{selectedEvent ? '(event)' : '(global imports)'}</span>
             </div>
             <div className="px-2.5 py-2 space-y-1.5">
               {[
-                { label: 'Results',   state: systemHealth.results   },
-                { label: 'Standings', state: systemHealth.standings  },
-                { label: 'Imports',   state: systemHealth.imports    },
-                { label: 'Media',     state: systemHealth.media      },
-                { label: 'Timing',    state: systemHealth.timing     },
+                { label: 'Results',   state: selectedEventHealth.results   },
+                { label: 'Standings', state: selectedEventHealth.standings  },
+                { label: 'Imports',   state: selectedEventHealth.imports    },
+                { label: 'Media',     state: selectedEventHealth.media      },
+                { label: 'Timing',    state: selectedEventHealth.timing     },
               ].map(({ label, state }) => {
                 const stateLabel = state === 'ok' ? '✓' : state === 'warn' ? '!' : state === 'error' ? 'ERR' : '—';
                 const stateColor = state === 'ok' ? 'text-green-400' : state === 'warn' ? 'text-amber-400' : state === 'error' ? 'text-red-500' : 'text-gray-600';

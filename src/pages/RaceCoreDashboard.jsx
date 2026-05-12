@@ -381,6 +381,14 @@ export default function RaceCoreDashboard() {
     ...DQ,
   });
 
+  // ── Dashboard events: filtered for non-admin users ──────────────────────────
+  const dashboardEvents = useMemo(() => {
+    if (isAdmin) return events;
+    // Non-admin: only show events they have EntityCollaborator access to
+    const allowedEventIds = new Set(userEventCollaborators.map((c) => c.entity_id));
+    return events.filter((e) => allowedEventIds.has(e.id));
+  }, [events, isAdmin, userEventCollaborators]);
+
   // Load recent credential requests for Media Portal preview
   const { data: recentCredentialRequests = [] } = useQuery({
     queryKey: ['credential_requests_recent', organizationId],
@@ -1018,7 +1026,7 @@ export default function RaceCoreDashboard() {
                   onCreateEvent={handleCreateEvent}
                   onOpenImportEntries={() => setShowImportEntriesModal(true)}
                   onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
-                  allEvents={events}
+                  allEvents={dashboardEvents}
                   importLogs={importLogs}
                 />
               )}
