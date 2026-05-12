@@ -46,7 +46,8 @@ export const RACE_CORE_NAV_GROUPS = [
     items: [
       { tab: 'overview',  label: 'RaceCore Overview', icon: LayoutDashboard, canTabKey: 'overview' },
       { href: '/race-control/events', label: 'Event Files', icon: MonitorPlay, canTabKey: null },
-      { tab: 'workspace', label: 'Event Workspace', icon: MonitorPlay, canTabKey: 'overview', requiresEvent: true, workspaceMigrated: true },
+      // Event-specific items hidden from global sidebar; accessible only through EventFile
+      { tab: 'workspace', label: 'Event Workspace', icon: MonitorPlay, canTabKey: 'overview', requiresEvent: true, workspaceMigrated: true, globalHidden: true },
     ],
   },
   {
@@ -54,16 +55,18 @@ export const RACE_CORE_NAV_GROUPS = [
     label: 'Planning & Setup',
     items: [
       { tab: 'eventBuilder',    label: 'Event Setup',        icon: Plus,           canTabKey: 'event_builder' },
-      { tab: 'classesSessions', label: 'Classes & Sessions', icon: ClipboardCheck, canTabKey: 'classes_sessions', requiresEvent: true, workspaceMigrated: true },
-      { tab: 'entries',         label: 'Entries',            icon: Users,          canTabKey: 'entries',          requiresEvent: true, workspaceMigrated: true },
+      // Event-specific items below are hidden from global sidebar
+      { tab: 'classesSessions', label: 'Classes & Sessions', icon: ClipboardCheck, canTabKey: 'classes_sessions', requiresEvent: true, workspaceMigrated: true, globalHidden: true },
+      { tab: 'entries',         label: 'Entries',            icon: Users,          canTabKey: 'entries',          requiresEvent: true, workspaceMigrated: true, globalHidden: true },
       { tab: 'integrations',    label: 'Integrations',       icon: Plug,           canTabKey: 'integrations' },
-      { tab: 'auditLog',        label: 'Audit Log',          icon: History,        canTabKey: 'audit_log', workspaceMigrated: true },
-      { tab: 'imports',         label: 'Imports',            icon: Upload,         canTabKey: 'imports', workspaceMigrated: true },
+      { tab: 'auditLog',        label: 'Audit Log',          icon: History,        canTabKey: 'audit_log', workspaceMigrated: true, globalHidden: true },
+      { tab: 'imports',         label: 'Imports',            icon: Upload,         canTabKey: 'imports', workspaceMigrated: true, globalHidden: true },
     ],
   },
   {
     id: 'operate',
     label: 'Race Day Operations',
+    hidden: true,
     items: [
       { tab: 'checkIn',    label: 'Check In',        icon: Car,         canTabKey: 'checkin',      requiresEvent: true, workspaceMigrated: true },
       { tab: 'compliance', label: 'Compliance',      icon: AlertCircle, canTabKey: 'compliance',   requiresEvent: true, workspaceMigrated: true },
@@ -78,6 +81,7 @@ export const RACE_CORE_NAV_GROUPS = [
   {
     id: 'media',
     label: 'Media & Content',
+    hidden: true,
     items: [
       { tab: 'media',        label: 'Media Governance', icon: Camera,   canTabKey: 'media', workspaceMigrated: true },
       { tab: 'media_portal', label: 'Media Portal',     icon: Camera,   canTabKey: 'media_portal', requiresEvent: true },
@@ -98,13 +102,14 @@ export const RACE_CORE_NAV_GROUPS = [
     label: 'Advanced Tools',
     adminOnly: true,
     items: [
-      { tab: 'opsCenter',      label: 'Ops Center',       icon: Gauge,    adminOnly: true, requiresEvent: true },
-      { tab: 'raceControl',    label: 'Race Ctrl Mgr',    icon: Radio,    ownerOnly: true, requiresEvent: true },
-      { tab: 'gateManager',    label: 'Gate Manager',     icon: DoorOpen, ownerOnly: true, requiresEvent: true },
-      { tab: 'paddock',        label: 'Paddock',          icon: Users,    ownerOnly: true, requiresEvent: true },
-      { tab: 'timing_sync',    label: 'Timing Sync',      icon: Clock,    ownerOnly: true, requiresEvent: true },
+      // Event-specific advanced tools hidden; accessible through EventFile
+      { tab: 'opsCenter',      label: 'Ops Center',       icon: Gauge,    adminOnly: true, requiresEvent: true, globalHidden: true },
+      { tab: 'raceControl',    label: 'Race Ctrl Mgr',    icon: Radio,    ownerOnly: true, requiresEvent: true, globalHidden: true },
+      { tab: 'gateManager',    label: 'Gate Manager',     icon: DoorOpen, ownerOnly: true, requiresEvent: true, globalHidden: true },
+      { tab: 'paddock',        label: 'Paddock',          icon: Users,    ownerOnly: true, requiresEvent: true, globalHidden: true },
+      { tab: 'timing_sync',    label: 'Timing Sync',      icon: Clock,    ownerOnly: true, requiresEvent: true, globalHidden: true },
       { tab: 'announcer_pack', label: 'Announcer Pack',   icon: BookOpen, canTabKey: 'announcer_pack' },
-      { tab: 'announcer',      label: 'Announcer',        icon: Mic,      canTabKey: 'announcer', requiresEvent: true },
+      { tab: 'announcer',      label: 'Announcer',        icon: Mic,      canTabKey: 'announcer', requiresEvent: true, globalHidden: true },
     ],
   },
 ];
