@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useDashboardMutation from './useDashboardMutation';
+import { useEventWorkspace } from './workspace/EventWorkspaceContext';
 import ImportEntriesModal from './entries/ImportEntriesModal';
 import DriverSelfServiceDrawer from './shared/DriverSelfServiceDrawer';
 import EntryDetailDrawer from './EntryDetailDrawer';
@@ -79,9 +80,20 @@ export default function EntriesManager({
 }) {
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
-  const canEdit = dashboardPermissions
-    ? ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions.role)
-    : true;
+
+  // R8G Part 6A: prefer canAction from EventWorkspaceContext when available (EventFile mode).
+  // Falls back to legacy dashboardPermissions.role check for RegistrationDashboard embedded mode.
+  const workspace = useEventWorkspace?.();
+  const canAction = workspace?.canAction;
+  const canEdit = (() => {
+    if (typeof canAction === 'function') {
+      return canAction('entries_create') || canAction('entries_edit') || canAction('entries_delete');
+    }
+    if (dashboardPermissions) {
+      return ['admin', 'entity_owner', 'entity_editor'].includes(dashboardPermissions.role);
+    }
+    return true;
+  })();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [filters, setFilters] = useState(() => filtersFromParams(searchParams));
