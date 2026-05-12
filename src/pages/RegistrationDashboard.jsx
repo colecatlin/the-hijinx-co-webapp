@@ -1055,8 +1055,8 @@ export default function RegistrationDashboard() {
               />
             )}
 
-            {/* Event Workspace Header */}
-            {selectedEvent ? (
+            {/* Event Workspace Header — Only shown when event is selected and workspace tab active */}
+            {selectedEvent && activeTab === 'workspace' ? (
               <EventWorkspaceHeader
                 dashboardContext={dashboardContext}
                 selectedEvent={selectedEvent}
@@ -1066,15 +1066,7 @@ export default function RegistrationDashboard() {
                 canUserEditEventCore={canUserEditEventCore}
                 invalidateAfterOperation={invalidateAfterOperation}
               />
-            ) : (
-              <div className="mb-6">
-                <h1 className="text-xl font-black text-white mb-1">Race Operations</h1>
-                <p className="text-sm text-gray-500">
-                  {selectedOrgName ? selectedOrgName : 'Configure your organization above to begin'}
-                  {eventId && !selectedEvent && <span className="text-yellow-500"> · Loading event…</span>}
-                </p>
-              </div>
-            )}
+            ) : null}
 
           {/* Workspace content — sidebar drives tab selection */}
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
