@@ -58,6 +58,8 @@ export default function EventWorkspaceContainer({
   // R8B: route support
   initialPanel = null,
   routeMode = false,
+  // R8G Part 3: event-scoped permissions (null when called from RegistrationDashboard)
+  eventPermissions = null,
 }) {
   // R8C: Validate panel against known ids — defense-in-depth for route mode
   const VALID_PANEL_IDS = new Set(WORKSPACE_PANELS.map(p => p.id));
@@ -117,6 +119,8 @@ export default function EventWorkspaceContainer({
     onShowOverrideDialog,
     // Legacy bridge
     onLegacyTabChange,
+    // R8G Part 3: event-scoped permissions from RaceControlProvider (null in embedded mode)
+    eventPermissions,
     // Permission check for Results actions
     canAction: dashboardPermissions ? (action) => {
       if (isAdmin) return true;

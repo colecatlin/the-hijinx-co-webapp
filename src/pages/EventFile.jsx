@@ -1,27 +1,22 @@
 /**
- * REVISION R8C — EventFile (Standalone Polish)
- * Fixes from R8B audit:
- * D1: organizationType derived from event relationships
- * D2: dashboardContext includes orgType/orgId/routeMode
- * D4: route panel passed as initialPanel (not pendingWorkspacePanel)
- * D8: breadcrumb/back navigation strip
- * D9: full-height layout, PageShell removed from workspace render
- * Part 7: onLegacyTabChange handles eventBuilder redirect
- * Part 8: callbacks memoized with useCallback
+ * REVISION R8G Part 3 — EventFile consumes RaceControlProvider
+ * - user/isAuthenticated/isAdmin/invalidateAfterOperation sourced from provider
+ * - eventPermissions derived via getEventPermissions and passed into workspace
+ * - All existing behavior preserved; no module gating yet
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, ArrowLeft, ChevronRight, Flag } from 'lucide-react';
 import EventWorkspaceContainer from '@/components/registrationdashboard/workspace/EventWorkspaceContainer';
-import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import useEventFileAdminOverride from '@/components/registrationdashboard/workspace/useEventFileAdminOverride';
+import { useRaceControl } from '@/components/racecontrol/RaceControlProvider';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -88,7 +83,6 @@ function FullscreenCard({ children }) {
 export default function EventFile() {
   const { eventId, panel } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   // Validate panel from route — D3 fix
   const safePanel = toSafePanel(panel);
@@ -96,19 +90,15 @@ export default function EventFile() {
   const [standingsDirty, setStandingsDirty] = useState(false);
   const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  const { data: isAuthenticated, isLoading: authLoading } = useQuery({
-    queryKey: ['isAuthenticated'],
-    queryFn: () => base44.auth.isAuthenticated(),
-    ...DQ,
-  });
-
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    enabled: !!isAuthenticated,
-    ...DQ,
-  });
+  // ── Auth — sourced from RaceControlProvider ───────────────────────────────
+  const {
+    user,
+    isAuthenticated,
+    isAdmin,
+    isLoading: providerLoading,
+    invalidateAfterOperation,
+    getEventPermissions,
+  } = useRaceControl();
 
   // ── Event ─────────────────────────────────────────────────────────────────
   const { data: selectedEvent, isLoading: eventLoading, error: eventError } = useQuery({
@@ -169,11 +159,6 @@ export default function EventFile() {
 
   // ── Stable callbacks ──────────────────────────────────────────────────────
 
-  const invalidateAfterOperation = useMemo(
-    () => buildInvalidateAfterOperation(queryClient),
-    [queryClient]
-  );
-
   // R8F Part 3: real override confirmation + audit log (replaces async () => true no-op)
   const { requireAdminOverride, OverrideDialog } = useEventFileAdminOverride({
     eventId,
@@ -221,8 +206,14 @@ export default function EventFile() {
     navigate('/race-control/events');
   }, [navigate]);
 
-  // ── Permissions ───────────────────────────────────────────────────────────
-  const isAdmin = user?.role === 'admin';
+  // ── Event-scoped permissions (R8G Part 3) ─────────────────────────────────
+  const eventPermissions = useMemo(() => getEventPermissions({
+    eventId: selectedEvent?.id,
+    trackId: selectedEvent?.track_id,
+    seriesId: selectedEvent?.series_id,
+  }), [getEventPermissions, selectedEvent?.id, selectedEvent?.track_id, selectedEvent?.series_id]);
+
+  // ── Dashboard permissions (existing — unchanged) ───────────────────────────
   const dashboardPermissions = useMemo(() => {
     if (isAdmin) {
       return {
@@ -242,7 +233,7 @@ export default function EventFile() {
   }, [isAdmin]);
 
   // ── Loading ───────────────────────────────────────────────────────────────
-  if (authLoading || userLoading || eventLoading) {
+  if (providerLoading || eventLoading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <BurnoutSpinner />
@@ -347,6 +338,7 @@ export default function EventFile() {
           initialPanel={safePanel}                    // D4: route panel via initialPanel
           pendingWorkspacePanel={null}                // D4: not used in route mode
           onPendingPanelApplied={() => {}}
+          eventPermissions={eventPermissions}         // R8G Part 3: provider-derived permissions
         />
       </div>
     </div>
