@@ -34,7 +34,6 @@ export default function RaceCoreSidebar({
 
   const isVisible = (item) => {
     if (item.workspaceMigrated) return false;
-    if (item.globalHidden) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.ownerOnly && !isOwnerOrEditor) return false;
     if (item.href) return true;
@@ -100,7 +99,6 @@ export default function RaceCoreSidebar({
       )}
 
       {RACE_CORE_NAV_GROUPS.map((group) => {
-        if (group.hidden) return null;
         const visibleItems = group.items.filter(isVisible);
         if (visibleItems.length === 0) return null;
         if (group.adminOnly && !isOwnerOrEditor) return null;
