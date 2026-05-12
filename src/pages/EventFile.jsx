@@ -1,40 +1,100 @@
 /**
- * REVISION R8B — EventFile
- * Standalone event-first page/route.
- * Maps /race-control/events/:eventId routes to EventWorkspaceContainer.
- * Accepts optional panel param to set initial workspace panel.
- * 
- * This is the event file metaphor:
- * - open an event URI → EventFile opens
- * - render full event workspace immediately
- * - no global context needed
- * 
- * TODO: Future (R8D) - Route panel switching (URL → eventWorkspacePanel sync)
+ * REVISION R8C — EventFile (Standalone Polish)
+ * Fixes from R8B audit:
+ * D1: organizationType derived from event relationships
+ * D2: dashboardContext includes orgType/orgId/routeMode
+ * D4: route panel passed as initialPanel (not pendingWorkspacePanel)
+ * D8: breadcrumb/back navigation strip
+ * D9: full-height layout, PageShell removed from workspace render
+ * Part 7: onLegacyTabChange handles eventBuilder redirect
+ * Part 8: callbacks memoized with useCallback
  */
 
-import React, { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useCallback } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import PageShell from '@/components/shared/PageShell';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ChevronRight, Flag } from 'lucide-react';
 import EventWorkspaceContainer from '@/components/registrationdashboard/workspace/EventWorkspaceContainer';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 
 const DQ = applyDefaultQueryOptions();
 
+// Valid panel IDs — centralized here for EventFile route validation
+// (Container also validates via WORKSPACE_PANELS for defense-in-depth)
+const VALID_PANELS = new Set([
+  'overview', 'schedule', 'sessions', 'results', 'entries',
+  'compliance', 'standings', 'media', 'activity', 'settings',
+]);
+
+function toSafePanel(raw) {
+  if (!raw || !VALID_PANELS.has(raw)) return 'overview';
+  return raw;
+}
+
+// ── Compact breadcrumb strip ────────────────────────────────────────────────
+function EventFileBreadcrumb({ eventName, onBack }) {
+  return (
+    <div
+      className="flex items-center gap-2 px-4 py-2 text-xs border-b border-gray-800/60 flex-shrink-0"
+      style={{ background: 'rgba(8,10,12,0.95)' }}
+    >
+      <Flag className="w-3 h-3 text-teal-500 flex-shrink-0" />
+      <button
+        onClick={onBack}
+        className="text-gray-500 hover:text-gray-300 transition-colors font-medium"
+      >
+        RaceCore
+      </button>
+      <ChevronRight className="w-3 h-3 text-gray-700 flex-shrink-0" />
+      <button
+        onClick={onBack}
+        className="text-gray-500 hover:text-gray-300 transition-colors"
+      >
+        Events
+      </button>
+      <ChevronRight className="w-3 h-3 text-gray-700 flex-shrink-0" />
+      <span className="text-gray-200 font-semibold truncate max-w-xs">
+        {eventName || '—'}
+      </span>
+      <div className="flex-1" />
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1 px-2.5 py-1 rounded border border-gray-800 text-gray-500 hover:text-gray-300 hover:border-gray-700 transition-colors"
+      >
+        <ArrowLeft className="w-3 h-3" />
+        <span>Back</span>
+      </button>
+    </div>
+  );
+}
+
+// ── Error / auth states — minimal, no PageShell ─────────────────────────────
+function FullscreenCard({ children }) {
+  return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
+      {children}
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 export default function EventFile() {
   const { eventId, panel } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Validate panel from route — D3 fix
+  const safePanel = toSafePanel(panel);
+
   const [standingsDirty, setStandingsDirty] = useState(false);
   const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
 
-  // Auth
+  // ── Auth ──────────────────────────────────────────────────────────────────
   const { data: isAuthenticated, isLoading: authLoading } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
@@ -48,7 +108,7 @@ export default function EventFile() {
     ...DQ,
   });
 
-  // Event
+  // ── Event ─────────────────────────────────────────────────────────────────
   const { data: selectedEvent, isLoading: eventLoading, error: eventError } = useQuery({
     queryKey: ['event', eventId],
     queryFn: () => (eventId ? base44.entities.Event.get(eventId) : Promise.resolve(null)),
@@ -56,23 +116,34 @@ export default function EventFile() {
     ...DQ,
   });
 
-  // Track (derived from event)
+  // ── Track + Series (derived from event) ───────────────────────────────────
   const { data: selectedTrack } = useQuery({
     queryKey: ['track', selectedEvent?.track_id],
-    queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
+    queryFn: () => base44.entities.Track.get(selectedEvent.track_id),
     enabled: !!isAuthenticated && !!selectedEvent?.track_id,
     ...DQ,
   });
 
-  // Series (derived from event)
   const { data: selectedSeries } = useQuery({
     queryKey: ['series', selectedEvent?.series_id],
-    queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
+    queryFn: () => base44.entities.Series.get(selectedEvent.series_id),
     enabled: !!isAuthenticated && !!selectedEvent?.series_id,
     ...DQ,
   });
 
-  // Derive context
+  // ── Derived context fields ────────────────────────────────────────────────
+
+  // D1: organizationType derived from event relationships
+  const organizationType = selectedEvent
+    ? (selectedEvent.track_id ? 'track' : selectedEvent.series_id ? 'series' : null)
+    : null;
+
+  const organizationId = organizationType === 'track'
+    ? selectedEvent?.track_id
+    : organizationType === 'series'
+      ? selectedEvent?.series_id
+      : null;
+
   const seasonYear = useMemo(() => {
     if (!selectedEvent) return '';
     if (selectedEvent.season) return selectedEvent.season;
@@ -80,175 +151,174 @@ export default function EventFile() {
     return '';
   }, [selectedEvent]);
 
+  // D2: dashboardContext with full shape matching RegistrationDashboard
   const dashboardContext = useMemo(() => ({
     eventId: selectedEvent?.id || '',
+    selectedEventId: selectedEvent?.id || '',
+    organizationType,
+    orgType: organizationType,
+    organizationId: organizationId || '',
+    orgId: organizationId || '',
     seasonYear,
-    // Note: no orgType/orgId in standalone mode
-    // Instead derived from event
-  }), [selectedEvent?.id, seasonYear]);
+    selectedSeason: seasonYear,
+    season: seasonYear,
+    routeMode: true,
+  }), [selectedEvent?.id, organizationType, organizationId, seasonYear]);
 
-  // Safe defaults for callbacks when running standalone
+  // ── Stable callbacks ──────────────────────────────────────────────────────
+
   const invalidateAfterOperation = useMemo(
     () => buildInvalidateAfterOperation(queryClient),
     [queryClient]
   );
 
-  // Safe default: always allow override in standalone mode (no admin dialog visible yet)
-  const requireAdminOverride = useMemo(() => {
-    return async () => true;
-  }, []);
+  const requireAdminOverride = useCallback(async () => true, []);
 
-  // Safe defaults for protected system callbacks
-  const handleResultsProvisional = () => {
+  // Part 8: memoized callbacks
+  const handleSetStandingsDirty = useCallback(() => setStandingsDirty(true), []);
+  const handleClearDirty = useCallback(() => setStandingsDirty(false), []);
+
+  const handleResultsProvisional = useCallback(() => {
     invalidateAfterOperation('results_published_provisional', { eventId });
     invalidateAfterOperation('session_status_changed', { eventId });
-  };
+  }, [invalidateAfterOperation, eventId]);
 
-  const handleResultsOfficial = () => {
+  const handleResultsOfficial = useCallback(() => {
     invalidateAfterOperation('results_published_official', { eventId });
     invalidateAfterOperation('session_status_changed', { eventId });
-  };
+  }, [invalidateAfterOperation, eventId]);
 
-  const handleResultsLocked = () => {
+  const handleResultsLocked = useCallback(() => {
     invalidateAfterOperation('results_locked', { eventId });
     invalidateAfterOperation('session_status_changed', { eventId });
-  };
+  }, [invalidateAfterOperation, eventId]);
 
-  const handleStandingsCalculated = () => {
+  const handleStandingsCalculated = useCallback(() => {
     setStandingsLastCalculatedAt(new Date().toISOString());
     invalidateAfterOperation('standings_recalculated', {
       seriesId: selectedEvent?.series_id,
       eventId,
     });
-  };
+  }, [invalidateAfterOperation, eventId, selectedEvent?.series_id]);
 
-  // Permissions: derive from user role (admin = full access)
+  // Part 7: onLegacyTabChange — handle eventBuilder redirect in standalone mode
+  const handleLegacyTabChange = useCallback((tab) => {
+    if (tab === 'eventBuilder' && eventId) {
+      navigate(`/RegistrationDashboard?tab=eventBuilder&eventId=${eventId}`);
+    }
+    // other legacy tabs: no-op for now
+  }, [navigate, eventId]);
+
+  // Back navigation — navigate(-1) with RegistrationDashboard fallback
+  const handleBack = useCallback(() => {
+    navigate('/RegistrationDashboard');
+  }, [navigate]);
+
+  // ── Permissions ───────────────────────────────────────────────────────────
   const isAdmin = user?.role === 'admin';
   const dashboardPermissions = useMemo(() => {
-    // Simplified: admins get all tabs
     if (isAdmin) {
       return {
-        overview: true,
-        event_builder: true,
-        classes_sessions: true,
-        entries: true,
-        compliance: true,
-        checkin: true,
-        tech: true,
-        results: true,
-        points_standings: true,
-        exports: true,
-        integrations: true,
-        audit_log: true,
-        announcer: true,
-        gate: true,
-        race_control: true,
-        announcer_pack: true,
-        imports: true,
-        media: true,
-        media_portal: true,
-        ops_center: true,
+        overview: true, event_builder: true, classes_sessions: true,
+        entries: true, compliance: true, checkin: true, tech: true,
+        results: true, points_standings: true, exports: true,
+        integrations: true, audit_log: true, announcer: true,
+        gate: true, race_control: true, announcer_pack: true,
+        imports: true, media: true, media_portal: true, ops_center: true,
       };
     }
-    // Users get operational tabs only
     return {
-      overview: true,
-      classes_sessions: true,
-      entries: true,
-      compliance: true,
-      checkin: true,
-      tech: true,
-      results: true,
-      points_standings: true,
-      audit_log: true,
+      overview: true, classes_sessions: true, entries: true,
+      compliance: true, checkin: true, tech: true, results: true,
+      points_standings: true, audit_log: true,
     };
   }, [isAdmin]);
 
-  // Loading state
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (authLoading || userLoading || eventLoading) {
     return (
-      <PageShell>
-        <div className="flex items-center justify-center min-h-screen">
-          <BurnoutSpinner />
-        </div>
-      </PageShell>
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <BurnoutSpinner />
+      </div>
     );
   }
 
-  // Auth required
+  // ── Auth required ─────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
-          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400" /> Login Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-300">You must be logged in to access event operations.</p>
-              <Button
-                onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                Log In
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </PageShell>
+      <FullscreenCard>
+        <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400" /> Login Required
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-300 text-sm">You must be logged in to access event operations.</p>
+            <Button
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Log In
+            </Button>
+          </CardContent>
+        </Card>
+      </FullscreenCard>
     );
   }
 
-  // Event not found
-  if (eventError || !selectedEvent) {
+  // ── Event not found ───────────────────────────────────────────────────────
+  if (eventError || (!eventLoading && !selectedEvent)) {
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
-          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400" /> Event Not Found
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-300">The event you're looking for doesn't exist or you don't have access to it.</p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate(-1)}
-                  className="flex-1 gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Go Back
-                </Button>
-                <Button
-                  onClick={() => navigate('/RegistrationDashboard')}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  Events List
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </PageShell>
+      <FullscreenCard>
+        <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400" /> Event Not Found
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-300 text-sm">This event doesn't exist or you don't have access to it.</p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleBack} className="flex-1 gap-2">
+                <ArrowLeft className="w-4 h-4" /> Go Back
+              </Button>
+              <Button
+                onClick={() => navigate('/RegistrationDashboard')}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                Events List
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </FullscreenCard>
     );
   }
 
-  // Render workspace
+  // ── Workspace render — D9: full-height, no PageShell ─────────────────────
   return (
-    <PageShell>
-      <div className="min-h-screen bg-[#0A0A0A]">
+    <div
+      className="flex flex-col bg-[#050505] text-white"
+      style={{ height: '100vh', overflow: 'hidden' }}
+    >
+      {/* D8: Compact breadcrumb strip */}
+      <EventFileBreadcrumb
+        eventName={selectedEvent.name}
+        onBack={handleBack}
+      />
+
+      {/* Workspace fills remaining height */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <EventWorkspaceContainer
           selectedEvent={selectedEvent}
           selectedTrack={selectedTrack}
           selectedSeries={selectedSeries}
           eventId={eventId}
-          organizationType="track" // placeholder: could be track or series
-          organizationId={selectedEvent?.track_id || selectedEvent?.series_id || ''}
+          organizationType={organizationType}         // D1: derived
+          organizationId={organizationId}             // D1: derived
           seasonYear={seasonYear}
-          dashboardContext={dashboardContext}
+          dashboardContext={dashboardContext}          // D2: complete shape
           dashboardPermissions={dashboardPermissions}
           isAdmin={isAdmin}
           user={user}
@@ -256,19 +326,20 @@ export default function EventFile() {
           invalidateAfterOperation={invalidateAfterOperation}
           standingsDirty={standingsDirty}
           standingsLastCalculatedAt={standingsLastCalculatedAt}
-          onSetStandingsDirty={() => setStandingsDirty(true)}
+          onSetStandingsDirty={handleSetStandingsDirty}
           onResultsProvisional={handleResultsProvisional}
           onResultsOfficial={handleResultsOfficial}
           onResultsLocked={handleResultsLocked}
-          sessions={[]} // fetched internally by EventWorkspaceContainer
-          onClearDirty={() => setStandingsDirty(false)}
+          sessions={[]}
+          onClearDirty={handleClearDirty}
           onStandingsCalculated={handleStandingsCalculated}
-          onShowOverrideDialog={() => {}} // no-op in standalone
-          onLegacyTabChange={() => {}} // no-op in standalone
-          pendingWorkspacePanel={panel} // pass route panel as initial panel
-          onPendingPanelApplied={() => {}} // no-op
+          onShowOverrideDialog={() => {}}
+          onLegacyTabChange={handleLegacyTabChange}   // Part 7: eventBuilder redirect
+          initialPanel={safePanel}                    // D4: route panel via initialPanel
+          pendingWorkspacePanel={null}                // D4: not used in route mode
+          onPendingPanelApplied={() => {}}
         />
       </div>
-    </PageShell>
+    </div>
   );
 }

@@ -59,8 +59,12 @@ export default function EventWorkspaceContainer({
   initialPanel = null,
   routeMode = false,
 }) {
-  // R8B: If initialPanel is provided (from route), use it; otherwise use pendingWorkspacePanel
-  const startPanel = initialPanel || pendingWorkspacePanel || 'overview';
+  // R8C: Validate panel against known ids — defense-in-depth for route mode
+  const VALID_PANEL_IDS = new Set(WORKSPACE_PANELS.map(p => p.id));
+  const toSafePanel = (raw) => (raw && VALID_PANEL_IDS.has(raw) ? raw : 'overview');
+
+  // R8B/R8C: initialPanel (route mode) takes precedence over pendingWorkspacePanel (dashboard redirect)
+  const startPanel = toSafePanel(initialPanel || pendingWorkspacePanel || 'overview');
   const [eventWorkspacePanel, setEventWorkspacePanel] = useState(startPanel);
   const [lastWorkspacePanel, setLastWorkspacePanel] = useState(startPanel);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
