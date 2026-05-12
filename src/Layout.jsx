@@ -15,6 +15,7 @@ import { getLaunchModeConfig } from '@/components/system/launchConfig';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
+  { name: 'RaceCore Dashboard', href: '/racecore' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
     { name: 'Submit a Story', page: 'OutletSubmit' },

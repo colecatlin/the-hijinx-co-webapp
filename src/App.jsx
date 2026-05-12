@@ -70,6 +70,7 @@ import EventFile from './pages/EventFile';
 import RaceControlEvents from './pages/RaceControlEvents';
 import RaceControlLayout from './components/racecontrol/RaceControlLayout';
 import RaceCoreDashboard from './pages/RaceCoreDashboard';
+import { Navigate } from 'react-router-dom';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -195,7 +196,9 @@ const AuthenticatedApp = () => {
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
       
       {/* RaceCore Dashboard - Global operational command center */}
-      <Route path="/RegistrationDashboard" element={<LayoutWrapper currentPageName="RaceCoreDashboard"><RaceCoreDashboard /></LayoutWrapper>} />
+      <Route path="/racecore" element={<LayoutWrapper currentPageName="RaceCoreDashboard"><RaceCoreDashboard /></LayoutWrapper>} />
+      {/* Legacy route redirect */}
+      <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
       
       {/* R8G: RaceControlLayout wraps all /race-control/* routes with RaceControlProvider */}
       <Route element={<LayoutWrapper currentPageName="RaceControl"><RaceControlLayout /></LayoutWrapper>}>
