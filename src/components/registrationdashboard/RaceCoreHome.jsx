@@ -266,12 +266,6 @@ export default function RaceCoreHome({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() => navigate('/race-control/events')}
-            className="text-[10px] px-2.5 py-1.5 bg-teal-900/30 border border-teal-700/50 text-teal-300 hover:bg-teal-900/50 rounded font-bold transition-colors"
-          >
-            OPS
-          </button>
         </div>
       </div>
 
@@ -329,11 +323,7 @@ export default function RaceCoreHome({
           label="Action Required"
           value={actionQueue.length}
           color={actionQueue.length > 0 ? 'text-amber-400' : 'text-gray-600'}
-          sub={
-            selectedEvent
-              ? (actionQueue.length === 0 ? 'No critical issues' : `${actionQueue.filter(a => a.severity === 'critical').length} critical`)
-              : 'Select event for deep scan'
-          }
+          sub={actionQueue.length === 0 ? 'All clear' : 'critical alerts'}
           icon={AlertTriangle}
         />
         <MetricCard
@@ -440,7 +430,7 @@ export default function RaceCoreHome({
             <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
               <Activity className="w-3 h-3 text-gray-500" />
               <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 flex-1">Ops Feed</p>
-              <button onClick={() => navigate(selectedEvent ? `/race-control/events/${selectedEvent.id}/activity` : '/race-control/events')} className="text-[8px] text-gray-600 hover:text-teal-400">
+              <button onClick={() => navigate('/race-control/events')} className="text-[8px] text-gray-600 hover:text-teal-400">
                 More
               </button>
             </div>
@@ -509,9 +499,6 @@ export default function RaceCoreHome({
                   ↑ Import
                 </button>
               )}
-              <button onClick={() => navigate('/race-control/events')} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-teal-300 hover:bg-teal-950/30 rounded transition-colors font-mono">
-                → Ops
-              </button>
             </div>
           </div>
 
