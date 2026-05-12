@@ -16,6 +16,7 @@ import {
   Radio,
   Activity,
   Settings,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 
@@ -30,6 +31,7 @@ const MODULE_GROUPS = [
       { id: 'results',     label: 'Results',     icon: BarChart3,        description: 'Results input, publishing, standings triggers', permKey: 'canManageResults' },
       { id: 'entries',     label: 'Entries',     icon: LogIn,            description: 'Roster and entry management',                  permKey: 'canManageEntries' },
       { id: 'compliance',  label: 'Compliance',  icon: Shield,           description: 'Waivers, tech, eligibility',                  permKey: 'canManageCompliance' },
+      { id: 'checkin',     label: 'Check-In',    icon: ClipboardCheck,   description: 'Arrival, payment, waiver, race-day check-in',  permKey: 'canManageCheckIn' },
       { id: 'standings',   label: 'Standings',   icon: Trophy,           description: 'Points systems and recalculation',            permKey: 'canManageStandings' },
     ],
   },

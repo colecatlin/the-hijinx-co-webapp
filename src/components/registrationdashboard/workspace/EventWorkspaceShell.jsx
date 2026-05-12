@@ -14,6 +14,7 @@ import OpsEventDashboard from '../ops/OpsEventDashboard';
 import EventSchedulePanel from './panels/EventSchedulePanel';
 import EventActivityPanel from './panels/EventActivityPanel';
 import EventAuditLogPanel from './panels/EventAuditLogPanel';
+import EventCheckInPanel from './panels/EventCheckInPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventEntriesPanel from './panels/EventEntriesPanel';
@@ -56,7 +57,7 @@ export default function EventWorkspaceShell({ panels }) {
     eventPermissions,
   } = useEventWorkspace();
 
-  // R8G Part 4: panel permission key map (mirrors EventWorkspaceNav)
+  // R8G Part 4 / R8H Part 2: panel permission key map (mirrors EventWorkspaceNav)
   const PANEL_PERM_KEY = {
     overview:   'canViewOverview',
     schedule:   'canViewSchedule',
@@ -64,6 +65,7 @@ export default function EventWorkspaceShell({ panels }) {
     results:    'canManageResults',
     entries:    'canManageEntries',
     compliance: 'canManageCompliance',
+    checkin:    'canManageCheckIn',
     standings:  'canManageStandings',
     media:      'canManageMedia',
     activity:   'canViewActivity',
@@ -72,7 +74,7 @@ export default function EventWorkspaceShell({ panels }) {
 
   // Build ordered list of permitted panel IDs. null → all permitted.
   const permittedPanels = useMemo(() => {
-    const allPanels = ['overview','schedule','sessions','results','entries','compliance','standings','media','activity','settings'];
+    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','standings','media','activity','settings'];
     if (!eventPermissions) return allPanels;
     return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
   }, [eventPermissions]);
@@ -197,6 +199,9 @@ export default function EventWorkspaceShell({ panels }) {
 
           {/* ── WIRED: Compliance ── */}
           {isPanelPermitted && eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
+
+          {/* ── R8H Part 2: Check-In ── */}
+          {isPanelPermitted && eventWorkspacePanel === 'checkin' && <EventCheckInPanel />}
 
           {/* ── WIRED: Entries ── */}
           {isPanelPermitted && eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
