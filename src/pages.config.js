@@ -111,7 +111,6 @@ import OutletStoryPage from './pages/OutletStoryPage';
 import OutletSubmit from './pages/OutletSubmit';
 import Profile from './pages/Profile';
 import Registration from './pages/Registration';
-import RegistrationDashboard from './pages/RegistrationDashboard';
 import RegistrationLanding from './pages/RegistrationLanding';
 import ScheduleEmbed from './pages/ScheduleEmbed';
 import ScheduleHome from './pages/ScheduleHome';
@@ -193,7 +192,6 @@ export const PAGES = {
     "OutletSubmit": OutletSubmit,
     "Profile": Profile,
     "Registration": Registration,
-    "RegistrationDashboard": RegistrationDashboard,
     "RegistrationLanding": RegistrationLanding,
     "ScheduleEmbed": ScheduleEmbed,
     "ScheduleHome": ScheduleHome,

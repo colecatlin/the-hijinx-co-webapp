@@ -69,6 +69,7 @@ import ManageStorefrontSettings from './pages/admin/ManageStorefrontSettings';
 import EventFile from './pages/EventFile';
 import RaceControlEvents from './pages/RaceControlEvents';
 import RaceControlLayout from './components/racecontrol/RaceControlLayout';
+import RaceCoreDashboard from './pages/RaceCoreDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -192,6 +193,9 @@ const AuthenticatedApp = () => {
       <Route path="/admin/reviews" element={<LayoutWrapper currentPageName="ManageReviews"><ManageReviews /></LayoutWrapper>} />
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
+      
+      {/* RaceCore Dashboard - Global operational command center */}
+      <Route path="/RegistrationDashboard" element={<LayoutWrapper currentPageName="RaceCoreDashboard"><RaceCoreDashboard /></LayoutWrapper>} />
       
       {/* R8G: RaceControlLayout wraps all /race-control/* routes with RaceControlProvider */}
       <Route element={<LayoutWrapper currentPageName="RaceControl"><RaceControlLayout /></LayoutWrapper>}>

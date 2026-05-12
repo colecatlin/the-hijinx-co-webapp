@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useEffect, React, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -153,7 +153,7 @@ function createRequireAdminOverride(queryClient) {
           try {
             await base44.asServiceRole.entities.OperationLog.create({
               operation_type: 'ADMIN_OVERRIDE',
-              source_type: 'RegistrationDashboard',
+              source_type: 'RaceCoreDashboard',
               entity_name: context.entityName || 'Session',
               function_name: actionName,
               status: 'success',
@@ -188,7 +188,7 @@ function createRequireAdminOverride(queryClient) {
   };
 }
 
-export default function RegistrationDashboard() {
+export default function RaceCoreDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showPublishDialog, setShowPublishDialog] = useState(false);
@@ -728,7 +728,7 @@ export default function RegistrationDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-300">
-                You must be logged in to access the Registration Dashboard.
+                You must be logged in to access RaceCore Dashboard.
               </p>
               <Button
                 onClick={() => base44.auth.redirectToLogin()}
