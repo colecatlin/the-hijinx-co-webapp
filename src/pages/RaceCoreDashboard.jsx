@@ -909,71 +909,13 @@ export default function RaceCoreDashboard() {
               onAnnouncerModeToggle={handleAnnouncerModeToggle}
             />
           <div className="flex-1 px-6 py-8 overflow-auto">
-
-
-
-                    {/* Hard Event Lock Banner */}
-            {!selectedEvent && (
-              <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-red-300 mb-1">Operations Disabled</p>
-                    <p className="text-xs text-red-200">
-                      Select Track or Series, Season, and Event above to enable operations. All entry, session, results, compliance, and tech actions require an active event context.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Live Mode Badge */}
-            {isLiveMode && (
-              <div className="mb-6 bg-red-950/40 border border-red-800/50 rounded-lg p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-sm font-semibold text-red-300">LIVE EVENT MODE</span>
-                </div>
-              </div>
-            )}
-
-            {/* Season Calendar */}
-            {dashboardContext.orgId && dashboardContext.seasonYear && (
-              <SeasonCalendarManager
-                dashboardContext={dashboardContext}
-                selectedEvent={selectedEvent}
-                dashboardPermissions={dashboardPermissions}
-                onSelectEvent={(newEventId) => {
-                  setEventId(newEventId);
-                  const params = new URLSearchParams(searchParams);
-                  params.set('eventId', newEventId);
-                  setSearchParams(params, { replace: true });
-                }}
-                onCreateEvent={handleCreateEvent}
-                invalidateAfterOperation={invalidateAfterOperation}
-              />
-            )}
-
-            {/* Event Workspace Header — Only shown when event is selected and workspace tab active */}
-            {selectedEvent && activeTab === 'workspace' ? (
-              <EventWorkspaceHeader
-                dashboardContext={dashboardContext}
-                selectedEvent={selectedEvent}
-                selectedTrack={selectedTrack}
-                selectedSeries={selectedSeries}
-                dashboardPermissions={dashboardPermissions}
-                canUserEditEventCore={canUserEditEventCore}
-                invalidateAfterOperation={invalidateAfterOperation}
-              />
-            ) : null}
-
           {/* Workspace content — sidebar drives tab selection */}
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
              {/* TabsList hidden — navigation handled by RaceCoreSidebar */}
              <TabsList className="hidden" />
 
              {/* Lazy-mounted tabs: only render active tab content */}
-            <div className="mt-6">
+            <div className="mt-0">
               {canTab(dashboardPermissions, 'overview') && activeTab === 'workspace' && selectedEvent && (
                 <EventWorkspaceContainer
                   selectedEvent={selectedEvent}
@@ -1010,22 +952,9 @@ export default function RaceCoreDashboard() {
 
               {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
                 <RaceCoreHome
-                  dashboardContext={dashboardContext}
                   dashboardPermissions={dashboardPermissions}
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  sessions={sessions}
-                  results={results}
-                  standings={standings}
-                  operationLogs={operationLogs}
-                  standingsDirty={standingsDirty}
                   isAdmin={isAdmin}
                   user={user}
-                  onTabChange={setActiveTab}
-                  onCreateEvent={handleCreateEvent}
-                  onOpenImportEntries={() => setShowImportEntriesModal(true)}
-                  onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
                   allEvents={dashboardEvents}
                   importLogs={importLogs}
                 />
