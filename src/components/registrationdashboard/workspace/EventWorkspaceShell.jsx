@@ -1,10 +1,11 @@
 /**
- * REVISION 7B — EventWorkspaceShell
+ * REVISION R8G Part 4 — EventWorkspaceShell
+ * Added: active panel fallback when current panel is not permitted.
  * RaceCore Command Center Visual System
  * Three-zone layout: left nav rail, center content, right intelligence rail.
  * Read-only command header + module nav + operational state widgets.
  */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -52,7 +53,40 @@ export default function EventWorkspaceShell({ panels }) {
     onResultsLocked,
     eventWorkspacePanel,
     setEventWorkspacePanel,
+    eventPermissions,
   } = useEventWorkspace();
+
+  // R8G Part 4: panel permission key map (mirrors EventWorkspaceNav)
+  const PANEL_PERM_KEY = {
+    overview:   'canViewOverview',
+    schedule:   'canViewSchedule',
+    sessions:   'canManageSessions',
+    results:    'canManageResults',
+    entries:    'canManageEntries',
+    compliance: 'canManageCompliance',
+    standings:  'canManageStandings',
+    media:      'canManageMedia',
+    activity:   'canViewActivity',
+    settings:   'canManageSettings',
+  };
+
+  // Build ordered list of permitted panel IDs. null → all permitted.
+  const permittedPanels = useMemo(() => {
+    const allPanels = ['overview','schedule','sessions','results','entries','compliance','standings','media','activity','settings'];
+    if (!eventPermissions) return allPanels;
+    return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
+  }, [eventPermissions]);
+
+  // Fallback: if active panel is not in permittedPanels, switch to first permitted (or overview).
+  useEffect(() => {
+    if (!permittedPanels.includes(eventWorkspacePanel)) {
+      const fallback = permittedPanels[0] || 'overview';
+      setEventWorkspacePanel(fallback);
+    }
+  }, [permittedPanels, eventWorkspacePanel, setEventWorkspacePanel]);
+
+  // Is the current panel actually permitted?
+  const isPanelPermitted = permittedPanels.includes(eventWorkspacePanel);
 
   // Fetch operational data for intelligence rail
   const { data: sessions = [] } = useQuery({
@@ -122,8 +156,16 @@ export default function EventWorkspaceShell({ panels }) {
 
         {/* Center: Main Content Panel */}
         <div className="flex-1 overflow-y-auto border-r border-gray-800/60 p-5">
+          {/* R8G Part 4: guard — if panel not permitted, show notice (fallback useEffect fires async) */}
+          {!isPanelPermitted && (
+            <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
+              <p className="text-gray-400 text-sm">Your access does not include the requested module.</p>
+              <p className="text-gray-600 text-xs">Redirecting to an available panel…</p>
+            </div>
+          )}
+
           {/* ── WIRED: Overview — OpsEventDashboard ── */}
-          {eventWorkspacePanel === 'overview' && (
+          {isPanelPermitted && eventWorkspacePanel === 'overview' && (
             <OpsEventDashboard
               selectedEvent={selectedEvent}
               selectedTrack={selectedTrack}
@@ -142,31 +184,31 @@ export default function EventWorkspaceShell({ panels }) {
           )}
 
           {/* ── WIRED: Schedule ── */}
-          {eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
 
           {/* ── WIRED: Activity ── */}
-          {eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
 
           {/* ── WIRED: Settings ── */}
-          {eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
 
           {/* ── WIRED: Media ── */}
-          {eventWorkspacePanel === 'media' && <EventMediaPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'media' && <EventMediaPanel />}
 
           {/* ── WIRED: Compliance ── */}
-          {eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
 
           {/* ── WIRED: Entries ── */}
-          {eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
 
           {/* ── R7E: Sessions — migrated workspace panel ── */}
-          {eventWorkspacePanel === 'sessions' && <EventSessionsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'sessions' && <EventSessionsPanel />}
 
           {/* ── R7E: Standings — migrated workspace panel ── */}
-          {eventWorkspacePanel === 'standings' && <EventStandingsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'standings' && <EventStandingsPanel />}
 
           {/* ── R7E PART 3: Results — migrated to workspace (PRIMARY SURFACE) ── */}
-          {eventWorkspacePanel === 'results' && <EventResultsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'results' && <EventResultsPanel />}
         </div>
 
         {/* Right: Event Intelligence Rail */}

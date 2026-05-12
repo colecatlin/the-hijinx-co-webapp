@@ -1,8 +1,8 @@
 /**
- * REVISION R7H — EventWorkspaceNav
- * Command-center module navigation rail with grouped sections.
- * Two operational zones: Event Operations + Management.
- * Responsive: desktop (w-56 + labels) → mobile (w-12 + icons only).
+ * REVISION R8G Part 4 — EventWorkspaceNav
+ * Module navigation rail with permission-based filtering.
+ * If eventPermissions is null (embedded/RegistrationDashboard mode), show all modules.
+ * If eventPermissions exists, filter by the corresponding boolean key.
  */
 import React from 'react';
 import {
@@ -17,31 +17,48 @@ import {
   Activity,
   Settings,
 } from 'lucide-react';
+import { useEventWorkspace } from './EventWorkspaceContext';
 
+// Module permission key map — R8G Part 4
 const MODULE_GROUPS = [
   {
     section: 'Event Operations',
     items: [
-      { id: 'overview', label: 'Overview', icon: LayoutDashboard, description: 'Weekend operations summary' },
-      { id: 'schedule', label: 'Schedule', icon: Calendar, description: 'Session timing and order' },
-      { id: 'sessions', label: 'Sessions', icon: Layers, description: 'Weekend structure and session flow' },
-      { id: 'results', label: 'Results', icon: BarChart3, description: 'Results input, publishing, standings triggers' },
-      { id: 'entries', label: 'Entries', icon: LogIn, description: 'Roster and entry management' },
-      { id: 'compliance', label: 'Compliance', icon: Shield, description: 'Waivers, tech, eligibility' },
-      { id: 'standings', label: 'Standings', icon: Trophy, description: 'Points systems and recalculation' },
+      { id: 'overview',    label: 'Overview',    icon: LayoutDashboard, description: 'Weekend operations summary',                    permKey: 'canViewOverview' },
+      { id: 'schedule',    label: 'Schedule',    icon: Calendar,         description: 'Session timing and order',                     permKey: 'canViewSchedule' },
+      { id: 'sessions',    label: 'Sessions',    icon: Layers,           description: 'Weekend structure and session flow',           permKey: 'canManageSessions' },
+      { id: 'results',     label: 'Results',     icon: BarChart3,        description: 'Results input, publishing, standings triggers', permKey: 'canManageResults' },
+      { id: 'entries',     label: 'Entries',     icon: LogIn,            description: 'Roster and entry management',                  permKey: 'canManageEntries' },
+      { id: 'compliance',  label: 'Compliance',  icon: Shield,           description: 'Waivers, tech, eligibility',                  permKey: 'canManageCompliance' },
+      { id: 'standings',   label: 'Standings',   icon: Trophy,           description: 'Points systems and recalculation',            permKey: 'canManageStandings' },
     ],
   },
   {
     section: 'Management',
     items: [
-      { id: 'media', label: 'Media', icon: Radio, description: 'Credentials, assets, governance' },
-      { id: 'activity', label: 'Activity', icon: Activity, description: 'Event history and audit log' },
-      { id: 'settings', label: 'Settings', icon: Settings, description: 'Event configuration and permissions' },
+      { id: 'media',       label: 'Media',       icon: Radio,    description: 'Credentials, assets, governance',        permKey: 'canManageMedia' },
+      { id: 'activity',    label: 'Activity',    icon: Activity, description: 'Event history and audit log',            permKey: 'canViewActivity' },
+      { id: 'settings',    label: 'Settings',    icon: Settings, description: 'Event configuration and permissions',    permKey: 'canManageSettings' },
     ],
   },
 ];
 
+// Returns true if the module should be shown given eventPermissions.
+// null → show all (embedded/RegistrationDashboard mode).
+function isModuleVisible(permKey, eventPermissions) {
+  if (!eventPermissions) return true;
+  return !!eventPermissions[permKey];
+}
+
 export default function EventWorkspaceNav({ activePanel, onPanelChange, compact = false }) {
+  const { eventPermissions } = useEventWorkspace();
+
+  // Filter groups — hide items that are not permitted; hide empty groups.
+  const visibleGroups = MODULE_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((mod) => isModuleVisible(mod.permKey, eventPermissions)),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <div
       className={`${compact ? 'w-12' : 'w-56'} flex-shrink-0 border-r border-gray-800/60 overflow-y-auto transition-all`}
@@ -54,7 +71,7 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
           <p className="text-[9px] uppercase tracking-widest font-bold text-gray-600 px-2 mb-3">Event Operations</p>
         )}
 
-        {MODULE_GROUPS.map((group, groupIdx) => (
+        {visibleGroups.map((group, groupIdx) => (
           <div key={group.section}>
             {/* Section divider + label */}
             {groupIdx > 0 && !compact && (
