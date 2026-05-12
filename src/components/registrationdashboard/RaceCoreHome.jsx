@@ -17,7 +17,6 @@ import {
   Users,
   BarChart2,
   ExternalLink,
-  MonitorPlay,
   Circle,
 } from 'lucide-react';
 
@@ -267,14 +266,6 @@ export default function RaceCoreHome({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {selectedEvent && (
-            <button
-              onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-              className="text-[10px] px-2.5 py-1.5 border border-gray-700 text-gray-400 hover:text-teal-300 hover:border-teal-700/50 rounded transition-colors"
-            >
-              EVENT
-            </button>
-          )}
           <button
             onClick={() => navigate('/race-control/events')}
             className="text-[10px] px-2.5 py-1.5 bg-teal-900/30 border border-teal-700/50 text-teal-300 hover:bg-teal-900/50 rounded font-bold transition-colors"
