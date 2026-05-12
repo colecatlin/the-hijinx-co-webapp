@@ -21,6 +21,7 @@ import { AlertCircle, ArrowLeft, ChevronRight, Flag } from 'lucide-react';
 import EventWorkspaceContainer from '@/components/registrationdashboard/workspace/EventWorkspaceContainer';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import useEventFileAdminOverride from '@/components/registrationdashboard/workspace/useEventFileAdminOverride';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -173,7 +174,12 @@ export default function EventFile() {
     [queryClient]
   );
 
-  const requireAdminOverride = useCallback(async () => true, []);
+  // R8F Part 3: real override confirmation + audit log (replaces async () => true no-op)
+  const { requireAdminOverride, OverrideDialog } = useEventFileAdminOverride({
+    eventId,
+    user,
+    selectedEvent,
+  });
 
   // Part 8: memoized callbacks
   const handleSetStandingsDirty = useCallback(() => setStandingsDirty(true), []);
@@ -302,6 +308,9 @@ export default function EventFile() {
   // correctly inside global Layout's <main className="flex-1"> wrapper.
   return (
     <div className="flex flex-col h-full min-h-0 bg-[#050505] text-white overflow-hidden">
+      {/* R8F Part 3: Admin override confirmation dialog */}
+      <OverrideDialog />
+
       {/* D8: Compact breadcrumb strip */}
       <EventFileBreadcrumb
         eventName={selectedEvent.name}
