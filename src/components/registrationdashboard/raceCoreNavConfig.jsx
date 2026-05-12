@@ -44,9 +44,9 @@ export const RACE_CORE_NAV_GROUPS = [
     id: 'home',
     label: 'Overview',
     items: [
+      { tab: 'overview',  label: 'RaceCore Overview', icon: LayoutDashboard, canTabKey: 'overview' },
       { href: '/race-control/events', label: 'Event Files', icon: MonitorPlay, canTabKey: null },
       { tab: 'workspace', label: 'Event Workspace', icon: MonitorPlay, canTabKey: 'overview', requiresEvent: true, workspaceMigrated: true },
-      { tab: 'overview',  label: 'RaceCore Overview', icon: LayoutDashboard, canTabKey: 'overview' },
     ],
   },
   {
