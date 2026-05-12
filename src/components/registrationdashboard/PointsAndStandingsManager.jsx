@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, RefreshCw, CheckCircle2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useEventWorkspace } from './workspace/EventWorkspaceContext';
 
 export default function PointsAndStandingsManager({
   selectedEvent,
@@ -19,14 +21,12 @@ export default function PointsAndStandingsManager({
   const queryClient = useQueryClient();
   const [isCalculating, setIsCalculating] = useState(false);
   const [overrideRulesetId, setOverrideRulesetId] = useState(null);
-  const [hasPermission, setHasPermission] = useState(false);
 
-  React.useEffect(() => {
-    (async () => {
-      const user = await base44.auth.me();
-      setHasPermission(user?.role === 'admin' || (isAdmin === true));
-    })();
-  }, [isAdmin]);
+  // R8G Part 6B: prefer eventPermissions from EventWorkspaceContext when available (EventFile mode).
+  // Falls back to isAdmin only for RegistrationDashboard embedded mode.
+  const workspace = useEventWorkspace?.();
+  const eventPermissions = workspace?.eventPermissions;
+  const canManageStandings = isAdmin || eventPermissions?.canManageStandings === true;
 
   const targetSeriesId = useMemo(() => {
     if (dashboardContext?.orgType === 'series' && selectedSeries?.id) return selectedSeries.id;
@@ -132,9 +132,15 @@ export default function PointsAndStandingsManager({
           <h2 className="text-base font-bold text-white">Points &amp; Standings</h2>
           <p className="text-xs text-gray-500 mt-0.5">Championship standings, points ruleset, and recalculation.</p>
         </div>
-        {isAdmin && (
+        {canManageStandings && (
           <Button
-            onClick={() => calculateMutation.mutate()}
+            onClick={() => {
+              if (!canManageStandings) {
+                toast.error('You do not have permission to recalculate standings.');
+                return;
+              }
+              calculateMutation.mutate();
+            }}
             disabled={isCalculating || !resolvedRuleset}
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 shrink-0"
@@ -146,7 +152,7 @@ export default function PointsAndStandingsManager({
       </div>
 
       {/* No ruleset warning */}
-      {isAdmin && !resolvedRuleset && (
+      {canManageStandings && !resolvedRuleset && (
         <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-950/30 border border-amber-700/40 rounded-lg text-xs text-amber-300">
           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           No PointsRuleSet found. Create one in Management → Points Configuration.
@@ -188,7 +194,7 @@ export default function PointsAndStandingsManager({
       </Card>
 
       {/* Event Override — admin only */}
-      {hasPermission && selectedEvent && (
+      {canManageStandings && selectedEvent && (
         <Card className="bg-[#171717] border-gray-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-white">Event Override</CardTitle>
@@ -252,7 +258,7 @@ export default function PointsAndStandingsManager({
           {standingsWithInfo.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-sm text-gray-500">No standings calculated yet.</p>
-              {isAdmin && resolvedRuleset && (
+              {canManageStandings && resolvedRuleset && (
                 <p className="text-xs text-gray-600 mt-1">Run a recalculation to generate standings from official results.</p>
               )}
             </div>
