@@ -143,7 +143,6 @@ export default function Layout({ children, currentPageName }) {
 
   const isActive = (page) => currentPageName === page;
   const launchMode = getLaunchModeConfig();
-  const isRaceCore = location.pathname.startsWith('/racecore') || location.pathname.startsWith('/race-core');
 
   // Root path redirect — always send / to the public homepage
   if (location.pathname === '/' || location.pathname === '') {
@@ -156,13 +155,12 @@ export default function Layout({ children, currentPageName }) {
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen" style={{
           background: '#050A0A',
-          backgroundImage: !isRaceCore ? 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)' : 'none',
+          backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
           backgroundRepeat: 'no-repeat',
           backgroundAttachment: 'fixed',
         }}>
-        {!isRaceCore && (
         <div className="sticky top-0 z-50" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
@@ -491,8 +489,6 @@ export default function Layout({ children, currentPageName }) {
             </header>
           </div>
         </div>
-        )}
-        {isRaceCore && <div className="h-0" />}
 
         {/* Mobile nav */}
         <AnimatePresence>
