@@ -1,86 +1,100 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { canTab, canAction } from '@/components/access/accessControl';
+import { canAction } from '@/components/access/accessControl';
 import {
-  AlertTriangle,
-  CheckCircle2,
   Plus,
-  Database,
-  Flag,
-  Users,
-  ClipboardCheck,
-  Trophy,
   Upload,
-  Clock,
-  Car,
-  Radio,
-  Wrench,
   ArrowRight,
   Calendar,
   MapPin,
-  Layers,
   Activity,
-  TrendingUp,
-  UserCheck,
-  RefreshCw,
+  Flag,
+  AlertTriangle,
+  CheckCircle2,
+  Radio,
+  Clock,
+  Zap,
+  Users,
+  BarChart2,
+  ExternalLink,
+  MonitorPlay,
+  AlertCircle,
+  Circle,
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function AlertBanner({ type, message, action, onAction }) {
-  const styles = {
-    live:    'bg-red-950/50 border-red-700/60 text-red-200',
-    error:   'bg-red-950/40 border-red-800/40 text-red-300',
-    warning: 'bg-amber-950/35 border-amber-700/40 text-amber-200',
-    info:    'bg-blue-950/30 border-blue-800/40 text-blue-200',
-  };
-  const dotStyles = {
-    live:    'bg-red-500 animate-pulse',
-    error:   'bg-red-400',
-    warning: 'bg-amber-400',
-    info:    'bg-blue-400',
-  };
-
+function PanelLabel({ children }) {
   return (
-    <div className={`flex items-start gap-2.5 px-3 py-2.5 rounded-lg border text-xs ${styles[type] || styles.info}`}>
-      <span className={`w-2 h-2 rounded-full shrink-0 mt-1 ${dotStyles[type] || dotStyles.info}`} />
-      <span className="flex-1 leading-relaxed">{message}</span>
-      {action && (
-        <button
-          onClick={onAction}
-          className="shrink-0 flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity ml-1 whitespace-nowrap"
-        >
-          {action} <ArrowRight className="w-3 h-3" />
-        </button>
-      )}
+    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2.5">
+      {children}
+    </p>
+  );
+}
+
+function StatusBadge({ status }) {
+  const cfg = {
+    Live:      'bg-red-900/60 text-red-300 border-red-700/50',
+    Published: 'bg-blue-900/40 text-blue-300 border-blue-700/40',
+    Completed: 'bg-green-900/30 text-green-400 border-green-700/30',
+    Draft:     'bg-gray-800 text-gray-500 border-gray-700',
+    PendingApproval: 'bg-amber-900/30 text-amber-300 border-amber-700/30',
+    Cancelled: 'bg-red-950/40 text-red-600 border-red-900/40',
+  };
+  const cls = cfg[status] || cfg.Draft;
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider ${cls}`}>
+      {status === 'Live' && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1" />}
+      {status || 'Draft'}
+    </span>
+  );
+}
+
+function MetricCard({ label, value, color = 'text-white', sub, icon: Icon }) {
+  return (
+    <div className="bg-[#111] border border-gray-800 rounded-lg px-3 py-2.5 min-w-0">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">{label}</p>
+        {Icon && <Icon className="w-3 h-3 text-gray-700" />}
+      </div>
+      <p className={`text-xl font-black ${color}`}>{value}</p>
+      {sub && <p className="text-[10px] text-gray-600 mt-0.5 truncate">{sub}</p>}
     </div>
   );
 }
 
-function QuickActionButton({ icon: Icon, label, color, onClick, disabled }) {
+function ActionItem({ severity, eventName, issue, panel, eventId }) {
+  const navigate = useNavigate();
+  const cfg = {
+    critical: { dot: 'bg-red-500',   text: 'text-red-300',   badge: 'bg-red-900/30 text-red-300 border-red-800/40' },
+    warning:  { dot: 'bg-amber-400', text: 'text-amber-300', badge: 'bg-amber-900/20 text-amber-300 border-amber-800/30' },
+    info:     { dot: 'bg-blue-400',  text: 'text-blue-300',  badge: 'bg-blue-900/20 text-blue-300 border-blue-800/30' },
+  };
+  const s = cfg[severity] || cfg.info;
+  const href = panel ? `/race-control/events/${eventId}/${panel}` : `/race-control/events/${eventId}`;
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={disabled ? 'Select an event first' : undefined}
-      className={`flex items-center gap-2.5 px-3 py-3 bg-[#1A1A1A] border rounded-lg text-xs text-left transition-all
-        ${disabled
-          ? 'border-gray-800 text-gray-700 cursor-not-allowed'
-          : 'border-gray-800 text-gray-300 hover:border-gray-600 hover:text-white hover:bg-[#222]'
-        }`}
-    >
-      <Icon className={`w-3.5 h-3.5 shrink-0 ${disabled ? 'text-gray-700' : color}`} />
-      <span className="font-medium leading-tight">{label}</span>
-    </button>
+    <div className="flex items-center gap-2.5 px-3 py-2 bg-[#0F0F0F] border border-gray-800 rounded-lg">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold text-gray-300 truncate">{eventName}</p>
+        <p className={`text-[10px] ${s.text}`}>{issue}</p>
+      </div>
+      <button
+        onClick={() => navigate(href)}
+        className="shrink-0 flex items-center gap-1 text-[10px] text-gray-500 hover:text-teal-300 transition-colors"
+      >
+        Fix <ArrowRight className="w-2.5 h-2.5" />
+      </button>
+    </div>
   );
 }
 
-function SectionLabel({ children }) {
-  return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">
-      {children}
-    </p>
-  );
+function HealthDot({ state }) {
+  if (state === 'ok')      return <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />;
+  if (state === 'warn')    return <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />;
+  if (state === 'error')   return <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />;
+  return <span className="w-2 h-2 rounded-full bg-gray-700 inline-block" />;
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -102,554 +116,463 @@ export default function RaceCoreHome({
   onCreateEvent,
   onOpenImportEntries,
   onOpenQuickCreate,
+  // all events for global view — passed from parent
+  allEvents = [],
 }) {
   const navigate = useNavigate();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  // ── Role resolution ──────────────────────────────────────────────────────
-  const isOwnerOrEditor = isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role);
-  const isTrack  = dashboardContext.orgType === 'track';
-  const isSeries = dashboardContext.orgType === 'series';
-  const hasOrg   = !!dashboardContext.orgId;
-  const hasEvent = !!selectedEvent;
+  // ── Global event metrics ─────────────────────────────────────────────────
+  const { liveEvents, upcomingEvents, recentEvents } = useMemo(() => {
+    const live = allEvents.filter(e =>
+      e.status === 'Live' ||
+      (e.status === 'Published' && e.event_date && new Date(e.event_date) <= new Date() && (!e.end_date || new Date(e.end_date) >= today))
+    );
+    const upcoming = allEvents
+      .filter(e => e.event_date && new Date(e.event_date) > today && e.status !== 'Cancelled' && e.status !== 'Completed')
+      .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+      .slice(0, 5);
+    const recent = allEvents
+      .filter(e => e.event_date && new Date(e.event_date) <= today)
+      .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
+      .slice(0, 3);
+    return { liveEvents: live, upcomingEvents: upcoming, recentEvents: recent };
+  }, [allEvents, today]);
 
-  // ── Derived operational data ─────────────────────────────────────────────
-  const {
-    unpublishedSessions,
-    sessionsWithNoResults,
-    draftSessions,
-    officialSessions,
-  } = useMemo(() => {
-    const unpublished = sessions.filter(s => s.status === 'Draft' || s.status === 'Provisional');
-    const noResults   = sessions.filter(s => {
-      const hasResult = results.some(r => r.session_id === s.id);
-      return !hasResult && (s.status === 'Draft' || s.status === 'Provisional');
-    });
-    const draft    = sessions.filter(s => s.status === 'Draft');
-    const official = sessions.filter(s => s.status === 'Official' || s.status === 'Locked');
-    return {
-      unpublishedSessions: unpublished,
-      sessionsWithNoResults: noResults,
-      draftSessions: draft,
-      officialSessions: official,
-    };
-  }, [sessions, results]);
+  // ── Action Required queue (from selected event data only — no global sessions/results yet) ──
+  const actionQueue = useMemo(() => {
+    const items = [];
 
+    // Build from selected event context
+    if (selectedEvent) {
+      const hasNoSessions = sessions.length === 0;
+      const sessionsNoResults = sessions.filter(s => {
+        const hasResult = results.some(r => r.session_id === s.id);
+        return !hasResult && (s.status === 'Draft' || s.status === 'Provisional');
+      });
+      const draftSessions = sessions.filter(s => s.status === 'Draft');
+      const officialSessions = sessions.filter(s => s.status === 'Official' || s.status === 'Locked');
+
+      if (selectedEvent.status === 'Live' || selectedEvent.status === 'Published') {
+        if (hasNoSessions) {
+          items.push({ severity: 'critical', eventName: selectedEvent.name, issue: 'No sessions set up — operations blocked', panel: 'sessions', eventId: selectedEvent.id });
+        }
+        if (sessionsNoResults.length > 0) {
+          items.push({ severity: 'warning', eventName: selectedEvent.name, issue: `${sessionsNoResults.length} session${sessionsNoResults.length > 1 ? 's' : ''} missing results`, panel: 'results', eventId: selectedEvent.id });
+        }
+        if (draftSessions.length > 0 && officialSessions.length === 0) {
+          items.push({ severity: 'warning', eventName: selectedEvent.name, issue: `${draftSessions.length} session${draftSessions.length > 1 ? 's' : ''} still Draft — not published`, panel: 'results', eventId: selectedEvent.id });
+        }
+      }
+      if (standingsDirty) {
+        items.push({ severity: 'warning', eventName: selectedEvent.name, issue: 'Championship standings need recalculation', panel: 'standings', eventId: selectedEvent.id });
+      }
+      if (selectedEvent.track_acceptance_status === 'Pending') {
+        items.push({ severity: 'info', eventName: selectedEvent.name, issue: 'Pending track acceptance', panel: null, eventId: selectedEvent.id });
+      }
+      if (selectedEvent.series_acceptance_status === 'Pending') {
+        items.push({ severity: 'info', eventName: selectedEvent.name, issue: 'Pending series acceptance', panel: null, eventId: selectedEvent.id });
+      }
+    }
+
+    // PendingApproval events from all events
+    allEvents
+      .filter(e => e.status === 'PendingApproval' && e.id !== selectedEvent?.id)
+      .slice(0, 3)
+      .forEach(e => items.push({ severity: 'info', eventName: e.name, issue: 'Awaiting approval to publish', panel: null, eventId: e.id }));
+
+    return items;
+  }, [selectedEvent, sessions, results, standingsDirty, allEvents]);
+
+  // ── Recent operation logs (global) ────────────────────────────────────────
   const recentLogs = useMemo(() =>
     [...operationLogs]
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-      .slice(0, 5),
+      .slice(0, 8),
     [operationLogs]
   );
 
-  // ── Alerts (priority-ordered, role/context filtered) ─────────────────────
-  const alerts = useMemo(() => {
-    const list = [];
+  // ── System health derivations ─────────────────────────────────────────────
+  const systemHealth = useMemo(() => {
+    const hasResults = results.length > 0;
+    const hasStandings = standings.length > 0;
+    const officialSessions = sessions.filter(s => s.status === 'Official' || s.status === 'Locked');
+    const recentErrors = operationLogs.filter(l => l.status === 'error').slice(0, 3);
 
-    if (!hasOrg) {
-      list.push({ id: 'no_org', type: 'info', message: 'No organization selected. Choose a Track or Series in the context bar above to begin.' });
-      return list;
-    }
+    return {
+      results:    hasResults ? 'ok' : 'standby',
+      standings:  standingsDirty ? 'warn' : hasStandings ? 'ok' : 'standby',
+      imports:    recentErrors.some(l => l.operation_type?.includes('import')) ? 'warn' : 'ok',
+      media:      'standby',
+      timing:     'standby',
+    };
+  }, [results, standings, sessions, standingsDirty, operationLogs]);
 
-    if (!hasEvent) {
-      list.push({ id: 'no_event', type: 'info', message: 'No event selected. Select or create an event to enable operations.', action: 'Create Event', onAction: () => onCreateEvent?.() });
-      return list;
-    }
+  // ── Global metrics ────────────────────────────────────────────────────────
+  const pendingApprovalCount = allEvents.filter(e => e.status === 'PendingApproval').length;
+  const draftCount           = allEvents.filter(e => e.status === 'Draft').length;
 
-    if (selectedEvent.status === 'Live') {
-      list.push({ id: 'live', type: 'live', message: `${selectedEvent.name} is LIVE.`, action: 'Go to Results', onAction: () => onTabChange('results') });
-    }
-
-    if (sessions.length === 0 && canTab(dashboardPermissions, 'classes_sessions')) {
-      list.push({ id: 'no_sessions', type: 'warning', message: 'No sessions set up for this event. Add classes and sessions before operations can begin.', action: 'Set Up', onAction: () => onTabChange('classesSessions') });
-    }
-
-    if (sessionsWithNoResults.length > 0 && canTab(dashboardPermissions, 'results')) {
-      list.push({ id: 'sessions_no_results', type: 'warning', message: `${sessionsWithNoResults.length} session${sessionsWithNoResults.length > 1 ? 's' : ''} have no results entered yet.`, action: 'Enter Results', onAction: () => onTabChange('results') });
-    }
-
-    if (draftSessions.length > 0 && officialSessions.length === 0 && canTab(dashboardPermissions, 'results')) {
-      list.push({ id: 'no_official', type: 'warning', message: `${draftSessions.length} session${draftSessions.length > 1 ? 's' : ''} are still in Draft — results are not yet published.`, action: 'Publish', onAction: () => onTabChange('results') });
-    }
-
-    if (standingsDirty && canTab(dashboardPermissions, 'points_standings')) {
-      list.push({ id: 'standings_dirty', type: 'warning', message: 'Championship standings may be out of date. Recalculate to reflect recent results.', action: 'Recalculate', onAction: () => onTabChange('pointsStandings') });
-    }
-
-    if (selectedEvent.track_acceptance_status === 'Pending' && isTrack && isOwnerOrEditor) {
-      list.push({ id: 'pending_track_accept', type: 'warning', message: 'This event is pending your track acceptance.', action: 'Review', onAction: () => onTabChange('eventBuilder') });
-    }
-
-    if (selectedEvent.series_acceptance_status === 'Pending' && isSeries && isOwnerOrEditor) {
-      list.push({ id: 'pending_series_accept', type: 'warning', message: 'This event is pending your series acceptance.', action: 'Review', onAction: () => onTabChange('eventBuilder') });
-    }
-
-    return list;
-  }, [hasOrg, hasEvent, selectedEvent, sessions, sessionsWithNoResults, draftSessions, officialSessions, standingsDirty, dashboardPermissions, isTrack, isSeries, isOwnerOrEditor, onTabChange, onCreateEvent]);
-
-  const allClear = hasEvent && alerts.filter(a => a.id !== 'live').length === 0;
-
-  // ── Quick actions (role + context filtered, max 8) ───────────────────────
-  const quickActions = useMemo(() => {
-    const actions = [];
-
-    if (canAction(dashboardPermissions, 'create_event')) {
-      actions.push({ id: 'create_event', label: 'Create Event', icon: Plus, color: 'text-blue-400', onClick: () => onCreateEvent?.(), disabled: false });
-    }
-
-    if (canTab(dashboardPermissions, 'classes_sessions') && hasEvent) {
-      actions.push({ id: 'classes', label: 'Classes & Sessions', icon: ClipboardCheck, color: 'text-purple-400', onClick: () => onTabChange('classesSessions'), disabled: false });
-    }
-
-    if (canTab(dashboardPermissions, 'entries')) {
-      actions.push({ id: 'entries', label: 'Entries', icon: Users, color: 'text-green-400', onClick: () => onTabChange('entries'), disabled: !hasEvent });
-    }
-
-    if (canAction(dashboardPermissions, 'import_csv') && isOwnerOrEditor) {
-      actions.push({ id: 'import', label: 'Import Entries', icon: Upload, color: 'text-amber-400', onClick: () => onOpenImportEntries?.(), disabled: !hasEvent });
-    }
-
-    if (canTab(dashboardPermissions, 'checkin') && (isTrack || isAdmin)) {
-      actions.push({ id: 'checkin', label: 'Check In', icon: Car, color: 'text-cyan-400', onClick: () => onTabChange('checkIn'), disabled: !hasEvent });
-    }
-
-    if (canTab(dashboardPermissions, 'results')) {
-      actions.push({ id: 'results', label: 'Results', icon: Flag, color: 'text-red-400', onClick: () => onTabChange('results'), disabled: !hasEvent });
-    }
-
-    if (canTab(dashboardPermissions, 'points_standings') && isSeries) {
-      actions.push({ id: 'standings', label: 'Points & Standings', icon: Trophy, color: 'text-yellow-400', onClick: () => onTabChange('pointsStandings'), disabled: false });
-    }
-
-    if (canTab(dashboardPermissions, 'tech') && isOwnerOrEditor) {
-      actions.push({ id: 'tech', label: 'Tech Inspection', icon: Wrench, color: 'text-orange-400', onClick: () => onTabChange('tech'), disabled: !hasEvent });
-    }
-
-    return actions.slice(0, 8);
-  }, [dashboardPermissions, hasEvent, isTrack, isSeries, isAdmin, isOwnerOrEditor, onTabChange, onCreateEvent, onOpenImportEntries]);
-
-  // ── Operational status modules (role-specific) ───────────────────────────
-  const showEventOps     = hasEvent && (isTrack || isAdmin) && canTab(dashboardPermissions, 'entries');
-  const showChampionship = hasOrg && (isSeries || isAdmin) && canTab(dashboardPermissions, 'points_standings');
-  const showTrackOps     = hasEvent && (isTrack || isAdmin) && canTab(dashboardPermissions, 'checkin');
-
-  // ── No context at all ────────────────────────────────────────────────────
-  if (!hasOrg) {
-    return (
-      <div className="py-12 text-center space-y-3">
-        <Calendar className="w-10 h-10 text-gray-700 mx-auto" />
-        <p className="text-sm font-semibold text-gray-400">Select a Track or Series to begin</p>
-        <p className="text-xs text-gray-600 max-w-xs mx-auto leading-relaxed">
-          Use the context bar above to pick an organization and season. Your workspace will load automatically.
-        </p>
-      </div>
-    );
-  }
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-0 max-w-full">
 
-      {/* ── A. Context Status ─────────────────────────────────────────────── */}
-      <div className="bg-[#161616] border border-gray-800 rounded-lg px-4 py-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
-              {dashboardContext.orgType === 'track' ? 'Track Workspace' : 'Series Workspace'}
-            </p>
-            <p className="text-sm font-bold text-white truncate">
-              {selectedTrack?.name || selectedSeries?.name || '—'}
-            </p>
-            <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-              {dashboardContext.season && (
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {dashboardContext.season}
-                </span>
-              )}
-              {hasEvent ? (
-                <span className="flex items-center gap-1 text-gray-300">
-                  <Calendar className="w-3 h-3" />
-                  {selectedEvent.name}
-                  <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                    selectedEvent.status === 'Live'      ? 'bg-red-900/50 text-red-300' :
-                    selectedEvent.status === 'Completed' ? 'bg-green-900/40 text-green-300' :
-                    selectedEvent.status === 'Published' ? 'bg-blue-900/40 text-blue-300' :
-                    'bg-gray-800 text-gray-400'
-                  }`}>
-                    {selectedEvent.status || 'Draft'}
-                  </span>
-                </span>
-              ) : (
-                <span className="text-gray-600 italic">No event selected</span>
-              )}
-            </div>
-          </div>
-          {hasEvent && sessions.length > 0 && (
-            <div className="text-right shrink-0">
-              <p className="text-xl font-black text-white">{sessions.length}</p>
-              <p className="text-[10px] text-gray-600">Sessions</p>
-            </div>
-          )}
+      {/* ── COMMAND HEADER ─────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h1 className="text-base font-black text-white tracking-tight">RaceCore Dashboard</h1>
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            Operational command center — live events, alerts, and race-day workflows.
+          </p>
         </div>
-
-        {/* Event date strip */}
-        {hasEvent && selectedEvent.event_date && (
-          <div className="mt-2 pt-2 border-t border-gray-800 text-xs text-gray-500 flex items-center gap-1.5">
-            <MapPin className="w-3 h-3" />
-            {selectedTrack?.name || 'Venue TBD'}
-            <span className="mx-1 text-gray-700">·</span>
-            {selectedEvent.event_date}
-            {selectedEvent.end_date && ` – ${selectedEvent.end_date}`}
-          </div>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {selectedEvent && (
+            <button
+              onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
+              className="flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 border border-gray-700 text-gray-400 hover:text-teal-300 hover:border-teal-700/50 rounded-lg transition-colors"
+            >
+              <Circle className="w-2.5 h-2.5 shrink-0" />
+              Current Event
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/race-control/events')}
+            className="flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 bg-teal-900/30 border border-teal-700/50 text-teal-300 hover:bg-teal-900/50 rounded-lg transition-colors font-semibold"
+          >
+            <MonitorPlay className="w-3 h-3 shrink-0" />
+            Event Operations
+          </button>
+        </div>
       </div>
 
-      {/* ── B. Alerts / Attention Needed ──────────────────────────────────── */}
-      {alerts.length > 0 && (
-        <div className="space-y-1.5">
-          <SectionLabel>Needs Attention</SectionLabel>
-          {alerts.map(a => (
-            <AlertBanner key={a.id} type={a.type} message={a.message} action={a.action} onAction={a.onAction} />
-          ))}
-        </div>
-      )}
+      {/* ── GLOBAL STATUS STRIP ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-5 gap-2 mb-5">
+        <MetricCard
+          label="Live Now"
+          value={liveEvents.length}
+          color={liveEvents.length > 0 ? 'text-red-400' : 'text-gray-600'}
+          sub={liveEvents.length > 0 ? liveEvents[0].name : 'No live events'}
+          icon={Radio}
+        />
+        <MetricCard
+          label="Upcoming"
+          value={upcomingEvents.length}
+          color="text-blue-300"
+          sub={upcomingEvents.length > 0 ? upcomingEvents[0].name : 'None scheduled'}
+          icon={Calendar}
+        />
+        <MetricCard
+          label="Action Required"
+          value={actionQueue.length}
+          color={actionQueue.length > 0 ? 'text-amber-400' : 'text-gray-600'}
+          sub={actionQueue.length === 0 ? 'No critical issues' : `${actionQueue.filter(a => a.severity === 'critical').length} critical`}
+          icon={AlertTriangle}
+        />
+        <MetricCard
+          label="Pending Publish"
+          value={pendingApprovalCount}
+          color={pendingApprovalCount > 0 ? 'text-amber-300' : 'text-gray-600'}
+          sub={pendingApprovalCount === 0 ? 'All clear' : 'awaiting approval'}
+          icon={Flag}
+        />
+        <MetricCard
+          label="Total Events"
+          value={allEvents.length}
+          color="text-gray-300"
+          sub={`${draftCount} draft`}
+          icon={BarChart2}
+        />
+      </div>
 
-      {allClear && (
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-950/20 border border-green-800/30 text-xs text-green-400">
-          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-          <span>No outstanding items — event operations are running.</span>
-        </div>
-      )}
+      {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-5 gap-4">
 
-      {/* ── Admin Quick Create ─────────────────────────────────────────── */}
-      {isAdmin && (
-        <div>
-          <SectionLabel>Quick Create</SectionLabel>
-          <div className="grid grid-cols-3 gap-2">
-            {['Driver','Team','Track','Series','Event'].map((type) => (
-              <button
-                key={type}
-                onClick={() => onOpenQuickCreate?.(type)}
-                className="flex items-center gap-2 px-3 py-2.5 bg-[#1A1A1A] border border-gray-800 hover:border-blue-700/60 hover:bg-blue-950/20 rounded-lg text-xs text-gray-400 hover:text-blue-300 transition-all text-left"
-              >
-                <Plus className="w-3 h-3 shrink-0" />
-                <span className="font-medium">{type}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        {/* ── LEFT COLUMN (3/5) ─────────────────────────────────────────── */}
+        <div className="col-span-3 space-y-4">
 
-      {/* ── C. Action Center ──────────────────────────────────────────────── */}
-      {quickActions.length > 0 && (
-        <div>
-          <SectionLabel>Action Center</SectionLabel>
-          {/* Primary actions — only when event selected */}
-          {hasEvent && (
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {[
-                canTab(dashboardPermissions, 'classes_sessions') && { id: 'sessions', label: 'Create Session', icon: Plus, color: 'text-purple-400', onClick: () => onTabChange('classesSessions') },
-                canTab(dashboardPermissions, 'results') && { id: 'results', label: 'Enter Results', icon: Flag, color: 'text-red-400', onClick: () => onTabChange('results') },
-                canTab(dashboardPermissions, 'points_standings') && isSeries && { id: 'standings', label: 'Recalc Standings', icon: RefreshCw, color: 'text-yellow-400', onClick: () => onTabChange('pointsStandings') },
-                canAction(dashboardPermissions, 'publish_official') && { id: 'publish', label: 'Publish Official', icon: Database, color: 'text-green-400', onClick: () => onTabChange('results') },
-              ].filter(Boolean).slice(0, 4).map(a => (
-                <QuickActionButton key={a.id} icon={a.icon} label={a.label} color={a.color} onClick={a.onClick} disabled={false} />
-              ))}
-            </div>
-          )}
-          {/* Secondary / navigation actions */}
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map(a => (
-              <QuickActionButton key={a.id} icon={a.icon} label={a.label} color={a.color} onClick={a.onClick} disabled={a.disabled} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── E. Weekend Status ────────────────────────────────────────────── */}
-      {hasEvent && (
-        <div>
-          <SectionLabel>Weekend Status</SectionLabel>
-          <div className="grid grid-cols-2 gap-2">
-
-            {/* Sessions */}
-            {canTab(dashboardPermissions, 'classes_sessions') && (
-              <button
-                onClick={() => onTabChange('classesSessions')}
-                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
-              >
-                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${sessions.length === 0 ? 'text-gray-600' : draftSessions.length > 0 ? 'text-amber-400' : 'text-green-400'}`}>Sessions</p>
-                <p className={`text-sm font-semibold ${sessions.length === 0 ? 'text-gray-500' : 'text-white'}`}>
-                  {sessions.length === 0 ? 'Not started' : `${sessions.length} sessions`}
-                </p>
-                {sessions.length > 0 && (
-                  <p className={`text-[10px] mt-0.5 ${draftSessions.length > 0 ? 'text-amber-500' : 'text-gray-600'}`}>
-                    {officialSessions.length} official · {draftSessions.length} draft
-                  </p>
-                )}
-              </button>
-            )}
-
-            {/* Results */}
-            {canTab(dashboardPermissions, 'results') && (
-              <button
-                onClick={() => onTabChange('results')}
-                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
-              >
-                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${results.length === 0 ? 'text-gray-600' : sessionsWithNoResults.length > 0 ? 'text-amber-400' : 'text-green-400'}`}>Results</p>
-                <p className={`text-sm font-semibold ${results.length === 0 ? 'text-gray-500' : 'text-white'}`}>
-                  {results.length === 0 ? 'No results yet' : `${results.length} results entered`}
-                </p>
-                {sessions.length > 0 && sessionsWithNoResults.length > 0 && (
-                  <p className="text-[10px] mt-0.5 text-amber-500">{sessionsWithNoResults.length} session{sessionsWithNoResults.length > 1 ? 's' : ''} missing results</p>
-                )}
-                {results.length > 0 && sessionsWithNoResults.length === 0 && (
-                  <p className="text-[10px] mt-0.5 text-gray-600">All sessions covered</p>
-                )}
-              </button>
-            )}
-
-            {/* Standings */}
-            {canTab(dashboardPermissions, 'points_standings') && (
-              <button
-                onClick={() => onTabChange('pointsStandings')}
-                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
-              >
-                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${standingsDirty ? 'text-amber-400' : standings.length === 0 ? 'text-gray-600' : 'text-green-400'}`}>Standings</p>
-                <p className={`text-sm font-semibold ${standings.length === 0 ? 'text-gray-500' : 'text-white'}`}>
-                  {standingsDirty ? 'Needs recalculation' : standings.length === 0 ? 'Not calculated' : `${standings.length} entries`}
-                </p>
-                {standingsDirty && <p className="text-[10px] mt-0.5 text-amber-500">Results changed since last calc</p>}
-                {!standingsDirty && standings.length > 0 && <p className="text-[10px] mt-0.5 text-gray-600">Up to date</p>}
-              </button>
-            )}
-
-            {/* Official sessions */}
-            {canTab(dashboardPermissions, 'results') && sessions.length > 0 && (
-              <button
-                onClick={() => onTabChange('results')}
-                className="bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg p-3 text-left transition-colors"
-              >
-                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${officialSessions.length === 0 ? 'text-gray-600' : 'text-blue-400'}`}>Published</p>
-                <p className={`text-sm font-semibold ${officialSessions.length === 0 ? 'text-gray-500' : 'text-white'}`}>
-                  {officialSessions.length === 0 ? 'None published yet' : `${officialSessions.length} of ${sessions.length} official`}
-                </p>
-                {officialSessions.length > 0 && officialSessions.length < sessions.length && (
-                  <p className="text-[10px] mt-0.5 text-gray-600">{sessions.length - officialSessions.length} still draft</p>
-                )}
-                {officialSessions.length === sessions.length && sessions.length > 0 && (
-                  <p className="text-[10px] mt-0.5 text-green-600">All sessions published</p>
-                )}
-              </button>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* ── F. Session Snapshot ──────────────────────────────────────────── */}
-      {hasEvent && canTab(dashboardPermissions, 'classes_sessions') && (
-        <div>
-          <SectionLabel>Session Snapshot</SectionLabel>
-          {sessions.length === 0 ? (
-            <div className="bg-[#161616] border border-gray-800/50 border-dashed rounded-lg px-4 py-6 text-center">
-              <Calendar className="w-5 h-5 text-gray-700 mx-auto mb-2" />
-              <p className="text-xs text-gray-600 mb-2">No sessions created yet.</p>
-              {canTab(dashboardPermissions, 'classes_sessions') && (
-                <button
-                  onClick={() => onTabChange('classesSessions')}
-                  className="text-xs px-3 py-1.5 bg-[#1A1A1A] border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white rounded transition-colors"
-                >
-                  + Create First Session
-                </button>
+          {/* LIVE EVENTS BOARD */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
+              <PanelLabel>Live Events</PanelLabel>
+              {liveEvents.length > 0 && (
+                <span className="flex items-center gap-1 text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  {liveEvents.length} Active
+                </span>
               )}
+            </div>
+            <div className="divide-y divide-gray-800/60">
+              {liveEvents.length === 0 ? (
+                <div className="px-3 py-6 text-center">
+                  <Radio className="w-6 h-6 text-gray-700 mx-auto mb-2" />
+                  <p className="text-xs text-gray-600 font-medium">No live events right now</p>
+                  <p className="text-[10px] text-gray-700 mt-0.5">Standby — next event will appear here when active</p>
+                  <button
+                    onClick={() => navigate('/race-control/events')}
+                    className="mt-3 text-[10px] text-teal-500 hover:text-teal-300 flex items-center gap-1 mx-auto transition-colors"
+                  >
+                    View Event Schedule <ArrowRight className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              ) : (
+                liveEvents.map(ev => (
+                  <div key={ev.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#161616] transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-xs font-semibold text-white truncate">{ev.name}</p>
+                        <StatusBadge status={ev.status} />
+                      </div>
+                      <p className="text-[10px] text-gray-500 truncate">
+                        {ev.series_name || '—'} · {ev.event_date || '—'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/race-control/events/${ev.id}`)}
+                      className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1 bg-teal-900/30 border border-teal-800/40 text-teal-300 hover:bg-teal-900/50 rounded transition-colors font-medium"
+                    >
+                      Open <ExternalLink className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* ACTION REQUIRED QUEUE */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
+              <PanelLabel>Action Required</PanelLabel>
+              {actionQueue.length > 0 && (
+                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">{actionQueue.length} item{actionQueue.length > 1 ? 's' : ''}</span>
+              )}
+            </div>
+            <div className="p-2 space-y-1.5">
+              {actionQueue.length === 0 ? (
+                <div className="px-3 py-4 text-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-700 mx-auto mb-1.5" />
+                  <p className="text-xs text-gray-600 font-medium">No critical issues</p>
+                  <p className="text-[10px] text-gray-700 mt-0.5">All tracked events are clear</p>
+                </div>
+              ) : (
+                actionQueue.map((item, i) => (
+                  <ActionItem key={i} {...item} />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* UPCOMING EVENTS */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
+              <PanelLabel>Upcoming Events</PanelLabel>
+              <button
+                onClick={() => navigate('/race-control/events')}
+                className="text-[9px] text-gray-600 hover:text-teal-400 transition-colors flex items-center gap-1"
+              >
+                All Events <ArrowRight className="w-2.5 h-2.5" />
+              </button>
+            </div>
+            <div className="divide-y divide-gray-800/60">
+              {upcomingEvents.length === 0 ? (
+                <div className="px-3 py-5 text-center">
+                  <Calendar className="w-5 h-5 text-gray-700 mx-auto mb-1.5" />
+                  <p className="text-xs text-gray-600">No upcoming events scheduled</p>
+                </div>
+              ) : (
+                upcomingEvents.map(ev => {
+                  const daysUntil = Math.ceil((new Date(ev.event_date) - today) / (1000 * 60 * 60 * 24));
+                  return (
+                    <div key={ev.id} className="flex items-center gap-3 px-3 py-2 hover:bg-[#161616] transition-colors">
+                      <div className="shrink-0 text-center w-9">
+                        <p className="text-[9px] font-bold text-gray-600 uppercase tracking-wide">
+                          {new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short' })}
+                        </p>
+                        <p className="text-sm font-black text-gray-300 leading-none">
+                          {new Date(ev.event_date).getDate()}
+                        </p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-white truncate">{ev.name}</p>
+                        <p className="text-[10px] text-gray-500 truncate">{ev.series_name || '—'}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[9px] text-gray-600">{daysUntil}d</span>
+                        <StatusBadge status={ev.status} />
+                        <button
+                          onClick={() => navigate(`/race-control/events/${ev.id}`)}
+                          className="text-gray-600 hover:text-teal-400 transition-colors"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── RIGHT COLUMN (2/5) ────────────────────────────────────────── */}
+        <div className="col-span-2 space-y-4">
+
+          {/* CURRENT EVENT CONTEXT (compact) */}
+          {selectedEvent ? (
+            <div className="bg-[#111] border border-gray-800 rounded-lg p-3">
+              <PanelLabel>Current Context</PanelLabel>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">{selectedEvent.name}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5 truncate">
+                    {selectedTrack?.name || selectedSeries?.name || '—'}
+                    {selectedEvent.event_date && ` · ${selectedEvent.event_date}`}
+                  </p>
+                </div>
+                <StatusBadge status={selectedEvent.status} />
+              </div>
+              <div className="flex gap-2 flex-wrap text-[10px]">
+                <span className="text-gray-600">{sessions.length} sessions</span>
+                <span className="text-gray-700">·</span>
+                <span className="text-gray-600">{results.length} results</span>
+                {standingsDirty && <span className="text-amber-400">· standings dirty</span>}
+              </div>
+              <button
+                onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
+                className="mt-2.5 w-full flex items-center justify-center gap-1.5 text-[10px] py-1.5 bg-teal-900/25 border border-teal-800/40 text-teal-300 hover:bg-teal-900/40 rounded transition-colors font-semibold"
+              >
+                <Zap className="w-2.5 h-2.5" /> Open Event Operations
+              </button>
             </div>
           ) : (
-            <div className="space-y-1">
-              {/* Next upcoming session */}
-              {(() => {
-                const upcoming = [...sessions]
-                  .filter(s => s.status === 'Draft' || s.status === 'Provisional')
-                  .sort((a, b) => (a.run_order ?? 999) - (b.run_order ?? 999));
-                const next = upcoming[0];
-                if (!next) return null;
-                return (
-                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-blue-900/40 rounded text-xs">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 mr-2">Next</span>
-                      <span className="text-gray-200 font-medium">{next.name || next.session_type}</span>
-                    </div>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${next.status === 'Provisional' ? 'bg-amber-900/40 text-amber-300' : 'bg-gray-800 text-gray-500'}`}>{next.status}</span>
-                  </div>
-                );
-              })()}
-              {/* Latest official */}
-              {(() => {
-                const latest = [...officialSessions].sort((a, b) => (b.run_order ?? 0) - (a.run_order ?? 0))[0];
-                if (!latest) return null;
-                return (
-                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-green-900/30 rounded text-xs">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-green-400 mr-2">Latest</span>
-                      <span className="text-gray-200 font-medium">{latest.name || latest.session_type}</span>
-                    </div>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-green-900/40 text-green-300">{latest.status}</span>
-                  </div>
-                );
-              })()}
-              {/* Sessions missing results */}
-              {sessionsWithNoResults.length > 0 && (
-                <button
-                  onClick={() => onTabChange('results')}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-[#161616] border border-amber-900/30 rounded text-xs hover:border-amber-700/50 transition-colors"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Missing Results</span>
-                  </div>
-                  <span className="text-amber-300 font-medium">{sessionsWithNoResults.length} session{sessionsWithNoResults.length > 1 ? 's' : ''} → Enter Results</span>
-                </button>
-              )}
-              {/* Scoring sessions count */}
-              {(() => {
-                const scoring = sessions.filter(s => s.session_type === 'Final' || s.session_type === 'Feature');
-                if (scoring.length === 0) return null;
-                return (
-                  <div className="flex items-center justify-between px-3 py-2 bg-[#161616] border border-gray-800/50 rounded text-xs">
-                    <span className="text-gray-500">Scoring sessions</span>
-                    <span className="text-gray-300 font-medium">{scoring.length}</span>
-                  </div>
-                );
-              })()}
+            <div className="bg-[#111] border border-gray-800 rounded-lg p-3">
+              <PanelLabel>Current Context</PanelLabel>
+              <p className="text-xs text-gray-600 italic">No event selected in context bar</p>
             </div>
           )}
-        </div>
-      )}
 
-      {/* ── Championship module — Series or Admin ───────────────────────── */}
-      {showChampionship && (
-        <div>
-          <SectionLabel>Championship</SectionLabel>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onTabChange('pointsStandings')}
-              className="flex items-center gap-3 bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg px-3 py-3 text-left transition-colors"
-            >
-              <Trophy className={`w-4 h-4 shrink-0 ${standingsDirty ? 'text-amber-400' : 'text-yellow-500'}`} />
-              <div>
-                <p className="text-xs font-semibold text-gray-200">Points &amp; Standings</p>
-                <p className={`text-[10px] mt-0.5 ${standingsDirty ? 'text-amber-400' : 'text-gray-600'}`}>
-                  {standingsDirty ? 'Recalculation needed' : `${standings.length} entries`}
-                </p>
-              </div>
-            </button>
-            {hasEvent && canTab(dashboardPermissions, 'event_builder') && (
+          {/* OPERATIONS FEED */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
+              <PanelLabel>Operations Feed</PanelLabel>
               <button
-                onClick={() => onTabChange('eventBuilder')}
-                className="flex items-center gap-3 bg-[#171717] border border-gray-800 hover:border-gray-700 rounded-lg px-3 py-3 text-left transition-colors"
+                onClick={() => navigate(selectedEvent ? `/race-control/events/${selectedEvent.id}/activity` : '/race-control/events')}
+                className="text-[9px] text-gray-600 hover:text-teal-400 transition-colors flex items-center gap-1"
               >
-                <Layers className="w-4 h-4 shrink-0 text-blue-400" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-200">Event Setup</p>
-                  <p className="text-[10px] text-gray-600 mt-0.5">
-                    {selectedEvent?.track_acceptance_status === 'Pending' ? 'Pending acceptance' : 'Edit structure'}
-                  </p>
-                </div>
+                View Activity <ArrowRight className="w-2.5 h-2.5" />
               </button>
-            )}
+            </div>
+            <div className="divide-y divide-gray-800/50">
+              {recentLogs.length === 0 ? (
+                <div className="px-3 py-5 text-center">
+                  <Activity className="w-5 h-5 text-gray-700 mx-auto mb-1.5" />
+                  <p className="text-xs text-gray-600">No recent operations yet</p>
+                </div>
+              ) : (
+                recentLogs.map(log => {
+                  const isErr = log.status === 'error';
+                  const isOk  = log.status === 'success';
+                  const timeStr = log.created_date
+                    ? new Date(log.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                    : '—';
+                  return (
+                    <div key={log.id} className="flex items-center gap-2 px-3 py-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isErr ? 'bg-red-500' : isOk ? 'bg-green-500' : 'bg-gray-600'}`} />
+                      <span className="text-[10px] text-gray-400 flex-1 truncate">
+                        {log.operation_type?.replace(/_/g, ' ') || 'operation'}
+                      </span>
+                      <span className="text-[9px] text-gray-700 shrink-0">{timeStr}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Track venue ops — Check-in / Compliance / Tech strip */}
-      {showTrackOps && (
-        <div>
-          <SectionLabel>Venue Operations</SectionLabel>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { label: 'Check In',   icon: UserCheck, tab: 'checkIn',    can: canTab(dashboardPermissions, 'checkin'),    color: 'text-cyan-400' },
-              { label: 'Compliance', icon: AlertTriangle, tab: 'compliance', can: canTab(dashboardPermissions, 'compliance'), color: 'text-amber-400' },
-              { label: 'Tech',       icon: Wrench,    tab: 'tech',       can: canTab(dashboardPermissions, 'tech'),        color: 'text-orange-400' },
-              { label: 'Race Ctrl',  icon: Radio,     tab: 'raceControlConsole', can: canTab(dashboardPermissions, 'race_control'), color: 'text-purple-400' },
-            ].filter(i => i.can).map(item => {
-              const Icon = item.icon;
-              return (
+          {/* SYSTEM HEALTH */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-3 py-2 border-b border-gray-800">
+              <PanelLabel>System Health</PanelLabel>
+            </div>
+            <div className="px-3 py-2 space-y-1.5">
+              {[
+                { label: 'Results',   state: systemHealth.results   },
+                { label: 'Standings', state: systemHealth.standings  },
+                { label: 'Imports',   state: systemHealth.imports    },
+                { label: 'Media',     state: systemHealth.media      },
+                { label: 'Timing',    state: systemHealth.timing     },
+              ].map(({ label, state }) => {
+                const stateLabel = state === 'ok' ? 'Ready' : state === 'warn' ? 'Attention' : state === 'error' ? 'Error' : 'Standby';
+                const stateColor = state === 'ok' ? 'text-green-400' : state === 'warn' ? 'text-amber-400' : state === 'error' ? 'text-red-400' : 'text-gray-600';
+                return (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-500">{label}</span>
+                    <div className="flex items-center gap-1.5">
+                      <HealthDot state={state} />
+                      <span className={`text-[9px] font-semibold ${stateColor}`}>{stateLabel}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* QUICK ACTIONS */}
+          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-3 py-2 border-b border-gray-800">
+              <PanelLabel>Quick Actions</PanelLabel>
+            </div>
+            <div className="p-2 space-y-1">
+              {canAction(dashboardPermissions, 'create_event') && (
                 <button
-                  key={item.tab}
-                  onClick={() => onTabChange(item.tab)}
-                  className="flex items-center gap-2 px-3 py-2 bg-[#1A1A1A] border border-gray-800 hover:border-gray-700 rounded-lg text-xs text-gray-300 hover:text-white transition-colors"
+                  onClick={() => onCreateEvent?.()}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-blue-300 hover:bg-blue-950/20 rounded transition-colors text-left"
                 >
-                  <Icon className={`w-3.5 h-3.5 ${item.color}`} />
-                  {item.label}
+                  <Plus className="w-3 h-3 text-blue-400 shrink-0" /> Create Event
                 </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── D. Recent Activity ────────────────────────────────────────────── */}
-      <div>
-        <SectionLabel>Recent Activity</SectionLabel>
-        {recentLogs.length === 0 ? (
-          <div className="px-3 py-5 bg-[#161616] border border-gray-800/50 rounded-lg text-center">
-            <Activity className="w-5 h-5 text-gray-700 mx-auto mb-1.5" />
-            <p className="text-xs text-gray-600">No recent activity in this workspace.</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {recentLogs.map(log => {
-              const isSuccess = log.status === 'success';
-              const isError   = log.status === 'error';
-              const timeAgo = log.created_date
-                ? new Date(log.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                : '—';
-              return (
-                <div key={log.id} className="flex items-center gap-2.5 px-3 py-2 bg-[#161616] border border-gray-800/50 rounded text-xs">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSuccess ? 'bg-green-500' : isError ? 'bg-red-500' : 'bg-gray-600'}`} />
-                  <span className="text-gray-300 truncate flex-1">{log.operation_type?.replace(/_/g, ' ') || 'Operation'}</span>
-                  <span className="text-gray-600 shrink-0 text-[10px]">{log.entity_name || ''}</span>
-                  <span className="text-gray-700 shrink-0 text-[10px]">{timeAgo}</span>
-                </div>
-              );
-            })}
-            {isAdmin && (
+              )}
+              {isAdmin && (
+                <button
+                  onClick={() => onOpenImportEntries?.()}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-amber-300 hover:bg-amber-950/20 rounded transition-colors text-left"
+                >
+                  <Upload className="w-3 h-3 text-amber-400 shrink-0" /> Import Data
+                </button>
+              )}
               <button
-                onClick={() => onTabChange('auditLog')}
-                className="mt-1 text-[11px] text-gray-600 hover:text-gray-400 flex items-center gap-1 transition-colors"
+                onClick={() => navigate('/race-control/events')}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-teal-300 hover:bg-teal-950/20 rounded transition-colors text-left"
               >
-                View full audit log <ArrowRight className="w-3 h-3" />
+                <MonitorPlay className="w-3 h-3 text-teal-400 shrink-0" /> Open Event Operations
               </button>
-            )}
+              {isAdmin && (
+                <button
+                  onClick={() => onTabChange('media_portal')}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-purple-300 hover:bg-purple-950/20 rounded transition-colors text-left"
+                >
+                  <Users className="w-3 h-3 text-purple-400 shrink-0" /> Open Media Portal
+                </button>
+              )}
+              {isAdmin && (
+                <button
+                  onClick={() => onTabChange('auditLog')}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 rounded transition-colors text-left"
+                >
+                  <Activity className="w-3 h-3 text-gray-500 shrink-0" /> View Audit Log
+                </button>
+              )}
+              {isAdmin && (
+                <button
+                  onClick={() => onOpenQuickCreate?.('Driver')}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 rounded transition-colors text-left"
+                >
+                  <Plus className="w-3 h-3 text-gray-500 shrink-0" /> Quick Create Entity
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* ── No event CTA (below activity, only when relevant) ─────────────── */}
-      {hasOrg && !hasEvent && canAction(dashboardPermissions, 'create_event') && (
-        <div className="pt-1">
-          <button
-            onClick={() => onCreateEvent?.()}
-            className="flex items-center gap-2 px-4 py-3 bg-blue-900/20 border border-blue-800/40 text-blue-300 rounded-lg text-sm font-medium hover:bg-blue-900/35 transition-colors w-full justify-center"
-          >
-            <Plus className="w-4 h-4" /> Create an Event to Begin
-          </button>
         </div>
-      )}
-
-      {/* ── Event Files primary CTAs ──────────────────────────────────────── */}
-      <div className="pt-3 border-t border-gray-800 space-y-2">
-        <button
-          onClick={() => navigate('/race-control/events')}
-          className="flex items-center gap-2 px-4 py-3 bg-teal-900/25 border border-teal-700/50 text-teal-300 rounded-lg text-sm font-bold hover:bg-teal-900/40 transition-colors w-full justify-center"
-        >
-          <ArrowRight className="w-4 h-4" /> View All Event Files
-        </button>
-        {hasEvent && (
-          <button
-            onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] border border-gray-700 hover:border-teal-700/40 text-gray-300 hover:text-teal-300 rounded-lg text-xs font-semibold transition-colors w-full justify-center"
-          >
-            <ArrowRight className="w-3.5 h-3.5" /> Open Current Event File — {selectedEvent.name}
-          </button>
-        )}
       </div>
 
     </div>

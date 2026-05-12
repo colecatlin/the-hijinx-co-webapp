@@ -1154,11 +1154,12 @@ export default function RegistrationDashboard() {
                   operationLogs={operationLogs}
                   standingsDirty={standingsDirty}
                   isAdmin={isAdmin}
-                    user={user}
-                    onTabChange={setActiveTab}
-                    onCreateEvent={handleCreateEvent}
-                    onOpenImportEntries={() => setShowImportEntriesModal(true)}
-                    onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
+                  user={user}
+                  onTabChange={setActiveTab}
+                  onCreateEvent={handleCreateEvent}
+                  onOpenImportEntries={() => setShowImportEntriesModal(true)}
+                  onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
+                  allEvents={events}
                 />
               )}
 
