@@ -49,15 +49,19 @@ function StatusBadge({ status }) {
   );
 }
 
-function MetricCard({ label, value, color = 'text-white', sub, icon: Icon }) {
+function MetricCard({ label, value, color = 'text-white', sub, icon: Icon, urgent = false }) {
   return (
-    <div className="bg-[#111] border border-gray-800 rounded-lg px-3 py-2.5 min-w-0">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">{label}</p>
-        {Icon && <Icon className="w-3 h-3 text-gray-700" />}
+    <div className={`border rounded-lg px-2.5 py-2 min-w-0 transition-all ${
+      urgent 
+        ? 'bg-red-950/25 border-red-800/50' 
+        : 'bg-[#0F0F0F] border-gray-800'
+    }`}>
+      <div className="flex items-center justify-between mb-0.5">
+        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-600">{label}</p>
+        {Icon && <Icon className={`w-2.5 h-2.5 ${urgent ? 'text-red-600' : 'text-gray-700'}`} />}
       </div>
-      <p className={`text-xl font-black ${color}`}>{value}</p>
-      {sub && <p className="text-[10px] text-gray-600 mt-0.5 truncate">{sub}</p>}
+      <p className={`text-lg font-black ${color}`}>{value}</p>
+      {sub && <p className="text-[9px] text-gray-600 mt-1 truncate">{sub}</p>}
     </div>
   );
 }
@@ -226,44 +230,102 @@ export default function RaceCoreHome({
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-0 max-w-full">
+    <div className="space-y-0 max-w-full bg-[#0A0A0A]">
 
-      {/* ── COMMAND HEADER ─────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-lg font-black text-white tracking-tight">RaceCore Dashboard</h1>
-          <p className="text-xs text-gray-600 mt-1">
-            Command center — live events, alerts, and operations.
-          </p>
+      {/* ── COMMAND HEADER + OPERATIONAL TELEMETRY ─────────────────────────── */}
+      <div className="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-800/50">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-black text-white tracking-tight">RaceCore</h1>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        
+        {/* Compact telemetry strip */}
+        <div className="flex items-center gap-3 text-[9px] text-gray-500 font-mono uppercase tracking-widest shrink-0">
+          {liveEvents.length > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-red-950/30 border border-red-800/40 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-red-300">{liveEvents.length} LIVE</span>
+            </div>
+          )}
+          {actionQueue.length > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-950/30 border border-amber-800/40 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span className="text-amber-300">{actionQueue.length} ALERT</span>
+            </div>
+          )}
+          {standingsDirty && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-950/30 border border-blue-800/40 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <span className="text-blue-300">STANDINGS DIRTY</span>
+            </div>
+          )}
+          {pendingApprovalCount > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-900 border border-gray-700/50 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+              <span className="text-gray-400">{pendingApprovalCount} PENDING</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
           {selectedEvent && (
             <button
               onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-              className="flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 border border-gray-700 text-gray-400 hover:text-teal-300 hover:border-teal-700/50 rounded-lg transition-colors"
+              className="text-[10px] px-2.5 py-1.5 border border-gray-700 text-gray-400 hover:text-teal-300 hover:border-teal-700/50 rounded transition-colors"
             >
-              <Circle className="w-2.5 h-2.5 shrink-0" />
-              Current Event
+              EVENT
             </button>
           )}
           <button
             onClick={() => navigate('/race-control/events')}
-            className="flex items-center gap-1.5 text-[10px] px-2.5 py-1.5 bg-teal-900/30 border border-teal-700/50 text-teal-300 hover:bg-teal-900/50 rounded-lg transition-colors font-semibold"
+            className="text-[10px] px-2.5 py-1.5 bg-teal-900/30 border border-teal-700/50 text-teal-300 hover:bg-teal-900/50 rounded font-bold transition-colors"
           >
-            <MonitorPlay className="w-3 h-3 shrink-0" />
-            Event Operations
+            OPS
           </button>
         </div>
       </div>
 
-      {/* ── GLOBAL STATUS STRIP ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-2 mb-6">
+      {/* ── LIVE EVENTS DOMINANT ZONE (moved to top) ─────────────────────────── */}
+      {liveEvents.length > 0 && (
+        <div className="mb-4 border-l-4 border-red-500 bg-red-950/15 rounded-r-lg overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-red-800/40 bg-red-950/25">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-red-300">ACTIVE RACES</p>
+              <span className="text-[9px] text-red-400 font-mono">{liveEvents.length}</span>
+            </div>
+          </div>
+          <div className="divide-y divide-red-800/30">
+            {liveEvents.map(ev => (
+              <div key={ev.id} className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-red-950/30 transition-colors group">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white truncate">{ev.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5 text-[9px] text-gray-400">
+                    <span>{ev.series_name || '—'}</span>
+                    <span className="text-gray-700">·</span>
+                    <span className="font-mono">{ev.event_date || '—'}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate(`/race-control/events/${ev.id}`)}
+                  className="shrink-0 text-[10px] px-2.5 py-1 bg-red-900/40 border border-red-700/60 text-red-300 hover:bg-red-900/60 rounded font-semibold transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  Open
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── GLOBAL STATUS STRIP (compact metrics) ─────────────────────────── */}
+      <div className="grid grid-cols-5 gap-1.5 mb-3">
         <MetricCard
           label="Live Now"
           value={liveEvents.length}
-          color={liveEvents.length > 0 ? 'text-red-400' : 'text-gray-600'}
-          sub={liveEvents.length > 0 ? liveEvents[0].name : 'No live events'}
+          color={liveEvents.length > 0 ? 'text-red-500' : 'text-gray-600'}
+          sub={liveEvents.length > 0 ? liveEvents[0].name : 'Standby'}
           icon={Radio}
+          urgent={liveEvents.length > 0}
         />
         <MetricCard
           label="Upcoming"
@@ -300,84 +362,49 @@ export default function RaceCoreHome({
       </div>
 
       {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 gap-3">
 
-        {/* ── LEFT COLUMN (3/5) ─────────────────────────────────────────── */}
-        <div className="col-span-3 space-y-4">
+        {/* ── LEFT COLUMN (2/3 - operations focus) ─────────────────────── */}
+        <div className="col-span-2 space-y-3">
 
-          {/* LIVE EVENTS BOARD */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
-              <PanelLabel>Live Events</PanelLabel>
-              {liveEvents.length > 0 && (
-                <span className="flex items-center gap-1 text-[9px] text-red-400 font-bold uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  {liveEvents.length} Active
-                </span>
-              )}
-            </div>
-            <div className="divide-y divide-gray-800/60">
-              {liveEvents.length === 0 ? (
-                <div className="px-3 py-6 text-center">
-                  <Radio className="w-6 h-6 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-600 font-medium">No live events right now</p>
-                  <p className="text-[10px] text-gray-700 mt-0.5">Standby — next event will appear here when active</p>
-                  <button
-                    onClick={() => navigate('/race-control/events')}
-                    className="mt-3 text-[10px] text-teal-500 hover:text-teal-300 flex items-center gap-1 mx-auto transition-colors"
-                  >
-                    View Event Schedule <ArrowRight className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              ) : (
-                liveEvents.map(ev => (
-                  <div key={ev.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-[#161616] transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-xs font-semibold text-white truncate">{ev.name}</p>
-                        <StatusBadge status={ev.status} />
+          {/* ACTION REQUIRED (promoted priority) */}
+          {actionQueue.length > 0 && (
+            <div className="border-l-4 border-amber-500 bg-amber-950/15 rounded-r-lg overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-amber-950/30 border-b border-amber-800/40">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-300">ALERTS</p>
+                <span className="text-[9px] text-amber-400 font-mono">{actionQueue.length}</span>
+              </div>
+              <div className="divide-y divide-amber-800/25 max-h-32 overflow-y-auto">
+                {actionQueue.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-amber-950/25 transition-colors group">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span className={`w-1 h-1 rounded-full shrink-0 ${
+                        item.severity === 'critical' ? 'bg-red-500' : 'bg-amber-400'
+                      }`} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[9px] text-gray-300 truncate">{item.eventName}</p>
+                        <p className={`text-[8px] ${
+                          item.severity === 'critical' ? 'text-red-300' : 'text-amber-300'
+                        } truncate`}>{item.issue}</p>
                       </div>
-                      <p className="text-[10px] text-gray-500 truncate">
-                        {ev.series_name || '—'} · {ev.event_date || '—'}
-                      </p>
                     </div>
                     <button
-                      onClick={() => navigate(`/race-control/events/${ev.id}`)}
-                      className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1 bg-teal-900/30 border border-teal-800/40 text-teal-300 hover:bg-teal-900/50 rounded transition-colors font-medium"
+                      onClick={() => navigate(item.panel ? `/race-control/events/${item.eventId}/${item.panel}` : `/race-control/events/${item.eventId}`)}
+                      className="shrink-0 text-[8px] px-1.5 py-0.5 bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:border-gray-600 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      Open <ExternalLink className="w-2.5 h-2.5" />
+                      Fix
                     </button>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-
-          {/* ACTION REQUIRED QUEUE */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
-              <PanelLabel>Action Required</PanelLabel>
-              {actionQueue.length > 0 && (
-                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">{actionQueue.length} item{actionQueue.length > 1 ? 's' : ''}</span>
-              )}
-            </div>
-            <div className="p-2 space-y-1.5">
-              {actionQueue.length === 0 ? (
-                <div className="px-3 py-4 text-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-700 mx-auto mb-1.5" />
-                  <p className="text-xs text-gray-600 font-medium">No critical issues</p>
-                  <p className="text-[10px] text-gray-700 mt-0.5">All tracked events are clear</p>
-                </div>
-              ) : (
-                actionQueue.map((item, i) => (
-                  <ActionItem key={i} {...item} />
-                ))
-              )}
-            </div>
-          </div>
+          )}
 
           {/* UPCOMING EVENTS */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
+
+          {/* UPCOMING EVENTS (compact density) */}
+          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
               <PanelLabel>Upcoming Events</PanelLabel>
               <button
@@ -387,37 +414,22 @@ export default function RaceCoreHome({
                 All Events <ArrowRight className="w-2.5 h-2.5" />
               </button>
             </div>
-            <div className="divide-y divide-gray-800/60">
+            <div className="divide-y divide-gray-800/50 max-h-40 overflow-y-auto">
               {upcomingEvents.length === 0 ? (
-                <div className="px-3 py-5 text-center">
-                  <Calendar className="w-5 h-5 text-gray-700 mx-auto mb-1.5" />
-                  <p className="text-xs text-gray-600">No upcoming events scheduled</p>
-                </div>
+                <div className="px-3 py-3 text-center text-[10px] text-gray-600">Standby</div>
               ) : (
                 upcomingEvents.map(ev => {
                   const daysUntil = Math.ceil((new Date(ev.event_date) - today) / (1000 * 60 * 60 * 24));
                   return (
-                    <div key={ev.id} className="flex items-center gap-3 px-3 py-2 hover:bg-[#161616] transition-colors">
-                      <div className="shrink-0 text-center w-9">
-                        <p className="text-[9px] font-bold text-gray-600 uppercase tracking-wide">
-                          {new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short' })}
-                        </p>
-                        <p className="text-sm font-black text-gray-300 leading-none">
-                          {new Date(ev.event_date).getDate()}
-                        </p>
-                      </div>
+                    <div key={ev.id} className="flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-[#161616] transition-colors text-[9px]">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white truncate">{ev.name}</p>
-                        <p className="text-[10px] text-gray-500 truncate">{ev.series_name || '—'}</p>
+                        <p className="font-semibold text-white truncate">{ev.name}</p>
+                        <p className="text-gray-500 truncate">{new Date(ev.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {daysUntil}d</p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[9px] text-gray-600">{daysUntil}d</span>
+                      <div className="flex items-center gap-1 shrink-0">
                         <StatusBadge status={ev.status} />
-                        <button
-                          onClick={() => navigate(`/race-control/events/${ev.id}`)}
-                          className="text-gray-600 hover:text-teal-400 transition-colors"
-                        >
-                          <ArrowRight className="w-3 h-3" />
+                        <button onClick={() => navigate(`/race-control/events/${ev.id}`)} className="text-gray-600 hover:text-teal-400">
+                          <ArrowRight className="w-2.5 h-2.5" />
                         </button>
                       </div>
                     </div>
@@ -429,74 +441,31 @@ export default function RaceCoreHome({
 
         </div>
 
-        {/* ── RIGHT COLUMN (2/5) ────────────────────────────────────────── */}
-        <div className="col-span-2 space-y-4">
+        {/* ── RIGHT COLUMN (1/3 - operations rail) ─────────────────────────── */}
+        <div className="col-span-1 space-y-3">
 
-          {/* CURRENT EVENT CONTEXT (compact) */}
-          {selectedEvent ? (
-            <div className="bg-[#111] border border-gray-800 rounded-lg p-3">
-              <PanelLabel>Current Context</PanelLabel>
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-white truncate">{selectedEvent.name}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5 truncate">
-                    {selectedTrack?.name || selectedSeries?.name || '—'}
-                    {selectedEvent.event_date && ` · ${selectedEvent.event_date}`}
-                  </p>
-                </div>
-                <StatusBadge status={selectedEvent.status} />
-              </div>
-              <div className="flex gap-2 flex-wrap text-[10px]">
-                <span className="text-gray-600">{sessions.length} sessions</span>
-                <span className="text-gray-700">·</span>
-                <span className="text-gray-600">{results.length} results</span>
-                {standingsDirty && <span className="text-amber-400">· standings dirty</span>}
-              </div>
-              <button
-                onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-                className="mt-2.5 w-full flex items-center justify-center gap-1.5 text-[10px] py-1.5 bg-teal-900/25 border border-teal-800/40 text-teal-300 hover:bg-teal-900/40 rounded transition-colors font-semibold"
-              >
-                <Zap className="w-2.5 h-2.5" /> Open Event Operations
+          {/* OPERATIONS FEED (compact, live) */}
+          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
+              <Activity className="w-3 h-3 text-gray-500" />
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 flex-1">Ops Feed</p>
+              <button onClick={() => navigate(selectedEvent ? `/race-control/events/${selectedEvent.id}/activity` : '/race-control/events')} className="text-[8px] text-gray-600 hover:text-teal-400">
+                More
               </button>
             </div>
-          ) : (
-            <div className="bg-[#111] border border-gray-800 rounded-lg p-3">
-              <PanelLabel>Current Context</PanelLabel>
-              <p className="text-xs text-gray-600 italic">No event selected in context bar</p>
-            </div>
-          )}
-
-          {/* OPERATIONS FEED */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
-              <PanelLabel>Operations Feed</PanelLabel>
-              <button
-                onClick={() => navigate(selectedEvent ? `/race-control/events/${selectedEvent.id}/activity` : '/race-control/events')}
-                className="text-[9px] text-gray-600 hover:text-teal-400 transition-colors flex items-center gap-1"
-              >
-                View Activity <ArrowRight className="w-2.5 h-2.5" />
-              </button>
-            </div>
-            <div className="divide-y divide-gray-800/50">
+            <div className="divide-y divide-gray-800/50 max-h-40 overflow-y-auto">
               {recentLogs.length === 0 ? (
-                <div className="px-3 py-5 text-center">
-                  <Activity className="w-5 h-5 text-gray-700 mx-auto mb-1.5" />
-                  <p className="text-xs text-gray-600">No recent operations yet</p>
-                </div>
+                <div className="px-3 py-2 text-center text-[9px] text-gray-700">Awaiting ops</div>
               ) : (
                 recentLogs.map(log => {
                   const isErr = log.status === 'error';
                   const isOk  = log.status === 'success';
-                  const timeStr = log.created_date
-                    ? new Date(log.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-                    : '—';
+                  const timeStr = log.created_date ? new Date(log.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
                   return (
-                    <div key={log.id} className="flex items-center gap-2 px-3 py-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isErr ? 'bg-red-500' : isOk ? 'bg-green-500' : 'bg-gray-600'}`} />
-                      <span className="text-[10px] text-gray-400 flex-1 truncate">
-                        {log.operation_type?.replace(/_/g, ' ') || 'operation'}
-                      </span>
-                      <span className="text-[9px] text-gray-700 shrink-0">{timeStr}</span>
+                    <div key={log.id} className="flex items-center gap-1.5 px-2.5 py-1 text-[8px] hover:bg-gray-800/30">
+                      <span className={`w-1 h-1 rounded-full shrink-0 ${isErr ? 'bg-red-500' : isOk ? 'bg-green-500' : 'bg-gray-600'}`} />
+                      <span className="text-gray-400 flex-1 truncate font-mono">{log.operation_type?.split('_').slice(0,2).join('_').toLowerCase() || 'op'}</span>
+                      <span className="text-gray-700 shrink-0">{timeStr}</span>
                     </div>
                   );
                 })
@@ -504,12 +473,13 @@ export default function RaceCoreHome({
             </div>
           </div>
 
-          {/* SYSTEM HEALTH */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-gray-800">
-              <PanelLabel>System Health</PanelLabel>
+          {/* SYSTEM HEALTH (telemetry) */}
+          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-700" />
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Telemetry</p>
             </div>
-            <div className="px-3 py-2 space-y-1.5">
+            <div className="px-2.5 py-2 space-y-1.5">
               {[
                 { label: 'Results',   state: systemHealth.results   },
                 { label: 'Standings', state: systemHealth.standings  },
@@ -517,14 +487,14 @@ export default function RaceCoreHome({
                 { label: 'Media',     state: systemHealth.media      },
                 { label: 'Timing',    state: systemHealth.timing     },
               ].map(({ label, state }) => {
-                const stateLabel = state === 'ok' ? 'Ready' : state === 'warn' ? 'Attention' : state === 'error' ? 'Error' : 'Standby';
-                const stateColor = state === 'ok' ? 'text-green-400' : state === 'warn' ? 'text-amber-400' : state === 'error' ? 'text-red-400' : 'text-gray-600';
+                const stateLabel = state === 'ok' ? '✓' : state === 'warn' ? '!' : state === 'error' ? 'ERR' : '—';
+                const stateColor = state === 'ok' ? 'text-green-400' : state === 'warn' ? 'text-amber-400' : state === 'error' ? 'text-red-500' : 'text-gray-600';
                 return (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-500">{label}</span>
-                    <div className="flex items-center gap-1.5">
+                  <div key={label} className="flex items-center justify-between text-[8px]">
+                    <span className="text-gray-600 uppercase font-mono">{label}</span>
+                    <div className="flex items-center gap-1">
                       <HealthDot state={state} />
-                      <span className={`text-[9px] font-semibold ${stateColor}`}>{stateLabel}</span>
+                      <span className={`font-bold ${stateColor}`}>{stateLabel}</span>
                     </div>
                   </div>
                 );
@@ -532,60 +502,29 @@ export default function RaceCoreHome({
             </div>
           </div>
 
-          {/* QUICK ACTIONS */}
-          <div className="bg-[#111] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-gray-800">
-              <PanelLabel>Quick Actions</PanelLabel>
+          {/* QUICK ACTIONS (compact vertical) */}
+          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Actions</p>
             </div>
-            <div className="p-2 space-y-1">
+            <div className="p-1.5 space-y-0.5">
               {canAction(dashboardPermissions, 'create_event') && (
-                <button
-                  onClick={() => onCreateEvent?.()}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-blue-300 hover:bg-blue-950/20 rounded transition-colors text-left"
-                >
-                  <Plus className="w-3 h-3 text-blue-400 shrink-0" /> Create Event
+                <button onClick={() => onCreateEvent?.()} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-blue-300 hover:bg-blue-950/30 rounded transition-colors font-mono">
+                  + Event
                 </button>
               )}
               {isAdmin && (
-                <button
-                  onClick={() => onOpenImportEntries?.()}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-amber-300 hover:bg-amber-950/20 rounded transition-colors text-left"
-                >
-                  <Upload className="w-3 h-3 text-amber-400 shrink-0" /> Import Data
+                <button onClick={() => onOpenImportEntries?.()} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-amber-300 hover:bg-amber-950/30 rounded transition-colors font-mono">
+                  ↑ Import
                 </button>
               )}
-              <button
-                onClick={() => navigate('/race-control/events')}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-teal-300 hover:bg-teal-950/20 rounded transition-colors text-left"
-              >
-                <MonitorPlay className="w-3 h-3 text-teal-400 shrink-0" /> Open Event Operations
+              <button onClick={() => navigate('/race-control/events')} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-teal-300 hover:bg-teal-950/30 rounded transition-colors font-mono">
+                → Ops
               </button>
-              {isAdmin && (
-                <button
-                  onClick={() => onTabChange('media_portal')}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-purple-300 hover:bg-purple-950/20 rounded transition-colors text-left"
-                >
-                  <Users className="w-3 h-3 text-purple-400 shrink-0" /> Open Media Portal
-                </button>
-              )}
-              {isAdmin && (
-                <button
-                  onClick={() => onTabChange('auditLog')}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 rounded transition-colors text-left"
-                >
-                  <Activity className="w-3 h-3 text-gray-500 shrink-0" /> View Audit Log
-                </button>
-              )}
-              {isAdmin && (
-                <button
-                  onClick={() => onOpenQuickCreate?.('Driver')}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 rounded transition-colors text-left"
-                >
-                  <Plus className="w-3 h-3 text-gray-500 shrink-0" /> Quick Create Entity
-                </button>
-              )}
             </div>
           </div>
+
+
 
         </div>
       </div>
