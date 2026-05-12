@@ -1013,6 +1013,30 @@ export default function RegistrationDashboard() {
                 </div>
                 </div>
 
+                {/* R8J — Event Files Guidance Banner */}
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-teal-950/30 border border-teal-800/40 rounded-lg px-4 py-3">
+              <p className="text-xs text-teal-300 leading-relaxed">
+                <span className="font-semibold">Event operations now live in Event Files.</span>{' '}
+                Use Event Files for Sessions, Results, Entries, Check-In, Imports, Exports, and race-day workflows.
+              </p>
+              <div className="flex items-center gap-2 shrink-0">
+                {selectedEvent && (
+                  <button
+                    onClick={() => navigate(`/race-control/events/${eventId}`)}
+                    className="text-xs px-3 py-1.5 bg-teal-800/40 border border-teal-700/50 text-teal-200 rounded hover:bg-teal-800/60 transition-colors font-medium"
+                  >
+                    Open Current Event File
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate('/race-control/events')}
+                  className="text-xs px-3 py-1.5 bg-teal-700/50 border border-teal-600/60 text-teal-100 rounded hover:bg-teal-700/70 transition-colors font-semibold"
+                >
+                  Open Event Files
+                </button>
+              </div>
+            </div>
+
                 {/* Hard Event Lock Banner */}
             {!selectedEvent && (
               <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
@@ -1176,6 +1200,7 @@ export default function RegistrationDashboard() {
                   moduleName="Sessions"
                   description="Session and class management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="sessions"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1188,6 +1213,7 @@ export default function RegistrationDashboard() {
                   moduleName="Entries"
                   description="Entry management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="entries"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1200,6 +1226,7 @@ export default function RegistrationDashboard() {
                   moduleName="Compliance"
                   description="Compliance management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="compliance"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1212,6 +1239,7 @@ export default function RegistrationDashboard() {
                   moduleName="Check-In"
                   description="Check-In now lives inside the Event Workspace so all race-day operations stay in the same event file."
                   panel="checkin"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1224,6 +1252,7 @@ export default function RegistrationDashboard() {
                   moduleName="Tech"
                   description="Tech inspection management now lives inside the Event Workspace (Compliance panel) so all event operations stay inside the same event file."
                   panel="compliance"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1236,6 +1265,7 @@ export default function RegistrationDashboard() {
                   moduleName="Results"
                   description="Results management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="results"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1248,6 +1278,7 @@ export default function RegistrationDashboard() {
                   moduleName="Standings"
                   description="Standings management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="standings"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1260,6 +1291,7 @@ export default function RegistrationDashboard() {
                   moduleName="Exports"
                   description="Exports now live inside the Event Workspace so all data operations stay in the same event file."
                   panel="exports"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1283,6 +1315,7 @@ export default function RegistrationDashboard() {
                   moduleName="Activity"
                   description="Activity and audit logging now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="activity"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1368,6 +1401,7 @@ export default function RegistrationDashboard() {
                   moduleName="Imports"
                   description="Imports now live inside the Event Workspace so all data operations stay in the same event file."
                   panel="imports"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);
@@ -1380,6 +1414,7 @@ export default function RegistrationDashboard() {
                   moduleName="Media"
                   description="Media management now lives inside the Event Workspace so all event operations stay inside the same event file."
                   panel="media"
+                  eventId={eventId || undefined}
                   onOpenWorkspace={(panel) => {
                     setActiveTab('workspace');
                     setPendingWorkspacePanel(panel);

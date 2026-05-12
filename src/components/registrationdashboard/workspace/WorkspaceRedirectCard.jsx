@@ -1,42 +1,57 @@
 /**
- * REVISION R7E PART 5 — WorkspaceRedirectCard
- * Reusable component for redirecting legacy tabs to Event Workspace panels.
- * 
- * Purpose: Provide consistent UX for legacy module redirects during R7E migration.
+ * REVISION R8J PART 2 — WorkspaceRedirectCard
+ * Navigates directly to /race-control/events/:eventId/:panel.
+ * Falls back to legacy onOpenWorkspace behavior when no eventId is available.
  */
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, LayoutDashboard } from 'lucide-react';
+import { ExternalLink, FolderOpen } from 'lucide-react';
 
 export default function WorkspaceRedirectCard({ 
   moduleName = 'Module',
   description = 'This module now lives inside the Event Workspace so all event operations stay inside the same event file.',
   panel = 'overview',
-  onOpenWorkspace 
+  eventId,
+  onOpenWorkspace,
 }) {
+  const navigate = useNavigate();
+
+  const handleOpen = () => {
+    if (eventId) {
+      navigate(`/race-control/events/${eventId}/${panel}`);
+    } else if (onOpenWorkspace) {
+      // Legacy fallback — still works for embedded workspace flows
+      onOpenWorkspace(panel);
+    }
+  };
+
   return (
     <Card className="bg-[#171717] border-gray-800">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
-          <ExternalLink className="w-5 h-5 text-blue-400" /> 
-          {moduleName} Moved to Event Workspace
+          <ExternalLink className="w-5 h-5 text-teal-400" /> 
+          {moduleName} — Now in Event Files
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-gray-400 text-sm">
           {description}
         </p>
-        <p className="text-gray-500 text-xs">
-          Legacy navigation is being preserved during migration.
-        </p>
         <Button
-          onClick={() => onOpenWorkspace(panel)}
-          className="bg-blue-600 hover:bg-blue-700 gap-2"
+          onClick={handleOpen}
+          disabled={!eventId && !onOpenWorkspace}
+          className="bg-teal-700 hover:bg-teal-600 gap-2"
         >
-          <LayoutDashboard className="w-4 h-4" />
-          Open Event Workspace {moduleName}
+          <FolderOpen className="w-4 h-4" />
+          {eventId ? `Open Event File — ${moduleName}` : 'Select an event to continue'}
         </Button>
+        {!eventId && (
+          <p className="text-gray-600 text-xs">
+            Select an event in the context bar above to open this module.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

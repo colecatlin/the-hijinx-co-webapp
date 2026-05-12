@@ -634,23 +634,23 @@ export default function RaceCoreHome({
         </div>
       )}
 
-      {/* ── Open Event File link (only when event selected) ─────────────── */}
-      {hasEvent && (
-        <div className="pt-3 border-t border-gray-800 space-y-2">
+      {/* ── Event Files primary CTAs ──────────────────────────────────────── */}
+      <div className="pt-3 border-t border-gray-800 space-y-2">
+        <button
+          onClick={() => navigate('/race-control/events')}
+          className="flex items-center gap-2 px-4 py-3 bg-teal-900/25 border border-teal-700/50 text-teal-300 rounded-lg text-sm font-bold hover:bg-teal-900/40 transition-colors w-full justify-center"
+        >
+          <ArrowRight className="w-4 h-4" /> View All Event Files
+        </button>
+        {hasEvent && (
           <button
             onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-            className="flex items-center gap-2 px-4 py-3 bg-teal-900/20 border border-teal-700/40 text-teal-300 rounded-lg text-xs font-semibold hover:bg-teal-900/35 transition-colors w-full justify-center"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] border border-gray-700 hover:border-teal-700/40 text-gray-300 hover:text-teal-300 rounded-lg text-xs font-semibold transition-colors w-full justify-center"
           >
-            <ArrowRight className="w-4 h-4" /> Open Event File
+            <ArrowRight className="w-3.5 h-3.5" /> Open Current Event File — {selectedEvent.name}
           </button>
-          <button
-            onClick={() => navigate('/race-control/events')}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-400 rounded-lg text-xs transition-colors w-full justify-center"
-          >
-            View All Event Files
-          </button>
-        </div>
-      )}
+        )}
+      </div>
 
     </div>
   );
