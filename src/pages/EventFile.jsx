@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
@@ -54,6 +54,7 @@ function EventFileBreadcrumb({ eventName, onBack }) {
       <button
         onClick={onBack}
         className="text-gray-500 hover:text-gray-300 transition-colors"
+        title="/race-control/events"
       >
         Events
       </button>
@@ -209,9 +210,9 @@ export default function EventFile() {
     // other legacy tabs: no-op for now
   }, [navigate, eventId]);
 
-  // Back navigation — navigate(-1) with RegistrationDashboard fallback
+  // Back navigation — to Event Directory (R8D)
   const handleBack = useCallback(() => {
-    navigate('/RegistrationDashboard');
+    navigate('/race-control/events');
   }, [navigate]);
 
   // ── Permissions ───────────────────────────────────────────────────────────
@@ -284,11 +285,11 @@ export default function EventFile() {
                 <ArrowLeft className="w-4 h-4" /> Go Back
               </Button>
               <Button
-                onClick={() => navigate('/RegistrationDashboard')}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-              >
-                Events List
-              </Button>
+                  onClick={() => navigate('/race-control/events')}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  Events List
+                </Button>
             </div>
           </CardContent>
         </Card>
@@ -297,11 +298,10 @@ export default function EventFile() {
   }
 
   // ── Workspace render — D9: full-height, no PageShell ─────────────────────
+  // L1 fix: use h-full + overflow-hidden instead of height:100vh to work
+  // correctly inside global Layout's <main className="flex-1"> wrapper.
   return (
-    <div
-      className="flex flex-col bg-[#050505] text-white"
-      style={{ height: '100vh', overflow: 'hidden' }}
-    >
+    <div className="flex flex-col h-full min-h-0 bg-[#050505] text-white overflow-hidden">
       {/* D8: Compact breadcrumb strip */}
       <EventFileBreadcrumb
         eventName={selectedEvent.name}

@@ -636,12 +636,18 @@ export default function RaceCoreHome({
 
       {/* ── Open Event File link (only when event selected) ─────────────── */}
       {hasEvent && (
-        <div className="pt-3 border-t border-gray-800">
+        <div className="pt-3 border-t border-gray-800 space-y-2">
           <button
             onClick={() => navigate(`/race-control/events/${selectedEvent.id}`)}
-            className="flex items-center gap-2 px-4 py-3 bg-purple-900/20 border border-purple-800/40 text-purple-300 rounded-lg text-xs font-medium hover:bg-purple-900/35 transition-colors w-full justify-center"
+            className="flex items-center gap-2 px-4 py-3 bg-teal-900/20 border border-teal-700/40 text-teal-300 rounded-lg text-xs font-semibold hover:bg-teal-900/35 transition-colors w-full justify-center"
           >
-            <ArrowRight className="w-4 h-4" /> Open as Event File
+            <ArrowRight className="w-4 h-4" /> Open Event File
+          </button>
+          <button
+            onClick={() => navigate('/race-control/events')}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-400 rounded-lg text-xs transition-colors w-full justify-center"
+          >
+            View All Event Files
           </button>
         </div>
       )}
