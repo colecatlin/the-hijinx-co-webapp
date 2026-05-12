@@ -1,24 +1,23 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { canAction } from '@/components/access/accessControl';
 import {
   Plus,
   Upload,
   ArrowRight,
   Calendar,
-  MapPin,
   Activity,
   Flag,
   AlertTriangle,
   CheckCircle2,
   Radio,
-  Clock,
   Zap,
   Users,
   BarChart2,
   ExternalLink,
   MonitorPlay,
-  AlertCircle,
   Circle,
 } from 'lucide-react';
 
@@ -118,13 +117,29 @@ export default function RaceCoreHome({
   onOpenQuickCreate,
   // all events for global view — passed from parent
   allEvents = [],
+  // import logs for health signal
+  importLogs = [],
 }) {
   const navigate = useNavigate();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // ── Global operations feed ─────────────────────────────────────────────
+  const { data: globalOperationLogs = [] } = useQuery({
+    queryKey: ['operationLogs_global'],
+    queryFn: async () => {
+      try {
+        const allLogs = await base44.entities.OperationLog.list('-created_date', 30);
+        return allLogs || [];
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
   // ── Global event metrics ─────────────────────────────────────────────────
-  const { liveEvents, upcomingEvents, recentEvents } = useMemo(() => {
+  const { liveEvents, upcomingEvents } = useMemo(() => {
     const live = allEvents.filter(e =>
       e.status === 'Live' ||
       (e.status === 'Published' && e.event_date && new Date(e.event_date) <= new Date() && (!e.end_date || new Date(e.end_date) >= today))
@@ -133,11 +148,7 @@ export default function RaceCoreHome({
       .filter(e => e.event_date && new Date(e.event_date) > today && e.status !== 'Cancelled' && e.status !== 'Completed')
       .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
       .slice(0, 5);
-    const recent = allEvents
-      .filter(e => e.event_date && new Date(e.event_date) <= today)
-      .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
-      .slice(0, 3);
-    return { liveEvents: live, upcomingEvents: upcoming, recentEvents: recent };
+    return { liveEvents: live, upcomingEvents: upcoming };
   }, [allEvents, today]);
 
   // ── Action Required queue (from selected event data only — no global sessions/results yet) ──
@@ -185,29 +196,29 @@ export default function RaceCoreHome({
     return items;
   }, [selectedEvent, sessions, results, standingsDirty, allEvents]);
 
-  // ── Recent operation logs (global) ────────────────────────────────────────
-  const recentLogs = useMemo(() =>
-    [...operationLogs]
+  // ── Recent operation logs — use global if available, fallback to parent ────
+  const recentLogs = useMemo(() => {
+    const logsToUse = globalOperationLogs.length > 0 ? globalOperationLogs : operationLogs;
+    return [...logsToUse]
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-      .slice(0, 8),
-    [operationLogs]
-  );
+      .slice(0, 8);
+  }, [globalOperationLogs, operationLogs]);
 
   // ── System health derivations ─────────────────────────────────────────────
   const systemHealth = useMemo(() => {
     const hasResults = results.length > 0;
     const hasStandings = standings.length > 0;
-    const officialSessions = sessions.filter(s => s.status === 'Official' || s.status === 'Locked');
-    const recentErrors = operationLogs.filter(l => l.status === 'error').slice(0, 3);
+    const failedImports = importLogs.filter(l => l.status === 'failed' || l.status === 'error').length > 0;
+    const pendingImports = importLogs.filter(l => l.status === 'pending' || l.status === 'processing').length > 0;
 
     return {
       results:    hasResults ? 'ok' : 'standby',
       standings:  standingsDirty ? 'warn' : hasStandings ? 'ok' : 'standby',
-      imports:    recentErrors.some(l => l.operation_type?.includes('import')) ? 'warn' : 'ok',
+      imports:    failedImports ? 'error' : pendingImports ? 'warn' : importLogs.length > 0 ? 'ok' : 'standby',
       media:      'standby',
       timing:     'standby',
     };
-  }, [results, standings, sessions, standingsDirty, operationLogs]);
+  }, [results, standings, standingsDirty, importLogs]);
 
   // ── Global metrics ────────────────────────────────────────────────────────
   const pendingApprovalCount = allEvents.filter(e => e.status === 'PendingApproval').length;
@@ -218,11 +229,11 @@ export default function RaceCoreHome({
     <div className="space-y-0 max-w-full">
 
       {/* ── COMMAND HEADER ─────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4 mb-5">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-base font-black text-white tracking-tight">RaceCore Dashboard</h1>
-          <p className="text-[11px] text-gray-500 mt-0.5">
-            Operational command center — live events, alerts, and race-day workflows.
+          <h1 className="text-lg font-black text-white tracking-tight">RaceCore Dashboard</h1>
+          <p className="text-xs text-gray-600 mt-1">
+            Command center — live events, alerts, and operations.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -246,7 +257,7 @@ export default function RaceCoreHome({
       </div>
 
       {/* ── GLOBAL STATUS STRIP ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-2 mb-5">
+      <div className="grid grid-cols-5 gap-2 mb-6">
         <MetricCard
           label="Live Now"
           value={liveEvents.length}
@@ -265,7 +276,11 @@ export default function RaceCoreHome({
           label="Action Required"
           value={actionQueue.length}
           color={actionQueue.length > 0 ? 'text-amber-400' : 'text-gray-600'}
-          sub={actionQueue.length === 0 ? 'No critical issues' : `${actionQueue.filter(a => a.severity === 'critical').length} critical`}
+          sub={
+            selectedEvent
+              ? (actionQueue.length === 0 ? 'No critical issues' : `${actionQueue.filter(a => a.severity === 'critical').length} critical`)
+              : 'Select event for deep scan'
+          }
           icon={AlertTriangle}
         />
         <MetricCard

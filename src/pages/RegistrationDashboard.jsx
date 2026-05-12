@@ -1013,31 +1013,7 @@ export default function RegistrationDashboard() {
                 </div>
                 </div>
 
-                {/* R8J — Event Files Guidance Banner */}
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-teal-950/30 border border-teal-800/40 rounded-lg px-4 py-3">
-              <p className="text-xs text-teal-300 leading-relaxed">
-                <span className="font-semibold">Event operations now live in Event Files.</span>{' '}
-                Use Event Files for Sessions, Results, Entries, Check-In, Imports, Exports, and race-day workflows.
-              </p>
-              <div className="flex items-center gap-2 shrink-0">
-                {selectedEvent && (
-                  <button
-                    onClick={() => navigate(`/race-control/events/${eventId}`)}
-                    className="text-xs px-3 py-1.5 bg-teal-800/40 border border-teal-700/50 text-teal-200 rounded hover:bg-teal-800/60 transition-colors font-medium"
-                  >
-                    Open Current Event File
-                  </button>
-                )}
-                <button
-                  onClick={() => navigate('/race-control/events')}
-                  className="text-xs px-3 py-1.5 bg-teal-700/50 border border-teal-600/60 text-teal-100 rounded hover:bg-teal-700/70 transition-colors font-semibold"
-                >
-                  Open Event Files
-                </button>
-              </div>
-            </div>
-
-                {/* Hard Event Lock Banner */}
+                    {/* Hard Event Lock Banner */}
             {!selectedEvent && (
               <div className="mb-6 bg-red-950/50 border-2 border-red-800 rounded-lg p-4">
                 <div className="flex items-start gap-3">
@@ -1160,6 +1136,7 @@ export default function RegistrationDashboard() {
                   onOpenImportEntries={() => setShowImportEntriesModal(true)}
                   onOpenQuickCreate={(type) => { setQuickCreateType(type || 'Driver'); setQuickCreateOpen(true); }}
                   allEvents={events}
+                  importLogs={importLogs}
                 />
               )}
 
