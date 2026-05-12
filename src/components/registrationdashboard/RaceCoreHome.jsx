@@ -343,10 +343,7 @@ export default function RaceCoreHome({
       </div>
 
       {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
-
-        {/* ── LEFT COLUMN (2/3 - operations focus) ─────────────────────── */}
-        <div className="col-span-2 space-y-3">
+      <div className="space-y-3">
 
           {/* ACTION REQUIRED (promoted priority) */}
           {actionQueue.length > 0 && (
@@ -421,91 +418,6 @@ export default function RaceCoreHome({
           </div>
 
         </div>
-
-        {/* ── RIGHT COLUMN (1/3 - operations rail) ─────────────────────────── */}
-        <div className="col-span-1 space-y-3">
-
-          {/* OPERATIONS FEED (compact, live) */}
-          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
-              <Activity className="w-3 h-3 text-gray-500" />
-              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 flex-1">Ops Feed</p>
-              <button onClick={() => navigate('/race-control/events')} className="text-[8px] text-gray-600 hover:text-teal-400">
-                More
-              </button>
-            </div>
-            <div className="divide-y divide-gray-800/50 max-h-40 overflow-y-auto">
-              {recentLogs.length === 0 ? (
-                <div className="px-3 py-2 text-center text-[9px] text-gray-700">Awaiting ops</div>
-              ) : (
-                recentLogs.map(log => {
-                  const isErr = log.status === 'error';
-                  const isOk  = log.status === 'success';
-                  const timeStr = log.created_date ? new Date(log.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
-                  return (
-                    <div key={log.id} className="flex items-center gap-1.5 px-2.5 py-1 text-[8px] hover:bg-gray-800/30">
-                      <span className={`w-1 h-1 rounded-full shrink-0 ${isErr ? 'bg-red-500' : isOk ? 'bg-green-500' : 'bg-gray-600'}`} />
-                      <span className="text-gray-400 flex-1 truncate font-mono">{log.operation_type?.split('_').slice(0,2).join('_').toLowerCase() || 'op'}</span>
-                      <span className="text-gray-700 shrink-0">{timeStr}</span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* SYSTEM HEALTH (telemetry) */}
-          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-700" />
-              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Telemetry</p>
-            </div>
-            <div className="px-2.5 py-2 space-y-1.5">
-              {[
-                { label: 'Results',   state: systemHealth.results   },
-                { label: 'Standings', state: systemHealth.standings  },
-                { label: 'Imports',   state: systemHealth.imports    },
-                { label: 'Media',     state: systemHealth.media      },
-                { label: 'Timing',    state: systemHealth.timing     },
-              ].map(({ label, state }) => {
-                const stateLabel = state === 'ok' ? '✓' : state === 'warn' ? '!' : state === 'error' ? 'ERR' : '—';
-                const stateColor = state === 'ok' ? 'text-green-400' : state === 'warn' ? 'text-amber-400' : state === 'error' ? 'text-red-500' : 'text-gray-600';
-                return (
-                  <div key={label} className="flex items-center justify-between text-[8px]">
-                    <span className="text-gray-600 uppercase font-mono">{label}</span>
-                    <div className="flex items-center gap-1">
-                      <HealthDot state={state} />
-                      <span className={`font-bold ${stateColor}`}>{stateLabel}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* QUICK ACTIONS (compact vertical) */}
-          <div className="bg-[#0F0F0F] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-3 py-2 border-b border-gray-800 bg-[#0A0A0A]">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Actions</p>
-            </div>
-            <div className="p-1.5 space-y-0.5">
-              {canAction(dashboardPermissions, 'create_event') && (
-                <button onClick={() => onCreateEvent?.()} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-blue-300 hover:bg-blue-950/30 rounded transition-colors font-mono">
-                  + Event
-                </button>
-              )}
-              {isAdmin && (
-                <button onClick={() => onOpenImportEntries?.()} className="w-full text-left px-2 py-1.5 text-[8px] text-gray-400 hover:text-amber-300 hover:bg-amber-950/30 rounded transition-colors font-mono">
-                  ↑ Import
-                </button>
-              )}
-            </div>
-          </div>
-
-
-
-        </div>
-      </div>
 
     </div>
   );
