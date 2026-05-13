@@ -1,10 +1,23 @@
+/**
+ * RaceCoreHome — Global Command Surface
+ * R8Y Part 1: Tactical UX refinement
+ * - Event Operations board dominates
+ * - Role-aware Operations panel
+ * - Dense operational rows
+ * - Live event emphasis
+ * - OperationLog feed with severity
+ * - Compressed telemetry strip
+ */
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
-import { AlertCircle, Plus, FileText, Settings, Users, Users2, MapPin, Trophy, ChevronRight, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  AlertCircle, Plus, FileText, ChevronRight,
+  Radio, BookOpen, Flag, BarChart2, Users,
+  Shield, Mic, Camera, ArrowRight,
+} from 'lucide-react';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { QueryKeys } from '@/components/utils/queryKeys';
 
@@ -12,28 +25,83 @@ const DQ = applyDefaultQueryOptions();
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  Live:            { label: 'LIVE',      color: 'text-red-300',   bg: 'bg-red-950/50 border-red-700/50',   dot: 'bg-red-500 animate-pulse' },
-  Published:       { label: 'PUBLISHED', color: 'text-blue-300',  bg: 'bg-blue-950/40 border-blue-700/40', dot: 'bg-blue-400' },
-  Completed:       { label: 'COMPLETED', color: 'text-green-300', bg: 'bg-green-950/30 border-green-700/40', dot: 'bg-green-500' },
-  Cancelled:       { label: 'CANCELLED', color: 'text-gray-500',  bg: 'bg-gray-900/40 border-gray-700/30', dot: 'bg-gray-600' },
-  Draft:           { label: 'DRAFT',     color: 'text-gray-400',  bg: 'bg-gray-900/30 border-gray-800',    dot: 'bg-gray-600' },
-  PendingApproval: { label: 'PENDING',   color: 'text-amber-300', bg: 'bg-amber-950/30 border-amber-700/40', dot: 'bg-amber-400' },
+  Live:            { label: 'LIVE',      color: 'text-red-300',    bg: 'bg-red-950/60 border-red-700/60',    dot: 'bg-red-500 animate-pulse' },
+  Published:       { label: 'PUBLISHED', color: 'text-teal-300',   bg: 'bg-teal-950/40 border-teal-700/40',  dot: 'bg-teal-400' },
+  Completed:       { label: 'DONE',      color: 'text-gray-500',   bg: 'bg-gray-900/30 border-gray-700/30',  dot: 'bg-gray-600' },
+  Cancelled:       { label: 'CANCLD',    color: 'text-gray-600',   bg: 'bg-gray-900/20 border-gray-800/30',  dot: 'bg-gray-700' },
+  Draft:           { label: 'DRAFT',     color: 'text-gray-400',   bg: 'bg-gray-900/30 border-gray-800',     dot: 'bg-gray-600' },
+  PendingApproval: { label: 'PENDING',   color: 'text-amber-300',  bg: 'bg-amber-950/30 border-amber-700/40', dot: 'bg-amber-400' },
 };
 
-function statusCfg(status) {
-  return STATUS_CONFIG[status] || STATUS_CONFIG.Draft;
-}
+function statusCfg(s) { return STATUS_CONFIG[s] || STATUS_CONFIG.Draft; }
 
-function StatusBadge({ status }) {
+function StatusTag({ status }) {
   const cfg = statusCfg(status);
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider border ${cfg.bg} ${cfg.color} whitespace-nowrap`}>
-      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-sm text-[9px] font-mono font-bold tracking-widest border ${cfg.bg} ${cfg.color} whitespace-nowrap`}>
+      <span className={`w-1 h-1 rounded-full flex-shrink-0 ${cfg.dot}`} />
       {cfg.label}
     </span>
   );
 }
 
+// ── Severity config for ops feed ──────────────────────────────────────────────
+function opSeverity(type = '') {
+  const t = type.toUpperCase();
+  if (t.includes('FAIL') || t.includes('ERROR'))  return { color: 'text-red-400',    dot: 'bg-red-500' };
+  if (t.includes('WARN') || t.includes('DIRTY'))  return { color: 'text-amber-400',  dot: 'bg-amber-500' };
+  if (t.includes('LOCK') || t.includes('PUBLISH') || t.includes('OFFICIAL')) return { color: 'text-teal-400', dot: 'bg-teal-500' };
+  return { color: 'text-gray-400', dot: 'bg-gray-600' };
+}
+
+// ── Role-aware operation shortcuts ────────────────────────────────────────────
+function buildRoleActions(isAdmin, role, navigate) {
+  if (isAdmin) {
+    return [
+      { label: 'Event Files',          sub: 'All events',              icon: FileText,  action: () => navigate('/race-control/events') },
+      { label: 'Create Event',         sub: 'New event file',          icon: Plus,      action: () => navigate('/racecore?tab=eventBuilder') },
+      { label: 'Announcer Pack',       sub: 'Pre-race assets',         icon: Mic,       action: () => navigate('/racecore?tab=announcer_pack') },
+      { label: 'Integrations',         sub: 'Sync & connections',      icon: BookOpen,  action: () => navigate('/racecore?tab=integrations') },
+      { label: 'Standings Review',     sub: 'Recalculate & publish',   icon: BarChart2, action: () => navigate('/race-control/events') },
+      { label: 'Media Governance',     sub: 'Credentials & requests',  icon: Camera,    action: () => navigate('/race-control/events') },
+    ];
+  }
+  if (role === 'entity_owner' || role === 'entity_editor') {
+    return [
+      { label: 'Event Files',     sub: 'Your assigned events',  icon: FileText,  action: () => navigate('/race-control/events') },
+      { label: 'Gate Queue',      sub: 'Check-in & tech',       icon: Shield,    action: () => navigate('/race-control/events') },
+      { label: 'Session Control', sub: 'Sessions & results',    icon: Flag,      action: () => navigate('/race-control/events') },
+      { label: 'Results Review',  sub: 'Pending publish',       icon: BarChart2, action: () => navigate('/race-control/events') },
+    ];
+  }
+  // default user / media
+  return [
+    { label: 'Event Files',      sub: 'Browse events',         icon: FileText, action: () => navigate('/race-control/events') },
+    { label: 'Credential Queue', sub: 'Media access',          icon: Camera,   action: () => navigate('/race-control/events') },
+  ];
+}
+
+// ── Stat pill ─────────────────────────────────────────────────────────────────
+function StatPill({ value, label, dim = false }) {
+  return (
+    <span className={`inline-flex items-center gap-1 font-mono text-[9px] tracking-widest whitespace-nowrap ${dim ? 'text-gray-700' : 'text-gray-500'}`}>
+      <span className={`font-bold ${dim ? 'text-gray-600' : 'text-gray-300'}`}>{value}</span>
+      {label}
+    </span>
+  );
+}
+
+// ── Telemetry cell ────────────────────────────────────────────────────────────
+function TelCell({ value, label, hot = false }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-800/60 last:border-r-0">
+      <span className={`text-sm font-black font-mono tabular-nums ${hot && value > 0 ? 'text-red-400' : 'text-gray-200'}`}>{value}</span>
+      <span className="text-[9px] uppercase tracking-widest text-gray-600 leading-tight">{label}</span>
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 export default function RaceCoreHome({
   dashboardPermissions,
   isAdmin,
@@ -43,220 +111,219 @@ export default function RaceCoreHome({
 }) {
   const navigate = useNavigate();
 
-  // ── Operations Feed: OperationLog (global, last 30) ───────────────────────
   const { data: operationLogs = [] } = useQuery({
     queryKey: QueryKeys.operationLog.recent(30),
     queryFn: () => base44.entities.OperationLog.list('-created_date', 30),
     ...DQ,
   });
 
-  // ── Telemetry metrics using event.status (not date math) ──────────────────
   const telemetry = useMemo(() => {
-    const live      = allEvents.filter(e => e.status === 'Live').length;
-    const upcoming  = allEvents.filter(e => ['Draft', 'PendingApproval', 'Published'].includes(e.status)).length;
-    const completed = allEvents.filter(e => e.status === 'Completed').length;
-    const total     = allEvents.length;
-
-    const last24h = new Date();
-    last24h.setDate(last24h.getDate() - 1);
-    const recentImports = importLogs.filter(log => new Date(log.created_date) > last24h).length;
-
-    return { live, upcoming, completed, total, recentImports };
+    const live     = allEvents.filter(e => e.status === 'Live').length;
+    const upcoming = allEvents.filter(e => ['Draft', 'PendingApproval', 'Published'].includes(e.status)).length;
+    const last24h  = new Date(); last24h.setDate(last24h.getDate() - 1);
+    const imports24h = importLogs.filter(l => new Date(l.created_date) > last24h).length;
+    return { live, upcoming, total: allEvents.length, imports24h };
   }, [allEvents, importLogs]);
 
-  const handleOpenEvent = (eventId) => {
-    navigate(`/race-control/events/${eventId}`);
-  };
+  // Sort: Live first, then by date desc
+  const sortedEvents = useMemo(() => {
+    return [...allEvents].sort((a, b) => {
+      if (a.status === 'Live' && b.status !== 'Live') return -1;
+      if (b.status === 'Live' && a.status !== 'Live') return 1;
+      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      return new Date(b.event_date || 0) - new Date(a.event_date || 0);
+    });
+  }, [allEvents]);
 
-  // ─── ZONE 1: COMMAND STRIP ───────────────────────────────────────────
+  const roleActions = useMemo(() => buildRoleActions(isAdmin, user?.role, navigate), [isAdmin, user?.role, navigate]);
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Command Telemetry Strip */}
-      <div className="bg-[#111111] border border-gray-800 rounded-lg p-4">
-        <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-3">OPERATIONS TELEMETRY</div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
-          <div className="bg-[#0A0A0A] border border-red-900/40 rounded p-3 text-center">
-            <div className={`text-lg font-bold ${telemetry.live > 0 ? 'text-red-400' : 'text-white'}`}>{telemetry.live}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Live</div>
-          </div>
-          <div className="bg-[#0A0A0A] border border-gray-700/50 rounded p-3 text-center">
-            <div className="text-lg font-bold text-white">{telemetry.upcoming}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Upcoming</div>
-          </div>
-          <div className="bg-[#0A0A0A] border border-gray-700/50 rounded p-3 text-center">
-            <div className="text-lg font-bold text-white">{telemetry.completed}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Completed</div>
-          </div>
-          <div className="bg-[#0A0A0A] border border-gray-700/50 rounded p-3 text-center">
-            <div className="text-lg font-bold text-white">{telemetry.total}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Total Events</div>
-          </div>
-          <div className="bg-[#0A0A0A] border border-gray-700/50 rounded p-3 text-center">
-            <div className="text-lg font-bold text-white">{telemetry.recentImports}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Imports 24h</div>
-          </div>
-          <div className="bg-[#0A0A0A] border border-gray-700/50 rounded p-3 text-center">
-            <div className="text-[10px] font-mono text-gray-300">{user?.role || 'user'}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Role</div>
-          </div>
+    <div className="flex flex-col gap-0 max-w-5xl mx-auto w-full">
+
+      {/* ── TELEMETRY STRIP — tertiary, compact, inline ────────────────────── */}
+      <div className="flex items-center border border-gray-800/70 rounded-lg overflow-hidden mb-5" style={{ background: '#0d0d0d' }}>
+        <div className="px-3 py-1.5 border-r border-gray-800/60">
+          <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600">TELEMETRY</span>
         </div>
+        <TelCell value={telemetry.live} label="LIVE" hot />
+        <TelCell value={telemetry.upcoming} label="UPCOMING" />
+        <TelCell value={telemetry.total} label="TOTAL" />
+        <TelCell value={telemetry.imports24h} label="IMPORTS 24H" />
       </div>
 
-      {/* ─── ZONE 2: EVENT OPERATIONS BOARD ─────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-300">Event Operations</h2>
-          <Button
+      {/* ── EVENT OPERATIONS — PRIMARY SURFACE ────────────────────────────── */}
+      <div className="mb-6">
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-400">EVENT OPERATIONS</span>
+            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{allEvents.length}</span>
+          </div>
+          <button
             onClick={() => navigate('/race-control/events')}
-            size="sm"
-            variant="outline"
-            className="border-gray-700 text-gray-300 hover:bg-gray-800 text-xs gap-1"
+            className="flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
           >
-            <FileText className="w-3 h-3" />
-            Event Files
-          </Button>
+            ALL FILES <ArrowRight className="w-2.5 h-2.5" />
+          </button>
         </div>
 
+        {/* Board */}
         {allEvents.length === 0 ? (
-          <div className="bg-[#111111] border border-gray-800 rounded-lg p-12 text-center space-y-3">
-            <AlertCircle className="w-8 h-8 text-gray-600 mx-auto" />
-            <p className="text-sm text-gray-400">NO EVENTS IN SCOPE</p>
-            <p className="text-xs text-gray-500">Use Event Files or Create Event to begin building operations.</p>
-            <Button
+          <div className="border border-gray-800/60 rounded-lg px-5 py-10 text-center" style={{ background: '#0d0d0d' }}>
+            <AlertCircle className="w-5 h-5 text-gray-700 mx-auto mb-2" />
+            <p className="text-[10px] font-mono tracking-widest text-gray-600">NO EVENTS IN SCOPE</p>
+            <button
               onClick={() => navigate('/race-control/events')}
-              variant="outline"
-              size="sm"
-              className="border-gray-700 text-gray-300 hover:bg-gray-800 mx-auto mt-2"
+              className="mt-3 text-[9px] font-mono text-teal-600 hover:text-teal-400 transition-colors uppercase tracking-widest"
             >
-              Open Event Files
-            </Button>
+              Open Event Files →
+            </button>
           </div>
         ) : (
-          <div className="space-y-2">
-            {allEvents.slice(0, 15).map(event => {
+          <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
+            {sortedEvents.slice(0, 20).map((event, idx) => {
               const isLive      = event.status === 'Live';
-              const isCompleted = event.status === 'Completed';
-              const isCancelled = event.status === 'Cancelled';
+              const isCompleted = event.status === 'Completed' || event.status === 'Cancelled';
               const eventDate   = event.event_date ? new Date(event.event_date) : null;
 
               return (
                 <div
                   key={event.id}
-                  onClick={() => handleOpenEvent(event.id)}
-                  className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
-                    isLive
-                      ? 'bg-[#1a1010] border-red-800/50 hover:border-red-700/70'
-                      : isCompleted || isCancelled
-                      ? 'bg-[#0a0a0a] border-gray-800/50 hover:border-gray-700/50'
-                      : 'bg-[#111111] border-gray-700/50 hover:border-gray-600/70'
-                  }`}
+                  onClick={() => navigate(`/race-control/events/${event.id}`)}
+                  className={`
+                    flex items-center gap-3 px-3 py-2 cursor-pointer transition-all border-b border-gray-800/40 last:border-b-0 group
+                    ${isLive
+                      ? 'bg-red-950/20 hover:bg-red-950/30'
+                      : isCompleted
+                      ? 'opacity-50 hover:opacity-70'
+                      : 'hover:bg-gray-800/30'
+                    }
+                  `}
                 >
+                  {/* Live indicator or index */}
+                  <div className="w-4 flex-shrink-0 flex items-center justify-center">
+                    {isLive
+                      ? <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      : <span className="text-[9px] font-mono text-gray-700 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                    }
+                  </div>
+
+                  {/* LEFT: Name + meta */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className={`text-sm font-semibold truncate ${isLive ? 'text-white' : 'text-gray-300'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold truncate leading-snug ${isLive ? 'text-white' : isCompleted ? 'text-gray-600' : 'text-gray-200'}`}>
                         {event.name}
-                      </div>
-                      <StatusBadge status={event.status || 'Draft'} />
+                      </span>
+                      <StatusTag status={event.status || 'Draft'} />
                     </div>
-                    <div className="text-xs text-gray-500 mt-1 truncate">
-                      {event.series_name && <span>{event.series_name}</span>}
-                      {event.series_name && event.location_note && <span> · </span>}
-                      {event.location_note && <span>{event.location_note}</span>}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {event.series_name && (
+                        <span className="text-[9px] font-mono text-gray-600 truncate">{event.series_name}</span>
+                      )}
+                      {event.location_note && (
+                        <span className="text-[9px] font-mono text-gray-700 truncate">{event.location_note}</span>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+
+                  {/* RIGHT: date + action */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     {eventDate && (
-                      <div className="text-right">
-                        <div className="text-xs font-mono text-gray-400">{format(eventDate, 'MMM d')}</div>
-                        <div className="text-[10px] text-gray-600">{format(eventDate, 'EEE')}</div>
+                      <div className="text-right hidden sm:block">
+                        <div className="text-[10px] font-mono text-gray-500 tabular-nums">{format(eventDate, 'MMM dd')}</div>
+                        <div className="text-[9px] font-mono text-gray-700">{format(eventDate, 'yyyy')}</div>
                       </div>
                     )}
-                    <ChevronRight className="w-4 h-4 text-gray-600" />
+                    <ChevronRight className={`w-3 h-3 flex-shrink-0 transition-colors ${isLive ? 'text-red-600 group-hover:text-red-400' : 'text-gray-700 group-hover:text-gray-500'}`} />
                   </div>
                 </div>
               );
             })}
-            {allEvents.length > 15 && (
-              <div className="text-center py-2">
-                <Button
-                  onClick={() => navigate('/race-control/events')}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-gray-500 hover:text-gray-400"
-                >
-                  View all {allEvents.length} events →
-                </Button>
-              </div>
+
+            {allEvents.length > 20 && (
+              <button
+                onClick={() => navigate('/race-control/events')}
+                className="w-full px-3 py-2 text-[9px] font-mono tracking-widest text-gray-700 hover:text-gray-500 transition-colors border-t border-gray-800/40 text-center"
+                style={{ background: '#0a0a0a' }}
+              >
+                + {allEvents.length - 20} MORE — OPEN EVENT FILES
+              </button>
             )}
           </div>
         )}
       </div>
 
-      {/* ─── ZONE 3: ROLE TOOLKIT ──────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-gray-300">Tools & Links</h2>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          <button onClick={() => navigate('/race-control/events')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><FileText className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Event Files</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          {isAdmin && (
-            <button onClick={() => navigate('/racecore?tab=eventBuilder')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-              <div className="flex items-center gap-2"><Plus className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Create Event</span></div>
-              <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-            </button>
-          )}
-          <button onClick={() => navigate('/racecore?tab=integrations')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><Settings className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Integrations</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          <button onClick={() => navigate('/ManageDrivers')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Drivers</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          <button onClick={() => navigate('/ManageTeams')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><Users2 className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Teams</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          <button onClick={() => navigate('/ManageSeries')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Series</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          <button onClick={() => navigate('/ManageTracks')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-            <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Tracks</span></div>
-            <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-          </button>
-          {isAdmin && (
-            <button onClick={() => navigate('/racecore?tab=announcer_pack')} className="flex items-center justify-between p-3 bg-[#111111] border border-gray-700/50 hover:border-gray-600 rounded-lg transition-all group">
-              <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-gray-500 group-hover:text-gray-400" /><span className="text-sm text-gray-300 group-hover:text-white">Announcer Pack</span></div>
-              <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-500" />
-            </button>
-          )}
-        </div>
-      </div>
+      {/* ── TWO-COLUMN LOWER SECTION ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-      {/* ─── ZONE 4: OPERATIONS FEED (OperationLog) ──────────────────────────── */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-gray-300">Recent Operations</h2>
-        {operationLogs.length === 0 ? (
-          <div className="bg-[#111111] border border-gray-800 rounded-lg p-6 text-center">
-            <div className="text-xs text-gray-500 font-mono">AWAITING OPS</div>
+        {/* ROLE ACTIONS — secondary */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">OPERATIONS</span>
+            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{user?.role || 'user'}</span>
           </div>
-        ) : (
-          <div className="space-y-1 max-h-60 overflow-y-auto">
-            {operationLogs.slice(0, 15).map(log => (
-              <div key={log.id} className="flex items-center justify-between p-2 bg-[#0a0a0a] border border-gray-800/50 rounded text-xs">
-                <div className="flex-1 min-w-0">
-                  <div className="text-gray-300 truncate">{log.operation_type || 'Operation'}</div>
-                  <div className="text-gray-600 text-[10px]">{log.source_type || log.entity_name || 'System'}</div>
-                </div>
-                <div className="text-gray-600 text-[10px] whitespace-nowrap ml-2">
-                  {log.created_date && format(new Date(log.created_date), 'HH:mm:ss')}
-                </div>
+          <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
+            {roleActions.map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={idx}
+                  onClick={action.action}
+                  className="w-full flex items-center gap-3 px-3 py-2 border-b border-gray-800/40 last:border-b-0 hover:bg-gray-800/30 transition-colors text-left group"
+                >
+                  <Icon className="w-3 h-3 text-gray-600 flex-shrink-0 group-hover:text-gray-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-300 group-hover:text-white transition-colors">{action.label}</div>
+                    <div className="text-[9px] font-mono text-gray-700">{action.sub}</div>
+                  </div>
+                  <ChevronRight className="w-2.5 h-2.5 text-gray-700 group-hover:text-gray-500 flex-shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* OPERATIONS FEED — secondary */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">OPS FEED</span>
+            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{operationLogs.length}</span>
+          </div>
+          <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
+            {operationLogs.length === 0 ? (
+              <div className="px-3 py-6 text-center">
+                <span className="text-[9px] font-mono tracking-widest text-gray-700">STANDBY — NO RECENT OPS</span>
               </div>
-            ))}
+            ) : (
+              <div className="max-h-56 overflow-y-auto">
+                {operationLogs.slice(0, 20).map(log => {
+                  const sev = opSeverity(log.operation_type);
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-800/30 last:border-b-0"
+                    >
+                      <span className={`w-1 h-1 rounded-full flex-shrink-0 ${sev.dot}`} />
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-[10px] font-mono font-bold truncate block ${sev.color}`}>
+                          {(log.operation_type || 'OPERATION').toUpperCase()}
+                        </span>
+                        {log.source_type && (
+                          <span className="text-[9px] font-mono text-gray-700 truncate block">{log.source_type}</span>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-mono text-gray-700 whitespace-nowrap tabular-nums flex-shrink-0">
+                        {log.created_date ? format(new Date(log.created_date), 'HH:mm:ss') : ''}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );
