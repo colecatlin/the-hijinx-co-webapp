@@ -84,7 +84,7 @@ export default function RaceCoreSidebar({
                 key={action.label}
                 onClick={action.onClick}
                 className={cn(
-                  'w-full flex items-center gap-2 px-3 py-1 text-[10px] transition-colors text-left',
+                  'w-full flex items-center gap-2 px-3 py-1 text-xs transition-colors text-left',
                   action.active
                     ? 'text-purple-300 bg-purple-900/20'
                     : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/30'
@@ -131,7 +131,7 @@ export default function RaceCoreSidebar({
                     disabled={disabled}
                     title={disabled ? 'Select an event first' : undefined}
                     className={cn(
-                      'relative w-full flex items-center gap-2 pl-3 pr-2 py-1 text-[10px] transition-colors text-left',
+                      'relative w-full flex items-center gap-2 pl-3 pr-2 py-1 text-xs transition-colors text-left',
                       active
                         ? 'text-white bg-gray-800/50'
                         : disabled

@@ -212,7 +212,7 @@ export default function RaceCoreHome({
                   {/* LEFT: Name + meta */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold truncate leading-snug ${isLive ? 'text-white' : isCompleted ? 'text-gray-600' : 'text-gray-200'}`}>
+                      <span className={`text-sm font-bold truncate leading-snug ${isLive ? 'text-white' : isCompleted ? 'text-gray-600' : 'text-gray-200'}`}>
                         {event.name}
                       </span>
                       <StatusTag status={event.status || 'Draft'} />
