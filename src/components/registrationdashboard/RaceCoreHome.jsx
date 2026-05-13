@@ -38,7 +38,7 @@ function statusCfg(s) { return STATUS_CONFIG[s] || STATUS_CONFIG.Draft; }
 function StatusTag({ status }) {
   const cfg = statusCfg(status);
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-sm text-[9px] font-mono font-bold tracking-widest border ${cfg.bg} ${cfg.color} whitespace-nowrap`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-px rounded-sm text-[10px] font-mono font-bold tracking-widest border ${cfg.bg} ${cfg.color} whitespace-nowrap`}>
       <span className={`w-1 h-1 rounded-full flex-shrink-0 ${cfg.dot}`} />
       {cfg.label}
     </span>
@@ -84,7 +84,7 @@ function buildRoleActions(isAdmin, role, navigate) {
 // ── Stat pill ─────────────────────────────────────────────────────────────────
 function StatPill({ value, label, dim = false }) {
   return (
-    <span className={`inline-flex items-center gap-1 font-mono text-[9px] tracking-widest whitespace-nowrap ${dim ? 'text-gray-700' : 'text-gray-500'}`}>
+    <span className={`inline-flex items-center gap-1 font-mono text-xs tracking-widest whitespace-nowrap ${dim ? 'text-gray-700' : 'text-gray-500'}`}>
       <span className={`font-bold ${dim ? 'text-gray-600' : 'text-gray-300'}`}>{value}</span>
       {label}
     </span>
@@ -95,8 +95,8 @@ function StatPill({ value, label, dim = false }) {
 function TelCell({ value, label, hot = false }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-800/60 last:border-r-0">
-      <span className={`text-sm font-black font-mono tabular-nums ${hot && value > 0 ? 'text-red-400' : 'text-gray-200'}`}>{value}</span>
-      <span className="text-[9px] uppercase tracking-widest text-gray-600 leading-tight">{label}</span>
+      <span className={`text-base font-black font-mono tabular-nums ${hot && value > 0 ? 'text-red-400' : 'text-gray-200'}`}>{value}</span>
+      <span className="text-[10px] uppercase tracking-widest text-gray-600 leading-tight">{label}</span>
     </div>
   );
 }
@@ -144,7 +144,7 @@ export default function RaceCoreHome({
       {/* ── TELEMETRY STRIP — tertiary, compact, inline ────────────────────── */}
       <div className="flex items-center border border-gray-800/70 rounded-lg overflow-hidden mb-5" style={{ background: '#0d0d0d' }}>
         <div className="px-3 py-1.5 border-r border-gray-800/60">
-          <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600">TELEMETRY</span>
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">TELEMETRY</span>
         </div>
         <TelCell value={telemetry.live} label="LIVE" hot />
         <TelCell value={telemetry.upcoming} label="UPCOMING" />
@@ -155,28 +155,28 @@ export default function RaceCoreHome({
       {/* ── EVENT OPERATIONS — PRIMARY SURFACE ────────────────────────────── */}
       <div className="mb-6">
         {/* Section header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-400">EVENT OPERATIONS</span>
-            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{allEvents.length}</span>
-          </div>
-          <button
-            onClick={() => navigate('/race-control/events')}
-            className="flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
-          >
+         <div className="flex items-center justify-between mb-2">
+           <div className="flex items-center gap-2">
+             <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">EVENT OPERATIONS</span>
+             <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{allEvents.length}</span>
+           </div>
+           <button
+             onClick={() => navigate('/race-control/events')}
+             className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
+           >
             ALL FILES <ArrowRight className="w-2.5 h-2.5" />
           </button>
         </div>
 
         {/* Board */}
         {allEvents.length === 0 ? (
-          <div className="border border-gray-800/60 rounded-lg px-5 py-10 text-center" style={{ background: '#0d0d0d' }}>
-            <AlertCircle className="w-5 h-5 text-gray-700 mx-auto mb-2" />
-            <p className="text-[10px] font-mono tracking-widest text-gray-600">NO EVENTS IN SCOPE</p>
-            <button
-              onClick={() => navigate('/race-control/events')}
-              className="mt-3 text-[9px] font-mono text-teal-600 hover:text-teal-400 transition-colors uppercase tracking-widest"
-            >
+           <div className="border border-gray-800/60 rounded-lg px-5 py-10 text-center" style={{ background: '#0d0d0d' }}>
+             <AlertCircle className="w-5 h-5 text-gray-700 mx-auto mb-2" />
+             <p className="text-xs font-mono tracking-widest text-gray-600">NO EVENTS IN SCOPE</p>
+             <button
+               onClick={() => navigate('/race-control/events')}
+               className="mt-3 text-[10px] font-mono text-teal-600 hover:text-teal-400 transition-colors uppercase tracking-widest"
+             >
               Open Event Files →
             </button>
           </div>
@@ -230,10 +230,10 @@ export default function RaceCoreHome({
                   {/* RIGHT: date + action */}
                   <div className="flex items-center gap-3 flex-shrink-0">
                     {eventDate && (
-                      <div className="text-right hidden sm:block">
-                        <div className="text-[10px] font-mono text-gray-500 tabular-nums">{format(eventDate, 'MMM dd')}</div>
-                        <div className="text-[9px] font-mono text-gray-700">{format(eventDate, 'yyyy')}</div>
-                      </div>
+                     <div className="text-right hidden sm:block">
+                       <div className="text-xs font-mono text-gray-500 tabular-nums">{format(eventDate, 'MMM dd')}</div>
+                       <div className="text-[10px] font-mono text-gray-700">{format(eventDate, 'yyyy')}</div>
+                     </div>
                     )}
                     <ChevronRight className={`w-3 h-3 flex-shrink-0 transition-colors ${isLive ? 'text-red-600 group-hover:text-red-400' : 'text-gray-700 group-hover:text-gray-500'}`} />
                   </div>
@@ -242,11 +242,11 @@ export default function RaceCoreHome({
             })}
 
             {allEvents.length > 20 && (
-              <button
-                onClick={() => navigate('/race-control/events')}
-                className="w-full px-3 py-2 text-[9px] font-mono tracking-widest text-gray-700 hover:text-gray-500 transition-colors border-t border-gray-800/40 text-center"
-                style={{ background: '#0a0a0a' }}
-              >
+               <button
+                 onClick={() => navigate('/race-control/events')}
+                 className="w-full px-3 py-2 text-[10px] font-mono tracking-widest text-gray-700 hover:text-gray-500 transition-colors border-t border-gray-800/40 text-center"
+                 style={{ background: '#0a0a0a' }}
+               >
                 + {allEvents.length - 20} MORE — OPEN EVENT FILES
               </button>
             )}
@@ -258,11 +258,11 @@ export default function RaceCoreHome({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* ROLE ACTIONS — secondary */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">OPERATIONS</span>
-            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{user?.role || 'user'}</span>
-          </div>
+         <div>
+           <div className="flex items-center gap-2 mb-2">
+             <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-600">OPERATIONS</span>
+             <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{user?.role || 'user'}</span>
+           </div>
           <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
             {roleActions.map((action, idx) => {
               const Icon = action.icon;
@@ -274,9 +274,9 @@ export default function RaceCoreHome({
                 >
                   <Icon className="w-3 h-3 text-gray-600 flex-shrink-0 group-hover:text-gray-400" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-gray-300 group-hover:text-white transition-colors">{action.label}</div>
-                    <div className="text-[9px] font-mono text-gray-700">{action.sub}</div>
-                  </div>
+                     <div className="text-sm text-gray-300 group-hover:text-white transition-colors">{action.label}</div>
+                     <div className="text-xs font-mono text-gray-700">{action.sub}</div>
+                   </div>
                   <ChevronRight className="w-2.5 h-2.5 text-gray-700 group-hover:text-gray-500 flex-shrink-0" />
                 </button>
               );
@@ -285,15 +285,15 @@ export default function RaceCoreHome({
         </div>
 
         {/* OPERATIONS FEED — secondary */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">OPS FEED</span>
-            <span className="text-[9px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{operationLogs.length}</span>
-          </div>
+         <div>
+           <div className="flex items-center gap-2 mb-2">
+             <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-600">OPS FEED</span>
+             <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{operationLogs.length}</span>
+           </div>
           <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
             {operationLogs.length === 0 ? (
               <div className="px-3 py-6 text-center">
-                <span className="text-[9px] font-mono tracking-widest text-gray-700">STANDBY — NO RECENT OPS</span>
+                <span className="text-[10px] font-mono tracking-widest text-gray-700">STANDBY — NO RECENT OPS</span>
               </div>
             ) : (
               <div className="max-h-56 overflow-y-auto">

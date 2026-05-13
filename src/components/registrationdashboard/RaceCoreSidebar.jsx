@@ -68,11 +68,11 @@ export default function RaceCoreSidebar({
     >
       {/* Identity strip */}
       <div className="px-3 py-2 border-b border-gray-800/60 flex items-center gap-2">
-        <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600">RACECORE</span>
-        {isAdmin && (
-          <span className="text-[8px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
-        )}
-      </div>
+         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RACECORE</span>
+         {isAdmin && (
+           <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
+         )}
+       </div>
 
       {/* Quick Actions */}
       {quickActions.length > 0 && (
@@ -111,8 +111,8 @@ export default function RaceCoreSidebar({
             <div key={group.id} className="mb-0.5">
               {/* Group label — collapsible */}
               <button
-                onClick={() => toggle(group.id)}
-                className="w-full flex items-center justify-between px-3 py-1 text-[8px] font-mono font-bold uppercase tracking-widest text-gray-700 hover:text-gray-500 transition-colors"
+               onClick={() => toggle(group.id)}
+               className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-700 hover:text-gray-500 transition-colors"
               >
                 <span>{group.label}</span>
                 <ChevronDown className={cn('w-2.5 h-2.5 transition-transform opacity-40', !isOpen && '-rotate-90')} />
