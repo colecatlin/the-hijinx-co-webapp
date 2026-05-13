@@ -1,0 +1,49 @@
+{
+  "name": "EventDay",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "day_number": {
+      "type": "number",
+      "description": "Sequential day number within the event (1, 2, 3\u2026)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label for the day (e.g. 'Day 1', 'Friday')"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Calendar date for this event day (YYYY-MM-DD)"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order \u2014 mirrors day_number by default"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Planned",
+        "Active",
+        "Completed",
+        "Cancelled"
+      ],
+      "default": "Planned",
+      "description": "Operational status of the event day"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for this event day"
+    }
+  },
+  "required": [
+    "event_id",
+    "day_number",
+    "date",
+    "label"
+  ]
+}

@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Reference to SeriesClass (optional, for standings and series filtering)"
     },
+    "event_day_id": {
+      "type": "string",
+      "description": "Reference to EventDay \u2014 which day of the event this session runs on"
+    },
     "session_type": {
       "type": "string",
       "enum": [
@@ -38,7 +42,30 @@
     },
     "round_number": {
       "type": "number",
-      "description": "Round number (optional)"
+      "description": "Round number \u2014 only used for Final sessions that award championship points"
+    },
+    "round_label": {
+      "type": "string",
+      "description": "Optional display label for the round (e.g. 'Round 1 \u2014 Saturday')"
+    },
+    "points_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this session awards points toward standings"
+    },
+    "points_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "qualifying",
+        "final"
+      ],
+      "default": "none",
+      "description": "Type of points awarded: none, qualifying, or final (championship)"
+    },
+    "points_rule": {
+      "type": "string",
+      "description": "Points rule identifier (e.g. top_2_qualifying, standard_final)"
     },
     "run_order": {
       "type": "number",

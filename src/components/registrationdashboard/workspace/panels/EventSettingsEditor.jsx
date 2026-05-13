@@ -25,6 +25,7 @@ import {
   Image,
   Info,
 } from 'lucide-react';
+import EventDayManager from '@/components/registrationdashboard/EventDayManager';
 
 const STATUS_COLORS = {
   Draft:           'bg-gray-700 text-gray-300',
@@ -403,6 +404,11 @@ export default function EventSettingsEditor() {
             Approval workflows, track/series linkage, and publish controls are managed in Full Event Management.
           </p>
         </div>
+      </div>
+
+      {/* Section 5 — Event Days */}
+      <div className="p-4 bg-[#0d0f11] border border-gray-800/60 rounded-xl">
+        <EventDayManager event={selectedEvent} isAdmin={canManageSettings} />
       </div>
 
       {/* Save Bar */}

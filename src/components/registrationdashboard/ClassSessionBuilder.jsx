@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +34,9 @@ const EMPTY_CLASS_FORM = {
 };
 const EMPTY_SESSION_FORM = {
   event_class_id: '', session_type: 'Practice', name: '', session_number: '',
-  round_number: '', scheduled_time: '', duration_minutes: '', laps: '',
+  round_number: '', round_label: '', scheduled_time: '', duration_minutes: '', laps: '',
   run_order: '', input_source: 'Manual', status: 'Draft', advancement_rules: '',
+  event_day_id: '', points_enabled: false, points_type: 'none', points_rule: '',
 };
 
 export default function ClassSessionBuilder({
@@ -71,6 +73,13 @@ export default function ClassSessionBuilder({
     dashboardContext: dashboardContext ?? { eventId },
     selectedEvent: selectedEvent ?? null,
   };
+
+  // ── EventDays query ───────────────────────────────────────────────────────
+  const { data: eventDays = [] } = useQuery({
+    queryKey: ['eventDays', eventId],
+    queryFn: () => base44.entities.EventDay.filter({ event_id: eventId }, 'sort_order', 50),
+    enabled: !!eventId,
+  });
 
   // ── Queries ───────────────────────────────────────────────────────────────
   const { data: eventClasses = [] } = useQuery({
@@ -228,6 +237,7 @@ export default function ClassSessionBuilder({
       name: session.name,
       session_number: session.session_number != null ? String(session.session_number) : '',
       round_number: session.round_number != null ? String(session.round_number) : '',
+      round_label: session.round_label || '',
       scheduled_time: session.scheduled_time || '',
       duration_minutes: session.duration_minutes != null ? String(session.duration_minutes) : '',
       laps: session.laps != null ? String(session.laps) : '',
@@ -235,20 +245,48 @@ export default function ClassSessionBuilder({
       input_source: session.input_source || 'Manual',
       status: session.status || 'Draft',
       advancement_rules: session.advancement_rules || '',
+      event_day_id: session.event_day_id || '',
+      points_enabled: session.points_enabled || false,
+      points_type: session.points_type || 'none',
+      points_rule: session.points_rule || '',
     });
     setSessionDialog(true);
+  };
+
+  // Derive points fields from session_type when saving
+  const derivePointsFields = (form) => {
+    const type = form.session_type;
+    if (!form.points_enabled || type === 'Practice' || type === 'Heat' || type === 'LCQ' || type === 'Time Attack') {
+      return { points_enabled: false, points_type: 'none', points_rule: null, round_number: null };
+    }
+    if (type === 'Qualifying') {
+      return {
+        points_enabled: true,
+        points_type: 'qualifying',
+        points_rule: form.points_rule || 'top_2_qualifying',
+        round_number: null,
+      };
+    }
+    // Final / Feature
+    return {
+      points_enabled: true,
+      points_type: 'final',
+      points_rule: form.points_rule || 'standard_final',
+      round_number: form.round_number ? Number(form.round_number) : null,
+    };
   };
 
   const handleSaveSession = async () => {
     if (!sessionForm.name.trim()) { toast.error('Session name required'); return; }
     if (!sessionForm.event_class_id) { toast.error('Select a class'); return; }
+    const pointsFields = derivePointsFields(sessionForm);
     const payload = {
       event_id: eventId,
       event_class_id: sessionForm.event_class_id,
+      event_day_id: sessionForm.event_day_id || undefined,
       session_type: sessionForm.session_type,
       name: sessionForm.name.trim(),
       session_number: sessionForm.session_number ? Number(sessionForm.session_number) : undefined,
-      round_number: sessionForm.round_number ? Number(sessionForm.round_number) : undefined,
       scheduled_time: sessionForm.scheduled_time || undefined,
       duration_minutes: sessionForm.duration_minutes ? Number(sessionForm.duration_minutes) : undefined,
       laps: sessionForm.laps ? Number(sessionForm.laps) : undefined,
@@ -260,6 +298,8 @@ export default function ClassSessionBuilder({
       input_source: sessionForm.input_source,
       status: sessionForm.status,
       advancement_rules: sessionForm.advancement_rules || undefined,
+      round_label: sessionForm.round_label || undefined,
+      ...pointsFields,
     };
     if (editingSession) {
       await updateSession({ id: editingSession.id, data: payload });
@@ -320,8 +360,10 @@ export default function ClassSessionBuilder({
     const maxRunOrder = sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0;
     let sessionsToCreate = [];
 
-    // Part 2 — inherit quickGenDate as scheduled_time (noon local time for day-only assignment)
-    const scheduledTime = quickGenDate ? `${quickGenDate}T12:00` : undefined;
+    // quickGenDate now holds an EventDay ID (not a date string)
+    const selectedDayId = quickGenDate || undefined;
+    const selectedDayRecord = selectedDayId ? eventDays.find(d => d.id === selectedDayId) : null;
+    const scheduledTime = selectedDayRecord ? `${selectedDayRecord.date}T12:00` : undefined;
 
     if (type === 'heats') {
       const entries = heatInputs.number_of_entries ? Number(heatInputs.number_of_entries) : 0;
@@ -333,6 +375,7 @@ export default function ClassSessionBuilder({
           event_id: eventId,
           event_class_id: classGroupId,
           series_class_id: classGroup.series_class_id,
+          event_day_id: selectedDayId,
           session_type: 'Heat',
           name: `Heat ${i}`,
           session_number: i,
@@ -340,6 +383,8 @@ export default function ClassSessionBuilder({
           input_source: 'Manual',
           status: 'Draft',
           run_order: maxRunOrder + i - 1,
+          points_enabled: false,
+          points_type: 'none',
         });
       }
     } else {
@@ -351,16 +396,20 @@ export default function ClassSessionBuilder({
       };
       const config = sessionTypeMap[type];
       if (config) {
+        const isPtsType = config.session_type === 'Feature';
         sessionsToCreate.push({
           event_id: eventId,
           event_class_id: classGroupId,
           series_class_id: classGroup.series_class_id,
+          event_day_id: selectedDayId,
           session_type: config.session_type,
           name: config.name,
           scheduled_time: scheduledTime,
           input_source: 'Manual',
           status: 'Draft',
           run_order: maxRunOrder,
+          points_enabled: isPtsType,
+          points_type: isPtsType ? 'final' : 'none',
         });
       }
     }
@@ -455,19 +504,21 @@ export default function ClassSessionBuilder({
                   {sortedSessions.length === 0 ? (
                     <div className="text-center py-4 space-y-3">
                       <p className="text-xs text-gray-500">No sessions in this class</p>
-                      {/* Part 2 — quick-gen date selector */}
-                      <div className="flex flex-col items-center gap-1">
+                      {/* Event Day selector for quick-gen */}
+                      {eventDays.length > 0 && (
                         <div className="flex items-center gap-2">
-                          <label className="text-xs text-gray-500 whitespace-nowrap">Session Date (optional)</label>
-                          <Input
-                            type="date"
-                            value={quickGenDate}
-                            onChange={e => setQuickGenDate(e.target.value)}
-                            className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-7 w-40"
-                          />
+                          <label className="text-xs text-gray-500 whitespace-nowrap">Assign to Day:</label>
+                          <Select value={quickGenDate || '__none'} onValueChange={(v) => setQuickGenDate(v === '__none' ? '' : v)}>
+                            <SelectTrigger className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-7 w-40"><SelectValue placeholder="No day" /></SelectTrigger>
+                            <SelectContent className="bg-[#262626] border-gray-700">
+                              <SelectItem value="__none">No day</SelectItem>
+                              {[...eventDays].sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).map(d => (
+                                <SelectItem key={d.id} value={d.id}>{d.label} — {d.date}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <p className="text-[10px] text-gray-600">Scheduled date improves multi-day event organization.</p>
-                      </div>
+                      )}
                       <div className="flex flex-wrap justify-center gap-2">
                         <Button onClick={() => generateSessions('practice', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Practice
@@ -491,23 +542,47 @@ export default function ClassSessionBuilder({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                       <div className="text-xs text-gray-500 px-2 py-1 grid grid-cols-6 gap-2 font-mono">
-                         <span>Run</span><span>Name</span><span>Type</span><span>Round</span><span>Start</span><span>Dur</span>
-                       </div>
-                       {sortedSessions.map((session) => (
+                       {sortedSessions.map((session) => {
+                         const sessionDay = eventDays.find(d => d.id === session.event_day_id);
+                         let dayWeekday = '';
+                         try { if (sessionDay) dayWeekday = format(parseISO(sessionDay.date), 'EEE'); } catch {}
+                         return (
                          <div
                            key={session.id}
-                           className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
+                           className={`p-3 rounded-lg border transition-colors ${
                              isLocked(session) ? 'bg-gray-800/20 border-gray-700 opacity-60' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700/50'
                            }`}
                          >
-                           <div className="flex-1 min-w-0 grid grid-cols-6 gap-2 items-center">
-                             <span className="text-xs font-mono text-gray-400">#{session.run_order || '0'}</span>
-                             <p className="font-medium text-white text-sm truncate">{session.name}</p>
-                             <Badge className="bg-purple-500/20 text-purple-400 text-xs justify-self-start">{session.session_type}</Badge>
-                             <span className="text-xs text-gray-400">{session.round_number || '—'}</span>
-                             <span className="text-xs text-gray-400 truncate">{session.scheduled_time ? new Date(session.scheduled_time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</span>
-                             <span className="text-xs text-gray-400">{session.duration_minutes ? `${session.duration_minutes}m` : '—'}</span>
+                           <div className="flex items-center justify-between gap-3">
+                           <div className="flex-1 min-w-0">
+                             <div className="flex items-center gap-2 flex-wrap">
+                               <span className="text-[10px] font-mono text-gray-600">#{session.run_order || '0'}</span>
+                               <p className="font-medium text-white text-sm">{session.name}</p>
+                               <Badge className="bg-purple-500/20 text-purple-400 text-xs">{session.session_type}</Badge>
+                               {session.points_enabled && session.points_type === 'final' && (
+                                 <Badge className="bg-amber-900/40 text-amber-300 text-xs">
+                                   🏆 {session.round_number ? `Round ${session.round_number}` : 'Final'}
+                                 </Badge>
+                               )}
+                               {session.points_enabled && session.points_type === 'qualifying' && (
+                                 <Badge className="bg-blue-900/40 text-blue-300 text-xs">⬆ Qual Pts</Badge>
+                               )}
+                             </div>
+                             <div className="flex items-center gap-2 mt-0.5">
+                               {sessionDay ? (
+                                 <span className="text-[9px] font-mono text-teal-700">{dayWeekday} · {sessionDay.label}</span>
+                               ) : (
+                                 <span className="text-[9px] font-mono text-gray-700">No day assigned</span>
+                               )}
+                               {session.scheduled_time && (
+                                 <span className="text-[9px] font-mono text-gray-600">
+                                   {new Date(session.scheduled_time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+                                 </span>
+                               )}
+                               {session.duration_minutes && (
+                                 <span className="text-[9px] font-mono text-gray-600">{session.duration_minutes}m</span>
+                               )}
+                             </div>
                            </div>
                           <div className="flex gap-1 flex-shrink-0">
                             {!isLocked(session) && <>
@@ -534,8 +609,10 @@ export default function ClassSessionBuilder({
                             )}
                           </div>
                         </div>
-                      ))}
-                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-gray-700 text-gray-300 mt-2">
+                        </div>
+                        );
+                        })}
+                        <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-gray-700 text-gray-300 mt-2">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
@@ -611,7 +688,8 @@ export default function ClassSessionBuilder({
           <DialogHeader>
             <DialogTitle className="text-white">{editingSession ? 'Edit Session' : 'Add Session'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+            {/* Row 1: Class + Day */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
@@ -623,8 +701,44 @@ export default function ClassSessionBuilder({
                 </Select>
               </div>
               <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Event Day</label>
+                <Select value={sessionForm.event_day_id || '__none'} onValueChange={(v) => setSessionForm({ ...sessionForm, event_day_id: v === '__none' ? '' : v })}>
+                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="No day assigned" /></SelectTrigger>
+                  <SelectContent className="bg-[#262626] border-gray-700">
+                    <SelectItem value="__none">No day assigned</SelectItem>
+                    {[...eventDays].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((d) => {
+                      let wd = '';
+                      try { wd = format(parseISO(d.date), 'EEE'); } catch {}
+                      return <SelectItem key={d.id} value={d.id}>{d.label} — {wd} {d.date}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+                {eventDays.length === 0 && (
+                  <p className="text-[10px] text-gray-600 mt-0.5">Generate event days in Settings to enable day assignment.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2: Session Type + Name */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
-                <Select value={sessionForm.session_type} onValueChange={(v) => setSessionForm({ ...sessionForm, session_type: v })}>
+                <Select
+                  value={sessionForm.session_type}
+                  onValueChange={(v) => {
+                    // Auto-set points defaults based on type
+                    const isPracticeOrHeat = ['Practice', 'Heat', 'LCQ', 'Time Attack', 'Other'].includes(v);
+                    const isQual = v === 'Qualifying';
+                    const isFinal = v === 'Final' || v === 'Feature';
+                    setSessionForm(prev => ({
+                      ...prev,
+                      session_type: v,
+                      points_enabled: isFinal || isQual ? prev.points_enabled : false,
+                      points_type: isFinal ? 'final' : isQual ? 'qualifying' : 'none',
+                      round_number: isFinal ? prev.round_number : '',
+                    }));
+                  }}
+                >
                   <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-[#262626] border-gray-700">
                     {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'].map((t) => (
@@ -634,53 +748,107 @@ export default function ClassSessionBuilder({
                     ))}
                   </SelectContent>
                 </Select>
-                {/* Part 5 — scoring indicator */}
-                {(sessionForm.session_type === 'Final' || sessionForm.session_type === 'Feature') ? (
-                  <p className="text-xs text-amber-400 mt-1">🏆 Scores toward standings</p>
-                ) : (
-                  <p className="text-xs text-gray-600 mt-1">⚪ Non-scoring session</p>
-                )}
               </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session Name *</label>
                 <Input value={sessionForm.name} onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Heat 1, Final" />
               </div>
+            </div>
+
+            {/* Points section */}
+            <div className="p-3 bg-[#111518] border border-gray-800 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-gray-400 uppercase font-semibold tracking-wider">Points Settings</label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs text-gray-400">Points Active</span>
+                  <button
+                    type="button"
+                    onClick={() => setSessionForm(prev => ({
+                      ...prev,
+                      points_enabled: !prev.points_enabled,
+                      points_type: !prev.points_enabled
+                        ? (prev.session_type === 'Qualifying' ? 'qualifying' : prev.session_type === 'Final' || prev.session_type === 'Feature' ? 'final' : 'none')
+                        : 'none',
+                    }))}
+                    className={`w-9 h-5 rounded-full transition-colors ${sessionForm.points_enabled ? 'bg-teal-600' : 'bg-gray-700'}`}
+                  >
+                    <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-0.5 ${sessionForm.points_enabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </button>
+                </label>
+              </div>
+
+              {sessionForm.points_enabled && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-gray-500 uppercase block mb-1">Points Type</label>
+                    <Select
+                      value={sessionForm.points_type}
+                      onValueChange={(v) => setSessionForm({ ...sessionForm, points_type: v })}
+                    >
+                      <SelectTrigger className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-[#262626] border-gray-700">
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="qualifying">Qualifying</SelectItem>
+                        <SelectItem value="final">Final (Championship)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {sessionForm.points_type === 'final' && (
+                    <div>
+                      <label className="text-[10px] text-gray-500 uppercase block mb-1">Round #</label>
+                      <Input
+                        type="number"
+                        value={sessionForm.round_number}
+                        onChange={(e) => setSessionForm({ ...sessionForm, round_number: e.target.value })}
+                        className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"
+                        placeholder="1, 2, 3…"
+                        min="1"
+                      />
+                    </div>
+                  )}
+                  {sessionForm.points_type === 'final' && (
+                    <div className="col-span-2">
+                      <label className="text-[10px] text-gray-500 uppercase block mb-1">Round Label (optional)</label>
+                      <Input
+                        value={sessionForm.round_label}
+                        onChange={(e) => setSessionForm({ ...sessionForm, round_label: e.target.value })}
+                        className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"
+                        placeholder="e.g. Saturday Final"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+              {!sessionForm.points_enabled && (
+                <p className="text-[10px] text-gray-600">
+                  {['Practice', 'Heat', 'LCQ'].includes(sessionForm.session_type)
+                    ? 'Practice / Heat sessions do not award points.'
+                    : 'Enable to award championship or qualifying points for this session.'}
+                </p>
+              )}
+            </div>
+
+            {/* Timing / logistics */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
+                <Input type="datetime-local" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Duration (min)</label>
+                <Input type="number" value={sessionForm.duration_minutes} onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
+                <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
+              </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Session #</label>
                 <Input type="number" value={sessionForm.session_number} onChange={(e) => setSessionForm({ ...sessionForm, session_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
-                </div>
-                <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Round #</label>
-                <Input type="number" value={sessionForm.round_number} onChange={(e) => setSessionForm({ ...sessionForm, round_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
-                </div>
-                <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
-                <Input type="datetime-local" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
-                </div>
-                <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Duration (min)</label>
-                <Input type="number" value={sessionForm.duration_minutes} onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
-                </div>
-                <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
-                <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
-                </div>
-              {/* Part 6 — run_order with day convention hint */}
+              </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Run Order</label>
                 <Input type="number" value={sessionForm.run_order} onChange={(e) => setSessionForm({ ...sessionForm, run_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Auto" />
-                <p className="text-[10px] text-gray-600 mt-0.5">Convention: 100s = Day 1, 200s = Day 2, 300s = Day 3</p>
-              </div>
-              <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Input Source</label>
-                <Select value={sessionForm.input_source} onValueChange={(v) => setSessionForm({ ...sessionForm, input_source: v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
-                    <SelectItem value="Manual">Manual</SelectItem>
-                    <SelectItem value="CSV">CSV</SelectItem>
-                    <SelectItem value="API">API</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Status</label>
@@ -765,11 +933,17 @@ export default function ClassSessionBuilder({
               <label className="text-xs text-gray-400 block mb-1">Cars Per Heat</label>
               <Input type="number" value={heatInputs.cars_per_heat} onChange={(e) => setHeatInputs({ ...heatInputs, cars_per_heat: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 8" />
             </div>
-            {/* Part 2 — date assignment in heat dialog */}
-            <div>
-              <label className="text-xs text-gray-400 block mb-1">Session Date (optional)</label>
-              <Input type="date" value={quickGenDate} onChange={(e) => setQuickGenDate(e.target.value)} className="bg-[#1A1A1A] border-gray-600 text-white" />
-              <p className="text-[10px] text-gray-600 mt-0.5">Scheduled date improves multi-day event organization.</p>
+                    <div>
+              <label className="text-xs text-gray-400 block mb-1">Event Day (optional)</label>
+              <Select value={quickGenDate || '__none'} onValueChange={(v) => setQuickGenDate(v === '__none' ? '' : v)}>
+                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white text-xs"><SelectValue placeholder="No day" /></SelectTrigger>
+                <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectItem value="__none">No day</SelectItem>
+                  {[...eventDays].sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).map(d => (
+                    <SelectItem key={d.id} value={d.id}>{d.label} — {d.date}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <p className="text-xs text-gray-500">
               {heatInputs.number_of_entries && heatInputs.cars_per_heat
