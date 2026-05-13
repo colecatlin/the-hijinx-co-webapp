@@ -19,6 +19,7 @@ import {
   ClipboardCheck,
   FolderDown,
   FileUp,
+  Camera,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 
@@ -42,8 +43,9 @@ const MODULE_GROUPS = [
   {
     section: 'Management',
     items: [
-      { id: 'media',       label: 'Media',       icon: Radio,    description: 'Credentials, assets, governance',        permKey: 'canManageMedia' },
-      { id: 'activity',    label: 'Activity',    icon: Activity, description: 'Event history and audit log',            permKey: 'canViewActivity' },
+      { id: 'media',        label: 'Media',        icon: Radio,    description: 'Credentials, assets, governance',        permKey: 'canManageMedia' },
+      { id: 'media_portal', label: 'Media Portal', icon: Camera,   description: 'Full media operations — requests, waivers, deliverables, uploads, review', permKey: 'canManageMedia' },
+      { id: 'activity',     label: 'Activity',     icon: Activity, description: 'Event history and audit log',            permKey: 'canViewActivity' },
       { id: 'settings',    label: 'Settings',    icon: Settings, description: 'Event configuration and permissions',    permKey: 'canManageSettings' },
     ],
   },

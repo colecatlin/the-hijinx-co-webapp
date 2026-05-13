@@ -19,8 +19,9 @@ const WORKSPACE_PANELS = [
   { id: 'exports',    label: 'Exports' },
   { id: 'imports',    label: 'Imports' },
   { id: 'standings',  label: 'Standings' },
-  { id: 'media',      label: 'Media' },
-  { id: 'activity',   label: 'Activity' },
+  { id: 'media',        label: 'Media' },
+  { id: 'media_portal', label: 'Media Portal' },
+  { id: 'activity',     label: 'Activity' },
   { id: 'settings',   label: 'Settings' },
 ];
 

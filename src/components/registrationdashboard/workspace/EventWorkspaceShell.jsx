@@ -18,6 +18,7 @@ import EventCheckInPanel from './panels/EventCheckInPanel';
 import EventExportsPanel from './panels/EventExportsPanel';
 import EventImportsPanel from './panels/EventImportsPanel';
 import EventMediaPanel from './panels/EventMediaPanel';
+import EventMediaPortalPanel from './panels/EventMediaPortalPanel';
 import EventCompliancePanel from './panels/EventCompliancePanel';
 import EventEntriesPanel from './panels/EventEntriesPanel';
 import EventSettingsPanel from './panels/EventSettingsPanel';
@@ -71,14 +72,15 @@ export default function EventWorkspaceShell({ panels }) {
     exports:    'canViewExports',
     imports:    'canViewImports',
     standings:  'canManageStandings',
-    media:      'canManageMedia',
-    activity:   'canViewActivity',
+    media:        'canManageMedia',
+    media_portal: 'canManageMedia',
+    activity:     'canViewActivity',
     settings:   'canManageSettings',
   };
 
   // Build ordered list of permitted panel IDs. null → all permitted.
   const permittedPanels = useMemo(() => {
-    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','exports','imports','standings','media','activity','settings'];
+    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','exports','imports','standings','media','media_portal','activity','settings'];
     if (!eventPermissions) return allPanels;
     return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
   }, [eventPermissions]);
@@ -198,8 +200,11 @@ export default function EventWorkspaceShell({ panels }) {
           {/* ── WIRED: Settings ── */}
           {isPanelPermitted && eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
 
-          {/* ── WIRED: Media ── */}
+          {/* ── WIRED: Media (governance) ── */}
           {isPanelPermitted && eventWorkspacePanel === 'media' && <EventMediaPanel />}
+
+          {/* ── R8Z Part 2: Media Portal (full event media ops) ── */}
+          {isPanelPermitted && eventWorkspacePanel === 'media_portal' && <EventMediaPortalPanel />}
 
           {/* ── WIRED: Compliance ── */}
           {isPanelPermitted && eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
