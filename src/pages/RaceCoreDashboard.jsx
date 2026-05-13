@@ -711,9 +711,7 @@ export default function RaceCoreDashboard() {
     }
   };
 
-  if (authLoading || userLoading || selectedEventLoading || selectedTrackLoading || selectedSeriesLoading) {
-  // Added trackCollaborators and seriesCollaborators query loading to auth checks
-  // They load quickly via EntityCollaborator filters
+  if (authLoading || userLoading) {
     return (
       <PageShell>
         <div className="flex items-center justify-center min-h-screen">

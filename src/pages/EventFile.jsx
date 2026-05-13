@@ -24,7 +24,8 @@ const DQ = applyDefaultQueryOptions();
 // (Container also validates via WORKSPACE_PANELS for defense-in-depth)
 const VALID_PANELS = new Set([
   'overview', 'schedule', 'sessions', 'results', 'entries',
-  'compliance', 'standings', 'media', 'activity', 'settings',
+  'compliance', 'checkin', 'exports', 'imports',
+  'standings', 'media', 'activity', 'settings',
 ]);
 
 function toSafePanel(raw) {

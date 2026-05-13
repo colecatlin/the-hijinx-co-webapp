@@ -15,6 +15,7 @@ import {
   Loader2, AlertTriangle, FolderOpen, ArrowRight, Radio,
   CheckCircle2, Clock, XCircle, Layers,
 } from 'lucide-react';
+import { QueryKeys } from '@/components/utils/queryKeys';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -212,7 +213,7 @@ export default function RaceControlEvents() {
 
   // Data
   const { data: events = [], isLoading: eventsLoading, error: eventsError } = useQuery({
-    queryKey: ['events-directory'],
+    queryKey: QueryKeys.events.list(),
     queryFn: () => base44.entities.Event.list('-event_date', 200),
     enabled: !!isAuthenticated,
     ...DQ,
@@ -296,7 +297,7 @@ export default function RaceControlEvents() {
       >
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-2 text-[10px] text-gray-600 mb-2 font-mono tracking-widest">
-            <Link to="/RegistrationDashboard" className="hover:text-gray-400 transition-colors">RACECORE</Link>
+            <Link to="/racecore" className="hover:text-gray-400 transition-colors">RACECORE</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-gray-500">EVENTS</span>
           </div>
