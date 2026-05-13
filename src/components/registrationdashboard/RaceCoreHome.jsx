@@ -117,24 +117,42 @@ export default function RaceCoreHome({
     ...DQ,
   });
 
-  const telemetry = useMemo(() => {
-    const live     = allEvents.filter(e => e.status === 'Live').length;
-    const upcoming = allEvents.filter(e => ['Draft', 'PendingApproval', 'Published'].includes(e.status)).length;
-    const last24h  = new Date(); last24h.setDate(last24h.getDate() - 1);
-    const imports24h = importLogs.filter(l => new Date(l.created_date) > last24h).length;
-    return { live, upcoming, total: allEvents.length, imports24h };
-  }, [allEvents, importLogs]);
+  const { upcomingEvents, pastEvents } = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // compare by day
+    const upcoming = [];
+    const past = [];
 
-  // Sort: Live first, then by date desc
-  const sortedEvents = useMemo(() => {
-    return [...allEvents].sort((a, b) => {
+    allEvents.forEach(event => {
+      const eventDate = event.event_date ? new Date(event.event_date) : null;
+      // Live events always go in upcoming regardless of date
+      if (event.status === 'Live' || (eventDate && eventDate >= now)) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+
+    // Upcoming: Live first, then soonest date first
+    upcoming.sort((a, b) => {
       if (a.status === 'Live' && b.status !== 'Live') return -1;
       if (b.status === 'Live' && a.status !== 'Live') return 1;
-      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
-      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
-      return new Date(b.event_date || 0) - new Date(a.event_date || 0);
+      return new Date(a.event_date || 0) - new Date(b.event_date || 0);
     });
+
+    // Past: most recent first
+    past.sort((a, b) => new Date(b.event_date || 0) - new Date(a.event_date || 0));
+
+    return { upcomingEvents: upcoming, pastEvents: past };
   }, [allEvents]);
+
+  const telemetry = useMemo(() => {
+    const live = upcomingEvents.filter(e => e.status === 'Live').length;
+    const upcoming = upcomingEvents.length;
+    const last24h = new Date(); last24h.setDate(last24h.getDate() - 1);
+    const imports24h = importLogs.filter(l => new Date(l.created_date) > last24h).length;
+    return { live, upcoming, total: allEvents.length, imports24h };
+  }, [allEvents, importLogs, upcomingEvents]);
 
   const roleActions = useMemo(() => buildRoleActions(isAdmin, user?.role, navigate), [isAdmin, user?.role, navigate]);
 
@@ -158,7 +176,7 @@ export default function RaceCoreHome({
          <div className="flex items-center justify-between mb-2">
            <div className="flex items-center gap-2">
              <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">EVENT OPERATIONS</span>
-             <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{allEvents.length}</span>
+             <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{upcomingEvents.length}</span>
            </div>
            <button
              onClick={() => navigate('/race-control/events')}
@@ -169,7 +187,7 @@ export default function RaceCoreHome({
         </div>
 
         {/* Board */}
-        {allEvents.length === 0 ? (
+        {upcomingEvents.length === 0 ? (
            <div className="border border-gray-800/60 rounded-lg px-5 py-10 text-center" style={{ background: '#0d0d0d' }}>
              <AlertCircle className="w-5 h-5 text-gray-700 mx-auto mb-2" />
              <p className="text-xs font-mono tracking-widest text-gray-600">NO EVENTS IN SCOPE</p>
@@ -182,7 +200,7 @@ export default function RaceCoreHome({
           </div>
         ) : (
           <div className="border border-gray-800/60 rounded-lg overflow-hidden" style={{ background: '#0d0d0d' }}>
-            {sortedEvents.slice(0, 20).map((event, idx) => {
+            {upcomingEvents.slice(0, 20).map((event, idx) => {
               const isLive      = event.status === 'Live';
               const isCompleted = event.status === 'Completed' || event.status === 'Cancelled';
               const eventDate   = event.event_date ? new Date(event.event_date) : null;
@@ -241,18 +259,79 @@ export default function RaceCoreHome({
               );
             })}
 
-            {allEvents.length > 20 && (
+            {upcomingEvents.length > 20 && (
                <button
                  onClick={() => navigate('/race-control/events')}
                  className="w-full px-3 py-2 text-[10px] font-mono tracking-widest text-gray-700 hover:text-gray-500 transition-colors border-t border-gray-800/40 text-center"
                  style={{ background: '#0a0a0a' }}
                >
-                + {allEvents.length - 20} MORE — OPEN EVENT FILES
-              </button>
-            )}
+                 + {upcomingEvents.length - 20} MORE — OPEN EVENT FILES
+               </button>
+             )}
           </div>
         )}
       </div>
+
+      {/* ── PAST EVENTS ────────────────────────────────────────────────────── */}
+      {pastEvents.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-600">PAST EVENTS</span>
+              <span className="text-[10px] font-mono text-gray-700 border border-gray-800 px-1.5 py-px rounded-sm">{pastEvents.length}</span>
+            </div>
+            <button
+              onClick={() => navigate('/race-control/events')}
+              className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              ALL FILES <ArrowRight className="w-2.5 h-2.5" />
+            </button>
+          </div>
+          <div className="border border-gray-800/40 rounded-lg overflow-hidden" style={{ background: '#0a0a0a' }}>
+            {pastEvents.slice(0, 10).map((event, idx) => {
+              const eventDate = event.event_date ? new Date(event.event_date) : null;
+              return (
+                <div
+                  key={event.id}
+                  onClick={() => navigate(`/race-control/events/${event.id}`)}
+                  className="flex items-center gap-3 px-3 py-2 cursor-pointer border-b border-gray-800/30 last:border-b-0 hover:bg-gray-800/20 transition-all group opacity-55 hover:opacity-75"
+                >
+                  <div className="w-4 flex-shrink-0 flex items-center justify-center">
+                    <span className="text-[9px] font-mono text-gray-700 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-500 truncate leading-snug">{event.name}</span>
+                      <StatusTag status={event.status || 'Draft'} />
+                    </div>
+                    {event.series_name && (
+                      <span className="text-[9px] font-mono text-gray-700 truncate block">{event.series_name}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {eventDate && (
+                      <div className="text-right hidden sm:block">
+                        <div className="text-[10px] font-mono text-gray-600 tabular-nums">{format(eventDate, 'MMM dd')}</div>
+                        <div className="text-[9px] font-mono text-gray-700">{format(eventDate, 'yyyy')}</div>
+                      </div>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-gray-800 group-hover:text-gray-600 flex-shrink-0" />
+                  </div>
+                </div>
+              );
+            })}
+            {pastEvents.length > 10 && (
+              <button
+                onClick={() => navigate('/race-control/events')}
+                className="w-full px-3 py-2 text-[10px] font-mono tracking-widest text-gray-700 hover:text-gray-500 transition-colors border-t border-gray-800/30 text-center"
+                style={{ background: '#080808' }}
+              >
+                + {pastEvents.length - 10} MORE PAST EVENTS
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── TWO-COLUMN LOWER SECTION ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
