@@ -294,12 +294,19 @@ export default function ResultsCsvImportDialog({
         .filter((r) => r.isValid && (r.driverStatus === 'matched' || createSelected.has(r._idx)))
         .map((r) => {
           const driverId = driverIdMap.has(r._idx) ? driverIdMap.get(r._idx) : r.driver?.id;
+          // R8Z Part 1D: include session competition metadata in CSV import result payload
           return {
             event_id: selectedEvent?.id,
             session_id: session?.id,
-            session_type: session?.session_type,
+            // Normalize Feature → Final (Feature is not a valid Results.session_type)
+            session_type: session?.session_type === 'Feature' ? 'Final' : session?.session_type,
             series_id: selectedEvent?.series_id,
             series_class_id: session?.series_class_id,
+            event_day_id: session?.event_day_id ?? undefined,
+            points_enabled: session?.points_enabled === true,
+            points_type: session?.points_type || 'none',
+            points_rule: session?.points_rule || undefined,
+            round_number: session?.points_type === 'final' ? (session?.round_number ?? null) : null,
             driver_id: driverId,
             position: r.position,
             status: r.status,

@@ -248,12 +248,19 @@ export default function ResultsPasteDialog({
         .filter((r) => r.isValid && (r.driverStatus === 'matched' || createSelected.has(r._idx)))
         .map((r) => {
           const driverId = driverIdMap.has(r._idx) ? driverIdMap.get(r._idx) : r.driver?.id;
+          // R8Z Part 1D: include session competition metadata in paste result payload
           return {
             event_id: selectedEvent?.id,
             session_id: selectedSession?.id,
-            session_type: selectedSession?.session_type,
+            // Normalize Feature → Final (Feature is not a valid Results.session_type)
+            session_type: selectedSession?.session_type === 'Feature' ? 'Final' : selectedSession?.session_type,
             series_id: selectedEvent?.series_id,
             series_class_id: selectedSession?.series_class_id,
+            event_day_id: selectedSession?.event_day_id ?? undefined,
+            points_enabled: selectedSession?.points_enabled === true,
+            points_type: selectedSession?.points_type || 'none',
+            points_rule: selectedSession?.points_rule || undefined,
+            round_number: selectedSession?.points_type === 'final' ? (selectedSession?.round_number ?? null) : null,
             driver_id: driverId,
             position: r.position,
             status: r.status,

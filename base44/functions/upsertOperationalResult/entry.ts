@@ -5,10 +5,63 @@
  * Builds a stable identity key and updates the existing row if found,
  * creates a new one only if no match exists.
  *
+ * R8Z Part 1D: Backend is now the authority for session metadata normalization.
+ * When session_id is present, fetches the parent Session and merges:
+ *   event_day_id, points_enabled, points_type, points_rule, round_number
+ * Also normalizes Feature → Final for session_type.
+ *
  * Input:  { payload, source_path? }
  * Output: { action: 'created'|'updated', record }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Valid session_type values for the Results entity (Feature is NOT in Results enum)
+const VALID_RESULT_SESSION_TYPES = new Set(['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final']);
+
+/**
+ * Normalize session_type for Results: Feature → Final.
+ * Returns a value safe for the Results.session_type enum.
+ */
+function normalizeResultSessionType(sessionType) {
+  if (!sessionType) return undefined;
+  if (sessionType === 'Feature') return 'Final';
+  if (VALID_RESULT_SESSION_TYPES.has(sessionType)) return sessionType;
+  return undefined; // unknown type — omit, do not write invalid enum value
+}
+
+/**
+ * Merge session competition metadata into the result payload.
+ * Session is the authority. Payload values are overridden by session metadata
+ * to enforce consistency. Only skips if session field is null/undefined (not set on session).
+ */
+function mergeSessionMetadata(payload, session) {
+  const merged = { ...payload };
+
+  // session_type: normalize Feature → Final; use session value as authority
+  const normalizedType = normalizeResultSessionType(session.session_type);
+  if (normalizedType) merged.session_type = normalizedType;
+
+  // event_day_id: copy if session has it
+  if (session.event_day_id != null) merged.event_day_id = session.event_day_id;
+
+  // points_enabled: session is authority; default false
+  merged.points_enabled = session.points_enabled === true;
+
+  // points_type: session is authority; default 'none'
+  merged.points_type = session.points_type || 'none';
+
+  // points_rule: copy if session has it
+  if (session.points_rule != null) merged.points_rule = session.points_rule;
+
+  // round_number: only meaningful for final points; enforce null for non-final
+  if (merged.points_type === 'final') {
+    merged.round_number = session.round_number ?? null;
+  } else {
+    merged.round_number = null;
+  }
+
+  return merged;
+}
 
 function normalizeName(name) {
   if (!name) return '';
@@ -38,7 +91,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'payload.session_id is required — do not create results without a session', status: 400 }, { status: 400 });
     }
 
-    const normalizedKey = buildNormalizedResultKey(payload.session_id, payload.driver_id, payload.driver_name);
+    // R8Z Part 1D: Fetch parent Session and merge metadata into payload
+    let enrichedPayload = { ...payload };
+    try {
+      const sessions = await base44.asServiceRole.entities.Session.filter({ id: payload.session_id }).catch(() => []);
+      const session = sessions?.[0];
+      if (session) {
+        enrichedPayload = mergeSessionMetadata(enrichedPayload, session);
+      }
+    } catch {
+      // Non-fatal: if session lookup fails, proceed with caller payload
+    }
+
+    const normalizedKey = buildNormalizedResultKey(enrichedPayload.session_id, enrichedPayload.driver_id, enrichedPayload.driver_name);
 
     // 1. Check by normalized_result_key (strongest, includes session context)
     let existing = null;
@@ -99,7 +164,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { id: _id, ...cleanPayload } = payload;
+    const { id: _id, ...cleanPayload } = enrichedPayload;
     const dataWithKey = { ...cleanPayload, normalized_result_key: normalizedKey };
     let record, action;
 

@@ -269,12 +269,21 @@ export default function ResultsQuickEntryTable({
   };
 
   const handleAddRow = async () => {
+    // R8Z Part 1D: include session competition metadata at creation time.
+    // driver_id is intentionally empty — this is a draft scaffold.
+    // Draft scaffolds must NOT count for standings until driver_id is assigned.
     const newRow = {
       event_id: selectedEvent?.id,
       session_id: session?.id,
-      session_type: session?.session_type,
+      // Normalize Feature → Final (Feature is not a valid Results.session_type)
+      session_type: session?.session_type === 'Feature' ? 'Final' : session?.session_type,
       series_class_id: session?.series_class_id,
       series_id: selectedEvent?.series_id,
+      event_day_id: session?.event_day_id ?? undefined,
+      points_enabled: session?.points_enabled === true,
+      points_type: session?.points_type || 'none',
+      points_rule: session?.points_rule || undefined,
+      round_number: session?.points_type === 'final' ? (session?.round_number ?? null) : null,
       driver_id: '',
       position: null,
       status: 'Running',
