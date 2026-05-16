@@ -60,10 +60,11 @@ export const RACE_CORE_NAV_GROUPS = [
     id: 'people',
     label: 'Entity Records',
     items: [
-      { href: '/ManageDrivers', label: 'Drivers', icon: User,   canTabKey: null },
-      { href: '/ManageTeams',   label: 'Teams',   icon: Users,  canTabKey: null },
-      { href: '/ManageSeries',  label: 'Series',  icon: Trophy, canTabKey: null },
-      { href: '/ManageTracks',  label: 'Tracks',  icon: MapPin, canTabKey: null },
+      { href: '/racecore/records/drivers', label: 'Drivers', icon: User,   canTabKey: null },
+      { href: '/racecore/records/teams',   label: 'Teams',   icon: Users,  canTabKey: null },
+      { href: '/racecore/records/series',  label: 'Series',  icon: Trophy, canTabKey: null },
+      { href: '/racecore/records/tracks',  label: 'Tracks',  icon: MapPin, canTabKey: null },
+      { href: '/racecore/records/events',  label: 'Events',  icon: Flag,   canTabKey: null },
     ],
   },
   {

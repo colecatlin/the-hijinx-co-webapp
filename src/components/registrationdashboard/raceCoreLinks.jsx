@@ -18,14 +18,16 @@ import { createPageUrl } from '@/components/utils';
 export function buildRaceCoreUrl(params) {
   const { orgType, orgId, seasonYear, eventId, tab } = params;
 
-  const queryParams = {};
-  if (orgType) queryParams.orgType = orgType;
-  if (orgId) queryParams.orgId = orgId;
-  if (seasonYear) queryParams.seasonYear = seasonYear;
-  if (eventId) queryParams.eventId = eventId;
-  if (tab) queryParams.tab = tab;
-
-  return createPageUrl('RegistrationDashboard', queryParams);
+  // Build query string directly — /racecore handles params natively.
+  // Previously pointed to /RegistrationDashboard which dropped query params via Navigate redirect.
+  const qs = new URLSearchParams();
+  if (orgType) qs.set('orgType', orgType);
+  if (orgId) qs.set('orgId', orgId);
+  if (seasonYear) qs.set('seasonYear', seasonYear);
+  if (eventId) qs.set('eventId', eventId);
+  if (tab) qs.set('tab', tab);
+  const queryString = qs.toString();
+  return queryString ? `/racecore?${queryString}` : '/racecore';
 }
 
 /**

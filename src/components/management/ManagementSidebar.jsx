@@ -71,10 +71,10 @@ export default function ManagementSidebar({ onNavigate }) {
               </Link>
 
               <Link
-                to={createPageUrl('RegistrationDashboard')}
+                to="/racecore"
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold border border-gray-200',
-                  currentPage === 'RegistrationDashboard'
+                  currentPage === 'racecore' || location.pathname.startsWith('/racecore')
                     ? 'bg-gray-900 text-white border-gray-900'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
