@@ -35,7 +35,7 @@ export default function RaceCoreEventEditor() {
     <ManagementLayout currentPage="RaceCoreEventEditor">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('RegistrationDashboard'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/events')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
@@ -50,7 +50,7 @@ export default function RaceCoreEventEditor() {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(createPageUrl('RegistrationDashboard') + (id && !isNew ? `?eventId=${id}` : ''))}
+            onClick={() => navigate('/racecore')}
             className="gap-2 shrink-0"
           >
             ↗ Back to Race Operations Hub

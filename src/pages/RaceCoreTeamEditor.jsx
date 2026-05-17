@@ -61,7 +61,7 @@ export default function RaceCoreTeamEditor() {
     <ManagementLayout currentPage="RaceCoreTeamEditor">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('ManageTeams'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/teams')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
@@ -72,7 +72,7 @@ export default function RaceCoreTeamEditor() {
               {!isNew && team && <ProfileCompletenessIndicator entityType="Team" record={team} />}
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationDashboard'))} className="gap-2 shrink-0">
+          <Button variant="outline" onClick={() => navigate('/racecore')} className="gap-2 shrink-0">
             ↗ Back to Race Operations Hub
           </Button>
         </div>

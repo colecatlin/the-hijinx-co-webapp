@@ -65,7 +65,7 @@ export default function RaceCoreDriverEditor() {
     <ManagementLayout currentPage="RaceCoreDriverEditor">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('ManageDrivers'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/drivers')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
@@ -76,7 +76,7 @@ export default function RaceCoreDriverEditor() {
               {!isNew && driver && <ProfileCompletenessIndicator entityType="Driver" record={driver} />}
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationDashboard'))} className="gap-2 shrink-0">
+          <Button variant="outline" onClick={() => navigate('/racecore')} className="gap-2 shrink-0">
             ↗ Back to Race Operations Hub
           </Button>
         </div>

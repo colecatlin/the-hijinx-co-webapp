@@ -46,7 +46,7 @@ export default function RaceCoreTrackEditor() {
     <ManagementLayout currentPage="RaceCoreTrackEditor">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('ManageTracks'))}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/tracks')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
@@ -57,7 +57,7 @@ export default function RaceCoreTrackEditor() {
               {!isNew && track && <ProfileCompletenessIndicator entityType="Track" record={track} />}
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate(createPageUrl('RegistrationDashboard'))} className="gap-2 shrink-0">
+          <Button variant="outline" onClick={() => navigate('/racecore')} className="gap-2 shrink-0">
             ↗ Back to Race Operations Hub
           </Button>
         </div>

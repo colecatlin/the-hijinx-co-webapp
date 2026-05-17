@@ -183,7 +183,7 @@ export default function ManageEvents() {
                 <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
                 <p className="text-sm text-blue-800">This page is for reviewing and editing event record metadata. For active event setup, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
               </div>
-              <Link to={createPageUrl('RegistrationDashboard')} className="shrink-0">
+              <Link to="/racecore" className="shrink-0">
                 <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2 whitespace-nowrap">
                   <ExternalLink className="w-4 h-4" />
                   Go to Race Operations Hub
@@ -249,7 +249,7 @@ export default function ManageEvents() {
         title="Events Data Overview"
         subtitle={`${events.length} total event records across the platform`}
         actions={<>
-          <Link to={createPageUrl('RegistrationDashboard')}>
+          <Link to="/racecore">
             <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
               <ExternalLink className="w-4 h-4" />
               Go to Race Operations Hub
