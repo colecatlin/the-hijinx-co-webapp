@@ -51,6 +51,8 @@ export default function DriverRecordRow({
 
   const { isReady, missing } = getProfileReadiness(driver);
 
+  const btnBase = 'p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded transition-colors';
+
   const actions = (
     <TooltipProvider>
       {/* Visibility toggle */}
@@ -59,17 +61,11 @@ export default function DriverRecordRow({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (!isReady && !isLive) {
-                // surface the missing fields as a tooltip — parent toast on mutation
-                return;
-              }
-              onToggleVisibility({
-                id: driver.id,
-                visibility_status: isLive ? 'draft' : 'live',
-              });
+              if (!isReady && !isLive) return;
+              onToggleVisibility({ id: driver.id, visibility_status: isLive ? 'draft' : 'live' });
             }}
             aria-label={isLive ? 'Set profile to draft' : 'Set profile to live'}
-            className={`p-1.5 rounded transition-colors ${
+            className={`${btnBase} ${
               isLive
                 ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-400/10'
                 : isReady
@@ -77,7 +73,7 @@ export default function DriverRecordRow({
                 : 'text-gray-700 cursor-not-allowed'
             }`}
           >
-            {isLive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+            {isLive ? <Eye className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" /> : <EyeOff className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />}
           </button>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs max-w-[200px]">
@@ -91,43 +87,34 @@ export default function DriverRecordRow({
 
       {/* Open in Race Core hub */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(buildRaceCoreUrl({ tab: 'entries', focusDriverId: driver.id }));
-        }}
+        onClick={(e) => { e.stopPropagation(); navigate(buildRaceCoreUrl({ tab: 'entries', focusDriverId: driver.id })); }}
         title="Open in Race Core Hub"
         aria-label={`Open ${fullName} in Race Core Hub`}
-        className="p-1.5 rounded text-gray-500 hover:text-teal-400 hover:bg-teal-400/10 transition-colors"
+        className={`${btnBase} text-gray-500 hover:text-teal-400 hover:bg-teal-400/10`}
       >
-        <ExternalLink className="w-3 h-3" />
+        <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
       {/* Edit */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate('/race-core/drivers/' + driver.id);
-        }}
+        onClick={(e) => { e.stopPropagation(); navigate('/race-core/drivers/' + driver.id); }}
         title="Edit driver record"
         aria-label={`Edit ${fullName}`}
-        className="p-1.5 rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
+        className={`${btnBase} text-gray-500 hover:text-gray-200 hover:bg-gray-700/60`}
       >
-        <Pencil className="w-3 h-3" />
+        <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
       {/* Delete (admin only) */}
       {isAdmin && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(driver);
-          }}
+          onClick={(e) => { e.stopPropagation(); onDelete(driver); }}
           disabled={isDeleting}
           title="Delete"
           aria-label={`Delete ${fullName}`}
-          className="p-1.5 rounded text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
+          className={`${btnBase} text-gray-600 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-40`}
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
         </button>
       )}
     </TooltipProvider>

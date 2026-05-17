@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ActivityTab from '@/components/management/ActivityTab';
@@ -10,36 +10,77 @@ import ActivityTab from '@/components/management/ActivityTab';
  *   entityName      — string, e.g. 'Track', 'Driver'
  *   onClose         — () => void
  *   overlayOnMobile — boolean (default false)
- *                     If true: below lg renders as an absolute overlay instead of
- *                     consuming horizontal space. At lg+ keeps the standard rail.
- *                     Default behavior is unchanged when omitted.
+ *                     If true: below lg renders as a full dark-backdrop overlay drawer.
+ *                     At lg+ keeps the standard inline rail.
  */
 export default function RecordActivityRail({ entityName, onClose, overlayOnMobile = false }) {
-  return (
+  // Lock body scroll on mobile overlay
+  useEffect(() => {
+    if (!overlayOnMobile) return;
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [overlayOnMobile]);
+
+  // Desktop: unchanged inline rail
+  const railContent = (
     <div
       className={cn(
-        'border-l border-gray-800/60 overflow-y-auto flex flex-col shrink-0',
+        'border-l border-gray-800/60 overflow-hidden flex flex-col shrink-0 h-full',
         overlayOnMobile
-          ? 'absolute inset-y-0 right-0 z-20 w-72 lg:static lg:z-auto'
+          ? 'w-full max-w-[320px] lg:w-72'
           : 'w-72'
       )}
       style={{ background: '#0c0c0c' }}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800/60 shrink-0">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800/60 shrink-0">
         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">
           Activity Log
         </span>
         <button
           onClick={onClose}
           aria-label="Close activity log"
-          className="text-gray-700 hover:text-gray-400 focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded transition-colors"
+          className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-400 focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded transition-colors"
         >
-          <X className="w-3 h-3" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
+      {/* Content */}
       <div className="p-3 flex-1 overflow-y-auto">
         <ActivityTab entityName={entityName} />
       </div>
     </div>
+  );
+
+  if (!overlayOnMobile) {
+    return railContent;
+  }
+
+  return (
+    <>
+      {/* Mobile overlay — hidden at lg+ */}
+      <div className="lg:hidden">
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+        {/* Drawer — slides in from right */}
+        <div className="fixed inset-y-0 right-0 z-50 flex flex-col shadow-2xl"
+          style={{ width: 'min(320px, 92vw)' }}
+        >
+          {railContent}
+        </div>
+      </div>
+
+      {/* Desktop — standard inline rail */}
+      <div className="hidden lg:flex lg:flex-col lg:shrink-0 h-full">
+        {railContent}
+      </div>
+    </>
   );
 }

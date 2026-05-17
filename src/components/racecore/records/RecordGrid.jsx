@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils';
 /**
  * RecordGrid — shared dense records list wrapper for RaceCore record pages.
  *
+ * Responsive:
+ *   Desktop: sticky column header visible, dense rows
+ *   Mobile:  column header hidden (rows are self-describing cards)
+ *
  * Props:
  *   isLoading        — shows skeleton rows
  *   isEmpty          — shows empty state
@@ -37,10 +41,10 @@ export default function RecordGrid({
   return (
     <div className="flex-1 overflow-y-auto">
 
-      {/* Sticky column header */}
+      {/* Sticky column header — hidden on mobile (rows are self-labeling cards) */}
       {columns.length > 0 && (
         <div
-          className="flex items-center gap-3 px-4 py-1.5 border-b border-gray-800/40 sticky top-0 z-10"
+          className="hidden sm:flex items-center gap-3 px-4 py-1.5 border-b border-gray-800/40 sticky top-0 z-10"
           style={{ background: '#0e0e0e' }}
         >
           {showSelectAll && (
@@ -48,6 +52,7 @@ export default function RecordGrid({
               <Checkbox
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
+                aria-label="Select all records"
                 className="border-gray-700 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 w-3.5 h-3.5"
               />
             </div>
@@ -70,16 +75,16 @@ export default function RecordGrid({
 
       {/* Loading state */}
       {isLoading && (
-        <div className="p-4 space-y-1.5">
+        <div className="p-3 sm:p-4 space-y-1.5">
           {[...Array(skeletonCount)].map((_, i) => (
-            <Skeleton key={`skel-${i}`} className="h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
+            <Skeleton key={`skel-${i}`} className="h-14 sm:h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
           ))}
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && isEmpty && (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <div className="flex flex-col items-center justify-center py-20 sm:py-24 gap-3">
           {EmptyIcon && <EmptyIcon className="w-8 h-8 text-gray-800" />}
           <p className="text-xs font-mono text-gray-700 uppercase tracking-widest">{emptyMessage}</p>
           {emptyAction}

@@ -7,6 +7,10 @@ import { getStatusAccent } from './RecordStatusBadge';
  * RecordRowShell — shared tactical row wrapper for all RaceCore entity rows.
  * Handles: hover state, selection state, left accent bar, checkbox, action reveal.
  *
+ * Responsive:
+ *   Desktop: dense row, actions revealed on hover
+ *   Mobile:  actions always visible (no hover available), taller touch targets
+ *
  * Props:
  *   id              — record id (string)
  *   status          — operational status string (for accent bar color)
@@ -45,7 +49,7 @@ export default function RecordRowShell({
       aria-selected={isSelected}
       aria-label={label ? `${label} record row` : undefined}
       className={cn(
-        'group relative flex items-center gap-3 px-4 py-2.5 border-b border-gray-800/60 transition-colors cursor-pointer',
+        'group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-2.5 border-b border-gray-800/60 transition-colors cursor-pointer',
         'hover:bg-gray-800/40',
         'focus:outline-none focus-visible:bg-gray-800/50 focus-visible:ring-inset focus-visible:ring-1 focus-visible:ring-teal-600/60',
         isSelected && 'bg-gray-800/30'
@@ -60,11 +64,11 @@ export default function RecordRowShell({
         accentColor
       )} />
 
-      {/* Checkbox */}
+      {/* Checkbox — larger touch target on mobile */}
       {isAdmin && (
         <div
           role="cell"
-          className="shrink-0"
+          className="shrink-0 flex items-center justify-center w-8 h-8 sm:w-4 sm:h-4 -mx-1 sm:mx-0"
           onClick={e => { e.stopPropagation(); onSelect?.(id); }}
         >
           <Checkbox
@@ -79,11 +83,17 @@ export default function RecordRowShell({
       {/* Content columns */}
       {children}
 
-      {/* Actions — revealed on hover or focus-within */}
+      {/* Actions:
+          Desktop — revealed on hover/focus-within
+          Mobile  — always visible (no hover state on touch) */}
       {actions && (
         <div
           role="cell"
-          className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+          className={cn(
+            'flex items-center gap-0.5 shrink-0 transition-opacity',
+            // Mobile: always visible; Desktop: reveal on hover/focus
+            'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
+          )}
           onClick={e => e.stopPropagation()}
         >
           {actions}

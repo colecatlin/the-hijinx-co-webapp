@@ -46,6 +46,8 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
     ? format(new Date(event.updated_date), 'MMM d, yy')
     : '—';
 
+  const btnBase = 'p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded transition-colors';
+
   const actions = (
     <>
       {/* EventFile ops link */}
@@ -53,9 +55,9 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         onClick={(e) => { e.stopPropagation(); navigate('/race-control/events/' + event.id); }}
         title="Open Event File (Ops)"
         aria-label={`Open ${event.name} in EventFile`}
-        className="p-1.5 rounded text-gray-500 hover:text-teal-400 hover:bg-teal-400/10 transition-colors"
+        className={`${btnBase} text-gray-500 hover:text-teal-400 hover:bg-teal-400/10`}
       >
-        <Flag className="w-3 h-3" />
+        <Flag className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
       {/* Race Core Hub link — preserve exact buildRaceCoreUrl call */}
@@ -68,9 +70,9 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         }}
         title="Open in Race Core Ops"
         aria-label={`Open ${event.name} in Race Core`}
-        className="p-1.5 rounded text-gray-500 hover:text-teal-400 hover:bg-teal-400/10 transition-colors"
+        className={`${btnBase} text-gray-500 hover:text-teal-400 hover:bg-teal-400/10`}
       >
-        <ExternalLink className="w-3 h-3" />
+        <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
       {/* Edit → canonical editor */}
@@ -78,9 +80,9 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         onClick={(e) => { e.stopPropagation(); navigate('/race-core/events/' + event.id); }}
         title="Edit record"
         aria-label={`Edit ${event.name}`}
-        className="p-1.5 rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
+        className={`${btnBase} text-gray-500 hover:text-gray-200 hover:bg-gray-700/60`}
       >
-        <Pencil className="w-3 h-3" />
+        <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
       {/* Delete (admin only) */}
@@ -90,9 +92,9 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
           disabled={isDeleting}
           title="Delete"
           aria-label={`Delete ${event.name}`}
-          className="p-1.5 rounded text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
+          className={`${btnBase} text-gray-600 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-40`}
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
         </button>
       )}
     </>

@@ -37,25 +37,28 @@ export default function SeriesRecordRow({ series, isAdmin, isSelected, onSelect,
       <button
         onClick={() => navigate(buildRaceCoreUrl({ orgType: 'series', orgId: series.id, tab: 'overview' }))}
         title="Open in Race Core Hub"
-        className="p-1.5 rounded text-gray-500 hover:text-teal-400 hover:bg-teal-400/10 transition-colors"
+        aria-label={`Open ${series.name} in Race Core Hub`}
+        className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded text-gray-500 hover:text-teal-400 hover:bg-teal-400/10 transition-colors"
       >
-        <ExternalLink className="w-3 h-3" />
+        <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
       <button
         onClick={() => navigate('/race-core/series/' + series.id)}
         title="Edit record"
-        className="p-1.5 rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
+        aria-label={`Edit ${series.name}`}
+        className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
       >
-        <Pencil className="w-3 h-3" />
+        <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
       {isAdmin && (
         <button
           onClick={() => onDelete(series.id)}
           disabled={isDeleting}
           title="Delete"
-          className="p-1.5 rounded text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
+          aria-label={`Delete ${series.name}`}
+          className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
         </button>
       )}
     </>
