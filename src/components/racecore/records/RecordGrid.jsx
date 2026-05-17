@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
  *   allSelected      — boolean
  *   onSelectAll      — (checked: boolean) => void
  *   skeletonCount    — number of skeleton rows (default 12)
+ *   actionsWidth     — Tailwind width class for actions column spacer (default 'w-20')
  *   children         — row components
  */
 export default function RecordGrid({
@@ -30,6 +31,7 @@ export default function RecordGrid({
   allSelected = false,
   onSelectAll,
   skeletonCount = 12,
+  actionsWidth = 'w-20',
   children,
 }) {
   return (
@@ -50,9 +52,9 @@ export default function RecordGrid({
               />
             </div>
           )}
-          {columns.map((col, i) => (
+          {columns.map((col) => (
             <div
-              key={i}
+              key={col.label}
               className={cn(
                 'text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-gray-700',
                 col.className
@@ -61,8 +63,8 @@ export default function RecordGrid({
               {col.label}
             </div>
           ))}
-          {/* Actions spacer */}
-          <div className="w-20 shrink-0" />
+          {/* Actions spacer — width controlled by actionsWidth prop */}
+          <div className={cn('shrink-0', actionsWidth)} />
         </div>
       )}
 
@@ -70,7 +72,7 @@ export default function RecordGrid({
       {isLoading && (
         <div className="p-4 space-y-1.5">
           {[...Array(skeletonCount)].map((_, i) => (
-            <Skeleton key={i} className="h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
+            <Skeleton key={`skel-${i}`} className="h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
           ))}
         </div>
       )}

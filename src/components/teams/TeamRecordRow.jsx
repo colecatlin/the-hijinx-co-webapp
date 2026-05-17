@@ -70,6 +70,7 @@ export default function TeamRecordRow({ team, isAdmin, isSelected, onSelect, onD
       onSelect={onSelect}
       onClick={() => navigate('/race-core/teams/' + team.id)}
       actions={actions}
+      label={team.name}
     >
       {/* Identity block */}
       <div className="flex-1 min-w-0">

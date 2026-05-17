@@ -70,6 +70,7 @@ export default function SeriesRecordRow({ series, isAdmin, isSelected, onSelect,
       onSelect={onSelect}
       onClick={() => navigate('/race-core/series/' + series.id)}
       actions={actions}
+      label={series.name}
     >
       {/* Identity block */}
       <div className="flex-1 min-w-0">

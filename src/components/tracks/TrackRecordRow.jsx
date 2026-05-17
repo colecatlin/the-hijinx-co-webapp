@@ -73,6 +73,7 @@ export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, o
       onSelect={onSelect}
       onClick={() => navigate('/race-core/tracks/' + track.id)}
       actions={actions}
+      label={track.name}
     >
       {/* Identity block */}
       <div className="flex-1 min-w-0">
