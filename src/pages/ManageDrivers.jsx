@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import ActivityTab from '@/components/management/ActivityTab';
 import PublishTab from '@/components/management/PublishTab';
 
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, Sparkles, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash, ExternalLink } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash, ExternalLink } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
@@ -45,9 +45,6 @@ export default function ManageDrivers() {
   const [selectedDrivers, setSelectedDrivers] = useState([]);
   const [selectedDriverForEdit, setSelectedDriverForEdit] = useState(null);
   const [editingStatuses, setEditingStatuses] = useState({});
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState(null);
-  const [importSeries, setImportSeries] = useState('nascar-cup-series');
   const [sortField, setSortField] = useState('updated_date');
   const [sortDir, setSortDir] = useState('desc');
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
@@ -82,17 +79,6 @@ export default function ManageDrivers() {
       navigate('/race-core/drivers/' + driverId);
     }
   }, []);
-
-  const handleNascarImport = async () => {
-    setImporting(true);
-    setImportResult(null);
-    const res = await base44.functions.invoke('importNascarStandings', { series: importSeries });
-    setImporting(false);
-    setImportResult(res.data);
-    if (res.data?.success) {
-      queryClient.invalidateQueries({ queryKey: ['drivers'] });
-    }
-  };
 
   const { data: drivers = [], isLoading } = useQuery({
     queryKey: ['drivers', 'all'],
@@ -407,14 +393,6 @@ export default function ManageDrivers() {
               <span>Potential duplicate driver records detected ({driverDupCount} group{driverDupCount > 1 ? 's' : ''}). Review before creating new records.</span>
             </div>
             <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold underline whitespace-nowrap">Open Diagnostics</Link>
-          </div>
-        )}
-
-        {importResult && (
-          <div className={`mb-4 p-3 rounded-lg text-sm ${importResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
-            {importResult.success
-              ? `✓ ${importResult.series_name} (${importResult.season}) — Drivers: ${importResult.drivers?.created} created, ${importResult.drivers?.skipped} already existed. Teams: ${importResult.teams?.created} created, ${importResult.teams?.skipped} already existed.`
-              : importResult.error}
           </div>
         )}
 
