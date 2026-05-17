@@ -2,51 +2,83 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Sparkles, ArrowUpDown, ExternalLink } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
-import { buildRaceCoreUrl, getOrgContextFromEvent, getSeasonFromEvent } from '@/components/registrationdashboard/raceCoreLinks';
-import { format } from 'date-fns';
-import AddEventForm from '@/components/management/AddEventForm';
-import EventCoreDetailsSection from '@/components/management/EventManagement/EventCoreDetailsSection';
-import EventSessionsSection from '@/components/management/EventManagement/EventSessionsSection';
-import EventResultsSection from '@/components/management/EventManagement/EventResultsSection';
-import EventResultsInputSection from '@/components/management/EventManagement/EventResultsInputSection';
-import AIEventGenerator from '@/components/management/AIEventGenerator';
-import ActivityTab from '@/components/management/ActivityTab';
-import PublishTab from '@/components/management/PublishTab';
-import AdminOverridePanel from '@/components/management/AdminOverridePanel';
+import { Plus, Trash2, AlertTriangle, X, CalendarDays, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
+// RaceCore Records primitives
+import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
+import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
+import RecordGrid         from '@/components/racecore/records/RecordGrid';
+import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
+import EventRecordRow     from '@/components/events/EventRecordRow';
+
+// Bulk scheduler (preserved, moved to header-action panel)
 import EventSchedulerForm from '@/components/management/EventScheduler/EventSchedulerForm';
+
+// ── Filter option sets (client-side only, preserved logic) ────────────────────
+const STATUS_OPTIONS   = ['upcoming', 'finished'];
+const APPROVAL_OPTIONS = [{ label: 'Pending', value: 'pending' }, { label: 'Both Approved', value: 'approved' }];
+const PUBLISH_OPTIONS  = [{ label: 'Ready', value: 'ready' }, { label: 'Blocked', value: 'blocked' }];
+const SORT_OPTIONS     = [
+  { label: 'Date ↑', value: 'date_desc' },
+  { label: 'Date ↓', value: 'date_asc' },
+  { label: 'Name A–Z', value: 'name_asc' },
+  { label: 'Name Z–A', value: 'name_desc' },
+];
+
+const GRID_COLUMNS = [
+  { label: 'Event / Series',    className: 'flex-1' },
+  { label: 'Date',              className: 'hidden sm:block w-24' },
+  { label: 'Acceptance',        className: 'hidden md:block w-20' },
+  { label: 'Season',            className: 'hidden lg:block w-12 text-center' },
+  { label: 'Updated',           className: 'hidden xl:block w-20 text-right' },
+];
 
 export default function ManageEvents() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEventForEdit, setSelectedEventForEdit] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [sortBy, setSortBy] = useState('date_desc');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedEvents, setSelectedEvents] = useState([]);
-  const [deletingEventId, setDeletingEventId] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+
+  // ── Filter / UI state ─────────────────────────────────────────────────────────
+  const [searchQuery,      setSearchQuery]      = useState('');
+  const [statusFilter,     setStatusFilter]     = useState('');
+  const [approvalFilter,   setApprovalFilter]   = useState('');
+  const [publishFilter,    setPublishFilter]    = useState('');
+  const [sortBy,           setSortBy]           = useState('date_desc');
+  const [selectedEvents,   setSelectedEvents]   = useState([]);
+  const [showActivity,     setShowActivity]     = useState(false);
+  const [showScheduler,    setShowScheduler]    = useState(false);
   const [selectedSeriesForScheduler, setSelectedSeriesForScheduler] = useState(null);
+
+  // ── Delete confirm state ──────────────────────────────────────────────────────
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [eventToDelete,     setEventToDelete]     = useState(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [deletingEventId,   setDeletingEventId]   = useState(null);
+
   const queryClient = useQueryClient();
 
+  // ── Auth (unchanged query key) ────────────────────────────────────────────────
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
+  // ── Data queries (unchanged keys + fetch params) ──────────────────────────────
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.Event.list('id', 500),
   });
 
+  const { data: tracks = [] } = useQuery({
+    queryKey: ['tracks'],
+    queryFn: () => base44.entities.Track.list(),
+  });
+
+  const { data: series = [] } = useQuery({
+    queryKey: ['series'],
+    queryFn: () => base44.entities.Series.list(),
+  });
+
+  // ── Mutations (unchanged logic, keys, callbacks) ──────────────────────────────
   const deleteMutation = useMutation({
     mutationFn: async ({ id, event }) => {
       await base44.entities.Event.delete(id);
@@ -81,537 +113,323 @@ export default function ManageEvents() {
     },
   });
 
-  const { data: tracks = [] } = useQuery({
-    queryKey: ['tracks'],
-    queryFn: () => base44.entities.Track.list(),
-  });
-
-  const { data: series = [] } = useQuery({
-    queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list(),
-  });
-
-  const [approvalFilter, setApprovalFilter] = useState('all');
-  const [publishReadyFilter, setPublishReadyFilter] = useState('all');
-
+  // ── Filtering (client-side, memoized — logic preserved exactly as before) ─────
   const filteredEvents = useMemo(() => {
     let result = events.filter(event =>
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    // statusFilter logic preserved as-is (includes pre-existing enum mismatch)
     if (statusFilter === 'upcoming') {
       result = result.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
     } else if (statusFilter === 'finished') {
       result = result.filter(e => e.status === 'completed' || e.status === 'cancelled');
     }
+    // approvalFilter logic preserved as-is (includes pre-existing field name mismatch)
     if (approvalFilter === 'pending') {
       result = result.filter(e => e.track_approval_status === 'pending' || e.series_approval_status === 'pending');
     } else if (approvalFilter === 'approved') {
       result = result.filter(e => e.track_approval_status === 'approved' && e.series_approval_status === 'approved');
     }
-    if (publishReadyFilter === 'ready') {
+    if (publishFilter === 'ready') {
       result = result.filter(e => e.publish_ready === true);
-    } else if (publishReadyFilter === 'blocked') {
+    } else if (publishFilter === 'blocked') {
       result = result.filter(e => e.publish_ready === false);
     }
     result = [...result].sort((a, b) => {
       const dateA = a.event_date ? new Date(a.event_date + 'T12:00:00') : new Date(0);
       const dateB = b.event_date ? new Date(b.event_date + 'T12:00:00') : new Date(0);
       if (sortBy === 'date_desc') return dateA - dateB;
-      if (sortBy === 'date_asc') return dateB - dateA;
-      if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'date_asc')  return dateB - dateA;
+      if (sortBy === 'name_asc')  return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '');
       return 0;
     });
     return result;
-  }, [events, searchQuery, sortBy, statusFilter, approvalFilter, publishReadyFilter]);
+  }, [events, searchQuery, sortBy, statusFilter, approvalFilter, publishFilter]);
 
-  if (showAIGenerator) {
-    return (
-      <ManagementLayout currentPage="ManageEvents">
-        <div className="max-w-2xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setShowAIGenerator(false)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-4xl font-black">AI Event Generator</h1>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <AIEventGenerator
-              tracks={tracks}
-              onCancel={() => setShowAIGenerator(false)}
-              onSuccess={(newEvent) => {
-                setShowAIGenerator(false);
-                setSelectedEventForEdit(newEvent);
-              }}
-            />
-          </div>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // ── Selection ─────────────────────────────────────────────────────────────────
+  const handleSelectAll   = (checked) => setSelectedEvents(checked ? filteredEvents.map(e => e.id) : []);
+  const handleSelectEvent = (id) => setSelectedEvents(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  if (showAddForm) {
-    return (
-      <ManagementLayout currentPage="ManageEvents">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setShowAddForm(false)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-4xl font-black">Add Event</h1>
-          </div>
-          <AddEventForm
-            tracks={tracks}
-            onCancel={() => setShowAddForm(false)}
-            onSuccess={(newEvent) => {
-              setShowAddForm(false);
-              setSelectedEventForEdit(newEvent);
-            }}
-          />
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // ── Delete handlers ───────────────────────────────────────────────────────────
+  const handleDelete = (event) => { setEventToDelete(event); setShowDeleteConfirm(true); };
+  const confirmDelete = () => {
+    if (!eventToDelete) return;
+    setShowDeleteConfirm(false);
+    setDeletingEventId(eventToDelete.id);
+    deleteMutation.mutate({ id: eventToDelete.id, event: eventToDelete });
+    setEventToDelete(null);
+  };
+  const confirmBulkDelete = () => {
+    setBulkDeleteConfirm(false);
+    const selectedItems = filteredEvents.filter(e => selectedEvents.includes(e.id));
+    bulkDeleteMutation.mutate({ ids: selectedEvents, selectedItems });
+  };
 
-  if (selectedEventForEdit) {
-    return (
-      <ManagementLayout currentPage="ManageEvents">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
-                <p className="text-sm text-blue-800">This page is for reviewing and editing event record metadata. For active event setup, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
-              </div>
-              <Link to="/racecore" className="shrink-0">
-                <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2 whitespace-nowrap">
-                  <ExternalLink className="w-4 h-4" />
-                  Go to Race Operations Hub
-                </Button>
-              </Link>
-            </div>
-          </div>
+  const clearFilters = () => {
+    setSearchQuery(''); setStatusFilter(''); setApprovalFilter(''); setPublishFilter(''); setSortBy('date_desc');
+  };
 
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedEventForEdit(null)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black mb-2">{selectedEventForEdit.name}</h1>
-              <p className="text-gray-600">Manage all event data</p>
-            </div>
-          </div>
+  // ── Derived stats ─────────────────────────────────────────────────────────────
+  const publishedCount  = events.filter(e => e.status === 'Published').length;
+  const liveCount       = events.filter(e => e.status === 'Live').length;
+  const completedCount  = events.filter(e => e.status === 'Completed').length;
+  const pendingCount    = events.filter(e => e.status === 'PendingApproval').length;
+  const hasActiveFilters = !!(searchQuery || statusFilter || approvalFilter || publishFilter);
 
-          <Tabs defaultValue="core" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="core">Core Details</TabsTrigger>
-              <TabsTrigger value="sessions">Sessions</TabsTrigger>
-              <TabsTrigger value="results">Results</TabsTrigger>
-              {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="core" className="mt-6">
-              <EventCoreDetailsSection event={selectedEventForEdit} isDraftOnly={selectedEventForEdit.status === 'Draft'} />
-            </TabsContent>
-            <TabsContent value="sessions" className="mt-6">
-              <EventSessionsSection event={selectedEventForEdit} />
-            </TabsContent>
-            <TabsContent value="results" className="mt-6">
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Input Results</h2>
-                  <EventResultsInputSection eventId={selectedEventForEdit.id} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold mb-4">All Results</h2>
-                  <EventResultsSection event={selectedEventForEdit} />
-                </div>
-              </div>
-            </TabsContent>
-            {isAdmin && (
-              <TabsContent value="override" className="mt-6">
-                <AdminOverridePanel
-                  entityType="Event"
-                  entityId={selectedEventForEdit.id}
-                  entityRecord={selectedEventForEdit}
-                  onSaved={() => queryClient.invalidateQueries({ queryKey: ['events'] })}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </ManagementLayout>
-    );
-  }
+  // ── Composed slots ────────────────────────────────────────────────────────────
+  const stats = [
+    { label: 'Total',     value: events.length },
+    { label: 'Published', value: publishedCount,  accent: 'text-teal-400' },
+    { label: 'Live',      value: liveCount,        accent: 'text-emerald-400' },
+    { label: 'Completed', value: completedCount,   accent: 'text-gray-500' },
+    ...(pendingCount > 0 ? [{ label: 'Pending', value: pendingCount, accent: 'text-amber-400' }] : []),
+  ];
 
-  return (
-    <ManagementLayout currentPage="ManageEvents">
-      <ManagementShell
-        title="Events Data Overview"
-        subtitle={`${events.length} total event records across the platform`}
-        actions={<>
-          <Link to="/racecore">
-            <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
-              <ExternalLink className="w-4 h-4" />
-              Go to Race Operations Hub
-            </Button>
-          </Link>
-        </>}
+  const headerActions = (
+    <>
+      {/* Bulk Scheduler toggle */}
+      <button
+        onClick={() => { setShowScheduler(v => !v); setSelectedSeriesForScheduler(null); }}
+        className={cn(
+          'h-7 px-3 text-[11px] font-mono rounded border transition-colors flex items-center gap-1.5',
+          showScheduler
+            ? 'bg-amber-900/30 border-amber-700/60 text-amber-300'
+            : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+        )}
       >
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
-            <TabsTrigger value="bulk-scheduler">Bulk Scheduler</TabsTrigger>
-            <TabsTrigger value="relationships">Relationships</TabsTrigger>
-            <TabsTrigger value="publish">Publish</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
+        <CalendarDays className="w-3 h-3" />
+        Bulk Scheduler
+      </button>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
-              <p className="text-sm text-blue-800">Review and maintain event records across the platform. For active event setup, race day operations, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
-            </div>
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Total Events</p>
-                <p className="text-2xl font-bold text-gray-900">{events.length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Upcoming</p>
-                <p className="text-2xl font-bold text-blue-600">{events.filter(e => e.status === 'upcoming').length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">In Progress</p>
-                <p className="text-2xl font-bold text-green-600">{events.filter(e => e.status === 'in_progress').length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Completed</p>
-                <p className="text-2xl font-bold text-gray-500">{events.filter(e => e.status === 'completed').length}</p>
-              </div>
-            </div>
-          </TabsContent>
+      {/* Activity toggle */}
+      <button
+        onClick={() => setShowActivity(v => !v)}
+        className={cn(
+          'h-7 px-3 text-[11px] font-mono rounded border transition-colors',
+          showActivity
+            ? 'bg-gray-800 border-gray-600 text-gray-200'
+            : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+        )}
+      >
+        Activity
+      </button>
 
-          <TabsContent value="data" className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-bold text-blue-900 mb-1">Data Overview — Not the Ops Hub</h3>
-              <p className="text-sm text-blue-800">Review and maintain event records across the platform. For active event setup, race day operations, entries, sessions, results, and standings, use the <strong>Race Operations Hub</strong>.</p>
-            </div>
+      {/* Add Event */}
+      <button
+        onClick={() => navigate('/race-core/events/new')}
+        className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
+      >
+        <Plus className="w-3 h-3" />
+        Add Event
+      </button>
+    </>
+  );
 
-            <div className="mb-4 flex gap-2">
-          {['all', 'upcoming', 'finished'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setStatusFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                statusFilter === f
-                  ? 'bg-gray-900 text-white border-gray-900'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-              }`}
-            >
-              {f === 'all' ? 'All' : f === 'upcoming' ? 'Upcoming' : 'Finished'}
-            </button>
-          ))}
+  // ── Filter rail ───────────────────────────────────────────────────────────────
+  const filterRail = (
+    <RecordsFilterRail
+      search={searchQuery}
+      onSearch={setSearchQuery}
+      searchPlaceholder="Search events..."
+      filters={[
+        {
+          key: 'status',
+          value: statusFilter,
+          onChange: setStatusFilter,
+          options: STATUS_OPTIONS,
+          placeholder: 'Status',
+        },
+        {
+          key: 'approval',
+          value: approvalFilter,
+          onChange: setApprovalFilter,
+          options: APPROVAL_OPTIONS.map(o => o.value),
+          placeholder: 'Approval',
+        },
+        {
+          key: 'publish',
+          value: publishFilter,
+          onChange: setPublishFilter,
+          options: PUBLISH_OPTIONS.map(o => o.value),
+          placeholder: 'Publish',
+        },
+        {
+          key: 'sort',
+          value: sortBy,
+          onChange: setSortBy,
+          options: SORT_OPTIONS.map(o => o.value),
+          placeholder: 'Sort',
+        },
+      ]}
+      hasActiveFilters={hasActiveFilters}
+      onClearAll={clearFilters}
+      resultCount={filteredEvents.length}
+      totalCount={events.length}
+    />
+  );
+
+  // ── Bulk bar (admin only, selection-driven) ───────────────────────────────────
+  const bulkBar = isAdmin && selectedEvents.length > 0 ? (
+    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10">
+      <span className="text-xs font-mono text-red-400">{selectedEvents.length} selected</span>
+      <button
+        onClick={() => setBulkDeleteConfirm(true)}
+        disabled={bulkDeleteMutation.isPending}
+        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+      >
+        <Trash2 className="w-3 h-3" />
+        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedEvents.length}`}
+      </button>
+      <button onClick={() => setSelectedEvents([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
+        Cancel
+      </button>
+    </div>
+  ) : null;
+
+  // ── Bulk Scheduler panel (collapsible, below the grid header) ─────────────────
+  const schedulerPanel = showScheduler ? (
+    <div className="border-b border-amber-800/30 bg-amber-900/10">
+      <div className="px-5 py-3 flex items-center justify-between border-b border-amber-800/20">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-xs font-mono font-semibold text-amber-300 tracking-wider">BULK EVENT SCHEDULER</span>
+          <span className="text-[10px] text-amber-600">Create multiple events with sessions for a series</span>
         </div>
+        <button
+          onClick={() => { setShowScheduler(false); setSelectedSeriesForScheduler(null); }}
+          className="text-amber-700 hover:text-amber-400 transition-colors"
+          aria-label="Close bulk scheduler"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
-        <div className="mb-6 flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-48">
-              <ArrowUpDown className="w-4 h-4 mr-2 text-gray-400" />
-              <SelectValue placeholder="Sort by..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date_desc">Date (Newest First)</SelectItem>
-              <SelectItem value="date_asc">Date (Oldest First)</SelectItem>
-              <SelectItem value="name_asc">Name (A–Z)</SelectItem>
-              <SelectItem value="name_desc">Name (Z–A)</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={approvalFilter} onValueChange={setApprovalFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Approvals" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Approvals</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Both Approved</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={publishReadyFilter} onValueChange={setPublishReadyFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Publish Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="ready">Ready</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
-            </SelectContent>
-          </Select>
-          {isAdmin && selectedEvents.length > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={() => {
-                if (window.confirm(`Delete ${selectedEvents.length} selected event(s)?`)) {
-                  const selectedItems = filteredEvents.filter(e => selectedEvents.includes(e.id));
-                  bulkDeleteMutation.mutate({ ids: selectedEvents, selectedItems });
-                }
+      <div className="px-5 py-4">
+        {selectedSeriesForScheduler ? (
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => setSelectedSeriesForScheduler(null)}
+                className="text-[11px] font-mono text-gray-500 hover:text-gray-300 flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3 h-3" /> Back to series
+              </button>
+              <span className="text-xs font-semibold text-gray-200">{selectedSeriesForScheduler.name}</span>
+            </div>
+            <EventSchedulerForm
+              seriesId={selectedSeriesForScheduler.id}
+              onSuccess={() => {
+                setSelectedSeriesForScheduler(null);
+                setShowScheduler(false);
+                queryClient.invalidateQueries({ queryKey: ['events'] });
               }}
-              disabled={bulkDeleteMutation.isPending}
-              className={bulkDeleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-            >
-              {bulkDeleteMutation.isPending ? (
-                <BurnoutSpinner />
-              ) : (
-                <Trash2 className="w-4 h-4 mr-2" />
-              )}
-              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedEvents.length}`}
-            </Button>
-          )}
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-12">Loading...</div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  {isAdmin && <th className="px-6 py-3 text-left w-12">
-                    <Checkbox 
-                      checked={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedEvents(filteredEvents.map(e => e.id));
-                        } else {
-                          setSelectedEvents([]);
-                        }
-                      }}
-                    />
-                  </th>}
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase">Name</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Date</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Status</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Track Appr.</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Series Appr.</th>
-                   <th className="px-6 py-3 text-left text-xs font-bold uppercase">Publish Ready</th>
-                   <th className="px-6 py-3 text-right text-xs font-bold uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredEvents.map(event => (
-                  <tr key={event.id} className="hover:bg-gray-50">
-                    {isAdmin && <td className="px-6 py-4">
-                      <Checkbox 
-                        checked={selectedEvents.includes(event.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedEvents(prev => [...prev, event.id]);
-                          } else {
-                            setSelectedEvents(prev => prev.filter(id => id !== event.id));
-                          }
-                        }}
-                      />
-                    </td>}
-                    <td className="px-6 py-4 font-medium">{event.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{event.series}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
-                      {event.end_date && event.end_date !== event.event_date && (
-                        <span className="text-gray-400"> – {format(new Date(event.end_date), 'MMM d')}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                       <span className={`px-2 py-1 text-xs rounded ${
-                         event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                         event.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                         'bg-green-100 text-green-800'
-                       }`}>
-                         {event.status}
-                       </span>
-                     </td>
-                     <td className="px-6 py-4">
-                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
-                         event.track_approval_status === 'approved' ? 'bg-green-100 text-green-800' :
-                         event.track_approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
-                         'bg-yellow-100 text-yellow-800'
-                       }`}>
-                         {event.track_approval_status || 'pending'}
-                       </span>
-                     </td>
-                     <td className="px-6 py-4">
-                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
-                         event.series_approval_status === 'approved' ? 'bg-green-100 text-green-800' :
-                         event.series_approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
-                         'bg-yellow-100 text-yellow-800'
-                       }`}>
-                         {event.series_approval_status || 'pending'}
-                       </span>
-                     </td>
-                     <td className="px-6 py-4">
-                       <span className={`px-2 py-0.5 text-xs rounded font-medium ${
-                         event.publish_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                       }`}>
-                         {event.publish_ready ? 'Ready' : 'Blocked'}
-                       </span>
-                     </td>
-                     <td className="px-6 py-4 text-right space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => {
-                          const { orgType, orgId } = getOrgContextFromEvent(event);
-                          const seasonYear = getSeasonFromEvent(event);
-                          navigate(buildRaceCoreUrl({
-                            orgType,
-                            orgId,
-                            seasonYear,
-                            eventId: event.id,
-                            tab: 'overview',
-                          }));
-                        }}
-                        title="Open in Race Core Ops"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setSelectedEventForEdit(event)}
-                        title="Edit metadata"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      {isAdmin && <Button
-                         variant="ghost"
-                         size="sm"
-                         onClick={() => {
-                           if (confirm(`Delete ${event.name}?`)) {
-                             setDeletingEventId(event.id);
-                             deleteMutation.mutate({ id: event.id, event });
-                           }
-                         }}
-                         disabled={deletingEventId === event.id}
-                         className={deletingEventId === event.id ? 'opacity-50 cursor-not-allowed' : ''}
-                       >
-                         {deletingEventId === event.id ? (
-                           <div className="text-gray-400"><BurnoutSpinner /></div>
-                         ) : (
-                           <Trash2 className="w-4 h-4 text-red-600" />
-                         )}
-                       </Button>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="bulk-scheduler" className="space-y-6">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <h3 className="font-bold text-amber-900 mb-1">Bulk Event Scheduler</h3>
-              <p className="text-sm text-amber-800">Create multiple events with sessions in one form. Select a series, input event details, and add as many rounds/sessions as needed.</p>
-            </div>
-
-            {selectedSeriesForScheduler ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setSelectedSeriesForScheduler(null)}
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                  </Button>
-                  <div>
-                    <h2 className="text-2xl font-bold">{selectedSeriesForScheduler.name}</h2>
-                    <p className="text-sm text-gray-600">Create events with sessions</p>
-                  </div>
-                </div>
-                <EventSchedulerForm 
-                  seriesId={selectedSeriesForScheduler.id}
-                  onSuccess={() => {
-                    setSelectedSeriesForScheduler(null);
-                    setActiveTab('data');
-                    queryClient.invalidateQueries({ queryKey: ['events'] });
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                <p className="text-sm text-gray-600 mb-2">Select a series to create events:</p>
-                {series.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No series found. Create a series first.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {series.map(s => (
-                      <button
-                        key={s.id}
-                        onClick={() => setSelectedSeriesForScheduler(s)}
-                        className="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                      >
-                        <h3 className="font-semibold text-gray-900">{s.name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{s.full_name || s.sanctioning_body || 'No description'}</p>
-                        <div className="mt-3 flex items-center text-xs text-gray-500">
-                          <Plus className="w-3 h-3 mr-1" />
-                          Create events
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="relationships" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Event Relationships</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Series</p>
-                  <p className="text-lg font-semibold">Parent Series</p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Track</p>
-                  <p className="text-lg font-semibold">Venue</p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Sessions</p>
-                  <p className="text-lg font-semibold">Race Schedule</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">Manage event relationships by editing the event's sections.</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="publish">
-            <PublishTab 
-              entityCount={events.length}
-              draftCount={0}
-              liveCount={events.length}
-              hasPublishControl={false}
             />
-          </TabsContent>
+          </div>
+        ) : (
+          <div>
+            <p className="text-[11px] font-mono text-gray-500 mb-3">Select a series to create events:</p>
+            {series.length === 0 ? (
+              <p className="text-xs text-gray-600">No series found. Create a series first.</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {series.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedSeriesForScheduler(s)}
+                    className="text-left px-3 py-2.5 rounded border border-gray-800 hover:border-amber-700/50 hover:bg-amber-900/10 transition-colors"
+                  >
+                    <p className="text-xs font-semibold text-gray-200 truncate">{s.name}</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5 truncate">{s.sanctioning_body || s.discipline || '—'}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null;
 
-          <TabsContent value="activity">
-            <ActivityTab entityName="Event" />
-          </TabsContent>
-        </Tabs>
-      </ManagementShell>
-    </ManagementLayout>
+  // ── Render ────────────────────────────────────────────────────────────────────
+  return (
+    <>
+      <ManagementLayout currentPage="ManageEvents">
+        <RecordsPageShell
+          icon={CalendarDays}
+          title="Event Records"
+          stats={stats}
+          isLoading={isLoading}
+          actions={headerActions}
+          filterRail={filterRail}
+          bulkBar={bulkBar}
+          alert={schedulerPanel}
+        >
+          <RecordGrid
+            isLoading={isLoading}
+            isEmpty={filteredEvents.length === 0}
+            emptyIcon={CalendarDays}
+            emptyMessage={hasActiveFilters ? 'No events match filters' : 'No events found'}
+            emptyAction={hasActiveFilters && (
+              <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+                Clear filters
+              </button>
+            )}
+            columns={GRID_COLUMNS}
+            showSelectAll={isAdmin}
+            allSelected={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
+            onSelectAll={handleSelectAll}
+          >
+            {filteredEvents.map(event => (
+              <EventRecordRow
+                key={event.id}
+                event={event}
+                isAdmin={isAdmin}
+                isSelected={selectedEvents.includes(event.id)}
+                onSelect={handleSelectEvent}
+                onDelete={handleDelete}
+                isDeleting={deletingEventId === event.id}
+              />
+            ))}
+          </RecordGrid>
+
+          {showActivity && (
+            <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} />
+          )}
+        </RecordsPageShell>
+      </ManagementLayout>
+
+      {/* Single delete confirm (AlertDialog) */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{eventToDelete?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">Yes, delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk delete confirm (AlertDialog) */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedEvents.length} event(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedEvents.length} selected events</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkDelete} className="bg-red-600 hover:bg-red-700">Yes, delete all</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
