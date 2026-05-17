@@ -1,97 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import ActivityTab from '@/components/management/ActivityTab';
-import PublishTab from '@/components/management/PublishTab';
-
-import { Search, Plus, Pencil, Trash2, ArrowLeft, Upload, Download, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Hash, ExternalLink } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Trash2, AlertTriangle, X, User, Upload, Download, Hash, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
-import DriverForm from '@/components/management/DriverForm';
-import { Skeleton } from '@/components/ui/skeleton';
-import { downloadTemplate } from '@/components/shared/downloadTemplate';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DriverCoreDetailsSection from '@/components/management/DriverManagement/DriverCoreDetailsSection.jsx';
-import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
-import DriverProgramSection from '@/components/management/DriverManagement/DriverProgramSection.jsx';
-import DriverProgramsList from '@/components/management/DriverManagement/DriverProgramsList.jsx';
-import DriverMediaSection from '@/components/management/DriverEditor/DriverMediaSection.jsx';
-import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
-import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
-import DriverResultsSection from '@/components/management/DriverManagement/DriverResultsSection.jsx';
-import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
-import DriverBrandingSection from '@/components/management/DriverManagement/DriverBrandingSection.jsx';
-import DriverCareerManager from '@/components/management/DriverManagement/DriverCareerManager.jsx';
-import DriverSponsorManager from '@/components/management/DriverManagement/DriverSponsorManager.jsx';
-import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useEntityEditPermission } from '@/components/access/entityEditPermission';
-import AdminOverridePanel from '@/components/management/AdminOverridePanel';
-import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
+// RaceCore Records primitives
+import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
+import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
+import RecordGrid         from '@/components/racecore/records/RecordGrid';
+import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
+import DriverRecordRow    from '@/components/drivers/DriverRecordRow';
+
+// Driver-specific tools (preserved)
+import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
+import { downloadTemplate } from '@/components/shared/downloadTemplate';
+
+// ── Filter option sets ────────────────────────────────────────────────────────
+const RACING_STATUS_OPTIONS  = ['Active', 'Part Time', 'Inactive'];
+const VISIBILITY_OPTIONS     = ['live', 'draft'];
+const DISCIPLINE_OPTIONS     = ['Off Road', 'Snowmobile', 'Asphalt Oval', 'Road Racing', 'Rallycross', 'Drag Racing', 'Mixed'];
+const CAREER_STATUS_OPTIONS  = ['Novice', 'Amateur', 'Semi-Professional', 'Professional'];
+
+const GRID_COLUMNS = [
+  { label: 'Driver / Location', className: 'flex-1' },
+  { label: 'Discipline',        className: 'hidden sm:block w-16 text-center' },
+  { label: 'Career',            className: 'hidden md:block w-16 text-center' },
+  { label: 'Updated',           className: 'hidden lg:block w-20 text-right' },
+];
 
 export default function ManageDrivers() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [editingDriver, setEditingDriver] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedDrivers, setSelectedDrivers] = useState([]);
-  const [selectedDriverForEdit, setSelectedDriverForEdit] = useState(null);
-  const [editingStatuses, setEditingStatuses] = useState({});
-  const [sortField, setSortField] = useState('updated_date');
-  const [sortDir, setSortDir] = useState('desc');
-  const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
-  const [driverDupCount, setDriverDupCount] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [driverToDelete, setDriverToDelete] = useState(null);
-  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
-
-  // Lightweight background duplicate check on first load
-  React.useEffect(() => {
-    base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'driver' })
-      .then(res => { if (res?.data?.duplicate_count > 0) setDriverDupCount(res.data.duplicate_count); })
-      .catch(() => {});
-  }, []);
-  const [backfillingIds, setBackfillingIds] = useState(false);
-  const [bulkStatus, setBulkStatus] = useState('');
-  const [bulkProfileStatus, setBulkProfileStatus] = useState('');
-  const [bulkDiscipline, setBulkDiscipline] = useState('');
-  const [applyingBulk, setApplyingBulk] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // ── Filter / UI state ─────────────────────────────────────────────────────────
+  const [searchQuery,      setSearchQuery]      = useState('');
+  const [filterStatus,     setFilterStatus]     = useState('');
+  const [filterVisibility, setFilterVisibility] = useState('');
+  const [filterDisc,       setFilterDisc]       = useState('');
+  const [filterCareer,     setFilterCareer]     = useState('');
+  const [selectedDrivers,  setSelectedDrivers]  = useState([]);
+  const [showActivity,     setShowActivity]     = useState(false);
+  const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState(null); // duplicate_count number
+
+  // ── Bulk edit state (preserved) ───────────────────────────────────────────────
+  const [bulkStatus,        setBulkStatus]        = useState('');
+  const [bulkProfileStatus, setBulkProfileStatus] = useState('');
+  const [bulkDiscipline,    setBulkDiscipline]    = useState('');
+  const [applyingBulk,      setApplyingBulk]      = useState(false);
+  const [backfillingIds,    setBackfillingIds]    = useState(false);
+
+  // ── Delete confirm state (preserved) ─────────────────────────────────────────
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [driverToDelete,    setDriverToDelete]    = useState(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // ── Auth (unchanged query key) ────────────────────────────────────────────────
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
-  // Deep-link: ?driverId=xxx → route directly to Race Core canonical editor
-  React.useEffect(() => {
+  // ── Deep-link: ?driverId=xxx (preserved) ─────────────────────────────────────
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const driverId = params.get('driverId');
-    if (driverId) {
-      navigate('/race-core/drivers/' + driverId);
-    }
+    if (driverId) navigate('/race-core/drivers/' + driverId);
   }, []);
 
+  // ── Background duplicate check (preserved) ───────────────────────────────────
+  useEffect(() => {
+    base44.functions.invoke('findDuplicateSourceEntities', { entity_type: 'driver' })
+      .then(res => { if (res?.data?.duplicate_count > 0) setDuplicateWarning(res.data.duplicate_count); })
+      .catch(() => {});
+  }, []);
+
+  // ── Data queries (unchanged keys + fetch params) ──────────────────────────────
   const { data: drivers = [], isLoading } = useQuery({
     queryKey: ['drivers', 'all'],
     queryFn: () => base44.entities.Driver.list('-updated_date', 500),
   });
-
-  // Permission check for the currently-open driver edit view
-  const editingDriverRecord = selectedDriverForEdit?.id && selectedDriverForEdit.id !== 'new'
-    ? drivers.find(d => d.id === selectedDriverForEdit.id) || selectedDriverForEdit
-    : selectedDriverForEdit;
-  const {
-    canEditManagement: canEditDriverManagement,
-  } = useEntityEditPermission('Driver', selectedDriverForEdit?.id, editingDriverRecord);
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
@@ -103,7 +95,8 @@ export default function ManageDrivers() {
     queryFn: () => base44.entities.DriverMedia.list(),
   });
 
-  const programsByDriver = React.useMemo(() => {
+  // ── Derived maps (unchanged logic) ───────────────────────────────────────────
+  const programsByDriver = useMemo(() => {
     const map = {};
     allPrograms.forEach(p => {
       if (!map[p.driver_id]) map[p.driver_id] = [];
@@ -112,12 +105,13 @@ export default function ManageDrivers() {
     return map;
   }, [allPrograms]);
 
-  const mediaByDriver = React.useMemo(() => {
+  const mediaByDriver = useMemo(() => {
     const map = {};
     allMedia.forEach(m => { map[m.driver_id] = m; });
     return map;
   }, [allMedia]);
 
+  // ── Profile readiness (unchanged logic) ──────────────────────────────────────
   const getProfileReadiness = (driver) => {
     const missing = [];
     if (!driver.first_name || !driver.last_name) missing.push('Name');
@@ -130,6 +124,7 @@ export default function ManageDrivers() {
     return { isReady: missing.length === 0, missing };
   };
 
+  // ── Mutations (unchanged logic, keys, callbacks) ──────────────────────────────
   const toggleProfileStatusMutation = useMutation({
     mutationFn: ({ id, visibility_status }) => base44.entities.Driver.update(id, { visibility_status }),
     onSuccess: (_, { visibility_status }) => {
@@ -141,7 +136,11 @@ export default function ManageDrivers() {
   const deleteMutation = useMutation({
     mutationFn: async (id, driver) => {
       await base44.entities.Driver.delete(id);
-      await base44.functions.invoke('logDeletion', { entityName: 'Driver', recordIds: [id], recordNames: [driver?.display_name || `${driver?.first_name} ${driver?.last_name}`] });
+      await base44.functions.invoke('logDeletion', {
+        entityName: 'Driver',
+        recordIds: [id],
+        recordNames: [driver?.display_name || `${driver?.first_name} ${driver?.last_name}`],
+      });
       await new Promise(r => setTimeout(r, 150));
     },
     onSuccess: () => {
@@ -166,131 +165,58 @@ export default function ManageDrivers() {
     },
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, racing_status }) => base44.entities.Driver.update(id, { racing_status }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      setEditingStatuses({});
-    },
-  });
-
-  const filteredDrivers = React.useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    const filtered = drivers.filter(driver =>
-      driver.first_name?.toLowerCase().includes(query) ||
-      driver.last_name?.toLowerCase().includes(query) ||
-      driver.display_name?.toLowerCase().includes(query)
-    );
-    return [...filtered].sort((a, b) => {
-      let aVal, bVal;
-      if (sortField === 'name') {
-        aVal = `${a.last_name} ${a.first_name}`.toLowerCase();
-        bVal = `${b.last_name} ${b.first_name}`.toLowerCase();
-      } else if (sortField === 'visibility_status') {
-        aVal = a.visibility_status || 'draft';
-        bVal = b.visibility_status || 'draft';
-      } else if (sortField === 'racing_status') {
-        aVal = a.racing_status || '';
-        bVal = b.racing_status || '';
-      } else {
-        aVal = a[sortField] || '';
-        bVal = b[sortField] || '';
-      }
-      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-      return 0;
+  // ── Filtering (client-side, memoized) ─────────────────────────────────────────
+  const filteredDrivers = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return drivers.filter(d => {
+      if (q && !d.first_name?.toLowerCase().includes(q) &&
+               !d.last_name?.toLowerCase().includes(q) &&
+               !d.display_name?.toLowerCase().includes(q)) return false;
+      if (filterStatus     && d.racing_status !== filterStatus)         return false;
+      if (filterVisibility && d.visibility_status !== filterVisibility)  return false;
+      if (filterDisc       && d.primary_discipline !== filterDisc)       return false;
+      if (filterCareer     && d.career_status !== filterCareer)          return false;
+      return true;
     });
-  }, [drivers, searchQuery, sortField, sortDir]);
+  }, [drivers, searchQuery, filterStatus, filterVisibility, filterDisc, filterCareer]);
 
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDir('asc');
-    }
-  };
+  // ── Selection (unchanged) ─────────────────────────────────────────────────────
+  const handleSelectAll    = (checked) => setSelectedDrivers(checked ? filteredDrivers.map(d => d.id) : []);
+  const handleSelectDriver = (id) => setSelectedDrivers(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const SortIcon = ({ field }) => {
-    if (sortField !== field) return <span className="ml-1 text-gray-300">↕</span>;
-    return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
-  };
-
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedDrivers(filteredDrivers.map(d => d.id));
-    } else {
-      setSelectedDrivers([]);
-    }
-  };
-
-  const handleSelectDriver = (id) => {
-    setSelectedDrivers(prev => 
-      prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]
-    );
-  };
-
-  const handleBulkDelete = () => {
-    setBulkDeleteConfirm(true);
-  };
-
-  const confirmBulkDelete = () => {
-    setBulkDeleteConfirm(false);
-    const selectedItems = drivers.filter(d => selectedDrivers.includes(d.id));
-    bulkDeleteMutation.mutate(selectedDrivers, selectedItems);
-  };
-
-  const handleBulkApply = async () => {
-    if (!bulkStatus && !bulkProfileStatus && !bulkDiscipline) return;
-    if (!window.confirm(`Apply changes to ${selectedDrivers.length} selected driver(s)?`)) return;
-    setApplyingBulk(true);
-    const updates = {};
-    if (bulkStatus) updates.racing_status = bulkStatus;
-    if (bulkProfileStatus) updates.visibility_status = bulkProfileStatus;
-    if (bulkDiscipline) updates.primary_discipline = bulkDiscipline;
-    for (const id of selectedDrivers) {
-      await base44.entities.Driver.update(id, updates);
-    }
-    queryClient.invalidateQueries({ queryKey: ['drivers'] });
-    toast.success(`Updated ${selectedDrivers.length} driver(s)`);
-    setBulkStatus('');
-    setBulkProfileStatus('');
-    setBulkDiscipline('');
-    setApplyingBulk(false);
-  };
-
-  const handleEdit = (driver) => {
-    navigate('/race-core/drivers/' + driver.id);
-  };
-
-  const handleDelete = (driver) => {
-    setDriverToDelete(driver);
-    setShowDeleteConfirm(true);
-  };
-
+  // ── Delete handlers (unchanged) ───────────────────────────────────────────────
+  const handleDelete = (driver) => { setDriverToDelete(driver); setShowDeleteConfirm(true); };
   const confirmDelete = () => {
     if (!driverToDelete) return;
     setShowDeleteConfirm(false);
     deleteMutation.mutate(driverToDelete.id, driverToDelete);
     setDriverToDelete(null);
   };
-
-  const handleFormClose = () => {
-    setShowForm(false);
-    setEditingDriver(null);
+  const confirmBulkDelete = () => {
+    setBulkDeleteConfirm(false);
+    const selectedItems = drivers.filter(d => selectedDrivers.includes(d.id));
+    bulkDeleteMutation.mutate(selectedDrivers, selectedItems);
   };
 
-  const handleSaveSuccess = (newDriverId) => {
-    if (newDriverId) {
-      setSelectedDriverForEdit({ id: newDriverId });
-      toast.success('Driver created successfully!');
-    } else {
-      setSelectedDriverForEdit(null);
-      toast.success('Driver updated successfully!');
+  // ── Bulk apply (unchanged) ────────────────────────────────────────────────────
+  const handleBulkApply = async () => {
+    if (!bulkStatus && !bulkProfileStatus && !bulkDiscipline) return;
+    if (!window.confirm(`Apply changes to ${selectedDrivers.length} selected driver(s)?`)) return;
+    setApplyingBulk(true);
+    const updates = {};
+    if (bulkStatus)        updates.racing_status     = bulkStatus;
+    if (bulkProfileStatus) updates.visibility_status = bulkProfileStatus;
+    if (bulkDiscipline)    updates.primary_discipline = bulkDiscipline;
+    for (const id of selectedDrivers) {
+      await base44.entities.Driver.update(id, updates);
     }
     queryClient.invalidateQueries({ queryKey: ['drivers'] });
+    toast.success(`Updated ${selectedDrivers.length} driver(s)`);
+    setBulkStatus(''); setBulkProfileStatus(''); setBulkDiscipline('');
+    setApplyingBulk(false);
   };
 
+  // ── JSON Export (unchanged) ───────────────────────────────────────────────────
   const handleExport = () => {
     const dataStr = JSON.stringify(drivers, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -302,10 +228,10 @@ export default function ManageDrivers() {
     URL.revokeObjectURL(url);
   };
 
+  // ── JSON Import (unchanged) ───────────────────────────────────────────────────
   const handleImport = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
@@ -331,357 +257,271 @@ export default function ManageDrivers() {
     e.target.value = '';
   };
 
-  // showForm / DriverForm path replaced by canonical /race-core/drivers/new route
-  // Edit now routes to canonical /race-core/drivers/:id — this block is no longer reached
+  const clearFilters = () => {
+    setSearchQuery(''); setFilterStatus(''); setFilterVisibility('');
+    setFilterDisc(''); setFilterCareer('');
+  };
 
-  return (
-    <ManagementLayout currentPage="ManageDrivers">
-      <ManagementShell
-        title="Drivers"
-        subtitle={`${drivers.length} total drivers`}
-        actions={activeTab === 'data' ? <>
-          <input id="import-drivers" type="file" accept=".json" onChange={handleImport} className="hidden" />
-          <Button variant="outline" onClick={() => downloadTemplate('driver', 'Driver')} title="Download import template"><Download className="w-4 h-4" /></Button>
-          <Button variant="outline" onClick={handleExport}><Download className="w-4 h-4 mr-2" />Export</Button>
-          <Button variant="outline" onClick={() => document.getElementById('import-drivers').click()}><Upload className="w-4 h-4 mr-2" />Import</Button>
-          <Button onClick={async () => { setBackfillingIds(true); try { const res = await base44.functions.invoke('assignDriverNumericIds'); toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`); queryClient.invalidateQueries({ queryKey: ['drivers'] }); } catch (e) { toast.error('Failed to assign IDs: ' + e.message); } finally { setBackfillingIds(false); } }} disabled={backfillingIds} variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50"><Hash className="w-4 h-4 mr-2" />{backfillingIds ? 'Assigning...' : 'Assign IDs'}</Button>
-          <Button onClick={() => setShowDuplicateFinder(true)} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50"><AlertCircle className="w-4 h-4 mr-2" />Find Duplicates</Button>
-          <Button onClick={() => navigate('/race-core/drivers/new')} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Driver</Button>
-        </> : undefined}
-      >
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
-            <TabsTrigger value="relationships">Relationships</TabsTrigger>
-            <TabsTrigger value="publish">Publish</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
+  // ── Derived stats ─────────────────────────────────────────────────────────────
+  const activeCount   = drivers.filter(d => d.racing_status === 'Active').length;
+  const partTimeCount = drivers.filter(d => d.racing_status === 'Part Time').length;
+  const liveCount     = drivers.filter(d => d.visibility_status === 'live').length;
+  const draftCount    = drivers.filter(d => d.visibility_status !== 'live').length;
+  const hasActiveFilters = !!(searchQuery || filterStatus || filterVisibility || filterDisc || filterCareer);
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Total Drivers</p>
-                <p className="text-2xl font-bold text-gray-900">{drivers.length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{drivers.filter(d => d.racing_status === 'Active').length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Profiles Live</p>
-                <p className="text-2xl font-bold text-blue-600">{drivers.filter(d => d.visibility_status === 'live').length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Part Time</p>
-                <p className="text-2xl font-bold text-yellow-600">{drivers.filter(d => d.racing_status === 'Part Time').length}</p>
-              </div>
-            </div>
-            <ProfileTasksSummary entityType="Driver" records={drivers} />
-            <Button onClick={() => navigate('/race-core/drivers/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Driver
-            </Button>
-          </TabsContent>
+  // ── Composed slots ────────────────────────────────────────────────────────────
+  const stats = [
+    { label: 'Total',     value: drivers.length },
+    { label: 'Active',    value: activeCount,   accent: 'text-emerald-400' },
+    { label: 'Part Time', value: partTimeCount, accent: 'text-amber-400' },
+    { label: 'Live',      value: liveCount,     accent: 'text-teal-400' },
+    ...(draftCount > 0 ? [{ label: 'Draft', value: draftCount, accent: 'text-gray-500' }] : []),
+  ];
 
-          <TabsContent value="data" className="space-y-6">
+  const headerActions = (
+    <>
+      {/* Hidden import input */}
+      <input id="import-drivers" type="file" accept=".json" onChange={handleImport} className="hidden" />
 
-        {driverDupCount > 0 && (
-          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>Potential duplicate driver records detected ({driverDupCount} group{driverDupCount > 1 ? 's' : ''}). Review before creating new records.</span>
-            </div>
-            <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold underline whitespace-nowrap">Open Diagnostics</Link>
-          </div>
-        )}
-
-        <div className="mb-6 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search drivers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.stopPropagation()}
-              className="pl-10"
-            />
-          </div>
-          {isAdmin && selectedDrivers.length > 0 && (
-            <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg flex-wrap">
-              <span className="text-xs font-semibold text-blue-700 whitespace-nowrap">{selectedDrivers.length} selected</span>
-              <Select value={bulkStatus} onValueChange={setBulkStatus}>
-                <SelectTrigger className="w-32 h-8 text-xs">
-                  <SelectValue placeholder="Status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Inactive">Inactive</SelectItem>
-                  <SelectItem value="Part Time">Part Time</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={bulkProfileStatus} onValueChange={setBulkProfileStatus}>
-                <SelectTrigger className="w-32 h-8 text-xs">
-                  <SelectValue placeholder="Profile..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="live">Live</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={bulkDiscipline} onValueChange={setBulkDiscipline}>
-                <SelectTrigger className="w-36 h-8 text-xs">
-                  <SelectValue placeholder="Discipline..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Off Road">Off Road</SelectItem>
-                  <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                  <SelectItem value="Asphalt Oval">Asphalt Oval</SelectItem>
-                  <SelectItem value="Road Racing">Road Racing</SelectItem>
-                  <SelectItem value="Rallycross">Rallycross</SelectItem>
-                  <SelectItem value="Drag Racing">Drag Racing</SelectItem>
-                  <SelectItem value="Mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
-                onClick={handleBulkApply}
-                disabled={applyingBulk || (!bulkStatus && !bulkProfileStatus && !bulkDiscipline)}
-              >
-                {applyingBulk ? 'Applying...' : 'Apply'}
-              </Button>
-              <Button 
-                variant="destructive"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={handleBulkDelete}
-                disabled={bulkDeleteMutation.isPending}
-              >
-                <Trash2 className="w-3 h-3 mr-1" />
-                {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(10)].map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {isAdmin && <th className="px-6 py-3 text-left w-12">
-                    <Checkbox 
-                      checked={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </th>}
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('name')}>
-                    Name <SortIcon field="name" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('primary_discipline')}>
-                    Discipline <SortIcon field="primary_discipline" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('racing_status')}>
-                    Status <SortIcon field="racing_status" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600 cursor-pointer hover:text-gray-900 select-none" onClick={() => handleSort('visibility_status')}>
-                    Profile <SortIcon field="visibility_status" />
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredDrivers.map((driver) => (
-                  <tr key={driver.id} className="hover:bg-gray-50">
-                    {isAdmin && <td className="px-6 py-4">
-                      <Checkbox 
-                        checked={selectedDrivers.includes(driver.id)}
-                        onCheckedChange={() => handleSelectDriver(driver.id)}
-                      />
-                    </td>}
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{driver.first_name} {driver.last_name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {driver.hometown_city}, {driver.hometown_state}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {driver.primary_discipline}
-                    </td>
-                    <td className="px-6 py-4">
-                      {editingStatuses[driver.id] ? (
-                        <Select 
-                          value={editingStatuses[driver.id]} 
-                          onValueChange={(value) => {
-                            updateStatusMutation.mutate({ id: driver.id, racing_status: value });
-                          }}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                            <SelectItem value="Part Time">Part Time</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span 
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded cursor-pointer ${
-                            driver.racing_status === 'Active' ? 'bg-green-100 text-green-800' :
-                            driver.racing_status === 'Part Time' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}
-                          onClick={() => setEditingStatuses({ [driver.id]: driver.racing_status })}
-                        >
-                          {driver.racing_status || 'Active'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {(() => {
-                        const { isReady, missing } = getProfileReadiness(driver);
-                        const isLive = driver.visibility_status === 'live';
-                        return (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => {
-                                    if (!isReady && !isLive) {
-                                      toast.error(`Missing: ${missing.join(', ')}`);
-                                      return;
-                                    }
-                                    toggleProfileStatusMutation.mutate({
-                                      id: driver.id,
-                                      visibility_status: isLive ? 'draft' : 'live',
-                                    });
-                                  }}
-                                  className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded transition-colors ${
-                                    isLive
-                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                      : isReady
-                                      ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                >
-                                  {isLive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                  {isLive ? 'Live' : 'Draft'}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {isLive
-                                  ? 'Publicly visible — click to hide'
-                                  : isReady
-                                  ? 'Ready to publish — click to make live'
-                                  : `Not ready. Missing: ${missing.join(', ')}`}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(buildRaceCoreUrl({
-                            tab: 'entries',
-                            focusDriverId: driver.id,
-                          }))}
-                          title="Open in Race Core"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(driver)}
-                          title="Manage driver details"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        {isAdmin && <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleDelete(driver)}
-                           disabled={deleteMutation.isPending}
-                           className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-                         >
-                           {deleteMutation.isPending ? (
-                             <div className="text-gray-400"><BurnoutSpinner /></div>
-                           ) : (
-                             <Trash2 className="w-4 h-4 text-red-600" />
-                           )}
-                         </Button>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-            {!isLoading && filteredDrivers.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                No drivers found
-              </div>
+      {/* Admin-only utilities */}
+      {isAdmin && (
+        <>
+          <button
+            onClick={() => downloadTemplate('driver', 'Driver')}
+            title="Download import template"
+            className="h-7 px-2 text-[11px] font-mono rounded border border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400 transition-colors"
+          >
+            <Download className="w-3 h-3" />
+          </button>
+          <button
+            onClick={handleExport}
+            title="Export JSON"
+            className="h-7 px-2 text-[11px] font-mono rounded border border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1"
+          >
+            <Download className="w-3 h-3" />
+            Export
+          </button>
+          <button
+            onClick={() => document.getElementById('import-drivers').click()}
+            title="Import JSON"
+            className="h-7 px-2 text-[11px] font-mono rounded border border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1"
+          >
+            <Upload className="w-3 h-3" />
+            Import
+          </button>
+          <button
+            onClick={async () => {
+              setBackfillingIds(true);
+              try {
+                const res = await base44.functions.invoke('assignDriverNumericIds');
+                toast.success(`Assigned IDs to ${res.data?.driversUpdated ?? 0} drivers`);
+                queryClient.invalidateQueries({ queryKey: ['drivers'] });
+              } catch (e) {
+                toast.error('Failed to assign IDs: ' + e.message);
+              } finally {
+                setBackfillingIds(false);
+              }
+            }}
+            disabled={backfillingIds}
+            title="Assign numeric IDs"
+            className="h-7 px-2 text-[11px] font-mono rounded border border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1 disabled:opacity-40"
+          >
+            <Hash className="w-3 h-3" />
+            {backfillingIds ? 'Assigning…' : 'IDs'}
+          </button>
+          <button
+            onClick={() => setShowDuplicateFinder(true)}
+            title="Find duplicate drivers"
+            className={cn(
+              'h-7 px-2 text-[11px] font-mono rounded border transition-colors flex items-center gap-1',
+              duplicateWarning
+                ? 'border-amber-700/60 bg-amber-900/20 text-amber-400 hover:bg-amber-900/40'
+                : 'border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
             )}
+          >
+            <AlertCircle className="w-3 h-3" />
+            Dupes{duplicateWarning ? ` (${duplicateWarning})` : ''}
+          </button>
+        </>
+      )}
 
-            <DriverDuplicateFinder
-              drivers={drivers}
-              open={showDuplicateFinder}
-              onOpenChange={setShowDuplicateFinder}
-            />
-          </TabsContent>
+      {/* Activity toggle */}
+      <button
+        onClick={() => setShowActivity(v => !v)}
+        className={cn(
+          'h-7 px-3 text-[11px] font-mono rounded border transition-colors',
+          showActivity
+            ? 'bg-gray-800 border-gray-600 text-gray-200'
+            : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+        )}
+      >
+        Activity
+      </button>
 
-          <TabsContent value="relationships" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Driver Relationships</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Teams</p>
-                  <p className="text-lg font-semibold">Associated via DriverProgram</p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Series</p>
-                  <p className="text-lg font-semibold">Associated via DriverProgram</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">Manage driver team and series associations by editing the driver's program section.</p>
-            </div>
-          </TabsContent>
+      {/* Add Driver */}
+      <button
+        onClick={() => navigate('/race-core/drivers/new')}
+        className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
+      >
+        <Plus className="w-3 h-3" />
+        Add Driver
+      </button>
+    </>
+  );
 
-          <TabsContent value="publish">
-            <PublishTab 
-              entityCount={drivers.length}
-              draftCount={drivers.filter(d => d.visibility_status === 'draft').length}
-              liveCount={drivers.filter(d => d.visibility_status === 'live').length}
-              hasPublishControl={true}
-            />
-          </TabsContent>
+  // ── Duplicate warning alert strip ────────────────────────────────────────────
+  const alertStrip = duplicateWarning ? (
+    <div className="flex items-center gap-3 px-5 py-2 border-b border-amber-800/40 bg-amber-900/20">
+      <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+      <p className="text-xs text-amber-400 flex-1">
+        {duplicateWarning} potential duplicate driver group{duplicateWarning > 1 ? 's' : ''} detected.{' '}
+        <button onClick={() => setShowDuplicateFinder(true)} className="underline font-semibold">
+          Open Duplicate Finder
+        </button>{' '}or{' '}
+        <Link to={createPageUrl('Diagnostics')} className="underline font-semibold">Diagnostics</Link>
+      </p>
+      <button onClick={() => setDuplicateWarning(null)} className="text-amber-600 hover:text-amber-400">
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  ) : null;
 
-          <TabsContent value="activity">
-            <ActivityTab entityName="Driver" />
-          </TabsContent>
-        </Tabs>
-      </ManagementShell>
+  // ── Filter rail ───────────────────────────────────────────────────────────────
+  const filterRail = (
+    <RecordsFilterRail
+      search={searchQuery}
+      onSearch={setSearchQuery}
+      searchPlaceholder="Search drivers..."
+      filters={[
+        { key: 'status',     value: filterStatus,     onChange: setFilterStatus,     options: RACING_STATUS_OPTIONS, placeholder: 'Status'     },
+        { key: 'visibility', value: filterVisibility, onChange: setFilterVisibility, options: VISIBILITY_OPTIONS,    placeholder: 'Profile'    },
+        { key: 'disc',       value: filterDisc,       onChange: setFilterDisc,       options: DISCIPLINE_OPTIONS,   placeholder: 'Discipline' },
+        { key: 'career',     value: filterCareer,     onChange: setFilterCareer,     options: CAREER_STATUS_OPTIONS, placeholder: 'Career'    },
+      ]}
+      hasActiveFilters={hasActiveFilters}
+      onClearAll={clearFilters}
+      resultCount={filteredDrivers.length}
+      totalCount={drivers.length}
+    />
+  );
 
-      {/* Single delete confirm */}
+  // ── Bulk bar (selection-driven, admin only) ───────────────────────────────────
+  const bulkBar = isAdmin && selectedDrivers.length > 0 ? (
+    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-blue-900/40 bg-blue-900/10 flex-wrap">
+      <span className="text-xs font-mono text-blue-400">{selectedDrivers.length} selected</span>
+
+      {/* Bulk racing status */}
+      <select
+        value={bulkStatus}
+        onChange={e => setBulkStatus(e.target.value)}
+        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+      >
+        <option value="">Status…</option>
+        {RACING_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+
+      {/* Bulk visibility */}
+      <select
+        value={bulkProfileStatus}
+        onChange={e => setBulkProfileStatus(e.target.value)}
+        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+      >
+        <option value="">Profile…</option>
+        <option value="live">Live</option>
+        <option value="draft">Draft</option>
+      </select>
+
+      {/* Bulk discipline */}
+      <select
+        value={bulkDiscipline}
+        onChange={e => setBulkDiscipline(e.target.value)}
+        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+      >
+        <option value="">Discipline…</option>
+        {DISCIPLINE_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+      </select>
+
+      <button
+        onClick={handleBulkApply}
+        disabled={applyingBulk || (!bulkStatus && !bulkProfileStatus && !bulkDiscipline)}
+        className="h-6 px-3 text-[11px] font-mono rounded border border-blue-800/60 bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 transition-colors disabled:opacity-40"
+      >
+        {applyingBulk ? 'Applying…' : 'Apply'}
+      </button>
+
+      <button
+        onClick={() => setBulkDeleteConfirm(true)}
+        disabled={bulkDeleteMutation.isPending}
+        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+      >
+        <Trash2 className="w-3 h-3" />
+        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedDrivers.length}`}
+      </button>
+
+      <button onClick={() => setSelectedDrivers([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
+        Cancel
+      </button>
+    </div>
+  ) : null;
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+  return (
+    <>
+      <ManagementLayout currentPage="ManageDrivers">
+        <RecordsPageShell
+          icon={User}
+          title="Driver Records"
+          stats={stats}
+          isLoading={isLoading}
+          actions={headerActions}
+          alert={alertStrip}
+          filterRail={filterRail}
+          bulkBar={bulkBar}
+        >
+          <RecordGrid
+            isLoading={isLoading}
+            isEmpty={filteredDrivers.length === 0}
+            emptyIcon={User}
+            emptyMessage={hasActiveFilters ? 'No drivers match filters' : 'No drivers found'}
+            emptyAction={hasActiveFilters && (
+              <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+                Clear filters
+              </button>
+            )}
+            columns={GRID_COLUMNS}
+            showSelectAll={isAdmin}
+            allSelected={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
+            onSelectAll={handleSelectAll}
+          >
+            {filteredDrivers.map(driver => (
+              <DriverRecordRow
+                key={driver.id}
+                driver={driver}
+                isAdmin={isAdmin}
+                isSelected={selectedDrivers.includes(driver.id)}
+                onSelect={handleSelectDriver}
+                onDelete={handleDelete}
+                isDeleting={deleteMutation.isPending}
+                onToggleVisibility={toggleProfileStatusMutation.mutate}
+                getProfileReadiness={getProfileReadiness}
+              />
+            ))}
+          </RecordGrid>
+
+          {showActivity && (
+            <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} />
+          )}
+        </RecordsPageShell>
+      </ManagementLayout>
+
+      {/* Duplicate finder dialog (preserved) */}
+      <DriverDuplicateFinder
+        drivers={drivers}
+        open={showDuplicateFinder}
+        onOpenChange={setShowDuplicateFinder}
+      />
+
+      {/* Single delete confirm (AlertDialog flow preserved) */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -697,7 +537,7 @@ export default function ManageDrivers() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Bulk delete confirm */}
+      {/* Bulk delete confirm (AlertDialog flow preserved) */}
       <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -712,7 +552,6 @@ export default function ManageDrivers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-    </ManagementLayout>
+    </>
   );
 }
