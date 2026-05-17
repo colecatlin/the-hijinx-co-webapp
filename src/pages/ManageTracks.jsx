@@ -1,46 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, ExternalLink, AlertTriangle, X } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Search, Plus, Trash2, AlertTriangle, X, MapPin,
+  SlidersHorizontal, ChevronDown
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { buildRaceCoreUrl } from '@/components/registrationdashboard/raceCoreLinks';
-import { Skeleton } from '@/components/ui/skeleton';
-import TrackForm from '@/components/management/TrackForm';
-import TrackCoreDetailsSection from '@/components/management/TrackManagement/TrackCoreDetailsSection';
-import TrackSeriesSection from '@/components/management/TrackManagement/TrackSeriesSection';
 import ActivityTab from '@/components/management/ActivityTab';
-import { useEntityEditPermission } from '@/components/access/entityEditPermission';
-import AdminOverridePanel from '@/components/management/AdminOverridePanel';
-import PublishTab from '@/components/management/PublishTab';
-import ProfileTasksSummary from '@/components/management/ProfileTasksSummary';
+import TrackRecordRow from '@/components/tracks/TrackRecordRow';
+import { cn } from '@/lib/utils';
 
+// ─── Filter options ────────────────────────────────────────────────────────────
+const SURFACE_OPTIONS = ['Asphalt', 'Concrete', 'Dirt', 'Clay', 'Mixed'];
+const STATUS_OPTIONS  = ['Active', 'Seasonal', 'Inactive'];
+const REGION_OPTIONS  = ['USA', 'Canada', 'Europe', 'Australia', 'Other'];
+
+function CompactSelect({ value, onChange, options, placeholder }) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={cn(
+          'appearance-none h-7 pl-2.5 pr-6 text-[11px] font-mono rounded border transition-colors outline-none',
+          'bg-gray-900 border-gray-700 text-gray-300',
+          'hover:border-gray-500 focus:border-teal-600/70',
+          value ? 'text-teal-300 border-teal-700/50' : ''
+        )}
+      >
+        <option value="">{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-gray-500 pointer-events-none" />
+    </div>
+  );
+}
+
+// ─── Stat pill ─────────────────────────────────────────────────────────────────
+function StatPill({ label, value, accent }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className={cn('text-lg font-black font-mono tabular-nums', accent || 'text-gray-100')}>{value}</span>
+      <span className="text-[10px] font-mono tracking-widest text-gray-600 uppercase">{label}</span>
+    </div>
+  );
+}
+
+// ─── Column header ─────────────────────────────────────────────────────────────
+function ColHeader({ children, className }) {
+  return (
+    <div className={cn('text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-gray-700', className)}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────────
 export default function ManageTracks() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [selectedTrackForEdit, setSelectedTrackForEdit] = useState(null);
-  const [selectedTracks, setSelectedTracks] = useState([]);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery]         = useState('');
+  const [filterSurface, setFilterSurface]     = useState('');
+  const [filterStatus, setFilterStatus]       = useState('');
+  const [filterRegion, setFilterRegion]       = useState('');
+  const [selectedTracks, setSelectedTracks]   = useState([]);
+  const [showActivity, setShowActivity]       = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
-
-  // Permission check for the currently-open track edit view
-  const editingTrackRecord = selectedTrackForEdit?.id
-    ? tracks.find(t => t.id === selectedTrackForEdit.id) || selectedTrackForEdit
-    : selectedTrackForEdit;
-  const { canEditManagement: canEditTrackManagement } =
-    useEntityEditPermission('Track', selectedTrackForEdit?.id, editingTrackRecord);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -49,11 +82,13 @@ export default function ManageTracks() {
       .catch(() => {});
   }, [isAdmin]);
 
+  // ── Data ─────────────────────────────────────────────────────────────────────
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['tracks'],
     queryFn: () => base44.entities.Track.list('-updated_date', 500),
   });
 
+  // ── Mutations (unchanged) ─────────────────────────────────────────────────────
   const deleteMutation = useMutation({
     mutationFn: async ({ id, name }) => {
       await base44.entities.Track.delete(id);
@@ -73,263 +108,262 @@ export default function ManageTracks() {
     },
   });
 
-  const filteredTracks = tracks.filter(track =>
-    track.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // ── Filtering (memoized) ──────────────────────────────────────────────────────
+  const filteredTracks = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return tracks.filter(t => {
+      if (q && !t.name?.toLowerCase().includes(q) &&
+               !t.location_city?.toLowerCase().includes(q) &&
+               !t.location_state?.toLowerCase().includes(q)) return false;
+      if (filterSurface && t.surface_type !== filterSurface) return false;
+      if (filterStatus  && t.operational_status !== filterStatus)  return false;
+      if (filterRegion) {
+        const country = t.location_country || '';
+        if (filterRegion === 'USA'       && country !== 'USA' && country !== 'United States') return false;
+        if (filterRegion === 'Canada'    && country !== 'Canada')    return false;
+        if (filterRegion === 'Europe'    && !['UK','France','Germany','Italy','Spain','Netherlands','Belgium','Austria'].includes(country)) return false;
+        if (filterRegion === 'Australia' && country !== 'Australia') return false;
+        if (filterRegion === 'Other'     && ['USA','United States','Canada','UK','France','Germany','Italy','Spain','Netherlands','Belgium','Austria','Australia'].includes(country)) return false;
+      }
+      return true;
+    });
+  }, [tracks, searchQuery, filterSurface, filterStatus, filterRegion]);
 
+  const activeCount    = tracks.filter(t => t.operational_status === 'Active').length;
+  const seasonalCount  = tracks.filter(t => t.operational_status === 'Seasonal').length;
+  const draftCount     = tracks.filter(t => t.visibility_status === 'draft').length;
+  const hasActiveFilters = searchQuery || filterSurface || filterStatus || filterRegion;
+
+  // ── Selection ─────────────────────────────────────────────────────────────────
+  const handleSelectAll = (checked) => {
+    setSelectedTracks(checked ? filteredTracks.map(t => t.id) : []);
+  };
+  const handleSelectTrack = (id) => {
+    setSelectedTracks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  // ── Actions ───────────────────────────────────────────────────────────────────
   const handleDelete = (track) => {
     if (window.confirm(`Delete ${track.name}?`)) {
       deleteMutation.mutate({ id: track.id, name: track.name });
     }
   };
-
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedTracks(filteredTracks.map(t => t.id));
-    } else {
-      setSelectedTracks([]);
-    }
-  };
-
-  const handleSelectTrack = (id) => {
-    setSelectedTracks(prev =>
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
-
   const handleBulkDelete = () => {
     if (window.confirm(`Delete ${selectedTracks.length} selected track(s)?`)) {
-      const selectedItems = filteredTracks.filter(t => selectedTracks.includes(t.id));
-      bulkDeleteMutation.mutate({ ids: selectedTracks, names: selectedItems.map(t => t.name) });
+      const items = filteredTracks.filter(t => selectedTracks.includes(t.id));
+      bulkDeleteMutation.mutate({ ids: selectedTracks, names: items.map(t => t.name) });
     }
   };
+  const clearFilters = () => {
+    setSearchQuery(''); setFilterSurface(''); setFilterStatus(''); setFilterRegion('');
+  };
 
-  // 'Add Track' now routes to /race-core/tracks/new — no showForm logic needed
-
-  // Edit now routes to canonical /race-core/tracks/:id — this block is no longer reached
-
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <ManagementLayout currentPage="ManageTracks">
-      {duplicateWarning && (
-        <div className="mx-6 mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-amber-800">Potential duplicate track records detected.</p>
-            <p className="text-xs text-amber-700 mt-0.5">Review diagnostics before creating new records.</p>
-          </div>
-          <Link to={createPageUrl('Diagnostics')} className="text-xs font-semibold text-amber-800 underline whitespace-nowrap">
-            Open Diagnostics
-          </Link>
-          <button onClick={() => setDuplicateWarning(false)} className="text-amber-500 hover:text-amber-700 ml-1">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
-      <ManagementShell
-        title="Tracks"
-        subtitle={`${tracks.length} total tracks`}
-        actions={activeTab === 'data' ? <Button onClick={() => navigate('/race-core/tracks/new')} className="bg-gray-900"><Plus className="w-4 h-4 mr-2" />Add Track</Button> : undefined}
-      >
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
-            <TabsTrigger value="relationships">Relationships</TabsTrigger>
-            <TabsTrigger value="publish">Publish</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
+      <div className="flex flex-col h-full min-h-screen" style={{ background: '#0a0a0a' }}>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Total Tracks</p>
-                <p className="text-2xl font-bold text-gray-900">{tracks.length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Active</p>
-                <p className="text-2xl font-bold text-green-600">{tracks.filter(t => t.operational_status === 'Active').length}</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Seasonal</p>
-                <p className="text-2xl font-bold text-yellow-600">{tracks.filter(t => t.operational_status === 'Seasonal').length}</p>
-              </div>
-            </div>
-            <ProfileTasksSummary entityType="Track" records={tracks} />
-            <Button onClick={() => navigate('/race-core/tracks/new')} className="w-full bg-[#232323] hover:bg-[#1A3249]">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Track
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="data" className="space-y-6">
-            <div className="mb-6 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search tracks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          {isAdmin && selectedTracks.length > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={handleBulkDelete}
-              disabled={bulkDeleteMutation.isPending}
-            >
-              {bulkDeleteMutation.isPending ? (
-                <BurnoutSpinner />
-              ) : (
-                <Trash2 className="w-4 h-4 mr-2" />
-              )}
-              {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedTracks.length}`}
-            </Button>
-          )}
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(10)].map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {isAdmin && <th className="px-6 py-3 text-left w-12">
-                    <Checkbox 
-                      checked={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </th>}
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredTracks.map((track) => (
-                  <tr key={track.id} className="hover:bg-gray-50">
-                    {isAdmin && <td className="px-6 py-4">
-                      <Checkbox 
-                        checked={selectedTracks.includes(track.id)}
-                        onCheckedChange={() => handleSelectTrack(track.id)}
-                      />
-                    </td>}
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{track.name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {track.location_city}, {track.location_state}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {track.track_type}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                        track.operational_status === 'Active' ? 'bg-green-100 text-green-800' :
-                        track.operational_status === 'Seasonal' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {track.operational_status || 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(buildRaceCoreUrl({
-                            orgType: 'track',
-                            orgId: track.id,
-                            tab: 'overview',
-                          }))}
-                          title="Open in Race Core"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/race-core/tracks/' + track.id)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        {isAdmin && <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleDelete(track)}
-                           disabled={deleteMutation.isPending}
-                           className={deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-                         >
-                           {deleteMutation.isPending ? (
-                             <div className="text-gray-400"><BurnoutSpinner /></div>
-                           ) : (
-                             <Trash2 className="w-4 h-4 text-red-600" />
-                           )}
-                         </Button>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* ── Duplicate warning ─────────────────────────────────────────────── */}
+        {duplicateWarning && (
+          <div className="flex items-center gap-3 px-5 py-2 border-b border-amber-800/40 bg-amber-900/20 shrink-0">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <p className="text-xs text-amber-400 flex-1">
+              Potential duplicate track records detected.{' '}
+              <Link to={createPageUrl('Diagnostics')} className="underline font-semibold">Open Diagnostics</Link>
+            </p>
+            <button onClick={() => setDuplicateWarning(false)} className="text-amber-600 hover:text-amber-400">
+              <X className="w-3 h-3" />
+            </button>
           </div>
         )}
 
-            {!isLoading && filteredTracks.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                No tracks found
+        {/* ── Header strip ──────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-gray-800/80 shrink-0">
+          {/* Left: identity + stats */}
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+              <span className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-gray-300">
+                Track Records
+              </span>
+            </div>
+            {!isLoading && (
+              <div className="hidden sm:flex items-center gap-5 pl-3 border-l border-gray-800">
+                <StatPill label="Total"    value={tracks.length} />
+                <StatPill label="Active"   value={activeCount}   accent="text-emerald-400" />
+                <StatPill label="Seasonal" value={seasonalCount} accent="text-amber-400" />
+                {draftCount > 0 && (
+                  <StatPill label="Draft" value={draftCount} accent="text-gray-500" />
+                )}
               </div>
             )}
-          </TabsContent>
+          </div>
 
-          <TabsContent value="relationships" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Track Relationships</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Series</p>
-                  <p className="text-lg font-semibold">Host Events</p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Events</p>
-                  <p className="text-lg font-semibold">Hosted</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">Manage track relationships by editing the track's sections.</p>
-            </div>
-          </TabsContent>
+          {/* Right: actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowActivity(v => !v)}
+              className={cn(
+                'h-7 px-3 text-[11px] font-mono rounded border transition-colors',
+                showActivity
+                  ? 'bg-gray-800 border-gray-600 text-gray-200'
+                  : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+              )}
+            >
+              Activity
+            </button>
+            <button
+              onClick={() => navigate('/race-core/tracks/new')}
+              className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3 h-3" />
+              Add Track
+            </button>
+          </div>
+        </div>
 
-          <TabsContent value="publish">
-            <PublishTab 
-              entityCount={tracks.length}
-              draftCount={0}
-              liveCount={tracks.length}
-              hasPublishControl={false}
+        {/* ── Filter rail ───────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-gray-800/60 shrink-0">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[160px] max-w-[260px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search tracks..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full h-7 pl-7 pr-3 text-[11px] font-mono rounded border bg-gray-900 border-gray-700 text-gray-300 placeholder-gray-600 outline-none hover:border-gray-600 focus:border-teal-600/70 transition-colors"
             />
-          </TabsContent>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-400"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
 
-          <TabsContent value="activity">
-            <ActivityTab entityName="Track" />
-          </TabsContent>
-        </Tabs>
-      </ManagementShell>
+          {/* Selects */}
+          <CompactSelect value={filterSurface} onChange={setFilterSurface} options={SURFACE_OPTIONS} placeholder="Surface" />
+          <CompactSelect value={filterRegion}  onChange={setFilterRegion}  options={REGION_OPTIONS}  placeholder="Region"  />
+          <CompactSelect value={filterStatus}  onChange={setFilterStatus}  options={STATUS_OPTIONS}  placeholder="Status"  />
+
+          {/* Clear */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="h-7 px-2.5 text-[10px] font-mono rounded border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors flex items-center gap-1"
+            >
+              <X className="w-2.5 h-2.5" /> Clear
+            </button>
+          )}
+
+          {/* Result count */}
+          <div className="ml-auto text-[10px] font-mono text-gray-700">
+            {filteredTracks.length} / {tracks.length}
+          </div>
+        </div>
+
+        {/* ── Bulk action bar ────────────────────────────────────────────────── */}
+        {isAdmin && selectedTracks.length > 0 && (
+          <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10 shrink-0">
+            <span className="text-xs font-mono text-red-400">{selectedTracks.length} selected</span>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3 h-3" />
+              {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedTracks.length}`}
+            </button>
+            <button
+              onClick={() => setSelectedTracks([])}
+              className="text-[11px] font-mono text-gray-600 hover:text-gray-400"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* ── Main content ──────────────────────────────────────────────────── */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+
+          {/* Records panel */}
+          <div className="flex-1 overflow-y-auto">
+
+            {/* Column headers */}
+            <div className="flex items-center gap-3 px-4 py-1.5 border-b border-gray-800/40 sticky top-0 z-10" style={{ background: '#0e0e0e' }}>
+              {isAdmin && (
+                <div className="shrink-0 w-4">
+                  <Checkbox
+                    checked={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    className="border-gray-700 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 w-3.5 h-3.5"
+                  />
+                </div>
+              )}
+              <ColHeader className="flex-1">Track / Location</ColHeader>
+              <ColHeader className="hidden sm:block w-14 text-center">Surface</ColHeader>
+              <ColHeader className="hidden md:block w-12 text-center">Length</ColHeader>
+              <ColHeader className="hidden lg:block w-20 text-right">Updated</ColHeader>
+              <div className="w-20 shrink-0" /> {/* actions spacer */}
+            </div>
+
+            {/* Rows */}
+            {isLoading ? (
+              <div className="p-4 space-y-1.5">
+                {[...Array(12)].map((_, i) => (
+                  <Skeleton key={i} className="h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
+                ))}
+              </div>
+            ) : filteredTracks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-3">
+                <MapPin className="w-8 h-8 text-gray-800" />
+                <p className="text-xs font-mono text-gray-700 uppercase tracking-widest">
+                  {hasActiveFilters ? 'No tracks match filters' : 'No tracks found'}
+                </p>
+                {hasActiveFilters && (
+                  <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredTracks.map(track => (
+                <TrackRecordRow
+                  key={track.id}
+                  track={track}
+                  isAdmin={isAdmin}
+                  isSelected={selectedTracks.includes(track.id)}
+                  onSelect={handleSelectTrack}
+                  onDelete={handleDelete}
+                  isDeleting={deleteMutation.isPending}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Activity sidebar (toggleable) */}
+          {showActivity && (
+            <div
+              className="w-72 shrink-0 border-l border-gray-800/60 overflow-y-auto"
+              style={{ background: '#0c0c0c' }}
+            >
+              <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800/60">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">Activity Log</span>
+                <button onClick={() => setShowActivity(false)} className="text-gray-700 hover:text-gray-400">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="p-3">
+                <ActivityTab entityName="Track" />
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
     </ManagementLayout>
   );
 }
