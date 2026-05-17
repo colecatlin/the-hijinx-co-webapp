@@ -40,7 +40,7 @@ export default function RecordRowShell({
 
   return (
     <div
-      role="row"
+      role="listitem"
       tabIndex={onClick ? 0 : undefined}
       aria-selected={isSelected}
       aria-label={label ? `${label} record row` : undefined}

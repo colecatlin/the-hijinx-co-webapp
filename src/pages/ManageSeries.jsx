@@ -6,7 +6,7 @@ import { Plus, Trash2, AlertTriangle, X, Activity, Download, Upload } from 'luci
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { cn } from '@/lib/utils';
-import { useEntityEditPermission } from '@/components/access/entityEditPermission';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 
 // RaceCore Records primitives
@@ -39,14 +39,13 @@ export default function ManageSeries() {
   const [selectedSeries,  setSelectedSeries]  = useState([]);
   const [showActivity,    setShowActivity]    = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(false);
+  const [showDeleteConfirm,  setShowDeleteConfirm]  = useState(false);
+  const [seriesToDelete,     setSeriesToDelete]     = useState(null);
+  const [bulkDeleteConfirm,  setBulkDeleteConfirm]  = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
-
-  // Permission check for edit surface (preserved — useEntityEditPermission unchanged)
-  const { canEditManagement: canEditSeriesManagement } =
-    useEntityEditPermission('Series', null, null);
 
   // Duplicate warning on load (unchanged)
   useEffect(() => {
@@ -63,7 +62,7 @@ export default function ManageSeries() {
   // ── Data (unchanged) ──────────────────────────────────────────────────────────
   const { data: series = [], isLoading } = useQuery({
     queryKey: ['series'],
-    queryFn: () => base44.entities.Series.list('-created_date'),
+    queryFn: () => base44.entities.Series.list('-created_date', 500),
   });
 
   // ── Mutations (byte-for-byte identical) ───────────────────────────────────────
@@ -107,17 +106,22 @@ export default function ManageSeries() {
 
   // ── Handlers (unchanged logic) ────────────────────────────────────────────────
   const handleDelete = (id) => {
-    if (confirm('Delete this series?')) {
-      const ser = series.find(s => s.id === id);
-      deleteSeriesMutation.mutate(id, ser);
-    }
+    const ser = series.find(s => s.id === id);
+    setSeriesToDelete(ser);
+    setShowDeleteConfirm(true);
+  };
+  const confirmDelete = () => {
+    if (!seriesToDelete) return;
+    setShowDeleteConfirm(false);
+    deleteSeriesMutation.mutate(seriesToDelete.id, seriesToDelete);
+    setSeriesToDelete(null);
   };
 
-  const handleBulkDelete = () => {
-    if (window.confirm(`Delete ${selectedSeries.length} selected series?`)) {
-      const selectedItems = filteredSeries.filter(s => selectedSeries.includes(s.id));
-      bulkDeleteMutation.mutate(selectedSeries, selectedItems);
-    }
+  const handleBulkDelete = () => setBulkDeleteConfirm(true);
+  const confirmBulkDelete = () => {
+    setBulkDeleteConfirm(false);
+    const selectedItems = filteredSeries.filter(s => selectedSeries.includes(s.id));
+    bulkDeleteMutation.mutate(selectedSeries, selectedItems);
   };
 
   const handleSelectAll        = (checked) => setSelectedSeries(checked ? filteredSeries.map(s => s.id) : []);
@@ -265,6 +269,7 @@ export default function ManageSeries() {
   ) : null;
 
   return (
+    <>
     <ManagementLayout currentPage="ManageSeries">
       <RecordsPageShell
         icon={Activity}
@@ -305,9 +310,40 @@ export default function ManageSeries() {
         </RecordGrid>
 
         {showActivity && (
-          <RecordActivityRail entityName="Series" onClose={() => setShowActivity(false)} />
+          <RecordActivityRail entityName="Series" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
     </ManagementLayout>
+
+    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete series?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <strong>{seriesToDelete?.name}</strong>? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">Yes, delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {selectedSeries.length} series?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <strong>{selectedSeries.length} selected series</strong>? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmBulkDelete} className="bg-red-600 hover:bg-red-700">Yes, delete all</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

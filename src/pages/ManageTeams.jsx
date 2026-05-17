@@ -224,7 +224,7 @@ export default function ManageTeams() {
           </RecordGrid>
 
           {showActivity && (
-            <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} />
+            <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} overlayOnMobile />
           )}
         </RecordsPageShell>
       </ManagementLayout>

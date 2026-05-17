@@ -81,7 +81,7 @@ export default function ManageDrivers() {
 
   // ── Data queries (unchanged keys + fetch params) ──────────────────────────────
   const { data: drivers = [], isLoading } = useQuery({
-    queryKey: ['drivers', 'all'],
+    queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list('-updated_date', 500),
   });
 
@@ -509,7 +509,7 @@ export default function ManageDrivers() {
           </RecordGrid>
 
           {showActivity && (
-            <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} />
+            <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} overlayOnMobile />
           )}
         </RecordsPageShell>
       </ManagementLayout>

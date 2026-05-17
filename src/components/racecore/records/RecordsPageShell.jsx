@@ -11,7 +11,8 @@ import TacticalStatStrip from './TacticalStatStrip';
  *   stats       — Array<{ label, value, accent? }> passed to TacticalStatStrip
  *   isLoading   — hides stats while loading
  *   actions     — ReactNode, rendered right side of header
- *   alert       — ReactNode, optional full-width alert strip above header
+ *   alert       — ReactNode, narrow warning/notice strip above header (e.g. duplicate warnings)
+ *   panel       — ReactNode, larger collapsible tool panel (e.g. bulk scheduler, import tools)
  *   bulkBar     — ReactNode, optional bulk-action strip rendered below filter rail
  *   filterRail  — ReactNode, rendered as the filter row
  *   children    — main content area (grid + optional activity rail)
@@ -23,6 +24,7 @@ export default function RecordsPageShell({
   isLoading = false,
   actions,
   alert,
+  panel,
   bulkBar,
   filterRail,
   children,
@@ -61,6 +63,13 @@ export default function RecordsPageShell({
       {filterRail && (
         <div className="shrink-0">
           {filterRail}
+        </div>
+      )}
+
+      {/* Panel slot — for collapsible utility tools (scheduler, importer, etc.) */}
+      {panel && (
+        <div className="shrink-0">
+          {panel}
         </div>
       )}
 

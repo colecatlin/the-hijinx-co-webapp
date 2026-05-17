@@ -20,9 +20,12 @@ import { cn } from '@/lib/utils';
 function CompactSelect({ value, onChange, options, placeholder }) {
   return (
     <div className="relative shrink-0">
+      <label htmlFor={`filter-${placeholder}`} className="sr-only">{placeholder} filter</label>
       <select
+        id={`filter-${placeholder}`}
         value={value}
         onChange={e => onChange(e.target.value)}
+        aria-label={`Filter by ${placeholder}`}
         className={cn(
           'appearance-none h-7 pl-2.5 pr-6 text-[11px] font-mono rounded border transition-colors outline-none cursor-pointer',
           'bg-gray-900 border-gray-700 text-gray-300',
@@ -58,12 +61,15 @@ export default function RecordsFilterRail({
 
       {/* Search */}
       <div className="relative flex-1 min-w-[160px] max-w-[260px]">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600 pointer-events-none" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600 pointer-events-none" aria-hidden="true" />
+        <label htmlFor="records-search" className="sr-only">{searchPlaceholder}</label>
         <input
+          id="records-search"
           type="text"
           placeholder={searchPlaceholder}
           value={search}
           onChange={e => onSearch(e.target.value)}
+          aria-label={searchPlaceholder}
           className="w-full h-7 pl-7 pr-7 text-[11px] font-mono rounded border bg-gray-900 border-gray-700 text-gray-300 placeholder-gray-600 outline-none hover:border-gray-600 focus:border-teal-600/70 transition-colors"
         />
         {search && (
@@ -91,9 +97,10 @@ export default function RecordsFilterRail({
       {hasActiveFilters && (
         <button
           onClick={onClearAll}
+          aria-label="Clear all filters"
           className="h-7 px-2.5 text-[10px] font-mono rounded border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors flex items-center gap-1 shrink-0"
         >
-          <X className="w-2.5 h-2.5" /> Clear
+          <X className="w-2.5 h-2.5" aria-hidden="true" /> Clear
         </button>
       )}
 

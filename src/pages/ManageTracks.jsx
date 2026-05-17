@@ -6,6 +6,7 @@ import { Plus, Trash2, AlertTriangle, X, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { cn } from '@/lib/utils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // RaceCore Records primitives
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
@@ -34,6 +35,9 @@ export default function ManageTracks() {
   const [selectedTracks, setSelectedTracks] = useState([]);
   const [showActivity,   setShowActivity]   = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [trackToDelete,    setTrackToDelete]    = useState(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -103,16 +107,18 @@ export default function ManageTracks() {
   const handleSelectTrack = (id) => setSelectedTracks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   // ── Actions (unchanged) ───────────────────────────────────────────────────────
-  const handleDelete = (track) => {
-    if (window.confirm(`Delete ${track.name}?`)) {
-      deleteMutation.mutate({ id: track.id, name: track.name });
-    }
+  const handleDelete = (track) => { setTrackToDelete(track); setShowDeleteConfirm(true); };
+  const confirmDelete = () => {
+    if (!trackToDelete) return;
+    setShowDeleteConfirm(false);
+    deleteMutation.mutate({ id: trackToDelete.id, name: trackToDelete.name });
+    setTrackToDelete(null);
   };
-  const handleBulkDelete = () => {
-    if (window.confirm(`Delete ${selectedTracks.length} selected track(s)?`)) {
-      const items = filteredTracks.filter(t => selectedTracks.includes(t.id));
-      bulkDeleteMutation.mutate({ ids: selectedTracks, names: items.map(t => t.name) });
-    }
+  const handleBulkDelete = () => setBulkDeleteConfirm(true);
+  const confirmBulkDelete = () => {
+    setBulkDeleteConfirm(false);
+    const items = filteredTracks.filter(t => selectedTracks.includes(t.id));
+    bulkDeleteMutation.mutate({ ids: selectedTracks, names: items.map(t => t.name) });
   };
   const clearFilters = () => { setSearchQuery(''); setFilterSurface(''); setFilterStatus(''); setFilterRegion(''); };
 
@@ -181,7 +187,7 @@ export default function ManageTracks() {
     <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10">
       <span className="text-xs font-mono text-red-400">{selectedTracks.length} selected</span>
       <button
-        onClick={handleBulkDelete}
+        onClick={() => setBulkDeleteConfirm(true)}
         disabled={bulkDeleteMutation.isPending}
         className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
       >
@@ -195,6 +201,7 @@ export default function ManageTracks() {
   ) : null;
 
   return (
+    <>
     <ManagementLayout currentPage="ManageTracks">
       <RecordsPageShell
         icon={MapPin}
@@ -235,9 +242,40 @@ export default function ManageTracks() {
         </RecordGrid>
 
         {showActivity && (
-          <RecordActivityRail entityName="Track" onClose={() => setShowActivity(false)} />
+          <RecordActivityRail entityName="Track" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
     </ManagementLayout>
+
+    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete track?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <strong>{trackToDelete?.name}</strong>? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">Yes, delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {selectedTracks.length} track(s)?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <strong>{selectedTracks.length} selected tracks</strong>? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmBulkDelete} className="bg-red-600 hover:bg-red-700">Yes, delete all</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

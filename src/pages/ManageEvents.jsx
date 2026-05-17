@@ -65,7 +65,7 @@ export default function ManageEvents() {
   // ── Data queries (unchanged keys + fetch params) ──────────────────────────────
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list('id', 500),
+    queryFn: () => base44.entities.Event.list('-event_date', 500),
   });
 
   const { data: tracks = [] } = useQuery({
@@ -363,7 +363,7 @@ export default function ManageEvents() {
           actions={headerActions}
           filterRail={filterRail}
           bulkBar={bulkBar}
-          alert={schedulerPanel}
+          panel={schedulerPanel}
         >
           <RecordGrid
             isLoading={isLoading}
@@ -394,7 +394,7 @@ export default function ManageEvents() {
           </RecordGrid>
 
           {showActivity && (
-            <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} />
+            <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} overlayOnMobile />
           )}
         </RecordsPageShell>
       </ManagementLayout>
