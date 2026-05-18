@@ -151,6 +151,56 @@ export function isScoringSession(session) {
 }
 
 /**
+ * R8AH — Group sessions by EventDay record (authoritative FK linkage).
+ * Falls back to 'Unassigned' group for sessions without event_day_id.
+ *
+ * Returns: Array<{ eventDay: EventDay|null, dayLabel: string, sessions: Session[] }>
+ * Groups are ordered by EventDay.sort_order, then day_number, with Unassigned last.
+ */
+export function groupSessionsByEventDay(sessions, eventDays = []) {
+  const sorted = sortSessionsChronologically(sessions);
+
+  // Build an ordered day list: sort eventDays by sort_order/day_number
+  const orderedDays = [...eventDays].sort((a, b) =>
+    (a.sort_order ?? a.day_number ?? 0) - (b.sort_order ?? b.day_number ?? 0)
+  );
+
+  // Map event_day_id → EventDay record
+  const dayById = {};
+  for (const d of orderedDays) dayById[d.id] = d;
+
+  // Bucket sessions into day groups
+  const dayBuckets = {}; // eventDayId → sessions[]
+  const unassigned = [];
+
+  for (const session of sorted) {
+    if (session.event_day_id && dayById[session.event_day_id]) {
+      if (!dayBuckets[session.event_day_id]) dayBuckets[session.event_day_id] = [];
+      dayBuckets[session.event_day_id].push(session);
+    } else {
+      unassigned.push(session);
+    }
+  }
+
+  const result = [];
+
+  // Emit groups in EventDay order (skip days with no sessions)
+  for (const day of orderedDays) {
+    const daySessions = dayBuckets[day.id];
+    if (daySessions && daySessions.length > 0) {
+      result.push({ eventDay: day, dayLabel: day.label, sessions: daySessions });
+    }
+  }
+
+  // Unassigned group last
+  if (unassigned.length > 0) {
+    result.push({ eventDay: null, dayLabel: 'Unassigned', sessions: unassigned });
+  }
+
+  return result;
+}
+
+/**
  * Check if a qualifying session exists for a class before a final.
  * Returns true if there's a Qualifying session for the same class.
  * Visibility-only — no enforcement.

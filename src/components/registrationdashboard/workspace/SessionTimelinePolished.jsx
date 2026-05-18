@@ -5,8 +5,9 @@
  * Read-only; no mutations.
  */
 import React, { useMemo } from 'react';
-import { CheckCircle2, Circle, Zap, Lock } from 'lucide-react';
+import { CheckCircle2, Circle, Zap, Lock, CalendarDays } from 'lucide-react';
 import { calculateSessionReadiness } from '../ops/sessionReadinessCalculator';
+import { groupSessionsByEventDay, sortSessionsChronologically } from '../ops/sessionOrdering';
 
 function TimelineSession({ session, results, entries, isActive, isNext, index }) {
   const readiness = useMemo(() => calculateSessionReadiness(session, entries, results), [session, entries, results]);
@@ -77,9 +78,16 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
   );
 }
 
-export default function SessionTimelinePolished({ sessions = [], results = [], entries = [] }) {
+export default function SessionTimelinePolished({ sessions = [], results = [], entries = [], eventDays = [] }) {
   const activeSession = useMemo(() => sessions.find(s => s.status === 'Live'), [sessions]);
   const nextSession = useMemo(() => sessions.find(s => s.status !== 'Locked' && s.status !== 'Completed' && s !== activeSession), [sessions, activeSession]);
+
+  // R8AH: group by EventDay when available, otherwise render flat
+  const useEventDayGrouping = eventDays.length > 0;
+  const dayGroups = useMemo(
+    () => useEventDayGrouping ? groupSessionsByEventDay(sessions, eventDays) : null,
+    [sessions, eventDays, useEventDayGrouping]
+  );
 
   if (sessions.length === 0) {
     return (
@@ -89,6 +97,65 @@ export default function SessionTimelinePolished({ sessions = [], results = [], e
     );
   }
 
+  // EventDay-grouped rendering
+  if (dayGroups) {
+    return (
+      <div className="space-y-4">
+        {dayGroups.map(({ eventDay, dayLabel, sessions: daySessions }) => {
+          // Build display label for the day header
+          let headerLabel = dayLabel;
+          if (eventDay?.date) {
+            try {
+              const d = new Date(eventDay.date + 'T12:00:00');
+              const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+              const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              headerLabel = `${eventDay.label} · ${weekday}, ${dateStr}`;
+            } catch { headerLabel = eventDay?.label || dayLabel; }
+          }
+
+          // EventDay status badge style
+          const STATUS_STYLES = {
+            Active:    'text-blue-400 border-blue-800',
+            Completed: 'text-green-400 border-green-800',
+            Cancelled: 'text-red-400 border-red-800',
+          };
+          const statusStyle = eventDay?.status ? STATUS_STYLES[eventDay.status] : null;
+
+          return (
+            <div key={dayLabel} className="bg-gray-900/40 border border-gray-800/50 rounded-lg overflow-hidden">
+              {/* Day header */}
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800/60" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <CalendarDays className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 flex-1">{headerLabel}</p>
+                {statusStyle && (
+                  <span className={`text-[10px] font-mono px-1.5 py-px rounded border ${statusStyle}`}>
+                    {eventDay.status}
+                  </span>
+                )}
+                <span className="text-[10px] font-mono text-gray-600">{daySessions.length} sessions</span>
+              </div>
+              {/* Sessions */}
+              <div className="p-4 space-y-3">
+                {daySessions.map((session, i) => (
+                  <TimelineSession
+                    key={session.id}
+                    session={session}
+                    results={results}
+                    entries={entries}
+                    isActive={session === activeSession}
+                    isNext={session === nextSession}
+                    index={i}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Flat rendering (no EventDay data)
   return (
     <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4 space-y-6">
       <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Weekend Progression</p>

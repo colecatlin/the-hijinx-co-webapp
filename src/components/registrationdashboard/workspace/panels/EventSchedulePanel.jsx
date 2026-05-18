@@ -11,6 +11,7 @@ import { useEventWorkspace } from '../EventWorkspaceContext';
 import SessionTimelinePolished from '../SessionTimelinePolished';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Calendar } from 'lucide-react';
+import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -44,6 +45,14 @@ export default function EventSchedulePanel() {
     ...DQ,
   });
 
+  // R8AH: EventDay records for grouped schedule display
+  const { data: eventDays = [] } = useQuery({
+    queryKey: REG_QK.eventDays(eventId),
+    queryFn: () => base44.entities.EventDay.filter({ event_id: eventId }, 'sort_order', 50),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
   if (!selectedEvent) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-2">
@@ -68,6 +77,7 @@ export default function EventSchedulePanel() {
         sessions={sessions}
         results={results}
         entries={[]}
+        eventDays={eventDays}
       />
     </div>
   );

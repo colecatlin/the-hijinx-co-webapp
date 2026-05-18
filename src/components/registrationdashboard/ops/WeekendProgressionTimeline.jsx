@@ -7,7 +7,7 @@
  */
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Calendar } from 'lucide-react';
-import { groupSessionsByDay, groupBySessionType } from './sessionOrdering';
+import { groupSessionsByDay, groupSessionsByEventDay, groupBySessionType } from './sessionOrdering';
 import {
   deriveSessionOperationalState,
   deriveEventOperationalStatus,
@@ -16,6 +16,7 @@ import {
 } from './sessionStateIntelligence';
 import SessionCard from './SessionCard';
 import ClassProgressionView from './ClassProgressionView';
+import EventDayGroupHeader from './EventDayGroupHeader';
 
 // Part 4 — View mode toggle labels
 const VIEW_MODES = [
@@ -31,6 +32,7 @@ export default function WeekendProgressionTimeline({
   selectedEvent,
   selectedSessionId,
   onSelectSession,
+  eventDays = [],   // R8AH: EventDay records — optional, falls back to scheduled_time grouping
 }) {
   const [collapsedDays, setCollapsedDays] = useState({});
   // Part 7: preserve collapse state when toggling — viewMode change does NOT reset collapsedDays
@@ -51,7 +53,11 @@ export default function WeekendProgressionTimeline({
   };
 
   const eventStartDate = selectedEvent?.event_date;
-  const dayGroups = groupSessionsByDay(sessions, eventStartDate);
+  // R8AH: prefer EventDay-aware grouping when EventDay records are available
+  const useEventDayGrouping = eventDays.length > 0;
+  const dayGroups = useEventDayGrouping
+    ? groupSessionsByEventDay(sessions, eventDays)
+    : groupSessionsByDay(sessions, eventStartDate);
 
   // Derived event operational status
   const derivedEventStatus = deriveEventOperationalStatus(sessions, results);
@@ -122,7 +128,7 @@ export default function WeekendProgressionTimeline({
         />
       )}
 
-      {viewMode === 'day' && dayGroups.map(({ dayLabel, sessions: daySessions }) => {
+      {viewMode === 'day' && dayGroups.map(({ dayLabel, sessions: daySessions, eventDay }) => {
         const isCollapsed = !!collapsedDays[dayLabel];
         const typeGroups = groupBySessionType(daySessions);
 
@@ -134,36 +140,16 @@ export default function WeekendProgressionTimeline({
 
         return (
           <div key={dayLabel} className="rounded-lg border border-gray-800 overflow-hidden">
-            {/* Day header */}
-            <button
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                allDayDone
-                  ? 'bg-green-950/30'
-                  : anyDayActive
-                  ? 'bg-[#1e1e22]'
-                  : 'bg-[#171717]'
-              } hover:bg-[#1e1e22]`}
-              onClick={() => toggleDay(dayLabel)}
-            >
-              {/* Day indicator */}
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                allDayDone ? 'bg-green-400' : anyDayActive ? 'bg-blue-400 animate-pulse' : 'bg-gray-600'
-              }`} />
-
-              <span className="font-bold text-sm text-white flex-1">{dayLabel}</span>
-
-              {/* Day summary badges */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-gray-500">{daySessions.length} sessions</span>
-                {allDayDone && <span className="text-xs text-green-400 font-semibold">Complete ✓</span>}
-              </div>
-
-              {isCollapsed ? (
-                <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              ) : (
-                <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              )}
-            </button>
+            {/* R8AH: EventDayGroupHeader handles both EventDay-aware and fallback display */}
+            <EventDayGroupHeader
+              eventDay={eventDay ?? null}
+              dayLabel={dayLabel}
+              sessionCount={daySessions.length}
+              isCollapsed={isCollapsed}
+              onToggle={() => toggleDay(dayLabel)}
+              allDone={allDayDone}
+              anyActive={anyDayActive}
+            />
 
             {/* Day content */}
             {!isCollapsed && (

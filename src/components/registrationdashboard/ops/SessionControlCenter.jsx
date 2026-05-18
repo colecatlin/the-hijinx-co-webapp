@@ -11,6 +11,7 @@ import WeekendProgressionTimeline from './WeekendProgressionTimeline';
 import { Badge } from '@/components/ui/badge';
 import { sortSessionsChronologically } from './sessionOrdering';
 import { deriveEventOperationalStatus, EVENT_STATUS_CONFIG } from './sessionStateIntelligence';
+import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -34,6 +35,14 @@ export default function SessionControlCenter({
   const { data: eventClasses = [] } = useQuery({
     queryKey: ['eventClasses', eventId],
     queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }) : Promise.resolve([])),
+    enabled: !!eventId,
+    ...DQ,
+  });
+
+  // R8AH: Fetch EventDay records for grouping — read-only, no authority changes
+  const { data: eventDays = [] } = useQuery({
+    queryKey: REG_QK.eventDays(eventId),
+    queryFn: () => base44.entities.EventDay.filter({ event_id: eventId }, 'sort_order', 50),
     enabled: !!eventId,
     ...DQ,
   });
@@ -80,6 +89,7 @@ export default function SessionControlCenter({
         selectedEvent={selectedEvent}
         selectedSessionId={selectedSessionId}
         onSelectSession={onSelectSession}
+        eventDays={eventDays}
       />
     </div>
   );
