@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, RefreshCw, CheckCircle2, X } from 'lucide-react';
+import { AlertCircle, RefreshCw, CheckCircle2, X, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import { useEventWorkspace } from './workspace/EventWorkspaceContext';
 import { REG_QK } from './queryKeys';
 import StandingsRecordGrid from './standings/StandingsRecordGrid';
@@ -254,10 +255,21 @@ export default function PointsAndStandingsManager({
       {/* Standings — tactical grid */}
       <Card className="bg-[#171717] border-gray-800">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-white">
-            Standings
-            {standings.length > 0 && <span className="ml-2 text-xs font-normal text-gray-500">{standings.length} entries</span>}
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-sm font-semibold text-white">
+              Standings
+              {standings.length > 0 && <span className="ml-2 text-xs font-normal text-gray-500">{standings.length} entries</span>}
+            </CardTitle>
+            {targetSeriesId && targetSeasonYear && (
+              <Link
+                to={`/racecore/standings/${targetSeriesId}/${targetSeasonYear}`}
+                className="flex items-center gap-1 text-[10px] font-mono text-gray-600 hover:text-teal-400 transition-colors"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Full Standings
+              </Link>
+            )}
+          </div>
           {standings.length === 0 && canManageStandings && resolvedRuleset && (
             <p className="text-xs text-gray-600 mt-1">Run a recalculation to generate standings from official results.</p>
           )}

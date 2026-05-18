@@ -75,6 +75,7 @@ import ManageTeams from './pages/ManageTeams';
 import ManageTracks from './pages/ManageTracks';
 import ManageSeries from './pages/ManageSeries';
 import ManageEvents from './pages/ManageEvents';
+import RaceCoreStandings from './pages/RaceCoreStandings';
 import { Navigate } from 'react-router-dom';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -204,6 +205,11 @@ const AuthenticatedApp = () => {
       <Route path="/racecore" element={<LayoutWrapper currentPageName="RaceCoreDashboard"><RaceCoreDashboard /></LayoutWrapper>} />
       {/* Legacy route redirect — preserves /racecore but old links that hardcoded RegistrationDashboard still land here */}
       <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
+
+      {/* R8AK: Canonical RaceCore Standings routes */}
+      <Route path="/racecore/standings" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
+      <Route path="/racecore/standings/:seriesId" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
+      <Route path="/racecore/standings/:seriesId/:seasonYear" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
 
       {/* R8AA: RaceCore Records routes — reuse Manage page components directly.
           ManagementLayout provides its own full shell, so these routes have NO LayoutWrapper. */}

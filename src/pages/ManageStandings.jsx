@@ -66,6 +66,21 @@ export default function ManageStandings() {
           </Button>
         }
       >
+        {/* Soft deprecation notice */}
+        <div className="mb-4 flex items-start gap-3 px-4 py-3 rounded-lg border border-amber-800/40 bg-amber-950/15">
+          <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-amber-300">Standings management has moved</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">
+              Use the{' '}
+              <a href="/racecore/standings" className="underline text-amber-300 hover:text-amber-200">
+                RaceCore Standings
+              </a>{' '}
+              page for series-scoped standings authority. This page remains for legacy inspection only.
+            </p>
+          </div>
+        </div>
+
         {/* Authority notice */}
         <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded-lg border border-blue-800/40 bg-blue-950/20">
           <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
