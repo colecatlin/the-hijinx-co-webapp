@@ -58,7 +58,7 @@ export default function useDashboardQueries({ dashboardContext, selectedEvent, s
   // ── Standings ────────────────────────────────────────────────────────────────
   const standingsQuery = useQuery({
     queryKey: REG_QK.standings(seriesId, seasonYear),
-    queryFn: () => base44.entities.Standings.filter({ series_id: seriesId, season: seasonYear }),
+    queryFn: () => base44.entities.Standings.filter({ series_id: seriesId, season_year: seasonYear }),
     enabled: !!seriesId,
     ...DQ,
   });

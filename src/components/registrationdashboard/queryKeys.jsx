@@ -18,6 +18,7 @@ export const REG_QK = {
   driverPrograms: (eventId)           => ['reg', 'driverPrograms', eventId ?? null],
   entries: (eventId)                  => ['reg', 'entries', eventId ?? null],
   standings: (seriesId, season)       => ['reg', 'standings', seriesId ?? null, season ?? null],
+  eventDays: (eventId)                => ['reg', 'eventDays', eventId ?? null],
   operationLogs: (eventId)            => ['reg', 'operationLogs', eventId ?? null],
   integrations: (orgType, orgId)      => ['reg', 'integrations', orgType ?? null, orgId ?? null],
   exports: (eventId)                  => ['reg', 'exports', eventId ?? null],

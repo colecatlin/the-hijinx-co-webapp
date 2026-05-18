@@ -27,8 +27,9 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'event_updated':
     case 'event_status_changed':
     case 'event_published':
-      broad.push(['events'], ['seasonCalendarEvents'], ['seasonCalendarSessions'], ['seasonCalendarEntries'], ['seasonCalendarResults'], ['selectedEvent'], ['operationLogs']);
-      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
+    case 'event_settings_updated':
+      broad.push(['events'], ['seasonCalendarEvents'], ['seasonCalendarSessions'], ['seasonCalendarEntries'], ['seasonCalendarResults'], ['selectedEvent'], ['operationLogs'], ['eventDays']);
+      if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId), REG_QK.eventDays(eventId));
       break;
 
     case 'event_collaboration_requested':
@@ -61,8 +62,8 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'session_start':
     case 'session_end':
     case 'session_cancel':
-      broad.push(['sessions'], ['session'], ['seasonCalendarSessions'], ['operationLogs'], ['rc_sessions']);
-      if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
+      broad.push(['sessions'], ['session'], ['seasonCalendarSessions'], ['operationLogs'], ['rc_sessions'], ['eventDays']);
+      if (eventId) exact.push(REG_QK.sessions(eventId), REG_QK.operationLogs(eventId), REG_QK.eventDays(eventId));
       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
       break;
 
@@ -93,7 +94,6 @@ function getKeysForOperation(operationType, payload = {}) {
     case 'session_marked_provisional':
     case 'session_published_official':
     case 'session_locked':
-    case 'standings_recalculated':
     case 'standings_published':
       broad.push(['results'], ['sessions'], ['standings'], ['operationLogs'], ['overview']);
       if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.operationLogs(eventId));
@@ -154,9 +154,10 @@ function getKeysForOperation(operationType, payload = {}) {
 
     case 'standings_recalculated':
     case 'standings_updated':
-       broad.push(['standings'], ['results'], ['sessions'], ['driverPrograms'], ['series'], ['events'], ['entries'], ['operationLogs']);
+       broad.push(['standings'], ['results'], ['sessions'], ['drivers'], ['driverPrograms'], ['series'], ['events'], ['entries'], ['operationLogs'], ['overview']);
        if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
        if (eventId) exact.push(REG_QK.operationLogs(eventId), REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId));
+       if (eventId) exact.push(['overview', eventId], ['officialResults', eventId]);
        break;
 
     case 'points_config_updated':
@@ -169,12 +170,6 @@ function getKeysForOperation(operationType, payload = {}) {
        if (seriesId) exact.push(REG_QK.standings(seriesId, seasonYear || 'any'));
        break;
     
-    case 'standings_recalculated':
-       broad.push(['standings'], ['drivers'], ['events'], ['operationLogs']);
-       if (eventId) exact.push(REG_QK.event(eventId), REG_QK.operationLogs(eventId));
-       if (seriesId && seasonYear) exact.push(REG_QK.standings(seriesId, seasonYear));
-       break;
-
     case 'import_completed':
       broad.push(['results'], ['sessions'], ['entries'], ['operationLogs']);
       if (eventId) exact.push(REG_QK.results(eventId), REG_QK.sessions(eventId), REG_QK.entries(eventId), REG_QK.operationLogs(eventId));

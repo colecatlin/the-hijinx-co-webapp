@@ -9,6 +9,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +33,7 @@ export default function EventDayManager({ event, isAdmin }) {
   const [savingId, setSavingId] = useState(null);
 
   const { data: eventDays = [], isLoading } = useQuery({
-    queryKey: ['eventDays', event?.id],
+    queryKey: REG_QK.eventDays(event?.id),
     queryFn: () => base44.entities.EventDay.filter({ event_id: event.id }, 'sort_order', 50),
     enabled: !!event?.id,
   });
@@ -46,7 +47,7 @@ export default function EventDayManager({ event, isAdmin }) {
   const sessionDayIds = useMemo(() => new Set(sessions.map(s => s.event_day_id).filter(Boolean)), [sessions]);
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['eventDays', event?.id] });
+    queryClient.invalidateQueries({ queryKey: REG_QK.eventDays(event?.id) });
   };
 
   // Build expected days from event date range
