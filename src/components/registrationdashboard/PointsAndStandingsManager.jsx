@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEventWorkspace } from './workspace/EventWorkspaceContext';
+import { REG_QK } from './queryKeys';
 
 export default function PointsAndStandingsManager({
   selectedEvent,
@@ -67,17 +68,25 @@ export default function PointsAndStandingsManager({
   const resolvedRuleset = rulesetResolution?.ruleset;
   const resolutionSource = rulesetResolution?.source;
 
-  const { data: standings = [] } = useQuery({
-    queryKey: ['standings', targetSeriesId, targetSeasonYear, targetSeriesClassId],
+  // R8AI: Migrated to REG_QK.standings(seriesId, seasonYear) — class filtering done client-side
+  const { data: standingsRaw = [] } = useQuery({
+    queryKey: REG_QK.standings(targetSeriesId, targetSeasonYear),
     queryFn: async () => {
       if (!targetSeriesId) return [];
       const query = { series_id: targetSeriesId };
       if (targetSeasonYear) query.season_year = targetSeasonYear;
-      if (targetSeriesClassId) query.series_class_id = targetSeriesClassId;
       return await base44.entities.Standings.filter(query).catch(() => []);
     },
     enabled: !!targetSeriesId
   });
+
+  // Client-side class filter (no separate cache namespace needed)
+  const standings = useMemo(() =>
+    targetSeriesClassId
+      ? standingsRaw.filter(s => s.series_class_id === targetSeriesClassId)
+      : standingsRaw,
+    [standingsRaw, targetSeriesClassId]
+  );
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['drivers'],
@@ -103,7 +112,11 @@ export default function PointsAndStandingsManager({
           event_id: targetEventId || null
         });
         if (response.data?.ok) {
-          await queryClient.invalidateQueries({ queryKey: ['standings'] });
+          // R8AI: exact targeted invalidation + broad fallback
+          if (targetSeriesId && targetSeasonYear) {
+            queryClient.invalidateQueries({ queryKey: REG_QK.standings(targetSeriesId, targetSeasonYear), exact: true });
+          }
+          queryClient.invalidateQueries({ queryKey: ['standings'] });
         }
         return response.data;
       } finally {

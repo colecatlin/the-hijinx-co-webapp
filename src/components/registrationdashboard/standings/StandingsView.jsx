@@ -56,8 +56,9 @@ export default function StandingsView({ standings, drivers }) {
         <CardTitle className="text-white">Standings</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="border border-gray-700 rounded-lg overflow-hidden">
-          <Table>
+        {/* R8AI: overflow-x-auto wrapper for mobile safety */}
+        <div className="border border-gray-700 rounded-lg overflow-hidden overflow-x-auto">
+          <Table className="min-w-[500px]">
             <TableHeader className="bg-[#171717]">
               <TableRow>
                 <TableHead className="text-gray-400 w-12">Pos</TableHead>
@@ -66,7 +67,6 @@ export default function StandingsView({ standings, drivers }) {
                 <TableHead className="text-gray-400 text-right">Events</TableHead>
                 <TableHead className="text-gray-400 text-right">Wins</TableHead>
                 <TableHead className="text-gray-400 text-right">Podiums</TableHead>
-                <TableHead className="text-gray-400 text-right">Bonus</TableHead>
                 <TableHead className="text-gray-400 text-xs">Updated</TableHead>
               </TableRow>
             </TableHeader>
@@ -106,9 +106,6 @@ export default function StandingsView({ standings, drivers }) {
                     </TableCell>
                     <TableCell className="text-right text-gray-400 text-sm">
                       {s.podiums || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-gray-400 text-sm">
-                      {s.bonus_points || 0}
                     </TableCell>
                     <TableCell className="text-gray-500 text-xs">
                       <div className="flex items-center justify-between">
