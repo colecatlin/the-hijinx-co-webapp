@@ -8,6 +8,7 @@
  * or trigger recalculateStandings from Race Operations Hub.
  */
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -73,9 +74,9 @@ export default function ManageStandings() {
             <p className="text-sm font-semibold text-amber-300">Standings management has moved</p>
             <p className="text-xs text-amber-400/80 mt-0.5">
               Use the{' '}
-              <a href="/racecore/standings" className="underline text-amber-300 hover:text-amber-200">
+              <Link to="/racecore/standings" className="underline text-amber-300 hover:text-amber-200">
                 RaceCore Standings
-              </a>{' '}
+              </Link>{' '}
               page for series-scoped standings authority. This page remains for legacy inspection only.
             </p>
           </div>

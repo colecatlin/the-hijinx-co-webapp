@@ -22,6 +22,7 @@ import {
   User,
   MapPin,
   MonitorPlay,
+  BarChart3,
 } from 'lucide-react';
 
 /**
@@ -54,6 +55,7 @@ export const RACE_CORE_NAV_GROUPS = [
     items: [
       { tab: 'eventBuilder',    label: 'Event Setup',        icon: Plus,           canTabKey: 'event_builder' },
       { tab: 'integrations',    label: 'Integrations',       icon: Plug,           canTabKey: 'integrations' },
+      { href: '/racecore/standings', label: 'Standings',      icon: BarChart3,      canTabKey: null },
     ],
   },
   {

@@ -11,13 +11,12 @@
  * Operational recalculation: EventFile only (via recalculateStandings).
  * This surface: PRESENTATION + INSPECTION only.
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 import StandingsRecordGrid from '@/components/registrationdashboard/standings/StandingsRecordGrid';
-import TacticalStatStrip from '@/components/racecore/records/TacticalStatStrip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Trophy, ChevronRight } from 'lucide-react';
@@ -106,6 +105,20 @@ export default function RaceCoreStandings() {
   const [selectedSeriesId, setSelectedSeriesId] = useState(paramSeriesId || null);
   const resolvedSeriesId = selectedSeriesId || seriesList[0]?.id || null;
   const selectedSeries = seriesList.find(s => s.id === resolvedSeriesId);
+
+  // Sync URL params to state when they change (browser back/forward, etc.)
+  useEffect(() => {
+    if (paramSeriesId && paramSeriesId !== selectedSeriesId) {
+      setSelectedSeriesId(paramSeriesId);
+      setSelectedClassId(null); // Reset class filter when series changes
+    }
+  }, [paramSeriesId]);
+
+  useEffect(() => {
+    if (paramSeasonYear && paramSeasonYear !== selectedSeason) {
+      setSelectedSeason(paramSeasonYear);
+    }
+  }, [paramSeasonYear]);
 
   // ── Season derivation from standings records
   const { data: allStandingsForSeries = [], isLoading: standingsLoading } = useQuery({
