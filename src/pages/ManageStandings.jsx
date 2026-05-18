@@ -1,46 +1,57 @@
 /**
  * ManageStandings — READ-ONLY INSPECT MODE
  *
- * R8AI: Direct standings mutations (create, edit, delete, import, bulk delete)
- * have been removed. Standings are computed snapshots derived from Results via
- * recalculateStandings. Direct editing bypasses the authority chain and breaks
- * the determinism guarantee.
+ * R8AI: Direct standings mutations removed. Standings are computed snapshots.
+ * R8AJ: Modernized to tactical dark styling using StandingsRecordGrid.
  *
- * To rebuild standings: use EventFile → Standings tab → Recalculate,
- * or trigger recalculateStandings from the Race Operations Hub.
+ * To rebuild: EventFile → Standings tab → Recalculate,
+ * or trigger recalculateStandings from Race Operations Hub.
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Search, Download, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Info, Search, Download } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
-import { Button } from '@/components/ui/button';
+import StandingsRecordGrid from '@/components/registrationdashboard/standings/StandingsRecordGrid';
 
 export default function ManageStandings() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: entries = [], isLoading } = useQuery({
+  const { data: standings = [], isLoading } = useQuery({
     queryKey: ['standings'],
     queryFn: () => base44.entities.Standings.list('-season_year'),
   });
 
-  const filteredEntries = entries.filter(entry =>
-    entry.driver_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.series_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.season_year?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.series_class_id?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => base44.entities.Driver.list('first_name', 500),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const filtered = useMemo(() => {
+    if (!searchQuery) return standings;
+    const q = searchQuery.toLowerCase();
+    return standings.filter(s =>
+      s.driver_id?.toLowerCase().includes(q) ||
+      s.series_id?.toLowerCase().includes(q) ||
+      s.season_year?.toLowerCase().includes(q) ||
+      s.series_class_id?.toLowerCase().includes(q) ||
+      drivers.find(d => d.id === s.driver_id && (
+        `${d.first_name} ${d.last_name}`.toLowerCase().includes(q)
+      ))
+    );
+  }, [standings, drivers, searchQuery]);
 
   const handleExport = () => {
-    const dataStr = JSON.stringify(entries, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `standings-export-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
+    const blob = new Blob([JSON.stringify(standings, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `standings-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -48,103 +59,44 @@ export default function ManageStandings() {
     <ManagementLayout currentPage="ManageStandings">
       <ManagementShell
         title="Standings"
-        subtitle="Championship standings — read-only inspect view"
+        subtitle="Championship standings — read-only inspection"
         actions={
-          <Button variant="outline" onClick={handleExport} disabled={entries.length === 0}>
-            <Download className="w-4 h-4 mr-2" />Export JSON
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={standings.length === 0}>
+            <Download className="w-3.5 h-3.5 mr-1.5" />Export JSON
           </Button>
         }
       >
         {/* Authority notice */}
-        <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-lg border border-blue-800/50 bg-blue-950/20">
+        <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded-lg border border-blue-800/40 bg-blue-950/20">
           <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-blue-300">Standings are computed snapshots</p>
             <p className="text-xs text-blue-400/80 mt-0.5">
-              Direct editing is disabled. Standings are rebuilt automatically from official Results
-              via <span className="font-mono text-blue-300">recalculateStandings</span>.
-              To rebuild: open an Event in Race Control → Standings tab → Recalculate.
+              Direct editing is disabled. Rebuild standings from{' '}
+              <span className="font-mono text-blue-300">EventFile → Standings → Recalculate</span>.
             </p>
           </div>
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search by driver ID, series ID, season, or class..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+          <Input
+            placeholder="Search driver, series, season..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-9 bg-[#111] border-gray-800 text-gray-200 placeholder:text-gray-700 text-sm"
+          />
+        </div>
 
-          {isLoading ? (
-            <div className="p-6 space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
-              ))}
-            </div>
-          ) : filteredEntries.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Rank</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Driver ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Series / Class</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Season</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600">Points</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600">Wins</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600">Starts</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Last Calculated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEntries.map((entry) => (
-                    <tr key={entry.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-bold text-lg">{entry.rank || entry.position || '—'}</td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-sm truncate max-w-[140px]" title={entry.driver_id}>{entry.driver_id || '—'}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700 truncate max-w-[140px]" title={entry.series_id}>{entry.series_id || '—'}</div>
-                        {entry.series_class_id && (
-                          <div className="text-xs text-gray-500 truncate max-w-[140px]" title={entry.series_class_id}>{entry.series_class_id}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{entry.season_year || '—'}</td>
-                      <td className="px-6 py-4 text-right font-semibold">{entry.points_total ?? 0}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-600">{entry.wins ?? 0}</td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-600">{entry.starts ?? 0}</td>
-                      <td className="px-6 py-4 text-xs text-gray-500">
-                        {entry.last_calculated
-                          ? new Date(entry.last_calculated).toLocaleString()
-                          : entry.updated_date
-                            ? new Date(entry.updated_date).toLocaleDateString()
-                            : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="p-12 text-center text-gray-500">
-              {searchQuery ? (
-                <p>No standings match your search</p>
-              ) : (
-                <div className="space-y-2">
-                  <AlertCircle className="w-8 h-8 text-gray-300 mx-auto" />
-                  <p className="font-medium">No standings calculated yet</p>
-                  <p className="text-sm text-gray-400">Open an event in Race Control and run Recalculate from the Standings tab.</p>
-                </div>
-              )}
-            </div>
-          )}
+        {/* Tactical standings grid */}
+        <div className="bg-[#0e0e0e] border border-gray-800 rounded-lg overflow-hidden">
+          <StandingsRecordGrid
+            standings={filtered}
+            drivers={drivers}
+            isLoading={isLoading}
+            emptyMessage={searchQuery ? 'No standings match your search' : 'No standings calculated yet'}
+          />
         </div>
       </ManagementShell>
     </ManagementLayout>

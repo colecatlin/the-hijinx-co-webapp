@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEventWorkspace } from './workspace/EventWorkspaceContext';
 import { REG_QK } from './queryKeys';
+import StandingsRecordGrid from './standings/StandingsRecordGrid';
 
 export default function PointsAndStandingsManager({
   selectedEvent,
@@ -92,14 +92,6 @@ export default function PointsAndStandingsManager({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list()
   });
-
-  const standingsWithInfo = useMemo(() =>
-    standings.map(s => ({
-      ...s,
-      driver: drivers.find(d => d.id === s.driver_id)
-    })).sort((a, b) => (a.rank || a.position || 0) - (b.rank || b.position || 0)),
-    [standings, drivers]
-  );
 
   const calculateMutation = useMutation({
     mutationFn: async () => {
@@ -259,52 +251,23 @@ export default function PointsAndStandingsManager({
         </Card>
       )}
 
-      {/* Standings Table */}
+      {/* Standings — tactical grid */}
       <Card className="bg-[#171717] border-gray-800">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-white">
             Standings
             {standings.length > 0 && <span className="ml-2 text-xs font-normal text-gray-500">{standings.length} entries</span>}
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {standingsWithInfo.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-sm text-gray-500">No standings calculated yet.</p>
-              {canManageStandings && resolvedRuleset && (
-                <p className="text-xs text-gray-600 mt-1">Run a recalculation to generate standings from official results.</p>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-800">
-                    <TableHead className="text-gray-400 text-xs">Rank</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Driver</TableHead>
-                    <TableHead className="text-gray-400 text-xs text-right">Points</TableHead>
-                    <TableHead className="text-gray-400 text-xs text-right">Wins</TableHead>
-                    <TableHead className="text-gray-400 text-xs text-right">2nd</TableHead>
-                    <TableHead className="text-gray-400 text-xs text-right">3rd</TableHead>
-                    <TableHead className="text-gray-400 text-xs text-right">Starts</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {standingsWithInfo.map((s) => (
-                    <TableRow key={s.id} className="border-gray-800 hover:bg-gray-800/40">
-                      <TableCell className="text-white font-bold text-sm">{s.rank || s.position || '—'}</TableCell>
-                      <TableCell className="text-white text-sm">{s.driver?.first_name} {s.driver?.last_name}</TableCell>
-                      <TableCell className="text-right text-white font-semibold text-sm">{s.points_total || s.total_points || 0}</TableCell>
-                      <TableCell className="text-right text-gray-400 text-xs">{s.wins || 0}</TableCell>
-                      <TableCell className="text-right text-gray-400 text-xs">{s.seconds || 0}</TableCell>
-                      <TableCell className="text-right text-gray-400 text-xs">{s.thirds || 0}</TableCell>
-                      <TableCell className="text-right text-gray-400 text-xs">{s.starts || s.results_count || 0}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+          {standings.length === 0 && canManageStandings && resolvedRuleset && (
+            <p className="text-xs text-gray-600 mt-1">Run a recalculation to generate standings from official results.</p>
           )}
+        </CardHeader>
+        <CardContent className="px-0 pb-0">
+          <StandingsRecordGrid
+            standings={standings}
+            drivers={drivers}
+            isLoading={false}
+          />
         </CardContent>
       </Card>
 
