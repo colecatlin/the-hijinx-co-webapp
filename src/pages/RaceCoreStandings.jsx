@@ -19,15 +19,15 @@ import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 import StandingsRecordGrid from '@/components/registrationdashboard/standings/StandingsRecordGrid';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Trophy, ChevronRight } from 'lucide-react';
+import { ExternalLink, Trophy } from 'lucide-react';
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
+import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
 
 // ─── Minimal dark shell (no ManagementLayout — this is a focused canonical surface)
 function StandingsShell({ children }) {
   return (
-    <div className="text-gray-100">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {children}
-      </div>
+    <div className="text-gray-100 flex flex-col min-h-screen" style={{ background: '#0a0a0a' }}>
+      {children}
     </div>
   );
 }
@@ -207,47 +207,40 @@ export default function RaceCoreStandings() {
     ? `/racecore?orgType=series&orgId=${resolvedSeriesId}&seasonYear=${resolvedSeason}&tab=pointsStandings`
     : null;
 
+  const breadcrumbCrumbs = [
+    { label: 'RaceCore', href: '/racecore' },
+    { label: 'Standings', href: '/racecore/standings' },
+    ...(selectedSeries ? [{ label: selectedSeries.name }] : []),
+  ];
+
   return (
     <StandingsShell>
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-700 uppercase tracking-widest mb-5">
-        <Link to="/racecore" className="hover:text-gray-400 transition-colors">RaceCore</Link>
-        <ChevronRight className="w-3 h-3" />
-        <span className="text-gray-500">Standings</span>
-        {selectedSeries && (
-          <>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-gray-400">{selectedSeries.name}</span>
-          </>
-        )}
-      </div>
+      <RaceCoreBreadcrumb crumbs={breadcrumbCrumbs} icon={Trophy} />
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-100 tracking-tight flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-teal-500" />
-            Championship Standings
-          </h1>
-          <p className="text-xs text-gray-600 mt-1 font-mono">
-            READ-ONLY · Snapshot-based · Rebuilt from Results via EventFile
-          </p>
-        </div>
+      {/* Page header */}
+      <RaceCorePageHeader
+        icon={Trophy}
+        title="Championship Standings"
+        subtitle="Read-only · Snapshot-based · Rebuilt from Results via EventFile"
+        actions={
+          eventFileLink ? (
+            <Link to={eventFileLink}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gray-700 text-gray-400 hover:text-teal-400 hover:border-teal-700 gap-1.5 text-xs shrink-0"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Recalculate in EventFile
+              </Button>
+            </Link>
+          ) : null
+        }
+      />
 
-        {/* Deep link to recalculation surface */}
-        {eventFileLink && (
-          <Link to={eventFileLink}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-700 text-gray-400 hover:text-teal-400 hover:border-teal-700 gap-1.5 text-xs shrink-0"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Recalculate in EventFile
-            </Button>
-          </Link>
-        )}
-      </div>
+      {/* Main content area */}
+      <div className="max-w-5xl mx-auto px-3 sm:px-5 py-5">
 
       {/* Series selector */}
       <div className="mb-4">
@@ -311,6 +304,8 @@ export default function RaceCoreStandings() {
           This page is a read-only inspection surface only.
         </p>
       </div>
+
+      </div>{/* /max-w-5xl */}
     </StandingsShell>
   );
 }

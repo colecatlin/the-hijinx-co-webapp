@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // RaceCore Records primitives
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
 import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
@@ -202,6 +203,13 @@ export default function ManageTracks({ embedded = false }) {
 
   return (
     <>
+    {embedded && (
+      <RaceCoreBreadcrumb crumbs={[
+        { label: 'RaceCore', href: '/racecore' },
+        { label: 'Records', href: '/racecore/records/tracks' },
+        { label: 'Tracks' },
+      ]} />
+    )}
     <ManagementLayout currentPage="ManageTracks" embedded={embedded}>
       <RecordsPageShell
         icon={MapPin}

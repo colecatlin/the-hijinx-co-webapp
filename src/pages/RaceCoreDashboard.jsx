@@ -10,6 +10,7 @@ import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
 import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import RaceCoreHome from '@/components/registrationdashboard/RaceCoreHome';
+import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
 import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
 import EntriesManager from '@/components/registrationdashboard/EntriesManager';
 import ImportEntriesModal from '@/components/registrationdashboard/entries/ImportEntriesModal';
@@ -878,7 +879,12 @@ export default function RaceCoreDashboard() {
 
   return (
     <>
-      <div className="px-6 py-8">
+      <RaceCorePageHeader
+        icon={Gauge}
+        title="RaceCore Command"
+        subtitle="Global operational command center"
+      />
+      <div className="px-4 sm:px-6 py-5">
         {/* Workspace content — sidebar drives tab selection */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* TabsList hidden — navigation handled by RaceCoreSidebar */}

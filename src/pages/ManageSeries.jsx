@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 
 // RaceCore Records primitives
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
 import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
@@ -270,6 +271,13 @@ export default function ManageSeries({ embedded = false }) {
 
   return (
     <>
+    {embedded && (
+      <RaceCoreBreadcrumb crumbs={[
+        { label: 'RaceCore', href: '/racecore' },
+        { label: 'Records', href: '/racecore/records/series' },
+        { label: 'Series' },
+      ]} />
+    )}
     <ManagementLayout currentPage="ManageSeries" embedded={embedded}>
       <RecordsPageShell
         icon={Activity}

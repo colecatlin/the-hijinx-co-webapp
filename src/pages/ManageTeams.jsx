@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 
 // RaceCore Records primitives
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
 import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
@@ -185,6 +186,13 @@ export default function ManageTeams({ embedded = false }) {
 
   return (
     <>
+      {embedded && (
+        <RaceCoreBreadcrumb crumbs={[
+          { label: 'RaceCore', href: '/racecore' },
+          { label: 'Records', href: '/racecore/records/teams' },
+          { label: 'Teams' },
+        ]} />
+      )}
       <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
         <RecordsPageShell
           icon={Users}

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // RaceCore Records primitives
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
 import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
@@ -467,6 +468,13 @@ export default function ManageDrivers({ embedded = false }) {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
+      {embedded && (
+        <RaceCoreBreadcrumb crumbs={[
+          { label: 'RaceCore', href: '/racecore' },
+          { label: 'Records', href: '/racecore/records/drivers' },
+          { label: 'Drivers' },
+        ]} />
+      )}
       <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
         <RecordsPageShell
           icon={User}

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // RaceCore Records primitives
+import RaceCoreBreadcrumb from '@/components/racecore/RaceCoreBreadcrumb';
 import RecordsPageShell   from '@/components/racecore/records/RecordsPageShell';
 import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail';
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
@@ -354,6 +355,13 @@ export default function ManageEvents({ embedded = false }) {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
+      {embedded && (
+        <RaceCoreBreadcrumb crumbs={[
+          { label: 'RaceCore', href: '/racecore' },
+          { label: 'Records', href: '/racecore/records/events' },
+          { label: 'Events' },
+        ]} />
+      )}
       <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
         <RecordsPageShell
           icon={CalendarDays}
