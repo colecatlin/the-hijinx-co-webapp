@@ -38,7 +38,6 @@ import MediaTabContent from '@/components/registrationdashboard/MediaTabContent'
 import MediaGovernanceManager from '@/components/registrationdashboard/MediaGovernanceManager';
 import MediaPortal from '@/components/registrationdashboard/media/MediaPortal';
 import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
-import RaceCoreSidebar from '@/components/registrationdashboard/RaceCoreSidebar';
 import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
 import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
 import PaddockManager from '@/components/registrationdashboard/PaddockManager';
@@ -1220,10 +1219,10 @@ export default function RaceCoreDashboard() {
                   onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                   onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                 />
-                )}
-                </div>
-                </Tabs>
-                </div>
+              )}
+            </div>
+          </Tabs>
+        </div>
 
       {/* Modals */}
         <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>

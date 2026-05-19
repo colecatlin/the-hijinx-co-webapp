@@ -4,9 +4,10 @@ import ManagementHeader from './ManagementHeader';
 
 export default function ManagementLayout({ children, currentPage, embedded = false }) {
   if (embedded) {
-    // In embedded mode (inside RaceCoreLayout): no sidebar, no header, dark content area
+    // In embedded mode (inside RaceCoreLayout): no sidebar, no header.
+    // RaceCoreLayout owns the scroll axis — do NOT add overflow-y-auto here.
     return (
-      <div className="flex-1 overflow-y-auto bg-[#0A0A0A] min-h-full">
+      <div className="flex-1 min-h-full bg-[#0A0A0A]">
         {children}
       </div>
     );

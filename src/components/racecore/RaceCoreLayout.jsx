@@ -95,7 +95,7 @@ export default function RaceCoreLayout() {
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.22 }}
               className="fixed top-0 left-0 bottom-0 z-50 lg:hidden flex flex-col"
-              style={{ width: 176 }}
+              style={{ width: 224 }}
             >
               <div className="flex items-center justify-between px-3 h-11 border-b border-gray-800/60"
                 style={{ background: '#0d0d0d' }}>
