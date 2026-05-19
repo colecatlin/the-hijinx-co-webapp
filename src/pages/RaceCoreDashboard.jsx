@@ -1220,9 +1220,10 @@ export default function RaceCoreDashboard() {
                   onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                   onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                 />
-              )}
-        </Tabs>
-      </div>
+                )}
+                </div>
+                </Tabs>
+                </div>
 
       {/* Modals */}
         <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
