@@ -26,7 +26,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',          className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageTeams() {
+export default function ManageTeams({ embedded = false }) {
   const navigate = useNavigate();
   const [searchQuery,    setSearchQuery]    = useState('');
   const [filterStatus,   setFilterStatus]   = useState('');
@@ -185,7 +185,7 @@ export default function ManageTeams() {
 
   return (
     <>
-      <ManagementLayout currentPage="ManageTeams">
+      <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
         <RecordsPageShell
           icon={Users}
           title="Team Records"

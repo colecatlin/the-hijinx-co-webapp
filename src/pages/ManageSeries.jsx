@@ -30,7 +30,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',                   className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageSeries() {
+export default function ManageSeries({ embedded = false }) {
   const navigate = useNavigate();
   const [searchQuery,     setSearchQuery]     = useState('');
   const [filterStatus,    setFilterStatus]    = useState('');
@@ -270,7 +270,7 @@ export default function ManageSeries() {
 
   return (
     <>
-    <ManagementLayout currentPage="ManageSeries">
+    <ManagementLayout currentPage="ManageSeries" embedded={embedded}>
       <RecordsPageShell
         icon={Activity}
         title="Series Records"

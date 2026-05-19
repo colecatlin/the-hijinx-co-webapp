@@ -7,7 +7,7 @@
  * - Muted inactive / strong active states
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { canTab, canAction } from '@/components/access/accessControl';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ExternalLink, Plus, Film, Mic } from 'lucide-react';
@@ -32,6 +32,7 @@ export default function RaceCoreSidebar({
   onExport,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState({});
 
   const isOwnerOrEditor = isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role);
@@ -121,7 +122,10 @@ export default function RaceCoreSidebar({
               {isOpen && visibleItems.map((item) => {
                 const Icon = item.icon;
                 const isHref = !!item.href;
-                const active = !isHref && activeTab === item.tab;
+                const active = isHref
+                  ? location.pathname === item.href ||
+                    (item.href !== '/racecore' && location.pathname.startsWith(item.href + '/'))
+                  : activeTab === item.tab;
                 const disabled = isDisabled(item);
 
                 return (

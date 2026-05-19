@@ -24,7 +24,7 @@ import { ExternalLink, Trophy, ChevronRight } from 'lucide-react';
 // ─── Minimal dark shell (no ManagementLayout — this is a focused canonical surface)
 function StandingsShell({ children }) {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-gray-100">
+    <div className="text-gray-100">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {children}
       </div>

@@ -713,19 +713,17 @@ export default function RaceCoreDashboard() {
 
   if (authLoading || userLoading) {
     return (
-      <PageShell>
-        <div className="flex items-center justify-center min-h-screen">
-          <BurnoutSpinner />
-        </div>
-      </PageShell>
+      <div className="flex items-center justify-center min-h-full py-20">
+        <BurnoutSpinner />
+      </div>
     );
   }
 
   // Handle unauthenticated users
   if (!isAuthenticated) {
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-full py-20">
+        <div className="bg-[#0A0A0A] flex items-center justify-center p-6">
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -745,7 +743,7 @@ export default function RaceCoreDashboard() {
             </CardContent>
           </Card>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
@@ -756,8 +754,8 @@ export default function RaceCoreDashboard() {
   // Handle org access denied for non-admins
   if (orgAccessDenied && organizationId && !isAdmin) {
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
+      <div className="flex items-center justify-center min-h-full py-20 p-6">
+        <div className="bg-[#0A0A0A] flex items-center justify-center p-6">
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -786,15 +784,15 @@ export default function RaceCoreDashboard() {
             </CardContent>
           </Card>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
   // Handle authenticated users with no accessible tabs
   if (availableTabs.length === 0) {
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-full py-20">
+        <div className="bg-[#0A0A0A] flex items-center justify-center">
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -814,7 +812,7 @@ export default function RaceCoreDashboard() {
             </CardContent>
           </Card>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
@@ -827,14 +825,9 @@ export default function RaceCoreDashboard() {
     raceCoreEntityList.length > 1;
 
   if (showWorkspaceChooser) {
-    const extras = {
-      ...(seasonYear ? { seasonYear } : {}),
-      ...(eventId ? { eventId } : {}),
-      ...(activeTab && activeTab !== 'overview' ? { tab: activeTab } : {}),
-    };
     return (
-      <PageShell>
-        <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
+      <div className="flex items-center justify-center min-h-full py-20 p-6">
+        <div className="bg-[#0A0A0A] flex items-center justify-center p-6">
           <div className="w-full max-w-lg space-y-6">
             <div>
               <h1 className="text-2xl font-black text-white mb-1">Choose a Race Core Workspace</h1>
@@ -880,40 +873,20 @@ export default function RaceCoreDashboard() {
             </Button>
           </div>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
   return (
-    <PageShell>
-      <div className="min-h-screen bg-[#0A0A0A]">
-        {/* Main Content — sidebar + workspace */}
-          <div className="flex min-h-[calc(100vh-72px)]">
-            <RaceCoreSidebar
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              dashboardPermissions={dashboardPermissions}
-              isAdmin={isAdmin}
-              user={user}
-              selectedEvent={selectedEvent}
-              onQuickCreate={() => { setQuickCreateType('Driver'); setQuickCreateOpen(true); }}
-              onCreateEvent={handleCreateEvent}
-              onImportEntries={() => setShowImportEntriesModal(true)}
-              onSyncTiming={() => setShowSyncModal(true)}
-              onPublish={handlePublishOfficial}
-              onExport={() => setShowExportModal(true)}
-              onMediaPortal={() => setShowMediaPortalDialog(true)}
-              announcerMode={announcerMode}
-              onAnnouncerModeToggle={handleAnnouncerModeToggle}
-            />
-          <div className="flex-1 px-6 py-8 overflow-auto">
-          {/* Workspace content — sidebar drives tab selection */}
-           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-             {/* TabsList hidden — navigation handled by RaceCoreSidebar */}
-             <TabsList className="hidden" />
+    <>
+      <div className="px-6 py-8">
+        {/* Workspace content — sidebar drives tab selection */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {/* TabsList hidden — navigation handled by RaceCoreSidebar */}
+          <TabsList className="hidden" />
 
              {/* Lazy-mounted tabs: only render active tab content */}
-            <div className="mt-0">
+             <div className="mt-0">
               {canTab(dashboardPermissions, 'overview') && activeTab === 'workspace' && selectedEvent && (
                 <EventWorkspaceContainer
                   selectedEvent={selectedEvent}
@@ -1248,12 +1221,10 @@ export default function RaceCoreDashboard() {
                   onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
                 />
               )}
-              </div>
-              </Tabs>
-          </div>
-        </div>
+        </Tabs>
+      </div>
 
-        {/* Modals */}
+      {/* Modals */}
         <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
           <AlertDialogContent className="bg-[#262626] border-gray-700">
             <AlertDialogTitle className="text-white">Publish Official Results</AlertDialogTitle>
@@ -1477,7 +1448,6 @@ export default function RaceCoreDashboard() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </PageShell>
+    </>
   );
 }

@@ -76,6 +76,7 @@ import ManageTracks from './pages/ManageTracks';
 import ManageSeries from './pages/ManageSeries';
 import ManageEvents from './pages/ManageEvents';
 import RaceCoreStandings from './pages/RaceCoreStandings';
+import RaceCoreLayout from './components/racecore/RaceCoreLayout';
 import { Navigate } from 'react-router-dom';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -201,26 +202,24 @@ const AuthenticatedApp = () => {
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
       
-      {/* RaceCore Dashboard - Global operational command center */}
-      <Route path="/racecore" element={<LayoutWrapper currentPageName="RaceCoreDashboard"><RaceCoreDashboard /></LayoutWrapper>} />
-      {/* Legacy route redirect — preserves /racecore but old links that hardcoded RegistrationDashboard still land here */}
+      {/* Legacy route redirect */}
       <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
 
-      {/* R8AK: Canonical RaceCore Standings routes */}
-      <Route path="/racecore/standings" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
-      <Route path="/racecore/standings/:seriesId" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
-      <Route path="/racecore/standings/:seriesId/:seasonYear" element={<LayoutWrapper currentPageName="RaceCoreStandings"><RaceCoreStandings /></LayoutWrapper>} />
+      {/* R8AO: All /racecore/* routes inside RaceCoreLayout — no public LayoutWrapper */}
+      <Route element={<RaceCoreLayout />}>
+        <Route path="/racecore" element={<RaceCoreDashboard />} />
+        <Route path="/racecore/standings" element={<RaceCoreStandings />} />
+        <Route path="/racecore/standings/:seriesId" element={<RaceCoreStandings />} />
+        <Route path="/racecore/standings/:seriesId/:seasonYear" element={<RaceCoreStandings />} />
+        {/* Records pages in embedded mode — ManagementLayout suppresses its own sidebar/header */}
+        <Route path="/racecore/records/drivers" element={<ManageDrivers embedded={true} />} />
+        <Route path="/racecore/records/teams" element={<ManageTeams embedded={true} />} />
+        <Route path="/racecore/records/tracks" element={<ManageTracks embedded={true} />} />
+        <Route path="/racecore/records/series" element={<ManageSeries embedded={true} />} />
+        <Route path="/racecore/records/events" element={<ManageEvents embedded={true} />} />
+      </Route>
 
-      {/* R8AA: RaceCore Records routes — reuse Manage page components directly.
-          ManagementLayout provides its own full shell, so these routes have NO LayoutWrapper. */}
-      <Route path="/racecore/records/drivers" element={<ManageDrivers />} />
-      <Route path="/racecore/records/teams" element={<ManageTeams />} />
-      <Route path="/racecore/records/tracks" element={<ManageTracks />} />
-      <Route path="/racecore/records/series" element={<ManageSeries />} />
-      <Route path="/racecore/records/events" element={<ManageEvents />} />
-
-      {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — no redirects needed.
-          The RaceCore sidebar now points to /racecore/records/* paths only. */}
+      {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}
       
       {/* R8G: RaceControlLayout wraps all /race-control/* routes with RaceControlProvider */}
       <Route element={<LayoutWrapper currentPageName="RaceControl"><RaceControlLayout /></LayoutWrapper>}>

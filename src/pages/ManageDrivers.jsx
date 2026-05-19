@@ -33,7 +33,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',           className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageDrivers() {
+export default function ManageDrivers({ embedded = false }) {
   const navigate = useNavigate();
 
   // ── Filter / UI state ─────────────────────────────────────────────────────────
@@ -467,7 +467,7 @@ export default function ManageDrivers() {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
-      <ManagementLayout currentPage="ManageDrivers">
+      <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
         <RecordsPageShell
           icon={User}
           title="Driver Records"

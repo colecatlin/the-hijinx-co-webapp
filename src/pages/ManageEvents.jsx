@@ -36,7 +36,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',           className: 'hidden xl:block w-20 text-right' },
 ];
 
-export default function ManageEvents() {
+export default function ManageEvents({ embedded = false }) {
   const navigate = useNavigate();
 
   // ── Filter / UI state ─────────────────────────────────────────────────────────
@@ -354,7 +354,7 @@ export default function ManageEvents() {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
-      <ManagementLayout currentPage="ManageEvents">
+      <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
         <RecordsPageShell
           icon={CalendarDays}
           title="Event Records"

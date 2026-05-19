@@ -26,7 +26,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',          className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageTracks() {
+export default function ManageTracks({ embedded = false }) {
   const navigate = useNavigate();
   const [searchQuery,    setSearchQuery]    = useState('');
   const [filterSurface,  setFilterSurface]  = useState('');
@@ -202,7 +202,7 @@ export default function ManageTracks() {
 
   return (
     <>
-    <ManagementLayout currentPage="ManageTracks">
+    <ManagementLayout currentPage="ManageTracks" embedded={embedded}>
       <RecordsPageShell
         icon={MapPin}
         title="Track Records"
