@@ -4,56 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { getPermissionsForRole, canTab, canAction } from '@/components/access/accessControl';
-import { canManageEntity } from '@/components/access/entityAccess';
-import PageShell from '@/components/shared/PageShell';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
-import OverviewGrid from '@/components/registrationdashboard/OverviewGrid';
 import RaceCoreHome from '@/components/registrationdashboard/RaceCoreHome';
 import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
-import ClassSessionBuilder from '@/components/registrationdashboard/ClassSessionBuilder';
-import EntriesManager from '@/components/registrationdashboard/EntriesManager';
 import ImportEntriesModal from '@/components/registrationdashboard/entries/ImportEntriesModal';
-import DriverRegistrationPanel from '@/components/registrationdashboard/DriverRegistrationPanel';
-import ComplianceManager from '@/components/registrationdashboard/ComplianceManager';
-import CheckInManager from '@/components/registrationdashboard/CheckInManager';
-import TechManager from '@/components/registrationdashboard/TechManager';
-import ResultsManager from '@/components/registrationdashboard/ResultsManager';
-import AnnouncerPanel from '@/components/registrationdashboard/AnnouncerPanel';
-import AnnouncerMode from '@/components/registrationdashboard/AnnouncerMode';
-import AnnouncerManager from '@/components/registrationdashboard/AnnouncerManager';
-import AnnouncerConsole from '@/components/registrationdashboard/AnnouncerConsole';
-import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
-import GateMode from '@/components/registrationdashboard/GateMode';
-import GateManagerRefactored from '@/components/registrationdashboard/GateManagerRefactored';
-import GateAttendantConsole from '@/components/registrationdashboard/GateAttendantConsole';
-import GateConsole from '@/components/registrationdashboard/GateConsole';
-import RaceControlConsole from '@/components/registrationdashboard/RaceControlConsole';
-import RaceControlManager from '@/components/registrationdashboard/RaceControlManager';
-import CSVImportManager from '@/components/registrationdashboard/CSVImportManager';
-import PointsAndStandingsManager from '@/components/registrationdashboard/PointsAndStandingsManager';
-import ExportsManager from '@/components/registrationdashboard/ExportsManager';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
-import AuditLogManager from '@/components/registrationdashboard/AuditLogManager';
-import MediaTabContent from '@/components/registrationdashboard/MediaTabContent';
-import MediaGovernanceManager from '@/components/registrationdashboard/MediaGovernanceManager';
-import MediaPortal from '@/components/registrationdashboard/media/MediaPortal';
-import EventWorkspaceHeader from '@/components/registrationdashboard/EventWorkspaceHeader';
-import EventSwitcher from '@/components/registrationdashboard/EventSwitcher';
-import SeasonCalendarManager from '@/components/registrationdashboard/SeasonCalendarManager';
-import PaddockManager from '@/components/registrationdashboard/PaddockManager';
-import RaceControlPanel from '@/components/registrationdashboard/RaceControlPanel';
-import TimingSyncManager from '@/components/registrationdashboard/TimingSyncManager';
-import GateManager from '@/components/registrationdashboard/GateManager';
-import ExportsDataHub from '@/components/registrationdashboard/ExportsDataHub';
-import EdgeCaseLab from '@/components/registrationdashboard/EdgeCaseLab';
-import EventWorkspaceContainer from '@/components/registrationdashboard/workspace/EventWorkspaceContainer';
+import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
-import OpsTimeline from '@/components/registrationdashboard/OpsTimeline';
-import LiveControlPanel from '@/components/registrationdashboard/LiveControlPanel';
-import OpsEventDashboard from '@/components/registrationdashboard/ops/OpsEventDashboard';
-import WorkspaceRedirectCard from '@/components/registrationdashboard/workspace/WorkspaceRedirectCard';
-import { motion } from 'framer-motion';
 import {
   Select,
   SelectContent,
@@ -61,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -78,40 +36,17 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-    Plus,
-    Upload,
-    RefreshCw,
-    Send,
-    Download,
     AlertCircle,
-    Download as DownloadIcon,
-    Users,
-    ClipboardCheck,
     Flag,
-    Trophy,
-    FileText,
-    Plug,
-    History,
-    LayoutDashboard,
-    Wrench,
-    Car,
-    Shield,
-    Clock,
-    Mic,
-    DoorOpen,
-    Radio,
-    BookOpen,
     Gauge,
-    Film,
-    Camera,
     Star,
     ArrowLeft,
+    Clock,
     ExternalLink,
   } from 'lucide-react';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
@@ -194,15 +129,14 @@ export default function RaceCoreDashboard() {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showImportEntriesModal, setShowImportEntriesModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showSyncModal, setShowSyncModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
+
   const [standingsDirty, setStandingsDirty] = useState(false);
   const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
   const [complianceSeverity, setComplianceSeverity] = useState('clear');
   const [showComplianceWarning, setShowComplianceWarning] = useState(false);
   const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
   const [showArchiveWarning, setShowArchiveWarning] = useState(false);
-  const [showMediaPortalDialog, setShowMediaPortalDialog] = useState(false);
+
   const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [quickCreateType, setQuickCreateType] = useState('Driver');
@@ -892,40 +826,6 @@ export default function RaceCoreDashboard() {
 
              {/* Lazy-mounted tabs: only render active tab content */}
              <div className="mt-0">
-              {canTab(dashboardPermissions, 'overview') && activeTab === 'workspace' && selectedEvent && (
-                <EventWorkspaceContainer
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  eventId={eventId}
-                  organizationType={organizationType}
-                  organizationId={organizationId}
-                  seasonYear={seasonYear}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin}
-                  user={user}
-                  requireAdminOverride={requireAdminOverride}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                  standingsDirty={standingsDirty}
-                  standingsLastCalculatedAt={standingsLastCalculatedAt}
-                  onSetStandingsDirty={() => setStandingsDirty(true)}
-                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  sessions={sessions}
-                  onClearDirty={() => setStandingsDirty(false)}
-                  onStandingsCalculated={() => {
-                    setStandingsLastCalculatedAt(new Date().toISOString());
-                    invalidateAfterOperation('standings_recalculated', { seriesId: selectedEvent?.series_id, eventId });
-                  }}
-                  onShowOverrideDialog={setOverrideDialog}
-                  onLegacyTabChange={setActiveTab}
-                  pendingWorkspacePanel={pendingWorkspacePanel}
-                  onPendingPanelApplied={() => setPendingWorkspacePanel(null)}
-                />
-              )}
-
               {canTab(dashboardPermissions, 'overview') && activeTab === 'overview' && (
                 <RaceCoreHome
                   dashboardPermissions={dashboardPermissions}
@@ -969,110 +869,6 @@ export default function RaceCoreDashboard() {
                 </div>
               )}
 
-              {canTab(dashboardPermissions, 'classes_sessions') && activeTab === 'classesSessions' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Sessions"
-                  description="Session and class management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="sessions"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'entries') && activeTab === 'entries' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Entries"
-                  description="Entry management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="entries"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'compliance') && activeTab === 'compliance' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Compliance"
-                  description="Compliance management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="compliance"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'checkin') && activeTab === 'checkIn' && (
-                <WorkspaceRedirectCard
-                  moduleName="Check-In"
-                  description="Check-In now lives inside the Event Workspace so all race-day operations stay in the same event file."
-                  panel="checkin"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'tech') && activeTab === 'tech' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Tech"
-                  description="Tech inspection management now lives inside the Event Workspace (Compliance panel) so all event operations stay inside the same event file."
-                  panel="compliance"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'results') && activeTab === 'results' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Results"
-                  description="Results management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="results"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'points_standings') && activeTab === 'pointsStandings' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Standings"
-                  description="Standings management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="standings"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'exports') && activeTab === 'exportsDataHub' && (
-                <WorkspaceRedirectCard
-                  moduleName="Exports"
-                  description="Exports now live inside the Event Workspace so all data operations stay in the same event file."
-                  panel="exports"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
               {canTab(dashboardPermissions, 'integrations') && activeTab === 'integrations' && (
                 <IntegrationsManager 
                   dashboardContext={dashboardContext} 
@@ -1080,84 +876,6 @@ export default function RaceCoreDashboard() {
                   selectedEvent={selectedEvent}
                   selectedTrack={selectedTrack}
                   selectedSeries={selectedSeries}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'audit_log') && activeTab === 'auditLog' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Activity"
-                  description="Activity and audit logging now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="activity"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'announcer') && activeTab === 'announcer' && (
-                <AnnouncerManager
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'gate') && activeTab === 'gate' && (
-                <GateManager
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'paddock' && (
-                <PaddockManager
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'gate') && activeTab === 'gateConsole' && (
-                <GateConsole
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'race_control') && activeTab === 'raceControlConsole' && (
-                <RaceControlConsole
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'race_control') && activeTab === 'raceControl' && (
-                <RaceControlManager
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                  isAdmin={isAdmin}
-                />
-              )}
-
-              {(isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role)) && activeTab === 'timing_sync' && (
-                <TimingSyncManager
-                  selectedEvent={selectedEvent}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
                   invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
@@ -1170,62 +888,7 @@ export default function RaceCoreDashboard() {
                 />
               )}
 
-              {canTab(dashboardPermissions, 'imports') && activeTab === 'imports' && (
-                <WorkspaceRedirectCard
-                  moduleName="Imports"
-                  description="Imports now live inside the Event Workspace so all data operations stay in the same event file."
-                  panel="imports"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
 
-              {canTab(dashboardPermissions, 'media') && activeTab === 'media' && (
-                <WorkspaceRedirectCard 
-                  moduleName="Media"
-                  description="Media management now lives inside the Event Workspace so all event operations stay inside the same event file."
-                  panel="media"
-                  eventId={eventId || undefined}
-                  onOpenWorkspace={(panel) => {
-                    setActiveTab('workspace');
-                    setPendingWorkspacePanel(panel);
-                  }}
-                />
-              )}
-
-              {canTab(dashboardPermissions, 'media_portal') && activeTab === 'media_portal' && (
-                <MediaPortal
-                  dashboardContext={dashboardContext}
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardPermissions={dashboardPermissions}
-                  currentUser={user}
-                  isAdmin={isAdmin}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                />
-              )}
-
-              {isAdmin && activeTab === 'opsCenter' && (
-                <OpsEventDashboard
-                  selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
-                  isAdmin={isAdmin}
-                  user={user}
-                  invalidateAfterOperation={invalidateAfterOperation}
-                  standingsLastCalculatedAt={standingsLastCalculatedAt}
-                  onSetStandingsDirty={() => setStandingsDirty(true)}
-                  onResultsProvisional={() => { invalidateAfterOperation('results_published_provisional', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsOfficial={() => { invalidateAfterOperation('results_published_official', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                  onResultsLocked={() => { invalidateAfterOperation('results_locked', { eventId }); invalidateAfterOperation('session_status_changed', { eventId }); }}
-                />
-              )}
             </div>
           </Tabs>
         </div>
@@ -1380,80 +1043,7 @@ export default function RaceCoreDashboard() {
           existingEntries={regEntries || []}
         />
 
-        {/* Sync Timing Modal */}
-        {showSyncModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <Card className="bg-[#262626] border-gray-700 w-96">
-              <CardHeader>
-                <CardTitle className="text-white">Sync Timing Data</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-400">Timing sync functionality coming soon</p>
-                <div className="flex justify-end">
-                  <Button onClick={() => setShowSyncModal(false)} className="bg-gray-700 hover:bg-gray-600">
-                    Close
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
-        {/* Export Modal */}
-        {showExportModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <Card className="bg-[#262626] border-gray-700 w-96">
-              <CardHeader>
-                <CardTitle className="text-white">Export Data</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-400">Export functionality coming soon</p>
-                <div className="flex justify-end">
-                  <Button onClick={() => setShowExportModal(false)} className="bg-gray-700 hover:bg-gray-600">
-                    Close
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Media Portal Preview Dialog */}
-        <Dialog open={showMediaPortalDialog} onOpenChange={setShowMediaPortalDialog}>
-          <DialogContent className="bg-[#262626] border-gray-700 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-white flex items-center gap-2">
-                <Film className="w-5 h-5 text-blue-400" /> Media Portal (Coming Soon)
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-400">
-                The Media Portal will allow media professionals to apply for credentials, submit assets, and track their requests. Full implementation coming in the next phase.
-              </p>
-              <div>
-                <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Recent Requests</p>
-                {recentCredentialRequests.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {recentCredentialRequests.map((req) => (
-                      <div key={req.id} className="bg-[#1A1A1A] border border-gray-700 rounded p-2 text-xs">
-                        <div className="text-gray-300">Request ID: {req.id?.slice(0, 8)}</div>
-                        <div className="text-gray-500">Status: {req.status}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500">No requests yet</p>
-                )}
-              </div>
-              <Button
-                onClick={() => setShowMediaPortalDialog(false)}
-                className="w-full bg-blue-700 hover:bg-blue-600"
-              >
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
     </>
   );
 }
