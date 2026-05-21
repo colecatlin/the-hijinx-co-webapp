@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
  *   onBack      — optional back button callback (renders a compact back button on the right)
  *   className   — optional additional wrapper class
  */
-export default function RaceCoreBreadcrumb({ crumbs = [], icon: Icon = Flag, onBack, className }) {
+export default function RaceCoreBreadcrumb({ crumbs = [], icon: Icon = Flag, onBack, className, noBorder = false }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-0 px-3 sm:px-5 py-2 border-b border-white/[0.06] flex-shrink-0 min-w-0',
+        'flex items-center gap-0 px-3 sm:px-5 py-2 flex-shrink-0 min-w-0',
+        !noBorder && 'border-b border-white/[0.06]',
         className
       )}
       style={{ background: 'rgba(8,10,12,0.95)' }}

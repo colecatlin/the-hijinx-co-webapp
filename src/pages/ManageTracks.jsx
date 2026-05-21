@@ -208,7 +208,7 @@ export default function ManageTracks({ embedded = false }) {
         { label: 'RaceCore', href: '/racecore' },
         { label: 'Records', href: '/racecore/records/tracks' },
         { label: 'Tracks' },
-      ]} />
+      ]} noBorder={embedded} />
     )}
     <ManagementLayout currentPage="ManageTracks" embedded={embedded}>
       <RecordsPageShell

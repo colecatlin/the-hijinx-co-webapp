@@ -48,7 +48,7 @@ export default function RecordsPageShell({
       )}
 
       {/* Header strip */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-gray-800/80 shrink-0 min-w-0">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-white/[0.06] shrink-0 min-w-0">
         {/* Left: identity + stats */}
         <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
           <div className="flex items-center gap-2 shrink-0">

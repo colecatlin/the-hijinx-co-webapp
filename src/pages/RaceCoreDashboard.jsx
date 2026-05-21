@@ -884,7 +884,7 @@ export default function RaceCoreDashboard() {
         title="RaceCore Command"
         subtitle="Global operational command center"
       />
-      <div className="px-4 sm:px-6 py-5">
+      <div className="px-3 sm:px-5 py-5">
         {/* Workspace content — sidebar drives tab selection */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* TabsList hidden — navigation handled by RaceCoreSidebar */}

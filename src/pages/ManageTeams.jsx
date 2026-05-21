@@ -191,7 +191,7 @@ export default function ManageTeams({ embedded = false }) {
           { label: 'RaceCore', href: '/racecore' },
           { label: 'Records', href: '/racecore/records/teams' },
           { label: 'Teams' },
-        ]} />
+        ]} noBorder={embedded} />
       )}
       <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
         <RecordsPageShell

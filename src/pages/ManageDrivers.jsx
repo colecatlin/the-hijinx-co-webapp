@@ -473,7 +473,7 @@ export default function ManageDrivers({ embedded = false }) {
           { label: 'RaceCore', href: '/racecore' },
           { label: 'Records', href: '/racecore/records/drivers' },
           { label: 'Drivers' },
-        ]} />
+        ]} noBorder={embedded} />
       )}
       <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
         <RecordsPageShell

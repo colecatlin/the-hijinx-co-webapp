@@ -276,7 +276,7 @@ export default function ManageSeries({ embedded = false }) {
         { label: 'RaceCore', href: '/racecore' },
         { label: 'Records', href: '/racecore/records/series' },
         { label: 'Series' },
-      ]} />
+      ]} noBorder={embedded} />
     )}
     <ManagementLayout currentPage="ManageSeries" embedded={embedded}>
       <RecordsPageShell

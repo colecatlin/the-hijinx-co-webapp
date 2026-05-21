@@ -360,7 +360,7 @@ export default function ManageEvents({ embedded = false }) {
           { label: 'RaceCore', href: '/racecore' },
           { label: 'Records', href: '/racecore/records/events' },
           { label: 'Events' },
-        ]} />
+        ]} noBorder={embedded} />
       )}
       <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
         <RecordsPageShell
