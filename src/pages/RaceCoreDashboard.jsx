@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { getPermissionsForRole, canTab, canAction } from '@/components/access/accessControl';
+import { getPermissionsForRole, canTab } from '@/components/access/accessControl';
 import BurnoutSpinner from '@/components/shared/BurnoutSpinner';
 import EventBuilderForm from '@/components/management/EventBuilder/EventBuilderForm';
 import RaceCoreHome from '@/components/registrationdashboard/RaceCoreHome';
@@ -12,13 +12,6 @@ import ImportEntriesModal from '@/components/registrationdashboard/entries/Impor
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Tabs, TabsList } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,16 +23,6 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import {
     AlertCircle,
     Flag,
@@ -53,95 +36,23 @@ import { buildInvalidateAfterOperation } from '@/components/registrationdashboar
 import {
   getResolvedManagedEntities,
   getRaceCoreEntities,
-  buildRaceCoreLaunchUrl,
 } from '@/components/entities/entityResolver';
-import { getValidPrimaryEntity, isPrimaryEntityStale } from '@/components/entities/entityPrimary';
+import { getValidPrimaryEntity } from '@/components/entities/entityPrimary';
 import { hasEntityAccess } from '@/components/entities/entityPermissions';
 import { QueryKeys } from '@/components/utils/queryKeys';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import useDashboardQueries from '@/components/registrationdashboard/useDashboardQueries';
-import { REG_QK } from '@/components/registrationdashboard/queryKeys';
-import { canEditEventCore, canApproveAsTrack, canApproveAsSeries } from '@/components/registrationdashboard/permissions/eventPlanningRights';
 
 // ─── Dashboard-wide React Query tunables ────────────────────────────────────
 // Canonical defaults live in queryDefaults.js; DQ is a convenience alias here.
 const DQ = applyDefaultQueryOptions();
 
-// Helper: Require admin override for sensitive operations
-function createRequireAdminOverride(queryClient) {
-  return async (actionName, context, onConfirm) => {
-    return new Promise((resolve) => {
-      // Create dialog programmatically with state management
-      const overrideRef = { resolved: false };
-      
-      window._showOverrideDialog = {
-        open: true,
-        actionName,
-        context,
-        onConfirm: async (reason) => {
-          if (overrideRef.resolved) return;
-          overrideRef.resolved = true;
-          
-          const user = await base44.auth.me();
-          
-          // Log override attempt
-          try {
-            await base44.asServiceRole.entities.OperationLog.create({
-              operation_type: 'ADMIN_OVERRIDE',
-              source_type: 'RaceCoreDashboard',
-              entity_name: context.entityName || 'Session',
-              function_name: actionName,
-              status: 'success',
-              metadata: {
-                eventId: context.eventId,
-                sessionId: context.sessionId,
-                seriesClassId: context.seriesClassId,
-                seriesId: context.seriesId,
-                beforeStatus: context.beforeStatus,
-                afterStatus: context.afterStatus,
-                reason,
-                userId: user?.id,
-              },
-              notes: `Override for ${actionName}: ${reason}`,
-            });
-            
-            queryClient.invalidateQueries({ queryKey: ['operationLogs'] });
-          } catch (e) {
-            console.error('Failed to log override:', e);
-          }
-          
-          await onConfirm(reason);
-          resolve(true);
-        },
-        onCancel: () => {
-          if (overrideRef.resolved) return;
-          overrideRef.resolved = true;
-          resolve(false);
-        },
-      };
-    });
-  };
-}
-
 export default function RaceCoreDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showImportEntriesModal, setShowImportEntriesModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
-
-  const [standingsDirty, setStandingsDirty] = useState(false);
-  const [standingsLastCalculatedAt, setStandingsLastCalculatedAt] = useState(null);
-  const [complianceSeverity, setComplianceSeverity] = useState('clear');
-  const [showComplianceWarning, setShowComplianceWarning] = useState(false);
-  const [pendingLifecycleChange, setPendingLifecycleChange] = useState(null);
   const [showArchiveWarning, setShowArchiveWarning] = useState(false);
-
-  const [overrideDialog, setOverrideDialog] = useState({ open: false, actionName: '', context: {}, onConfirm: null });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [quickCreateType, setQuickCreateType] = useState('Driver');
-  const [overrideText, setOverrideText] = useState('');
-  const [overrideReason, setOverrideReason] = useState('');
   const queryClient = useQueryClient();
 
   const [organizationType, setOrganizationType] = useState(
@@ -157,9 +68,7 @@ export default function RaceCoreDashboard() {
     searchParams.get('eventId') || ''
   );
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
-  const [pendingWorkspacePanel, setPendingWorkspacePanel] = useState(null);
   const [editingEventId, setEditingEventId] = useState('');
-  const [announcerMode, setAnnouncerMode] = useState(searchParams.get('announcer') === '1');
   const [orgAccessDenied, setOrgAccessDenied] = useState(false);
 
   // Centralized invalidation helper – available to all tab components
@@ -232,76 +141,6 @@ export default function RaceCoreDashboard() {
     ...DQ,
   });
 
-  // Fetch selected track details
-  const { data: selectedTrack, isLoading: selectedTrackLoading } = useQuery({
-    queryKey: QueryKeys.tracks.byId(selectedEvent?.track_id),
-    queryFn: () => (selectedEvent?.track_id ? base44.entities.Track.get(selectedEvent.track_id) : Promise.resolve(null)),
-    enabled: !!isAuthenticated && !!selectedEvent?.track_id,
-    ...DQ,
-  });
-
-  // Fetch selected series details
-  const { data: selectedSeries, isLoading: selectedSeriesLoading } = useQuery({
-    queryKey: QueryKeys.series.byId(selectedEvent?.series_id),
-    queryFn: () => (selectedEvent?.series_id ? base44.entities.Series.get(selectedEvent.series_id) : Promise.resolve(null)),
-    enabled: !!isAuthenticated && !!selectedEvent?.series_id,
-    ...DQ,
-  });
-
-  const { data: trackCollaborators = [] } = useQuery({
-    queryKey: ['trackCollaborators', selectedEvent?.track_id],
-    queryFn: () => (selectedEvent?.track_id 
-      ? base44.entities.EntityCollaborator.filter({ entity_type: 'Track', entity_id: selectedEvent.track_id })
-      : Promise.resolve([])),
-    enabled: !!isAuthenticated && !!selectedEvent?.track_id,
-    ...DQ,
-  });
-
-  // Fetch series collaborators
-  const { data: seriesCollaborators = [] } = useQuery({
-    queryKey: ['seriesCollaborators', selectedEvent?.series_id],
-    queryFn: () => (selectedEvent?.series_id 
-      ? base44.entities.EntityCollaborator.filter({ entity_type: 'Series', entity_id: selectedEvent.series_id })
-      : Promise.resolve([])),
-    enabled: !!isAuthenticated && !!selectedEvent?.series_id,
-    ...DQ,
-  });
-
-  // Derive planning rights access
-  const userTrackAccess = trackCollaborators.some(c => 
-    c.user_id === user?.id && ['owner', 'editor'].includes(c.role)
-  );
-  const userSeriesAccess = seriesCollaborators.some(c => 
-    c.user_id === user?.id && ['owner', 'editor'].includes(c.role)
-  );
-
-  const canUserEditEventCore = canEditEventCore({
-    isAdmin,
-    userId: user?.id,
-    selectedEvent,
-    userTrackAccess,
-    userSeriesAccess,
-  });
-
-  // ── Shared dashboard queries (standardized REG_QK keys) ──────────────────
-  const {
-    sessions,
-    results,
-    driverPrograms,
-    entries: regEntries,
-    standings,
-    operationLogs,
-    sessionsQuery,
-    resultsQuery,
-  } = useDashboardQueries({
-    dashboardContext: dashContext,
-    selectedEvent: selectedEvent ?? null,
-    selectedTrack: selectedTrack ?? null,
-    selectedSeries: selectedSeries ?? null,
-  });
-
-
-
   const { data: importLogs = [] } = useQuery({
     queryKey: ['importLogs'],
     queryFn: () => {
@@ -322,25 +161,6 @@ export default function RaceCoreDashboard() {
     const allowedEventIds = new Set(userEventCollaborators.map((c) => c.entity_id));
     return events.filter((e) => allowedEventIds.has(e.id));
   }, [events, isAdmin, userEventCollaborators]);
-
-  // Load recent credential requests for Media Portal preview
-  const { data: recentCredentialRequests = [] } = useQuery({
-    queryKey: ['credential_requests_recent', organizationId],
-    queryFn: async () => {
-      if (!organizationId) return [];
-      const allRequests = await base44.entities.CredentialRequest.filter({});
-      return allRequests
-        .filter(
-          (cr) =>
-            cr.target_entity_id === organizationId ||
-            (selectedEvent && cr.related_event_id === selectedEvent.id)
-        )
-        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-        .slice(0, 5);
-    },
-    enabled: !!organizationId && !!isAuthenticated,
-    ...DQ,
-  });
 
   const filteredEvents = useMemo(() => {
     let filtered = [...events];
@@ -386,16 +206,6 @@ export default function RaceCoreDashboard() {
     return Array.from(seasonSet).sort((a, b) => b - a);
   }, [events]);
 
-  const selectedOrgName = useMemo(() => {
-    if (organizationType === 'track') {
-      const track = tracks.find((t) => t.id === organizationId);
-      return track?.name || '';
-    } else {
-      const matchedSeriesForName = seriesList.find((s) => s.id === organizationId);
-      return matchedSeriesForName?.name || '';
-    }
-  }, [organizationType, organizationId, tracks, seriesList]);
-
   // Get permissions from shared access control module
   const dashboardPermissions = useMemo(() => 
     getPermissionsForRole(user?.role || 'public'), 
@@ -423,35 +233,6 @@ export default function RaceCoreDashboard() {
     checkOrgAccess();
   }, [organizationId, organizationType, isAdmin, user?.id]);
 
-  // Helper bound to queryClient
-  const requireAdminOverride = useMemo(() => createRequireAdminOverride(queryClient), [queryClient]);
-
-  const handleOverrideConfirm = async () => {
-    if (overrideText !== 'OVERRIDE' || !overrideReason.trim()) {
-      toast.error('Type OVERRIDE and provide a reason');
-      return;
-    }
-
-    setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
-    if (overrideDialog.onConfirm) {
-      await overrideDialog.onConfirm(overrideReason);
-    }
-    setOverrideText('');
-    setOverrideReason('');
-  };
-
-  // ── Announcer Mode toggle in URL ─────────────────────────────────────────
-  const handleAnnouncerModeToggle = (enabled) => {
-    setAnnouncerMode(enabled);
-    const params = new URLSearchParams(searchParams);
-    if (enabled) {
-      params.set('announcer', '1');
-    } else {
-      params.delete('announcer');
-    }
-    setSearchParams(params, { replace: true });
-  };
-
   // ── Debounced URL write (250 ms) ──────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -460,12 +241,11 @@ export default function RaceCoreDashboard() {
       if (organizationId) params.set('orgId', organizationId); else params.delete('orgId');
       if (seasonYear) params.set('seasonYear', seasonYear); else params.delete('seasonYear');
       if (eventId) params.set('eventId', eventId); else params.delete('eventId');
-      if (announcerMode) params.set('announcer', '1'); else params.delete('announcer');
       if (activeTab && activeTab !== 'overview') params.set('tab', activeTab); else params.delete('tab');
       setSearchParams(params, { replace: true });
     }, 250);
     return () => clearTimeout(timer);
-  }, [organizationType, organizationId, seasonYear, eventId, announcerMode, activeTab, setSearchParams]);
+  }, [organizationType, organizationId, seasonYear, eventId, activeTab, setSearchParams]);
 
   useEffect(() => {
     if (authLoading === false && !isAuthenticated) {
@@ -534,81 +314,6 @@ export default function RaceCoreDashboard() {
     }
   }, [filteredEvents, eventId]);
 
-  // When orgType or seasonYear changes, cancel in-flight queries and reset to Overview
-  const prevOrgTypeRef = React.useRef(organizationType);
-  const prevSeasonYearRef = React.useRef(seasonYear);
-  useEffect(() => {
-    if (
-      prevOrgTypeRef.current !== organizationType ||
-      prevSeasonYearRef.current !== seasonYear
-    ) {
-      queryClient.cancelQueries({ queryKey: QueryKeys.sessions.listByEvent(undefined).slice(0,1) });
-      queryClient.cancelQueries({ queryKey: ['entries'] });
-      queryClient.cancelQueries({ queryKey: QueryKeys.results.listByEvent(undefined).slice(0,1) });
-      queryClient.cancelQueries({ queryKey: QueryKeys.events.byId(undefined).slice(0,1) });
-      setEventId('');
-      setActiveTab('overview');
-      prevOrgTypeRef.current = organizationType;
-      prevSeasonYearRef.current = seasonYear;
-    }
-  }, [organizationType, seasonYear]);
-
-  // When eventId changes: cancel stale queries, prefetch sessions + results
-  const prevEventIdRef = React.useRef(eventId);
-  useEffect(() => {
-    if (prevEventIdRef.current && prevEventIdRef.current !== eventId) {
-      const oldId = prevEventIdRef.current;
-      queryClient.cancelQueries({ queryKey: ['sessions', oldId] });
-      queryClient.cancelQueries({ queryKey: ['entries', oldId] });
-      queryClient.cancelQueries({ queryKey: ['results', oldId] });
-      queryClient.cancelQueries({ queryKey: REG_QK.sessions(oldId) });
-      queryClient.cancelQueries({ queryKey: REG_QK.entries(oldId) });
-      queryClient.cancelQueries({ queryKey: REG_QK.results(oldId) });
-    }
-    prevEventIdRef.current = eventId;
-
-    if (eventId) {
-      // Prefetch sessions and results for the new event using REG_QK keys
-      queryClient.prefetchQuery({
-        queryKey: REG_QK.sessions(eventId),
-        queryFn: () => base44.entities.Session.filter({ event_id: eventId }),
-        ...DQ,
-      });
-      queryClient.prefetchQuery({
-        queryKey: REG_QK.results(eventId),
-        queryFn: () => base44.entities.Results.filter({ event_id: eventId }),
-        ...DQ,
-      });
-    }
-  }, [eventId]);
-
-  // Detect when any Session status changes to Official or Locked
-  useEffect(() => {
-    if (!sessions || sessions.length === 0) return;
-    
-    const hasOfficialOrLocked = sessions.some((s) => 
-      s.status === 'Official' || s.status === 'Locked'
-    );
-    
-    if (hasOfficialOrLocked && !standingsDirty) {
-      setStandingsDirty(true);
-    }
-  }, [sessions, standingsDirty]);
-
-  // Live mode detection — aligns with Event entity status enum
-  const isLiveMode = selectedEvent?.status === 'in_progress';
-
-  useEffect(() => {
-    if (isLiveMode && selectedEvent) {
-      // Auto-default to Results if sessions exist, else CheckIn
-      if (sessions.length > 0) {
-        setActiveTab('results');
-      } else {
-        setActiveTab('checkIn');
-      }
-    }
-  }, [isLiveMode, selectedEvent, sessions.length]);
-
   const handleCreateEvent = () => {
     setEditingEventId('');
     setActiveTab('eventBuilder');
@@ -616,33 +321,6 @@ export default function RaceCoreDashboard() {
 
   const handleEventCreated = (newEventId) => {
     setEditingEventId(newEventId);
-  };
-
-  const handlePublishOfficial = () => {
-    setShowPublishDialog(true);
-  };
-
-  const confirmPublish = () => {
-    setShowPublishDialog(false);
-  };
-
-  const handleEventStatusChange = (newStatus) => {
-    if (complianceSeverity === 'warning' && (newStatus === 'Live' || newStatus === 'Completed')) {
-      setPendingLifecycleChange(newStatus);
-      setShowComplianceWarning(true);
-    } else {
-      // Allow immediate change if no compliance issues
-      // This would be handled by EventStatusCard's save logic
-      setPendingLifecycleChange(null);
-    }
-  };
-
-  const handleConfirmLifecycleChange = () => {
-    setShowComplianceWarning(false);
-    if (pendingLifecycleChange) {
-      // Allow the event status to change - parent component handles save
-      setPendingLifecycleChange(null);
-    }
   };
 
   if (authLoading || userLoading) {
@@ -858,13 +536,13 @@ export default function RaceCoreDashboard() {
                     selectedEventId={editingEventId}
                     onEventCreated={(id) => { handleEventCreated(id); invalidateAfterOperation('event_updated', { eventId: id }); }}
                     isAdmin={isAdmin}
-                    isLiveMode={isLiveMode}
+                    isLiveMode={selectedEvent?.status === 'Live'}
                     onArchiveAttempt={() => setShowArchiveWarning(true)}
                     onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
                     onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
-                    canEditEventCore={canUserEditEventCore}
-                    canApproveAsTrack={canApproveAsTrack({ isAdmin, selectedEvent, userTrackAccess })}
-                    canApproveAsSeries={canApproveAsSeries({ isAdmin, selectedEvent, userSeriesAccess })}
+                    canEditEventCore={isAdmin}
+                    canApproveAsTrack={false}
+                    canApproveAsSeries={false}
                   />
                 </div>
               )}
@@ -874,8 +552,6 @@ export default function RaceCoreDashboard() {
                   dashboardContext={dashboardContext} 
                   dashboardPermissions={dashboardPermissions}
                   selectedEvent={selectedEvent}
-                  selectedTrack={selectedTrack}
-                  selectedSeries={selectedSeries}
                   invalidateAfterOperation={invalidateAfterOperation}
                 />
               )}
@@ -894,36 +570,6 @@ export default function RaceCoreDashboard() {
         </div>
 
       {/* Modals */}
-        <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
-          <AlertDialogContent className="bg-[#262626] border-gray-700">
-            <AlertDialogTitle className="text-white">Publish Official Results</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              This will mark all results as official and lock them from further editing. This action cannot be undone.
-            </AlertDialogDescription>
-            <div className="flex gap-2 justify-end">
-              <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmPublish} className="bg-green-600 hover:bg-green-700">
-                Confirm Publish
-              </AlertDialogAction>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={showComplianceWarning} onOpenChange={setShowComplianceWarning}>
-          <AlertDialogContent className="bg-[#262626] border-gray-700">
-            <AlertDialogTitle className="text-white">Compliance Warning</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              This event has unresolved compliance issues. Continue anyway?
-            </AlertDialogDescription>
-            <div className="flex gap-2 justify-end">
-              <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirmLifecycleChange} className="bg-amber-600 hover:bg-amber-700">
-                Proceed
-              </AlertDialogAction>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
-
         <AlertDialog open={showArchiveWarning} onOpenChange={setShowArchiveWarning}>
           <AlertDialogContent className="bg-[#262626] border-gray-700">
             <AlertDialogTitle className="text-white">Event Currently Live</AlertDialogTitle>
@@ -938,81 +584,6 @@ export default function RaceCoreDashboard() {
             </div>
           </AlertDialogContent>
         </AlertDialog>
-
-        {/* Admin Override Dialog */}
-        <Dialog open={overrideDialog.open} onOpenChange={(open) => {
-          if (!open) {
-            setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
-            setOverrideText('');
-            setOverrideReason('');
-          }
-        }}>
-          <DialogContent className="bg-[#262626] border-gray-700 sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-500" />
-                Admin Override Required
-              </DialogTitle>
-              <DialogDescription className="text-gray-400 mt-2">
-                {overrideDialog.actionName === 'reopen_locked_session' && 'Reopening a locked session will unlock it for further edits.'}
-                {overrideDialog.actionName === 'edit_results_official' && 'Editing results in an official session.'}
-                {overrideDialog.actionName === 'import_results_official' && 'Importing results into an official session.'}
-                {overrideDialog.actionName === 'import_results_allow_duplicates' && 'Allowing duplicate results in the same session.'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {overrideDialog.context && (
-                <div className="text-xs text-gray-400 bg-gray-900/50 p-3 rounded border border-gray-700">
-                  <div className="font-mono space-y-1">
-                    {selectedEvent && <div>Event: {selectedEvent.name}</div>}
-                    {overrideDialog.context.sessionId && <div>Session ID: {overrideDialog.context.sessionId}</div>}
-                    {overrideDialog.context.beforeStatus && overrideDialog.context.afterStatus && (
-                      <div>Change: {overrideDialog.context.beforeStatus} → {overrideDialog.context.afterStatus}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div>
-                <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Confirmation Code</label>
-                <Input
-                  placeholder="Type OVERRIDE to confirm"
-                  value={overrideText}
-                  onChange={(e) => setOverrideText(e.target.value)}
-                  className="bg-gray-900 border-gray-600 text-white"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Reason (required)</label>
-                <Textarea
-                  placeholder="Explain why this override is necessary..."
-                  value={overrideReason}
-                  onChange={(e) => setOverrideReason(e.target.value)}
-                  className="bg-gray-900 border-gray-600 text-white h-20"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setOverrideDialog({ open: false, actionName: '', context: {}, onConfirm: null });
-                  setOverrideText('');
-                  setOverrideReason('');
-                }}
-                className="border-gray-700 text-gray-300"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleOverrideConfirm}
-                disabled={overrideText !== 'OVERRIDE' || !overrideReason.trim()}
-                className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
-              >
-                Confirm Override
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Quick Create Modal (admin only) */}
         {isAdmin && (
@@ -1040,7 +611,7 @@ export default function RaceCoreDashboard() {
           selectedEvent={selectedEvent}
           dashboardPermissions={dashboardPermissions}
           invalidateAfterOperation={invalidateAfterOperation}
-          existingEntries={regEntries || []}
+          existingEntries={[]}
         />
 
 
