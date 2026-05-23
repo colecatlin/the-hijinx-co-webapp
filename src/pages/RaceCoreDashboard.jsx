@@ -161,10 +161,7 @@ export default function RaceCoreDashboard() {
   }, [eventId, setSearchParams]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleCreateEvent = () => {
-    setEditingEventId('');
-    setSearchParams({ tab: 'eventBuilder' }, { replace: true });
-  };
+
 
   const handleEventCreated = (newEventId) => {
     setEditingEventId(newEventId);
@@ -273,8 +270,6 @@ export default function RaceCoreDashboard() {
                   </div>
                 )}
                 <EventBuilderForm
-                  dashboardContext={dashboardContext}
-                  dashboardPermissions={dashboardPermissions}
                   selectedEventId={editingEventId}
                   onEventCreated={(id) => {
                     handleEventCreated(id);
@@ -283,18 +278,13 @@ export default function RaceCoreDashboard() {
                   isAdmin={isAdmin}
                   isLiveMode={selectedEvent?.status === 'Live'}
                   onArchiveAttempt={() => setShowArchiveWarning(true)}
-                  onSaved={() => invalidateAfterOperation('event_updated', { eventId: editingEventId || eventId })}
-                  onStatusChanged={() => invalidateAfterOperation('event_status_changed', { eventId })}
                   canEditEventCore={isAdmin}
-                  canApproveAsTrack={false}
-                  canApproveAsSeries={false}
                 />
               </div>
             )}
 
             {canTab(dashboardPermissions, 'integrations') && activeTab === 'integrations' && (
               <IntegrationsManager
-                dashboardContext={dashboardContext}
                 dashboardPermissions={dashboardPermissions}
                 selectedEvent={selectedEvent}
                 invalidateAfterOperation={invalidateAfterOperation}
@@ -305,7 +295,6 @@ export default function RaceCoreDashboard() {
               <AnnouncerPackManager
                 selectedEvent={selectedEvent}
                 dashboardContext={dashboardContext}
-                dashboardPermissions={dashboardPermissions}
               />
             )}
 
