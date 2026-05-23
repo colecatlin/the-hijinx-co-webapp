@@ -45,17 +45,17 @@ export const RACE_CORE_NAV_GROUPS = [
     id: 'home',
     label: 'Command',
     items: [
-      { tab: 'overview',  label: 'RaceCore Dashboard', icon: LayoutDashboard, canTabKey: 'overview' },
-      { href: '/race-control/events', label: 'Event Files', icon: MonitorPlay, canTabKey: null },
+      { href: '/racecore',              label: 'RaceCore Dashboard', icon: LayoutDashboard, canTabKey: 'overview' },
+      { href: '/race-control/events',   label: 'Event Files',        icon: MonitorPlay,     canTabKey: null },
     ],
   },
   {
     id: 'build',
     label: 'Governance',
     items: [
-      { tab: 'eventBuilder',    label: 'Event Setup',        icon: Plus,           canTabKey: 'event_builder' },
-      { tab: 'integrations',    label: 'Integrations',       icon: Plug,           canTabKey: 'integrations' },
-      { href: '/racecore/standings', label: 'Standings',      icon: BarChart3,      canTabKey: null },
+      { href: '/racecore?tab=eventBuilder',  label: 'Event Setup',   icon: Plus,     canTabKey: 'event_builder' },
+      { href: '/racecore?tab=integrations',  label: 'Integrations',  icon: Plug,     canTabKey: 'integrations' },
+      { href: '/racecore/standings',         label: 'Standings',     icon: BarChart3, canTabKey: null },
     ],
   },
   {
@@ -74,7 +74,7 @@ export const RACE_CORE_NAV_GROUPS = [
     label: 'Admin Tools',
     adminOnly: true,
     items: [
-      { tab: 'announcer_pack', label: 'Announcer Pack',   icon: BookOpen, canTabKey: 'announcer_pack' },
+      { href: '/racecore?tab=announcer_pack', label: 'Announcer Pack', icon: BookOpen, canTabKey: 'announcer_pack' },
     ],
   },
 ];

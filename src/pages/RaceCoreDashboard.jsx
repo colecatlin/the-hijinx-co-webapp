@@ -11,7 +11,7 @@ import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
 import IntegrationsManager from '@/components/registrationdashboard/IntegrationsManager';
 import AnnouncerPackManager from '@/components/registrationdashboard/AnnouncerPackManager';
 import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
-import { Tabs, TabsList } from '@/components/ui/tabs';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,8 +37,11 @@ export default function RaceCoreDashboard() {
   const [quickCreateType, setQuickCreateType] = useState('Driver');
   const queryClient = useQueryClient();
 
+  const VALID_TABS = ['overview', 'eventBuilder', 'integrations', 'announcer_pack'];
+  const rawTab = searchParams.get('tab') || 'overview';
+  const activeTab = VALID_TABS.includes(rawTab) ? rawTab : 'overview';
+
   const [eventId, setEventId] = useState(searchParams.get('eventId') || '');
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [editingEventId, setEditingEventId] = useState('');
 
   const invalidateAfterOperation = useMemo(
@@ -123,15 +126,13 @@ export default function RaceCoreDashboard() {
   const dashboardContext = useMemo(() => ({ eventId }), [eventId]);
 
   // ── Permissions ───────────────────────────────────────────────────────────
+
   const dashboardPermissions = useMemo(
     () => getPermissionsForRole(user?.role || 'public'),
     [user?.role]
   );
 
-  const availableTabs = useMemo(() => {
-    const tabKeys = ['overview', 'event_builder', 'integrations', 'announcer_pack'];
-    return tabKeys.filter((key) => canTab(dashboardPermissions, key));
-  }, [dashboardPermissions]);
+  const hasAnyAccess = VALID_TABS.some((key) => canTab(dashboardPermissions, key.replace('eventBuilder', 'event_builder')));
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
@@ -149,21 +150,20 @@ export default function RaceCoreDashboard() {
     }
   }, [dashboardEvents, eventId]);
 
-  // Debounced URL write — tab + eventId only
+  // Debounced URL write — eventId only (tab is already the URL source of truth)
   useEffect(() => {
     const timer = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (activeTab && activeTab !== 'overview') params.set('tab', activeTab);
-      if (eventId) params.set('eventId', eventId);
+      const params = new URLSearchParams(searchParams);
+      if (eventId) params.set('eventId', eventId); else params.delete('eventId');
       setSearchParams(params, { replace: true });
     }, 250);
     return () => clearTimeout(timer);
-  }, [eventId, activeTab, setSearchParams]);
+  }, [eventId, setSearchParams]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleCreateEvent = () => {
     setEditingEventId('');
-    setActiveTab('eventBuilder');
+    setSearchParams({ tab: 'eventBuilder' }, { replace: true });
   };
 
   const handleEventCreated = (newEventId) => {
@@ -206,7 +206,7 @@ export default function RaceCoreDashboard() {
 
   if (!user) return null;
 
-  if (availableTabs.length === 0) {
+  if (!hasAnyAccess) {
     return (
       <div className="flex items-center justify-center min-h-full py-20">
         <div className="bg-[#0A0A0A] flex items-center justify-center">
@@ -242,8 +242,7 @@ export default function RaceCoreDashboard() {
         subtitle="Global operational command center"
       />
       <div className="px-3 sm:px-5 py-5">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="hidden" />
+        <div className="w-full">
 
           <div className="mt-0">
 
@@ -311,7 +310,7 @@ export default function RaceCoreDashboard() {
             )}
 
           </div>
-        </Tabs>
+        </div>
       </div>
 
       {/* Archive warning dialog */}

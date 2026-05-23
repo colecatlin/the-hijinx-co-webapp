@@ -14,8 +14,6 @@ import { ChevronDown, ExternalLink, Plus, Film, Mic } from 'lucide-react';
 import { RACE_CORE_NAV_GROUPS } from './raceCoreNavConfig';
 
 export default function RaceCoreSidebar({
-  activeTab,
-  onTabChange,
   dashboardPermissions,
   isAdmin,
   user,
@@ -25,11 +23,6 @@ export default function RaceCoreSidebar({
   onMediaPortal,
   announcerMode,
   onAnnouncerModeToggle,
-  // kept for signature compat — not used in global command mode
-  onImportEntries,
-  onSyncTiming,
-  onPublish,
-  onExport,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,6 +30,9 @@ export default function RaceCoreSidebar({
 
   const isOwnerOrEditor = isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role);
   const toggle = (id) => setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
+
+  // Parse current tab from URL search string for active state
+  const currentTabParam = new URLSearchParams(location.search).get('tab');
 
   const isVisible = (item) => {
     if (item.workspaceMigrated) return false;
@@ -47,11 +43,10 @@ export default function RaceCoreSidebar({
     return true;
   };
 
-  const isDisabled = (item) => !item.href && item.requiresEvent && !selectedEvent;
+  const isDisabled = (item) => item.requiresEvent && !selectedEvent;
 
   const handleItemClick = (item) => {
-    if (item.href) { navigate(item.href); return; }
-    if (!isDisabled(item)) onTabChange(item.tab);
+    if (item.href) navigate(item.href);
   };
 
   // Global-safe quick actions only (no selectedEvent gates)
@@ -122,10 +117,20 @@ export default function RaceCoreSidebar({
               {isOpen && visibleItems.map((item) => {
                 const Icon = item.icon;
                 const isHref = !!item.href;
-                const active = isHref
-                  ? location.pathname === item.href ||
-                    (item.href !== '/racecore' && location.pathname.startsWith(item.href + '/'))
-                  : activeTab === item.tab;
+                // Active state: resolve pathname + optional tab query param
+                const active = (() => {
+                  if (!isHref) return false;
+                  const [hrefPath, hrefQuery] = item.href.split('?');
+                  if (location.pathname !== hrefPath) {
+                    return location.pathname.startsWith(hrefPath + '/');
+                  }
+                  if (!hrefQuery) {
+                    // Pure path (e.g. /racecore = overview): active when no tab param
+                    return hrefPath === '/racecore' ? !currentTabParam : true;
+                  }
+                  // Has query — match tab param
+                  return new URLSearchParams(hrefQuery).get('tab') === currentTabParam;
+                })();
                 const disabled = isDisabled(item);
 
                 return (

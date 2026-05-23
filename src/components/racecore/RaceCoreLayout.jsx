@@ -32,10 +32,8 @@ export default function RaceCoreLayout() {
   const isAdmin = user?.role === 'admin';
   const dashboardPermissions = getPermissionsForRole(user?.role || 'public');
 
-  // RaceCoreSidebar in layout mode: href-based navigation only (no tab callbacks needed)
+  // RaceCoreSidebar in layout mode: href-based navigation only
   const sidebarProps = {
-    activeTab: null,
-    onTabChange: () => {},
     dashboardPermissions,
     isAdmin,
     user,
@@ -45,10 +43,6 @@ export default function RaceCoreLayout() {
     onMediaPortal: () => {},
     announcerMode: false,
     onAnnouncerModeToggle: () => {},
-    onImportEntries: () => {},
-    onSyncTiming: () => {},
-    onPublish: () => {},
-    onExport: () => {},
   };
 
   return (
