@@ -78,16 +78,3 @@ export const RACE_CORE_NAV_GROUPS = [
     ],
   },
 ];
-
-/**
- * Quick actions surfaced on the Race Core Home for role-aware shortcuts.
- * These are contextual — shown based on what's available / needed.
- */
-export const RACE_CORE_QUICK_ACTIONS = [
-  { id: 'create_event',     label: 'Create Event',      icon: Plus,     tab: 'eventBuilder',    canActionKey: 'create_event' },
-  { id: 'import_entries',   label: 'Import Entries',    icon: Upload,   modal: 'importEntries', canActionKey: 'import_csv',     requiresEvent: true },
-  { id: 'sync_timing',      label: 'Sync Timing',       icon: Clock,    modal: 'syncTiming',    canActionKey: 'sync_timing',    requiresEvent: true, ownerOnly: true },
-  { id: 'publish_results',  label: 'Publish Results',   icon: Flag,     tab: 'results',         canActionKey: 'publish_official', requiresEvent: true },
-  { id: 'data_hub',         label: 'Export / Data Hub', icon: Download, tab: 'exportsDataHub',  canActionKey: 'export',         requiresEvent: true },
-  { id: 'media_portal',     label: 'Media Portal',      icon: Camera,   tab: 'media_portal',    canTabKey: 'media_portal',      requiresEvent: true },
-];
