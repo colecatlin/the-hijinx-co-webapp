@@ -78,6 +78,14 @@ import ManageEvents from './pages/ManageEvents';
 import RaceCoreStandings from './pages/RaceCoreStandings';
 import RaceCoreLayout from './components/racecore/RaceCoreLayout';
 import { Navigate } from 'react-router-dom';
+import ManageSessions from './pages/ManageSessions';
+import ManageResults from './pages/ManageResults';
+import ManagePointsConfig from './pages/ManagePointsConfig';
+import ManageDriverClaims from './pages/ManageDriverClaims';
+import ManageAccess from './pages/ManageAccess';
+import ManageCSVImportExport from './pages/ManageCSVImportExport';
+import ManageCalendarSync from './pages/ManageCalendarSync';
+import Diagnostics from './pages/Diagnostics';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -217,6 +225,20 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/records/tracks" element={<ManageTracks embedded={true} />} />
         <Route path="/racecore/records/series" element={<ManageSeries embedded={true} />} />
         <Route path="/racecore/records/events" element={<ManageEvents embedded={true} />} />
+        {/* R9AE: Operational system routes */}
+        <Route path="/racecore/records/sessions" element={<ManageSessions embedded={true} />} />
+        <Route path="/racecore/records/results" element={<ManageResults embedded={true} />} />
+        <Route path="/racecore/records/points-rulesets" element={<ManagePointsConfig embedded={true} />} />
+        <Route path="/racecore/media/applications" element={<ManageMediaApplications embedded={true} />} />
+        <Route path="/racecore/media/assignments" element={<ManageAssignments embedded={true} />} />
+        <Route path="/racecore/media/requests" element={<ManageRequests embedded={true} />} />
+        <Route path="/racecore/media/revenue" element={<ManageRevenue embedded={true} />} />
+        <Route path="/racecore/access/claims" element={<ManageDriverClaims embedded={true} />} />
+        <Route path="/racecore/access/management" element={<ManageAccess embedded={true} />} />
+        <Route path="/racecore/data/csv" element={<ManageCSVImportExport embedded={true} />} />
+        <Route path="/racecore/data/calendar-sync" element={<ManageCalendarSync embedded={true} />} />
+        <Route path="/racecore/data/champ-import" element={<ChampImportAdmin embedded={true} />} />
+        <Route path="/racecore/diagnostics" element={<Diagnostics embedded={true} />} />
       </Route>
 
       {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}
