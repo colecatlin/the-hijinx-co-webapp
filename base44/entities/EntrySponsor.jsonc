@@ -1,0 +1,30 @@
+{
+  "name": "EntrySponsor",
+  "type": "object",
+  "properties": {
+    "entry_id": {
+      "type": "string",
+      "description": "Reference to Entry (required)"
+    },
+    "sponsor_name": {
+      "type": "string",
+      "description": "Sponsor name (required)"
+    },
+    "sponsor_url": {
+      "type": "string",
+      "description": "Sponsor website URL (optional)"
+    },
+    "sponsor_tier": {
+      "type": "string",
+      "description": "Sponsor tier level (optional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes about this sponsor"
+    }
+  },
+  "required": [
+    "entry_id",
+    "sponsor_name"
+  ]
+}

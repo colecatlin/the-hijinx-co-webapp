@@ -1,0 +1,122 @@
+{
+  "name": "NarrativeArc",
+  "type": "object",
+  "properties": {
+    "arc_name": {
+      "type": "string",
+      "description": "Name of the ongoing narrative/storyline"
+    },
+    "arc_summary": {
+      "type": "string",
+      "description": "Editorial summary of what this narrative represents"
+    },
+    "arc_type": {
+      "type": "string",
+      "enum": [
+        "championship_battle",
+        "rivalry",
+        "momentum_shift",
+        "win_streak",
+        "rookie_breakout",
+        "sponsor_movement",
+        "team_growth",
+        "series_instability",
+        "schedule_drama",
+        "controversy",
+        "industry_trend",
+        "cultural_story",
+        "technology_shift"
+      ],
+      "description": "Category of narrative arc"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "emerging",
+        "cooling",
+        "closed",
+        "ignored"
+      ],
+      "default": "emerging",
+      "description": "Current lifecycle status of this arc"
+    },
+    "momentum_score": {
+      "type": "number",
+      "description": "Arc momentum 0-100"
+    },
+    "importance_score": {
+      "type": "number",
+      "description": "Editorial importance 0-100"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this arc was first detected"
+    },
+    "last_update_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this arc was last updated"
+    },
+    "signal_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ContentSignal IDs contributing to this arc"
+    },
+    "recommendation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "StoryRecommendation IDs linked to this arc"
+    },
+    "trend_cluster_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "StoryTrendCluster IDs associated with this arc"
+    },
+    "entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Entity IDs involved in this narrative"
+    },
+    "entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Entity names involved in this narrative"
+    },
+    "story_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Published OutletStory IDs covering this arc"
+    },
+    "coverage_plan_id": {
+      "type": "string",
+      "description": "Linked NarrativeCoveragePlan ID"
+    },
+    "coverage_gap_flagged": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if arc has high momentum but low coverage"
+    },
+    "dedupe_key": {
+      "type": "string",
+      "description": "Deduplication key to prevent duplicate arcs"
+    }
+  },
+  "required": [
+    "arc_name",
+    "arc_type"
+  ]
+}

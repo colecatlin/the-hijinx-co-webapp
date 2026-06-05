@@ -10,7 +10,7 @@ import RequestsReviewPanel from '@/components/media/requests/RequestsReviewPanel
 
 const PAGE = 'management/media/requests';
 
-export default function ManageRequests() {
+export default function ManageRequests({ embedded = false }) {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useQuery({
@@ -23,12 +23,12 @@ export default function ManageRequests() {
 
   if (user.role !== 'admin') {
     return (
-      <ManagementLayout currentPage={PAGE}>
+      <ManagementLayout currentPage={PAGE} embedded={embedded}>
         <ManagementShell title="Media Requests">
           <div className="py-24 flex flex-col items-center gap-4 text-center">
             <ShieldOff className="w-10 h-10 text-gray-300" />
             <p className="text-gray-500 text-sm">Restricted to editorial staff.</p>
-            <Button size="sm" onClick={() => navigate('/Management')}>Back to Management</Button>
+            <Button size="sm" onClick={() => navigate(embedded ? '/racecore' : '/Management')}>Back to Management</Button>
           </div>
         </ManagementShell>
       </ManagementLayout>
@@ -36,7 +36,7 @@ export default function ManageRequests() {
   }
 
   return (
-    <ManagementLayout currentPage={PAGE}>
+    <ManagementLayout currentPage={PAGE} embedded={embedded}>
       <ManagementShell
         title="Media Requests"
         subtitle="Create and manage hiring and collaboration requests for creators"

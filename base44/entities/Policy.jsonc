@@ -1,0 +1,60 @@
+{
+  "name": "Policy",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event"
+      ]
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "liability",
+        "insurance",
+        "conduct",
+        "operational",
+        "media_rules"
+      ],
+      "default": "general"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body_rich_text": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "policy_type",
+    "title",
+    "body_rich_text"
+  ]
+}

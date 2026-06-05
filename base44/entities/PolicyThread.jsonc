@@ -1,0 +1,36 @@
+{
+  "name": "PolicyThread",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "Reference to CredentialRequest"
+    },
+    "policy_id": {
+      "type": "string",
+      "description": "Reference to Policy"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "resolved",
+        "closed"
+      ],
+      "default": "open",
+      "description": "Thread resolution status"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "request_id",
+    "policy_id"
+  ]
+}

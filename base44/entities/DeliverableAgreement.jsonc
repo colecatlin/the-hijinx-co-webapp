@@ -1,0 +1,36 @@
+{
+  "name": "DeliverableAgreement",
+  "type": "object",
+  "properties": {
+    "requirement_id": {
+      "type": "string"
+    },
+    "holder_media_user_id": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "declined"
+      ]
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "requirement_id",
+    "holder_media_user_id",
+    "request_id",
+    "status"
+  ]
+}

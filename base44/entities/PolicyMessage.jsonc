@@ -1,0 +1,27 @@
+{
+  "name": "PolicyMessage",
+  "type": "object",
+  "properties": {
+    "thread_id": {
+      "type": "string",
+      "description": "Reference to PolicyThread"
+    },
+    "sender_user_id": {
+      "type": "string",
+      "description": "User id of the sender"
+    },
+    "message_text": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "thread_id",
+    "sender_user_id",
+    "message_text"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "OutletIssue",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Issue title"
+    },
+    "volume": {
+      "type": "number",
+      "description": "Volume number"
+    },
+    "issue_number": {
+      "type": "number",
+      "description": "Issue number"
+    },
+    "cover_image": {
+      "type": "string",
+      "description": "Issue cover image URL"
+    },
+    "description": {
+      "type": "string",
+      "description": "Issue description"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Publication date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title",
+    "volume",
+    "issue_number"
+  ]
+}

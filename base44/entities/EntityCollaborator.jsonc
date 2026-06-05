@@ -1,0 +1,54 @@
+{
+  "name": "EntityCollaborator",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the collaborator"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the collaborator for reference"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Team",
+        "Track",
+        "Series",
+        "Event"
+      ],
+      "description": "Type of entity being managed"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the specific entity"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Name of the entity for reference"
+    },
+    "access_code": {
+      "type": "string",
+      "description": "8-digit numeric access code from the entity"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "editor"
+      ],
+      "default": "editor",
+      "description": "Role/permission level for this entity"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "entity_type",
+    "entity_id",
+    "role",
+    "access_code"
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "name": "DriverCareerEntry",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver"
+    },
+    "year": {
+      "type": "number",
+      "description": "Season or competition year"
+    },
+    "season_label": {
+      "type": "string",
+      "description": "Optional label for the season or program, e.g. 'Pro 4 Full Season' or 'Select Rounds'"
+    },
+    "is_primary_program": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marks this entry as the driver's primary program for that year. Only one per driver per year."
+    },
+    "program_status": {
+      "type": "string",
+      "enum": [
+        "Planned",
+        "Active",
+        "Completed",
+        "Partial",
+        "Cancelled"
+      ],
+      "description": "Status of this career program"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team"
+    },
+    "team_name_override": {
+      "type": "string",
+      "description": "Optional manual team name if no Team entity is linked"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series"
+    },
+    "series_name_override": {
+      "type": "string",
+      "description": "Optional manual series name if no Series entity is linked"
+    },
+    "class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass"
+    },
+    "class_name_override": {
+      "type": "string",
+      "description": "Optional manual class name if no SeriesClass or EventClass entity is linked"
+    },
+    "vehicle": {
+      "type": "string",
+      "description": "Truck, car, sled, etc"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Vehicle manufacturer for this entry"
+    },
+    "number": {
+      "type": "string",
+      "description": "Car or bib number for this entry"
+    },
+    "rounds_contested": {
+      "type": "number",
+      "description": "Number of rounds or events contested in this program"
+    },
+    "starts": {
+      "type": "number",
+      "description": "Number of starts in this stint"
+    },
+    "wins": {
+      "type": "number",
+      "description": "Number of wins in this stint"
+    },
+    "podiums": {
+      "type": "number",
+      "description": "Number of podium finishes"
+    },
+    "top_fives": {
+      "type": "number",
+      "description": "Number of top-5 finishes"
+    },
+    "top_tens": {
+      "type": "number",
+      "description": "Number of top-10 finishes"
+    },
+    "championship_position": {
+      "type": "number",
+      "description": "Final championship standing for this season"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Manual ordering within the same year if needed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Highlights, injuries, milestones"
+    }
+  },
+  "required": [
+    "driver_id",
+    "year"
+  ]
+}

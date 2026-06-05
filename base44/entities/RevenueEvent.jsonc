@@ -1,0 +1,112 @@
+{
+  "name": "RevenueEvent",
+  "type": "object",
+  "properties": {
+    "revenue_type": {
+      "type": "string",
+      "enum": [
+        "asset_license_sale",
+        "assignment_payment_due",
+        "merch_sale",
+        "creator_fund_award",
+        "sponsored_content_payment",
+        "outlet_revenue_share"
+      ],
+      "description": "Type of monetization event"
+    },
+    "linked_asset_id": {
+      "type": "string",
+      "description": "Optional MediaAsset ID"
+    },
+    "linked_assignment_id": {
+      "type": "string",
+      "description": "Optional MediaAssignment ID"
+    },
+    "linked_story_id": {
+      "type": "string",
+      "description": "Optional OutletStory ID"
+    },
+    "linked_agreement_id": {
+      "type": "string",
+      "description": "RevenueAgreement ID governing this event"
+    },
+    "linked_buyer_entity_type": {
+      "type": "string",
+      "description": "Type of buying entity (team, outlet, brand, user, etc.)"
+    },
+    "linked_buyer_entity_id": {
+      "type": "string",
+      "description": "ID of the buying entity"
+    },
+    "gross_amount": {
+      "type": "number",
+      "description": "Total gross amount in cents"
+    },
+    "platform_amount": {
+      "type": "number",
+      "description": "Platform's share in cents"
+    },
+    "creator_amount": {
+      "type": "number",
+      "description": "Creator's share in cents"
+    },
+    "outlet_amount": {
+      "type": "number",
+      "description": "Outlet's share in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "invoiced",
+        "paid",
+        "payout_pending",
+        "payout_sent",
+        "refunded",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Payment lifecycle status"
+    },
+    "payment_provider": {
+      "type": "string",
+      "default": "stripe",
+      "description": "Payment provider used"
+    },
+    "stripe_payment_intent_id": {
+      "type": "string",
+      "description": "Stripe PaymentIntent ID"
+    },
+    "stripe_checkout_session_id": {
+      "type": "string",
+      "description": "Stripe Checkout Session ID"
+    },
+    "stripe_invoice_id": {
+      "type": "string",
+      "description": "Stripe Invoice ID"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this revenue event occurred"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes on this event"
+    }
+  },
+  "required": [
+    "revenue_type",
+    "gross_amount",
+    "platform_amount",
+    "creator_amount",
+    "outlet_amount",
+    "status",
+    "occurred_at"
+  ]
+}

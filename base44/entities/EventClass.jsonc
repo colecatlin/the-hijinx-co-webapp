@@ -1,0 +1,53 @@
+{
+  "name": "EventClass",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional, for standings linking)"
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Display name of the class for this event (required)"
+    },
+    "max_entries": {
+      "type": "number",
+      "description": "Maximum number of entries allowed in this class (optional)"
+    },
+    "class_status": {
+      "type": "string",
+      "enum": [
+        "Open",
+        "Full",
+        "Closed"
+      ],
+      "default": "Open",
+      "description": "Class registration status"
+    },
+    "class_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Ordering index for class display"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional admin notes"
+    },
+    "event_class_identity_key": {
+      "type": "string",
+      "description": "Stable deduplication key: event_class:{event_id}:{normalized_class_name}"
+    },
+    "normalized_event_class_key": {
+      "type": "string",
+      "description": "Deterministic normalized key: event_class:{event_id}:{normalized_class_name}"
+    }
+  },
+  "required": [
+    "event_id",
+    "class_name"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "name": "StoryRadarAlert",
+  "type": "object",
+  "properties": {
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "critical_signal",
+        "urgent_recommendation",
+        "momentum_spike",
+        "ready_to_draft",
+        "processing_error",
+        "recommendation_assigned",
+        "coverage_gap"
+      ],
+      "description": "Type of alert"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short alert title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Alert message body"
+    },
+    "related_signal_id": {
+      "type": "string",
+      "description": "Optional: linked ContentSignal ID"
+    },
+    "related_recommendation_id": {
+      "type": "string",
+      "description": "Optional: linked StoryRecommendation ID"
+    },
+    "related_cluster_id": {
+      "type": "string",
+      "description": "Optional: linked StoryTrendCluster ID"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "urgent"
+      ],
+      "default": "info",
+      "description": "Alert severity level"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unread",
+        "read",
+        "archived"
+      ],
+      "default": "unread",
+      "description": "Alert read/archive status"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Optional: email of assigned editorial user"
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this alert was triggered"
+    },
+    "dedupe_key": {
+      "type": "string",
+      "description": "Prevents duplicate alerts for the same item"
+    }
+  },
+  "required": [
+    "alert_type",
+    "title",
+    "severity"
+  ]
+}

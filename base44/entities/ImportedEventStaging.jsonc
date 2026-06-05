@@ -1,0 +1,43 @@
+{
+  "name": "ImportedEventStaging",
+  "type": "object",
+  "properties": {
+    "import_run_id": {
+      "type": "string"
+    },
+    "source_event_name": {
+      "type": "string"
+    },
+    "source_event_slug": {
+      "type": "string"
+    },
+    "source_event_date_start": {
+      "type": "string"
+    },
+    "source_event_date_end": {
+      "type": "string"
+    },
+    "source_location": {
+      "type": "string"
+    },
+    "mapped_event_id": {
+      "type": "string",
+      "description": "Linked Event record if matched"
+    },
+    "import_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "matched",
+        "created",
+        "skipped",
+        "conflict"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "import_run_id",
+    "source_event_name"
+  ]
+}

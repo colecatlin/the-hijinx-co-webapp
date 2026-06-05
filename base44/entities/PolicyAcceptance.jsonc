@@ -1,0 +1,50 @@
+{
+  "name": "PolicyAcceptance",
+  "type": "object",
+  "properties": {
+    "policy_id": {
+      "type": "string"
+    },
+    "holder_media_user_id": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "change_requested"
+      ]
+    },
+    "change_category": {
+      "type": "string",
+      "enum": [
+        "liability",
+        "insurance",
+        "deliverables",
+        "usage_rights",
+        "conduct",
+        "other"
+      ]
+    },
+    "change_details": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "policy_id",
+    "holder_media_user_id",
+    "request_id",
+    "status"
+  ]
+}

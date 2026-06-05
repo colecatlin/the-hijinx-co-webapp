@@ -1,0 +1,43 @@
+{
+  "name": "AdAnalytics",
+  "type": "object",
+  "properties": {
+    "advertisement_id": {
+      "type": "string",
+      "description": "Reference to Advertisement entity"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of analytics data"
+    },
+    "impressions": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of ad impressions"
+    },
+    "clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of ad clicks"
+    },
+    "conversions": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of conversions"
+    },
+    "ctr": {
+      "type": "number",
+      "description": "Click-through rate (calculated as clicks/impressions)"
+    },
+    "conversion_rate": {
+      "type": "number",
+      "description": "Conversion rate (calculated as conversions/clicks)"
+    }
+  },
+  "required": [
+    "advertisement_id",
+    "date",
+    "impressions"
+  ]
+}

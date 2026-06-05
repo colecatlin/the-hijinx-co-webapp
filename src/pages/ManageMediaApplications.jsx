@@ -242,7 +242,7 @@ function ApplicationDetail({ app, onReviewed }) {
   );
 }
 
-export default function ManageMediaApplications() {
+export default function ManageMediaApplications({ embedded = false }) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('pending');
   const [selected, setSelected] = useState(null);
@@ -263,7 +263,7 @@ export default function ManageMediaApplications() {
 
   if (user && user.role !== 'admin') {
     return (
-      <ManagementLayout currentPage="ManageMediaApplications">
+      <ManagementLayout currentPage="ManageMediaApplications" embedded={embedded}>
         <ManagementShell title="Media Applications">
           <div className="text-center py-20 text-gray-500">Admin access required.</div>
         </ManagementShell>
@@ -282,7 +282,7 @@ export default function ManageMediaApplications() {
   }, {});
 
   return (
-    <ManagementLayout currentPage="ManageMediaApplications">
+    <ManagementLayout currentPage="ManageMediaApplications" embedded={embedded}>
       <ManagementShell
         title="Media Applications"
         subtitle="Review and approve contributor applications"

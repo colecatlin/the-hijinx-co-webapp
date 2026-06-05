@@ -1,0 +1,56 @@
+{
+  "name": "InsuranceProfile",
+  "type": "object",
+  "properties": {
+    "media_user_id": {
+      "type": "string"
+    },
+    "organization_id": {
+      "type": "string"
+    },
+    "carrier_name": {
+      "type": "string"
+    },
+    "policy_number": {
+      "type": "string"
+    },
+    "coverage_amount": {
+      "type": "string"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "certificate_drive_file_id": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "unverified"
+    },
+    "verified_by_user_id": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "carrier_name"
+  ]
+}

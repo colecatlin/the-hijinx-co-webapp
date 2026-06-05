@@ -1,0 +1,82 @@
+{
+  "name": "ActivityFeed",
+  "type": "object",
+  "description": "Platform activity log powering the homepage live feed",
+  "properties": {
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "driver_registration",
+        "story_published",
+        "media_uploaded",
+        "results_posted",
+        "event_created",
+        "track_added",
+        "series_updated",
+        "driver_registered"
+      ],
+      "description": "Type of platform activity"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short headline for the feed card"
+    },
+    "description": {
+      "type": "string",
+      "description": "Supporting detail line"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "track",
+        "series",
+        "event",
+        "story",
+        "media",
+        "results"
+      ],
+      "description": "Type of entity this activity relates to"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the related entity record"
+    },
+    "related_driver_id": {
+      "type": "string",
+      "description": "Optional linked driver"
+    },
+    "related_event_id": {
+      "type": "string",
+      "description": "Optional linked event"
+    },
+    "related_series_id": {
+      "type": "string",
+      "description": "Optional linked series"
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "Image URL for the feed card"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "entity",
+        "private"
+      ],
+      "default": "public",
+      "description": "Controls who sees this item in the feed"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the activity occurred"
+    }
+  },
+  "required": [
+    "activity_type",
+    "title",
+    "visibility"
+  ]
+}

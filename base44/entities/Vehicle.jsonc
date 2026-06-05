@@ -1,0 +1,64 @@
+{
+  "name": "Vehicle",
+  "type": "object",
+  "properties": {
+    "owner_driver_id": {
+      "type": "string",
+      "description": "Reference to Driver (optional)"
+    },
+    "owner_team_id": {
+      "type": "string",
+      "description": "Reference to Team (optional)"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Vehicle nickname/name"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "description": "Type (e.g., Pro4, Pro2, SxS, etc.)"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Vehicle manufacturer"
+    },
+    "model": {
+      "type": "string",
+      "description": "Vehicle model"
+    },
+    "year": {
+      "type": "number",
+      "description": "Model year"
+    },
+    "vin_last4": {
+      "type": "string",
+      "description": "Last 4 digits of VIN"
+    },
+    "transponder_default_id": {
+      "type": "string",
+      "description": "Default transponder ID for this vehicle"
+    },
+    "number_default": {
+      "type": "string",
+      "description": "Default car number"
+    },
+    "primary_color": {
+      "type": "string",
+      "description": "Primary vehicle color (hex or name)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Archive status"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,131 @@
+{
+  "name": "MediaApplication",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the applicant"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the applicant"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Applicant's display or professional name"
+    },
+    "application_type": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of media work: writer, photographer, videographer, journalist, press, editor_interest, outlet_representative, creator"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific coverage specialties"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short professional bio"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "location_state": {
+      "type": "string"
+    },
+    "location_country": {
+      "type": "string"
+    },
+    "primary_affiliation_type": {
+      "type": "string",
+      "enum": [
+        "independent",
+        "outlet",
+        "team_media",
+        "series_media",
+        "track_media"
+      ],
+      "description": "Primary affiliation type"
+    },
+    "primary_outlet_name": {
+      "type": "string",
+      "description": "Name of affiliated outlet or organization"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Professional website"
+    },
+    "social_links": {
+      "type": "object",
+      "description": "Social media links (instagram, x, youtube, etc.)"
+    },
+    "portfolio_links": {
+      "type": "object",
+      "description": "Portfolio or publication links"
+    },
+    "sample_work_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Links to sample work"
+    },
+    "reason_for_applying": {
+      "type": "string",
+      "description": "Why the applicant wants to join"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied",
+        "needs_more_info",
+        "withdrawn"
+      ],
+      "default": "pending",
+      "description": "Review status"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email of admin who reviewed"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When reviewed"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Admin review notes"
+    },
+    "granted_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Media roles granted upon approval"
+    },
+    "terms_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether terms were accepted"
+    },
+    "usage_rights_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether usage rights terms were accepted"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "application_type",
+    "terms_accepted"
+  ]
+}

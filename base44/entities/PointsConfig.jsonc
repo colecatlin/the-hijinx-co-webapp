@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "PointsConfig",
+  "type": "object",
+  "description": "Points ruleset configuration by series, class, season, and optional event override",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human readable ruleset name"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (required)"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season year as string, optional but recommended"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional, null means applies to all classes)"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional. If set, overrides for that specific event only"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this is the default ruleset for the series and season scope"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Status of the ruleset"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this ruleset is active for resolution (legacy field for compatibility)"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Higher wins when multiple configs match the same scope"
+    },
+    "applies_to_session_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "Final"
+      ],
+      "description": "Which session types earn points, defaults to Final only"
+    },
+    "points_by_position": {
+      "type": "array",
+      "description": "Points table, index 0 is position 1",
+      "items": {
+        "type": "number"
+      },
+      "default": [
+        50,
+        44,
+        40,
+        36,
+        32,
+        30,
+        28,
+        26,
+        24,
+        22,
+        20,
+        18,
+        16,
+        14,
+        12,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    "bonus_rules": {
+      "type": "object",
+      "description": "Optional bonus points",
+      "properties": {
+        "fastest_lap": {
+          "type": "number",
+          "default": 0
+        },
+        "most_laps_led": {
+          "type": "number",
+          "default": 0
+        },
+        "pole_award": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "default": {
+        "fastest_lap": 0,
+        "most_laps_led": 0,
+        "pole_award": 0
+      }
+    },
+    "drop_rounds": {
+      "type": "object",
+      "description": "Optional drop rounds configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "count": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "default": {
+        "enabled": false,
+        "count": 0
+      }
+    },
+    "tie_breaker_order": {
+      "type": "array",
+      "description": "Tie breaker order list",
+      "items": {
+        "type": "string",
+        "enum": [
+          "wins",
+          "seconds",
+          "thirds",
+          "best_finishes",
+          "most_starts",
+          "most_entries",
+          "latest_finish"
+        ]
+      },
+      "default": [
+        "wins",
+        "seconds",
+        "thirds",
+        "best_finishes",
+        "latest_finish"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    }
+  },
+  "required": [
+    "name",
+    "series_id"
+  ]
+}

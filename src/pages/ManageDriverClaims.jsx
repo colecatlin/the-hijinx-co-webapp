@@ -15,7 +15,7 @@ import { ArrowLeft, CheckCircle2, XCircle, ExternalLink, AlertCircle, Clock, Use
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-export default function ManageDriverClaims() {
+export default function ManageDriverClaims({ embedded = false }) {
   const queryClient = useQueryClient();
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [reviewAction, setReviewAction] = useState(null);
@@ -325,7 +325,7 @@ export default function ManageDriverClaims() {
   const rejectedClaims = claims.filter(c => c.status === 'rejected' || c.status === 'duplicate');
 
   return (
-    <ManagementLayout currentPage="ManageDriverClaims">
+    <ManagementLayout currentPage="ManageDriverClaims" embedded={embedded}>
       <ManagementShell title="Driver Claims" subtitle="Review and verify driver-submitted race results">
 
         {isLoading ? (

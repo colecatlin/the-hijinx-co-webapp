@@ -1,0 +1,87 @@
+{
+  "name": "DeliverableRequirement",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "track",
+        "event"
+      ]
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "requirement_type": {
+      "type": "string",
+      "enum": [
+        "photo_set",
+        "video_clips",
+        "highlight_edit",
+        "raw_dump",
+        "social_recap",
+        "interview",
+        "other"
+      ],
+      "default": "other"
+    },
+    "quantity_min": {
+      "type": "number"
+    },
+    "specs_json": {
+      "type": "string"
+    },
+    "due_rule_type": {
+      "type": "string",
+      "enum": [
+        "hours_after_event_end",
+        "fixed_datetime",
+        "none"
+      ],
+      "default": "none"
+    },
+    "due_hours_after_event_end": {
+      "type": "number"
+    },
+    "due_datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "enforcement_level": {
+      "type": "string",
+      "enum": [
+        "soft",
+        "conditional",
+        "hard"
+      ],
+      "default": "soft"
+    },
+    "usage_rights_text": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "title",
+    "requirement_type"
+  ]
+}

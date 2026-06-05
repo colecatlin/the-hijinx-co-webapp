@@ -1,0 +1,81 @@
+{
+  "name": "ImportLog",
+  "type": "object",
+  "properties": {
+    "import_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the import was run"
+    },
+    "total_rows": {
+      "type": "number",
+      "description": "Total rows in the import"
+    },
+    "created_drivers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created driver records"
+    },
+    "created_tracks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created track records"
+    },
+    "created_series": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created series records"
+    },
+    "created_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created series class records"
+    },
+    "created_events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created event records"
+    },
+    "created_programs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created driver program records"
+    },
+    "created_results": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of created result records"
+    },
+    "summary": {
+      "type": "object",
+      "description": "Import summary (tracks, series, classes, events, drivers, programs, results counts)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "rolled_back"
+      ],
+      "default": "completed",
+      "description": "Import status"
+    }
+  },
+  "required": [
+    "import_date",
+    "total_rows"
+  ]
+}

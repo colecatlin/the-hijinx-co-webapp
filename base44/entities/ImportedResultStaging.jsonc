@@ -1,0 +1,81 @@
+{
+  "name": "ImportedResultStaging",
+  "type": "object",
+  "properties": {
+    "import_run_id": {
+      "type": "string"
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "round_number": {
+      "type": "number"
+    },
+    "race_date": {
+      "type": "string"
+    },
+    "class_name": {
+      "type": "string"
+    },
+    "session_type": {
+      "type": "string"
+    },
+    "finishing_position": {
+      "type": "number"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "driver_first_name": {
+      "type": "string"
+    },
+    "driver_last_name": {
+      "type": "string"
+    },
+    "driver_number": {
+      "type": "string"
+    },
+    "laps_completed": {
+      "type": "number"
+    },
+    "status_text": {
+      "type": "string"
+    },
+    "best_lap": {
+      "type": "string"
+    },
+    "points_awarded": {
+      "type": "number"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "mapped_driver_id": {
+      "type": "string"
+    },
+    "mapped_event_id": {
+      "type": "string"
+    },
+    "mapped_class_id": {
+      "type": "string"
+    },
+    "import_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "matched",
+        "created",
+        "skipped",
+        "conflict"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "import_run_id",
+    "event_name",
+    "class_name",
+    "driver_name",
+    "finishing_position"
+  ]
+}

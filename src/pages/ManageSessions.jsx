@@ -12,7 +12,7 @@ import { SESSION_STATE_CONFIG } from '@/components/registrationdashboard/ops/ses
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 
-export default function ManageSessions() {
+export default function ManageSessions({ embedded = false }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSessionForEdit, setSelectedSessionForEdit] = useState(null);
   const queryClient = useQueryClient();
@@ -36,14 +36,14 @@ export default function ManageSessions() {
 
   if (selectedSessionForEdit) {
     return (
-      <ManagementLayout currentPage="ManageSessions">
+      <ManagementLayout currentPage="ManageSessions" embedded={embedded}>
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
             <h3 className="font-bold text-blue-900 mb-1">Deep Record View</h3>
             <p className="text-sm text-blue-800">Active session creation, race day workflow, provisional status, official status, and locked status should be managed inside the <strong>Race Operations Hub</strong>. This view is for reviewing and repairing the raw session record.</p>
           </div>
           <div className="flex justify-end mb-4">
-            <Link to={createPageUrl('RegistrationDashboard')}>
+            <Link to="/racecore">
               <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
                 <ExternalLink className="w-4 h-4" />
                 Go to Race Operations Hub
@@ -126,12 +126,12 @@ export default function ManageSessions() {
   }
 
   return (
-    <ManagementLayout currentPage="ManageSessions">
+    <ManagementLayout currentPage="ManageSessions" embedded={embedded}>
       <ManagementShell
         title="Sessions Records"
         subtitle={`${sessions.length} total session records across the platform`}
         actions={
-          <Link to={createPageUrl('RegistrationDashboard')}>
+          <Link to="/racecore">
             <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
               <ExternalLink className="w-4 h-4" />
               Go to Race Operations Hub
@@ -148,7 +148,7 @@ export default function ManageSessions() {
           <p className="text-sm text-gray-600 flex-1">
             Session creation should happen inside the Race Operations Hub so sessions stay connected to event classes, race workflow, and results.
           </p>
-          <Link to="/RegistrationDashboard">
+          <Link to="/racecore">
             <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
               <Plus className="w-4 h-4" />
               Create Sessions in Race Ops

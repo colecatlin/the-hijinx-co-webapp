@@ -1,0 +1,31 @@
+{
+  "name": "MediaOrganization",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "primary_contact_name": {
+      "type": "string"
+    },
+    "primary_contact_email": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name",
+    "primary_contact_name",
+    "primary_contact_email"
+  ]
+}

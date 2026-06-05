@@ -1,0 +1,119 @@
+{
+  "name": "UsageRightsAgreement",
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Entity requiring the rights agreement (event, team, series, etc.)"
+    },
+    "holder_media_user_id": {
+      "type": "string",
+      "description": "MediaUser ID of the media professional party"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "User ID of the asset creator/owner for creator-economy agreements"
+    },
+    "owner_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the creator party"
+    },
+    "asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MediaAsset IDs this agreement covers (empty = general/blanket agreement)"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional scoping event"
+    },
+    "request_id": {
+      "type": "string",
+      "description": "Optional linked credential request"
+    },
+    "usage_context": {
+      "type": "string",
+      "enum": [
+        "editorial",
+        "platform_display",
+        "promotional",
+        "merchandise",
+        "commercial_license",
+        "personal_portfolio"
+      ],
+      "description": "The specific usage context this agreement covers"
+    },
+    "rights_text": {
+      "type": "string",
+      "description": "Full text of usage rights terms"
+    },
+    "creator_opt_in_required": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether creator must explicitly opt in for this usage context"
+    },
+    "revenue_share_applicable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a revenue share applies under this agreement"
+    },
+    "revenue_share_percent_creator": {
+      "type": "number",
+      "description": "Creator's share of any revenue (0-100)"
+    },
+    "revenue_share_percent_platform": {
+      "type": "number",
+      "description": "Platform's share of any revenue (0-100)"
+    },
+    "revenue_share_percent_outlet": {
+      "type": "number",
+      "description": "Outlet's share of any revenue (0-100)"
+    },
+    "entity_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deadline for entity to sign"
+    },
+    "media_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deadline for media to sign"
+    },
+    "entity_signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "media_signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "proposed",
+        "accepted_by_media",
+        "accepted_by_entity",
+        "fully_executed",
+        "expired",
+        "revoked"
+      ],
+      "default": "draft",
+      "description": "Agreement lifecycle status"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "rights_text",
+    "status"
+  ]
+}

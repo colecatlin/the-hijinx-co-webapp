@@ -1,0 +1,118 @@
+{
+  "name": "EventCollaboration",
+  "type": "object",
+  "description": "Track collaboration record for events",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "track_id": {
+      "type": "string",
+      "description": "Reference to Track (required)"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (required)"
+    },
+    "created_by_entity_type": {
+      "type": "string",
+      "enum": [
+        "track",
+        "series"
+      ],
+      "description": "Which entity initiated the collaboration (required)"
+    },
+    "created_by_entity_id": {
+      "type": "string",
+      "description": "ID of the Track or Series that initiated (required)"
+    },
+    "track_acceptance_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Track side acceptance status"
+    },
+    "series_acceptance_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Series side acceptance status"
+    },
+    "track_planning_rights": {
+      "type": "string",
+      "enum": [
+        "none",
+        "edit_only",
+        "full_publish"
+      ],
+      "default": "edit_only",
+      "description": "Planning and publish rights for Track"
+    },
+    "series_planning_rights": {
+      "type": "string",
+      "enum": [
+        "none",
+        "edit_only",
+        "full_publish"
+      ],
+      "default": "edit_only",
+      "description": "Planning and publish rights for Series"
+    },
+    "accepted_track_user_id": {
+      "type": "string",
+      "description": "User ID who accepted on behalf of Track"
+    },
+    "accepted_series_user_id": {
+      "type": "string",
+      "description": "User ID who accepted on behalf of Series"
+    },
+    "accepted_track_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Track accepted"
+    },
+    "accepted_series_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Series accepted"
+    },
+    "publish_gate_mode": {
+      "type": "string",
+      "enum": [
+        "both_must_accept",
+        "either_full_publish"
+      ],
+      "default": "both_must_accept",
+      "description": "Publish gating: both sides accept or either side with full_publish can publish"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Collaboration status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes or decline reason"
+    }
+  },
+  "required": [
+    "event_id",
+    "track_id",
+    "series_id",
+    "created_by_entity_type",
+    "created_by_entity_id"
+  ]
+}

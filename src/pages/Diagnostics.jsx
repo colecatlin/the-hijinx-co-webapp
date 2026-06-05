@@ -188,7 +188,7 @@ function V1SectionPanel({ sectionKey, section }) {
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
-export default function Diagnostics() {
+export default function Diagnostics({ embedded = false }) {
   const [report, setReport] = useState(null);
   const [running, setRunning] = useState(false);
   const [repairing, setRepairing] = useState(false);
@@ -653,7 +653,7 @@ export default function Diagnostics() {
 
   if (user?.role !== 'admin') {
     return (
-      <ManagementLayout currentPage="Diagnostics">
+      <ManagementLayout currentPage="Diagnostics" embedded={embedded}>
         <ManagementShell title="Access Denied" subtitle="">
           <div className="py-20 text-center"><p className="text-gray-600">This page is for administrators only.</p></div>
         </ManagementShell>
@@ -668,7 +668,7 @@ export default function Diagnostics() {
   const rte = report?.route_audit  || {};
 
   return (
-    <ManagementLayout currentPage="Diagnostics">
+    <ManagementLayout currentPage="Diagnostics" embedded={embedded}>
       <ManagementShell title="Platform Diagnostics" subtitle="Admin-only integrity audit and safe repair tooling">
 
         {/* ── Media Ecosystem Health ───────────────────────────────────── */}

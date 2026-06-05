@@ -1,0 +1,47 @@
+{
+  "name": "MediaCompliance",
+  "type": "object",
+  "properties": {
+    "holder_media_user_id": {
+      "type": "string",
+      "description": "Reference to MediaUser"
+    },
+    "on_time_rate": {
+      "type": "number",
+      "description": "Ratio of on-time submissions (0.0 to 1.0)"
+    },
+    "outstanding_requirements_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of unsubmitted or unaccepted deliverable requirements"
+    },
+    "last_submission_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Most recent deliverable submission timestamp"
+    },
+    "flags_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of compliance flags or violations"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "good",
+        "watchlist",
+        "restricted"
+      ],
+      "default": "good",
+      "description": "Compliance standing"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "holder_media_user_id",
+    "status"
+  ]
+}

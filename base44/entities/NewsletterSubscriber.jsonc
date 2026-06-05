@@ -1,0 +1,19 @@
+{
+  "name": "NewsletterSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where they signed up from"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "name": "ImportedStandingStaging",
+  "type": "object",
+  "properties": {
+    "import_run_id": {
+      "type": "string"
+    },
+    "season_year": {
+      "type": "number"
+    },
+    "class_name": {
+      "type": "string"
+    },
+    "standing_position": {
+      "type": "number"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "driver_first_name": {
+      "type": "string"
+    },
+    "driver_last_name": {
+      "type": "string"
+    },
+    "driver_number": {
+      "type": "string"
+    },
+    "total_points": {
+      "type": "number"
+    },
+    "wins": {
+      "type": "number"
+    },
+    "podiums": {
+      "type": "number"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "mapped_driver_id": {
+      "type": "string"
+    },
+    "mapped_class_id": {
+      "type": "string"
+    },
+    "import_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "matched",
+        "created",
+        "skipped",
+        "conflict"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "import_run_id",
+    "season_year",
+    "class_name",
+    "driver_name",
+    "standing_position",
+    "total_points"
+  ]
+}

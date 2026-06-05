@@ -1,0 +1,45 @@
+{
+  "name": "AssetReview",
+  "type": "object",
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "description": "Reference to MediaAsset"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Governing entity for this review"
+    },
+    "reviewer_user_id": {
+      "type": "string",
+      "description": "User who last reviewed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "uploaded",
+        "in_review",
+        "approved",
+        "rejected",
+        "flagged"
+      ],
+      "default": "uploaded"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "asset_id",
+    "entity_id",
+    "status"
+  ]
+}

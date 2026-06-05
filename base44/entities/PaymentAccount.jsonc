@@ -1,0 +1,67 @@
+{
+  "name": "PaymentAccount",
+  "type": "object",
+  "properties": {
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "media_profile",
+        "media_outlet"
+      ],
+      "description": "Type of entity this payment account belongs to"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID of the owning MediaProfile or MediaOutlet"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID (for purchases)"
+    },
+    "stripe_connected_account_id": {
+      "type": "string",
+      "description": "Stripe Connect Account ID (for receiving payouts)"
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "onboarding_started",
+        "pending_verification",
+        "active",
+        "restricted",
+        "disabled"
+      ],
+      "default": "not_started",
+      "description": "Stripe onboarding and account lifecycle status"
+    },
+    "payouts_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe payouts are enabled for this account"
+    },
+    "charges_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe charges are enabled for this account"
+    },
+    "onboarding_completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When onboarding was completed"
+    },
+    "last_sync_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When account status was last synced from Stripe"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes on this payment account"
+    }
+  },
+  "required": [
+    "owner_type",
+    "owner_id"
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "name": "MediaRequest",
+  "type": "object",
+  "properties": {
+    "request_title": {
+      "type": "string",
+      "description": "Title or brief description of the request"
+    },
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "event_coverage",
+        "photography",
+        "videography",
+        "writing",
+        "social_content",
+        "mixed_media",
+        "editorial_assignment",
+        "brand_collaboration"
+      ],
+      "description": "Type of work being requested"
+    },
+    "request_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "matched",
+        "sent_to_creator",
+        "accepted",
+        "declined",
+        "expired",
+        "converted_to_assignment",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Lifecycle status of the request"
+    },
+    "requested_by_user_id": {
+      "type": "string",
+      "description": "User ID of the person who created this request"
+    },
+    "requested_by_entity_type": {
+      "type": "string",
+      "enum": [
+        "team",
+        "track",
+        "series",
+        "outlet",
+        "brand",
+        "admin"
+      ],
+      "description": "Type of entity making the request"
+    },
+    "requested_by_entity_id": {
+      "type": "string",
+      "description": "ID of the requesting entity"
+    },
+    "requested_by_entity_name": {
+      "type": "string",
+      "description": "Display name of requesting entity (denormalized)"
+    },
+    "target_creator_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of a specifically targeted creator (direct request)"
+    },
+    "target_creator_user_id": {
+      "type": "string",
+      "description": "User ID of the targeted creator"
+    },
+    "target_creator_name": {
+      "type": "string",
+      "description": "Display name of targeted creator (denormalized)"
+    },
+    "target_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID if request is outlet-level"
+    },
+    "open_to_applicants": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether open creators can see and respond to this request"
+    },
+    "matched_creator_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MediaProfile IDs of creators matched to this request"
+    },
+    "linked_event_id": {
+      "type": "string",
+      "description": "Optional linked Event ID"
+    },
+    "linked_event_name": {
+      "type": "string",
+      "description": "Event name (denormalized)"
+    },
+    "linked_series_id": {
+      "type": "string",
+      "description": "Optional linked Series ID"
+    },
+    "linked_track_id": {
+      "type": "string",
+      "description": "Optional linked Track ID"
+    },
+    "request_description": {
+      "type": "string",
+      "description": "Full description of the work being requested"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Structured deliverable list [{type, quantity, required_format, notes}]"
+    },
+    "budget_range": {
+      "type": "string",
+      "description": "Optional budget range indicator (future monetization)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Request priority level"
+    },
+    "credential_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a valid media credential is required for this request"
+    },
+    "credential_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether credential requirement has been verified"
+    },
+    "location": {
+      "type": "string",
+      "description": "Location relevant to this request"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start date of the work period"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End date of the work period"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deadline for creator response or deliverable submission"
+    },
+    "converted_assignment_id": {
+      "type": "string",
+      "description": "MediaAssignment ID created when request was accepted"
+    },
+    "decline_reason": {
+      "type": "string",
+      "description": "Reason provided when creator declines"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal admin/editor notes"
+    }
+  },
+  "required": [
+    "request_title",
+    "request_type",
+    "request_status"
+  ]
+}

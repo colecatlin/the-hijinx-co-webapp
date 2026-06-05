@@ -1,0 +1,149 @@
+{
+  "name": "StoryPerformanceMetrics",
+  "type": "object",
+  "properties": {
+    "story_id": {
+      "type": "string",
+      "description": "Reference to OutletStory (required)"
+    },
+    "story_title": {
+      "type": "string",
+      "description": "Story headline (denormalized for quick queries)"
+    },
+    "story_slug": {
+      "type": "string",
+      "description": "URL slug (denormalized)"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Story publish date"
+    },
+    "views_total": {
+      "type": "number",
+      "description": "Total page views"
+    },
+    "views_first_24h": {
+      "type": "number",
+      "description": "Views in first 24 hours"
+    },
+    "views_first_7_days": {
+      "type": "number",
+      "description": "Views in first 7 days"
+    },
+    "views_first_30_days": {
+      "type": "number",
+      "description": "Views in first 30 days"
+    },
+    "engagement_score": {
+      "type": "number",
+      "description": "Composite engagement score 0-100"
+    },
+    "time_on_page_average": {
+      "type": "number",
+      "description": "Average time on page in seconds"
+    },
+    "scroll_depth_average": {
+      "type": "number",
+      "description": "Average scroll depth 0-100"
+    },
+    "social_shares": {
+      "type": "number",
+      "description": "Total social shares"
+    },
+    "social_clickthroughs": {
+      "type": "number",
+      "description": "Clicks from social platforms"
+    },
+    "comments_count": {
+      "type": "number",
+      "description": "Comment count"
+    },
+    "newsletter_clicks": {
+      "type": "number",
+      "description": "Clicks from newsletter"
+    },
+    "search_traffic_percent": {
+      "type": "number",
+      "description": "Percent of traffic from search"
+    },
+    "direct_traffic_percent": {
+      "type": "number",
+      "description": "Percent of traffic from direct"
+    },
+    "social_traffic_percent": {
+      "type": "number",
+      "description": "Percent of traffic from social"
+    },
+    "performance_score": {
+      "type": "number",
+      "description": "Composite performance score 0-100"
+    },
+    "virality_score": {
+      "type": "number",
+      "description": "Virality score 0-100 based on early traffic and share velocity"
+    },
+    "longevity_score": {
+      "type": "number",
+      "description": "Longevity score 0-100 based on sustained traffic over time"
+    },
+    "story_type": {
+      "type": "string",
+      "description": "Type of story (feature, news, analysis, etc.)"
+    },
+    "category": {
+      "type": "string",
+      "description": "Primary story category"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Sub-category"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Story tags"
+    },
+    "related_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Motorsports entities covered (drivers, teams, tracks, series)"
+    },
+    "related_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of related entities"
+    },
+    "recommendation_id": {
+      "type": "string",
+      "description": "Optional: StoryRecommendation that originated this story"
+    },
+    "radar_originated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this story originated from Story Radar"
+    },
+    "editor_rating": {
+      "type": "number",
+      "description": "Editor's qualitative rating 0-100"
+    },
+    "editor_notes": {
+      "type": "string",
+      "description": "Editor's notes on story quality and performance"
+    },
+    "last_computed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When performance scores were last calculated"
+    }
+  },
+  "required": [
+    "story_id"
+  ]
+}

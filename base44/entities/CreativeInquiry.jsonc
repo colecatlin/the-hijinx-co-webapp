@@ -1,0 +1,56 @@
+{
+  "name": "CreativeInquiry",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "Writing",
+        "Design",
+        "Photo and Video",
+        "Other"
+      ]
+    },
+    "budget_range": {
+      "type": "string",
+      "enum": [
+        "Under $1,000",
+        "$1,000 - $5,000",
+        "$5,000 - $15,000",
+        "$15,000+"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Project description"
+    },
+    "timeline": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "contacted",
+        "in_progress",
+        "completed"
+      ],
+      "default": "new"
+    }
+  },
+  "required": [
+    "name",
+    "email",
+    "service_type",
+    "description"
+  ]
+}

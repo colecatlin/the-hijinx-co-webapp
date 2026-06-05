@@ -1,0 +1,114 @@
+{
+  "name": "StoryTrendCluster",
+  "type": "object",
+  "properties": {
+    "trend_name": {
+      "type": "string",
+      "description": "Name/label for the trend cluster"
+    },
+    "trend_type": {
+      "type": "string",
+      "enum": [
+        "entity_surge",
+        "topic_wave",
+        "rivalry",
+        "milestone_run",
+        "controversy",
+        "sponsorship_wave",
+        "series_growth",
+        "other"
+      ],
+      "description": "Type/category of trend"
+    },
+    "trend_summary": {
+      "type": "string",
+      "description": "Human-readable summary of what this trend represents"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "forming",
+        "active",
+        "peaking",
+        "cooling",
+        "closed",
+        "ignored",
+        "archived"
+      ],
+      "default": "forming",
+      "description": "Current lifecycle status of the trend"
+    },
+    "momentum_score": {
+      "type": "number",
+      "description": "Score 0-100 representing current momentum/velocity"
+    },
+    "story_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of stories/recommendations linked to this trend"
+    },
+    "signal_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of signals contributing to this cluster"
+    },
+    "signal_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of ContentSignals contributing to this cluster"
+    },
+    "recommendation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of StoryRecommendations linked to this cluster"
+    },
+    "related_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Entity IDs most associated with this trend"
+    },
+    "related_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Entity names most associated with this trend"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for grouping and filtering trends"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this trend cluster was first identified"
+    },
+    "first_signal_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the first signal in this cluster was detected"
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Most recent activity associated with this cluster"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal editorial notes about this trend"
+    }
+  },
+  "required": [
+    "trend_name",
+    "trend_type"
+  ]
+}

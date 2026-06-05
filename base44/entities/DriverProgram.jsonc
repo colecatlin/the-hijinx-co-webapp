@@ -1,0 +1,94 @@
+{
+  "name": "DriverProgram",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver entity"
+    },
+    "program_type": {
+      "type": "string",
+      "enum": [
+        "series",
+        "single_event"
+      ],
+      "default": "series",
+      "description": "Whether this program is part of a series or a standalone event"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series entity (if program_type = series)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass entity for this program"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event entity (if program_type = single_event)"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team entity"
+    },
+    "start_month": {
+      "type": "number",
+      "description": "Start month (1-12)"
+    },
+    "start_year": {
+      "type": "number",
+      "description": "Start year"
+    },
+    "end_month": {
+      "type": "number",
+      "description": "End month (1-12) \u2014 required if status is inactive"
+    },
+    "end_year": {
+      "type": "number",
+      "description": "End year \u2014 required if status is inactive"
+    },
+    "car_number": {
+      "type": "string",
+      "description": "Car or bib number for this program"
+    },
+    "participation_status": {
+      "type": "string",
+      "enum": [
+        "Full-Time",
+        "Part-Time",
+        "Guest"
+      ],
+      "default": "Full-Time",
+      "description": "Whether the driver is full-time, part-time, or a guest in this program"
+    },
+    "races_participated": {
+      "type": "number",
+      "description": "Number of races the driver ran in this program"
+    },
+    "total_series_races": {
+      "type": "number",
+      "description": "Total number of races in the series for the season"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Program status"
+    },
+    "is_rookie": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was a rookie year for the driver in this program/class"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional program notes"
+    }
+  },
+  "required": [
+    "driver_id"
+  ]
+}

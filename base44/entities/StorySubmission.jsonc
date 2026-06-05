@@ -1,0 +1,189 @@
+{
+  "name": "StorySubmission",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Submitter name"
+    },
+    "email": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "description": "Proposed story title"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Racing",
+        "Culture",
+        "Business",
+        "Gear",
+        "Travel",
+        "Opinion",
+        "Media"
+      ]
+    },
+    "pitch": {
+      "type": "string",
+      "description": "Story pitch / summary"
+    },
+    "writing_sample_url": {
+      "type": "string",
+      "description": "Link to writing sample"
+    },
+    "photo_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Submitted photo URLs"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewing",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Legacy status field \u2014 preserved for backward compatibility"
+    },
+    "decline_reason": {
+      "type": "string",
+      "description": "Reason for declining the submission"
+    },
+    "submission_source": {
+      "type": "string",
+      "enum": [
+        "profile",
+        "mediaportal",
+        "writer_workspace",
+        "editorial_assignment"
+      ],
+      "default": "profile",
+      "description": "Where this submission originated"
+    },
+    "submission_type": {
+      "type": "string",
+      "enum": [
+        "tip",
+        "full_story",
+        "pitch"
+      ],
+      "default": "full_story",
+      "description": "The type of submission"
+    },
+    "submitter_user_id": {
+      "type": "string",
+      "description": "User ID of the submitter"
+    },
+    "submitter_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the submitter if contributor"
+    },
+    "submitter_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID if submitted on behalf of an outlet"
+    },
+    "submitter_media_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Media roles the submitter held at time of submission"
+    },
+    "related_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of related platform entities"
+    },
+    "related_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of related platform entities (denormalized)"
+    },
+    "related_event_id": {
+      "type": "string",
+      "description": "Optional linked Event ID"
+    },
+    "related_series_id": {
+      "type": "string",
+      "description": "Optional linked Series ID"
+    },
+    "related_track_id": {
+      "type": "string",
+      "description": "Optional linked Track ID"
+    },
+    "related_driver_id": {
+      "type": "string",
+      "description": "Optional linked Driver ID"
+    },
+    "related_team_id": {
+      "type": "string",
+      "description": "Optional linked Team ID"
+    },
+    "editorial_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "needs_revision",
+        "approved",
+        "rejected",
+        "converted_to_draft",
+        "published_direct",
+        "archived"
+      ],
+      "default": "pending_review",
+      "description": "Editorial workflow status \u2014 primary review state"
+    },
+    "editorial_priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Editorial review priority"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email of editor/admin who reviewed"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the review was completed"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Editorial review notes \u2014 surfaced to submitter on revision requests"
+    },
+    "converted_draft_story_id": {
+      "type": "string",
+      "description": "OutletStory ID created from this submission"
+    },
+    "linked_recommendation_id": {
+      "type": "string",
+      "description": "Optional linked StoryRecommendation ID"
+    },
+    "linked_research_packet_id": {
+      "type": "string",
+      "description": "Optional linked StoryResearchPacket ID"
+    }
+  },
+  "required": [
+    "name",
+    "email",
+    "title",
+    "pitch"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "name": "WaiverSignature",
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": "string"
+    },
+    "holder_media_user_id": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "signed_name": {
+      "type": "string"
+    },
+    "signed_email": {
+      "type": "string"
+    },
+    "signed_phone": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date"
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "signature_image": {
+      "type": "string"
+    },
+    "signed_pdf_drive_file_id": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "revoked"
+      ],
+      "default": "valid"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "template_id",
+    "holder_media_user_id",
+    "signed_name",
+    "signed_email",
+    "signed_at"
+  ]
+}

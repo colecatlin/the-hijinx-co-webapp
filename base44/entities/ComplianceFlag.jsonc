@@ -1,0 +1,74 @@
+{
+  "name": "ComplianceFlag",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "entry_id": {
+      "type": "string",
+      "description": "Reference to Entry (required)"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver (optional, denormalized for convenience)"
+    },
+    "flag_type": {
+      "type": "string",
+      "enum": [
+        "Missing Waiver",
+        "Expired License",
+        "Duplicate Car Number",
+        "Missing Transponder",
+        "Other"
+      ],
+      "description": "Type of compliance issue"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "warning",
+      "description": "Severity level of the flag"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "resolved"
+      ],
+      "default": "open",
+      "description": "Current status of the flag"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes about the issue"
+    },
+    "resolved_notes": {
+      "type": "string",
+      "description": "Notes about how the issue was resolved"
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID of who created the flag"
+    },
+    "resolved_by_user_id": {
+      "type": "string",
+      "description": "User ID of who resolved the flag"
+    },
+    "resolved_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the flag was resolved"
+    }
+  },
+  "required": [
+    "event_id",
+    "entry_id",
+    "flag_type"
+  ]
+}

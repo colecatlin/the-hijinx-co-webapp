@@ -1,0 +1,199 @@
+{
+  "name": "MediaAssignment",
+  "type": "object",
+  "properties": {
+    "assignment_title": {
+      "type": "string",
+      "description": "Title or brief description of the assignment"
+    },
+    "assignment_type": {
+      "type": "string",
+      "enum": [
+        "story",
+        "event_coverage",
+        "photo_capture",
+        "video_capture",
+        "editorial_research",
+        "interview",
+        "social_content",
+        "recap_package",
+        "feature_package",
+        "mixed_media"
+      ],
+      "description": "Type of contributor assignment"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "assigned",
+        "accepted",
+        "declined",
+        "in_progress",
+        "submitted",
+        "needs_revision",
+        "approved",
+        "completed",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Workflow status of the assignment"
+    },
+    "assigned_to_user_id": {
+      "type": "string",
+      "description": "User ID of the assigned contributor"
+    },
+    "assigned_to_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the assigned contributor"
+    },
+    "assigned_to_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID \u2014 for outlet-level assignments"
+    },
+    "assigned_by_user_id": {
+      "type": "string",
+      "description": "User ID of the admin or editor who created the assignment"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deadline for the assignment"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Assignment priority"
+    },
+    "linked_event_id": {
+      "type": "string",
+      "description": "Optional linked Event ID"
+    },
+    "linked_series_id": {
+      "type": "string",
+      "description": "Optional linked Series ID"
+    },
+    "linked_track_id": {
+      "type": "string",
+      "description": "Optional linked Track ID"
+    },
+    "linked_story_id": {
+      "type": "string",
+      "description": "Optional linked OutletStory ID"
+    },
+    "linked_story_submission_id": {
+      "type": "string",
+      "description": "Optional linked StorySubmission ID"
+    },
+    "linked_recommendation_id": {
+      "type": "string",
+      "description": "Optional linked StoryRecommendation ID"
+    },
+    "linked_research_packet_id": {
+      "type": "string",
+      "description": "Optional linked StoryResearchPacket ID"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Structured deliverable requirements: [{type, quantity, due_at, required_format, notes}]"
+    },
+    "deliverable_notes": {
+      "type": "string",
+      "description": "Free-text deliverable requirements and guidance"
+    },
+    "assignment_notes": {
+      "type": "string",
+      "description": "Editorial briefing notes for the contributor"
+    },
+    "contributor_notes": {
+      "type": "string",
+      "description": "Notes added by the contributor during the assignment"
+    },
+    "editor_notes": {
+      "type": "string",
+      "description": "Internal editor notes \u2014 may or may not be visible to contributor"
+    },
+    "credential_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a valid RaceCore credential is required for this assignment"
+    },
+    "credential_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the credential requirement has been verified by the system"
+    },
+    "compensation_type": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "flat_fee",
+        "revenue_share",
+        "creator_fund_eligible",
+        "sponsored"
+      ],
+      "default": "unpaid",
+      "description": "How the contributor will be compensated"
+    },
+    "compensation_amount": {
+      "type": "number",
+      "description": "Flat fee amount in cents (for flat_fee type)"
+    },
+    "compensation_currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code for compensation"
+    },
+    "linked_revenue_agreement_id": {
+      "type": "string",
+      "description": "RevenueAgreement ID governing this assignment's payment"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "invoiced",
+        "paid",
+        "payout_pending",
+        "payout_sent"
+      ],
+      "default": "none",
+      "description": "Payment workflow status for this assignment"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the contributor submitted their work"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the assignment was approved"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the assignment was marked complete"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the assignment was cancelled"
+    }
+  },
+  "required": [
+    "assignment_title",
+    "assignment_type",
+    "status"
+  ]
+}

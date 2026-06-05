@@ -1,0 +1,200 @@
+{
+  "name": "StoryResearchPacket",
+  "type": "object",
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this packet was generated"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "recommendation",
+        "narrative_arc",
+        "trend_cluster",
+        "story",
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event",
+        "manual_topic"
+      ],
+      "description": "What sourced this research packet"
+    },
+    "source_id": {
+      "type": "string",
+      "description": "ID of the source record"
+    },
+    "source_title": {
+      "type": "string",
+      "description": "Title of the source record (denormalized)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Research packet title"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short overview of what the packet covers"
+    },
+    "editorial_brief": {
+      "type": "string",
+      "description": "Stronger explanation of the story opportunity"
+    },
+    "why_this_matters": {
+      "type": "string",
+      "description": "Relevance to The Outlet audience"
+    },
+    "recommended_angle": {
+      "type": "string",
+      "description": "Primary editorial angle for the story"
+    },
+    "target_reader": {
+      "type": "string",
+      "description": "Target audience description"
+    },
+    "recent_results_context": {
+      "type": "string",
+      "description": "Recent results and competition context"
+    },
+    "standings_context": {
+      "type": "string",
+      "description": "Current standings and points context"
+    },
+    "schedule_context": {
+      "type": "string",
+      "description": "Upcoming and recent schedule context"
+    },
+    "business_context": {
+      "type": "string",
+      "description": "Business, sponsorship, and industry context"
+    },
+    "cultural_context": {
+      "type": "string",
+      "description": "Cultural and human interest context"
+    },
+    "historical_context": {
+      "type": "string",
+      "description": "Historical background and precedent"
+    },
+    "recent_coverage_summary": {
+      "type": "string",
+      "description": "What The Outlet has already covered on this topic"
+    },
+    "coverage_gaps": {
+      "type": "string",
+      "description": "What has not yet been covered"
+    },
+    "key_talking_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bullet-point talking points for the writer"
+    },
+    "stats_snapshot": {
+      "type": "string",
+      "description": "Structured summary of important numbers and records"
+    },
+    "notable_quotes_or_placeholders": {
+      "type": "string",
+      "description": "Notable quotes or suggested quote gathering directions"
+    },
+    "seo_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Suggested SEO keywords"
+    },
+    "suggested_headlines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Suggested headline options"
+    },
+    "suggested_sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Suggested article body sections"
+    },
+    "related_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related entity IDs"
+    },
+    "related_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related entity display names"
+    },
+    "related_story_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related OutletStory IDs"
+    },
+    "related_recommendation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related StoryRecommendation IDs"
+    },
+    "related_trend_cluster_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related StoryTrendCluster IDs"
+    },
+    "related_narrative_arc_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related NarrativeArc IDs"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Email of assigned writer/editor"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "reviewed",
+        "attached_to_draft",
+        "archived"
+      ],
+      "default": "generated",
+      "description": "Packet workflow status"
+    },
+    "editor_notes": {
+      "type": "string",
+      "description": "Editor notes and annotations on this packet"
+    },
+    "linked_draft_story_id": {
+      "type": "string",
+      "description": "OutletStory draft this packet is attached to"
+    },
+    "research_fingerprint": {
+      "type": "string",
+      "description": "Deduplication fingerprint to avoid generating identical packets"
+    }
+  },
+  "required": [
+    "source_type",
+    "title"
+  ]
+}

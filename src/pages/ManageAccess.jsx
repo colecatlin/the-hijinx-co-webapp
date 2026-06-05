@@ -17,7 +17,7 @@ function generateNumericId() {
   return Math.floor(10000000 + Math.random() * 90000000).toString();
 }
 
-export default function ManageAccess() {
+export default function ManageAccess({ embedded = false }) {
   const queryClient = useQueryClient();
   const [expandedEntity, setExpandedEntity] = useState(null); // "Driver:entityId"
   const [activeType, setActiveType] = useState('Driver');
@@ -171,7 +171,7 @@ export default function ManageAccess() {
   }, [allInvitations, filterEntityType, filterRole]);
 
   return (
-    <ManagementLayout currentPage="ManageAccess">
+    <ManagementLayout currentPage="ManageAccess" embedded={embedded}>
       <ManagementShell title="Access Management" subtitle="View and revoke user access to entities across the platform" maxWidth="max-w-5xl">
 
         {/* Section tabs */}

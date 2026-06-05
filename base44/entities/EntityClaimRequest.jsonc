@@ -1,0 +1,121 @@
+{
+  "name": "EntityClaimRequest",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the claimant"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the claimant"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Team",
+        "Track",
+        "Series"
+      ],
+      "description": "Type of entity being claimed"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the entity being claimed"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Name of the entity for display"
+    },
+    "claim_mode": {
+      "type": "string",
+      "enum": [
+        "claim",
+        "dispute",
+        "access_request"
+      ],
+      "default": "claim",
+      "description": "Intent of the request \u2014 standard ownership claim, dispute of existing ownership, or access-only request"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "claim",
+        "dispute"
+      ],
+      "default": "claim",
+      "description": "Legacy field \u2014 use claim_mode going forward"
+    },
+    "dispute_reason": {
+      "type": "string",
+      "enum": [
+        "rightful_owner",
+        "incorrect_current_claim",
+        "should_have_management_access",
+        "ownership_review_requested",
+        "other"
+      ],
+      "description": "Reason for dispute or access request (when claim_mode is dispute or access_request)"
+    },
+    "existing_owner_user_id": {
+      "type": "string",
+      "description": "User ID of the current owner at time of submission \u2014 captured for dispute context"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "needs_more_info"
+      ],
+      "default": "pending",
+      "description": "Current review status (user-facing)"
+    },
+    "justification": {
+      "type": "string",
+      "description": "Reason provided by the claimant"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Admin notes \u2014 shown to claimant for needs_more_info, internal for rejections"
+    },
+    "admin_resolution_type": {
+      "type": "string",
+      "enum": [
+        "approved_as_owner",
+        "approved_as_editor",
+        "denied",
+        "needs_more_info",
+        "ownership_overridden",
+        "ownership_retained"
+      ],
+      "description": "Specific admin outcome \u2014 richer than status alone"
+    },
+    "reviewed_by_user_id": {
+      "type": "string",
+      "description": "Admin user ID who reviewed"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When claim was last reviewed"
+    },
+    "granted_role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "editor"
+      ],
+      "description": "Role granted on approval"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "entity_type",
+    "entity_id",
+    "entity_name"
+  ]
+}

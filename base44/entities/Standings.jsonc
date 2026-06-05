@@ -1,0 +1,135 @@
+{
+  "name": "Standings",
+  "type": "object",
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (required)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional, null = series overall standings)"
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Season year (required)"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver (required)"
+    },
+    "program_id": {
+      "type": "string",
+      "description": "Reference to DriverProgram (optional)"
+    },
+    "position": {
+      "type": "number",
+      "description": "Standing position (computed rank)"
+    },
+    "rank": {
+      "type": "number",
+      "description": "Final rank after tie breaker sorting"
+    },
+    "points_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Total points accumulated"
+    },
+    "wins": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of first-place finishes"
+    },
+    "seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of second-place finishes"
+    },
+    "thirds": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of third-place finishes"
+    },
+    "podiums": {
+      "type": "number",
+      "default": 0,
+      "description": "Total top-3 finishes"
+    },
+    "top5": {
+      "type": "number",
+      "default": 0,
+      "description": "Total top-5 finishes"
+    },
+    "top10": {
+      "type": "number",
+      "default": 0,
+      "description": "Total top-10 finishes"
+    },
+    "best_finishes": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": [],
+      "description": "Sorted list of finishing positions used for tie breakers"
+    },
+    "starts": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of starts (counted results)"
+    },
+    "latest_finish": {
+      "type": "number",
+      "description": "Finish position in the most recent counted event"
+    },
+    "rounds_counted": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of rounds contributing to standing"
+    },
+    "points_breakdown": {
+      "type": "array",
+      "default": [],
+      "description": "Per event breakdown for UI. Each item is { event_id, event_date, points, finish_position }"
+    },
+    "last_calculated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When standings were last calculated"
+    },
+    "calculation_source": {
+      "type": "string",
+      "default": "RaceCore",
+      "description": "Source of calculation (RaceCore, Management, etc.)"
+    },
+    "points_config_id": {
+      "type": "string",
+      "description": "Reference to PointsConfig used for this calculation"
+    },
+    "points_ruleset_id": {
+      "type": "string",
+      "description": "Reference to PointsRuleSet used for this calculation"
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Additional metadata like force_default_used"
+    },
+    "standing_identity_key": {
+      "type": "string",
+      "description": "Stable deduplication key: standing:{series_id}:{season_year}:{class_id_or_none}:{driver_id}"
+    },
+    "normalized_standing_key": {
+      "type": "string",
+      "description": "Deterministic normalized key: standing:{series_id}:{season_year}:{driver_id_or_normalized_name}"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes (DUPLICATE_OF:{id} marker used by repair tools)"
+    }
+  },
+  "required": [
+    "series_id",
+    "season_year",
+    "driver_id"
+  ]
+}

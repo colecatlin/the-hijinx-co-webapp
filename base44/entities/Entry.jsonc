@@ -1,0 +1,189 @@
+{
+  "name": "Entry",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver (required)"
+    },
+    "event_class_id": {
+      "type": "string",
+      "description": "Reference to EventClass (required). Preferred over series_class_id in all UI and ops."
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team (optional)"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (optional, denormalized convenience)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional, retained for backwards compatibility and standings)"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Reference to Vehicle (optional)"
+    },
+    "car_number": {
+      "type": "string",
+      "description": "Car number for this event entry"
+    },
+    "transponder_id": {
+      "type": "string",
+      "description": "Transponder ID assigned for this event entry"
+    },
+    "entry_status": {
+      "type": "string",
+      "enum": [
+        "Registered",
+        "Checked In",
+        "Teched",
+        "Withdrawn"
+      ],
+      "default": "Registered",
+      "description": "Operational entry state"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "Unpaid",
+        "Paid",
+        "Refunded",
+        "Comped"
+      ],
+      "default": "Unpaid",
+      "description": "Payment state for entry fees"
+    },
+    "tech_status": {
+      "type": "string",
+      "enum": [
+        "Not Inspected",
+        "Failed",
+        "Passed",
+        "Recheck Required"
+      ],
+      "default": "Not Inspected",
+      "description": "Tech inspection state"
+    },
+    "waiver_status": {
+      "type": "string",
+      "enum": [
+        "Missing",
+        "Verified"
+      ],
+      "default": "Missing",
+      "description": "Waiver verification state"
+    },
+    "license_status": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "Valid",
+        "Expired"
+      ],
+      "default": "Unknown",
+      "description": "License verification state"
+    },
+    "duplicate_number_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if car_number duplicates another entry in the same class"
+    },
+    "missing_transponder_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if transponder_id is empty"
+    },
+    "waiver_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether waiver has been verified"
+    },
+    "license_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether license has been verified"
+    },
+    "transponder_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether transponder has been verified"
+    },
+    "checkin_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the entry was checked in"
+    },
+    "checked_in_by_user_id": {
+      "type": "string",
+      "description": "User ID who performed check-in"
+    },
+    "tech_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When tech inspection was completed"
+    },
+    "tech_inspector_user_id": {
+      "type": "string",
+      "description": "User ID of tech inspector"
+    },
+    "wristband_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of wristbands issued to this entry"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General admin notes for this entry"
+    },
+    "compliance_notes": {
+      "type": "string",
+      "description": "Compliance-specific notes"
+    },
+    "tech_notes": {
+      "type": "string",
+      "description": "Tech inspection notes"
+    },
+    "flags": {
+      "type": "string",
+      "description": "Free text comma-separated flags"
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID who created this entry"
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID who last updated this entry"
+    },
+    "last_checkin_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When entry was last checked in"
+    },
+    "last_tech_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When tech inspection was last performed"
+    },
+    "entry_identity_key": {
+      "type": "string",
+      "description": "Stable deduplication key: entry:{event_id}:{driver_id}:{class_id_or_none}"
+    },
+    "normalized_entry_key": {
+      "type": "string",
+      "description": "Deterministic normalized key: entry:{event_id}:{driver_id_or_normalized_name}:{class_id_or_none}"
+    }
+  },
+  "required": [
+    "event_id",
+    "driver_id",
+    "car_number"
+  ]
+}

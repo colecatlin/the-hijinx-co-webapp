@@ -1,0 +1,87 @@
+{
+  "name": "Advertisement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Headline for the advertisement"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short, catchy phrase or subtitle"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "URL for the main image displayed on the front of the ad card"
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": [
+        "1:1",
+        "4:5"
+      ],
+      "default": "1:1",
+      "description": "Aspect ratio for the cover image"
+    },
+    "display_style": {
+      "type": "string",
+      "enum": [
+        "flip",
+        "static"
+      ],
+      "default": "flip",
+      "description": "Display style: flip for interactive card, static for always visible content"
+    },
+    "body": {
+      "type": "string",
+      "description": "Detailed description or additional content for the back of the ad card"
+    },
+    "call_to_action_text": {
+      "type": "string",
+      "description": "Text for the call to action button (e.g., 'Learn More', 'Shop Now')"
+    },
+    "call_to_action_url": {
+      "type": "string",
+      "description": "URL the call to action button links to"
+    },
+    "background_color": {
+      "type": "string",
+      "description": "Optional background color for the ad card (e.g., hex code, CSS color name)"
+    },
+    "text_color": {
+      "type": "string",
+      "description": "Optional text color for the ad card"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Status of the advertisement"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order for advertisements (lower numbers appear first)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the advertisement becomes active"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the advertisement becomes inactive"
+    }
+  },
+  "required": [
+    "title",
+    "call_to_action_text",
+    "call_to_action_url",
+    "status"
+  ]
+}

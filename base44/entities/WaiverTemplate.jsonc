@@ -1,0 +1,47 @@
+{
+  "name": "WaiverTemplate",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event"
+      ]
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body_rich_text": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "title",
+    "body_rich_text"
+  ]
+}

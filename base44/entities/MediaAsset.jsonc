@@ -1,0 +1,197 @@
+{
+  "name": "MediaAsset",
+  "type": "object",
+  "properties": {
+    "uploader_media_user_id": {
+      "type": "string",
+      "description": "MediaUser ID of the uploader (legacy \u2014 keep for backward compatibility)"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "User ID of the creator/owner \u2014 explicit ownership field"
+    },
+    "owner_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the owning creator"
+    },
+    "owner_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID if this asset is owned by or exclusively associated with an outlet"
+    },
+    "creator_owned": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the creator retains ownership. Default true unless explicitly transferred."
+    },
+    "drive_file_id": {
+      "type": "string",
+      "description": "Google Drive file ID"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Direct file URL (CDN or storage)"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Thumbnail or preview URL"
+    },
+    "drive_folder_path": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "file_size": {
+      "type": "number"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "video",
+        "audio",
+        "document",
+        "graphic"
+      ],
+      "default": "photo",
+      "description": "Type of media asset"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Descriptive tags for searchability"
+    },
+    "captured_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "location_text": {
+      "type": "string"
+    },
+    "embargo_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "uploaded",
+        "in_review",
+        "approved",
+        "rejected",
+        "archived"
+      ],
+      "default": "uploaded",
+      "description": "Review/approval status of the asset"
+    },
+    "public_access": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this asset is approved for public access. Admin-controlled."
+    },
+    "visibility_scope": {
+      "type": "string",
+      "enum": [
+        "private",
+        "contributor_only",
+        "outlet_only",
+        "public"
+      ],
+      "default": "private",
+      "description": "Who can see this asset. Public display requires public_access=true AND visibility_scope=public."
+    },
+    "rights_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "cleared",
+        "restricted",
+        "revoked"
+      ],
+      "default": "pending",
+      "description": "Rights clearance status. Assets must be cleared for public display."
+    },
+    "editorial_usage_allowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Creator has granted editorial usage rights to publications. Not assumed by default."
+    },
+    "platform_promotional_usage_allowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Creator has granted platform promotional/display rights. Not assumed by default."
+    },
+    "merchandise_usage_allowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Creator has granted merchandise rights. Separate opt-in \u2014 never assumed."
+    },
+    "commercial_usage_allowed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Creator has granted commercial license rights. Separate opt-in \u2014 never assumed."
+    },
+    "revenue_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this asset is eligible for future creator economy revenue programs."
+    },
+    "linked_rights_agreement_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "UsageRightsAgreement IDs linked to this asset"
+    },
+    "featured_on_media_home": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-approved showcase on MediaHome. Requires rights_status=cleared."
+    },
+    "featured_on_creator_profile": {
+      "type": "boolean",
+      "default": false,
+      "description": "Displayed in creator portfolio. Requires owner_profile_id and rights_status=cleared."
+    },
+    "featured_on_outlet_profile": {
+      "type": "boolean",
+      "default": false,
+      "description": "Displayed on outlet profile page. Requires owner_outlet_id or explicit association."
+    },
+    "captured_at_event_id": {
+      "type": "string",
+      "description": "Optional: RaceCore Event ID where this asset was captured"
+    },
+    "captured_at_event_name": {
+      "type": "string",
+      "description": "Denormalized event name for display without extra queries"
+    },
+    "credentialed_capture": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the creator held a valid credential when capturing this asset"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "asset_type"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "name": "DriverClaim",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver entity submitting the claim"
+    },
+    "event_name_claimed": {
+      "type": "string",
+      "description": "Name of the event as claimed by the driver"
+    },
+    "event_date_claimed": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event as claimed"
+    },
+    "track_name_claimed": {
+      "type": "string",
+      "description": "Name of the track as claimed"
+    },
+    "series_name_claimed": {
+      "type": "string",
+      "description": "Name of the series as claimed"
+    },
+    "class_name_claimed": {
+      "type": "string",
+      "description": "Racing class as claimed"
+    },
+    "position_claimed": {
+      "type": "number",
+      "description": "Driver's finishing position as claimed"
+    },
+    "laps_completed_claimed": {
+      "type": "number",
+      "description": "Number of laps completed as claimed"
+    },
+    "best_lap_time_claimed": {
+      "type": "string",
+      "description": "Best lap time as claimed (e.g., '1:23.456')"
+    },
+    "evidence_url": {
+      "type": "string",
+      "description": "URL to supporting evidence (e.g., photo of results sheet, link to official results)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or context from the driver"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "verified",
+        "rejected",
+        "duplicate"
+      ],
+      "default": "pending",
+      "description": "Current status of the claim"
+    },
+    "verified_result_id": {
+      "type": "string",
+      "description": "Reference to the official Results entity once verified"
+    },
+    "reviewer_notes": {
+      "type": "string",
+      "description": "Notes from the administrator reviewing the claim"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email of admin who reviewed the claim"
+    },
+    "reviewed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the claim was reviewed"
+    }
+  },
+  "required": [
+    "driver_id",
+    "event_name_claimed",
+    "event_date_claimed",
+    "position_claimed"
+  ]
+}

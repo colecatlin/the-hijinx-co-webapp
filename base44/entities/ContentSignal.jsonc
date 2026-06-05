@@ -1,0 +1,145 @@
+{
+  "name": "ContentSignal",
+  "type": "object",
+  "properties": {
+    "source_entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Team",
+        "Track",
+        "Series",
+        "Event",
+        "External"
+      ],
+      "description": "Type of entity that triggered this signal"
+    },
+    "source_entity_id": {
+      "type": "string",
+      "description": "ID of the source entity"
+    },
+    "source_entity_name": {
+      "type": "string",
+      "description": "Display name of the source entity"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "result_posted",
+        "standings_change",
+        "new_driver",
+        "team_change",
+        "event_published",
+        "social_mention",
+        "external_news",
+        "milestone",
+        "controversy",
+        "partnership",
+        "other"
+      ],
+      "description": "Type of signal"
+    },
+    "trigger_action": {
+      "type": "string",
+      "description": "Specific action or event that triggered this signal"
+    },
+    "previous_value": {
+      "type": "string",
+      "description": "Previous value before the triggering change (e.g. old standing, old status)"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "New value after the triggering change"
+    },
+    "importance_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Editorial importance level"
+    },
+    "signal_summary": {
+      "type": "string",
+      "description": "Human-readable summary of what the signal represents"
+    },
+    "related_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of other entities related to this signal"
+    },
+    "dedupe_key": {
+      "type": "string",
+      "description": "Deduplication key to prevent duplicate signals for the same event"
+    },
+    "raw_data": {
+      "type": "string",
+      "description": "Raw data payload associated with the signal (JSON string)"
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this signal was first detected"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "queued",
+        "processing",
+        "processed",
+        "dismissed",
+        "errored",
+        "ignored"
+      ],
+      "default": "new",
+      "description": "Processing status of the signal"
+    },
+    "processing_notes": {
+      "type": "string",
+      "description": "Notes added during manual review or processing"
+    },
+    "ai_processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI has analyzed this signal"
+    },
+    "ai_processed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When AI processing completed"
+    },
+    "ai_notes": {
+      "type": "string",
+      "description": "AI-generated notes or analysis about the signal"
+    },
+    "recommendation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of StoryRecommendations generated from this signal"
+    },
+    "linked_recommendation_id": {
+      "type": "string",
+      "description": "Primary StoryRecommendation ID generated from this signal"
+    },
+    "trend_cluster_id": {
+      "type": "string",
+      "description": "ID of any StoryTrendCluster this signal belongs to"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if status is errored"
+    }
+  },
+  "required": [
+    "signal_type",
+    "signal_summary"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "EntityConfirmation",
+  "type": "object",
+  "description": "Bilateral confirmation record for an Event, tracking acceptance from Track and optionally Series",
+  "properties": {
+    "event_entity_id": {
+      "type": "string",
+      "description": "References Entity.id where entity_type = event"
+    },
+    "track_entity_id": {
+      "type": "string",
+      "description": "References Entity.id where entity_type = track"
+    },
+    "series_entity_id": {
+      "type": "string",
+      "description": "References Entity.id where entity_type = series (optional)"
+    },
+    "track_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "series_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Only relevant when series_entity_id is set"
+    },
+    "effective_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_confirmation",
+        "confirmed",
+        "rejected"
+      ],
+      "default": "pending_confirmation",
+      "description": "Computed status based on track_status and series_status"
+    },
+    "last_computed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_entity_id",
+    "track_entity_id"
+  ]
+}

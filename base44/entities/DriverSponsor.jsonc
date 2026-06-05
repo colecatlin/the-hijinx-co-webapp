@@ -1,0 +1,47 @@
+{
+  "name": "DriverSponsor",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver"
+    },
+    "sponsor_name": {
+      "type": "string",
+      "description": "Name of the sponsoring entity"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Sponsor logo image URL"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Sponsor website URL"
+    },
+    "sponsor_type": {
+      "type": "string",
+      "enum": [
+        "Primary",
+        "Associate",
+        "Personal",
+        "Apparel",
+        "Technical"
+      ],
+      "description": "Role or tier of the sponsorship"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Sponsorship start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Sponsorship end date (if concluded)"
+    }
+  },
+  "required": [
+    "driver_id",
+    "sponsor_name"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "DeliverableSubmission",
+  "type": "object",
+  "properties": {
+    "requirement_id": {
+      "type": "string"
+    },
+    "holder_media_user_id": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "revisions_needed",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "reviewer_user_id": {
+      "type": "string"
+    },
+    "reviewer_notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "requirement_id",
+    "holder_media_user_id",
+    "asset_ids"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "Entity",
+  "type": "object",
+  "description": "Unified entity record representing Driver, Team, Track, Series, or Event for cross-module use",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event"
+      ],
+      "description": "Type of the source entity"
+    },
+    "source_entity_id": {
+      "type": "string",
+      "description": "ID of the corresponding Driver, Team, Track, Series, or Event record"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name, denormalized from source entity"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Optional URL-friendly identifier"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Primary owner user ID when applicable"
+    },
+    "manager_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Additional manager user IDs"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_type",
+    "source_entity_id",
+    "name"
+  ]
+}

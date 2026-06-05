@@ -1,0 +1,51 @@
+{
+  "name": "TechInspection",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "entry_id": {
+      "type": "string",
+      "description": "Reference to Entry (required)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (required)"
+    },
+    "inspector_user_id": {
+      "type": "string",
+      "description": "User ID of inspector who performed inspection (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Not Inspected",
+        "Failed",
+        "Passed",
+        "Recheck Required"
+      ],
+      "default": "Not Inspected",
+      "description": "Current inspection status"
+    },
+    "checklist_results": {
+      "type": "string",
+      "description": "JSON string array of item results with structure: [{id, passed}, ...]"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Inspector notes"
+    },
+    "inspected_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When inspection was completed"
+    }
+  },
+  "required": [
+    "event_id",
+    "entry_id",
+    "series_class_id"
+  ]
+}

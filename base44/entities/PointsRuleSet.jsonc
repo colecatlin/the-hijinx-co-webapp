@@ -1,0 +1,91 @@
+{
+  "name": "PointsRuleSet",
+  "type": "object",
+  "description": "Configurable points ruleset per series, class, season, and event",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Ruleset name"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (optional)"
+    },
+    "track_id": {
+      "type": "string",
+      "description": "Reference to Track (optional)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (optional)"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season year (optional)"
+    },
+    "discipline": {
+      "type": "string",
+      "description": "Racing discipline (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Status of the ruleset"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Priority for resolution when multiple rulesets match"
+    },
+    "applies_to_session_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Practice",
+          "Qualifying",
+          "Heat",
+          "LCQ",
+          "Final"
+        ]
+      },
+      "default": [
+        "Final"
+      ],
+      "description": "Session types that earn points under this ruleset"
+    },
+    "points_table_json": {
+      "type": "string",
+      "description": "JSON string storing points table with positions map and default value"
+    },
+    "bonus_rules_json": {
+      "type": "string",
+      "description": "JSON string storing bonus rules (fastest_lap, most_laps_led, pole)"
+    },
+    "drop_rounds_json": {
+      "type": "string",
+      "description": "JSON string storing drop rounds configuration"
+    },
+    "tiebreaker_order_json": {
+      "type": "string",
+      "description": "JSON string array of tiebreaker criteria order"
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID who created this ruleset"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    }
+  },
+  "required": [
+    "name",
+    "points_table_json"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "Invitation",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Email address of the invited user"
+    },
+    "code": {
+      "type": "string",
+      "description": "Unique invitation code"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Track",
+        "Team",
+        "Event",
+        "Series"
+      ],
+      "description": "Type of entity being invited to manage"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the specific entity"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Name of the entity for reference"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "editor"
+      ],
+      "default": "editor",
+      "description": "Role granted upon acceptance"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invitation expires"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "expired",
+        "revoked"
+      ],
+      "default": "pending",
+      "description": "Current status of the invitation"
+    },
+    "invited_by": {
+      "type": "string",
+      "description": "Email of the admin who sent the invitation"
+    },
+    "accepted_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invitation was accepted"
+    }
+  },
+  "required": [
+    "email",
+    "code",
+    "entity_type",
+    "entity_id",
+    "entity_name",
+    "expiration_date"
+  ]
+}

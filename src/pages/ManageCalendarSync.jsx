@@ -19,7 +19,7 @@ const DEFAULT_CALENDARS = [
   },
 ];
 
-export default function ManageCalendarSync() {
+export default function ManageCalendarSync({ embedded = false }) {
   const [calendars, setCalendars] = useState(() => {
     try {
       const stored = localStorage.getItem('hijinx_sync_calendars');
@@ -79,7 +79,7 @@ export default function ManageCalendarSync() {
   };
 
   return (
-    <ManagementLayout currentPage="ManageCalendarSync">
+    <ManagementLayout currentPage="ManageCalendarSync" embedded={embedded}>
       <ManagementShell
         title="Schedule Sync"
         subtitle="Sync ICS/webcal schedules into Events"

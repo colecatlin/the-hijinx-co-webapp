@@ -1,0 +1,112 @@
+{
+  "name": "OutletStoryCoverageMap",
+  "type": "object",
+  "properties": {
+    "story_title": {
+      "type": "string",
+      "description": "Title of the story being tracked"
+    },
+    "story_id": {
+      "type": "string",
+      "description": "Reference to OutletStory (if linked)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Racing",
+        "Business",
+        "Culture",
+        "Tech",
+        "Media",
+        "Marketplace"
+      ],
+      "description": "Primary story category"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Sub-category of the story"
+    },
+    "article_type": {
+      "type": "string",
+      "enum": [
+        "feature",
+        "news",
+        "analysis",
+        "opinion",
+        "profile",
+        "race_report",
+        "data_story",
+        "photo_essay",
+        "other"
+      ],
+      "description": "Type of article"
+    },
+    "article_angle": {
+      "type": "string",
+      "description": "Editorial angle or framing for the story"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the story was published"
+    },
+    "performance_score": {
+      "type": "number",
+      "description": "Performance score 0-100 based on engagement metrics"
+    },
+    "evergreen_score": {
+      "type": "number",
+      "description": "Evergreen score 0-100 (higher = longer shelf life)"
+    },
+    "covered_entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of entities (drivers, teams, etc.) covered in this story"
+    },
+    "covered_entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Display names of covered entities"
+    },
+    "covered_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topics covered in this story"
+    },
+    "covered_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords covered in this story"
+    },
+    "is_gap": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this topic area has been flagged as a coverage gap"
+    },
+    "gap_reason": {
+      "type": "string",
+      "description": "Why this area was flagged as a coverage gap"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal editorial notes"
+    },
+    "last_computed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this record was last recalculated"
+    }
+  },
+  "required": [
+    "story_title",
+    "category"
+  ]
+}

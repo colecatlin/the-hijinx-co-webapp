@@ -1,0 +1,81 @@
+{
+  "name": "PayoutRecord",
+  "type": "object",
+  "properties": {
+    "payout_recipient_type": {
+      "type": "string",
+      "enum": [
+        "media_profile",
+        "media_outlet"
+      ],
+      "description": "Type of recipient"
+    },
+    "payout_recipient_id": {
+      "type": "string",
+      "description": "ID of the MediaProfile or MediaOutlet receiving the payout"
+    },
+    "linked_revenue_event_id": {
+      "type": "string",
+      "description": "RevenueEvent ID this payout is tied to"
+    },
+    "linked_payment_account_id": {
+      "type": "string",
+      "description": "PaymentAccount ID for the recipient"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Payout amount in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "processing",
+        "paid",
+        "failed",
+        "reversed"
+      ],
+      "default": "pending",
+      "description": "Payout lifecycle status"
+    },
+    "stripe_transfer_id": {
+      "type": "string",
+      "description": "Stripe Transfer ID once payout is executed"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "User ID or email of admin who approved the payout"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the payout was approved"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the payout was executed"
+    },
+    "failure_reason": {
+      "type": "string",
+      "description": "Reason for failure if status=failed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    }
+  },
+  "required": [
+    "payout_recipient_type",
+    "payout_recipient_id",
+    "linked_revenue_event_id",
+    "amount",
+    "status"
+  ]
+}

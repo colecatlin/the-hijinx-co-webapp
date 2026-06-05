@@ -1,0 +1,65 @@
+{
+  "name": "EntityScope",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event"
+      ],
+      "description": "Type of referenced subject"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of referenced subject entity"
+    },
+    "name": {
+      "type": "string",
+      "description": "Denormalized display name for fast UI lists"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Primary owner user id for this scope, optional if derived elsewhere"
+    },
+    "manager_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Additional managers for scoped governance"
+    },
+    "parent_entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "team",
+        "track",
+        "series",
+        "event"
+      ],
+      "description": "Optional parent scope type"
+    },
+    "parent_entity_id": {
+      "type": "string",
+      "description": "Optional parent scope id"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "name"
+  ]
+}

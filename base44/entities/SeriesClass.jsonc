@@ -1,0 +1,95 @@
+{
+  "name": "SeriesClass",
+  "type": "object",
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series"
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Class name (e.g. Pro 4, Super Stock, 450 MX)"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique identifier"
+    },
+    "description_summary": {
+      "type": "string",
+      "description": "Short description of the class"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "description": "Vehicle type description"
+    },
+    "competition_level": {
+      "type": "number",
+      "description": "Competition level 1-5 (1=Foundation, 2=Development, 3=National, 4=Premier, 5=World)"
+    },
+    "geographic_scope": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Regional",
+        "National",
+        "International",
+        "Global"
+      ],
+      "description": "Geographic reach of the class"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Manual display order \u2014 lower number = displayed first. Classes with same sort_order fall back to competition_level descending."
+    },
+    "media_score": {
+      "type": "number",
+      "description": "Media reach score (1-10)"
+    },
+    "attendance_score": {
+      "type": "number",
+      "description": "Attendance score (1-10)"
+    },
+    "purse_score": {
+      "type": "number",
+      "description": "Prize purse score (1-10)"
+    },
+    "manufacturer_score": {
+      "type": "number",
+      "description": "Manufacturer involvement score (1-10)"
+    },
+    "geographic_diversity_score": {
+      "type": "number",
+      "description": "Geographic diversity score (1-10)"
+    },
+    "team_budget_score": {
+      "type": "number",
+      "description": "Team budget scale score (1-10)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether class is active"
+    },
+    "is_sample": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is sample/demo data"
+    },
+    "series_class_identity_key": {
+      "type": "string",
+      "description": "Stable deduplication key: series_class:{series_id}:{normalized_class_name}"
+    },
+    "normalized_series_class_key": {
+      "type": "string",
+      "description": "Deterministic normalized key: series_class:{series_id}:{normalized_class_name}"
+    }
+  },
+  "required": [
+    "series_id",
+    "class_name"
+  ]
+}

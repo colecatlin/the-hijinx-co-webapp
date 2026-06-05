@@ -1,0 +1,57 @@
+{
+  "name": "MediaUser",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Optional link to auth user"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "legal_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "Optional link to MediaOrganization"
+    },
+    "portfolio_url": {
+      "type": "string"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "full_name",
+    "legal_name",
+    "email"
+  ]
+}

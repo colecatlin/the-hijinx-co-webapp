@@ -1,0 +1,157 @@
+{
+  "name": "OperationLog",
+  "type": "object",
+  "properties": {
+    "operation_type": {
+      "type": "string",
+      "description": "Type of operation (import, export, deletion, entry_created, entry_updated, compliance_updated, checkin_override, tech_updated, etc.)"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "csv_upload",
+        "google_sheets",
+        "api_function",
+        "manual",
+        "Registration",
+        "RegistrationDashboard"
+      ],
+      "description": "Where the operation originated"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Entity type being operated on"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the specific entity record"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Event ID context for this operation"
+    },
+    "function_name": {
+      "type": "string",
+      "description": "Backend function name if applicable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "rolled_back",
+        "success"
+      ],
+      "default": "pending",
+      "description": "Operation status"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable message about the operation"
+    },
+    "total_records": {
+      "type": "number",
+      "description": "Total records in the operation"
+    },
+    "created_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Records created during import"
+    },
+    "updated_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Records updated during import"
+    },
+    "deleted_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Records deleted"
+    },
+    "skipped_count": {
+      "type": "number",
+      "default": 0
+    },
+    "failed_count": {
+      "type": "number",
+      "default": 0
+    },
+    "error_details": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional operation details"
+    },
+    "reversed_from": {
+      "type": "string"
+    },
+    "execution_time_ms": {
+      "type": "number"
+    },
+    "initiated_by": {
+      "type": "string",
+      "description": "Email of user who initiated the operation"
+    }
+  },
+  "required": [
+    "operation_type",
+    "entity_name",
+    "status"
+  ]
+}

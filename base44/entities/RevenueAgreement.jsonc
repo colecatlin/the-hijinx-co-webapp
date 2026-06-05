@@ -1,0 +1,104 @@
+{
+  "name": "RevenueAgreement",
+  "type": "object",
+  "properties": {
+    "agreement_type": {
+      "type": "string",
+      "enum": [
+        "media_asset_license",
+        "assignment_payment",
+        "merch_revenue_share",
+        "creator_fund",
+        "outlet_revenue_share",
+        "sponsored_content"
+      ],
+      "description": "Type of revenue agreement"
+    },
+    "linked_asset_id": {
+      "type": "string",
+      "description": "Optional MediaAsset ID"
+    },
+    "linked_assignment_id": {
+      "type": "string",
+      "description": "Optional MediaAssignment ID"
+    },
+    "linked_story_id": {
+      "type": "string",
+      "description": "Optional OutletStory ID"
+    },
+    "linked_outlet_id": {
+      "type": "string",
+      "description": "Optional MediaOutlet ID"
+    },
+    "linked_profile_id": {
+      "type": "string",
+      "description": "Optional MediaProfile ID"
+    },
+    "linked_request_id": {
+      "type": "string",
+      "description": "Optional MediaRequest ID"
+    },
+    "creator_profile_id": {
+      "type": "string",
+      "description": "MediaProfile ID of the creator party"
+    },
+    "media_outlet_id": {
+      "type": "string",
+      "description": "MediaOutlet ID if outlet is a party"
+    },
+    "platform_share_percent": {
+      "type": "number",
+      "description": "Platform's percentage of gross revenue (0-100)"
+    },
+    "creator_share_percent": {
+      "type": "number",
+      "description": "Creator's percentage of gross revenue (0-100)"
+    },
+    "outlet_share_percent": {
+      "type": "number",
+      "description": "Outlet's percentage of gross revenue (0-100)"
+    },
+    "flat_fee_amount": {
+      "type": "number",
+      "description": "Optional flat fee in cents (overrides percentage for flat-fee agreements)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_acceptance",
+        "active",
+        "revoked",
+        "completed"
+      ],
+      "default": "draft",
+      "description": "Agreement lifecycle status"
+    },
+    "effective_start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this agreement becomes effective"
+    },
+    "effective_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this agreement expires"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin or editorial notes"
+    }
+  },
+  "required": [
+    "agreement_type",
+    "platform_share_percent",
+    "creator_share_percent",
+    "outlet_share_percent",
+    "status"
+  ]
+}

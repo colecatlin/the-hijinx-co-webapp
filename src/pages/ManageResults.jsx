@@ -16,7 +16,7 @@ import ResultForm from '@/components/management/results/ResultForm';
 import ResultsBulkUpload from '@/components/management/results/ResultsBulkUpload';
 import SmartResultsImport from '@/components/management/results/SmartResultsImport';
 
-export default function ManageResults() {
+export default function ManageResults({ embedded = false }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
@@ -118,12 +118,12 @@ export default function ManageResults() {
   });
 
   return (
-    <ManagementLayout currentPage="ManageResults">
+    <ManagementLayout currentPage="ManageResults" embedded={embedded}>
       <ManagementShell
         title="Results Records"
         subtitle={`${results.length} total result records across the platform`}
         actions={<>
-          <Link to={createPageUrl('RegistrationDashboard')}>
+          <Link to="/racecore">
             <Button className="bg-gray-900 text-white hover:bg-gray-800 gap-2">
               <ExternalLink className="w-4 h-4" />
               Go to Race Operations Hub

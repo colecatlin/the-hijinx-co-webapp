@@ -50,7 +50,7 @@ function StatsCard({ icon: IconComponent, label, value, sub }) {
   );
 }
 
-export default function ManageRevenue() {
+export default function ManageRevenue({ embedded = false }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('payouts');
@@ -101,12 +101,12 @@ export default function ManageRevenue() {
   if (!user) { base44.auth.redirectToLogin('/' + PAGE); return null; }
   if (user.role !== 'admin') {
     return (
-      <ManagementLayout currentPage={PAGE}>
+      <ManagementLayout currentPage={PAGE} embedded={embedded}>
         <ManagementShell title="Revenue & Payments">
           <div className="py-24 flex flex-col items-center gap-4">
             <ShieldOff className="w-10 h-10 text-gray-300" />
             <p className="text-gray-500 text-sm">Admin access required.</p>
-            <Button size="sm" onClick={() => navigate('/Management')}>Back</Button>
+            <Button size="sm" onClick={() => navigate(embedded ? '/racecore' : '/Management')}>Back</Button>
           </div>
         </ManagementShell>
       </ManagementLayout>
@@ -127,7 +127,7 @@ export default function ManageRevenue() {
   ];
 
   return (
-    <ManagementLayout currentPage={PAGE}>
+    <ManagementLayout currentPage={PAGE} embedded={embedded}>
       <ManagementShell title="Revenue & Payments" subtitle="Review and manage creator payments, payout approvals, and revenue events">
         <div className="space-y-6">
 

@@ -20,7 +20,7 @@ const ENTITY_TYPES = [
   'UserFollowDriver', 'HomepageSettings'
 ];
 
-export default function ManageCSVImportExport() {
+export default function ManageCSVImportExport({ embedded = false }) {
   const [selectedEntity, setSelectedEntity] = useState('Driver');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
@@ -151,7 +151,7 @@ export default function ManageCSVImportExport() {
   };
 
   return (
-    <ManagementLayout currentPage="ManageCSVImportExport">
+    <ManagementLayout currentPage="ManageCSVImportExport" embedded={embedded}>
       <ManagementShell title="CSV Import / Export" subtitle="Bulk import and export entity data as CSV files" maxWidth="max-w-2xl">
 
 

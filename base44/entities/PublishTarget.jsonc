@@ -1,0 +1,63 @@
+{
+  "name": "PublishTarget",
+  "type": "object",
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "driver_gallery",
+        "team_gallery",
+        "track_gallery",
+        "event_recap",
+        "series_feed",
+        "homepage_feature"
+      ]
+    },
+    "target_entity_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "published",
+        "removed"
+      ],
+      "default": "scheduled"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "override_allowed": {
+      "type": "boolean",
+      "default": false
+    },
+    "override_by_user_id": {
+      "type": "string"
+    },
+    "override_reason": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "asset_id",
+    "target_type",
+    "status"
+  ]
+}

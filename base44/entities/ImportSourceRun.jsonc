@@ -1,0 +1,74 @@
+{
+  "name": "ImportSourceRun",
+  "type": "object",
+  "properties": {
+    "source_name": {
+      "type": "string",
+      "description": "e.g. champoffroad"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Root URL scraped"
+    },
+    "season_year": {
+      "type": "number",
+      "description": "e.g. 2025"
+    },
+    "import_type": {
+      "type": "string",
+      "enum": [
+        "results",
+        "standings",
+        "mixed"
+      ],
+      "description": "What data was imported"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "completed",
+        "failed",
+        "partially_completed"
+      ],
+      "default": "pending"
+    },
+    "records_found": {
+      "type": "number",
+      "default": 0
+    },
+    "records_created": {
+      "type": "number",
+      "default": 0
+    },
+    "records_updated": {
+      "type": "number",
+      "default": 0
+    },
+    "records_skipped": {
+      "type": "number",
+      "default": 0
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_name",
+    "season_year",
+    "import_type"
+  ]
+}

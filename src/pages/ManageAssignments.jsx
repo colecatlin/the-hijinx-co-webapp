@@ -11,7 +11,7 @@ import AssignmentReviewPanel from '@/components/media/assignments/AssignmentRevi
 const PAGE = 'management/media/assignments';
 const ALLOWED_ROLES = ['admin'];
 
-export default function ManageAssignments() {
+export default function ManageAssignments({ embedded = false }) {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useQuery({
@@ -24,12 +24,12 @@ export default function ManageAssignments() {
 
   if (!ALLOWED_ROLES.includes(user.role)) {
     return (
-      <ManagementLayout currentPage={PAGE}>
+      <ManagementLayout currentPage={PAGE} embedded={embedded}>
         <ManagementShell title="Assignments">
           <div className="py-24 flex flex-col items-center gap-4 text-center">
             <ShieldOff className="w-10 h-10 text-gray-300" />
             <p className="text-gray-500 text-sm">Restricted to editorial staff.</p>
-            <Button size="sm" onClick={() => navigate('/Management')}>Back to Management</Button>
+            <Button size="sm" onClick={() => navigate(embedded ? '/racecore' : '/Management')}>Back to Management</Button>
           </div>
         </ManagementShell>
       </ManagementLayout>
@@ -37,7 +37,7 @@ export default function ManageAssignments() {
   }
 
   return (
-    <ManagementLayout currentPage={PAGE}>
+    <ManagementLayout currentPage={PAGE} embedded={embedded}>
       <ManagementShell
         title="Assignments"
         subtitle="Create and manage contributor assignments"

@@ -1,0 +1,133 @@
+{
+  "name": "MediaOutlet",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Outlet or organization name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique identifier (auto-generated from name)"
+    },
+    "outlet_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "hidden"
+      ],
+      "default": "draft",
+      "description": "Outlet lifecycle status"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "featured",
+        "suspended"
+      ],
+      "default": "pending",
+      "description": "Platform trust/verification status \u2014 admin-controlled"
+    },
+    "outlet_type": {
+      "type": "string",
+      "enum": [
+        "publication",
+        "creator_brand",
+        "podcast",
+        "video_channel",
+        "journalist_collective",
+        "team_media",
+        "series_media",
+        "track_media"
+      ],
+      "description": "Type of media organization"
+    },
+    "description": {
+      "type": "string",
+      "description": "Outlet description or bio"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Primary website URL"
+    },
+    "social_links": {
+      "type": "object",
+      "description": "Social media links (instagram, x, youtube, tiktok, etc.)"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Outlet logo image URL"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Outlet cover/banner image URL"
+    },
+    "primary_contact_user_id": {
+      "type": "string",
+      "description": "User ID of the primary contact or outlet admin"
+    },
+    "contributor_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of affiliated contributors"
+    },
+    "contributor_profile_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MediaProfile IDs of affiliated contributors"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Coverage specialties"
+    },
+    "series_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Series IDs or names this outlet covers"
+    },
+    "public_visible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this outlet is publicly visible \u2014 enabled later"
+    },
+    "monetization_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Eligible for monetization programs \u2014 admin-controlled"
+    },
+    "branded_partnership_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Eligible for branded partnership programs \u2014 admin-controlled"
+    },
+    "licensing_partner_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Eligible to license content through the platform \u2014 admin-controlled"
+    },
+    "credentialed_events": {
+      "type": "object",
+      "description": "JSON summary of events for which this outlet has held credentials. Keyed by event ID."
+    },
+    "credentialed_series": {
+      "type": "object",
+      "description": "JSON summary of series for which this outlet has held credentials. Keyed by series ID."
+    }
+  },
+  "required": [
+    "name",
+    "outlet_type"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "name": "NarrativeCoveragePlan",
+  "type": "object",
+  "properties": {
+    "arc_id": {
+      "type": "string",
+      "description": "Reference to NarrativeArc (required)"
+    },
+    "arc_name": {
+      "type": "string",
+      "description": "Arc name (denormalized for display)"
+    },
+    "coverage_strategy": {
+      "type": "string",
+      "enum": [
+        "light_watch",
+        "developing_story",
+        "priority_story",
+        "major_editorial_focus"
+      ],
+      "default": "developing_story",
+      "description": "How aggressively to cover this narrative"
+    },
+    "recommended_story_count": {
+      "type": "number",
+      "description": "Recommended number of stories for this arc"
+    },
+    "recommended_story_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Suggested story types: quick_update, analysis, feature, interview, event_preview, event_recap, data_story, timeline, opinion, explainer"
+    },
+    "coverage_timeline": {
+      "type": "string",
+      "description": "Editorial timeline narrative (e.g. pre-event preview \u2192 race recap \u2192 season wrap)"
+    },
+    "coverage_beats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific coverage beats or milestones to hit"
+    },
+    "assigned_editor": {
+      "type": "string",
+      "description": "Email of assigned editor"
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "active",
+        "paused",
+        "complete"
+      ],
+      "default": "planned",
+      "description": "Current execution status"
+    },
+    "stories_published": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of stories published under this plan"
+    },
+    "editor_notes": {
+      "type": "string",
+      "description": "Editorial notes and strategy context"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this plan was AI-generated or manually created"
+    }
+  },
+  "required": [
+    "arc_id"
+  ]
+}

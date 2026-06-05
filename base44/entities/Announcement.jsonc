@@ -1,0 +1,51 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Announcement message text"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "Optional link URL"
+    },
+    "link_text": {
+      "type": "string",
+      "description": "Link text (e.g., 'Learn More')"
+    },
+    "background_color": {
+      "type": "string",
+      "enum": [
+        "black",
+        "white",
+        "blue",
+        "indigo",
+        "purple",
+        "pink",
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "teal",
+        "cyan",
+        "gray"
+      ],
+      "default": "black",
+      "description": "Background color"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether announcement is active"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (higher first)"
+    }
+  },
+  "required": [
+    "message"
+  ]
+}

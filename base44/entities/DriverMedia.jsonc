@@ -1,0 +1,68 @@
+{
+  "name": "DriverMedia",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver entity"
+    },
+    "headshot_url": {
+      "type": "string",
+      "description": "Driver headshot photo URL"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Hero/banner image URL"
+    },
+    "gallery_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Gallery image URLs"
+    },
+    "highlight_video_url": {
+      "type": "string",
+      "description": "Highlight video URL"
+    },
+    "social_instagram": {
+      "type": "string",
+      "description": "Instagram handle or URL"
+    },
+    "social_x": {
+      "type": "string",
+      "description": "X (Twitter) handle or URL"
+    },
+    "social_youtube": {
+      "type": "string",
+      "description": "YouTube channel URL"
+    },
+    "social_facebook": {
+      "type": "string",
+      "description": "Facebook profile URL"
+    },
+    "social_threads": {
+      "type": "string",
+      "description": "Threads handle or URL"
+    },
+    "social_tiktok": {
+      "type": "string",
+      "description": "TikTok handle or URL"
+    },
+    "social_linkedin": {
+      "type": "string",
+      "description": "LinkedIn profile URL"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Personal/team website URL"
+    },
+    "media_notes": {
+      "type": "string",
+      "description": "Additional media notes"
+    }
+  },
+  "required": [
+    "driver_id"
+  ]
+}

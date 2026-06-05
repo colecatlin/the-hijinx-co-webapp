@@ -1,0 +1,235 @@
+{
+  "name": "MediaProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the contributor \u2014 required, one profile per user"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique identifier (auto-generated from display_name)"
+    },
+    "profile_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "hidden"
+      ],
+      "default": "draft",
+      "description": "Profile lifecycle status"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "featured",
+        "suspended"
+      ],
+      "default": "pending",
+      "description": "Platform trust/verification status \u2014 admin-controlled"
+    },
+    "primary_role": {
+      "type": "string",
+      "enum": [
+        "writer",
+        "editor",
+        "photographer",
+        "videographer",
+        "journalist",
+        "creator",
+        "outlet_representative"
+      ],
+      "description": "Primary contributor role"
+    },
+    "role_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional role tags"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Coverage specialties (e.g. off road, drag racing)"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short professional bio"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "location_state": {
+      "type": "string"
+    },
+    "location_country": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Professional website"
+    },
+    "social_links": {
+      "type": "object",
+      "description": "Social media handles/URLs (instagram, x, youtube, tiktok, etc.)"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Profile/headshot image URL"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Cover/banner image URL"
+    },
+    "primary_affiliation_type": {
+      "type": "string",
+      "enum": [
+        "independent",
+        "outlet",
+        "team_media",
+        "series_media",
+        "track_media"
+      ],
+      "description": "Primary affiliation type"
+    },
+    "primary_outlet_name": {
+      "type": "string",
+      "description": "Name of primary outlet or organization"
+    },
+    "primary_outlet_id": {
+      "type": "string",
+      "description": "Optional reference to a MediaOrganization entity"
+    },
+    "secondary_outlet_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional outlet/org IDs"
+    },
+    "series_covered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Series IDs or names this contributor covers"
+    },
+    "featured_work_asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MediaAsset IDs featured on profile"
+    },
+    "featured_story_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "OutletStory IDs featured on profile"
+    },
+    "public_visible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this profile is publicly visible \u2014 admin or contributor enables later"
+    },
+    "creator_directory_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether profile meets requirements for creator directory listing \u2014 derived"
+    },
+    "credentialed_media": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether contributor has at least one approved media credential \u2014 synced"
+    },
+    "availability_status": {
+      "type": "string",
+      "enum": [
+        "unavailable",
+        "limited",
+        "available"
+      ],
+      "default": "unavailable",
+      "description": "Contributor availability for assignments"
+    },
+    "monetization_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Eligible for monetization programs \u2014 admin-controlled"
+    },
+    "creator_fund_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Eligible for creator fund awards \u2014 admin-controlled"
+    },
+    "licensing_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Assets may be licensed \u2014 admin-controlled"
+    },
+    "merch_opt_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Creator has opted into merchandise revenue sharing \u2014 explicit opt-in only"
+    },
+    "payout_profile_ready": {
+      "type": "boolean",
+      "default": false,
+      "description": "Stripe Connect account is active and payouts are enabled \u2014 derived from PaymentAccount"
+    },
+    "creator_terms_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether contributor accepted creator terms"
+    },
+    "creator_rights_acknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether contributor acknowledged usage rights"
+    },
+    "completeness_score": {
+      "type": "number",
+      "description": "Computed completeness score 0-100 \u2014 updated by backend"
+    },
+    "writer_trust_level": {
+      "type": "string",
+      "enum": [
+        "none",
+        "contributor",
+        "verified_writer",
+        "senior_writer",
+        "editor"
+      ],
+      "default": "none",
+      "description": "Editorial trust level \u2014 applies only to writing and editorial flow. Admin/editor controlled."
+    },
+    "can_publish_without_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this contributor can publish stories without editorial review. Requires verified_writer or higher. Admin-controlled and revocable."
+    },
+    "trust_notes": {
+      "type": "string",
+      "description": "Admin/editorial notes on trust level decisions"
+    },
+    "verified_writer_since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When verified writer status was granted"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

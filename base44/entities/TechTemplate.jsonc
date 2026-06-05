@@ -1,0 +1,28 @@
+{
+  "name": "TechTemplate",
+  "type": "object",
+  "properties": {
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (required)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Template name (required)"
+    },
+    "items": {
+      "type": "string",
+      "description": "JSON string array of checklist items with structure: [{id, label, required}, ...]"
+    },
+    "required_for_publish": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether tech inspection must be Passed to publish Official results"
+    }
+  },
+  "required": [
+    "series_class_id",
+    "name",
+    "items"
+  ]
+}
