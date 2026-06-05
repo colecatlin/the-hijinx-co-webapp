@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -227,7 +228,7 @@ function PointsRuleSetEditor({ open, onOpenChange, rulesetId, series, tracks, se
   );
 }
 
-export default function ManagePointsConfig() {
+export default function ManagePointsConfig({ embedded = false }) {
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -338,10 +339,15 @@ export default function ManagePointsConfig() {
   }, [configs]);
 
   if (!isAdmin) {
-    return <div className="p-6 text-center text-gray-400">Admin access required.</div>;
+    return (
+      <ManagementLayout currentPage="ManagePointsConfig" embedded={embedded}>
+        <div className="p-6 text-center text-gray-400">Admin access required.</div>
+      </ManagementLayout>
+    );
   }
 
   return (
+    <ManagementLayout currentPage="ManagePointsConfig" embedded={embedded}>
     <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
@@ -349,7 +355,7 @@ export default function ManagePointsConfig() {
           <p className="text-sm text-gray-400 mt-1">Manage points rules and scoring configuration for all series and classes.</p>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/RegistrationDashboard">
+          <a href="/racecore">
             <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white gap-2">
               <span>↗</span> Go to Race Operations Hub
             </Button>
@@ -554,6 +560,7 @@ export default function ManagePointsConfig() {
         </AlertDialog>
       )}
     </div>
+    </ManagementLayout>
   );
 }
 

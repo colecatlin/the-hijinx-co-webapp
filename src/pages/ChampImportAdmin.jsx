@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import ManagementLayout from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import ReconciliationPanel from '@/components/champ-import/ReconciliationPanel';
 import StagingReviewPanel from '@/components/champ-import/StagingReviewPanel';
 import { AlertTriangle, Play, RefreshCw, CheckCircle } from 'lucide-react';
 
-export default function ChampImportAdmin() {
+export default function ChampImportAdmin({ embedded = false }) {
   const [selectedRunId, setSelectedRunId] = useState(null);
   const [activeTab, setActiveTab] = useState('runs');
   const [reconcileReport, setReconcileReport] = useState(null);
@@ -78,16 +79,19 @@ export default function ChampImportAdmin() {
 
   if (currentUser?.role !== 'admin') {
     return (
-      <div className="p-8 text-center text-gray-500">
-        <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-amber-500" />
-        Admin access required.
-      </div>
+      <ManagementLayout currentPage="ChampImportAdmin" embedded={embedded}>
+        <div className="p-8 text-center text-gray-500">
+          <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-amber-500" />
+          Admin access required.
+        </div>
+      </ManagementLayout>
     );
   }
 
   const isRunning = startResultsMutation.isPending || startStandingsMutation.isPending;
 
   return (
+    <ManagementLayout currentPage="ChampImportAdmin" embedded={embedded}>
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">CHAMP Off Road 2025 Import</h1>
@@ -173,5 +177,6 @@ export default function ChampImportAdmin() {
         </TabsContent>
       </Tabs>
     </div>
+    </ManagementLayout>
   );
 }
