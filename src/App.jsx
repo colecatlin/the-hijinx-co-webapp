@@ -83,6 +83,7 @@ import ManageResults from './pages/ManageResults';
 import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageDriverClaims from './pages/ManageDriverClaims';
 import ManageAccess from './pages/ManageAccess';
+import ManageEntityClaims from './pages/ManageEntityClaims';
 import ManageCSVImportExport from './pages/ManageCSVImportExport';
 import ManageCalendarSync from './pages/ManageCalendarSync';
 import Diagnostics from './pages/Diagnostics';
@@ -234,6 +235,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/media/requests" element={<ManageRequests embedded={true} />} />
         <Route path="/racecore/media/revenue" element={<ManageRevenue embedded={true} />} />
         <Route path="/racecore/access/claims" element={<ManageDriverClaims embedded={true} />} />
+        <Route path="/racecore/access/entity-claims" element={<ManageEntityClaims embedded={true} />} />
         <Route path="/racecore/access/management" element={<ManageAccess embedded={true} />} />
         <Route path="/racecore/data/csv" element={<ManageCSVImportExport embedded={true} />} />
         <Route path="/racecore/data/calendar-sync" element={<ManageCalendarSync embedded={true} />} />

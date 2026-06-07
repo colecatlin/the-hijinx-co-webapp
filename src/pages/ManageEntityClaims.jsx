@@ -329,7 +329,7 @@ function ClaimDetailDialog({ claim, onClose, onActionComplete }) {
   );
 }
 
-export default function ManageEntityClaims() {
+export default function ManageEntityClaims({ embedded = false }) {
   const queryClient = useQueryClient();
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -362,7 +362,7 @@ export default function ManageEntityClaims() {
 
   if (user && user.role !== 'admin') {
     return (
-      <ManagementLayout currentPage="ManageEntityClaims">
+      <ManagementLayout currentPage="ManageEntityClaims" embedded={embedded}>
         <ManagementShell title="Access Denied" subtitle="">
           <div className="py-20 text-center text-gray-500">This page is for administrators only.</div>
         </ManagementShell>
@@ -386,7 +386,7 @@ export default function ManageEntityClaims() {
   const disputeCount = claims.filter(c => getClaimMode(c) === 'dispute' && c.status === 'pending').length;
 
   return (
-    <ManagementLayout currentPage="ManageEntityClaims">
+    <ManagementLayout currentPage="ManageEntityClaims" embedded={embedded}>
       <ManagementShell
         title="Claim Review Center"
         subtitle="Review ownership claims, disputes, and access requests for Drivers, Teams, Tracks, and Series"

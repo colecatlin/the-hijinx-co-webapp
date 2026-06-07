@@ -75,8 +75,9 @@ export const RACE_CORE_NAV_GROUPS = [
     id: 'access-claims',
     label: 'Access & Claims',
     items: [
-      { href: '/racecore/access/claims',     label: 'Driver Claims',     icon: UserCheck },
-      { href: '/racecore/access/management', label: 'Access Management', icon: Shield },
+      { href: '/racecore/access/claims',        label: 'Driver Claims',     icon: UserCheck },
+      { href: '/racecore/access/entity-claims', label: 'Entity Claims',    icon: Shield },
+      { href: '/racecore/access/management',    label: 'Access Management', icon: Shield },
     ],
   },
   {
