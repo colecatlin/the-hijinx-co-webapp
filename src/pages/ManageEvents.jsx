@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -60,7 +61,7 @@ export default function ManageEvents({ embedded = false }) {
   const queryClient = useQueryClient();
 
   // ── Auth (unchanged query key) ────────────────────────────────────────────────
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
   // ── Data queries (unchanged keys + fetch params) ──────────────────────────────
@@ -351,6 +352,16 @@ export default function ManageEvents({ embedded = false }) {
       </div>
     </div>
   ) : null;
+
+  if (userLoading) return null;
+  if (!user) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -21,29 +22,35 @@ export default function ManageDriverClaims({ embedded = false }) {
   const [reviewAction, setReviewAction] = useState(null);
   const [reviewNotes, setReviewNotes] = useState('');
 
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const isAdmin = user?.role === 'admin';
+
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['allDriverClaims'],
     queryFn: () => base44.entities.DriverClaim.list('-created_date'),
+    enabled: isAdmin,
   });
 
   const { data: drivers = [] } = useQuery({
     queryKey: ['allDrivers'],
     queryFn: () => base44.entities.Driver.list(),
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    enabled: isAdmin,
   });
 
   const { data: tracks = [] } = useQuery({
     queryKey: ['allTracks'],
     queryFn: () => base44.entities.Track.list(),
+    enabled: isAdmin,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['allEvents'],
     queryFn: () => base44.entities.Event.list(),
+    enabled: isAdmin,
   });
 
   const updateClaimMutation = useMutation({
@@ -323,6 +330,17 @@ export default function ManageDriverClaims({ embedded = false }) {
   const pendingClaims = claims.filter(c => c.status === 'pending');
   const verifiedClaims = claims.filter(c => c.status === 'verified');
   const rejectedClaims = claims.filter(c => c.status === 'rejected' || c.status === 'duplicate');
+
+  // ── Admin guard ──────────────────────────────────────────────────────────────
+  if (userLoading) return null;
+  if (!user) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageDriverClaims" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <ManagementLayout currentPage="ManageDriverClaims" embedded={embedded}>

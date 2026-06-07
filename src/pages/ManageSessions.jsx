@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -17,18 +18,33 @@ export default function ManageSessions({ embedded = false }) {
   const [selectedSessionForEdit, setSelectedSessionForEdit] = useState(null);
   const queryClient = useQueryClient();
 
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
-
+  const isAdmin = currentUser?.role === 'admin';
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => base44.entities.Session.list('-created_date', 500),
+    enabled: isAdmin,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Session.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   });
+
+  if (userLoading) return null;
+  if (!currentUser) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageSessions" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   const filteredSessions = sessions.filter(session =>
     session.name?.toLowerCase().includes(searchQuery.toLowerCase())

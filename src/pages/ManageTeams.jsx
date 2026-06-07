@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -40,7 +41,7 @@ export default function ManageTeams({ embedded = false }) {
   const [bulkDeleteConfirm,  setBulkDeleteConfirm]  = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
   // Deep-link: ?teamId=xxx → route directly to Race Core canonical editor (preserved)
@@ -183,6 +184,16 @@ export default function ManageTeams({ embedded = false }) {
       </button>
     </div>
   ) : null;
+
+  if (userLoading) return null;
+  if (!user) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <>

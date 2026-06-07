@@ -22,15 +22,37 @@ export default function RaceCoreLayout() {
     setDrawerOpen(false);
   }, [location.pathname]);
 
+  const { data: isAuthenticated, isLoading: authLoading } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Minimal auth for sidebar permission context only
   const { data: user } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
+    enabled: !!isAuthenticated,
   });
 
   const isAdmin = user?.role === 'admin';
   const dashboardPermissions = getPermissionsForRole(user?.role || 'public');
+
+  // Layout-level auth guard — redirect unauthenticated users before any child route renders
+  useEffect(() => {
+    if (!authLoading && isAuthenticated === false) {
+      base44.auth.redirectToLogin(window.location.href);
+    }
+  }, [authLoading, isAuthenticated]);
+
+  if (authLoading || isAuthenticated === false) {
+    return (
+      <div className="flex h-screen items-center justify-center" style={{ background: '#0A0A0A' }}>
+        <div className="w-6 h-6 border-2 border-gray-700 border-t-gray-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // RaceCoreSidebar in layout mode: href-based navigation only
   const sidebarProps = {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
@@ -24,6 +25,13 @@ export default function ManageResults({ embedded = false }) {
   const [editingResult, setEditingResult] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const queryClient = useQueryClient();
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const isAdmin = currentUser?.role === 'admin';
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['results'],
@@ -116,6 +124,16 @@ export default function ManageResults({ embedded = false }) {
     const q = searchQuery.toLowerCase();
     return driverName.toLowerCase().includes(q) || eventName.toLowerCase().includes(q) || (result.series || '').toLowerCase().includes(q);
   });
+
+  if (userLoading) return null;
+  if (!currentUser) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageResults" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <ManagementLayout currentPage="ManageResults" embedded={embedded}>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -27,20 +28,30 @@ export default function ManageAccess({ embedded = false }) {
   const [filterRole, setFilterRole] = useState('all');
   const [claimProcessing, setClaimProcessing] = useState(null);
 
+  // Auth
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const isAdminUser = currentUser?.role === 'admin';
+
   // Fetch all collaborators and invitations
   const { data: allCollaborators = [], isLoading: loadingCollaborators } = useQuery({
     queryKey: ['allCollaborators'],
     queryFn: () => base44.entities.EntityCollaborator.list(),
+    enabled: isAdminUser,
   });
 
   const { data: allInvitations = [], isLoading: loadingInvitations, refetch: refetchInvitations } = useQuery({
     queryKey: ['allInvitations'],
     queryFn: () => base44.entities.Invitation.list('-created_date', 300),
+    enabled: isAdminUser,
   });
 
   const { data: allClaims = [], isLoading: loadingClaims, refetch: refetchClaims } = useQuery({
     queryKey: ['entityClaimRequests'],
     queryFn: () => base44.entities.EntityClaimRequest.list('-created_date', 200),
+    enabled: isAdminUser,
   });
 
   const handleClaimAction = async (claim, action) => {
@@ -83,6 +94,7 @@ export default function ManageAccess({ embedded = false }) {
       };
       return entityMap[activeType].list();
     },
+    enabled: isAdminUser,
   });
 
   const deleteMutation = useMutation({
@@ -169,6 +181,16 @@ export default function ManageAccess({ embedded = false }) {
     }
     return filtered;
   }, [allInvitations, filterEntityType, filterRole]);
+
+  if (userLoading) return null;
+  if (!currentUser) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdminUser) {
+    return (
+      <ManagementLayout currentPage="ManageAccess" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <ManagementLayout currentPage="ManageAccess" embedded={embedded}>

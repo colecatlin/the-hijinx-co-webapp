@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ManagementLayout from '@/components/management/ManagementLayout';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, AlertTriangle, X, User, Upload, Download, Hash, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -63,7 +64,7 @@ export default function ManageDrivers({ embedded = false }) {
   const queryClient = useQueryClient();
 
   // ── Auth (unchanged query key) ────────────────────────────────────────────────
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
   // ── Deep-link: ?driverId=xxx (preserved) ─────────────────────────────────────
@@ -464,6 +465,17 @@ export default function ManageDrivers({ embedded = false }) {
       </button>
     </div>
   ) : null;
+
+  // ── Admin guard ──────────────────────────────────────────────────────────────
+  if (userLoading) return null;
+  if (!user) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
