@@ -75,6 +75,18 @@ function buildNormalizedResultKey(session_id, driver_id, driver_name) {
   return null;
 }
 
+async function isEventCollaborator(base44, userId, eventId, seriesId, trackId) {
+  const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ user_id: userId }).catch(() => []);
+  const allowed = new Set(['owner', 'editor']);
+  return collabs.some(c =>
+    allowed.has(c.role) && (
+      (c.entity_type === 'Event'  && c.entity_id === eventId) ||
+      (c.entity_type === 'Series' && seriesId && c.entity_id === seriesId) ||
+      (c.entity_type === 'Track'  && trackId  && c.entity_id === trackId)
+    )
+  );
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -89,6 +101,15 @@ Deno.serve(async (req) => {
     }
     if (!payload.session_id) {
       return Response.json({ error: 'payload.session_id is required — do not create results without a session', status: 400 }, { status: 400 });
+    }
+
+    // Authorization: admin, or event/series collaborator
+    if (user.role !== 'admin') {
+      const event = await base44.asServiceRole.entities.Event.filter({ id: payload.event_id }).then(r => r?.[0]).catch(() => null);
+      const allowed = await isEventCollaborator(base44, user.id, payload.event_id, event?.series_id || null, event?.track_id || null);
+      if (!allowed) {
+        return Response.json({ error: 'Forbidden: must be admin or event/series collaborator' }, { status: 403 });
+      }
     }
 
     // R8Z Part 1D: Fetch parent Session and merge metadata into payload

@@ -1,8 +1,26 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+async function isEventCollaborator(base44, userId, userEmail, eventId, seriesId) {
+  const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+    user_id: userId,
+  }).catch(() => []);
+
+  const allowed = new Set(['owner', 'editor']);
+  return collabs.some(c =>
+    allowed.has(c.role) && (
+      (c.entity_type === 'Event'  && c.entity_id === eventId) ||
+      (c.entity_type === 'Series' && c.entity_id === seriesId)
+    )
+  );
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { session_id } = await req.json();
 
     if (!session_id) {
@@ -10,20 +28,30 @@ Deno.serve(async (req) => {
     }
 
     // 1) Load Session
-    const session = await base44.entities.Session.get(session_id);
+    const session = await base44.asServiceRole.entities.Session.filter({ id: session_id }).then(r => r?.[0]).catch(() => null);
     if (!session) {
       return Response.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    // 2) Determine shouldBePublic
+    // 2) Authorization: admin, or event/series collaborator
+    if (user.role !== 'admin') {
+      const event = await base44.asServiceRole.entities.Event.filter({ id: session.event_id }).then(r => r?.[0]).catch(() => null);
+      const seriesId = event?.series_id || null;
+      const allowed = await isEventCollaborator(base44, user.id, user.email, session.event_id, seriesId);
+      if (!allowed) {
+        return Response.json({ error: 'Forbidden: must be admin or event/series collaborator' }, { status: 403 });
+      }
+    }
+
+    // 3) Determine shouldBePublic
     const shouldBePublic = ['Official', 'Locked'].includes(session.status);
 
-    // 3) Load all Results for this session
-    const results = await base44.entities.Results.filter({ session_id });
+    // 4) Load all Results for this session
+    const results = await base44.asServiceRole.entities.Results.filter({ session_id });
 
-    // 4) Update is_public for each result
+    // 5) Update is_public for each result
     const updates = results.map(r =>
-      base44.entities.Results.update(r.id, { is_public: shouldBePublic })
+      base44.asServiceRole.entities.Results.update(r.id, { is_public: shouldBePublic })
     );
     await Promise.all(updates);
 
