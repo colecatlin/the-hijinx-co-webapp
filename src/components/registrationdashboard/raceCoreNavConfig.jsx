@@ -1,80 +1,92 @@
 import {
   LayoutDashboard,
-  Plus,
-  ClipboardCheck,
-  Users,
-  Car,
-  AlertCircle,
-  Wrench,
-  Flag,
-  Radio,
-  DoorOpen,
-  Trophy,
-  Upload,
-  Download,
-  Plug,
-  History,
-  Mic,
-  Clock,
-  Gauge,
-  Camera,
-  BookOpen,
   User,
+  Users,
+  Trophy,
   MapPin,
+  Flag,
   MonitorPlay,
   BarChart3,
+  Wrench,
+  Camera,
+  Clock,
+  Award,
+  SlidersHorizontal,
+  Briefcase,
+  Send,
+  DollarSign,
+  UserCheck,
+  Shield,
+  FileJson,
+  RefreshCw,
+  GitMerge,
 } from 'lucide-react';
 
 /**
- * Race Core navigation config — single source of truth for sidebar.
+ * Race Core navigation config — single source of truth for RaceCoreSidebar.
  *
  * item fields:
- *   tab         — activeTab string value (for tab-based navigation)
- *   href        — full path (for link-based navigation outside dashboard tabs)
- *   label       — display name
- *   icon        — Lucide icon component
- *   canTabKey   — permission key checked via canTab()
- *   requiresEvent — greyed out when no event is selected
- *   adminOnly   — only shown to role === 'admin'
- *   ownerOnly   — shown to admins and entity owners/editors
- *   quickAction — true: shown in quick actions section, not primary nav
+ *   href   — full path (all items are href-driven, no tab/modal keys)
+ *   label  — display name
+ *   icon   — Lucide icon component
  */
 
 export const RACE_CORE_NAV_GROUPS = [
   {
-    id: 'home',
+    id: 'command',
     label: 'Command',
     items: [
-      { href: '/racecore',              label: 'RaceCore Dashboard', icon: LayoutDashboard, canTabKey: 'overview' },
-      { href: '/race-control/events',   label: 'Event Files',        icon: MonitorPlay,     canTabKey: null },
+      { href: '/racecore',            label: 'RaceCore Dashboard', icon: LayoutDashboard },
+      { href: '/race-control/events', label: 'Event Files',        icon: MonitorPlay },
     ],
   },
   {
-    id: 'build',
-    label: 'Governance',
+    id: 'entity-oversight',
+    label: 'Entity Oversight',
     items: [
-      { href: '/racecore?tab=eventBuilder',  label: 'Event Setup',   icon: Plus,     canTabKey: 'event_builder' },
-      { href: '/racecore?tab=integrations',  label: 'Integrations',  icon: Plug,     canTabKey: 'integrations' },
-      { href: '/racecore/standings',         label: 'Standings',     icon: BarChart3, canTabKey: null },
+      { href: '/racecore/records/drivers', label: 'Drivers',         icon: User },
+      { href: '/racecore/records/teams',   label: 'Teams',           icon: Users },
+      { href: '/racecore/records/series',  label: 'Series',          icon: Trophy },
+      { href: '/racecore/records/tracks',  label: 'Tracks',          icon: MapPin },
+      { href: '/racecore/records/events',  label: 'Events Overview', icon: Flag },
     ],
   },
   {
-    id: 'people',
-    label: 'Entity Records',
+    id: 'race-records',
+    label: 'Race Records',
     items: [
-      { href: '/racecore/records/drivers', label: 'Drivers', icon: User,   canTabKey: null },
-      { href: '/racecore/records/teams',   label: 'Teams',   icon: Users,  canTabKey: null },
-      { href: '/racecore/records/series',  label: 'Series',  icon: Trophy, canTabKey: null },
-      { href: '/racecore/records/tracks',  label: 'Tracks',  icon: MapPin, canTabKey: null },
-      { href: '/racecore/records/events',  label: 'Events',  icon: Flag,   canTabKey: null },
+      { href: '/racecore/records/sessions',       label: 'Sessions',        icon: Clock },
+      { href: '/racecore/records/results',        label: 'Results',         icon: Award },
+      { href: '/racecore/records/points-rulesets',label: 'Points Rulesets', icon: SlidersHorizontal },
+      { href: '/racecore/standings',              label: 'Standings Hub',   icon: BarChart3 },
     ],
   },
   {
-    id: 'admin',
-    label: 'Admin Tools',
-    adminOnly: true,
+    id: 'media-ecosystem',
+    label: 'Media Ecosystem',
     items: [
-      { href: '/racecore?tab=announcer_pack', label: 'Announcer Pack', icon: BookOpen, canTabKey: 'announcer_pack' },
+      { href: '/racecore/media/applications', label: 'Applications',    icon: Camera },
+      { href: '/racecore/media/assignments',  label: 'Assignments',     icon: Briefcase },
+      { href: '/racecore/media/requests',     label: 'Requests',        icon: Send },
+      { href: '/racecore/media/revenue',      label: 'Revenue & Payouts', icon: DollarSign },
+    ],
+  },
+  {
+    id: 'access-claims',
+    label: 'Access & Claims',
+    items: [
+      { href: '/racecore/access/claims',     label: 'Driver Claims',     icon: UserCheck },
+      { href: '/racecore/access/management', label: 'Access Management', icon: Shield },
+    ],
+  },
+  {
+    id: 'data-integrity',
+    label: 'Data Integrity',
+    items: [
+      { href: '/racecore/data/csv',           label: 'CSV Import/Export',   icon: FileJson },
+      { href: '/racecore/data/calendar-sync', label: 'Schedule Sync',       icon: RefreshCw },
+      { href: '/racecore/data/champ-import',  label: 'Champ Import',        icon: GitMerge },
+      { href: '/racecore/diagnostics',        label: 'System Diagnostics',  icon: Wrench },
     ],
   },
 ];
