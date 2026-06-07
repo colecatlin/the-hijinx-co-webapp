@@ -62,9 +62,29 @@ export default function RaceCoreSidebar({
       className="w-44 shrink-0 border-r border-gray-800/70 min-h-full flex flex-col overflow-y-auto"
       style={{ background: '#0d0d0d' }}
     >
+      {/* Home link — HIJINX platform */}
+      <button
+        onClick={() => navigate('/')}
+        className="w-full px-3 pt-3 pb-2 flex items-center gap-2 hover:opacity-70 transition-opacity"
+        title="Back to HIJINX"
+      >
+        <img
+          src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
+          alt="HIJINX"
+          className="h-4 w-auto object-contain"
+          style={{ filter: 'brightness(0) invert(1)', opacity: 0.7 }}
+        />
+        <img
+          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png"
+          alt="HIJINX"
+          className="h-5 w-auto object-contain"
+          style={{ filter: 'brightness(0) invert(1)', opacity: 0.55 }}
+        />
+      </button>
+
       {/* Identity strip */}
       <div className="px-3 py-2 border-b border-gray-800/60 flex items-center gap-2">
-         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RACECORE</span>
+         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RaceCore</span>
          {isAdmin && (
            <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
          )}
