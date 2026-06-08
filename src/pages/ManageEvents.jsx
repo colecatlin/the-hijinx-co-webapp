@@ -120,11 +120,11 @@ export default function ManageEvents({ embedded = false }) {
     let result = events.filter(event =>
       event.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    // statusFilter logic preserved as-is (includes pre-existing enum mismatch)
+    // statusFilter — aligned to schema enum values (Title Case)
     if (statusFilter === 'upcoming') {
-      result = result.filter(e => e.status === 'upcoming' || e.status === 'in_progress');
+      result = result.filter(e => e.status === 'Draft' || e.status === 'PendingApproval' || e.status === 'Published');
     } else if (statusFilter === 'finished') {
-      result = result.filter(e => e.status === 'completed' || e.status === 'cancelled');
+      result = result.filter(e => e.status === 'Completed' || e.status === 'Cancelled');
     }
     // approvalFilter logic preserved as-is (includes pre-existing field name mismatch)
     if (approvalFilter === 'pending') {

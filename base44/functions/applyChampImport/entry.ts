@@ -28,26 +28,46 @@ Deno.serve(async (req) => {
 
       for (const row of staged) {
         try {
-          // Check for existing result to avoid duplication
-          const existing = await db.entities.Results.filter({
-            driver_id: row.mapped_driver_id,
-            event_id: row.mapped_event_id,
-            class_id: row.mapped_class_id,
-          });
+          // Map staging fields → operational Results schema
+          // finishing_position → position (used by recalculateStandings)
+          // class_id → series_class_id
+          // best_lap → best_lap_time_ms (convert seconds to ms if numeric)
+          const bestLapMs = row.best_lap
+            ? (typeof row.best_lap === 'number' ? Math.round(row.best_lap * 1000) : null)
+            : null;
+
+          // Build normalized_result_key for dedup compatibility
+          const normalizedKey = row.mapped_driver_id && row.mapped_event_id
+            ? `result:${row.mapped_event_id}:${row.mapped_driver_id}`
+            : null;
+
+          // Check for existing result to avoid duplication — use normalized key first
+          let existing = [];
+          if (normalizedKey) {
+            existing = await db.entities.Results.filter({ normalized_result_key: normalizedKey });
+          }
+          if (!existing.length && row.mapped_driver_id && row.mapped_event_id) {
+            existing = await db.entities.Results.filter({
+              driver_id: row.mapped_driver_id,
+              event_id: row.mapped_event_id,
+              series_class_id: row.mapped_class_id || null,
+            });
+          }
 
           const resultData = {
             driver_id: row.mapped_driver_id,
             event_id: row.mapped_event_id,
-            class_id: row.mapped_class_id,
-            finishing_position: row.finishing_position,
-            laps_completed: row.laps_completed,
-            points: row.points_awarded,
-            status: row.status_text,
-            best_lap_time: row.best_lap,
-            source_name: 'champoffroad',
-            source_url: row.source_url,
+            series_class_id: row.mapped_class_id || null,   // was: class_id (wrong field)
+            position: row.finishing_position || null,        // was: finishing_position (wrong field)
+            laps_completed: row.laps_completed || null,
+            points: row.points_awarded || null,
+            status: row.status_text || 'Running',
+            best_lap_time_ms: bestLapMs,                     // was: best_lap_time / best_lap (wrong field + no ms)
+            session_type: 'Final',                           // CHAMP results are final session results
+            data_source: 'champoffroad',
+            source_url: row.source_url || null,
             import_run_id: importRunId,
-            imported_at: now,
+            ...(normalizedKey && { normalized_result_key: normalizedKey }),
           };
 
           if (existing.length > 0) {
@@ -74,24 +94,23 @@ Deno.serve(async (req) => {
       for (const row of staged) {
         try {
           // Standings: store as a snapshot — do not auto-overwrite calculated standings
-          // Find existing standing for this driver/class/year
+          // Find existing standing for this driver/class/year using correct field names
           const existing = await db.entities.Standings.filter({
             driver_id: row.mapped_driver_id,
-            class_id: row.mapped_class_id,
-            season: row.season_year,
+            series_class_id: row.mapped_class_id || null,   // was: class_id (wrong field)
+            season_year: row.season_year,                    // was: season (wrong field)
           });
 
           const standingData = {
             driver_id: row.mapped_driver_id,
-            class_id: row.mapped_class_id,
-            season: row.season_year,
-            position: row.standing_position,
-            points: row.total_points,
-            wins: row.wins,
-            source_name: 'champoffroad',
-            source_url: row.source_url,
+            series_class_id: row.mapped_class_id || null,   // was: class_id
+            season_year: row.season_year,                    // was: season
+            position: row.standing_position || null,
+            points_total: row.total_points || 0,             // was: points (wrong field for Standings entity)
+            wins: row.wins || 0,
+            calculation_source: 'champoffroad',
+            source_url: row.source_url || null,
             import_run_id: importRunId,
-            imported_at: now,
           };
 
           if (existing.length > 0) {

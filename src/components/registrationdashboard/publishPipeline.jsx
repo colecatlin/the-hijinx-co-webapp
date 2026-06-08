@@ -93,14 +93,14 @@ export async function unpublishEvent({ eventId, userId }) {
 }
 
 /**
- * Set event to Live (status = in_progress)
+ * Set event to Live (status = 'Live' — schema enum)
  */
 export async function setEventLive({ eventId, userId }) {
   try {
     const event = await base44.entities.Event.get(eventId);
     
     await base44.entities.Event.update(eventId, {
-      status: 'in_progress',
+      status: 'Live',
     });
 
     // Write operation log
@@ -113,7 +113,7 @@ export async function setEventLive({ eventId, userId }) {
       metadata: JSON.stringify({
         eventId,
         eventName: event.name,
-        newStatus: 'in_progress',
+        newStatus: 'Live',
         userId,
       }),
       notes: `Event ${event.name} set to Live`,
@@ -127,14 +127,14 @@ export async function setEventLive({ eventId, userId }) {
 }
 
 /**
- * Set event to Completed (status = completed)
+ * Set event to Completed (status = 'Completed' — schema enum)
  */
 export async function setEventCompleted({ eventId, userId }) {
   try {
     const event = await base44.entities.Event.get(eventId);
     
     await base44.entities.Event.update(eventId, {
-      status: 'completed',
+      status: 'Completed',
     });
 
     // Write operation log
@@ -147,7 +147,7 @@ export async function setEventCompleted({ eventId, userId }) {
       metadata: JSON.stringify({
         eventId,
         eventName: event.name,
-        newStatus: 'completed',
+        newStatus: 'Completed',
         userId,
       }),
       notes: `Event ${event.name} set to Completed`,
