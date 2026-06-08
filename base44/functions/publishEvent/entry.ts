@@ -31,29 +31,16 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
-    // Update event status
-    const updatedEvent = await base44.entities.Event.update(event_id, {
-      publish_status: 'Published',
-      published_by_user_id: user_id || user.email,
-      published_date: new Date().toISOString(),
-      status: 'Published'
-    });
-
-    // Log operation
-    await base44.entities.OperationLog.create({
-      operation_type: 'event_published',
-      entity_name: 'Event',
-      entity_id: event_id,
+    // Atomic lifecycle update via canonical function (status + public_status + published_flag)
+    const lifecycleRes = await base44.functions.invoke('setEventLifecycleStatus', {
       event_id,
-      status: 'success',
-      source_type: 'api_function',
-      function_name: 'publishEvent',
-      message: `Event published: ${updatedEvent.name}`,
-      metadata: {
-        event_id,
-        published_by_user_id: user_id || user.email
-      }
+      new_status: 'Published',
+      reason: `publishEvent function called by ${user_id || user.email}`,
     });
+    if (!lifecycleRes?.data?.ok) {
+      throw new Error(lifecycleRes?.data?.error || 'setEventLifecycleStatus failed');
+    }
+    const updatedEvent = lifecycleRes.data.event;
 
     // Fire-and-forget: create ActivityFeed item for published event
     base44.functions.invoke('createActivityFeedItemSafe', {

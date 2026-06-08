@@ -27,31 +27,15 @@ export function canPublishStandings(selectedSeries, seasonYear) {
 }
 
 /**
- * Publish an event (set published_flag = true)
+ * Publish an event → routes through setEventLifecycleStatus for atomic field sync.
  */
 export async function publishEvent({ eventId, userId }) {
   try {
-    const event = await base44.entities.Event.get(eventId);
-    
-    await base44.entities.Event.update(eventId, {
-      published_flag: true,
+    await base44.functions.invoke('setEventLifecycleStatus', {
+      event_id: eventId,
+      new_status: 'Published',
+      reason: `Triggered by publishEvent (userId: ${userId})`,
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'event_published',
-      source_type: 'race_core',
-      entity_name: 'Event',
-      entity_id: eventId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        eventName: event.name,
-        userId,
-      }),
-      notes: `Event ${event.name} published`,
-    });
-
     return true;
   } catch (error) {
     console.error('publishEvent error:', error);
@@ -60,31 +44,15 @@ export async function publishEvent({ eventId, userId }) {
 }
 
 /**
- * Unpublish an event (set published_flag = false)
+ * Unpublish an event → routes back to Draft via setEventLifecycleStatus.
  */
 export async function unpublishEvent({ eventId, userId }) {
   try {
-    const event = await base44.entities.Event.get(eventId);
-    
-    await base44.entities.Event.update(eventId, {
-      published_flag: false,
+    await base44.functions.invoke('setEventLifecycleStatus', {
+      event_id: eventId,
+      new_status: 'Draft',
+      reason: `Triggered by unpublishEvent (userId: ${userId})`,
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'event_unpublished',
-      source_type: 'race_core',
-      entity_name: 'Event',
-      entity_id: eventId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        eventName: event.name,
-        userId,
-      }),
-      notes: `Event ${event.name} unpublished`,
-    });
-
     return true;
   } catch (error) {
     console.error('unpublishEvent error:', error);
@@ -93,32 +61,15 @@ export async function unpublishEvent({ eventId, userId }) {
 }
 
 /**
- * Set event to Live (status = 'Live' — schema enum)
+ * Set event to Live → routes through setEventLifecycleStatus.
  */
 export async function setEventLive({ eventId, userId }) {
   try {
-    const event = await base44.entities.Event.get(eventId);
-    
-    await base44.entities.Event.update(eventId, {
-      status: 'Live',
+    await base44.functions.invoke('setEventLifecycleStatus', {
+      event_id: eventId,
+      new_status: 'Live',
+      reason: `Triggered by setEventLive (userId: ${userId})`,
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'event_status_changed',
-      source_type: 'race_core',
-      entity_name: 'Event',
-      entity_id: eventId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        eventName: event.name,
-        newStatus: 'Live',
-        userId,
-      }),
-      notes: `Event ${event.name} set to Live`,
-    });
-
     return true;
   } catch (error) {
     console.error('setEventLive error:', error);
@@ -127,32 +78,15 @@ export async function setEventLive({ eventId, userId }) {
 }
 
 /**
- * Set event to Completed (status = 'Completed' — schema enum)
+ * Set event to Completed → routes through setEventLifecycleStatus.
  */
 export async function setEventCompleted({ eventId, userId }) {
   try {
-    const event = await base44.entities.Event.get(eventId);
-    
-    await base44.entities.Event.update(eventId, {
-      status: 'Completed',
+    await base44.functions.invoke('setEventLifecycleStatus', {
+      event_id: eventId,
+      new_status: 'Completed',
+      reason: `Triggered by setEventCompleted (userId: ${userId})`,
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'event_status_changed',
-      source_type: 'race_core',
-      entity_name: 'Event',
-      entity_id: eventId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        eventName: event.name,
-        newStatus: 'Completed',
-        userId,
-      }),
-      notes: `Event ${event.name} set to Completed`,
-    });
-
     return true;
   } catch (error) {
     console.error('setEventCompleted error:', error);
@@ -161,32 +95,16 @@ export async function setEventCompleted({ eventId, userId }) {
 }
 
 /**
- * Publish a session as Official (status = Official)
+ * Publish a session as Official — routes through updateSessionStatus backend
+ * state machine (validates transition, logs, auto-syncs result visibility).
  */
 export async function publishSessionOfficial({ sessionId, eventId, userId }) {
   try {
-    const session = await base44.entities.Session.get(sessionId);
-    
-    await base44.entities.Session.update(sessionId, {
-      status: 'Official',
+    const res = await base44.functions.invoke('updateSessionStatus', {
+      session_id: sessionId,
+      new_status: 'Official',
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'session_published_official',
-      source_type: 'race_core',
-      entity_name: 'Session',
-      entity_id: sessionId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        sessionId,
-        sessionName: session.name,
-        userId,
-      }),
-      notes: `Session ${session.name} published as Official`,
-    });
-
+    if (res?.data?.error) throw new Error(res.data.error);
     return true;
   } catch (error) {
     console.error('publishSessionOfficial error:', error);
@@ -195,33 +113,16 @@ export async function publishSessionOfficial({ sessionId, eventId, userId }) {
 }
 
 /**
- * Lock a session (status = Locked, locked = true)
+ * Lock a session — routes through updateSessionStatus backend state machine.
+ * State machine keeps status and locked boolean in sync automatically.
  */
 export async function lockSession({ sessionId, eventId, userId }) {
   try {
-    const session = await base44.entities.Session.get(sessionId);
-    
-    await base44.entities.Session.update(sessionId, {
-      status: 'Locked',
-      locked: true,
+    const res = await base44.functions.invoke('updateSessionStatus', {
+      session_id: sessionId,
+      new_status: 'Locked',
     });
-
-    // Write operation log
-    await base44.entities.OperationLog.create({
-      operation_type: 'session_locked',
-      source_type: 'race_core',
-      entity_name: 'Session',
-      entity_id: sessionId,
-      status: 'success',
-      metadata: JSON.stringify({
-        eventId,
-        sessionId,
-        sessionName: session.name,
-        userId,
-      }),
-      notes: `Session ${session.name} locked`,
-    });
-
+    if (res?.data?.error) throw new Error(res.data.error);
     return true;
   } catch (error) {
     console.error('lockSession error:', error);
