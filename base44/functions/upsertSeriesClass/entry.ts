@@ -19,6 +19,12 @@ function buildNormalizedSeriesClassKey(series_id, class_name) {
   return `series_class:${series_id}:${normalizeName(class_name)}`;
 }
 
+async function isSeriesCollaborator(base44, userId, seriesId) {
+  const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ user_id: userId }).catch(() => []);
+  const allowed = new Set(['owner', 'editor']);
+  return collabs.some(c => allowed.has(c.role) && c.entity_type === 'Series' && c.entity_id === seriesId);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -30,6 +36,14 @@ Deno.serve(async (req) => {
 
     if (!payload.series_id || !payload.class_name) {
       return Response.json({ error: 'payload.series_id and payload.class_name are required' }, { status: 400 });
+    }
+
+    // Authorization: admin or series collaborator
+    if (user.role !== 'admin') {
+      const allowed = await isSeriesCollaborator(base44, user.id, payload.series_id);
+      if (!allowed) {
+        return Response.json({ error: 'Forbidden: must be admin or series collaborator' }, { status: 403 });
+      }
     }
 
     const normalizedKey = buildNormalizedSeriesClassKey(payload.series_id, payload.class_name);

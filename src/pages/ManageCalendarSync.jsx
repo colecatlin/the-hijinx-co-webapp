@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import EventDuplicateScanner from '@/components/management/EventDuplicateScanner';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 
 const DEFAULT_CALENDARS = [
   {
@@ -20,6 +21,12 @@ const DEFAULT_CALENDARS = [
 ];
 
 export default function ManageCalendarSync({ embedded = false }) {
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const isAdmin = currentUser?.role === 'admin';
+
   const [calendars, setCalendars] = useState(() => {
     try {
       const stored = localStorage.getItem('hijinx_sync_calendars');
@@ -77,6 +84,16 @@ export default function ManageCalendarSync({ embedded = false }) {
       await syncCalendar(cal);
     }
   };
+
+  if (userLoading) return null;
+  if (!currentUser) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageCalendarSync" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <ManagementLayout currentPage="ManageCalendarSync" embedded={embedded}>

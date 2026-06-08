@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const ALLOWED_ENTITY_TYPES = ['Driver', 'Team', 'Track', 'Series', 'Event'];
 const ROLE_RANK = { owner: 2, editor: 1 };
+const ALLOWED_ROLES = ['owner', 'editor'];
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -18,8 +19,21 @@ Deno.serve(async (req) => {
     return Response.json({ error: `Invalid entity_type. Allowed: ${ALLOWED_ENTITY_TYPES.join(', ')}` }, { status: 400 });
   }
 
-  if (!ROLE_RANK[role]) {
+  if (!ALLOWED_ROLES.includes(role)) {
     return Response.json({ error: 'Invalid role. Allowed: owner, editor' }, { status: 400 });
+  }
+
+  // Authorization: caller must be admin OR existing owner of the target entity
+  if (user.role !== 'admin') {
+    const ownerCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+      entity_type,
+      entity_id,
+      role: 'owner',
+    }).catch(() => []);
+    const isOwner = ownerCollabs.some(c => c.user_id === user.id || c.user_email === user.email);
+    if (!isOwner) {
+      return Response.json({ error: 'Forbidden: Only admins or entity owners can grant access' }, { status: 403 });
+    }
   }
 
   // Check for existing collaborator record

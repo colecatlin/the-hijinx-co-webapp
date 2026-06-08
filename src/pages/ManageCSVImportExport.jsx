@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SmartCSVImport from '@/components/management/SmartCSVImport';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 
 const ENTITY_TYPES = [
   'Driver', 'Team', 'Track', 'Series', 'Event', 'Results', 'Session',
@@ -28,10 +29,17 @@ export default function ManageCSVImportExport({ embedded = false }) {
   const [undoLoading, setUndoLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const isAdmin = currentUser?.role === 'admin';
+
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs'],
     queryFn: () => base44.entities.OperationLog.filter({ operation_type: 'import' }, '-created_date', 50),
     refetchInterval: 2000,
+    enabled: isAdmin,
   });
 
   const lastImport = operationLogs[0];
@@ -149,6 +157,16 @@ export default function ManageCSVImportExport({ embedded = false }) {
       setLoading(false);
     }
   };
+
+  if (userLoading) return null;
+  if (!currentUser) { base44.auth.redirectToLogin(); return null; }
+  if (!isAdmin) {
+    return (
+      <ManagementLayout currentPage="ManageCSVImportExport" embedded={embedded}>
+        <AdminAccessDenied />
+      </ManagementLayout>
+    );
+  }
 
   return (
     <ManagementLayout currentPage="ManageCSVImportExport" embedded={embedded}>

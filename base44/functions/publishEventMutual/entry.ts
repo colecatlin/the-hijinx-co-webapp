@@ -32,6 +32,29 @@ Deno.serve(async (req) => {
     const eventUpdate = {};
     let failureReason = null;
 
+    // Authorization: validate caller has permission for the given publisherType
+    if (publisherType === 'admin') {
+      if (user.role !== 'admin') {
+        return Response.json({ ok: false, error: 'Forbidden: admin publisherType requires admin role' }, { status: 403 });
+      }
+    } else if (publisherType === 'track') {
+      if (user.role !== 'admin') {
+        const trackId = event.track_id;
+        if (!trackId) return Response.json({ ok: false, error: 'Event has no track associated' }, { status: 403 });
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ entity_type: 'Track', entity_id: trackId }).catch(() => []);
+        const hasAccess = collabs.some(c => (c.user_id === user.id || c.user_email === user.email) && ['owner', 'editor'].includes(c.role));
+        if (!hasAccess) return Response.json({ ok: false, error: 'Forbidden: must be track owner or editor' }, { status: 403 });
+      }
+    } else if (publisherType === 'series') {
+      if (user.role !== 'admin') {
+        const seriesId = event.series_id;
+        if (!seriesId) return Response.json({ ok: false, error: 'Event has no series associated' }, { status: 403 });
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ entity_type: 'Series', entity_id: seriesId }).catch(() => []);
+        const hasAccess = collabs.some(c => (c.user_id === user.id || c.user_email === user.email) && ['owner', 'editor'].includes(c.role));
+        if (!hasAccess) return Response.json({ ok: false, error: 'Forbidden: must be series owner or editor' }, { status: 403 });
+      }
+    }
+
     // Validate and update based on publisherType
     if (publisherType === 'track') {
       const trackState = event.track_publish_state || 'pending';

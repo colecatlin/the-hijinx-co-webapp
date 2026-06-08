@@ -22,6 +22,17 @@ function buildNormalizedStandingKey(series_id, season_year, driver_id, driver_na
   return null;
 }
 
+async function isSeriesOrEventCollaborator(base44, userId, seriesId, eventId) {
+  const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ user_id: userId }).catch(() => []);
+  const allowed = new Set(['owner', 'editor']);
+  return collabs.some(c =>
+    allowed.has(c.role) && (
+      (c.entity_type === 'Series' && seriesId && c.entity_id === seriesId) ||
+      (c.entity_type === 'Event'  && eventId  && c.entity_id === eventId)
+    )
+  );
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -39,6 +50,14 @@ Deno.serve(async (req) => {
 
     if (!payload.driver_id || !payload.series_id || !payload.season_year) {
       return Response.json({ error: 'payload.driver_id, payload.series_id, and payload.season_year are required' }, { status: 400 });
+    }
+
+    // Authorization: admin, or series/event collaborator
+    if (user.role !== 'admin') {
+      const allowed = await isSeriesOrEventCollaborator(base44, user.id, payload.series_id, payload.event_id || null);
+      if (!allowed) {
+        return Response.json({ error: 'Forbidden: must be admin or series/event collaborator' }, { status: 403 });
+      }
     }
 
     const normalizedKey = buildNormalizedStandingKey(

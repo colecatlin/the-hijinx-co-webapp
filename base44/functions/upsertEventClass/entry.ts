@@ -19,6 +19,12 @@ function buildNormalizedEventClassKey(event_id, class_name) {
   return `event_class:${event_id}:${normalizeName(class_name)}`;
 }
 
+async function isEventCollaborator(base44, userId, eventId) {
+  const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ user_id: userId }).catch(() => []);
+  const allowed = new Set(['owner', 'editor']);
+  return collabs.some(c => allowed.has(c.role) && c.entity_type === 'Event' && c.entity_id === eventId);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -30,6 +36,14 @@ Deno.serve(async (req) => {
 
     if (!payload.event_id || !payload.class_name) {
       return Response.json({ error: 'payload.event_id and payload.class_name are required' }, { status: 400 });
+    }
+
+    // Authorization: admin or event collaborator
+    if (user.role !== 'admin') {
+      const allowed = await isEventCollaborator(base44, user.id, payload.event_id);
+      if (!allowed) {
+        return Response.json({ error: 'Forbidden: must be admin or event collaborator' }, { status: 403 });
+      }
     }
 
     const normalizedKey = buildNormalizedEventClassKey(payload.event_id, payload.class_name);
